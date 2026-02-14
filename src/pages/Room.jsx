@@ -1,0 +1,353 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Radio, Users, MessageSquare, Hand, Settings, 
+  LogOut, Mic, MicOff, Video, VideoOff, PhoneOff,
+  Share2, MoreVertical
+} from 'lucide-react';
+import StageView from '../components/rooms/StageView';
+import ChatPanel from '../components/rooms/ChatPanel';
+import ParticipantsList from '../components/rooms/ParticipantsList';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+
+export default function RoomPage() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('id');
+  const queryClient = useQueryClient();
+
+  const [currentParticipant, setCurrentParticipant] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [stages, setStages] = useState([]);
+  const [activeTab, setActiveTab] = useState('stage');
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: room, isLoading } = useQuery({
+    queryKey: ['room', roomId],
+    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
+    enabled: !!roomId,
+  });
+
+  const { data: fetchedStages = [] } = useQuery({
+    queryKey: ['stages', roomId],
+    queryFn: () => base44.entities.Stage.filter({ room_id: roomId }, 'order'),
+    enabled: !!roomId,
+  });
+
+  const { data: fetchedParticipants = [] } = useQuery({
+    queryKey: ['participants', roomId],
+    queryFn: () => base44.entities.Participant.filter({ room_id: roomId }),
+    enabled: !!roomId,
+  });
+
+  useEffect(() => {
+    setStages(fetchedStages);
+  }, [fetchedStages]);
+
+  useEffect(() => {
+    setParticipants(fetchedParticipants);
+    if (user) {
+      const myParticipant = fetchedParticipants.find(p => p.user_id === user.id);
+      setCurrentParticipant(myParticipant);
+    }
+  }, [fetchedParticipants, user]);
+
+  // Real-time subscriptions
+  useEffect(() => {
+    if (!roomId) return;
+
+    const unsubParticipants = base44.entities.Participant.subscribe((event) => {
+      if (event.data.room_id === roomId) {
+        if (event.type === 'create') {
+          setParticipants(prev => [...prev, event.data]);
+        } else if (event.type === 'update') {
+          setParticipants(prev => prev.map(p => p.id === event.id ? event.data : p));
+          if (event.data.user_id === user?.id) {
+            setCurrentParticipant(event.data);
+          }
+        } else if (event.type === 'delete') {
+          setParticipants(prev => prev.filter(p => p.id !== event.id));
+        }
+      }
+    });
+
+    return () => {
+      unsubParticipants();
+    };
+  }, [roomId, user]);
+
+  const joinRoomMutation = useMutation({
+    mutationFn: async () => {
+      const existingParticipant = participants.find(p => p.user_id === user.id);
+      if (existingParticipant) {
+        return existingParticipant;
+      }
+
+      return await base44.entities.Participant.create({
+        room_id: roomId,
+        user_id: user.id,
+        user_name: user.full_name || user.email,
+        user_avatar: user.avatar_url,
+        role: room.host_id === user.id ? 'host' : 'audience',
+        status: 'online',
+        joined_at: new Date().toISOString(),
+      });
+    },
+    onSuccess: (participant) => {
+      setCurrentParticipant(participant);
+      toast.success('Joined room successfully!');
+    },
+  });
+
+  const leaveRoomMutation = useMutation({
+    mutationFn: async () => {
+      if (currentParticipant) {
+        await base44.entities.Participant.delete(currentParticipant.id);
+      }
+    },
+    onSuccess: () => {
+      window.location.href = createPageUrl('Home');
+    },
+  });
+
+  const updateParticipantMutation = useMutation({
+    mutationFn: async ({ id, updates }) => {
+      return await base44.entities.Participant.update(id, updates);
+    },
+  });
+
+  const raiseHandMutation = useMutation({
+    mutationFn: async () => {
+      return await base44.entities.Participant.update(currentParticipant.id, {
+        hand_raised: !currentParticipant.hand_raised,
+        hand_raised_at: !currentParticipant.hand_raised ? new Date().toISOString() : null,
+      });
+    },
+    onSuccess: () => {
+      toast.success(currentParticipant.hand_raised ? 'Hand lowered' : 'Hand raised!');
+    },
+  });
+
+  useEffect(() => {
+    if (room && user && !currentParticipant) {
+      joinRoomMutation.mutate();
+    }
+  }, [room, user]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading room...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!room) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Room not found</h2>
+          <p className="text-muted-foreground mb-4">This room doesn't exist or has been deleted</p>
+          <Button onClick={() => window.location.href = createPageUrl('Home')}>
+            Go Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const isHost = currentParticipant?.role === 'host';
+  const isSpeaker = ['host', 'co-host', 'speaker'].includes(currentParticipant?.role);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Top Bar */}
+      <div className="bg-white border-b shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {room.status === 'live' && (
+                <Badge className="bg-red-500 text-white animate-pulse">
+                  <Radio className="w-3 h-3 mr-1" />
+                  LIVE
+                </Badge>
+              )}
+              <div>
+                <h1 className="text-xl font-bold">{room.title}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {participants.length} {participants.length === 1 ? 'participant' : 'participants'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon">
+                <Share2 className="w-4 h-4" />
+              </Button>
+              {isHost && (
+                <Button variant="outline" size="icon">
+                  <Settings className="w-4 h-4" />
+                </Button>
+              )}
+              <Button 
+                variant="destructive"
+                onClick={() => leaveRoomMutation.mutate()}
+              >
+                <PhoneOff className="w-4 h-4 mr-2" />
+                Leave
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Column - Stage & Controls */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Stage */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              {stages.length > 0 ? (
+                <Tabs defaultValue={stages[0]?.id} className="space-y-4">
+                  {stages.length > 1 && (
+                    <TabsList>
+                      {stages.map(stage => (
+                        <TabsTrigger key={stage.id} value={stage.id}>
+                          {stage.name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  )}
+
+                  {stages.map(stage => (
+                    <TabsContent key={stage.id} value={stage.id}>
+                      <StageView
+                        stage={stage}
+                        participants={participants}
+                        currentUserId={user?.id}
+                        onUpdateParticipant={(id, updates) => 
+                          updateParticipantMutation.mutate({ id, updates })
+                        }
+                      />
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No stages available</p>
+                </div>
+              )}
+            </div>
+
+            {/* Control Bar */}
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <div className="flex items-center justify-center gap-3">
+                {currentParticipant && (
+                  <>
+                    <Button
+                      size="lg"
+                      variant={currentParticipant.is_audio_enabled ? "default" : "destructive"}
+                      className="w-16 h-16 rounded-full"
+                      onClick={() => updateParticipantMutation.mutate({
+                        id: currentParticipant.id,
+                        updates: { is_audio_enabled: !currentParticipant.is_audio_enabled }
+                      })}
+                      disabled={!isSpeaker}
+                    >
+                      {currentParticipant.is_audio_enabled ? (
+                        <Mic className="w-6 h-6" />
+                      ) : (
+                        <MicOff className="w-6 h-6" />
+                      )}
+                    </Button>
+
+                    <Button
+                      size="lg"
+                      variant={currentParticipant.is_video_enabled ? "default" : "outline"}
+                      className="w-16 h-16 rounded-full"
+                      onClick={() => updateParticipantMutation.mutate({
+                        id: currentParticipant.id,
+                        updates: { is_video_enabled: !currentParticipant.is_video_enabled }
+                      })}
+                      disabled={!isSpeaker}
+                    >
+                      {currentParticipant.is_video_enabled ? (
+                        <Video className="w-6 h-6" />
+                      ) : (
+                        <VideoOff className="w-6 h-6" />
+                      )}
+                    </Button>
+
+                    {!isSpeaker && (
+                      <Button
+                        size="lg"
+                        variant={currentParticipant.hand_raised ? "default" : "outline"}
+                        className="w-16 h-16 rounded-full"
+                        onClick={() => raiseHandMutation.mutate()}
+                      >
+                        <Hand className="w-6 h-6" />
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Chat & Participants */}
+          <div className="lg:col-span-1">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-[calc(100vh-200px)]">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="chat">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Chat
+                </TabsTrigger>
+                <TabsTrigger value="participants">
+                  <Users className="w-4 h-4 mr-2" />
+                  People
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="chat" className="h-full mt-4">
+                <ChatPanel roomId={roomId} currentUser={user} />
+              </TabsContent>
+
+              <TabsContent value="participants" className="h-full mt-4">
+                <ParticipantsList
+                  participants={participants}
+                  currentUser={user}
+                  onUpdateParticipant={(id, updates) => 
+                    updateParticipantMutation.mutate({ id, updates })
+                  }
+                  onInviteToStage={(participant) => {
+                    updateParticipantMutation.mutate({
+                      id: participant.id,
+                      updates: { 
+                        role: 'speaker',
+                        stage_id: stages[0]?.id,
+                        hand_raised: false
+                      }
+                    });
+                    toast.success(`Invited ${participant.user_name} to stage`);
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
