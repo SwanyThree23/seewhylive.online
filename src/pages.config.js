@@ -51,6 +51,8 @@ import Home from './pages/Home';
 import Room from './pages/Room';
 import CreateRoom from './pages/CreateRoom';
 import Communities from './pages/Communities';
+import ModerationDashboard from './pages/ModerationDashboard';
+import Monetization from './pages/Monetization';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +61,8 @@ export const PAGES = {
     "Room": Room,
     "CreateRoom": CreateRoom,
     "Communities": Communities,
+    "ModerationDashboard": ModerationDashboard,
+    "Monetization": Monetization,
 }
 
 export const pagesConfig = {
