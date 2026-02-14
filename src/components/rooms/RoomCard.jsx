@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Video, Mic, Users, Clock, Radio } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
+import { createPageUrl } from '../../utils';
 
 export default function RoomCard({ room, onJoin }) {
   const isLive = room.status === 'live';

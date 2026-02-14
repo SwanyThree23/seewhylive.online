@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Video, Mic, CalendarIcon, Plus, X, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { createPageUrl } from './utils';
+import { createPageUrl } from '../utils';
 
 export default function CreateRoomPage() {
   const [formData, setFormData] = useState({
