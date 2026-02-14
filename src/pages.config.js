@@ -58,6 +58,7 @@ import CommunityGrowth from './pages/CommunityGrowth';
 import Community from './pages/Community';
 import CreateCommunity from './pages/CreateCommunity';
 import CommunityAdmin from './pages/CommunityAdmin';
+import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Community": Community,
     "CreateCommunity": CreateCommunity,
     "CommunityAdmin": CommunityAdmin,
+    "Profile": Profile,
 }
 
 export const pagesConfig = {

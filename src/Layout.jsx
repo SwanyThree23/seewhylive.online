@@ -34,6 +34,10 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
   ];
 
+  const quickActions = [
+    { name: 'Create Community', href: createPageUrl('CreateCommunity') },
+  ];
+
   const isAdmin = user?.role === 'admin';
 
   return (
@@ -103,9 +107,17 @@ export default function Layout({ children, currentPageName }) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('Profile')}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('CreateCommunity')}>
+                      <Users className="mr-2 h-4 w-4" />
+                      <span>Create Community</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />

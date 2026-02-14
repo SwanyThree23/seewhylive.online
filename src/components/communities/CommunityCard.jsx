@@ -7,7 +7,7 @@ import { Users, CheckCircle, Lock, Globe, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
-export default function CommunityCard({ community, isMember, onJoin }) {
+export default function CommunityCard({ community, isMember, isAdmin, onJoin }) {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300">
       {/* Cover Image */}
@@ -114,8 +114,15 @@ export default function CommunityCard({ community, isMember, onJoin }) {
           </div>
           {isMember && (
             <div className="flex gap-2">
+              {isAdmin && (
+                <Link to={createPageUrl(`CommunityAdmin?id=${community.id}`)} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <Link to={createPageUrl(`CommunityGrowth?id=${community.id}`)} className="flex-1">
-                <Button variant="ghost" className="w-full text-purple-600 hover:text-purple-700">
+                <Button variant="ghost" size="sm" className="w-full text-purple-600">
                   <TrendingUp className="w-4 h-4 mr-2" />
                   Growth
                 </Button>
