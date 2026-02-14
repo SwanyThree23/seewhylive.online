@@ -53,6 +53,7 @@ import CreateRoom from './pages/CreateRoom';
 import Communities from './pages/Communities';
 import ModerationDashboard from './pages/ModerationDashboard';
 import Monetization from './pages/Monetization';
+import HybridStreamRoom from './pages/HybridStreamRoom';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +64,7 @@ export const PAGES = {
     "Communities": Communities,
     "ModerationDashboard": ModerationDashboard,
     "Monetization": Monetization,
+    "HybridStreamRoom": HybridStreamRoom,
 }
 
 export const pagesConfig = {

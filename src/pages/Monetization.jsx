@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import { DollarSign, TrendingUp, Users, Award } from 'lucide-react';
 
 export default function MonetizationPage() {
@@ -117,11 +118,16 @@ export default function MonetizationPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="subscriptions" className="space-y-6">
+      <Tabs defaultValue="revenue" className="space-y-6">
         <TabsList>
+          <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="store">Virtual Goods Store</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="revenue">
+          <RevenueDashboard userId={user?.id} />
+        </TabsContent>
 
         <TabsContent value="subscriptions" className="space-y-6">
           <div>
