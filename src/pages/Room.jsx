@@ -328,6 +328,8 @@ export default function RoomPage() {
                 <ParticipantsList
                   participants={participants}
                   currentUser={user}
+                  roomId={roomId}
+                  communityId={room.community_id}
                   onUpdateParticipant={(id, updates) => 
                     updateParticipantMutation.mutate({ id, updates })
                   }

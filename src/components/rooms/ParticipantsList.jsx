@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Users, Hand, Mic, MicOff, Video, VideoOff, 
-  Crown, Shield, Search, MoreVertical 
+  Crown, Shield, Search, MoreVertical, DollarSign, Flag
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,9 +16,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import TippingModal from '../monetization/TippingModal';
+import ReportModal from '../moderation/ReportModal';
+import ModerationActionModal from '../moderation/ModerationActionModal';
 
-export default function ParticipantsList({ participants, currentUser, onUpdateParticipant, onInviteToStage }) {
+export default function ParticipantsList({ participants, currentUser, onUpdateParticipant, onInviteToStage, roomId, communityId }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [tippingUser, setTippingUser] = useState(null);
+  const [reportingUser, setReportingUser] = useState(null);
+  const [moderatingUser, setModeratingUser] = useState(null);
 
   const speakers = participants.filter(p => 
     ['host', 'co-host', 'speaker', 'guest'].includes(p.role)
@@ -118,11 +124,42 @@ export default function ParticipantsList({ participants, currentUser, onUpdatePa
           </TabsContent>
         </Tabs>
       </CardContent>
+
+      {tippingUser && (
+        <TippingModal
+          isOpen={!!tippingUser}
+          onClose={() => setTippingUser(null)}
+          recipient={tippingUser}
+          roomId={roomId}
+          communityId={communityId}
+        />
+      )}
+
+      {reportingUser && (
+        <ReportModal
+          isOpen={!!reportingUser}
+          onClose={() => setReportingUser(null)}
+          reportedUser={reportingUser}
+          roomId={roomId}
+          communityId={communityId}
+        />
+      )}
+
+      {moderatingUser && (
+        <ModerationActionModal
+          isOpen={!!moderatingUser}
+          onClose={() => setModeratingUser(null)}
+          targetUser={moderatingUser}
+          roomId={roomId}
+          communityId={communityId}
+          moderatorId={currentUser?.id}
+        />
+      )}
     </Card>
   );
 }
 
-function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInviteToStage }) {
+function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInviteToStage, setTippingUser, setReportingUser, setModeratingUser }) {
   const isCurrentUser = participant.user_id === currentUser.id;
   const isSpeaker = ['host', 'co-host', 'speaker', 'guest'].includes(participant.role);
 
@@ -186,9 +223,20 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>View Profile</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setTippingUser(participant)}>
+            <DollarSign className="w-4 h-4 mr-2" />
+            Send Tip
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setReportingUser(participant)}>
+            <Flag className="w-4 h-4 mr-2" />
+            Report User
+          </DropdownMenuItem>
           {currentUser.role === 'admin' && !isCurrentUser && (
             <>
+              <DropdownMenuItem onClick={() => setModeratingUser(participant)}>
+                <Shield className="w-4 h-4 mr-2" />
+                Moderate
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onInviteToStage(participant)}>
                 Invite to Stage
               </DropdownMenuItem>
