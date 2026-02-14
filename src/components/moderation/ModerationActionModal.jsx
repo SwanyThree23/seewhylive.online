@@ -54,7 +54,7 @@ export default function ModerationActionModal({ isOpen, onClose, targetUser, roo
 
     actionMutation.mutate({
       action_type: actionType,
-      target_user_id: targetUser.id,
+      target_user_id: targetUser.user_id || targetUser.id,
       moderator_id: moderatorId,
       room_id: roomId,
       community_id: communityId,

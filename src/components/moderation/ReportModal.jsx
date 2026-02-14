@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,11 @@ export default function ReportModal({ isOpen, onClose, reportedUser, roomId, com
   const [reportType, setReportType] = useState('');
   const [description, setDescription] = useState('');
   const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const reportMutation = useMutation({
     mutationFn: async (reportData) => {
@@ -36,8 +41,8 @@ export default function ReportModal({ isOpen, onClose, reportedUser, roomId, com
     }
 
     reportMutation.mutate({
-      reporter_id: 'current_user',
-      reported_user_id: reportedUser.id,
+      reporter_id: currentUser?.id,
+      reported_user_id: reportedUser.user_id || reportedUser.id,
       report_type: reportType,
       description: description.trim(),
       room_id: roomId,

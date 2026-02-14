@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,11 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
     { value: 10, icon: Star, label: '$10' },
     { value: 25, icon: Award, label: '$25' },
   ];
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const sendTipMutation = useMutation({
     mutationFn: async (tipData) => {
@@ -48,8 +53,8 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
     sendTipMutation.mutate({
       type: 'tip',
       amount: tipAmount,
-      from_user_id: 'current_user',
-      to_user_id: recipient.id,
+      from_user_id: currentUser?.id,
+      to_user_id: recipient.user_id || recipient.id,
       room_id: roomId,
       community_id: communityId,
       message: message,
