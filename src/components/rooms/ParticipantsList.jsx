@@ -78,6 +78,9 @@ export default function ParticipantsList({ participants, currentUser, onUpdatePa
                     currentUser={currentUser}
                     onUpdateParticipant={onUpdateParticipant}
                     onInviteToStage={onInviteToStage}
+                    setTippingUser={setTippingUser}
+                    setReportingUser={setReportingUser}
+                    setModeratingUser={setModeratingUser}
                   />
                 ))}
               </div>
@@ -94,6 +97,9 @@ export default function ParticipantsList({ participants, currentUser, onUpdatePa
                     currentUser={currentUser}
                     onUpdateParticipant={onUpdateParticipant}
                     onInviteToStage={onInviteToStage}
+                    setTippingUser={setTippingUser}
+                    setReportingUser={setReportingUser}
+                    setModeratingUser={setModeratingUser}
                   />
                 ))}
               </div>
@@ -111,6 +117,9 @@ export default function ParticipantsList({ participants, currentUser, onUpdatePa
                       currentUser={currentUser}
                       onUpdateParticipant={onUpdateParticipant}
                       onInviteToStage={onInviteToStage}
+                      setTippingUser={setTippingUser}
+                      setReportingUser={setReportingUser}
+                      setModeratingUser={setModeratingUser}
                     />
                   ))
                 ) : (
