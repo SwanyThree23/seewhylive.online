@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users, CheckCircle, Lock, Globe } from 'lucide-react';
+import { Users, CheckCircle, Lock, Globe, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
@@ -93,22 +93,32 @@ export default function CommunityCard({ community, isMember, onJoin }) {
           </div>
         )}
 
-        <div className="flex gap-2 pt-2">
-          <Link to={createPageUrl(`Community?id=${community.id}`)} className="flex-1">
-            <Button variant="outline" className="w-full">
-              View
-            </Button>
-          </Link>
-          {!isMember && (
-            <Button 
-              className="flex-1" 
-              onClick={(e) => {
-                e.preventDefault();
-                onJoin?.(community);
-              }}
-            >
-              Join
-            </Button>
+        <div className="space-y-2 pt-2">
+          <div className="flex gap-2">
+            <Link to={createPageUrl(`Community?id=${community.id}`)} className="flex-1">
+              <Button variant="outline" className="w-full">
+                View
+              </Button>
+            </Link>
+            {!isMember && (
+              <Button 
+                className="flex-1" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  onJoin?.(community);
+                }}
+              >
+                Join
+              </Button>
+            )}
+          </div>
+          {isMember && (
+            <Link to={createPageUrl(`CommunityGrowth?id=${community.id}`)} className="block">
+              <Button variant="ghost" className="w-full text-purple-600 hover:text-purple-700">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Growth Hub
+              </Button>
+            </Link>
           )}
         </div>
       </CardContent>
