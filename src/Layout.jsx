@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   Home, Radio, Users, Settings, LogOut, 
-  User, Plus, Video, DollarSign, Shield
+  User, Plus, Video, DollarSign, Shield, Bell, Search as SearchIcon, Activity
 } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
@@ -30,12 +30,9 @@ export default function Layout({ children, currentPageName }) {
 
   const navigation = [
     { name: 'Home', icon: Home, href: createPageUrl('Home') },
+    { name: 'Search', icon: SearchIcon, href: createPageUrl('Search') },
     { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
-  ];
-
-  const quickActions = [
-    { name: 'Create Community', href: createPageUrl('CreateCommunity') },
   ];
 
   const isAdmin = user?.role === 'admin';
@@ -76,12 +73,17 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
-            <Link to={createPageUrl('CreateRoom')}>
-              <Button className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Create Room</span>
-              </Button>
-            </Link>
+          <Link to={createPageUrl('Notifications')}>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="w-5 h-5" />
+            </Button>
+          </Link>
+          <Link to={createPageUrl('CreateRoom')}>
+            <Button className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create Room</span>
+            </Button>
+          </Link>
 
             {user ? (
               <DropdownMenu>
@@ -114,14 +116,28 @@ export default function Layout({ children, currentPageName }) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('Activity')}>
+                      <Activity className="mr-2 h-4 w-4" />
+                      <span>Activity</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('Analytics')}>
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      <span>Analytics</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to={createPageUrl('CreateCommunity')}>
                       <Users className="mr-2 h-4 w-4" />
                       <span>Create Community</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('Settings')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>

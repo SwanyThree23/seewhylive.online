@@ -59,6 +59,12 @@ import Community from './pages/Community';
 import CreateCommunity from './pages/CreateCommunity';
 import CommunityAdmin from './pages/CommunityAdmin';
 import Profile from './pages/Profile';
+import Notifications from './pages/Notifications';
+import Settings from './pages/Settings';
+import Search from './pages/Search';
+import Activity from './pages/Activity';
+import Analytics from './pages/Analytics';
+import CommunitySettings from './pages/CommunitySettings';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +81,12 @@ export const PAGES = {
     "CreateCommunity": CreateCommunity,
     "CommunityAdmin": CommunityAdmin,
     "Profile": Profile,
+    "Notifications": Notifications,
+    "Settings": Settings,
+    "Search": Search,
+    "Activity": Activity,
+    "Analytics": Analytics,
+    "CommunitySettings": CommunitySettings,
 }
 
 export const pagesConfig = {
