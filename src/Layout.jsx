@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   Home, Radio, Users, Settings, LogOut, 
-  User, Plus, Video 
+  User, Plus, Video, DollarSign, Shield
 } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
@@ -31,7 +31,10 @@ export default function Layout({ children, currentPageName }) {
   const navigation = [
     { name: 'Home', icon: Home, href: createPageUrl('Home') },
     { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
+    { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
   ];
+
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,6 +111,14 @@ export default function Layout({ children, currentPageName }) {
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl('ModerationDashboard')}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Moderation</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
