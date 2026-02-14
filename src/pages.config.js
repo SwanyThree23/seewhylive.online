@@ -49,14 +49,20 @@
  */
 import Home from './pages/Home';
 import Room from './pages/Room';
+import CreateRoom from './pages/CreateRoom';
+import Communities from './pages/Communities';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Home": Home,
     "Room": Room,
+    "CreateRoom": CreateRoom,
+    "Communities": Communities,
 }
 
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
+    Layout: __Layout,
 };
