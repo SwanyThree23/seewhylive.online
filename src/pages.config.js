@@ -57,6 +57,7 @@ import HybridStreamRoom from './pages/HybridStreamRoom';
 import CommunityGrowth from './pages/CommunityGrowth';
 import Community from './pages/Community';
 import CreateCommunity from './pages/CreateCommunity';
+import CommunityAdmin from './pages/CommunityAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -71,6 +72,7 @@ export const PAGES = {
     "CommunityGrowth": CommunityGrowth,
     "Community": Community,
     "CreateCommunity": CreateCommunity,
+    "CommunityAdmin": CommunityAdmin,
 }
 
 export const pagesConfig = {
