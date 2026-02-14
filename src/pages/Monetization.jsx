@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import { DollarSign, TrendingUp, Users, Award } from 'lucide-react';
 
 export default function MonetizationPage() {
@@ -130,22 +131,7 @@ export default function MonetizationPage() {
         </TabsContent>
 
         <TabsContent value="subscriptions" className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Choose Your Tier</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {subscriptionTiers.map((tierData) => (
-                <SubscriptionCard
-                  key={tierData.tier}
-                  tier={tierData.tier}
-                  price={tierData.price}
-                  benefits={tierData.benefits}
-                  isSubscribed={subscriptions.some(
-                    s => s.tier === tierData.tier && s.status === 'active'
-                  )}
-                />
-              ))}
-            </div>
-          </div>
+          <SubscriptionTiers userId={user?.id} />
         </TabsContent>
 
         <TabsContent value="store">

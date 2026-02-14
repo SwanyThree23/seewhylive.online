@@ -113,12 +113,14 @@ export default function CommunityCard({ community, isMember, onJoin }) {
             )}
           </div>
           {isMember && (
-            <Link to={createPageUrl(`CommunityGrowth?id=${community.id}`)} className="block">
-              <Button variant="ghost" className="w-full text-purple-600 hover:text-purple-700">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Growth Hub
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to={createPageUrl(`CommunityGrowth?id=${community.id}`)} className="flex-1">
+                <Button variant="ghost" className="w-full text-purple-600 hover:text-purple-700">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Growth
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
       </CardContent>
