@@ -11,12 +11,18 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import PollCard from '../components/community/PollCard';
+import CreatePollModal from '../components/community/CreatePollModal';
+import SpotlightSection from '../components/community/SpotlightSection';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
 import { toast } from 'sonner';
 
 export default function CommunityPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const communityId = urlParams.get('id');
   const queryClient = useQueryClient();
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -47,6 +53,22 @@ export default function CommunityPage() {
   const { data: members = [] } = useQuery({
     queryKey: ['communityMembers', communityId],
     queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId }, '-joined_at', 50),
+    enabled: !!communityId,
+  });
+
+  const { data: polls = [] } = useQuery({
+    queryKey: ['polls', communityId],
+    queryFn: () => base44.entities.Poll.filter({ community_id: communityId }, '-created_date', 10),
+    enabled: !!communityId,
+  });
+
+  const { data: ppvEvents = [] } = useQuery({
+    queryKey: ['ppv-events', communityId],
+    queryFn: () => base44.entities.PayPerViewEvent.filter(
+      { community_id: communityId, status: 'upcoming' },
+      'event_date',
+      6
+    ),
     enabled: !!communityId,
   });
 
@@ -169,12 +191,22 @@ export default function CommunityPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs defaultValue="rooms" className="space-y-6">
+        {/* Spotlight Section */}
+        <SpotlightSection communityId={communityId} />
+
+        <Tabs defaultValue="discussions" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="discussions">Discussions</TabsTrigger>
             <TabsTrigger value="rooms"><Radio className="w-4 h-4 mr-2" />Rooms</TabsTrigger>
+            <TabsTrigger value="polls">Polls</TabsTrigger>
+            <TabsTrigger value="premium">Premium Events</TabsTrigger>
             <TabsTrigger value="announcements"><Calendar className="w-4 h-4 mr-2" />Announcements</TabsTrigger>
             <TabsTrigger value="members"><Users className="w-4 h-4 mr-2" />Members</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="discussions">
+            <DiscussionFeed communityId={communityId} />
+          </TabsContent>
 
           <TabsContent value="rooms" className="space-y-6">
             {liveRooms.length > 0 && (
@@ -207,6 +239,47 @@ export default function CommunityPage() {
             )}
           </TabsContent>
 
+          <TabsContent value="polls" className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Community Polls</h2>
+              {isMember && (
+                <Button onClick={() => setShowCreatePoll(true)}>
+                  Create Poll
+                </Button>
+              )}
+            </div>
+            {polls.length > 0 ? (
+              <div className="space-y-4">
+                {polls.map(poll => (
+                  <PollCard key={poll.id} poll={poll} />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <p className="text-muted-foreground">No polls yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="premium" className="space-y-4">
+            <h2 className="text-xl font-bold mb-4">Premium Events</h2>
+            {ppvEvents.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {ppvEvents.map(event => (
+                  <PayPerViewCard key={event.id} event={event} />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <p className="text-muted-foreground">No premium events scheduled</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
           <TabsContent value="announcements">
             <AnnouncementFeed communityId={communityId} />
           </TabsContent>
@@ -228,6 +301,12 @@ export default function CommunityPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <CreatePollModal
+        isOpen={showCreatePoll}
+        onClose={() => setShowCreatePoll(false)}
+        communityId={communityId}
+      />
     </div>
   );
 }

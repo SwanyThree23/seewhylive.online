@@ -70,6 +70,7 @@ import AIModeration from './pages/AIModeration';
 import AdvancedAnalytics from './pages/AdvancedAnalytics';
 import Discover from './pages/Discover';
 import Welcome from './pages/Welcome';
+import PayPerViewEvents from './pages/PayPerViewEvents';
 import __Layout from './Layout.jsx';
 
 
@@ -97,6 +98,7 @@ export const PAGES = {
     "AdvancedAnalytics": AdvancedAnalytics,
     "Discover": Discover,
     "Welcome": Welcome,
+    "PayPerViewEvents": PayPerViewEvents,
 }
 
 export const pagesConfig = {

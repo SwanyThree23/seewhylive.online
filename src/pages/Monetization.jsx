@@ -10,6 +10,8 @@ import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import { DollarSign, TrendingUp, Users, Award } from 'lucide-react';
 
 export default function MonetizationPage() {
+  const [showGiftShop, setShowGiftShop] = useState(false);
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
