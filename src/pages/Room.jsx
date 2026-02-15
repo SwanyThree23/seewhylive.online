@@ -26,7 +26,8 @@ export default function RoomPage() {
   const [currentParticipant, setCurrentParticipant] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [stages, setStages] = useState([]);
-  const [activeTab, setActiveTab] = useState('stage');
+  const [activeTab, setActiveTab] = useState('chat');
+  const [showWhiteboard, setShowWhiteboard] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -198,7 +199,12 @@ export default function RoomPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => setShowWhiteboard(!showWhiteboard)}
+                title="Toggle Whiteboard"
+              >
                 <Share2 className="w-4 h-4" />
               </Button>
               {isHost && (
@@ -256,6 +262,14 @@ export default function RoomPage() {
                 </div>
               )}
             </div>
+
+            {/* Whiteboard */}
+            {showWhiteboard && (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="font-semibold mb-4">Collaborative Whiteboard</h3>
+                <CollaborativeWhiteboard roomId={roomId} />
+              </div>
+            )}
 
             {/* Control Bar */}
             <div className="bg-white rounded-xl shadow-lg p-4">
@@ -315,7 +329,7 @@ export default function RoomPage() {
           {/* Right Column - Chat & Participants */}
           <div className="lg:col-span-1">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-[calc(100vh-200px)]">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="chat">
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Chat
@@ -323,6 +337,10 @@ export default function RoomPage() {
                 <TabsTrigger value="participants">
                   <Users className="w-4 h-4 mr-2" />
                   People
+                </TabsTrigger>
+                <TabsTrigger value="costream">
+                  <Video className="w-4 h-4 mr-2" />
+                  Co-Stream
                 </TabsTrigger>
               </TabsList>
 
@@ -351,6 +369,10 @@ export default function RoomPage() {
                     toast.success(`Invited ${participant.user_name} to stage`);
                   }}
                 />
+              </TabsContent>
+
+              <TabsContent value="costream" className="h-full mt-4 overflow-auto">
+                <CoStreamPanel roomId={roomId} />
               </TabsContent>
             </Tabs>
           </div>
