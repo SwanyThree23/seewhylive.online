@@ -13,6 +13,8 @@ import {
 import StageView from '../components/rooms/StageView';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 

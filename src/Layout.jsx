@@ -30,7 +30,7 @@ export default function Layout({ children, currentPageName }) {
 
   const navigation = [
     { name: 'Home', icon: Home, href: createPageUrl('Home') },
-    { name: 'Search', icon: SearchIcon, href: createPageUrl('Search') },
+    { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
     { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
   ];

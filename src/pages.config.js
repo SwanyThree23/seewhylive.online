@@ -68,6 +68,8 @@ import Settings from './pages/Settings';
 import Newsletter from './pages/Newsletter';
 import AIModeration from './pages/AIModeration';
 import AdvancedAnalytics from './pages/AdvancedAnalytics';
+import Discover from './pages/Discover';
+import Welcome from './pages/Welcome';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +95,8 @@ export const PAGES = {
     "Newsletter": Newsletter,
     "AIModeration": AIModeration,
     "AdvancedAnalytics": AdvancedAnalytics,
+    "Discover": Discover,
+    "Welcome": Welcome,
 }
 
 export const pagesConfig = {
