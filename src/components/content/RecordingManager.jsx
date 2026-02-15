@@ -7,16 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, Play, Edit, Trash2, Eye, Sparkles, Video } from 'lucide-react';
+import { Upload, Play, Edit, Trash2, Eye, Sparkles, Video, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AIHighlightGenerator from './AIHighlightGenerator';
 
 export default function RecordingManager({ userId }) {
   const [selectedRecording, setSelectedRecording] = useState(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [batchUploadDialogOpen, setBatchUploadDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [highlightDialogOpen, setHighlightDialogOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
+  const [batchFiles, setBatchFiles] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -25,6 +28,8 @@ export default function RecordingManager({ userId }) {
     is_public: true,
   });
   const queryClient = useQueryClient();
+
+  const categories = ['all', 'gaming', 'music', 'tech', 'education', 'entertainment', 'other'];
 
   const { data: recordings = [], isLoading } = useQuery({
     queryKey: ['recordings', userId],
@@ -70,6 +75,64 @@ export default function RecordingManager({ userId }) {
     },
   });
 
+  const batchUploadMutation = useMutation({
+    mutationFn: async (files) => {
+      const results = [];
+      for (const file of files) {
+        try {
+          // Upload file
+          const { file_url } = await base44.integrations.Core.UploadFile({ file });
+          
+          // Auto-generate metadata
+          const fileName = file.name.replace(/\.[^/.]+$/, '');
+          const aiResult = await base44.integrations.Core.InvokeLLM({
+            prompt: `Based on the filename "${fileName}", generate a title, description, category, and 3-5 keywords for this stream recording.`,
+            response_json_schema: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                description: { type: 'string' },
+                category: { type: 'string' },
+                keywords: { type: 'array', items: { type: 'string' } }
+              }
+            }
+          });
+
+          const recording = await base44.entities.StreamRecording.create({
+            creator_id: userId,
+            title: aiResult.title,
+            description: aiResult.description,
+            category: aiResult.category,
+            recording_url: file_url,
+            recorded_at: new Date().toISOString(),
+            ai_summary: aiResult.description,
+            ai_keywords: aiResult.keywords,
+            is_public: true,
+          });
+          
+          results.push({ success: true, recording });
+        } catch (error) {
+          results.push({ success: false, error: error.message, fileName: file.name });
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      const successful = results.filter(r => r.success).length;
+      const failed = results.filter(r => !r.success).length;
+      
+      queryClient.invalidateQueries({ queryKey: ['recordings'] });
+      setBatchUploadDialogOpen(false);
+      setBatchFiles([]);
+      
+      if (failed === 0) {
+        toast.success(`Successfully uploaded ${successful} recordings!`);
+      } else {
+        toast.warning(`Uploaded ${successful} recordings, ${failed} failed`);
+      }
+    },
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.StreamRecording.update(id, data),
     onSuccess: () => {
@@ -95,6 +158,18 @@ export default function RecordingManager({ userId }) {
     uploadMutation.mutate(formData);
   };
 
+  const handleBatchUpload = () => {
+    if (batchFiles.length === 0) {
+      toast.error('Please select files to upload');
+      return;
+    }
+    batchUploadMutation.mutate(batchFiles);
+  };
+
+  const filteredRecordings = selectedCategory === 'all' 
+    ? recordings 
+    : recordings.filter(r => r.category === selectedCategory);
+
   const formatDuration = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -110,10 +185,31 @@ export default function RecordingManager({ userId }) {
             {recordings.length} recording{recordings.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button onClick={() => setUploadDialogOpen(true)}>
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Recording
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setBatchUploadDialogOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Batch Upload
+          </Button>
+          <Button onClick={() => setUploadDialogOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Upload Recording
+          </Button>
+        </div>
+      </div>
+
+      {/* Category Filters */}
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {categories.map((cat) => (
+          <Button
+            key={cat}
+            variant={selectedCategory === cat ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedCategory(cat)}
+            className="capitalize"
+          >
+            {cat}
+          </Button>
+        ))}
       </div>
 
       {isLoading ? (
@@ -131,7 +227,7 @@ export default function RecordingManager({ userId }) {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recordings.map((recording) => (
+          {filteredRecordings.map((recording) => (
             <Card key={recording.id}>
               <CardContent className="p-4 space-y-3">
                 {recording.thumbnail_url && (
@@ -160,7 +256,12 @@ export default function RecordingManager({ userId }) {
                 )}
 
                 <div className="flex gap-2 flex-wrap">
-                  {recording.ai_keywords?.slice(0, 3).map(keyword => (
+                  {recording.category && (
+                    <Badge variant="default" className="text-xs capitalize">
+                      {recording.category}
+                    </Badge>
+                  )}
+                  {recording.ai_keywords?.slice(0, 2).map(keyword => (
                     <Badge key={keyword} variant="secondary" className="text-xs">
                       {keyword}
                     </Badge>
@@ -248,12 +349,73 @@ export default function RecordingManager({ userId }) {
                 placeholder="Enter description"
               />
             </div>
+            <div>
+              <label className="text-sm font-medium">Category</label>
+              <select
+                className="w-full border rounded-md p-2"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              >
+                <option value="">Select category</option>
+                {categories.filter(c => c !== 'all').map(cat => (
+                  <option key={cat} value={cat} className="capitalize">{cat}</option>
+                ))}
+              </select>
+            </div>
             <Button 
               onClick={handleUpload} 
               disabled={uploadMutation.isPending}
               className="w-full"
             >
               {uploadMutation.isPending ? 'Uploading...' : 'Upload & Generate AI Summary'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Upload Dialog */}
+      <Dialog open={batchUploadDialogOpen} onOpenChange={setBatchUploadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Batch Upload Recordings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Select Multiple Videos</label>
+              <Input
+                type="file"
+                accept="video/*"
+                multiple
+                onChange={(e) => setBatchFiles(Array.from(e.target.files))}
+              />
+              {batchFiles.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  {batchFiles.length} file{batchFiles.length !== 1 ? 's' : ''} selected
+                </p>
+              )}
+            </div>
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-blue-600 mt-0.5" />
+                <div className="text-sm text-blue-700">
+                  <p className="font-medium">AI-Powered Upload</p>
+                  <p>Files will be automatically analyzed to generate titles, descriptions, categories, and keywords.</p>
+                </div>
+              </div>
+            </div>
+            <Button 
+              onClick={handleBatchUpload} 
+              disabled={batchUploadMutation.isPending}
+              className="w-full"
+            >
+              {batchUploadMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading {batchFiles.length} files...
+                </>
+              ) : (
+                <>Upload {batchFiles.length} Recording{batchFiles.length !== 1 ? 's' : ''}</>
+              )}
             </Button>
           </div>
         </DialogContent>

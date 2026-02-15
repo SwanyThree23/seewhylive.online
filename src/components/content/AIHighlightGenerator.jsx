@@ -22,20 +22,30 @@ export default function AIHighlightGenerator({ recording }) {
   const generateHighlights = async () => {
     setGenerating(true);
     try {
-      const prompt = `Analyze this stream recording and suggest 3-5 key highlights:
+      const prompt = `Analyze this stream recording and suggest 3-5 key highlights based on engagement potential:
 
 Title: ${recording.title}
 Description: ${recording.description}
 Duration: ${Math.floor(recording.duration_seconds / 60)} minutes
+Category: ${recording.category || 'general'}
+AI Keywords: ${recording.ai_keywords?.join(', ') || 'none'}
 Tags: ${recording.tags?.join(', ') || 'none'}
+Views: ${recording.views || 0}
+
+Consider these factors for highlight selection:
+- Moments likely to drive high engagement (shares, comments)
+- Peak entertainment or educational value
+- Moments that work well as standalone clips
+- Viral potential and social media friendliness
 
 Generate highlight segments with:
-- title: catchy title for the highlight
-- description: what makes it interesting
-- start_time: approximate start time in seconds
-- duration: length of highlight (30-90 seconds)
-- highlight_type: one of [peak_moment, funny, educational, interactive]
-- confidence: score 0-1 for how interesting this moment is`;
+- title: catchy, shareable title (under 60 chars)
+- description: compelling description that drives clicks
+- start_time: approximate start time in seconds (distribute across video)
+- duration: optimal length for highlight (20-90 seconds)
+- highlight_type: one of [peak_moment, funny, educational, interactive, custom]
+- confidence: score 0-1 for engagement potential
+- engagement_score: predicted engagement rating 0-100`;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
@@ -52,7 +62,8 @@ Generate highlight segments with:
                   start_time: { type: 'number' },
                   duration: { type: 'number' },
                   highlight_type: { type: 'string' },
-                  confidence: { type: 'number' }
+                  confidence: { type: 'number' },
+                  engagement_score: { type: 'number' }
                 }
               }
             }
@@ -139,8 +150,13 @@ Generate highlight segments with:
                     {formatTime(highlight.start_time)} - {formatTime(highlight.start_time + highlight.duration)}
                   </div>
                   <Badge variant="outline" className="text-xs">
-                    {Math.round(highlight.confidence * 100)}% confidence
+                    {Math.round(highlight.confidence * 100)}% AI confidence
                   </Badge>
+                  {highlight.engagement_score && (
+                    <Badge className="bg-green-500 text-xs">
+                      {Math.round(highlight.engagement_score)} engagement
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="flex gap-2">
