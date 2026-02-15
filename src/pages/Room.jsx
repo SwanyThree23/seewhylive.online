@@ -359,7 +359,7 @@ export default function RoomPage() {
               </TabsList>
 
               <TabsContent value="chat" className="h-full mt-4">
-                <ChatPanel roomId={roomId} currentUser={user} />
+                <ChatPanel roomId={roomId} currentUser={user} isHost={isHost} />
               </TabsContent>
 
               <TabsContent value="participants" className="h-full mt-4">
