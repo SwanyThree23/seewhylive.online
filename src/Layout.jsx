@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   Home, Radio, Users, Settings, LogOut, 
-  User, Plus, Video, DollarSign, Shield, Bell, Search as SearchIcon, Activity
+  User, Plus, Video, DollarSign, Shield, Bell, Search as SearchIcon, Activity, Mail
 } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
@@ -125,6 +125,24 @@ export default function Layout({ children, currentPageName }) {
                     <Link to={createPageUrl('Analytics')}>
                       <DollarSign className="mr-2 h-4 w-4" />
                       <span>Analytics</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('AdvancedAnalytics')}>
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      <span>Advanced Analytics</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('Newsletter')}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      <span>Newsletter</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('AIModeration')}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>AI Moderation</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
