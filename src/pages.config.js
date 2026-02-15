@@ -72,6 +72,7 @@ import Search from './pages/Search';
 import Settings from './pages/Settings';
 import Welcome from './pages/Welcome';
 import ContentCalendar from './pages/ContentCalendar';
+import CreatorDashboard from './pages/CreatorDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -101,6 +102,7 @@ export const PAGES = {
     "Settings": Settings,
     "Welcome": Welcome,
     "ContentCalendar": ContentCalendar,
+    "CreatorDashboard": CreatorDashboard,
 }
 
 export const pagesConfig = {
