@@ -15,11 +15,27 @@ import { motion } from 'framer-motion';
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  const { data: preferences } = useQuery({
+    queryKey: ['userPreferences', user?.id],
+    queryFn: async () => {
+      const prefs = await base44.entities.UserPreference.filter({ user_id: user?.id });
+      return prefs[0];
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (user && (!preferences || !preferences.onboarding_completed)) {
+      setTimeout(() => setShowOnboarding(true), 1000);
+    }
+  }, [user, preferences]);
 
   const { data: liveRooms = [], isLoading: loadingLive } = useQuery({
     queryKey: ['rooms', 'live'],
@@ -52,7 +68,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <>
+      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-6">
