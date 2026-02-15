@@ -39,15 +39,34 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen bg-background">
+      <style>{`
+        :root {
+          --primary: 25 45% 35%;
+          --primary-foreground: 40 30% 95%;
+          --accent: 35 55% 45%;
+          --accent-foreground: 40 30% 95%;
+        }
+        .bg-gradient-to-br { background-image: linear-gradient(to bottom right, #8B6F47, #A0826D); }
+        .bg-gradient-to-r { background-image: linear-gradient(to right, #8B4513, #B8860B); }
+        .from-purple-600 { --tw-gradient-from: #8B4513; }
+        .to-pink-600 { --tw-gradient-to: #B8860B; }
+        .text-purple-600 { color: #8B4513; }
+        .text-purple-500 { color: #A0826D; }
+        .text-purple-700 { color: #6B3410; }
+        .bg-purple-50 { background-color: #F5F0EB; }
+        .bg-purple-500 { background-color: #8B4513; }
+        .hover\\:bg-purple-600:hover { background-color: #6B3410; }
+        .border-purple-300 { border-color: #C4A57B; }
+      `}</style>
       {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
           {/* Logo */}
           <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center">
               <Video className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="font-bold text-xl bg-gradient-to-r bg-clip-text text-transparent">
               StreamSpace
             </span>
           </Link>
@@ -79,7 +98,7 @@ export default function Layout({ children, currentPageName }) {
             </Button>
           </Link>
           <Link to={createPageUrl('CreateRoom')}>
-            <Button className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90">
+            <Button className="gap-2 bg-gradient-to-r hover:opacity-90">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Create Room</span>
             </Button>
