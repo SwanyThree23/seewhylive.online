@@ -47,7 +47,9 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AIModeration from './pages/AIModeration';
 import Activity from './pages/Activity';
+import AdvancedAnalytics from './pages/AdvancedAnalytics';
 import Analytics from './pages/Analytics';
 import Communities from './pages/Communities';
 import Community from './pages/Community';
@@ -56,26 +58,27 @@ import CommunityGrowth from './pages/CommunityGrowth';
 import CommunitySettings from './pages/CommunitySettings';
 import CreateCommunity from './pages/CreateCommunity';
 import CreateRoom from './pages/CreateRoom';
+import Discover from './pages/Discover';
 import Home from './pages/Home';
 import HybridStreamRoom from './pages/HybridStreamRoom';
 import ModerationDashboard from './pages/ModerationDashboard';
 import Monetization from './pages/Monetization';
+import Newsletter from './pages/Newsletter';
 import Notifications from './pages/Notifications';
+import PayPerViewEvents from './pages/PayPerViewEvents';
 import Profile from './pages/Profile';
 import Room from './pages/Room';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
-import Newsletter from './pages/Newsletter';
-import AIModeration from './pages/AIModeration';
-import AdvancedAnalytics from './pages/AdvancedAnalytics';
-import Discover from './pages/Discover';
 import Welcome from './pages/Welcome';
-import PayPerViewEvents from './pages/PayPerViewEvents';
+import ContentCalendar from './pages/ContentCalendar';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AIModeration": AIModeration,
     "Activity": Activity,
+    "AdvancedAnalytics": AdvancedAnalytics,
     "Analytics": Analytics,
     "Communities": Communities,
     "Community": Community,
@@ -84,21 +87,20 @@ export const PAGES = {
     "CommunitySettings": CommunitySettings,
     "CreateCommunity": CreateCommunity,
     "CreateRoom": CreateRoom,
+    "Discover": Discover,
     "Home": Home,
     "HybridStreamRoom": HybridStreamRoom,
     "ModerationDashboard": ModerationDashboard,
     "Monetization": Monetization,
+    "Newsletter": Newsletter,
     "Notifications": Notifications,
+    "PayPerViewEvents": PayPerViewEvents,
     "Profile": Profile,
     "Room": Room,
     "Search": Search,
     "Settings": Settings,
-    "Newsletter": Newsletter,
-    "AIModeration": AIModeration,
-    "AdvancedAnalytics": AdvancedAnalytics,
-    "Discover": Discover,
     "Welcome": Welcome,
-    "PayPerViewEvents": PayPerViewEvents,
+    "ContentCalendar": ContentCalendar,
 }
 
 export const pagesConfig = {
