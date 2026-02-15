@@ -5,17 +5,21 @@ import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radio, Clock, TrendingUp, Search, Plus, Filter } from 'lucide-react';
+import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
-import { motion } from 'framer-motion';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -70,6 +74,34 @@ export default function Home() {
   return (
     <>
       <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
+      <QuickActionPanel isOpen={showQuickActions} onClose={() => setShowQuickActions(false)} />
+      
+      {/* Floating Action Buttons */}
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.5, type: 'spring' }}
+        className="fixed bottom-6 right-6 z-30 flex flex-col gap-3"
+      >
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 90 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowQuickActions(true)}
+          className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg flex items-center justify-center hover:shadow-xl"
+        >
+          <Zap className="w-6 h-6" />
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowActivitySidebar(true)}
+          className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg flex items-center justify-center hover:shadow-xl"
+        >
+          <Activity className="w-6 h-6" />
+        </motion.button>
+      </motion.div>
+      
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
@@ -108,24 +140,34 @@ export default function Home() {
       </div>
 
       {/* Category Filter */}
-      <div className="bg-white border-b">
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-white border-b"
+      >
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             <Filter className="w-5 h-5 text-muted-foreground shrink-0" />
-            {categories.map((category) => (
-              <Button
+            {categories.map((category, index) => (
+              <motion.div
                 key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className="capitalize shrink-0"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
               >
-                {category}
-              </Button>
+                <Button
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                  className="capitalize shrink-0"
+                >
+                  {category}
+                </Button>
+              </motion.div>
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="live" className="space-y-8">
@@ -167,11 +209,13 @@ export default function Home() {
               </div>
             ) : filteredRooms(liveRooms).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredRooms(liveRooms).map((room) => (
+                {filteredRooms(liveRooms).map((room, index) => (
                   <motion.div
                     key={room.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.03, y: -5 }}
                   >
                     <RoomCard room={room} />
                   </motion.div>
@@ -207,11 +251,13 @@ export default function Home() {
               </div>
             ) : filteredRooms(scheduledRooms).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredRooms(scheduledRooms).map((room) => (
+                {filteredRooms(scheduledRooms).map((room, index) => (
                   <motion.div
                     key={room.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.03, y: -5 }}
                   >
                     <RoomCard room={room} />
                   </motion.div>
@@ -246,11 +292,13 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {communities.map((community) => (
+                {communities.map((community, index) => (
                   <motion.div
                     key={community.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.03, y: -5 }}
                   >
                     <CommunityCard community={community} />
                   </motion.div>
