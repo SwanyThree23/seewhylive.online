@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
-import { DollarSign, TrendingUp, Users, Award } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, Award, Gift, Sparkles } from 'lucide-react';
 
 export default function MonetizationPage() {
   const [showGiftShop, setShowGiftShop] = useState(false);
@@ -126,6 +129,7 @@ export default function MonetizationPage() {
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="store">Virtual Goods Store</TabsTrigger>
+          <TabsTrigger value="gifts"><Sparkles className="w-4 h-4 mr-2" />Animated Gifts</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue">
@@ -139,7 +143,36 @@ export default function MonetizationPage() {
         <TabsContent value="store">
           <VirtualGoodsStore userId={user?.id} />
         </TabsContent>
+
+        <TabsContent value="gifts">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5" />
+                Animated Gift Gallery
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                Send unique animated gifts to streamers and community members to show your support
+              </p>
+              <Button onClick={() => setShowGiftShop(true)} size="lg">
+                <Gift className="w-4 h-4 mr-2" />
+                Browse Gifts
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      <Dialog open={showGiftShop} onOpenChange={setShowGiftShop}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Animated Gift Shop</DialogTitle>
+          </DialogHeader>
+          <AnimatedGiftShop onClose={() => setShowGiftShop(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
