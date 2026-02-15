@@ -8,13 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Radio, Users, MessageSquare, Hand, Settings, 
   LogOut, Mic, MicOff, Video, VideoOff, PhoneOff,
-  Share2, MoreVertical
+  Share2, MoreVertical, DollarSign, TrendingUp
 } from 'lucide-react';
 import StageView from '../components/rooms/StageView';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import QuickTip from '../components/rooms/QuickTip';
+import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -271,6 +274,17 @@ export default function RoomPage() {
               </div>
             )}
 
+            {/* Quick Tip */}
+            {room?.host_id !== user?.id && (
+              <div className="bg-white rounded-xl shadow-lg p-4">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Support the Creator
+                </h3>
+                <QuickTip recipientId={room.host_id} recipientName="Host" />
+              </div>
+            )}
+
             {/* Control Bar */}
             <div className="bg-white rounded-xl shadow-lg p-4">
               <div className="flex items-center justify-center gap-3">
@@ -329,18 +343,18 @@ export default function RoomPage() {
           {/* Right Column - Chat & Participants */}
           <div className="lg:col-span-1">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-[calc(100vh-200px)]">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="chat">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Chat
+                  <MessageSquare className="w-4 h-4" />
                 </TabsTrigger>
                 <TabsTrigger value="participants">
-                  <Users className="w-4 h-4 mr-2" />
-                  People
+                  <Users className="w-4 h-4" />
                 </TabsTrigger>
                 <TabsTrigger value="costream">
-                  <Video className="w-4 h-4 mr-2" />
-                  Co-Stream
+                  <Video className="w-4 h-4" />
+                </TabsTrigger>
+                <TabsTrigger value="analytics">
+                  <TrendingUp className="w-4 h-4" />
                 </TabsTrigger>
               </TabsList>
 
@@ -374,7 +388,25 @@ export default function RoomPage() {
               <TabsContent value="costream" className="h-full mt-4 overflow-auto">
                 <CoStreamPanel roomId={roomId} />
               </TabsContent>
+
+              <TabsContent value="analytics" className="h-full mt-4 overflow-auto">
+                {isHost ? (
+                  <RoomAnalyticsPanel roomId={roomId} />
+                ) : (
+                  <div className="text-center py-8">
+                    <TrendingUp className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-muted-foreground">Only the host can view analytics</p>
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
+
+            {/* Moderation Panel for Host */}
+            {isHost && (
+              <div className="mt-4">
+                <ChatModerationPanel roomId={roomId} />
+              </div>
+            )}
           </div>
         </div>
       </div>
