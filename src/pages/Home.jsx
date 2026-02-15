@@ -260,7 +260,7 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
     </>
   );
 }
