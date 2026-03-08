@@ -33,6 +33,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Home', icon: Home, href: createPageUrl('Home') },
     { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
     { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
+    { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
   ];
 
@@ -169,6 +170,24 @@ export default function Layout({ children, currentPageName }) {
                     <Link to={createPageUrl('MultiStreamManager')}>
                       <Radio className="mr-2 h-4 w-4" />
                       <span>Multi-Stream</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('OverlayEditor')}>
+                      <Globe className="mr-2 h-4 w-4" />
+                      <span>Overlays</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('LoyaltyProgram')}>
+                      <Globe className="mr-2 h-4 w-4" />
+                      <span>Loyalty</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('ViewerDashboard')}>
+                      <Globe className="mr-2 h-4 w-4" />
+                      <span>Viewer Feed</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
