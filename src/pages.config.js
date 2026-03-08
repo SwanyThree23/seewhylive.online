@@ -56,8 +56,10 @@ import Community from './pages/Community';
 import CommunityAdmin from './pages/CommunityAdmin';
 import CommunityGrowth from './pages/CommunityGrowth';
 import CommunitySettings from './pages/CommunitySettings';
+import ContentCalendar from './pages/ContentCalendar';
 import CreateCommunity from './pages/CreateCommunity';
 import CreateRoom from './pages/CreateRoom';
+import CreatorDashboard from './pages/CreatorDashboard';
 import Discover from './pages/Discover';
 import Home from './pages/Home';
 import HybridStreamRoom from './pages/HybridStreamRoom';
@@ -71,8 +73,9 @@ import Room from './pages/Room';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
 import Welcome from './pages/Welcome';
-import ContentCalendar from './pages/ContentCalendar';
-import CreatorDashboard from './pages/CreatorDashboard';
+import LiveRoom from './pages/LiveRoom';
+import StreamAnalytics from './pages/StreamAnalytics';
+import CreatorChannel from './pages/CreatorChannel';
 import __Layout from './Layout.jsx';
 
 
@@ -86,8 +89,10 @@ export const PAGES = {
     "CommunityAdmin": CommunityAdmin,
     "CommunityGrowth": CommunityGrowth,
     "CommunitySettings": CommunitySettings,
+    "ContentCalendar": ContentCalendar,
     "CreateCommunity": CreateCommunity,
     "CreateRoom": CreateRoom,
+    "CreatorDashboard": CreatorDashboard,
     "Discover": Discover,
     "Home": Home,
     "HybridStreamRoom": HybridStreamRoom,
@@ -101,8 +106,9 @@ export const PAGES = {
     "Search": Search,
     "Settings": Settings,
     "Welcome": Welcome,
-    "ContentCalendar": ContentCalendar,
-    "CreatorDashboard": CreatorDashboard,
+    "LiveRoom": LiveRoom,
+    "StreamAnalytics": StreamAnalytics,
+    "CreatorChannel": CreatorChannel,
 }
 
 export const pagesConfig = {
