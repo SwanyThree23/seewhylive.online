@@ -77,6 +77,8 @@ import LiveRoom from './pages/LiveRoom';
 import StreamAnalytics from './pages/StreamAnalytics';
 import CreatorChannel from './pages/CreatorChannel';
 import MultiStreamManager from './pages/MultiStreamManager';
+import StreamScheduler from './pages/StreamScheduler';
+import LoyaltyProgram from './pages/LoyaltyProgram';
 import __Layout from './Layout.jsx';
 
 
@@ -111,6 +113,8 @@ export const PAGES = {
     "StreamAnalytics": StreamAnalytics,
     "CreatorChannel": CreatorChannel,
     "MultiStreamManager": MultiStreamManager,
+    "StreamScheduler": StreamScheduler,
+    "LoyaltyProgram": LoyaltyProgram,
 }
 
 export const pagesConfig = {
