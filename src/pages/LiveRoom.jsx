@@ -16,6 +16,13 @@ import ViewerCount from '../components/live/ViewerCount';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import StreamEventBus from '../components/live/StreamEventBus';
 import ChatModeration from '../components/live/ChatModeration';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import ClipCreator from '../components/live/ClipCreator';
+import PointsNotification from '../components/live/PointsNotification';
+import StreamMetadata from '../components/live/StreamMetadata';
+import StreamGoals from '../components/live/StreamGoals';
+import RaidPanel from '../components/live/RaidPanel';
+import MobileStreamControls from '../components/live/MobileStreamControls';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -369,6 +376,14 @@ export default function LiveRoom() {
             </div>
           </div>
 
+          {/* Pre-stream countdown (scheduled, not live) */}
+          {room?.status === 'scheduled' && room?.scheduled_start && !isLive && (
+            <PreStreamCountdown room={room} currentUser={user} onGoLive={() => isHost && goLiveMutation.mutate()} />
+          )}
+
+          {/* Viewer points notification */}
+          {!isHost && <PointsNotification userId={user?.id} />}
+
           {/* Bottom bar: layout controls */}
           <div className="h-9 shrink-0 flex items-center justify-center gap-2 border-t border-white/5 bg-[rgba(13,6,24,0.8)] px-4">
             {LAYOUT_MODES.map(l => (
@@ -411,7 +426,7 @@ export default function LiveRoom() {
                     { value: 'chat', icon: MessageSquare, label: 'Chat' },
                     { value: 'guests', icon: Users, label: 'Guests' },
                     { value: 'analytics', icon: BarChart2, label: 'Stats' },
-                    { value: 'store', icon: ShoppingBag, label: 'Store' },
+                    { value: 'store', icon: ShoppingBag, label: 'Goals' },
                   ].map(tab => (
                     <TabsTrigger
                       key={tab.value}
@@ -454,6 +469,10 @@ export default function LiveRoom() {
                   )}
                 </TabsContent>
 
+                <TabsContent value="store" className="flex-1 overflow-hidden m-0 p-0">
+                  <StreamMetadata room={room} isHost={isHost} />
+                </TabsContent>
+
                 <TabsContent value="analytics" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
                   <p className="text-xs font-semibold text-[#d4af37]">Stream Stats</p>
                   <div className="grid grid-cols-2 gap-2">
@@ -476,16 +495,23 @@ export default function LiveRoom() {
                   </Link>
                 </TabsContent>
 
-                <TabsContent value="store" className="flex-1 overflow-y-auto m-0 p-3">
-                  <p className="text-xs font-semibold text-[#d4af37] mb-3">Creator Store</p>
-                  <p className="text-[11px] text-white/40 text-center py-8">Store items will appear here</p>
-                  <p className="text-[10px] text-white/20 text-center">90% to creator · 10% platform fee</p>
+                <TabsContent value="goals" className="flex-1 overflow-hidden m-0 p-0">
+                  <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
                 </TabsContent>
               </Tabs>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Mobile controls */}
+      <MobileStreamControls
+        micMuted={micMuted}
+        onMicToggle={() => setMicMuted(!micMuted)}
+        onReact={() => {}}
+        onQuickTip={() => {}}
+        roomId={roomId}
+      />
 
       {/* Mobile bottom strip */}
       <div className="md:hidden h-14 shrink-0 flex items-center justify-around border-t border-white/10 bg-[rgba(13,6,24,0.95)] px-4">
