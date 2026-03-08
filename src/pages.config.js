@@ -79,6 +79,8 @@ import CreatorChannel from './pages/CreatorChannel';
 import MultiStreamManager from './pages/MultiStreamManager';
 import StreamScheduler from './pages/StreamScheduler';
 import LoyaltyProgram from './pages/LoyaltyProgram';
+import OverlayEditor from './pages/OverlayEditor';
+import ViewerDashboard from './pages/ViewerDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -115,6 +117,8 @@ export const PAGES = {
     "MultiStreamManager": MultiStreamManager,
     "StreamScheduler": StreamScheduler,
     "LoyaltyProgram": LoyaltyProgram,
+    "OverlayEditor": OverlayEditor,
+    "ViewerDashboard": ViewerDashboard,
 }
 
 export const pagesConfig = {
