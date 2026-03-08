@@ -426,7 +426,7 @@ export default function LiveRoom() {
                     { value: 'chat', icon: MessageSquare, label: 'Chat' },
                     { value: 'guests', icon: Users, label: 'Guests' },
                     { value: 'analytics', icon: BarChart2, label: 'Stats' },
-                    { value: 'store', icon: ShoppingBag, label: 'Goals' },
+                    { value: 'goals', icon: ShoppingBag, label: 'Goals' },
                   ].map(tab => (
                     <TabsTrigger
                       key={tab.value}
@@ -467,10 +467,6 @@ export default function LiveRoom() {
                       + Invite Guest
                     </button>
                   )}
-                </TabsContent>
-
-                <TabsContent value="store" className="flex-1 overflow-hidden m-0 p-0">
-                  <StreamMetadata room={room} isHost={isHost} />
                 </TabsContent>
 
                 <TabsContent value="analytics" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
