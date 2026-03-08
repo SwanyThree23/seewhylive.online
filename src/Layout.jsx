@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   Home, Radio, Users, Settings, LogOut, 
-  User, Plus, Video, DollarSign, Shield, Bell, Search as SearchIcon, Activity, Mail
+  User, Plus, Video, DollarSign, Shield, Bell, Search as SearchIcon, Activity, Mail,
+  BarChart2, Globe
 } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
@@ -97,6 +98,12 @@ export default function Layout({ children, currentPageName }) {
               <Bell className="w-5 h-5" />
             </Button>
           </Link>
+          <Link to={createPageUrl('LiveRoom')}>
+            <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-[#800020] border border-[#800020]/30 hover:bg-[#800020]/10">
+              <Radio className="w-3.5 h-3.5" />
+              Studio
+            </Button>
+          </Link>
           <Link to={createPageUrl('CreateRoom')}>
             <Button className="gap-2 bg-gradient-to-r hover:opacity-90">
               <Plus className="w-4 h-4" />
@@ -150,6 +157,18 @@ export default function Layout({ children, currentPageName }) {
                     <Link to={createPageUrl('AdvancedAnalytics')}>
                       <DollarSign className="mr-2 h-4 w-4" />
                       <span>Advanced Analytics</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('StreamAnalytics')}>
+                      <BarChart2 className="mr-2 h-4 w-4" />
+                      <span>Stream Analytics</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('MultiStreamManager')}>
+                      <Radio className="mr-2 h-4 w-4" />
+                      <span>Multi-Stream</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
