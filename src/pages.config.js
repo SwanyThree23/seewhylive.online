@@ -76,6 +76,7 @@ import Welcome from './pages/Welcome';
 import LiveRoom from './pages/LiveRoom';
 import StreamAnalytics from './pages/StreamAnalytics';
 import CreatorChannel from './pages/CreatorChannel';
+import MultiStreamManager from './pages/MultiStreamManager';
 import __Layout from './Layout.jsx';
 
 
@@ -109,6 +110,7 @@ export const PAGES = {
     "LiveRoom": LiveRoom,
     "StreamAnalytics": StreamAnalytics,
     "CreatorChannel": CreatorChannel,
+    "MultiStreamManager": MultiStreamManager,
 }
 
 export const pagesConfig = {

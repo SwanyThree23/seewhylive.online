@@ -1,16 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lock, ExternalLink, Clock } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import {
+  Play, Pause, Volume2, VolumeX, Maximize, Maximize2,
+  Settings, Share2, Lock, Clock, Copy, Code2, Users, X
+} from 'lucide-react';
 
-export default function EmbedPlayer({ roomId, previewDuration = 120 }) {
+export default function EmbedPlayer({
+  roomId,
+  creatorName = 'Creator',
+  creatorAvatar,
+  streamTitle = 'Live Stream',
+  viewerCount = 0,
+  previewDuration = 120,
+  price = 4.99,
+  subscriptionPrice = 9.99,
+  isLive = true,
+}) {
   const [timeLeft, setTimeLeft] = useState(previewDuration);
   const [isLocked, setIsLocked] = useState(false);
+  const [playing, setPlaying] = useState(true);
+  const [volume, setVolume] = useState([80]);
+  const [muted, setMuted] = useState(false);
+  const [quality, setQuality] = useState('Auto');
+  const [showControls, setShowControls] = useState(false);
+  const [showEmbed, setShowEmbed] = useState(false);
+  const [previewExtended, setPreviewExtended] = useState(false);
+  const [blurAmount, setBlurAmount] = useState(0);
+  const controlsTimeoutRef = useRef(null);
+
+  const embedCode = `<iframe\n  src="${window.location.origin}/embed?room=${roomId}"\n  width="560" height="315"\n  frameborder="0"\n  allow="autoplay; fullscreen"\n  allowfullscreen>\n</iframe>`;
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
+    if (isLocked) return;
+    const t = setInterval(() => {
+      setTimeLeft(prev => {
         if (prev <= 1) {
           setIsLocked(true);
           return 0;
@@ -18,98 +44,221 @@ export default function EmbedPlayer({ roomId, previewDuration = 120 }) {
         return prev - 1;
       });
     }, 1000);
+    return () => clearInterval(t);
+  }, [isLocked]);
 
-    return () => clearInterval(timer);
-  }, []);
+  // Gradual blur as paywall approaches
+  useEffect(() => {
+    if (timeLeft < 20 && timeLeft > 0) {
+      setBlurAmount(((20 - timeLeft) / 20) * 16);
+    }
+  }, [timeLeft]);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const extendPreview = () => {
+    setTimeLeft(prev => prev + 15);
+    setPreviewExtended(true);
   };
 
-  if (isLocked) {
-    return (
-      <div className="w-full h-full min-h-[400px] bg-[#3C2F2F] flex items-center justify-center relative overflow-hidden">
-        {/* Backdrop */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#800020]/20 to-[#2A1F1F] backdrop-blur-md" />
-        
-        {/* Golden Glow Effect */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#D4AF37] rounded-full blur-[100px]" />
-        </div>
+  const showControlsTemporarily = () => {
+    setShowControls(true);
+    clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000);
+  };
 
-        {/* Paywall Card */}
-        <Card className="z-10 bg-[#2A1F1F] border-2 border-[#D4AF37] shadow-[0_0_50px_rgba(212,175,55,0.3)] max-w-md mx-4">
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#800020] to-[#D4AF37] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(212,175,55,0.5)]">
-              <Lock className="w-10 h-10 text-white" />
-            </div>
+  const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-            <h2 className="text-3xl font-bold text-[#D4AF37] mb-2">Preview Ended</h2>
-            <p className="text-[#F5E6D3] mb-6">
-              Join this Watch Party to continue streaming and interact with the community.
-            </p>
-
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between p-3 bg-[#3C2F2F] rounded-lg">
-                <span className="text-[#F5E6D3]">✨ HD Streaming</span>
-                <Badge className="bg-green-600">Included</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-[#3C2F2F] rounded-lg">
-                <span className="text-[#F5E6D3]">💬 Live Chat</span>
-                <Badge className="bg-green-600">Included</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-[#3C2F2F] rounded-lg">
-                <span className="text-[#F5E6D3]">🎤 Guest Panel</span>
-                <Badge className="bg-green-600">Included</Badge>
-              </div>
-            </div>
-
-            <Button className="w-full bg-gradient-to-r from-[#800020] to-[#D4AF37] text-white font-bold py-6 text-lg hover:scale-105 transition-transform shadow-[0_0_20px_rgba(212,175,55,0.4)]">
-              Unlock for $0.99
-              <ExternalLink className="w-5 h-5 ml-2" />
-            </Button>
-
-            <p className="text-xs text-gray-400 mt-4">
-              One-time payment • Instant access • No subscription required
-            </p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  const progress = ((previewDuration - timeLeft) / previewDuration) * 100;
 
   return (
-    <div className="relative w-full h-full min-h-[400px] group">
-      {/* Video Stream Placeholder */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#3C2F2F] to-[#2A1F1F] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-24 h-24 rounded-full bg-[#800020] flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <div className="w-16 h-16 rounded-full bg-[#D4AF37]" />
-          </div>
-          <p className="text-[#F5E6D3] text-xl font-bold">Live Stream Preview</p>
+    <div className="relative w-full bg-black rounded-xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+      {/* Video area */}
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onMouseMove={showControlsTemporarily}
+        onClick={() => setPlaying(!playing)}
+        style={{ filter: `blur(${blurAmount}px)`, transition: 'filter 0.5s ease' }}
+      >
+        {/* Fake video background */}
+        <div className="w-full h-full bg-gradient-to-br from-[#1a0a30] via-[#0d0618] to-[#001a20] flex items-center justify-center">
+          {!playing ? (
+            <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center">
+              <Play className="w-8 h-8 text-white ml-1" />
+            </div>
+          ) : (
+            <div className="w-32 h-32 relative">
+              <div className="absolute inset-0 rounded-full bg-[#d4af37]/20 animate-ping" />
+              <div className="absolute inset-4 rounded-full bg-[#d4af37]/30 animate-pulse" />
+              <div className="absolute inset-8 rounded-full bg-[#d4af37]/50" />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Preview Timer Badge */}
-      <Badge className="absolute top-4 left-4 bg-[#800020] text-[#D4AF37] border-2 border-[#D4AF37] text-lg px-4 py-2 animate-pulse shadow-[0_0_20px_rgba(212,175,55,0.5)]">
-        <Clock className="w-4 h-4 mr-2" />
-        PREVIEW: {formatTime(timeLeft)}
-      </Badge>
-
-      {/* Watermark */}
-      <div className="absolute bottom-4 right-4 text-[#D4AF37] font-bold text-sm opacity-70">
-        StreamSpace Preview
+      {/* Top overlay: stream info */}
+      <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/70 to-transparent flex items-center gap-2">
+        {isLive && (
+          <Badge className="bg-red-600 text-white text-xs gap-1 border-0 animate-pulse">
+            <div className="w-1.5 h-1.5 rounded-full bg-white" />
+            LIVE
+          </Badge>
+        )}
+        <div className="flex items-center gap-1.5 text-white text-xs">
+          <Users className="w-3 h-3" />
+          {viewerCount.toLocaleString()} viewers
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-white text-[10px] font-bold">
+            {creatorName.charAt(0)}
+          </div>
+          <span className="text-white text-xs font-semibold truncate max-w-24">{creatorName}</span>
+        </div>
       </div>
 
-      {/* Unlock Hint */}
-      <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Card className="bg-black/80 border-[#D4AF37] p-3">
-          <p className="text-[#F5E6D3] text-sm">
-            🔓 Unlock full access after preview
-          </p>
-        </Card>
+      {/* Stream title */}
+      <div className="absolute bottom-16 left-3 max-w-[70%] pointer-events-none">
+        <p className="text-white font-bold text-sm line-clamp-2 drop-shadow-lg">{streamTitle}</p>
+        <p className="text-white/60 text-xs mt-0.5">{creatorName}</p>
+      </div>
+
+      {/* Preview timer bar */}
+      {!isLocked && (
+        <div className="absolute bottom-10 left-0 right-0 h-0.5 bg-white/10">
+          <motion.div
+            className="h-full bg-[#d4af37]"
+            style={{ width: `${100 - progress}%` }}
+          />
+        </div>
+      )}
+
+      {/* Custom control bar */}
+      <AnimatePresence>
+        {(showControls && !isLocked) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-3 pb-3 pt-6"
+          >
+            <div className="flex items-center gap-2">
+              <button onClick={() => setPlaying(!playing)} className="text-white hover:text-[#d4af37]">
+                {playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              </button>
+              <button onClick={() => setMuted(!muted)} className="text-white/70 hover:text-white">
+                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+              <div className="w-20">
+                <Slider value={muted ? [0] : volume} onValueChange={setVolume} min={0} max={100}
+                  className="[&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-white" />
+              </div>
+              <div className="flex-1" />
+              <Badge className="text-[9px] bg-black/60 text-[#d4af37] border-[#d4af37]/30 cursor-pointer hover:bg-[#d4af37]/10"
+                onClick={() => setQuality(quality === 'Auto' ? '1080p' : quality === '1080p' ? '720p' : quality === '720p' ? '480p' : 'Auto')}>
+                {quality}
+              </Badge>
+              <button onClick={() => setShowEmbed(!showEmbed)} className="text-white/60 hover:text-white">
+                <Code2 className="w-4 h-4" />
+              </button>
+              <button className="text-white/60 hover:text-white">
+                <Maximize className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Preview timer badge */}
+      {!isLocked && timeLeft <= 30 && (
+        <motion.div
+          initial={{ scale: 0.8 }} animate={{ scale: 1 }}
+          className="absolute top-12 left-3"
+        >
+          <Badge className="bg-[#800020] text-[#d4af37] border-2 border-[#d4af37] gap-1 animate-pulse">
+            <Clock className="w-3 h-3" />
+            PREVIEW: {formatTime(timeLeft)}
+          </Badge>
+        </motion.div>
+      )}
+
+      {/* Paywall overlay */}
+      <AnimatePresence>
+        {isLocked && (
+          <motion.div
+            initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 20 }}
+            className="absolute inset-0 flex flex-col justify-end"
+            style={{ backdropFilter: 'blur(12px)', background: 'rgba(13,6,24,0.85)' }}
+          >
+            <div className="p-6 border border-[#d4af37]/20 rounded-t-2xl bg-gradient-to-t from-[#0d0618] to-transparent">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-white text-xl font-bold">
+                  {creatorName.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-white font-bold">Continue watching</p>
+                  <p className="text-[#d4af37] font-semibold">{creatorName}</p>
+                </div>
+                <Lock className="w-5 h-5 text-[#d4af37] ml-auto" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <button className="py-3 rounded-xl bg-gradient-to-r from-[#800020] to-[#d4af37] text-white font-bold text-sm hover:opacity-90 transition-opacity">
+                  Unlock ${price} — One-time
+                </button>
+                <button className="py-3 rounded-xl bg-gradient-to-r from-purple-700 to-purple-500 text-white font-bold text-sm hover:opacity-90 transition-opacity">
+                  Subscribe ${subscriptionPrice}/mo
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-3 mb-3 flex-wrap">
+                {['Stripe', 'PayPal', 'CashApp', 'Venmo'].map(p => (
+                  <button key={p} className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white/60 hover:bg-white/10 hover:text-white">
+                    {p}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <button className="text-xs text-white/40 hover:text-white underline">
+                  Already a member? Sign In
+                </button>
+                {!previewExtended && (
+                  <button onClick={extendPreview} className="text-xs text-[#00d4ff] hover:text-white underline">
+                    Watch 15s more free
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Embed Code Modal */}
+      <AnimatePresence>
+        {showEmbed && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+            className="absolute inset-4 bg-[#0d0618] border border-[#d4af37]/30 rounded-xl p-4 z-50"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-[#d4af37]">Embed Code</p>
+              <button onClick={() => setShowEmbed(false)} className="text-white/40 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <pre className="bg-black/50 rounded-lg p-3 text-xs text-[#00d4ff] font-mono overflow-x-auto whitespace-pre-wrap mb-3">
+              {embedCode}
+            </pre>
+            <Button
+              size="sm"
+              onClick={() => { navigator.clipboard.writeText(embedCode); }}
+              className="bg-[#d4af37] text-black font-bold gap-2 hover:bg-[#f5e6a3]"
+            >
+              <Copy className="w-3 h-3" /> Copy Code
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Watermark */}
+      <div className="absolute bottom-2 right-3 text-[#d4af37]/40 text-[10px] font-bold pointer-events-none">
+        StreamSpace
       </div>
     </div>
   );
