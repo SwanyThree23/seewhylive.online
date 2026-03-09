@@ -169,8 +169,8 @@ export default function Home() {
         </div>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs defaultValue="live" className="space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <Tabs defaultValue="live" className="space-y-6 sm:space-y-8">
           <TabsList className="grid w-full max-w-md grid-cols-3 mx-auto">
             <TabsTrigger value="live" className="flex items-center gap-2">
               <Radio className="w-4 h-4" />
