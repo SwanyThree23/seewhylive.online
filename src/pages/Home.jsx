@@ -82,7 +82,7 @@ export default function Home() {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.5, type: 'spring' }}
-        className="fixed bottom-6 right-6 z-30 flex flex-col gap-3"
+        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-30 flex flex-col gap-3"
       >
         <motion.button
           whileHover={{ scale: 1.1, rotate: 90 }}
