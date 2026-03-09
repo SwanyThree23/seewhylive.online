@@ -171,7 +171,6 @@ export default function MonetizationPage() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
 
         <TabsContent value="goals">
           <StreamerGoalsWidget creatorId={user?.id} isCreator={true} />
