@@ -16,7 +16,7 @@ import {
 import { 
   Home, Radio, Users, Settings, LogOut, 
   User, Plus, Video, DollarSign, Shield, Bell, Search as SearchIcon, Activity, Mail,
-  BarChart2, Globe
+  BarChart2, Globe, Crown
 } from 'lucide-react';
 
 export default function Layout({ children, currentPageName }) {
