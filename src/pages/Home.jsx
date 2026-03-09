@@ -202,13 +202,13 @@ export default function Home() {
             </div>
 
             {loadingLive ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-96 bg-muted animate-pulse rounded-lg" />
+                  <div key={i} className="h-72 sm:h-96 bg-muted animate-pulse rounded-lg" />
                 ))}
               </div>
             ) : filteredRooms(liveRooms).length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredRooms(liveRooms).map((room, index) => (
                   <motion.div
                     key={room.id}
