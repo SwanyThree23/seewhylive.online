@@ -104,32 +104,32 @@ export default function Home() {
       
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-10 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-5xl font-bold mb-4">
-              Welcome to StreamSpace
+            <h1 className="text-3xl sm:text-5xl font-bold mb-3">
+              Welcome to SeeWhy LIVE
             </h1>
-            <p className="text-xl text-purple-100 mb-8">
+            <p className="text-base sm:text-xl text-purple-100 mb-6 sm:mb-8 px-2">
               Join live audio & video rooms, connect with communities, and stream together
             </p>
 
-            <div className="flex gap-4 justify-center max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-2xl mx-auto px-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
-                  placeholder="Search rooms, topics, communities..."
+                  placeholder="Search rooms, topics..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 py-6 text-lg bg-white/10 backdrop-blur border-white/20 text-white placeholder:text-white/60"
+                  className="pl-10 py-5 text-base bg-white/10 backdrop-blur border-white/20 text-white placeholder:text-white/60"
                 />
               </div>
               <Link to={createPageUrl('CreateRoom')}>
-                <Button size="lg" className="bg-white text-purple-600 hover:bg-white/90 px-8">
+                <Button size="lg" className="w-full sm:w-auto bg-white text-purple-600 hover:bg-white/90 px-6">
                   <Plus className="w-5 h-5 mr-2" />
                   Create Room
                 </Button>
