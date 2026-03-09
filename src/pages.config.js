@@ -82,6 +82,7 @@ import StreamScheduler from './pages/StreamScheduler';
 import ViewerDashboard from './pages/ViewerDashboard';
 import Welcome from './pages/Welcome';
 import MonetizationWidgets from './pages/MonetizationWidgets';
+import CreatorSubscriptions from './pages/CreatorSubscriptions';
 import __Layout from './Layout.jsx';
 
 
@@ -121,6 +122,7 @@ export const PAGES = {
     "ViewerDashboard": ViewerDashboard,
     "Welcome": Welcome,
     "MonetizationWidgets": MonetizationWidgets,
+    "CreatorSubscriptions": CreatorSubscriptions,
 }
 
 export const pagesConfig = {
