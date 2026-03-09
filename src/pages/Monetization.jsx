@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
-import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
