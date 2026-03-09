@@ -191,6 +191,12 @@ export default function Layout({ children, currentPageName }) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link to={createPageUrl('CreatorSubscriptions')}>
+                      <Crown className="mr-2 h-4 w-4" />
+                      <span>Memberships</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link to={createPageUrl('MonetizationWidgets')}>
                       <DollarSign className="mr-2 h-4 w-4" />
                       <span>Widget Suite</span>
