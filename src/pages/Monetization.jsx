@@ -107,7 +107,18 @@ export default function MonetizationPage() {
         </TabsContent>
 
         <TabsContent value="subscriptions" className="space-y-6">
-          <SubscriptionTiers userId={user?.id} />
+          <Tabs defaultValue="manage" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="manage">Manage My Tiers</TabsTrigger>
+              <TabsTrigger value="mine">My Subscriptions</TabsTrigger>
+            </TabsList>
+            <TabsContent value="manage">
+              <CreatorTierManager creatorId={user?.id} />
+            </TabsContent>
+            <TabsContent value="mine">
+              <MySubscriptions userId={user?.id} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="store">
