@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
@@ -14,8 +13,6 @@ import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget'
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import { DollarSign, TrendingUp, Users, Award, Gift, Sparkles, Target, Bell, Gavel } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 
 export default function MonetizationPage() {
   const [showGiftShop, setShowGiftShop] = useState(false);
@@ -39,42 +36,6 @@ export default function MonetizationPage() {
 
   const totalSpent = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
-
-  const subscriptionTiers = [
-    {
-      tier: 'basic',
-      price: 4.99,
-      benefits: [
-        'Access to exclusive rooms',
-        'Custom profile badge',
-        'Priority support',
-        'Ad-free experience',
-      ],
-    },
-    {
-      tier: 'premium',
-      price: 9.99,
-      benefits: [
-        'All Basic benefits',
-        'Host unlimited rooms',
-        'Custom emojis',
-        'Advanced analytics',
-        'VIP community access',
-      ],
-    },
-    {
-      tier: 'elite',
-      price: 19.99,
-      benefits: [
-        'All Premium benefits',
-        'Verified badge',
-        'Revenue sharing',
-        'Dedicated support',
-        'Early access to features',
-        'Custom branding',
-      ],
-    },
-  ];
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -134,10 +95,10 @@ export default function MonetizationPage() {
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           <TabsTrigger value="store">Virtual Goods</TabsTrigger>
-          <TabsTrigger value="gifts"><Sparkles className="w-4 h-4 mr-2" />Gifts</TabsTrigger>
-          <TabsTrigger value="goals" className="gap-1.5"><Target className="w-4 h-4" />Goals</TabsTrigger>
-          <TabsTrigger value="alerts" className="gap-1.5"><Bell className="w-4 h-4" />Alerts</TabsTrigger>
-          <TabsTrigger value="auctions" className="gap-1.5"><Gavel className="w-4 h-4" />Auctions</TabsTrigger>
+          <TabsTrigger value="gifts"><Sparkles className="w-4 h-4 mr-1" />Gifts</TabsTrigger>
+          <TabsTrigger value="goals"><Target className="w-4 h-4 mr-1" />Goals</TabsTrigger>
+          <TabsTrigger value="alerts"><Bell className="w-4 h-4 mr-1" />Alerts</TabsTrigger>
+          <TabsTrigger value="auctions"><Gavel className="w-4 h-4 mr-1" />Auctions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue">
@@ -175,12 +136,16 @@ export default function MonetizationPage() {
         <TabsContent value="goals">
           <StreamerGoalsWidget creatorId={user?.id} isCreator={true} />
         </TabsContent>
+
         <TabsContent value="alerts">
           <div className="max-w-2xl">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Bell className="w-5 h-5" /> Sound Alert Configuration</h3>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Bell className="w-5 h-5" /> Sound Alert Configuration
+            </h3>
             <SoundAlertsManager creatorId={user?.id} />
           </div>
         </TabsContent>
+
         <TabsContent value="auctions">
           <div className="max-w-2xl">
             <LiveAuctionWidget creatorId={user?.id} isCreator={true} currentUser={user} />
