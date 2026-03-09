@@ -59,28 +59,29 @@ import CommunitySettings from './pages/CommunitySettings';
 import ContentCalendar from './pages/ContentCalendar';
 import CreateCommunity from './pages/CreateCommunity';
 import CreateRoom from './pages/CreateRoom';
+import CreatorChannel from './pages/CreatorChannel';
 import CreatorDashboard from './pages/CreatorDashboard';
 import Discover from './pages/Discover';
 import Home from './pages/Home';
 import HybridStreamRoom from './pages/HybridStreamRoom';
+import LiveRoom from './pages/LiveRoom';
+import LoyaltyProgram from './pages/LoyaltyProgram';
 import ModerationDashboard from './pages/ModerationDashboard';
 import Monetization from './pages/Monetization';
+import MultiStreamManager from './pages/MultiStreamManager';
 import Newsletter from './pages/Newsletter';
 import Notifications from './pages/Notifications';
+import OverlayEditor from './pages/OverlayEditor';
 import PayPerViewEvents from './pages/PayPerViewEvents';
 import Profile from './pages/Profile';
 import Room from './pages/Room';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
-import Welcome from './pages/Welcome';
-import LiveRoom from './pages/LiveRoom';
 import StreamAnalytics from './pages/StreamAnalytics';
-import CreatorChannel from './pages/CreatorChannel';
-import MultiStreamManager from './pages/MultiStreamManager';
 import StreamScheduler from './pages/StreamScheduler';
-import LoyaltyProgram from './pages/LoyaltyProgram';
-import OverlayEditor from './pages/OverlayEditor';
 import ViewerDashboard from './pages/ViewerDashboard';
+import Welcome from './pages/Welcome';
+import MonetizationWidgets from './pages/MonetizationWidgets';
 import __Layout from './Layout.jsx';
 
 
@@ -97,28 +98,29 @@ export const PAGES = {
     "ContentCalendar": ContentCalendar,
     "CreateCommunity": CreateCommunity,
     "CreateRoom": CreateRoom,
+    "CreatorChannel": CreatorChannel,
     "CreatorDashboard": CreatorDashboard,
     "Discover": Discover,
     "Home": Home,
     "HybridStreamRoom": HybridStreamRoom,
+    "LiveRoom": LiveRoom,
+    "LoyaltyProgram": LoyaltyProgram,
     "ModerationDashboard": ModerationDashboard,
     "Monetization": Monetization,
+    "MultiStreamManager": MultiStreamManager,
     "Newsletter": Newsletter,
     "Notifications": Notifications,
+    "OverlayEditor": OverlayEditor,
     "PayPerViewEvents": PayPerViewEvents,
     "Profile": Profile,
     "Room": Room,
     "Search": Search,
     "Settings": Settings,
-    "Welcome": Welcome,
-    "LiveRoom": LiveRoom,
     "StreamAnalytics": StreamAnalytics,
-    "CreatorChannel": CreatorChannel,
-    "MultiStreamManager": MultiStreamManager,
     "StreamScheduler": StreamScheduler,
-    "LoyaltyProgram": LoyaltyProgram,
-    "OverlayEditor": OverlayEditor,
     "ViewerDashboard": ViewerDashboard,
+    "Welcome": Welcome,
+    "MonetizationWidgets": MonetizationWidgets,
 }
 
 export const pagesConfig = {

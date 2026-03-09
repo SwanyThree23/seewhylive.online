@@ -10,7 +10,12 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
-import { DollarSign, TrendingUp, Users, Award, Gift, Sparkles } from 'lucide-react';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import { DollarSign, TrendingUp, Users, Award, Gift, Sparkles, Target, Bell, Gavel } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 export default function MonetizationPage() {
   const [showGiftShop, setShowGiftShop] = useState(false);
@@ -125,11 +130,14 @@ export default function MonetizationPage() {
       </div>
 
       <Tabs defaultValue="revenue" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-          <TabsTrigger value="store">Virtual Goods Store</TabsTrigger>
-          <TabsTrigger value="gifts"><Sparkles className="w-4 h-4 mr-2" />Animated Gifts</TabsTrigger>
+          <TabsTrigger value="store">Virtual Goods</TabsTrigger>
+          <TabsTrigger value="gifts"><Sparkles className="w-4 h-4 mr-2" />Gifts</TabsTrigger>
+          <TabsTrigger value="goals" className="gap-1.5"><Target className="w-4 h-4" />Goals</TabsTrigger>
+          <TabsTrigger value="alerts" className="gap-1.5"><Bell className="w-4 h-4" />Alerts</TabsTrigger>
+          <TabsTrigger value="auctions" className="gap-1.5"><Gavel className="w-4 h-4" />Auctions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue">
@@ -162,6 +170,22 @@ export default function MonetizationPage() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+      </Tabs>
+
+        <TabsContent value="goals">
+          <StreamerGoalsWidget creatorId={user?.id} isCreator={true} />
+        </TabsContent>
+        <TabsContent value="alerts">
+          <div className="max-w-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Bell className="w-5 h-5" /> Sound Alert Configuration</h3>
+            <SoundAlertsManager creatorId={user?.id} />
+          </div>
+        </TabsContent>
+        <TabsContent value="auctions">
+          <div className="max-w-2xl">
+            <LiveAuctionWidget creatorId={user?.id} isCreator={true} currentUser={user} />
+          </div>
         </TabsContent>
       </Tabs>
 
