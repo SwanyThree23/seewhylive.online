@@ -43,14 +43,21 @@ const defaultForm = {
 
 export default function TierEditor({ open, onClose, creatorId, existing }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState(existing ? {
-    ...defaultForm,
-    ...existing,
-    price: existing.price?.toString() || '',
-    max_subscribers: existing.max_subscribers?.toString() || '',
-    benefits: existing.benefits || [],
-  } : defaultForm);
+  const [form, setForm] = useState(defaultForm);
   const [newBenefit, setNewBenefit] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setForm(existing ? {
+        ...defaultForm,
+        ...existing,
+        price: existing.price?.toString() || '',
+        max_subscribers: existing.max_subscribers?.toString() || '',
+        benefits: existing.benefits || [],
+      } : defaultForm);
+      setNewBenefit('');
+    }
+  }, [open, existing]);
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
