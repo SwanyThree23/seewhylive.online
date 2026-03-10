@@ -230,8 +230,8 @@ export default function ViewerDashboard() {
                         <Star className="w-4 h-4 text-purple-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-white">{s.community_id}</p>
-                        <p className="text-[10px] text-white/40">Active</p>
+                        <p className="text-sm text-white font-semibold">{s.tier_name || 'Subscription'}</p>
+                        <p className="text-[10px] text-white/40">${s.price}/mo · since {s.start_date ? new Date(s.start_date).toLocaleDateString() : new Date(s.created_date).toLocaleDateString()}</p>
                       </div>
                       <Badge className="text-[9px] bg-green-900/30 text-green-400 border-green-700/30">Active</Badge>
                     </div>
