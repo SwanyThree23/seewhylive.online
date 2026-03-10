@@ -118,6 +118,11 @@ export default function ProfilePage() {
 
                 {isEditing ? (
                   <div className="space-y-3">
+                    <Input
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Display name"
+                    />
                     <Textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
@@ -126,11 +131,11 @@ export default function ProfilePage() {
                     />
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => updateProfileMutation.mutate({ bio })}
+                        onClick={() => updateProfileMutation.mutate({ bio, full_name: displayName })}
                         disabled={updateProfileMutation.isPending}
                         size="sm"
                       >
-                        Save
+                        {updateProfileMutation.isPending ? 'Saving...' : 'Save'}
                       </Button>
                       <Button onClick={() => setIsEditing(false)} variant="outline" size="sm">
                         Cancel
@@ -139,9 +144,9 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div>
-                    <p className="text-muted-foreground mb-2">{user?.bio || 'No bio yet'}</p>
+                    <p className="text-muted-foreground mb-2">{user?.bio || 'No bio yet. Click Edit to add one.'}</p>
                     <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-                      Edit Bio
+                      Edit Profile
                     </Button>
                   </div>
                 )}
