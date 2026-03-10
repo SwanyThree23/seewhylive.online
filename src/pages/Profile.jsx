@@ -53,10 +53,22 @@ export default function ProfilePage() {
   });
 
   React.useEffect(() => {
-    if (user?.bio) {
-      setBio(user.bio);
+    if (user) {
+      setBio(user.bio || '');
+      setDisplayName(user.full_name || '');
     }
   }, [user]);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    await base44.auth.updateMe({ avatar_url: file_url });
+    queryClient.invalidateQueries(['currentUser']);
+    toast.success('Avatar updated!');
+    setUploadingAvatar(false);
+  };
 
   if (isLoading) {
     return (
