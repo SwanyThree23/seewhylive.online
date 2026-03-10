@@ -127,6 +127,12 @@ export default function SettingsPage() {
               </div>
               <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
             </div>
+            <Button
+              onClick={() => savePreferencesMutation.mutate({ email_notifications: emailNotifications, push_notifications: pushNotifications })}
+              disabled={savePreferencesMutation.isPending}
+            >
+              Save Notification Preferences
+            </Button>
           </CardContent>
         </Card>
 
