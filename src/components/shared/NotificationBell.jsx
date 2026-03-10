@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
@@ -23,9 +23,9 @@ export default function NotificationBell() {
   });
 
   // Real-time subscription for new notifications
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) return;
-    const unsub = base44.entities.Notification.subscribe((event) => {
+    const unsub = base44.entities.Notification.subscribe((event) => { // eslint-disable-line
       if (event.data?.user_id === user.id) {
         qc.invalidateQueries(['notifications', user.id]);
       }
