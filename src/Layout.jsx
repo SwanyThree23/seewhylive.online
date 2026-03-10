@@ -13,11 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  Home, Radio, Users, Settings, LogOut, 
-  User, Plus, Video, DollarSign, Shield, Bell, Search as SearchIcon, Activity, Mail,
-  BarChart2, Globe, Crown
-} from 'lucide-react';
+import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video } from 'lucide-react';
+import NotificationBell from '@/components/shared/NotificationBell';
+import UserMenu from '@/components/shared/UserMenu';
 
 export default function Layout({ children, currentPageName }) {
   const { data: user } = useQuery({
