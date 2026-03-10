@@ -20,6 +20,15 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const qc = useQueryClient();
+
+  // Real-time room updates
+  useEffect(() => {
+    const unsub = base44.entities.Room.subscribe(() => {
+      qc.invalidateQueries(['rooms']);
+    });
+    return unsub;
+  }, [qc]);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
