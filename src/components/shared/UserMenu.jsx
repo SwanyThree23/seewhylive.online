@@ -23,22 +23,42 @@ export default function UserMenu({ user, isAdmin }) {
     );
   }
 
-  const menuItems = [
-    { label: 'Profile', icon: User, href: 'Profile' },
-    { label: 'Activity', icon: Activity, href: 'Activity' },
-    { label: 'Creator Dashboard', icon: BarChart2, href: 'CreatorDashboard' },
-    { label: 'Analytics', icon: DollarSign, href: 'Analytics' },
-    { label: 'Stream Analytics', icon: BarChart2, href: 'StreamAnalytics' },
-    { label: 'Multi-Stream', icon: Radio, href: 'MultiStreamManager' },
-    { label: 'Overlays', icon: Globe, href: 'OverlayEditor' },
-    { label: 'Loyalty', icon: Globe, href: 'LoyaltyProgram' },
-    { label: 'Viewer Feed', icon: Globe, href: 'ViewerDashboard' },
-    { label: 'Memberships', icon: Crown, href: 'CreatorSubscriptions' },
-    { label: 'Widget Suite', icon: DollarSign, href: 'MonetizationWidgets' },
-    { label: 'Newsletter', icon: Mail, href: 'Newsletter' },
-    { label: 'AI Moderation', icon: Shield, href: 'AIModeration' },
-    { label: 'Create Community', icon: Users, href: 'CreateCommunity' },
-    { label: 'Settings', icon: Settings, href: 'Settings' },
+  const sections = [
+    {
+      label: 'My Account',
+      items: [
+        { label: 'Profile', icon: User, href: 'Profile' },
+        { label: 'Activity', icon: Activity, href: 'Activity' },
+        { label: 'Settings', icon: Settings, href: 'Settings' },
+      ],
+    },
+    {
+      label: 'Creator',
+      items: [
+        { label: 'Creator Dashboard', icon: BarChart2, href: 'CreatorDashboard' },
+        { label: 'Memberships', icon: Crown, href: 'CreatorSubscriptions' },
+        { label: 'Multi-Stream', icon: Radio, href: 'MultiStreamManager' },
+        { label: 'Overlay Editor', icon: Globe, href: 'OverlayEditor' },
+        { label: 'Loyalty Program', icon: Globe, href: 'LoyaltyProgram' },
+        { label: 'Newsletter', icon: Mail, href: 'Newsletter' },
+        { label: 'Widget Suite', icon: DollarSign, href: 'MonetizationWidgets' },
+      ],
+    },
+    {
+      label: 'Viewer',
+      items: [
+        { label: 'My Feed', icon: Globe, href: 'ViewerDashboard' },
+        { label: 'Analytics', icon: DollarSign, href: 'Analytics' },
+        { label: 'Stream Analytics', icon: BarChart2, href: 'StreamAnalytics' },
+      ],
+    },
+    {
+      label: 'Community',
+      items: [
+        { label: 'Create Community', icon: Users, href: 'CreateCommunity' },
+        { label: 'AI Moderation', icon: Shield, href: 'AIModeration' },
+      ],
+    },
   ];
 
   return (
@@ -53,25 +73,31 @@ export default function UserMenu({ user, isAdmin }) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto" align="end">
+      <DropdownMenuContent className="w-56 max-h-[85vh] overflow-y-auto" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.full_name || 'User'}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {menuItems.map(({ label, icon: Icon, href }) => (
-          <DropdownMenuItem key={href} asChild>
-            <Link to={createPageUrl(href)}>
-              <Icon className="mr-2 h-4 w-4" />
-              <span>{label}</span>
-            </Link>
-          </DropdownMenuItem>
+        {sections.map(({ label, items }) => (
+          <React.Fragment key={label}>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider px-2 py-1">{label}</DropdownMenuLabel>
+            {items.map(({ label: itemLabel, icon: Icon, href }) => (
+              <DropdownMenuItem key={href} asChild>
+                <Link to={createPageUrl(href)}>
+                  <Icon className="mr-2 h-4 w-4" />
+                  <span>{itemLabel}</span>
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </React.Fragment>
         ))}
         {isAdmin && (
           <>
             <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider px-2 py-1">Admin</DropdownMenuLabel>
             <DropdownMenuItem asChild>
               <Link to={createPageUrl('ModerationDashboard')}>
                 <Shield className="mr-2 h-4 w-4" />
