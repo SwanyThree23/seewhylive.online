@@ -138,7 +138,8 @@ export default function CreatorDashboardPage() {
             { label: 'Total Rooms', value: myRooms.length, color: '#00d4ff', icon: Users },
             { label: 'Recordings', value: recordings.length, color: '#d4af37', icon: Video },
             { label: 'Total Views', value: totalViews.toLocaleString(), color: '#22c55e', icon: TrendingUp },
-            { label: 'Rewards', value: loyaltyRewards.length, color: '#a78bfa', icon: Star },
+            { label: 'Subscribers', value: activeSubscriptions.length, color: '#a78bfa', icon: Star },
+          { label: 'Monthly Rev.', value: `$${monthlyRevenue.toFixed(0)}`, color: '#22c55e', icon: DollarSign },
           ].map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
               <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)] hover:border-[rgba(212,175,55,0.2)] transition-all">
