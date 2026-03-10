@@ -61,6 +61,7 @@ import CreateCommunity from './pages/CreateCommunity';
 import CreateRoom from './pages/CreateRoom';
 import CreatorChannel from './pages/CreatorChannel';
 import CreatorDashboard from './pages/CreatorDashboard';
+import CreatorSubscriptions from './pages/CreatorSubscriptions';
 import Discover from './pages/Discover';
 import Home from './pages/Home';
 import HybridStreamRoom from './pages/HybridStreamRoom';
@@ -68,6 +69,7 @@ import LiveRoom from './pages/LiveRoom';
 import LoyaltyProgram from './pages/LoyaltyProgram';
 import ModerationDashboard from './pages/ModerationDashboard';
 import Monetization from './pages/Monetization';
+import MonetizationWidgets from './pages/MonetizationWidgets';
 import MultiStreamManager from './pages/MultiStreamManager';
 import Newsletter from './pages/Newsletter';
 import Notifications from './pages/Notifications';
@@ -81,8 +83,6 @@ import StreamAnalytics from './pages/StreamAnalytics';
 import StreamScheduler from './pages/StreamScheduler';
 import ViewerDashboard from './pages/ViewerDashboard';
 import Welcome from './pages/Welcome';
-import MonetizationWidgets from './pages/MonetizationWidgets';
-import CreatorSubscriptions from './pages/CreatorSubscriptions';
 import __Layout from './Layout.jsx';
 
 
@@ -101,6 +101,7 @@ export const PAGES = {
     "CreateRoom": CreateRoom,
     "CreatorChannel": CreatorChannel,
     "CreatorDashboard": CreatorDashboard,
+    "CreatorSubscriptions": CreatorSubscriptions,
     "Discover": Discover,
     "Home": Home,
     "HybridStreamRoom": HybridStreamRoom,
@@ -108,6 +109,7 @@ export const PAGES = {
     "LoyaltyProgram": LoyaltyProgram,
     "ModerationDashboard": ModerationDashboard,
     "Monetization": Monetization,
+    "MonetizationWidgets": MonetizationWidgets,
     "MultiStreamManager": MultiStreamManager,
     "Newsletter": Newsletter,
     "Notifications": Notifications,
@@ -121,8 +123,6 @@ export const PAGES = {
     "StreamScheduler": StreamScheduler,
     "ViewerDashboard": ViewerDashboard,
     "Welcome": Welcome,
-    "MonetizationWidgets": MonetizationWidgets,
-    "CreatorSubscriptions": CreatorSubscriptions,
 }
 
 export const pagesConfig = {

@@ -9,8 +9,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Radio, Users, CheckCircle, Share2, Bell, Play, Clock,
-  Twitter, Instagram, Youtube, ExternalLink, Calendar
+  Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown
 } from 'lucide-react';
+import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
