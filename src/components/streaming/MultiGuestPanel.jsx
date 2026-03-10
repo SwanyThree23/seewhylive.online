@@ -98,6 +98,7 @@ export default function MultiGuestPanel({ participants = [], spotlightId, onSpot
 
 function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
   if (!participant) return null;
+  const [showRTMP, setShowRTMP] = useState(false);
 
   return (
     <motion.div
