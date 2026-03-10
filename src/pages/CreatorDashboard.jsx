@@ -79,6 +79,12 @@ export default function CreatorDashboardPage() {
     enabled: !!user,
   });
 
+  const { data: activeSubscriptions = [] } = useQuery({
+    queryKey: ['creator-active-subs', user?.id],
+    queryFn: () => base44.entities.Subscription.filter({ creator_id: user?.id, status: 'active' }),
+    enabled: !!user,
+  });
+
   const quickLaunchMutation = useMutation({
     mutationFn: async () => {
       const room = await base44.entities.Room.create({
