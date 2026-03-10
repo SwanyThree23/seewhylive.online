@@ -271,6 +271,19 @@ export default function CreatorChannel() {
             )}
           </TabsContent>
 
+          {/* Memberships Tab */}
+          <TabsContent value="memberships" className="mt-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Crown className="w-5 h-5 text-[#d4af37]" />
+                <h3 className="text-lg font-bold text-white">Support {displayName}</h3>
+              </div>
+              <div className="bg-white/3 rounded-2xl p-4">
+                <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+              </div>
+            </div>
+          </TabsContent>
+
           {/* About Tab */}
           <TabsContent value="about" className="mt-6">
             <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.12)] text-white">
