@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import GuestRTMPPanel from '@/components/streaming/GuestRTMPPanel';
 
 export default function MultiGuestPanel({ participants = [], spotlightId, onSpotlight, maxGuests = 20 }) {
   const [layout, setLayout] = useState('grid'); // 'grid' or 'spotlight'
