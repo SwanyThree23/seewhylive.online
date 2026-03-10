@@ -55,6 +55,25 @@ export default function ViewerDashboard() {
     queryFn: () => base44.entities.StreamRecording.list('-recorded_at', 12),
   });
 
+  // Real-time: refresh live rooms when rooms change
+  useEffect(() => {
+    const unsub = base44.entities.Room.subscribe(() => {
+      qc.invalidateQueries(['all-live-rooms']);
+    });
+    return unsub;
+  }, [qc]);
+
+  // Real-time: refresh notifications
+  useEffect(() => {
+    if (!user) return;
+    const unsub = base44.entities.Notification.subscribe((event) => {
+      if (event.data?.user_id === user.id) {
+        qc.invalidateQueries(['notifications', user.id]);
+      }
+    });
+    return unsub;
+  }, [user, qc]);
+
   const markAllRead = useMutation({
     mutationFn: () => Promise.all(notifications.filter(n => !n.is_read).map(n => base44.entities.Notification.update(n.id, { is_read: true }))),
     onSuccess: () => qc.invalidateQueries(['notifications']),
