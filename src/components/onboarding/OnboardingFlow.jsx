@@ -56,7 +56,7 @@ export default function OnboardingFlow({ isOpen, onClose }) {
 
   const steps = [
     {
-      title: 'Welcome to StreamSpace!',
+      title: 'Welcome to SeeWhy LIVE!',
       description: 'Let\'s get you started with a quick tour',
       icon: <Radio className="w-16 h-16 text-purple-500" />,
     },
