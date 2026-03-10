@@ -103,6 +103,7 @@ export default function CreatorDashboardPage() {
   const liveRooms = myRooms.filter(r => r.status === 'live');
   const recentRooms = myRooms.filter(r => r.status === 'ended').slice(0, 3);
   const totalViews = recordings.reduce((s, r) => s + (r.views || 0), 0);
+  const monthlyRevenue = activeSubscriptions.reduce((sum, s) => sum + (s.price || 0), 0);
   const streamStreak = 3; // Simulated streak
 
   return (
