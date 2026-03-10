@@ -53,6 +53,7 @@ export default function Home() {
   const { data: liveRooms = [], isLoading: loadingLive } = useQuery({
     queryKey: ['rooms', 'live'],
     queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20),
+    refetchInterval: 15000,
   });
 
   const { data: scheduledRooms = [], isLoading: loadingScheduled } = useQuery({
