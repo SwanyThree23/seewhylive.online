@@ -23,9 +23,7 @@ export default function Layout({ children, currentPageName }) {
     queryFn: () => base44.auth.me(),
   });
 
-  const handleLogout = async () => {
-    await base44.auth.logout();
-  };
+  const isAdmin = user?.role === 'admin';
 
   const navigation = [
     { name: 'Home', icon: Home, href: createPageUrl('Home') },
