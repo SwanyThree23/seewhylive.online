@@ -16,25 +16,54 @@ export default function SettingsPage() {
   const [fullName, setFullName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
+  const [showActivity, setShowActivity] = useState(true);
+  const [publicProfile, setPublicProfile] = useState(true);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  React.useEffect(() => {
-    if (user) {
-      setFullName(user.full_name || '');
-    }
+  const { data: preferences } = useQuery({
+    queryKey: ['userPreferences', user?.id],
+    queryFn: async () => {
+      const prefs = await base44.entities.UserPreference.filter({ user_id: user?.id });
+      return prefs[0] || null;
+    },
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (user) setFullName(user.full_name || '');
   }, [user]);
 
+  useEffect(() => {
+    if (preferences) {
+      setEmailNotifications(preferences.email_notifications ?? true);
+      setPushNotifications(preferences.push_notifications ?? true);
+      setShowActivity(preferences.show_activity ?? true);
+      setPublicProfile(preferences.public_profile ?? true);
+    }
+  }, [preferences]);
+
   const updateProfileMutation = useMutation({
+    mutationFn: async (data) => base44.auth.updateMe(data),
+    onSuccess: () => {
+      toast.success('Profile saved!');
+      queryClient.invalidateQueries(['currentUser']);
+    },
+  });
+
+  const savePreferencesMutation = useMutation({
     mutationFn: async (data) => {
-      return await base44.auth.updateMe(data);
+      if (preferences?.id) {
+        return base44.entities.UserPreference.update(preferences.id, data);
+      }
+      return base44.entities.UserPreference.create({ user_id: user?.id, ...data });
     },
     onSuccess: () => {
-      toast.success('Settings saved!');
-      queryClient.invalidateQueries(['currentUser']);
+      toast.success('Preferences saved!');
+      queryClient.invalidateQueries(['userPreferences']);
     },
   });
 
