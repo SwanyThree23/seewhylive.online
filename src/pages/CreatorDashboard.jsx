@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RecordingManager from '../components/content/RecordingManager';
 import { toast } from 'sonner';
+import { Link as RouterLink } from 'react-router-dom';
 
 function StreamStreakBadge({ days }) {
   if (days === 0) return null;
