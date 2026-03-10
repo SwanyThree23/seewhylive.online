@@ -151,15 +151,21 @@ export default function SettingsPage() {
                 <p className="font-medium">Show Activity</p>
                 <p className="text-sm text-muted-foreground">Let others see your activity</p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={showActivity} onCheckedChange={setShowActivity} />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Public Profile</p>
                 <p className="text-sm text-muted-foreground">Make your profile visible to all</p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={publicProfile} onCheckedChange={setPublicProfile} />
             </div>
+            <Button
+              onClick={() => savePreferencesMutation.mutate({ show_activity: showActivity, public_profile: publicProfile })}
+              disabled={savePreferencesMutation.isPending}
+            >
+              Save Privacy Preferences
+            </Button>
           </CardContent>
         </Card>
 
