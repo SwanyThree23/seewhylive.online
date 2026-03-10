@@ -14,8 +14,6 @@ export default function Layout({ children, currentPageName }) {
     queryFn: () => base44.auth.me(),
   });
 
-  const isAdmin = user?.role === 'admin';
-
   const navigation = [
     { name: 'Home', icon: Home, href: createPageUrl('Home') },
     { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
