@@ -19,7 +19,7 @@ export default function DiscoverPage() {
   const { data: preferences } = useQuery({
     queryKey: ['userPreferences', user?.id],
     queryFn: async () => {
-      const prefs = await base44.entities.UserPreference.filter({ user_id: user.id });
+      const prefs = await base44.entities.UserPreference.filter({ user_id: user?.id });
       return prefs[0];
     },
     enabled: !!user,
