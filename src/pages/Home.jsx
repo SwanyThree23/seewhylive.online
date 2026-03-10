@@ -5,7 +5,7 @@ import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap } from 'lucide-react';
+import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
