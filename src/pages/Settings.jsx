@@ -169,6 +169,31 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Quick Links */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LayoutDashboard className="w-5 h-5" />
+              Quick Links
+            </CardTitle>
+            <CardDescription>Jump to key sections of the app</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'Creator Dashboard', href: 'CreatorDashboard' },
+              { label: 'Monetization', href: 'Monetization' },
+              { label: 'Memberships', href: 'CreatorSubscriptions' },
+              { label: 'Viewer Feed', href: 'ViewerDashboard' },
+              { label: 'Multi-Stream', href: 'MultiStreamManager' },
+              { label: 'AI Moderation', href: 'AIModeration' },
+            ].map(({ label, href }) => (
+              <Link key={href} to={createPageUrl(href)}>
+                <Button variant="outline" className="w-full justify-start text-sm">{label}</Button>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+
         {/* Account Actions */}
         <Card>
           <CardHeader>
@@ -176,11 +201,12 @@ export default function SettingsPage() {
             <CardDescription>Manage your account</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
-              Change Password
-            </Button>
-            <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700">
-              Delete Account
+            <Button
+              variant="outline"
+              className="w-full justify-start text-red-600 hover:text-red-700"
+              onClick={() => base44.auth.logout()}
+            >
+              Sign Out
             </Button>
           </CardContent>
         </Card>
