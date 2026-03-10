@@ -173,9 +173,41 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
                 {isSpotlight ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
             )}
+
+            {/* RTMP Toggle Button */}
+            {!compact && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setShowRTMP(v => !v)}
+                title="Configure RTMP destinations"
+                className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all bg-black/50 hover:bg-[#D4AF37]/20 ${
+                  showRTMP ? 'opacity-100 text-[#D4AF37] bg-[#D4AF37]/20' : 'text-white/60'
+                }`}
+              >
+                <Radio className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Collapsible RTMP Panel */}
+      <AnimatePresence>
+        {showRTMP && !compact && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden mt-1"
+          >
+            <GuestRTMPPanel
+              participantId={participant.id}
+              userId={participant.user_id || participant.id}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
