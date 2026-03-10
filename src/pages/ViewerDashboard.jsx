@@ -41,6 +41,7 @@ export default function ViewerDashboard() {
     queryKey: ['my-subs', user?.id],
     queryFn: () => base44.entities.Subscription.filter({ user_id: user?.id, status: 'active' }),
     enabled: !!user,
+    refetchInterval: 30000,
   });
 
   const { data: myClips = [] } = useQuery({
