@@ -90,158 +90,20 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
-          <Link to={createPageUrl('Notifications')}>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-            </Button>
-          </Link>
-          <Link to={createPageUrl('LiveRoom')}>
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-[#800020] border border-[#800020]/30 hover:bg-[#800020]/10">
-              <Radio className="w-3.5 h-3.5" />
-              Studio
-            </Button>
-          </Link>
-          <Link to={createPageUrl('CreateRoom')}>
-            <Button className="gap-2 bg-gradient-to-r hover:opacity-90">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Create Room</span>
-            </Button>
-          </Link>
-
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar>
-                      <AvatarImage src={user.avatar_url} />
-                      <AvatarFallback>
-                        {user.full_name?.charAt(0) || user.email?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {user.full_name || 'User'}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('Profile')}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('Activity')}>
-                      <Activity className="mr-2 h-4 w-4" />
-                      <span>Activity</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('Analytics')}>
-                      <DollarSign className="mr-2 h-4 w-4" />
-                      <span>Analytics</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('AdvancedAnalytics')}>
-                      <DollarSign className="mr-2 h-4 w-4" />
-                      <span>Advanced Analytics</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('StreamAnalytics')}>
-                      <BarChart2 className="mr-2 h-4 w-4" />
-                      <span>Stream Analytics</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('MultiStreamManager')}>
-                      <Radio className="mr-2 h-4 w-4" />
-                      <span>Multi-Stream</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('OverlayEditor')}>
-                      <Globe className="mr-2 h-4 w-4" />
-                      <span>Overlays</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('LoyaltyProgram')}>
-                      <Globe className="mr-2 h-4 w-4" />
-                      <span>Loyalty</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('ViewerDashboard')}>
-                      <Globe className="mr-2 h-4 w-4" />
-                      <span>Viewer Feed</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('CreatorSubscriptions')}>
-                      <Crown className="mr-2 h-4 w-4" />
-                      <span>Memberships</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('MonetizationWidgets')}>
-                      <DollarSign className="mr-2 h-4 w-4" />
-                      <span>Widget Suite</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('Newsletter')}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      <span>Newsletter</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('AIModeration')}>
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>AI Moderation</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('CreateCommunity')}>
-                      <Users className="mr-2 h-4 w-4" />
-                      <span>Create Community</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl('Settings')}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl('ModerationDashboard')}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        <span>Moderation</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button onClick={() => base44.auth.redirectToLogin()}>
-                Sign In
+            <NotificationBell />
+            <Link to={createPageUrl('LiveRoom')}>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-[#800020] border border-[#800020]/30 hover:bg-[#800020]/10">
+                <Radio className="w-3.5 h-3.5" />
+                Studio
               </Button>
-            )}
+            </Link>
+            <Link to={createPageUrl('CreateRoom')}>
+              <Button className="gap-2 bg-gradient-to-r hover:opacity-90">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Create Room</span>
+              </Button>
+            </Link>
+            <UserMenu user={user} isAdmin={isAdmin} />
           </div>
         </div>
       </header>
