@@ -93,7 +93,7 @@ export default function OnboardingFlow({ isOpen, onClose }) {
         onboarding_completed: true,
         onboarding_step: step,
       });
-      toast.success('Welcome to StreamSpace! 🎉');
+      toast.success('Welcome to SeeWhy LIVE! 🎉');
       onClose();
     } else if (step === 1) {
       // Save preferences
