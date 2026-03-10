@@ -54,7 +54,7 @@ export default function Layout({ children, currentPageName }) {
               <Video className="w-6 h-6 text-white" />
             </div>
             <span className="font-bold text-xl bg-gradient-to-r bg-clip-text text-transparent">
-              StreamSpace
+              SeeWhy LIVE
             </span>
           </Link>
 
