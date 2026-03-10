@@ -134,6 +134,14 @@ export default function Home() {
                   Create Room
                 </Button>
               </Link>
+              {user && (
+                <Link to={createPageUrl('CreatorDashboard')}>
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/40 text-white hover:bg-white/10 px-6">
+                    <LayoutDashboard className="w-5 h-5 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
             </div>
           </motion.div>
         </div>
