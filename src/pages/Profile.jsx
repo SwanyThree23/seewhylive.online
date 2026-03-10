@@ -54,7 +54,7 @@ export default function ProfilePage() {
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       setBio(user.bio || '');
       setDisplayName(user.full_name || '');
