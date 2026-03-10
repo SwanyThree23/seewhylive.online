@@ -14,6 +14,9 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [bio, setBio] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileRef = useRef();
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
