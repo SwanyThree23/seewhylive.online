@@ -67,6 +67,15 @@ export default function RoomPage() {
     }
   }, [fetchedParticipants, user]);
 
+  // Increment viewer count on join, decrement on leave
+  useEffect(() => {
+    if (!room || !user) return;
+    base44.entities.Room.update(room.id, { viewer_count: (room.viewer_count || 0) + 1 }).catch(() => {});
+    return () => {
+      base44.entities.Room.update(room.id, { viewer_count: Math.max(0, (room.viewer_count || 1) - 1) }).catch(() => {});
+    };
+  }, [room?.id, user?.id]);
+
   // Real-time subscriptions
   useEffect(() => {
     if (!roomId) return;
