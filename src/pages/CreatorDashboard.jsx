@@ -164,7 +164,7 @@ export default function CreatorDashboardPage() {
           {[
             { label: 'Schedule Stream', icon: Calendar, href: 'StreamScheduler', color: '#00d4ff' },
             { label: 'Stream Analytics', icon: BarChart2, href: 'StreamAnalytics', color: '#d4af37' },
-            { label: 'Overlay Editor', icon: Zap, href: 'OverlayEditor', color: '#a78bfa' },
+            { label: 'Memberships', icon: DollarSign, href: 'CreatorSubscriptions', color: '#f59e0b' },
             { label: 'Multi-Stream', icon: Radio, href: 'MultiStreamManager', color: '#f97316' },
           ].map(action => (
             <Link key={action.label} to={createPageUrl(action.href)}>
