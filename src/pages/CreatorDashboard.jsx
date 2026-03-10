@@ -132,7 +132,7 @@ export default function CreatorDashboardPage() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
             { label: 'Live Rooms', value: liveRooms.length, color: '#ef4444', icon: Radio },
             { label: 'Total Rooms', value: myRooms.length, color: '#00d4ff', icon: Users },
