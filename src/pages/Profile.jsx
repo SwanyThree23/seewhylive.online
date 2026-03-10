@@ -87,12 +87,20 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-start gap-6">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={user?.avatar_url} />
-                <AvatarFallback className="text-3xl bg-gradient-to-br from-purple-600 to-pink-600 text-white">
-                  {user?.full_name?.charAt(0) || user?.email?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative group cursor-pointer" onClick={() => fileRef.current?.click()}>
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={user?.avatar_url} />
+                  <AvatarFallback className="text-3xl bg-gradient-to-br from-purple-600 to-pink-600 text-white">
+                    {user?.full_name?.charAt(0) || user?.email?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {uploadingAvatar
+                    ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    : <Camera className="w-6 h-6 text-white" />}
+                </div>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              </div>
 
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
