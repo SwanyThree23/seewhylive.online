@@ -232,10 +232,8 @@ export default function ProfilePage() {
                 {subscriptions.map((sub) => (
                   <div key={sub.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div>
-                      <p className="font-medium capitalize">{sub.tier} Tier</p>
-                      <p className="text-sm text-muted-foreground">
-                        ${sub.price}/month
-                      </p>
+                      <p className="font-medium">{sub.tier_name || 'Subscription'}</p>
+                      <p className="text-sm text-muted-foreground">${sub.price}/month</p>
                     </div>
                     <Badge>Active</Badge>
                   </div>
@@ -244,6 +242,33 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Quick Links */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Access</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3">
+            <Link to={createPageUrl('CreatorDashboard')}>
+              <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-slate-50 cursor-pointer transition-colors">
+                <Radio className="w-5 h-5 text-red-500" />
+                <div>
+                  <p className="text-sm font-medium">Creator Dashboard</p>
+                  <p className="text-xs text-muted-foreground">Manage streams</p>
+                </div>
+              </div>
+            </Link>
+            <Link to={createPageUrl('ViewerDashboard')}>
+              <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-slate-50 cursor-pointer transition-colors">
+                <BarChart2 className="w-5 h-5 text-blue-500" />
+                <div>
+                  <p className="text-sm font-medium">Viewer Feed</p>
+                  <p className="text-xs text-muted-foreground">Your activity</p>
+                </div>
+              </div>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
