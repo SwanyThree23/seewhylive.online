@@ -13,7 +13,7 @@ import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import { DollarSign, TrendingUp, Users, Award, Gift, Sparkles, Target, Bell, Gavel } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, Award, Gift, Sparkles, Target, Bell, Gavel, Crown } from 'lucide-react';
 
 export default function MonetizationPage() {
   const [showGiftShop, setShowGiftShop] = useState(false);
