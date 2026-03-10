@@ -151,10 +151,10 @@ export default function CreatorChannel() {
         {/* Tabs */}
         <Tabs defaultValue="live" className="pb-16">
           <TabsList className="bg-white/5 border border-white/10">
-            {['live', 'videos', 'schedule', 'about'].map(t => (
+            {['live', 'videos', 'schedule', 'memberships', 'about'].map(t => (
               <TabsTrigger key={t} value={t}
                 className="capitalize text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
-                {t}
+                {t === 'memberships' ? <><Crown className="w-3.5 h-3.5 mr-1 inline" />Memberships</> : t}
               </TabsTrigger>
             ))}
           </TabsList>
