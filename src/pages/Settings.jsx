@@ -149,14 +149,14 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Show Activity</p>
-                <p className="text-sm text-muted-foreground">Let others see your activity</p>
+                <p className="text-sm text-muted-foreground">Let others see your activity feed</p>
               </div>
               <Switch checked={showActivity} onCheckedChange={setShowActivity} />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Public Profile</p>
-                <p className="text-sm text-muted-foreground">Make your profile visible to all</p>
+                <p className="text-sm text-muted-foreground">Make your profile visible to all users</p>
               </div>
               <Switch checked={publicProfile} onCheckedChange={setPublicProfile} />
             </div>
@@ -164,31 +164,33 @@ export default function SettingsPage() {
               onClick={() => savePreferencesMutation.mutate({ show_activity: showActivity, public_profile: publicProfile })}
               disabled={savePreferencesMutation.isPending}
             >
-              Save Privacy Preferences
+              Save Privacy Settings
             </Button>
           </CardContent>
         </Card>
 
-        {/* Quick Links */}
+        {/* Creator Tools Quick Links */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <LayoutDashboard className="w-5 h-5" />
-              Quick Links
+              Creator Tools
             </CardTitle>
-            <CardDescription>Jump to key sections of the app</CardDescription>
+            <CardDescription>Quick access to creator features</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3">
+          <CardContent className="grid grid-cols-2 gap-2">
             {[
               { label: 'Creator Dashboard', href: 'CreatorDashboard' },
+              { label: 'Viewer Dashboard', href: 'ViewerDashboard' },
+              { label: 'Stream Scheduler', href: 'StreamScheduler' },
               { label: 'Monetization', href: 'Monetization' },
-              { label: 'Memberships', href: 'CreatorSubscriptions' },
-              { label: 'Viewer Feed', href: 'ViewerDashboard' },
-              { label: 'Multi-Stream', href: 'MultiStreamManager' },
-              { label: 'AI Moderation', href: 'AIModeration' },
-            ].map(({ label, href }) => (
-              <Link key={href} to={createPageUrl(href)}>
-                <Button variant="outline" className="w-full justify-start text-sm">{label}</Button>
+              { label: 'Analytics', href: 'Analytics' },
+              { label: 'Overlay Editor', href: 'OverlayEditor' },
+            ].map(item => (
+              <Link key={item.href} to={createPageUrl(item.href)}>
+                <Button variant="outline" size="sm" className="w-full justify-start text-xs">
+                  {item.label}
+                </Button>
               </Link>
             ))}
           </CardContent>
@@ -203,10 +205,10 @@ export default function SettingsPage() {
           <CardContent className="space-y-3">
             <Button
               variant="outline"
-              className="w-full justify-start text-red-600 hover:text-red-700"
+              className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
               onClick={() => base44.auth.logout()}
             >
-              Sign Out
+              Log Out
             </Button>
           </CardContent>
         </Card>
