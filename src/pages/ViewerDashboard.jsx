@@ -39,7 +39,7 @@ export default function ViewerDashboard() {
 
   const { data: mySubscriptions = [] } = useQuery({
     queryKey: ['my-subs', user?.id],
-    queryFn: () => base44.entities.Subscription.filter({ subscriber_id: user?.id }),
+    queryFn: () => base44.entities.Subscription.filter({ user_id: user?.id, status: 'active' }),
     enabled: !!user,
   });
 
