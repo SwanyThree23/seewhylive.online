@@ -5,6 +5,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DollarSign, TrendingUp, CreditCard, Users, ArrowUpRight, Download } from 'lucide-react';
+import { toast } from 'sonner';
+
+function exportCSV(transactions, subscriptions) {
+  const rows = [
+    ['Type', 'Amount', 'Date', 'Description'],
+    ...transactions.map(t => [t.type || 'transaction', `$${t.amount || 0}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
+    ...subscriptions.map(s => ['subscription', `$${s.price || 0}/mo`, new Date(s.created_date).toLocaleDateString(), s.tier_name || '']),
+  ];
+  const csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `revenue_report_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function RevenueDashboard({ userId }) {
   const { data: transactions = [] } = useQuery({
