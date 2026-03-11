@@ -56,7 +56,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
       queryClient.invalidateQueries({ queryKey: ['loyalty'] });
       
       // Confetti effect
-      canvas({
+      confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
