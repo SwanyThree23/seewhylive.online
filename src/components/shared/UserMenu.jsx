@@ -30,6 +30,7 @@ export default function UserMenu({ user, isAdmin }) {
         { label: 'Profile', icon: User, href: 'Profile' },
         { label: 'Activity', icon: Activity, href: 'Activity' },
         { label: 'Settings', icon: Settings, href: 'Settings' },
+        { label: 'Export Data', icon: Activity, href: 'DataExport' },
       ],
     },
     {
