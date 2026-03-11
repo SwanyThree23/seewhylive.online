@@ -95,7 +95,7 @@ export default function UserMenu({ user, isAdmin }) {
           </div>
         ))}
         {isAdmin && (
-          <>
+          <div>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider px-2 py-1">Admin</DropdownMenuLabel>
             <DropdownMenuItem asChild>
@@ -104,7 +104,7 @@ export default function UserMenu({ user, isAdmin }) {
                 <span>Moderation</span>
               </Link>
             </DropdownMenuItem>
-          </>
+          </div>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-red-600">
