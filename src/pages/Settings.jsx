@@ -196,6 +196,25 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Data Export */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="w-5 h-5" />
+              Data Export
+            </CardTitle>
+            <CardDescription>Download your data as PDF, CSV, or JSON</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link to={createPageUrl('DataExport')}>
+              <Button variant="outline" className="w-full justify-start gap-2">
+                <Download className="w-4 h-4" />
+                Export My Data
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
         {/* Account Actions */}
         <Card>
           <CardHeader>
