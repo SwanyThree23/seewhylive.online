@@ -81,7 +81,7 @@ export default function UserMenu({ user, isAdmin }) {
           </div>
         </DropdownMenuLabel>
         {sections.map(({ label, items }) => (
-          <React.Fragment key={label}>
+          <div key={label}>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider px-2 py-1">{label}</DropdownMenuLabel>
             {items.map(({ label: itemLabel, icon: Icon, href }) => (
@@ -92,7 +92,7 @@ export default function UserMenu({ user, isAdmin }) {
                 </Link>
               </DropdownMenuItem>
             ))}
-          </React.Fragment>
+          </div>
         ))}
         {isAdmin && (
           <>
