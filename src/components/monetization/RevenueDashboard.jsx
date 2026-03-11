@@ -59,7 +59,10 @@ export default function RevenueDashboard({ userId }) {
           <h2 className="text-3xl font-bold text-[#D4AF37]">Revenue Dashboard</h2>
           <p className="text-[#F5E6D3] text-sm mt-1">Your creator earnings breakdown</p>
         </div>
-        <Button className="bg-gradient-to-r from-[#800020] to-[#D4AF37] text-white">
+        <Button
+          className="bg-gradient-to-r from-[#800020] to-[#D4AF37] text-white"
+          onClick={() => { exportCSV(transactions, subscriptions); toast.success('Revenue report exported!'); }}
+        >
           <Download className="w-4 h-4 mr-2" />
           Export Report
         </Button>
