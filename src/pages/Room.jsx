@@ -176,7 +176,7 @@ export default function RoomPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Room not found</h2>
           <p className="text-muted-foreground mb-4">This room doesn't exist or has been deleted</p>
-          <Button onClick={() => window.location.href = '/Home'}>
+          <Button onClick={() => window.location.href = createPageUrl('Home')}>
             Go Home
           </Button>
         </div>
