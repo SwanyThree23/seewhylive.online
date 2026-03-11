@@ -130,7 +130,7 @@ export default function RoomPage() {
       }
     },
     onSuccess: () => {
-      window.location.href = '/Home';
+      window.location.href = createPageUrl('Home');
     },
   });
 

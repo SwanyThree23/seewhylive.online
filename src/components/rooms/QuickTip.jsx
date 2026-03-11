@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { DollarSign, Heart, Sparkles, Gift } from 'lucide-react';
 import { toast } from 'sonner';
-import canvas from 'canvas-confetti';
+import confetti from 'canvas-confetti';
 
 export default function QuickTip({ recipientId, recipientName, onTipSent }) {
   const [selectedAmount, setSelectedAmount] = useState(null);

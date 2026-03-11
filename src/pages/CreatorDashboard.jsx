@@ -75,7 +75,7 @@ export default function CreatorDashboardPage() {
   });
   const { data: leaderboard = [] } = useQuery({
     queryKey: ['loyalty-lb-dash', user?.id],
-    queryFn: () => base44.entities.ViewerPoints.filter({ room_id: user?.id }, '-points', 3),
+    queryFn: () => base44.entities.ViewerPoints.filter({ creator_id: user?.id }, '-points', 3),
     enabled: !!user,
   });
 
