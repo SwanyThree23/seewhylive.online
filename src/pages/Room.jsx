@@ -20,6 +20,7 @@ import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { createPageUrl } from '../utils';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
