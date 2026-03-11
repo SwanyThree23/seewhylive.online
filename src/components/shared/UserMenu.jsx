@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   User, Activity, DollarSign, BarChart2, Radio, Globe,
-  Mail, Shield, Users, Settings, LogOut, Crown
+  Mail, Shield, Users, Settings, LogOut, Crown, Download
 } from 'lucide-react';
 
 export default function UserMenu({ user, isAdmin }) {
