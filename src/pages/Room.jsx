@@ -221,7 +221,16 @@ export default function RoomPage() {
                 <Share2 className="w-4 h-4" />
               </Button>
               {isHost && (
-                <Button variant="outline" size="icon">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="End stream"
+                  onClick={async () => {
+                    await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
+                    toast.success('Stream ended');
+                    queryClient.invalidateQueries(['room', roomId]);
+                  }}
+                >
                   <Settings className="w-4 h-4" />
                 </Button>
               )}
