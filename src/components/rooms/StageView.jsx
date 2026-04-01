@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Mic, MicOff, Video, VideoOff, MonitorUp, Hand, 
-  Settings, UserPlus, MoreVertical 
+  Settings, UserPlus, MoreVertical, Users
 } from 'lucide-react';
 import {
   DropdownMenu,

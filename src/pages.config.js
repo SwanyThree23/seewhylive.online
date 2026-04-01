@@ -84,6 +84,7 @@ import StreamScheduler from './pages/StreamScheduler';
 import ViewerDashboard from './pages/ViewerDashboard';
 import Welcome from './pages/Welcome';
 import DataExport from './pages/DataExport';
+import EnhancementSuite from './pages/EnhancementSuite';
 import __Layout from './Layout.jsx';
 
 
@@ -125,6 +126,7 @@ export const PAGES = {
     "ViewerDashboard": ViewerDashboard,
     "Welcome": Welcome,
     "DataExport": DataExport,
+    "EnhancementSuite": EnhancementSuite,
 }
 
 export const pagesConfig = {
