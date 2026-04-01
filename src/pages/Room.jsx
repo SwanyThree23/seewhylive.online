@@ -118,9 +118,34 @@ export default function RoomPage() {
         joined_at: new Date().toISOString(),
       });
     },
-    onSuccess: (participant) => {
+    onSuccess: async (participant) => {
       setCurrentParticipant(participant);
       toast.success('Joined room successfully!');
+      // Log activity
+      try {
+        const me = await base44.auth.me();
+        await base44.entities.Activity.create({
+          user_id: me.id,
+          type: 'room_joined',
+          title: `Joined room: ${room.title}`,
+          entity_id: roomId,
+          entity_type: 'Room',
+          is_public: room.is_public,
+        });
+        // Award ViewerPoints for joining
+        const existing = await base44.entities.ViewerPoints.filter({ user_id: me.id, creator_id: room.host_id });
+        if (existing.length > 0) {
+          await base44.entities.ViewerPoints.update(existing[0].id, {
+            points: (existing[0].points || 0) + 5,
+          });
+        } else {
+          await base44.entities.ViewerPoints.create({
+            user_id: me.id,
+            creator_id: room.host_id,
+            points: 5,
+          });
+        }
+      } catch (_) {}
     },
   });
 

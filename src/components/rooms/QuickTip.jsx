@@ -49,6 +49,16 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
         });
       }
 
+      // Notify recipient
+      const me = await base44.auth.me();
+      await base44.entities.Notification.create({
+        user_id: recipientId,
+        type: 'tip',
+        title: `💰 New tip from ${me.full_name || me.email}!`,
+        message: `You received a $${transaction.amount} tip! +${pointsEarned} loyalty points earned for the tipper.`,
+        sender_id: me.id,
+      });
+
       return { transaction, pointsEarned };
     },
     onSuccess: ({ transaction, pointsEarned }) => {

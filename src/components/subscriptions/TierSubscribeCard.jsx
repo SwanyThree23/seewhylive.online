@@ -32,7 +32,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
         ...FEATURE_LABELS.filter(f => tier[f.key]).map(f => f.label),
         ...(tier.benefits || []),
       ];
-      return base44.entities.Subscription.create({
+      const sub = await base44.entities.Subscription.create({
         user_id: userId,
         creator_id: creatorId,
         tier_id: tier.id,
@@ -44,6 +44,16 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
         auto_renew: true,
         benefits_snapshot: allBenefits,
       });
+      // Notify the creator
+      const me = await base44.auth.me();
+      await base44.entities.Notification.create({
+        user_id: creatorId,
+        type: 'subscription',
+        title: `⭐ New ${tier.name} subscriber!`,
+        message: `${me.full_name || me.email} just subscribed to your ${tier.name} tier for $${tier.price}/month.`,
+        sender_id: userId,
+      });
+      return sub;
     },
     onSuccess: () => {
       toast.success(`Subscribed to ${tier.name}! 🎉`);

@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   User, Activity, DollarSign, BarChart2, Radio, Globe,
-  Mail, Shield, Users, Settings, LogOut, Crown, Download
+  Mail, Shield, Users, Settings, LogOut, Crown, Download,
+  Star, UserPlus, Zap
 } from 'lucide-react';
 
 export default function UserMenu({ user, isAdmin }) {
@@ -40,9 +41,10 @@ export default function UserMenu({ user, isAdmin }) {
         { label: 'Memberships', icon: Crown, href: 'CreatorSubscriptions' },
         { label: 'Multi-Stream', icon: Radio, href: 'MultiStreamManager' },
         { label: 'Overlay Editor', icon: Globe, href: 'OverlayEditor' },
-        { label: 'Loyalty Program', icon: Globe, href: 'LoyaltyProgram' },
+        { label: 'Loyalty Program', icon: Star, href: 'LoyaltyProgram' },
         { label: 'Newsletter', icon: Mail, href: 'Newsletter' },
         { label: 'Widget Suite', icon: DollarSign, href: 'MonetizationWidgets' },
+        { label: 'Enhancement Suite', icon: Zap, href: 'EnhancementSuite' },
       ],
     },
     {
@@ -58,6 +60,8 @@ export default function UserMenu({ user, isAdmin }) {
       items: [
         { label: 'Create Community', icon: Users, href: 'CreateCommunity' },
         { label: 'AI Moderation', icon: Shield, href: 'AIModeration' },
+        { label: 'Invite to Beta', icon: UserPlus, href: 'InviteUsers' },
+        { label: 'Beta Status', icon: Zap, href: 'BetaStatus' },
       ],
     },
   ];

@@ -4,7 +4,7 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video } from 'lucide-react';
+import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
 
@@ -117,6 +117,13 @@ export default function Layout({ children, currentPageName }) {
             );
           })}
         </nav>
+      </div>
+
+      {/* Beta Banner */}
+      <div className="bg-amber-500 text-black text-xs font-semibold py-1.5 px-4 flex items-center justify-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+        SeeWhy LIVE is in <strong>Beta Testing</strong> — All features active. Report issues to your admin.
+        <Link to={createPageUrl('BetaStatus')} className="underline hover:no-underline">View status →</Link>
       </div>
 
       {/* Main Content */}

@@ -85,6 +85,8 @@ import ViewerDashboard from './pages/ViewerDashboard';
 import Welcome from './pages/Welcome';
 import DataExport from './pages/DataExport';
 import EnhancementSuite from './pages/EnhancementSuite';
+import InviteUsers from './pages/InviteUsers';
+import BetaStatus from './pages/BetaStatus';
 import __Layout from './Layout.jsx';
 
 
@@ -127,6 +129,8 @@ export const PAGES = {
     "Welcome": Welcome,
     "DataExport": DataExport,
     "EnhancementSuite": EnhancementSuite,
+    "InviteUsers": InviteUsers,
+    "BetaStatus": BetaStatus,
 }
 
 export const pagesConfig = {
