@@ -5,7 +5,7 @@ import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap } from 'lucide-react';
+import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap, Video, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
@@ -143,6 +143,26 @@ export default function Home() {
                   <Plus className="w-5 h-5 mr-2" />
                   Create Room
                 </Button>
+              </Link>
+              <Link to={createPageUrl('VideoPost')}>
+                <Button size="lg" className="w-full sm:w-auto bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6">
+                  <Video className="w-5 h-5 mr-2" />
+                  Post Video
+                </Button>
+              </Link>
+            </div>
+
+            {/* Quick links */}
+            <div className="flex flex-wrap gap-2 justify-center mt-4">
+              <Link to={createPageUrl('FeaturedContent')}>
+                <span className="inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full border border-white/20 transition-all cursor-pointer">
+                  <Star className="w-3 h-3 text-yellow-300" /> Featured Channels & Videos
+                </span>
+              </Link>
+              <Link to={createPageUrl('LiveRoom')}>
+                <span className="inline-flex items-center gap-1.5 text-xs bg-red-600/40 hover:bg-red-600/60 text-white px-3 py-1.5 rounded-full border border-red-500/30 transition-all cursor-pointer">
+                  <Radio className="w-3 h-3 animate-pulse" /> Go Live Now
+                </span>
               </Link>
             </div>
           </motion.div>

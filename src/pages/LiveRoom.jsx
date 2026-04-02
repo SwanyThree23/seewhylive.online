@@ -29,8 +29,13 @@ import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
   Video, Monitor, Mic, MicOff, StopCircle, Circle,
   MessageSquare, Users, BarChart2, ShoppingBag, HelpCircle, Share2,
-  Clock, Crown, AlignLeft
+  Clock, Crown, AlignLeft, DollarSign, Lock
 } from 'lucide-react';
+import ShareModal from '../components/live/ShareModal';
+import DirectPayments from '../components/live/DirectPayments';
+import PaywallGate from '../components/live/PaywallGate';
+import PrivatePanel from '../components/live/PrivatePanel';
+import AudioPanel from '../components/live/AudioPanel';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -61,6 +66,9 @@ export default function LiveRoom() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [bannerConfig, setBannerConfig] = useState({ enabled: false, text: '', style: 'gradient', color: '#d4af37' });
   const [participants, setParticipants] = useState([]);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [paywallUnlocked, setPaywallUnlocked] = useState(false);
   const timerRef = useRef(null);
 
   const { data: user } = useQuery({
@@ -199,6 +207,19 @@ export default function LiveRoom() {
 
   return (
     <div className="h-screen bg-[#0d0618] text-white flex flex-col overflow-hidden" style={{ fontFamily: 'system-ui, sans-serif' }}>
+      {/* Modals */}
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        url={`${window.location.origin}/LiveRoom?id=${roomId}`}
+        title={room?.title}
+      />
+      <DirectPayments
+        isOpen={paymentsOpen}
+        onClose={() => setPaymentsOpen(false)}
+        creatorName={user?.full_name}
+      />
+
       {/* Mount invisible event bus + alert center */}
       <StreamEventBus roomId={roomId} isHost={isHost} onViewerUpdate={setViewerCount} />
       <HostAlertCenter />
@@ -260,7 +281,25 @@ export default function LiveRoom() {
           </div>
         )}
 
-        <Button variant="ghost" size="icon" className="w-8 h-8 text-white/60 hover:text-white" onClick={copyInvite}>
+        {/* Direct Payments */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-8 h-8 text-[#d4af37]/60 hover:text-[#d4af37]"
+          title="Direct Payments"
+          onClick={() => setPaymentsOpen(true)}
+        >
+          <DollarSign className="w-4 h-4" />
+        </Button>
+
+        {/* Share */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-8 h-8 text-white/60 hover:text-white"
+          title="Share stream"
+          onClick={() => setShareOpen(true)}
+        >
           <Share2 className="w-4 h-4" />
         </Button>
 
@@ -287,11 +326,24 @@ export default function LiveRoom() {
               className="shrink-0 h-full border-r border-[rgba(212,175,55,0.1)] bg-[rgba(13,6,24,0.7)] flex flex-col overflow-y-auto overflow-x-hidden"
             >
               <div className="p-3 space-y-3">
-                <StreamHealthMonitor isLive={isLive} />
-                <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
-                <AudioMixer micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} />
-                <LowerThirdsBanner onBannerChange={setBannerConfig} />
-                {isHost && <ChatModeration />}
+              <StreamHealthMonitor isLive={isLive} />
+              <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
+              <AudioPanel micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} participants={participants} />
+              <AudioMixer micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} />
+              <LowerThirdsBanner onBannerChange={setBannerConfig} />
+              {isHost && <ChatModeration />}
+              <PrivatePanel isHost={isHost} currentUser={user} />
+              {!isHost && !paywallUnlocked && (
+                <PaywallGate
+                  isHost={false}
+                  streamTitle={room?.title}
+                  onUnlock={() => setPaywallUnlocked(true)}
+                  isUnlocked={paywallUnlocked}
+                />
+              )}
+              {isHost && (
+                <PaywallGate isHost={true} streamTitle={room?.title} />
+              )}
 
                 <div className="space-y-2 pt-1">
                   <p className="text-[10px] text-white/30 uppercase tracking-wider px-1">Layout</p>

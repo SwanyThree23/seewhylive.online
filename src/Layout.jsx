@@ -4,7 +4,7 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap } from 'lucide-react';
+import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
 
@@ -20,6 +20,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
     { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
+    { name: 'Featured', icon: Zap, href: createPageUrl('FeaturedContent') },
   ];
 
   const isAdmin = user?.role === 'admin';

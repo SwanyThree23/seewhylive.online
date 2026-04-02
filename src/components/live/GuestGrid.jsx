@@ -14,6 +14,7 @@ const LAYOUTS = [
   { label: '4', value: 4 },
   { label: '6', value: 6 },
   { label: '9', value: 9 },
+  { label: '12', value: 12 },
   { label: '20', value: 20 },
 ];
 
@@ -23,6 +24,7 @@ function getGridClass(count, maxSlots) {
   if (maxSlots <= 4) return 'grid-cols-2';
   if (maxSlots <= 6) return 'grid-cols-3';
   if (maxSlots <= 9) return 'grid-cols-3';
+  if (maxSlots <= 12) return 'grid-cols-4';
   return 'grid-cols-4 md:grid-cols-5';
 }
 

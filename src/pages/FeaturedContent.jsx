@@ -1,0 +1,225 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+
+const CHANNELS = [
+  {
+    id: 'domino',
+    name: 'Domino Entertainment',
+    handle: '@dominoentertainment5513',
+    url: 'https://youtube.com/@dominoentertainment5513',
+    description: 'Live entertainment, shows, and exclusive content',
+    color: 'from-red-900 to-orange-900',
+    accent: '#ff6b35',
+    emoji: '🎭',
+  },
+  {
+    id: 'memoirs',
+    name: 'Memoirs of a Shy Girl',
+    handle: '@memoirsofashygirl',
+    url: 'https://youtube.com/@memoirsofashygirl',
+    description: 'Personal stories, lifestyle, and real conversations',
+    color: 'from-pink-900 to-rose-900',
+    accent: '#ff85a1',
+    emoji: '📖',
+  },
+  {
+    id: 'ampdup',
+    name: 'Amp\'d Up Videos',
+    handle: '@ampdupvideos',
+    url: 'https://youtube.com/@ampdupvideos',
+    description: 'High energy content, music videos, and entertainment',
+    color: 'from-yellow-900 to-amber-900',
+    accent: '#ffd700',
+    emoji: '⚡',
+  },
+  {
+    id: 'aiverse',
+    name: 'AIverse Podcast',
+    handle: '@aiversepodcast',
+    url: 'https://youtube.com/@aiversepodcast',
+    description: 'AI, tech, and futurism — conversations that matter',
+    color: 'from-blue-900 to-cyan-900',
+    accent: '#00d4ff',
+    emoji: '🤖',
+  },
+];
+
+const FEATURED_VIDEOS = [
+  {
+    id: 'domino-demo',
+    title: 'Domino Entertainment — Featured Demo',
+    channel: 'Domino Entertainment',
+    channelId: 'domino',
+    embedId: 'Otl7qiUonLs',
+    description: 'Watch the featured Domino Entertainment demo reel — exclusive content right here on SeeWhy.',
+    isDemo: true,
+    emoji: '🎭',
+  },
+];
+
+function YouTubeEmbed({ videoId, title }) {
+  const [playing, setPlaying] = useState(false);
+
+  if (!playing) {
+    return (
+      <div
+        className="relative aspect-video bg-black rounded-xl overflow-hidden cursor-pointer group"
+        onClick={() => setPlaying(true)}
+      >
+        <img
+          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          alt={title}
+          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+          onError={e => { e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }}
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+            <Play className="w-7 h-7 text-white fill-white ml-1" />
+          </div>
+        </div>
+        <div className="absolute bottom-3 left-3">
+          <Badge className="bg-black/70 text-white border-0 text-xs">▶ Click to Play</Badge>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="aspect-video rounded-xl overflow-hidden">
+      <iframe
+        className="w-full h-full"
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+  );
+}
+
+export default function FeaturedContent() {
+  const [activeChannel, setActiveChannel] = useState(null);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0d0618] to-[#1a0a30] py-8 px-4">
+      <div className="max-w-5xl mx-auto space-y-8">
+
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center">
+              <Youtube className="w-7 h-7 text-white" />
+            </div>
+            <div className="text-left">
+              <h1 className="text-3xl font-bold text-white">Featured Content</h1>
+              <p className="text-white/40 text-sm">Partner channels & exclusive videos on SeeWhy</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Featured Demo Video */}
+        {FEATURED_VIDEOS.map(video => (
+          <div key={video.id} className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-[#d4af37] text-black font-bold border-0">⭐ Featured</Badge>
+              <span className="text-white font-bold text-lg">{video.title}</span>
+            </div>
+            <YouTubeEmbed videoId={video.embedId} title={video.title} />
+            <p className="text-white/40 text-sm">{video.description}</p>
+          </div>
+        ))}
+
+        {/* Partner Channels */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Star className="w-5 h-5 text-[#d4af37]" />
+            <h2 className="text-xl font-bold text-white">Partner YouTube Channels</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {CHANNELS.map(channel => (
+              <div
+                key={channel.id}
+                className={`bg-gradient-to-br ${channel.color} border border-white/10 rounded-2xl p-5 space-y-3 hover:border-white/20 transition-all cursor-pointer`}
+                onClick={() => setActiveChannel(activeChannel === channel.id ? null : channel.id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{channel.emoji}</span>
+                    <div>
+                      <h3 className="text-white font-bold">{channel.name}</h3>
+                      <p className="text-white/50 text-xs">{channel.handle}</p>
+                    </div>
+                  </div>
+                  <a
+                    href={channel.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-red-700/50 hover:bg-red-600 text-white transition-all"
+                  >
+                    <Youtube className="w-3 h-3" />
+                    Subscribe
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                </div>
+
+                <p className="text-white/60 text-sm">{channel.description}</p>
+
+                {/* Embed area */}
+                {activeChannel === channel.id && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-white/40 uppercase tracking-wider">Latest from this channel →</p>
+                    <div className="aspect-video rounded-xl overflow-hidden bg-black/50 flex items-center justify-center">
+                      <a
+                        href={channel.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex flex-col items-center gap-3 text-white/60 hover:text-white transition-all"
+                      >
+                        <Youtube className="w-12 h-12 text-red-500" />
+                        <span className="text-sm">Open on YouTube →</span>
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 text-[11px] text-white/30">
+                  <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> SeeWhy Partner</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Memoirs Studio Pro Link */}
+        <div className="bg-gradient-to-r from-pink-900/50 to-rose-900/50 border border-pink-700/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <span className="text-4xl">📖</span>
+            <div>
+              <h3 className="text-white font-bold text-lg">Memoirs Studio Pro</h3>
+              <p className="text-white/50 text-sm">Professional streaming studio by Memoirs of a Shy Girl</p>
+              <p className="text-[11px] text-pink-300/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
+            </div>
+          </div>
+          <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noreferrer">
+            <Button className="bg-pink-600 hover:bg-pink-500 text-white shrink-0">
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Visit Studio Pro
+            </Button>
+          </a>
+        </div>
+
+        <div className="text-center">
+          <Link to={createPageUrl('Home')}>
+            <Button variant="ghost" className="text-white/40 hover:text-white">← Back to Home</Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
