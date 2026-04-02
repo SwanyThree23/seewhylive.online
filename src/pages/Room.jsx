@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import TipAlert from '../components/monetization/TipAlert';
@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Radio, Users, MessageSquare, Hand, Settings, 
   LogOut, Mic, MicOff, Video, VideoOff, PhoneOff,
-  Share2, MoreVertical, DollarSign, TrendingUp
+  Share2, MoreVertical, DollarSign, TrendingUp, Circle, StopCircle
 } from 'lucide-react';
 import StageView from '../components/rooms/StageView';
 import ChatPanel from '../components/rooms/ChatPanel';
@@ -32,6 +32,9 @@ export default function RoomPage() {
   const [stages, setStages] = useState([]);
   const [activeTab, setActiveTab] = useState('chat');
   const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const recordingRef = useRef(null);
+  const recordingStartRef = useRef(null);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -166,6 +169,44 @@ export default function RoomPage() {
     },
   });
 
+  const startRecordingMutation = useMutation({
+    mutationFn: async () => {
+      const rec = await base44.entities.Recording.create({
+        room_id: roomId,
+        host_id: room.host_id,
+        title: room.title,
+        started_at: new Date().toISOString(),
+        status: 'recording',
+        stream_url: `${window.location.origin}${createPageUrl('Room')}?id=${roomId}`,
+        viewer_count: room.viewer_count || 0,
+      });
+      return rec;
+    },
+    onSuccess: (rec) => {
+      recordingRef.current = rec.id;
+      recordingStartRef.current = Date.now();
+      setIsRecording(true);
+      toast.success('Recording started');
+    },
+  });
+
+  const stopRecordingMutation = useMutation({
+    mutationFn: async () => {
+      if (!recordingRef.current) return;
+      const duration = Math.floor((Date.now() - (recordingStartRef.current || Date.now())) / 1000);
+      await base44.entities.Recording.update(recordingRef.current, {
+        ended_at: new Date().toISOString(),
+        status: 'ready',
+        duration_seconds: duration,
+      });
+    },
+    onSuccess: () => {
+      setIsRecording(false);
+      recordingRef.current = null;
+      toast.success('Recording saved to Past Streams');
+    },
+  });
+
   const raiseHandMutation = useMutation({
     mutationFn: async () => {
       return await base44.entities.Participant.update(currentParticipant.id, {
@@ -246,18 +287,34 @@ export default function RoomPage() {
                 <Share2 className="w-4 h-4" />
               </Button>
               {isHost && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  title="End stream"
-                  onClick={async () => {
-                    await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
-                    toast.success('Stream ended');
-                    queryClient.invalidateQueries(['room', roomId]);
-                  }}
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
+                <>
+                  <Button
+                    variant={isRecording ? 'destructive' : 'outline'}
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={() => {
+                      if (isRecording) stopRecordingMutation.mutate();
+                      else startRecordingMutation.mutate();
+                    }}
+                    disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
+                  >
+                    {isRecording ? <StopCircle className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                    {isRecording ? 'Stop Rec' : 'Record'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    title="End stream"
+                    onClick={async () => {
+                      if (isRecording) await stopRecordingMutation.mutateAsync();
+                      await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
+                      toast.success('Stream ended');
+                      queryClient.invalidateQueries(['room', roomId]);
+                    }}
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </>
               )}
               <Button 
                 variant="destructive"

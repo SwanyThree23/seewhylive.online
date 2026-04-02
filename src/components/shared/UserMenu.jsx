@@ -39,6 +39,7 @@ export default function UserMenu({ user, isAdmin }) {
       items: [
         { label: 'Creator Dashboard', icon: BarChart2, href: 'CreatorDashboard' },
         { label: 'Memberships', icon: Crown, href: 'CreatorSubscriptions' },
+        { label: 'Payouts', icon: DollarSign, href: 'Payouts' },
         { label: 'Multi-Stream', icon: Radio, href: 'MultiStreamManager' },
         { label: 'Overlay Editor', icon: Globe, href: 'OverlayEditor' },
         { label: 'Loyalty Program', icon: Star, href: 'LoyaltyProgram' },

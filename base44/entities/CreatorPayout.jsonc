@@ -1,0 +1,51 @@
+{
+  "name": "CreatorPayout",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "Connected Stripe account ID"
+    },
+    "stripe_connected": {
+      "type": "boolean",
+      "default": false
+    },
+    "pending_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "Pending balance in USD from tips"
+    },
+    "total_paid_out": {
+      "type": "number",
+      "default": 0
+    },
+    "last_payout_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_payout_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "bank_last4": {
+      "type": "string",
+      "description": "Last 4 digits of connected bank"
+    },
+    "payout_schedule": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "daily",
+        "weekly"
+      ],
+      "default": "manual"
+    }
+  },
+  "required": [
+    "creator_id"
+  ]
+}

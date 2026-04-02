@@ -1,0 +1,56 @@
+{
+  "name": "Recording",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room"
+    },
+    "host_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "title": {
+      "type": "string",
+      "description": "Recording title"
+    },
+    "stream_url": {
+      "type": "string",
+      "description": "Link to the stream session or recording"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "viewer_count": {
+      "type": "number",
+      "default": 0
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "recording",
+        "processing",
+        "ready",
+        "failed"
+      ],
+      "default": "recording"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id",
+    "title"
+  ]
+}

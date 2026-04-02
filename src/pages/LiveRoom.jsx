@@ -12,6 +12,7 @@ import AudioMixer from '../components/live/AudioMixer';
 import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
 import GuestGrid from '../components/live/GuestGrid';
 import UnifiedChat from '../components/live/UnifiedChat';
+import AggregatedChat from '../components/live/AggregatedChat';
 import ViewerCount from '../components/live/ViewerCount';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import StreamEventBus from '../components/live/StreamEventBus';
@@ -51,6 +52,8 @@ export default function LiveRoom() {
   const [activeScene, setActiveScene] = useState('camera');
   const [micMuted, setMicMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingId, setRecordingId] = useState(null);
+  const recordingStartRef = useRef(null);
   const [layoutMode, setLayoutMode] = useState('grid');
   const [activeTab, setActiveTab] = useState('chat');
   const [viewerCount, setViewerCount] = useState(0);
@@ -109,6 +112,45 @@ export default function LiveRoom() {
       ended_at: room?.status === 'live' ? new Date().toISOString() : undefined,
     }),
     onSuccess: () => qc.invalidateQueries(['room', roomId]),
+  });
+
+  const startRecordingMutation = useMutation({
+    mutationFn: async () => {
+      const rec = await base44.entities.Recording.create({
+        room_id: roomId,
+        host_id: room?.host_id,
+        title: room?.title || 'Live Stream',
+        started_at: new Date().toISOString(),
+        status: 'recording',
+        stream_url: `${window.location.origin}${createPageUrl('LiveRoom')}?id=${roomId}`,
+        viewer_count: viewerCount,
+      });
+      return rec;
+    },
+    onSuccess: (rec) => {
+      setRecordingId(rec.id);
+      recordingStartRef.current = Date.now();
+      setIsRecording(true);
+      toast.success('Recording started');
+    },
+  });
+
+  const stopRecordingMutation = useMutation({
+    mutationFn: async () => {
+      if (!recordingId) return;
+      const duration = Math.floor((Date.now() - (recordingStartRef.current || Date.now())) / 1000);
+      await base44.entities.Recording.update(recordingId, {
+        ended_at: new Date().toISOString(),
+        status: 'ready',
+        duration_seconds: duration,
+        viewer_count: peakViewers,
+      });
+    },
+    onSuccess: () => {
+      setIsRecording(false);
+      setRecordingId(null);
+      toast.success('Recording saved to Past Streams');
+    },
   });
 
   const leaveMutation = useMutation({
@@ -194,7 +236,8 @@ export default function LiveRoom() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => setIsRecording(!isRecording)}
+              onClick={() => isRecording ? stopRecordingMutation.mutate() : startRecordingMutation.mutate()}
+              disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
               className={`h-7 text-xs gap-1 ${isRecording ? 'text-red-400' : 'text-white/50'}`}
             >
               {isRecording ? <StopCircle className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
@@ -440,7 +483,7 @@ export default function LiveRoom() {
                 </TabsList>
 
                 <TabsContent value="chat" className="flex-1 overflow-hidden m-0 p-0">
-                  <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />
+                  <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
                 </TabsContent>
 
                 <TabsContent value="guests" className="flex-1 overflow-y-auto m-0 p-3 space-y-2">

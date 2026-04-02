@@ -79,6 +79,12 @@ export default function CreatorDashboardPage() {
     enabled: !!user,
   });
 
+  const { data: pastStreamRecordings = [] } = useQuery({
+    queryKey: ['past-recordings', user?.id],
+    queryFn: () => base44.entities.Recording.filter({ host_id: user?.id }, '-created_date', 20),
+    enabled: !!user,
+  });
+
   const { data: activeSubscriptions = [] } = useQuery({
     queryKey: ['creator-active-subs', user?.id],
     queryFn: () => base44.entities.Subscription.filter({ creator_id: user?.id, status: 'active' }),
@@ -295,8 +301,11 @@ export default function CreatorDashboardPage() {
         )}
 
         {/* Main content tabs */}
-        <Tabs defaultValue="recordings">
+        <Tabs defaultValue="past-streams">
           <TabsList className="bg-white/5 border border-white/10">
+            <TabsTrigger value="past-streams" className="text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
+              <Video className="w-4 h-4 mr-2" /> Past Streams
+            </TabsTrigger>
             <TabsTrigger value="recordings" className="text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
               <Video className="w-4 h-4 mr-2" /> Recordings
             </TabsTrigger>
@@ -304,6 +313,51 @@ export default function CreatorDashboardPage() {
               <Calendar className="w-4 h-4 mr-2" /> Scheduled ({scheduledStreams.length})
             </TabsTrigger>
           </TabsList>
+          <TabsContent value="past-streams" className="mt-4">
+            {pastStreamRecordings.length === 0 ? (
+              <div className="text-center py-12">
+                <Video className="w-12 h-12 mx-auto mb-4 text-white/20" />
+                <p className="text-white/40 mb-2">No recordings yet</p>
+                <p className="text-xs text-white/20">Hit "Record" during a live stream to save it here</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pastStreamRecordings.map(rec => {
+                  const mins = Math.floor((rec.duration_seconds || 0) / 60);
+                  const secs = (rec.duration_seconds || 0) % 60;
+                  return (
+                    <div key={rec.id} className="bg-[rgba(255,255,255,0.04)] border border-[rgba(212,175,55,0.1)] rounded-xl p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="w-10 h-10 rounded-lg bg-[#d4af37]/10 flex items-center justify-center shrink-0">
+                          <Video className="w-5 h-5 text-[#d4af37]" />
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                          rec.status === 'ready' ? 'text-green-400 border-green-800' :
+                          rec.status === 'recording' ? 'text-red-400 border-red-800 animate-pulse' :
+                          'text-white/40 border-white/10'
+                        }`}>{rec.status}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white truncate">{rec.title}</p>
+                        <p className="text-[10px] text-white/40 mt-0.5">
+                          {new Date(rec.started_at || rec.created_date).toLocaleDateString()} ·{' '}
+                          {mins > 0 ? `${mins}m ${secs}s` : `${secs}s`} ·{' '}
+                          {rec.viewer_count || 0} viewers
+                        </p>
+                      </div>
+                      {rec.stream_url && (
+                        <a href={rec.stream_url} target="_blank" rel="noreferrer">
+                          <Button size="sm" variant="ghost" className="h-7 text-[10px] text-[#d4af37] p-0 hover:bg-transparent">
+                            View Stream →
+                          </Button>
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
           <TabsContent value="recordings" className="mt-4">
             <RecordingManager userId={user?.id} />
           </TabsContent>

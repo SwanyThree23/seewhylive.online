@@ -87,6 +87,7 @@ import DataExport from './pages/DataExport';
 import EnhancementSuite from './pages/EnhancementSuite';
 import InviteUsers from './pages/InviteUsers';
 import BetaStatus from './pages/BetaStatus';
+import Payouts from './pages/Payouts';
 import __Layout from './Layout.jsx';
 
 
@@ -131,6 +132,7 @@ export const PAGES = {
     "EnhancementSuite": EnhancementSuite,
     "InviteUsers": InviteUsers,
     "BetaStatus": BetaStatus,
+    "Payouts": Payouts,
 }
 
 export const pagesConfig = {
