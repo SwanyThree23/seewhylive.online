@@ -90,6 +90,7 @@ import BetaStatus from './pages/BetaStatus';
 import Payouts from './pages/Payouts';
 import VideoPost from './pages/VideoPost';
 import FeaturedContent from './pages/FeaturedContent';
+import WatchParty from './pages/WatchParty';
 import __Layout from './Layout.jsx';
 
 
@@ -137,6 +138,7 @@ export const PAGES = {
     "Payouts": Payouts,
     "VideoPost": VideoPost,
     "FeaturedContent": FeaturedContent,
+    "WatchParty": WatchParty,
 }
 
 export const pagesConfig = {

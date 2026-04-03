@@ -1,0 +1,32 @@
+{
+  "name": "WatchPartyMember",
+  "type": "object",
+  "properties": {
+    "party_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "left_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "party_id",
+    "user_id",
+    "user_name"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "name": "WatchParty",
+  "type": "object",
+  "properties": {
+    "host_id": {
+      "type": "string",
+      "description": "User who created the party"
+    },
+    "title": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "YouTube URL or direct video URL"
+    },
+    "video_type": {
+      "type": "string",
+      "enum": [
+        "youtube",
+        "direct"
+      ],
+      "default": "youtube"
+    },
+    "playback_state": {
+      "type": "string",
+      "enum": [
+        "playing",
+        "paused",
+        "seeking"
+      ],
+      "default": "paused"
+    },
+    "current_time": {
+      "type": "number",
+      "default": 0,
+      "description": "Current playback time in seconds"
+    },
+    "updated_at_ms": {
+      "type": "number",
+      "description": "Epoch ms when state last changed (for sync)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "ended"
+      ],
+      "default": "active"
+    },
+    "participant_count": {
+      "type": "number",
+      "default": 0
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Optional linked room for chat"
+    }
+  },
+  "required": [
+    "host_id",
+    "title",
+    "video_url"
+  ]
+}

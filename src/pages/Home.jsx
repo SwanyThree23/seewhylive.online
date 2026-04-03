@@ -164,6 +164,11 @@ export default function Home() {
                   <Radio className="w-3 h-3 animate-pulse" /> Go Live Now
                 </span>
               </Link>
+              <Link to={createPageUrl('WatchParty')}>
+                <span className="inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full border border-white/20 transition-all cursor-pointer">
+                  <Video className="w-3 h-3" /> Watch Party
+                </span>
+              </Link>
             </div>
           </motion.div>
         </div>

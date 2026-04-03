@@ -1,0 +1,54 @@
+{
+  "name": "ViewerSubscription",
+  "type": "object",
+  "properties": {
+    "viewer_id": {
+      "type": "string"
+    },
+    "creator_id": {
+      "type": "string"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold"
+      ],
+      "default": "bronze"
+    },
+    "price_usd": {
+      "type": "number"
+    },
+    "stripe_checkout_session_id": {
+      "type": "string"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "cancelled",
+        "expired"
+      ],
+      "default": "pending"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "viewer_id",
+    "creator_id",
+    "tier",
+    "price_usd"
+  ]
+}

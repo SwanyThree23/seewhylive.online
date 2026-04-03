@@ -14,6 +14,8 @@ import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget'
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import { DollarSign, TrendingUp, Users, Award, Gift, Sparkles, Target, Bell, Gavel, Crown } from 'lucide-react';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 
 export default function MonetizationPage() {
   const [showGiftShop, setShowGiftShop] = useState(false);
@@ -107,16 +109,29 @@ export default function MonetizationPage() {
         </TabsContent>
 
         <TabsContent value="subscriptions" className="space-y-6">
+          <div className="max-w-xl">
+            <StripeConnectButton creatorId={user?.id} />
+          </div>
           <Tabs defaultValue="manage" className="space-y-4">
             <TabsList>
               <TabsTrigger value="manage">Manage My Tiers</TabsTrigger>
               <TabsTrigger value="mine">My Subscriptions</TabsTrigger>
+              <TabsTrigger value="subscribe">Subscribe to Creator</TabsTrigger>
             </TabsList>
             <TabsContent value="manage">
               <CreatorTierManager creatorId={user?.id} />
             </TabsContent>
             <TabsContent value="mine">
               <MySubscriptions userId={user?.id} />
+            </TabsContent>
+            <TabsContent value="subscribe">
+              <div className="max-w-lg">
+                <StripeSubscribeButton
+                  creatorId={user?.id}
+                  creatorName={user?.full_name || 'this creator'}
+                  currentUserId={user?.id}
+                />
+              </div>
             </TabsContent>
           </Tabs>
         </TabsContent>

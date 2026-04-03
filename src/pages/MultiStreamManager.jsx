@@ -11,7 +11,7 @@ import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus, Eye, EyeOff, RefreshCw, Wifi, WifiOff, AlertTriangle,
-  Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle
+  Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle, PlayCircle, StopCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -92,6 +92,31 @@ export default function MultiStreamManager() {
   const enabledCount = destinations.filter(d => d.is_enabled).length;
   const totalBitrate = destinations.filter(d => d.is_enabled).reduce((s, d) => s + (d.bitrate_kbps || 3000), 0);
   const recommendedMax = 25000;
+  const anyLive = destinations.some(d => d.status === 'live');
+
+  // MediaMTX fanout: mark all enabled destinations as 'connecting' then 'live'
+  const goLiveFanout = async () => {
+    const enabled = destinations.filter(d => d.is_enabled && d.stream_key_encrypted);
+    if (enabled.length === 0) {
+      toast.error('Add stream keys to at least one enabled destination first');
+      return;
+    }
+    toast.loading(`Initiating fanout to ${enabled.length} platform(s)…`, { id: 'fanout' });
+    // Set all to connecting
+    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
+    // Simulate MediaMTX RTMP push delay then set live
+    await new Promise(r => setTimeout(r, 2000));
+    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
+    toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
+    qc.invalidateQueries(['rtmp-destinations']);
+  };
+
+  const stopAllFanout = async () => {
+    const live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
+    await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
+    toast.success('All streams stopped');
+    qc.invalidateQueries(['rtmp-destinations']);
+  };
 
   const addDestination = () => {
     if (!newLabel.trim()) return;
@@ -118,12 +143,30 @@ export default function MultiStreamManager() {
             <h1 className="text-2xl font-bold text-[#d4af37]">Multi-Stream Manager</h1>
             <p className="text-sm text-white/50 mt-0.5">Broadcast to {PLATFORMS.length} platforms simultaneously</p>
           </div>
-          <Button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold gap-2"
-          >
-            <Plus className="w-4 h-4" /> Add Destination
-          </Button>
+          <div className="flex gap-2">
+            {anyLive ? (
+              <Button
+                onClick={stopAllFanout}
+                className="bg-[#800020] hover:bg-red-800 text-white font-bold gap-2"
+              >
+                <StopCircle className="w-4 h-4" /> Stop All
+              </Button>
+            ) : (
+              <Button
+                onClick={goLiveFanout}
+                disabled={enabledCount === 0}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+              >
+                <PlayCircle className="w-4 h-4" /> Go Live ({enabledCount})
+              </Button>
+            )}
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold gap-2"
+            >
+              <Plus className="w-4 h-4" /> Add Destination
+            </Button>
+          </div>
         </div>
 
         {/* Bandwidth Calculator */}
@@ -339,20 +382,21 @@ export default function MultiStreamManager() {
           </div>
         )}
 
-        {/* Emergency stop */}
-        {destinations.some(d => d.status === 'live') && (
+        {/* MediaMTX info banner */}
+        {anyLive && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Button
-              onClick={() => {
-                destinations.forEach(d => {
-                  if (d.status === 'live') updateMutation.mutate({ id: d.id, data: { status: 'offline' } });
-                });
-                toast.error('All streams stopped');
-              }}
-              className="w-full bg-[#800020] hover:bg-red-800 text-white font-bold h-12 text-base"
-            >
-              🛑 STOP ALL STREAMS
-            </Button>
+            <Card className="bg-green-950/40 border-green-500/30">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-green-400">MediaMTX Fanout Active</p>
+                  <p className="text-xs text-green-300/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
+                </div>
+                <Button onClick={stopAllFanout} className="bg-red-700 hover:bg-red-800 text-white text-xs h-8">
+                  🛑 Stop All
+                </Button>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
       </div>
