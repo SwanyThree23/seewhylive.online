@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Video, Calendar, TrendingUp, DollarSign, Users, Radio,
-  Zap, Scissors, Star, Clock, Flame, Target, BarChart2
+  Zap, Scissors, Star, Clock, Flame, Target, BarChart2, Monitor, Library
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RecordingManager from '../components/content/RecordingManager';
+import VideoLibrary from '../components/vod/VideoLibrary';
+import OBSBridge from '../components/obs/OBSBridge';
 import { toast } from 'sonner';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -302,12 +304,18 @@ export default function CreatorDashboardPage() {
 
         {/* Main content tabs */}
         <Tabs defaultValue="past-streams">
-          <TabsList className="bg-white/5 border border-white/10">
+          <TabsList className="bg-white/5 border border-white/10 flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="past-streams" className="text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
               <Video className="w-4 h-4 mr-2" /> Past Streams
             </TabsTrigger>
             <TabsTrigger value="recordings" className="text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
               <Video className="w-4 h-4 mr-2" /> Recordings
+            </TabsTrigger>
+            <TabsTrigger value="video-library" className="text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
+              <Library className="w-4 h-4 mr-2" /> VOD Library
+            </TabsTrigger>
+            <TabsTrigger value="obs" className="text-white/50 data-[state=active]:text-[#00d4ff] data-[state=active]:bg-[#00d4ff]/10">
+              <Monitor className="w-4 h-4 mr-2" /> OBS Bridge
             </TabsTrigger>
             <TabsTrigger value="upcoming" className="text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
               <Calendar className="w-4 h-4 mr-2" /> Scheduled ({scheduledStreams.length})
@@ -360,6 +368,14 @@ export default function CreatorDashboardPage() {
           </TabsContent>
           <TabsContent value="recordings" className="mt-4">
             <RecordingManager userId={user?.id} />
+          </TabsContent>
+          <TabsContent value="video-library" className="mt-4">
+            <VideoLibrary creatorId={user?.id} />
+          </TabsContent>
+          <TabsContent value="obs" className="mt-4">
+            <div className="max-w-lg">
+              <OBSBridge />
+            </div>
           </TabsContent>
           <TabsContent value="upcoming" className="mt-4">
             {scheduledStreams.length === 0 ? (

@@ -1,0 +1,77 @@
+{
+  "name": "VODVideo",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Source live room"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Source/playback URL"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "trim_start": {
+      "type": "number",
+      "default": 0,
+      "description": "Trim start in seconds"
+    },
+    "trim_end": {
+      "type": "number",
+      "description": "Trim end in seconds"
+    },
+    "chapters": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Array of {time, title} chapter markers"
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "unlisted"
+      ],
+      "default": "draft"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "category": {
+      "type": "string"
+    },
+    "is_clipped": {
+      "type": "boolean",
+      "default": false,
+      "description": "Was this trimmed from a longer stream"
+    }
+  },
+  "required": [
+    "creator_id",
+    "title"
+  ]
+}

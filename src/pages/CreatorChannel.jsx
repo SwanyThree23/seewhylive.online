@@ -12,6 +12,7 @@ import {
   Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown
 } from 'lucide-react';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import VideoLibrary from '../components/vod/VideoLibrary';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -194,42 +195,7 @@ export default function CreatorChannel() {
 
           {/* Videos Tab */}
           <TabsContent value="videos" className="mt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...pastRooms, ...recordings].slice(0, 12).map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  whileHover={{ scale: 1.03, y: -3 }}
-                >
-                  <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)] text-white overflow-hidden cursor-pointer group">
-                    <div className="h-36 bg-gradient-to-br from-[#1a0a20] to-[#0d0618] flex items-center justify-center relative">
-                      {item.thumbnail_url
-                        ? <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover" />
-                        : <Play className="w-10 h-10 text-white/20" />}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Play className="w-10 h-10 text-white" />
-                      </div>
-                      {item.duration_seconds && (
-                        <Badge className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] px-1.5 py-0.5 border-0">
-                          {Math.floor(item.duration_seconds / 60)}m
-                        </Badge>
-                      )}
-                    </div>
-                    <CardContent className="p-3">
-                      <p className="text-sm font-semibold text-white line-clamp-1">{item.title}</p>
-                      <div className="flex items-center gap-2 mt-1 text-[10px] text-white/40">
-                        <span>{item.views || item.viewer_count || 0} views</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-            {[...pastRooms, ...recordings].length === 0 && (
-              <p className="text-center text-white/30 py-12">No videos yet</p>
-            )}
+            <VideoLibrary creatorId={userId} />
           </TabsContent>
 
           {/* Schedule Tab */}
