@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
@@ -7,8 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
+import GlobalSearch from '@/components/shared/GlobalSearch';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import { AnimatePresence } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
+  const [showSearch, setShowSearch] = useState(false);
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -25,8 +29,23 @@ export default function Layout({ children, currentPageName }) {
 
   const isAdmin = user?.role === 'admin';
 
+  // Global keyboard shortcut ⌘K / Ctrl+K for search
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch(s => !s);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
+      <AnimatePresence>
+        {showSearch && <GlobalSearch onClose={() => setShowSearch(false)} />}
+      </AnimatePresence>
       <style>{`
         :root {
           --primary: 25 45% 35%;
@@ -80,6 +99,14 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowSearch(true)}
+              className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors"
+            >
+              <SearchIcon className="w-4 h-4" />
+              <span className="text-xs">Search...</span>
+              <kbd className="text-[10px] bg-white border rounded px-1 ml-1">⌘K</kbd>
+            </button>
             <NotificationBell />
             <Link to={createPageUrl('LiveRoom')}>
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-[#800020] border border-[#800020]/30 hover:bg-[#800020]/10">
@@ -120,16 +147,16 @@ export default function Layout({ children, currentPageName }) {
         </nav>
       </div>
 
-      {/* Beta Banner */}
-      <div className="bg-amber-500 text-black text-xs font-semibold py-1.5 px-4 flex items-center justify-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
-        SeeWhy LIVE is in <strong>Beta Testing</strong> — All features active. Report issues to your admin.
-        <Link to={createPageUrl('BetaStatus')} className="underline hover:no-underline">View status →</Link>
+      {/* Status Banner */}
+      <div className="bg-green-600 text-white text-xs font-semibold py-1.5 px-4 flex items-center justify-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+        SeeWhy LIVE — <strong>Production Ready</strong> · 28 features live · Multi-user enabled
+        <Link to={createPageUrl('BetaStatus')} className="underline hover:no-underline ml-1">View platform status →</Link>
       </div>
 
       {/* Main Content */}
       <main className="pb-16 md:pb-0">
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
       </main>
     </div>
   );

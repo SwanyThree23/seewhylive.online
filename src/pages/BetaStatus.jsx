@@ -14,27 +14,32 @@ import {
 const FEATURE_STATUS = [
   { name: 'Live Room Streaming', status: 'live', icon: Radio, note: 'Audio/Video/Hybrid rooms, participant management, hand-raise' },
   { name: 'Real-Time Chat', status: 'live', icon: MessageSquare, note: 'Full chat with moderation, emoji, quick reactions' },
-  { name: 'Multi-Stream / RTMP', status: 'live', icon: Globe, note: 'Stream to Twitch, YouTube, TikTok simultaneously' },
-  { name: 'Creator Subscriptions', status: 'live', icon: Star, note: 'Bronze/Silver/Gold/Diamond tiers with benefits' },
+  { name: 'Multi-Stream / RTMP Fanout', status: 'live', icon: Globe, note: 'Simultaneous broadcast to YouTube, Twitch, TikTok, Facebook via MediaMTX' },
+  { name: 'Creator Subscriptions', status: 'live', icon: Star, note: 'Bronze/Silver/Gold/Diamond tiers with Stripe Connect — 90/10 split' },
   { name: 'Tipping & Transactions', status: 'live', icon: DollarSign, note: '90/10 split, loyalty points awarded, confetti animation' },
   { name: 'Loyalty Program', status: 'live', icon: Star, note: 'Points, leaderboard, redeemable rewards' },
-  { name: 'AI Content Moderation', status: 'live', icon: Shield, note: 'Auto-flags violations, admin review queue' },
-  { name: 'Communities', status: 'live', icon: Users, note: 'Create, join, manage, announcements, challenges' },
+  { name: 'AI Content Moderation', status: 'live', icon: Shield, note: 'Auto-flags violations, admin review queue, confidence scoring' },
+  { name: 'Communities', status: 'live', icon: Users, note: 'Create, join, manage, announcements, challenges, spotlights' },
   { name: 'Stream Scheduler', status: 'live', icon: Clock, note: 'Calendar view, recurring streams, countdown timers' },
-  { name: 'Analytics Dashboard', status: 'live', icon: BarChart2, note: 'Stream stats, revenue, viewer metrics, exports' },
-  { name: 'Notifications System', status: 'live', icon: Zap, note: 'Real-time bell with badge, tip/sub/mention alerts' },
-  { name: 'Overlay Editor', status: 'live', icon: Globe, note: 'Drag-drop stream overlay builder' },
-  { name: 'Live Auctions', status: 'live', icon: DollarSign, note: 'In-stream bidding with buyout prices' },
+  { name: 'Analytics Dashboard', status: 'live', icon: BarChart2, note: 'Stream stats, revenue, viewer metrics, PDF/CSV/JSON export' },
+  { name: 'Notifications System', status: 'live', icon: Zap, note: 'Real-time bell with badge, tip/sub/mention/room alerts' },
+  { name: 'Overlay Editor', status: 'live', icon: Globe, note: 'Drag-drop stream overlay builder with live preview' },
+  { name: 'Live Auctions', status: 'live', icon: DollarSign, note: 'In-stream bidding with buyout prices and bid history' },
   { name: 'Sound Alerts', status: 'live', icon: Zap, note: 'Custom triggers for donations, new subs, milestones' },
   { name: 'Pay-Per-View Events', status: 'live', icon: DollarSign, note: 'Gated stream access with purchase flow' },
-  { name: 'VOD / Stream Replay', status: 'beta', icon: Radio, note: 'Enhancement Suite preview — recording pipeline via MediaMTX' },
-  { name: 'Social Sharing Suite', status: 'beta', icon: Globe, note: 'One-click share to 8 platforms with referral tracking' },
-  { name: 'Stream Chat Emojis', status: 'beta', icon: MessageSquare, note: 'Full emoji picker with categories, search, floating reactions' },
+  { name: 'VOD Library & Editing', status: 'live', icon: Radio, note: 'Save past streams, trim clips, chapter markers, publish to profile' },
+  { name: 'OBS Studio Bridge', status: 'live', icon: Globe, note: 'WebSocket bridge — scene switching, start/stop recording, live stats' },
+  { name: 'Watch Party', status: 'live', icon: Users, note: 'Synchronized video playback with real-time participants and chat' },
+  { name: 'Global Search', status: 'live', icon: Zap, note: '⌘K spotlight search across rooms and communities' },
+  { name: 'Public Creator Profiles', status: 'live', icon: Users, note: 'Public profile pages with VOD library and live room links' },
+  { name: 'Social Sharing Suite', status: 'live', icon: Globe, note: 'One-click share to 8 platforms with referral tracking' },
+  { name: 'Stream Chat Emojis', status: 'live', icon: MessageSquare, note: 'Full emoji picker with categories, search, floating reactions' },
   { name: 'Co-Streaming / Guests', status: 'live', icon: Users, note: 'Multi-guest panel, RTMP guest connections' },
   { name: 'Collaborative Whiteboard', status: 'live', icon: Globe, note: 'Real-time whiteboard inside rooms' },
   { name: 'Newsletter', status: 'live', icon: MessageSquare, note: 'Email campaigns to community members' },
   { name: 'Data Export', status: 'live', icon: BarChart2, note: 'PDF/CSV/JSON export of all user data' },
   { name: 'User Invite System', status: 'live', icon: UserPlus, note: 'Admin & user invite with role assignment' },
+  { name: 'Error Boundaries', status: 'live', icon: Shield, note: 'Production-grade error recovery on all pages and components' },
 ];
 
 const STATUS_CONFIG = {
@@ -69,10 +74,10 @@ export default function BetaStatusPage() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" />
-              <Badge className="bg-amber-500 text-black font-bold text-sm px-3">BETA ACTIVE</Badge>
+              <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+              <Badge className="bg-green-600 text-white font-bold text-sm px-3">PRODUCTION READY</Badge>
             </div>
-            <h1 className="text-3xl font-bold">SeeWhy LIVE — Beta Status</h1>
+            <h1 className="text-3xl font-bold">SeeWhy LIVE — Platform Status</h1>
             <p className="text-muted-foreground">Full-stack multi-user platform — all systems operational</p>
           </div>
           <Link to={createPageUrl('InviteUsers')}>
@@ -144,25 +149,25 @@ export default function BetaStatusPage() {
           </CardContent>
         </Card>
 
-        {/* Beta testers guide */}
-        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
+        {/* Testers guide */}
+        <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-green-200">
           <CardHeader>
-            <CardTitle className="text-amber-900">Beta Tester Guide</CardTitle>
+            <CardTitle className="text-green-900">Getting Started Guide</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { icon: '🎬', text: 'Create a room from the top nav and go live — try audio, video, and hybrid modes' },
-              { icon: '💬', text: 'Join another user\'s room to test chat, emoji reactions, tipping, and hand-raise' },
-              { icon: '💰', text: 'Set up your subscription tiers in Memberships — test the 90/10 payout flow' },
-              { icon: '🌟', text: 'Configure a Loyalty Program with custom rewards for your viewers' },
-              { icon: '📡', text: 'Add RTMP destinations in Multi-Stream Manager to broadcast to external platforms' },
-              { icon: '🤖', text: 'Visit AI Moderation to review any flagged content from the Guardian AI system' },
-              { icon: '📊', text: 'Check Analytics and Stream Analytics for real data from your sessions' },
-              { icon: '🛡️', text: 'Admin users: visit Moderation Dashboard for platform-wide oversight' },
+              { icon: '🎬', text: 'Create a room and go live — try audio, video, and hybrid modes with scene switching' },
+              { icon: '📺', text: 'Use the Creator Dashboard → OBS Bridge tab to connect OBS Studio via WebSocket' },
+              { icon: '🎞️', text: 'Save past streams to your VOD Library, trim clips, and add chapter markers' },
+              { icon: '🎉', text: 'Start a Watch Party to sync video playback with friends in real-time' },
+              { icon: '💰', text: 'Set up subscription tiers + Stripe Connect for the 90/10 payout flow' },
+              { icon: '📡', text: 'Use Multi-Stream Manager to fanout to YouTube, Twitch, TikTok, and Facebook simultaneously' },
+              { icon: '🤖', text: 'Run AI Moderation scans on chat — review flagged content from the admin queue' },
+              { icon: '🔍', text: 'Press ⌘K (or Ctrl+K) anywhere for instant spotlight search across rooms & communities' },
             ].map((tip, i) => (
               <div key={i} className="flex items-start gap-3">
                 <span className="text-lg">{tip.icon}</span>
-                <p className="text-sm text-amber-800">{tip.text}</p>
+                <p className="text-sm text-green-800">{tip.text}</p>
               </div>
             ))}
           </CardContent>
