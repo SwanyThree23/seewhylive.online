@@ -92,6 +92,8 @@ import VideoPost from './pages/VideoPost';
 import FeaturedContent from './pages/FeaturedContent';
 import WatchParty from './pages/WatchParty';
 import PublicProfile from './pages/PublicProfile';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import __Layout from './Layout.jsx';
 
 
@@ -141,6 +143,8 @@ export const PAGES = {
     "FeaturedContent": FeaturedContent,
     "WatchParty": WatchParty,
     "PublicProfile": PublicProfile,
+    "TermsOfService": TermsOfService,
+    "PrivacyPolicy": PrivacyPolicy,
 }
 
 export const pagesConfig = {

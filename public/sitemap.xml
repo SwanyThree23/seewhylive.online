@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://seewhy.live/</loc><priority>1.0</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhy.live/Discover</loc><priority>0.9</priority><changefreq>hourly</changefreq></url>
+  <url><loc>https://seewhy.live/Communities</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhy.live/FeaturedContent</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhy.live/StreamScheduler</loc><priority>0.7</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhy.live/TermsOfService</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://seewhy.live/PrivacyPolicy</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+</urlset>

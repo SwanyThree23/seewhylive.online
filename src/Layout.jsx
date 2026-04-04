@@ -4,7 +4,7 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film } from 'lucide-react';
+import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -24,7 +24,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
     { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
-    { name: 'Featured', icon: Zap, href: createPageUrl('FeaturedContent') },
+    { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
   ];
 
   const isAdmin = user?.role === 'admin';
@@ -158,6 +158,18 @@ export default function Layout({ children, currentPageName }) {
       <main className="pb-16 md:pb-0">
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
+
+      {/* Footer */}
+      <footer className="hidden md:block border-t bg-white/80 py-4 px-6 text-xs text-muted-foreground">
+        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
+          <span>© {new Date().getFullYear()} SeeWhy LIVE. All rights reserved.</span>
+          <div className="flex items-center gap-4">
+            <Link to={createPageUrl('TermsOfService')} className="hover:text-foreground transition-colors">Terms of Service</Link>
+            <Link to={createPageUrl('PrivacyPolicy')} className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to={createPageUrl('BetaStatus')} className="hover:text-foreground transition-colors">Platform Status</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
