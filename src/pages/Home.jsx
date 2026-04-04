@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +19,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const qc = useQueryClient();
@@ -44,11 +46,21 @@ export default function Home() {
     enabled: !!user,
   });
 
+  const { data: creatorProfile } = useQuery({
+    queryKey: ['creatorProfile', user?.id],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
+    enabled: !!user,
+  });
+
   useEffect(() => {
-    if (user && (!preferences || !preferences.onboarding_completed)) {
+    if (!user) return;
+    if (!preferences || !preferences.onboarding_completed) {
       setTimeout(() => setShowOnboarding(true), 1000);
+    } else if (creatorProfile === null || creatorProfile === undefined) {
+      // Onboarding done but no creator profile yet — prompt after short delay
+      setTimeout(() => setShowProfileSetup(true), 1500);
     }
-  }, [user, preferences]);
+  }, [user, preferences, creatorProfile]);
 
   const { data: liveRooms = [], isLoading: loadingLive } = useQuery({
     queryKey: ['rooms', 'live'],
@@ -84,6 +96,7 @@ export default function Home() {
   return (
     <>
       <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <CreatorProfileSetup user={user} isOpen={showProfileSetup} onClose={() => setShowProfileSetup(false)} />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <QuickActionPanel isOpen={showQuickActions} onClose={() => setShowQuickActions(false)} />
       

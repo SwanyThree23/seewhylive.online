@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +30,7 @@ import MobileStreamControls from '../components/live/MobileStreamControls';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
-  Video, Monitor, Mic, MicOff, StopCircle, Circle,
+  Video, VideoOff, Monitor, Mic, MicOff, StopCircle, Circle,
   MessageSquare, Users, BarChart2, ShoppingBag, HelpCircle, Share2,
   Clock, Crown, AlignLeft, DollarSign, Lock
 } from 'lucide-react';
@@ -70,6 +73,12 @@ export default function LiveRoom() {
   const [paymentsOpen, setPaymentsOpen] = useState(false);
   const [paywallUnlocked, setPaywallUnlocked] = useState(false);
   const timerRef = useRef(null);
+
+  // Real browser media (mic + camera)
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, } = useLocalMedia({ audio: true, video: true });
+
+  // Keep micMuted in sync with actual track state
+  const handleMicToggle = () => { toggleAudio(); setMicMuted(v => !v); };
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -416,13 +425,52 @@ export default function LiveRoom() {
                     </div>
                   </div>
                 ) : (
-                  <GuestGrid
-                    participants={participants}
-                    isHost={isHost}
-                    hostId={room?.host_id}
-                    maxGuests={20}
-                    onInvite={copyInvite}
-                  />
+                  <div className="w-full h-full flex flex-col">
+                    {/* Local self-view: top-right PiP when others on stage, else full */}
+                    {participants.length > 0 ? (
+                      <>
+                        <GuestGrid
+                          participants={participants}
+                          isHost={isHost}
+                          hostId={room?.host_id}
+                          maxGuests={20}
+                          onInvite={copyInvite}
+                        />
+                        {/* Self-view picture-in-picture */}
+                        <div className="absolute top-3 right-3 w-36 h-24 z-10 rounded-lg overflow-hidden shadow-xl border border-[#d4af37]/30">
+                          <LocalVideoTile
+                            stream={localStream}
+                            audioEnabled={audioEnabled}
+                            videoEnabled={videoEnabled}
+                            userName={user?.full_name}
+                            isHost={isHost}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6">
+                        <div className="w-full max-w-sm aspect-video rounded-xl overflow-hidden">
+                          <LocalVideoTile
+                            stream={localStream}
+                            audioEnabled={audioEnabled}
+                            videoEnabled={videoEnabled}
+                            userName={user?.full_name}
+                            isHost={isHost}
+                          />
+                        </div>
+                        {mediaError && (
+                          <div className="w-full max-w-sm">
+                            <WebRTCSetupBanner
+                              error={mediaError}
+                              audioEnabled={audioEnabled}
+                              videoEnabled={videoEnabled}
+                              onRetry={() => window.location.reload()}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </motion.div>
             </AnimatePresence>
@@ -456,14 +504,19 @@ export default function LiveRoom() {
             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity bg-black/60 rounded-full px-4 py-2 z-20 pointer-events-none group-hover:pointer-events-auto">
               <button
                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all pointer-events-auto ${
-                  micMuted ? 'bg-red-700/80 border-red-600 text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                  !audioEnabled ? 'bg-red-700/80 border-red-600 text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                 }`}
-                onClick={() => setMicMuted(!micMuted)}
+                onClick={handleMicToggle}
               >
-                {micMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {!audioEnabled ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center border-2 bg-white/10 border-white/20 text-white hover:bg-white/20 pointer-events-auto">
-                <Video className="w-4 h-4" />
+              <button
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all pointer-events-auto ${
+                  !videoEnabled ? 'bg-red-700/80 border-red-600 text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                }`}
+                onClick={toggleVideo}
+              >
+                {!videoEnabled ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
               </button>
               <button className="w-10 h-10 rounded-full flex items-center justify-center border-2 bg-white/10 border-white/20 text-white hover:bg-white/20 pointer-events-auto">
                 <Monitor className="w-4 h-4" />
@@ -606,8 +659,8 @@ export default function LiveRoom() {
 
       {/* Mobile bottom strip */}
       <div className="md:hidden h-14 shrink-0 flex items-center justify-around border-t border-white/10 bg-[rgba(13,6,24,0.95)] px-4">
-        <button onClick={() => setMicMuted(!micMuted)} className={`flex flex-col items-center gap-0.5 ${micMuted ? 'text-red-400' : 'text-white/60'}`}>
-          {micMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+        <button onClick={handleMicToggle} className={`flex flex-col items-center gap-0.5 ${!audioEnabled ? 'text-red-400' : 'text-white/60'}`}>
+          {!audioEnabled ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           <span className="text-[9px]">Mic</span>
         </button>
         <button onClick={() => setActiveTab('chat')} className="flex flex-col items-center gap-0.5 text-white/60">
