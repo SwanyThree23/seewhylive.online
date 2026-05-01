@@ -94,6 +94,7 @@ import WatchParty from './pages/WatchParty';
 import PublicProfile from './pages/PublicProfile';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import StageCleanup from './pages/StageCleanup';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +146,7 @@ export const PAGES = {
     "PublicProfile": PublicProfile,
     "TermsOfService": TermsOfService,
     "PrivacyPolicy": PrivacyPolicy,
+    "StageCleanup": StageCleanup,
 }
 
 export const pagesConfig = {

@@ -13,6 +13,7 @@ import {
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RecordingManager from '../components/content/RecordingManager';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import VideoLibrary from '../components/vod/VideoLibrary';
 import OBSBridge from '../components/obs/OBSBridge';
 import { toast } from 'sonner';
@@ -116,6 +117,7 @@ export default function CreatorDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#0d0618] text-white p-4 md:p-6">
+      <MilestoneAlerts creatorId={user?.id} />
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Header */}

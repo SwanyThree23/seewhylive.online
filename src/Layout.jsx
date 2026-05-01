@@ -4,7 +4,7 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard } from 'lucide-react';
+import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard, Layers } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -25,6 +25,10 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
     { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  ];
+
+  const adminNav = [
+    { name: 'Stage Cleanup', icon: Layers, href: createPageUrl('StageCleanup') },
   ];
 
   const isAdmin = user?.role === 'admin';
@@ -108,6 +112,14 @@ export default function Layout({ children, currentPageName }) {
               <kbd className="text-[10px] bg-white border rounded px-1 ml-1">⌘K</kbd>
             </button>
             <NotificationBell />
+            {isAdmin && adminNav.map(item => (
+              <Link key={item.name} to={item.href}>
+                <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-orange-600 border border-orange-300/40 hover:bg-orange-50">
+                  <item.icon className="w-3.5 h-3.5" />
+                  {item.name}
+                </Button>
+              </Link>
+            ))}
             <Link to={createPageUrl('LiveRoom')}>
               <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-[#800020] border border-[#800020]/30 hover:bg-[#800020]/10">
                 <Radio className="w-3.5 h-3.5" />
