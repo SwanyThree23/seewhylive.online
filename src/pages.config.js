@@ -95,6 +95,7 @@ import PublicProfile from './pages/PublicProfile';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import StageCleanup from './pages/StageCleanup';
+import VODLibrary from './pages/VODLibrary';
 import __Layout from './Layout.jsx';
 
 
@@ -147,6 +148,7 @@ export const PAGES = {
     "TermsOfService": TermsOfService,
     "PrivacyPolicy": PrivacyPolicy,
     "StageCleanup": StageCleanup,
+    "VODLibrary": VODLibrary,
 }
 
 export const pagesConfig = {

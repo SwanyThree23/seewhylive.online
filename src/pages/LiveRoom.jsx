@@ -27,6 +27,8 @@ import StreamMetadata from '../components/live/StreamMetadata';
 import StreamGoals from '../components/live/StreamGoals';
 import RaidPanel from '../components/live/RaidPanel';
 import MobileStreamControls from '../components/live/MobileStreamControls';
+import StreamChatbot from '../components/live/StreamChatbot';
+import PKBattle from '../components/live/PKBattle';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -341,6 +343,19 @@ export default function LiveRoom() {
               <AudioMixer micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} />
               <LowerThirdsBanner onBannerChange={setBannerConfig} />
               {isHost && <ChatModeration />}
+              <StreamChatbot
+                roomId={roomId}
+                isHost={isHost}
+                elapsedSeconds={elapsedSeconds}
+                hostName={user?.full_name}
+                room={room}
+              />
+              <PKBattle
+                roomId={roomId}
+                isHost={isHost}
+                hostName={user?.full_name}
+                viewerCount={viewerCount}
+              />
               <PrivatePanel isHost={isHost} currentUser={user} />
               {!isHost && !paywallUnlocked && (
                 <PaywallGate
