@@ -98,6 +98,7 @@ import StageCleanup from './pages/StageCleanup';
 import VODLibrary from './pages/VODLibrary';
 import PKBattlePage from './pages/PKBattlePage';
 import RTMPServer from './pages/RTMPServer';
+import LiveBattles from './pages/LiveBattles';
 import __Layout from './Layout.jsx';
 
 
@@ -153,6 +154,7 @@ export const PAGES = {
     "VODLibrary": VODLibrary,
     "PKBattlePage": PKBattlePage,
     "RTMPServer": RTMPServer,
+    "LiveBattles": LiveBattles,
 }
 
 export const pagesConfig = {

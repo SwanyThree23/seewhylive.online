@@ -6,7 +6,7 @@ import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap, Video, Star } from 'lucide-react';
+import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap, Video, Star, Swords } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
@@ -185,6 +185,11 @@ export default function Home() {
               <Link to={createPageUrl('VODLibrary')}>
                 <span className="inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full border border-white/20 transition-all cursor-pointer">
                   <Video className="w-3 h-3" /> VOD Library
+                </span>
+              </Link>
+              <Link to={createPageUrl('LiveBattles')}>
+                <span className="inline-flex items-center gap-1.5 text-xs bg-red-600/30 hover:bg-red-600/50 text-white px-3 py-1.5 rounded-full border border-red-500/30 transition-all cursor-pointer">
+                  <Swords className="w-3 h-3" /> PK Battles
                 </span>
               </Link>
             </div>

@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, Users, Plus, Link as LinkIcon, Youtube, Video, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import AggregatedChat from '../components/live/AggregatedChat';
+import ViewerRail from '../components/watchparty/ViewerRail';
+import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 
 function getYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -300,6 +302,9 @@ export default function WatchPartyPage() {
           )}
         </div>
 
+        {/* Viewer rail */}
+        <ViewerRail members={members} hostId={party.host_id} maxVisible={20} />
+
         {/* Player */}
         <div className="flex-1 relative">
           {ytId ? (
@@ -325,12 +330,15 @@ export default function WatchPartyPage() {
           )}
         </div>
 
-        {/* Viewer controls (non-host) */}
-        {!isHost && (
-          <div className="bg-gray-900 border-t border-white/10 px-4 py-2 text-xs text-white/40 text-center shrink-0">
-            Playback is controlled by the host · You are watching in sync
-          </div>
-        )}
+        {/* Reactions */}
+        <div className="relative bg-gray-900 border-t border-white/10 shrink-0">
+          <ReactionOverlay partyId={partyId} currentUser={user} />
+          {!isHost && (
+            <div className="px-4 pb-2 text-[10px] text-white/30 text-center">
+              Playback controlled by host · Watching in sync
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── CHAT SIDEBAR ── */}

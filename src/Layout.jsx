@@ -4,7 +4,7 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard, Layers } from 'lucide-react';
+import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard, Layers, Swords } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -25,6 +25,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
     { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+    { name: 'Battles', icon: Swords, href: createPageUrl('LiveBattles') },
   ];
 
   const adminNav = [
@@ -163,7 +164,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Status Banner */}
       <div className="bg-green-600 text-white text-xs font-semibold py-1.5 px-4 flex items-center justify-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-        SeeWhy LIVE — <strong>Production Ready</strong> · 28 features live · Multi-user enabled
+        SeeWhy LIVE — <strong>Production Ready</strong> · 34 features live · Multi-user enabled
         <Link to={createPageUrl('BetaStatus')} className="underline hover:no-underline ml-1">View platform status →</Link>
       </div>
 
