@@ -10,6 +10,7 @@ const COMMANDS = [
   { trigger: '!host', description: 'Who is hosting' },
   { trigger: '!social', description: 'Social links' },
   { trigger: '!discord', description: 'Discord invite' },
+  { trigger: '!commands', description: 'List all commands' },
 ];
 
 const BOT_NAME = '🤖 SeeWhyBot';
@@ -45,6 +46,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
     if (t === '!host') return `👑 ${hostName || 'Unknown'} is your host today!`;
     if (t === '!social') return `🔗 Follow on all platforms to stay connected!`;
     if (t === '!discord') return `💬 Join our Discord community for more!`;
+    if (t === '!commands') return `📋 Commands: !uptime · !host · !social · !discord · and custom commands. Ask a question ending with "?" for AI answers!`;
     // Q&A: if message ends with "?" use AI
     const custom = customList.find(c => t === c.trigger.toLowerCase());
     if (custom) return custom.reply;

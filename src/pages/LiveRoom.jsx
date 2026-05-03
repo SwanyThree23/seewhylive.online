@@ -29,6 +29,7 @@ import RaidPanel from '../components/live/RaidPanel';
 import MobileStreamControls from '../components/live/MobileStreamControls';
 import StreamChatbot from '../components/live/StreamChatbot';
 import PKBattle from '../components/live/PKBattle';
+import WebhookHooks from '../components/live/WebhookHooks';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -356,6 +357,7 @@ export default function LiveRoom() {
                 hostName={user?.full_name}
                 viewerCount={viewerCount}
               />
+              <WebhookHooks roomId={roomId} isHost={isHost} />
               <PrivatePanel isHost={isHost} currentUser={user} />
               {!isHost && !paywallUnlocked && (
                 <PaywallGate

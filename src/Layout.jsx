@@ -29,6 +29,7 @@ export default function Layout({ children, currentPageName }) {
 
   const adminNav = [
     { name: 'Stage Cleanup', icon: Layers, href: createPageUrl('StageCleanup') },
+    { name: 'RTMP Server', icon: Radio, href: createPageUrl('RTMPServer') },
   ];
 
   const isAdmin = user?.role === 'admin';
