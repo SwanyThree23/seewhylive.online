@@ -1,0 +1,37 @@
+{
+  "name": "OnlinePresence",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "away",
+        "busy",
+        "offline"
+      ],
+      "default": "online"
+    },
+    "current_room_id": {
+      "type": "string",
+      "description": "Room the user is currently in"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

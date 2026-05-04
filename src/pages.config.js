@@ -99,6 +99,8 @@ import VODLibrary from './pages/VODLibrary';
 import PKBattlePage from './pages/PKBattlePage';
 import RTMPServer from './pages/RTMPServer';
 import LiveBattles from './pages/LiveBattles';
+import AdminDashboard from './pages/AdminDashboard';
+import Leaderboard from './pages/Leaderboard';
 import __Layout from './Layout.jsx';
 
 
@@ -155,6 +157,8 @@ export const PAGES = {
     "PKBattlePage": PKBattlePage,
     "RTMPServer": RTMPServer,
     "LiveBattles": LiveBattles,
+    "AdminDashboard": AdminDashboard,
+    "Leaderboard": Leaderboard,
 }
 
 export const pagesConfig = {

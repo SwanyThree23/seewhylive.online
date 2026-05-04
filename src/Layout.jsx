@@ -4,12 +4,13 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard, Layers, Swords } from 'lucide-react';
+import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard, Layers, Swords, Trophy, Shield } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence } from 'framer-motion';
+import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 
 export default function Layout({ children, currentPageName }) {
   const [showSearch, setShowSearch] = useState(false);
@@ -17,6 +18,9 @@ export default function Layout({ children, currentPageName }) {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Register online presence globally
+  usePresenceHeartbeat();
 
   const navigation = [
     { name: 'Home', icon: Home, href: createPageUrl('Home') },
@@ -26,9 +30,11 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
     { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
     { name: 'Battles', icon: Swords, href: createPageUrl('LiveBattles') },
+    { name: 'Leaderboard', icon: Trophy, href: createPageUrl('Leaderboard') },
   ];
 
   const adminNav = [
+    { name: 'Admin', icon: Shield, href: createPageUrl('AdminDashboard') },
     { name: 'Stage Cleanup', icon: Layers, href: createPageUrl('StageCleanup') },
     { name: 'RTMP Server', icon: Radio, href: createPageUrl('RTMPServer') },
   ];

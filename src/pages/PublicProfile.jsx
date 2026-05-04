@@ -9,6 +9,9 @@ import { CheckCircle, Users, Radio, Video, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import VideoLibrary from '../components/vod/VideoLibrary';
+import FollowButton from '../components/shared/FollowButton';
+import PresenceDot from '../components/shared/PresenceDot';
+import ShareButtons from '../components/shared/ShareButtons';
 
 export default function PublicProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -63,7 +66,10 @@ export default function PublicProfile() {
           </Avatar>
           <div className="flex-1 pt-10 sm:pt-14">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold">{profile.display_name}</h1>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                {profile.display_name}
+                <PresenceDot userId={userId} size="md" />
+              </h1>
               {profile.is_verified && <CheckCircle className="w-5 h-5 text-blue-500" />}
               <Badge variant="outline" className="capitalize">{profile.category}</Badge>
               {liveRoom && <Badge className="bg-red-500 text-white animate-pulse border-0">🔴 LIVE</Badge>}
@@ -74,7 +80,7 @@ export default function PublicProfile() {
               <span><strong className="text-foreground">{profile.follower_count || 0}</strong> followers</span>
             </div>
           </div>
-          <div className="sm:pt-14 flex gap-2">
+          <div className="sm:pt-14 flex gap-2 flex-wrap">
             {liveRoom && (
               <Link to={createPageUrl('Room') + `?id=${liveRoom.id}`}>
                 <Button className="bg-red-500 hover:bg-red-600 text-white gap-2">
@@ -82,6 +88,8 @@ export default function PublicProfile() {
                 </Button>
               </Link>
             )}
+            <FollowButton targetUserId={userId} targetUserName={profile.display_name} />
+            <ShareButtons url={window.location.href} title={`Check out ${profile.display_name} on SeeWhy LIVE`} />
             <Link to={createPageUrl('CreatorChannel') + `?id=${userId}`}>
               <Button variant="outline" className="gap-2">
                 <ExternalLink className="w-4 h-4" /> Full Channel

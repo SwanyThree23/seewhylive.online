@@ -21,6 +21,7 @@ import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
+import ShareButtons from '../components/shared/ShareButtons';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -278,6 +279,10 @@ export default function RoomPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <ShareButtons
+                url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`}
+                title={room?.title}
+              />
               <Button 
                 variant="outline" 
                 size="icon"
