@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
+import ShareButtons from '../components/shared/ShareButtons';
 
 const MAX_DURATION_SECONDS = 600; // 10 minutes
 
@@ -297,6 +298,9 @@ export default function VideoPost() {
                 <Share2 className="w-4 h-4 mr-2" />
                 Share to Instagram, TikTok & more
               </Button>
+              <div className="flex justify-center">
+                <ShareButtons url={publishedUrl} title={`Watch my video: ${form.title}`} />
+              </div>
               <Link to={createPageUrl('Home')}>
                 <Button variant="ghost" className="w-full text-white/60 hover:text-white">
                   Back to Home

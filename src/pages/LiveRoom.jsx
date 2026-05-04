@@ -30,6 +30,7 @@ import MobileStreamControls from '../components/live/MobileStreamControls';
 import StreamChatbot from '../components/live/StreamChatbot';
 import PKBattle from '../components/live/PKBattle';
 import WebhookHooks from '../components/live/WebhookHooks';
+import LivePoll from '../components/live/LivePoll';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -358,6 +359,7 @@ export default function LiveRoom() {
                 viewerCount={viewerCount}
               />
               <WebhookHooks roomId={roomId} isHost={isHost} />
+              <LivePoll roomId={roomId} isHost={isHost} />
               <PrivatePanel isHost={isHost} currentUser={user} />
               {!isHost && !paywallUnlocked && (
                 <PaywallGate
