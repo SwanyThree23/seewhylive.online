@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Pause, Users, Plus, Link as LinkIcon, Youtube, Video, LogOut } from 'lucide-react';
+import { Users, Plus, Youtube, Video, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import AggregatedChat from '../components/live/AggregatedChat';
 import ViewerRail from '../components/watchparty/ViewerRail';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
+import ShareButtons from '../components/shared/ShareButtons';
 
 function getYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -292,9 +293,11 @@ export default function WatchPartyPage() {
           {isHost && (
             <Badge className="bg-green-600 text-white text-xs">You are host</Badge>
           )}
-          <Button size="sm" variant="ghost" className="text-white/60 hover:text-white" onClick={copyInvite}>
-            <LinkIcon className="w-4 h-4 mr-1" /> Invite
-          </Button>
+          <ShareButtons
+            url={window.location.href}
+            title={`Join my Watch Party: ${party?.title}`}
+            className="text-white [&_button]:text-white/60 [&_button:hover]:text-white"
+          />
           {isHost && (
             <Button size="sm" variant="destructive" onClick={() => endPartyMutation.mutate()}>
               <LogOut className="w-3 h-3 mr-1" /> End

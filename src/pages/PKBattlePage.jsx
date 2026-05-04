@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Share2, Gift, Crown } from 'lucide-react';
+import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import ShareButtons from '../components/shared/ShareButtons';
 
 const BATTLE_DURATION = 180;
 const GIFTS = [
@@ -302,9 +303,11 @@ export default function PKBattlePage() {
         <div className="font-mono text-xl font-black text-[#d4af37] tabular-nums">
           {formatTime(timeLeft)}
         </div>
-        <Button variant="ghost" size="icon" className="w-8 h-8 text-white/40 hover:text-white" onClick={copyLink}>
-          <Share2 className="w-4 h-4" />
-        </Button>
+        <ShareButtons
+          url={window.location.href}
+          title={`Watch this PK Battle: ${battle?.title || 'Live Battle'}`}
+          className="[&_button]:text-white/40 [&_button:hover]:text-white"
+        />
       </div>
 
       {/* Main split-screen */}
