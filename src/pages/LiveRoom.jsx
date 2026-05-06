@@ -31,6 +31,8 @@ import StreamChatbot from '../components/live/StreamChatbot';
 import PKBattle from '../components/live/PKBattle';
 import WebhookHooks from '../components/live/WebhookHooks';
 import LivePoll from '../components/live/LivePoll';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import BattleMode from '../components/streaming/BattleMode';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -610,30 +612,36 @@ export default function LiveRoom() {
                   <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
                 </TabsContent>
 
-                <TabsContent value="guests" className="flex-1 overflow-y-auto m-0 p-3 space-y-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-semibold text-[#d4af37]">Stage Participants</p>
-                    <Badge className="text-[9px] bg-[#800020]/60 text-[#d4af37] border-[#d4af37]/30">{participants.length}</Badge>
-                  </div>
-                  {participants.map(p => (
-                    <div key={p.id} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-xs font-bold text-white shrink-0">
-                        {p.user_name?.charAt(0)?.toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-white truncate flex items-center gap-1">
-                          {p.user_id === room?.host_id && <Crown className="w-3 h-3 text-[#d4af37]" />}
-                          {p.user_name}
-                        </p>
-                        <p className="text-[10px] text-white/40 capitalize">{p.role}</p>
-                      </div>
+                <TabsContent value="guests" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                  {/* Greenroom Queue — real-time director view */}
+                  <GreenroomQueue roomId={roomId} isHost={isHost} />
+
+                  {/* On-stage participants list */}
+                  <div className="border-t border-white/5 pt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[10px] font-semibold text-[#d4af37] uppercase tracking-wider">On Stage</p>
+                      <Badge className="text-[9px] bg-[#800020]/60 text-[#d4af37] border-[#d4af37]/30">{participants.length}</Badge>
                     </div>
-                  ))}
-                  {isHost && (
-                    <button onClick={copyInvite} className="w-full mt-2 py-2 rounded-lg border border-dashed border-[#d4af37]/30 text-[11px] text-[#d4af37]/60 hover:border-[#d4af37] hover:text-[#d4af37] transition-all">
-                      + Invite Guest
-                    </button>
-                  )}
+                    {participants.map(p => (
+                      <div key={p.id} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5 mb-1">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                          {p.user_name?.charAt(0)?.toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-semibold text-white truncate flex items-center gap-1">
+                            {p.user_id === room?.host_id && <Crown className="w-3 h-3 text-[#d4af37]" />}
+                            {p.user_name}
+                          </p>
+                          <p className="text-[9px] text-white/40 capitalize">{p.role}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Battle Mode widget */}
+                  <div className="border-t border-white/5 pt-3">
+                    <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name} participants={participants} />
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="analytics" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">

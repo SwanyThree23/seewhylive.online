@@ -3,12 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Radio } from 'lucide-react';
+import { Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Radio, Swords, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuestRTMPPanel from '@/components/streaming/GuestRTMPPanel';
+import BattleMode from '@/components/streaming/BattleMode';
+import GreenroomQueue from '@/components/streaming/GreenroomQueue';
 
-export default function MultiGuestPanel({ participants = [], spotlightId, onSpotlight, maxGuests = 20 }) {
-  const [layout, setLayout] = useState('grid'); // 'grid' or 'spotlight'
+export default function MultiGuestPanel({ participants = [], spotlightId, onSpotlight, maxGuests = 20, roomId, isHost }) {
+  const [layout, setLayout] = useState('grid'); // 'grid' | 'spotlight' | 'battle'
+  const [tab, setTab] = useState('stage'); // 'stage' | 'greenroom'
 
   const speakers = participants
     .filter(p => ['host', 'co-host', 'speaker', 'guest'].includes(p.role))
@@ -32,27 +35,42 @@ export default function MultiGuestPanel({ participants = [], spotlightId, onSpot
           </Badge>
         </div>
         
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant={layout === 'grid' ? 'default' : 'outline'}
-            onClick={() => setLayout('grid')}
-            className="bg-[#800020] text-[#D4AF37] border-[#D4AF37]"
-          >
-            Grid
-          </Button>
-          <Button
-            size="sm"
-            variant={layout === 'spotlight' ? 'default' : 'outline'}
-            onClick={() => setLayout('spotlight')}
-            className="bg-[#800020] text-[#D4AF37] border-[#D4AF37]"
-          >
-            Spotlight
-          </Button>
+        <div className="flex gap-1">
+          {['grid', 'spotlight', 'battle'].map(l => (
+            <Button
+              key={l}
+              size="sm"
+              variant={layout === l ? 'default' : 'outline'}
+              onClick={() => setLayout(l)}
+              className={`text-[10px] h-6 px-2 ${layout === l ? 'bg-[#800020] text-[#D4AF37] border-[#D4AF37]' : 'border-white/20 text-white/50 bg-transparent'}`}
+            >
+              {l === 'battle' ? <Swords className="w-3 h-3" /> : l.charAt(0).toUpperCase() + l.slice(1)}
+            </Button>
+          ))}
         </div>
       </div>
 
-      {layout === 'grid' ? (
+      {/* Tabs: Stage vs Greenroom */}
+      <div className="flex gap-1 mb-3">
+        {[{ id: 'stage', icon: Radio, label: 'Stage' }, { id: 'greenroom', icon: Users, label: 'Queue' }].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded border transition-all ${
+              tab === t.id ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 text-white/40 hover:border-white/20'
+            }`}
+          >
+            <t.icon className="w-2.5 h-2.5" />
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'greenroom' ? (
+        <GreenroomQueue roomId={roomId} isHost={isHost} />
+      ) : layout === 'battle' ? (
+        <BattleMode roomId={roomId} isHost={isHost} participants={participants} />
+      ) : layout === 'grid' ? (
         <div className={`grid ${getGridCols()} gap-3 auto-rows-fr`}>
           <AnimatePresence>
             {speakers.map((participant) => (
@@ -94,7 +112,7 @@ export default function MultiGuestPanel({ participants = [], spotlightId, onSpot
       )}
     </div>
   );
-}
+}  // closes tab === 'greenroom' ternary
 
 function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
   const [showRTMP, setShowRTMP] = useState(false);

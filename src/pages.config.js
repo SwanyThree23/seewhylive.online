@@ -101,6 +101,7 @@ import RTMPServer from './pages/RTMPServer';
 import LiveBattles from './pages/LiveBattles';
 import AdminDashboard from './pages/AdminDashboard';
 import Leaderboard from './pages/Leaderboard';
+import GuestJoin from './pages/GuestJoin';
 import __Layout from './Layout.jsx';
 
 
@@ -159,6 +160,7 @@ export const PAGES = {
     "LiveBattles": LiveBattles,
     "AdminDashboard": AdminDashboard,
     "Leaderboard": Leaderboard,
+    "GuestJoin": GuestJoin,
 }
 
 export const pagesConfig = {
