@@ -33,6 +33,10 @@ import WebhookHooks from '../components/live/WebhookHooks';
 import LivePoll from '../components/live/LivePoll';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import BattleMode from '../components/streaming/BattleMode';
+import AuraPanel from '../components/live/AuraPanel';
+import GoldenWall from '../components/live/GoldenWall';
+import SuperChatBar from '../components/live/SuperChatBar';
+import SignalBars from '../components/live/SignalBars';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -590,12 +594,13 @@ export default function LiveRoom() {
               className="shrink-0 h-full border-l border-[rgba(212,175,55,0.1)] bg-[rgba(13,6,24,0.95)] flex flex-col overflow-hidden"
             >
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-                <TabsList className="shrink-0 grid grid-cols-4 bg-[rgba(13,6,24,0.9)] border-b border-[rgba(212,175,55,0.1)] rounded-none h-10 p-0">
+                <TabsList className="shrink-0 grid grid-cols-5 bg-[rgba(13,6,24,0.9)] border-b border-[rgba(212,175,55,0.1)] rounded-none h-10 p-0">
                   {[
                     { value: 'chat', icon: MessageSquare, label: 'Chat' },
                     { value: 'guests', icon: Users, label: 'Guests' },
                     { value: 'analytics', icon: BarChart2, label: 'Stats' },
                     { value: 'goals', icon: ShoppingBag, label: 'Goals' },
+                    { value: 'aura', icon: AlignLeft, label: 'AURA' },
                   ].map(tab => (
                     <TabsTrigger
                       key={tab.value}
@@ -608,8 +613,16 @@ export default function LiveRoom() {
                   ))}
                 </TabsList>
 
-                <TabsContent value="chat" className="flex-1 overflow-hidden m-0 p-0">
-                  <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
+                <TabsContent value="chat" className="flex-1 overflow-hidden m-0 p-0 flex flex-col">
+                  <div className="flex-1 overflow-hidden">
+                    <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
+                  </div>
+                  <SuperChatBar
+                    roomId={roomId}
+                    currentUser={user}
+                    recipientId={room?.host_id}
+                    recipientName={room?.title}
+                  />
                 </TabsContent>
 
                 <TabsContent value="guests" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
@@ -666,8 +679,19 @@ export default function LiveRoom() {
                   </Link>
                 </TabsContent>
 
-                <TabsContent value="goals" className="flex-1 overflow-hidden m-0 p-0">
+                <TabsContent value="goals" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
                   <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
+                  <GoldenWall roomId={roomId} isExpanded={true} />
+                </TabsContent>
+
+                <TabsContent value="aura" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                  <AuraPanel
+                    roomId={roomId}
+                    isHost={isHost}
+                    streamTitle={room?.title}
+                    viewerCount={viewerCount}
+                    isLive={isLive}
+                  />
                 </TabsContent>
               </Tabs>
             </motion.div>

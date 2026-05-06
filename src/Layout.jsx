@@ -11,6 +11,8 @@ import GlobalSearch from '@/components/shared/GlobalSearch';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence } from 'framer-motion';
 import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
+import BrandChyron from '@/components/live/BrandChyron';
+import SignalBars from '@/components/live/SignalBars';
 
 export default function Layout({ children, currentPageName }) {
   const [showSearch, setShowSearch] = useState(false);
@@ -77,8 +79,11 @@ export default function Layout({ children, currentPageName }) {
         .hover\\:bg-purple-600:hover { background-color: #6B3410; }
         .border-purple-300 { border-color: #C4A57B; }
       `}</style>
+      {/* Top brand gradient line — permanent brand signature, never remove */}
+      <div className="fixed top-0 left-0 right-0 z-[101] h-[2px]" style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #00F5FF, #00FF88, #8B5CF6, transparent)' }} />
+
       {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <header className="sticky top-[2px] z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
           {/* Logo */}
           <Link to={createPageUrl('Home')} className="flex items-center gap-2">
@@ -88,6 +93,7 @@ export default function Layout({ children, currentPageName }) {
             <span className="font-bold text-xl bg-gradient-to-r bg-clip-text text-transparent">
               SeeWhy LIVE
             </span>
+            <SignalBars count={5} active={true} size="xs" className="ml-1 opacity-70" />
           </Link>
 
           {/* Navigation Links */}
@@ -175,9 +181,12 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Main Content */}
-      <main className="pb-16 md:pb-0">
+      <main className="pb-[50px] md:pb-[34px]">
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
+
+      {/* Permanent brand chyron — never remove */}
+      <BrandChyron />
 
       {/* Footer */}
       <footer className="hidden md:block border-t bg-white/80 py-4 px-6 text-xs text-muted-foreground">
