@@ -1,0 +1,9 @@
+{
+  "name": "SeeWhy LIVE by SWANYTHREE EntTech",
+  "site": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist"
+  }
+}
