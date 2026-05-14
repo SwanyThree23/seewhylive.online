@@ -19,6 +19,7 @@ import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import BrandChyron from '@/components/live/BrandChyron';
 import SignalBars from '@/components/live/SignalBars';
 import GlobalChatWidget from '@/components/live/GlobalChatWidget';
+import ARIAWidget from '@/components/guide/ARIAWidget';
 
 var MOBILE_NAV = [
   { name: 'Home',      icon: Home,          href: createPageUrl('Home') },
@@ -280,6 +281,9 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Global multilingual chat widget */}
       <GlobalChatWidget />
+
+      {/* ARIA — Voice AI Guide */}
+      <ARIAWidget />
 
       {/* ── MOBILE BOTTOM NAV ── */}
       <div className="md:hidden fixed bottom-[34px] left-0 right-0 z-40"
