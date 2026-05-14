@@ -154,20 +154,21 @@ export default function SwanyBotWidget() {
     setOpen(true);
     setMinimized(false);
     setPulse(false);
+    if (convRef.current) {
+      setConversation(convRef.current);
+      return;
+    }
     if (hasGreeted) return;
     setHasGreeted(true);
     setLoading(true);
     const conv = await initConversation();
-    const unsub = base44.agents.subscribeToConversation(conv.id, (data) => {
-      setMessages(data.messages || []);
-      if (data.messages && data.messages.length > 0) setLoading(false);
-    });
+    setConversation(conv);
     // Send greeting
     await base44.agents.addMessage(conv, {
       role: 'user',
       content: "Yo! I just got here and I want to know what SeeWhy LIVE is all about. Introduce yourself and break it down for me!",
     });
-  }, [hasGreeted, initConversation, audioEnabled]);
+  }, [hasGreeted, initConversation]);
 
   const sendMessage = async (text) => {
     const trimmed = (text || input).trim();
