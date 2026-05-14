@@ -31,6 +31,7 @@ import StreamChatbot from '../components/live/StreamChatbot';
 import PKBattle from '../components/live/PKBattle';
 import WebhookHooks from '../components/live/WebhookHooks';
 import LivePoll from '../components/live/LivePoll';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import BattleMode from '../components/streaming/BattleMode';
 import AuraPanel from '../components/live/AuraPanel';
@@ -109,6 +110,16 @@ export default function LiveRoom() {
     queryFn: () => base44.entities.Participant.filter({ room_id: roomId }),
     enabled: !!roomId,
     refetchInterval: 10000,
+  });
+
+  const { data: activeBattle } = useQuery({
+    queryKey: ['activePKBattle', roomId],
+    queryFn: async () => {
+      const battles = await base44.entities.PKBattle.filter({ room_id: roomId, status: 'active' });
+      return battles?.[0] || null;
+    },
+    enabled: !!roomId,
+    refetchInterval: 2000,
   });
 
   useEffect(() => { setParticipants(fetchedParticipants); }, [fetchedParticipants]);
@@ -341,6 +352,7 @@ export default function LiveRoom() {
                 <AudioPanel micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} participants={participants} />
                 <AudioMixer micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} />
                 <LowerThirdsBanner onBannerChange={setBannerConfig} />
+                {isHost && activeBattle && <PKBattleSoundboard battleId={activeBattle.id} isBattleActive={!!activeBattle} />}
                 {isHost && <ChatModeration />}
                 <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsedSeconds} hostName={user?.full_name} room={room} />
                 <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name} viewerCount={viewerCount} />
