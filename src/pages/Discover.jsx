@@ -15,6 +15,7 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
@@ -129,6 +130,11 @@ export default function DiscoverPage() {
             />
           </div>
         </div>
+      </div>
+
+      {/* ZEGOCLOUD Mobile App Banner */}
+      <div className="max-w-7xl mx-auto px-6 pt-6">
+        <ZEGOMobileAppBanner />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">

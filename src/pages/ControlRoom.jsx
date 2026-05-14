@@ -7,6 +7,8 @@ import {
   RefreshCw, Power, StopCircle, Cpu, Wifi, Clock, Monitor,
   ChevronDown, X
 } from 'lucide-react';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
@@ -284,13 +286,14 @@ export default function ControlRoomPage() {
         </div>
         <div className="flex items-center gap-2">
           {!isLive ? (
-            <motion.button whileTap={{ scale: 0.96 }}
-              onClick={() => goLiveMut.mutate()}
-              disabled={goLiveMut.isPending}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
-              style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, boxShadow: `0 0 20px rgba(128,0,32,0.4)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              <Radio className="w-4 h-4" /> GO LIVE
-            </motion.button>
+            <ZEGOGoLiveFlow roomId={roomId} userId={user?.id} onLive={() => goLiveMut.mutate()}>
+              <motion.button whileTap={{ scale: 0.96 }}
+                disabled={goLiveMut.isPending}
+                className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
+                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, boxShadow: `0 0 20px rgba(128,0,32,0.4)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <Radio className="w-4 h-4" /> GO LIVE
+              </motion.button>
+            </ZEGOGoLiveFlow>
           ) : (
             <button onClick={() => setShowEndModal(true)}
               className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
@@ -338,6 +341,13 @@ export default function ControlRoomPage() {
           </button>
         </div>
       </div>
+
+      {/* ZEGOCLOUD Health Card */}
+      {roomId && (
+        <div className="px-4 md:px-8 pt-4">
+          <ZEGOStreamHealthCard roomId={roomId} />
+        </div>
+      )}
 
       {/* RTMP Cards Grid */}
       <div className="p-4 md:p-8">

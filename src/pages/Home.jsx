@@ -6,6 +6,7 @@ import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Radio, Clock, Users, Search, Plus, Video, Star, Swords, Eye, Zap, Activity } from 'lucide-react';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
@@ -244,6 +245,11 @@ export default function Home() {
               </span>
             </div>
           )}
+        </div>
+
+        {/* ── ZEGOCLOUD MOBILE BANNER ── */}
+        <div className="px-4 pt-4">
+          <ZEGOMobileAppBanner />
         </div>
 
         {/* ── CONTENT ── */}

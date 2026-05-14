@@ -14,6 +14,7 @@ import {
   Star, Play, Trash2, Edit, X, Check, FileText, Target, BarChart2,
   Crown, Layers
 } from 'lucide-react';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -987,6 +988,9 @@ function SettingsTab({ user }) {
           {destinations.length === 0 && <p className="text-[10px]" style={{ color: CREAM + '25' }}>No destinations configured</p>}
         </div>
       </Card>
+
+      {/* ZEGOCLOUD Streaming Engine */}
+      <ZEGOConfigPanel user={user} />
 
       {/* Overlay Builder link */}
       <Link to="/OverlayBuilder">
