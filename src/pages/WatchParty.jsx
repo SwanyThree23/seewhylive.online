@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Plus, Youtube, Video, LogOut } from 'lucide-react';
+import { Users, Plus, Youtube, Video, LogOut, List } from 'lucide-react';
 import { toast } from 'sonner';
+import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
+import VideoPlayerControls from '../components/video/VideoPlayerControls';
 import AggregatedChat from '../components/live/AggregatedChat';
 import ViewerRail from '../components/watchparty/ViewerRail';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
@@ -21,14 +23,7 @@ import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
 import PartyReactionsOverlay from '../components/watchparty/PartyReactionsOverlay';
 import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
 
-function getYouTubeId(url) {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
-  return m ? m[1] : null;
-}
-
-function detectType(url) {
-  return url.includes('youtube.com') || url.includes('youtu.be') ? 'youtube' : 'direct';
-}
+function detectType(url) { return detectVideoType(url); }
 
 // ── Sync Engine ──────────────────────────────────────────────────────────────
 function useSyncEngine({ party, isHost, onTimeSync }) {
@@ -160,6 +155,8 @@ export default function WatchPartyPage() {
   const [activePanel, setActivePanel] = useState('chat');
   const [reactionCount, setReactionCount] = useState(0);
   const [pollCount, setPollCount] = useState(0);
+  const [playlist, setPlaylist] = useState([]);
+  const directVideoRef = useRef(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -243,42 +240,84 @@ export default function WatchPartyPage() {
     toast.success('Invite link copied!');
   };
 
+  const changeVideo = async (source) => {
+    if (!isHost || !party?.id) return;
+    await base44.entities.WatchParty.update(party.id, {
+      video_url: source.url,
+      video_type: source.type === 'youtube' ? 'youtube' : 'direct',
+      current_time: 0,
+      playback_state: 'paused',
+      updated_at_ms: Date.now(),
+    });
+    qc.invalidateQueries(['watchparty', partyId]);
+    toast.success('Video changed!');
+  };
+
   // ── Create screen ─────────────────────────────────────────────────────────
   if (!partyId) {
     return (
-      <div className="max-w-lg mx-auto mt-16 p-6 space-y-6">
+      <div className="max-w-lg mx-auto mt-10 p-6 space-y-6" style={{ background: '#0B0B18', minHeight: '100vh' }}>
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2"><Video className="w-8 h-8 text-primary" /> Watch Party</h1>
-          <p className="text-muted-foreground mt-1">Watch together in sync with real-time chat</p>
+          <h1 className="text-3xl font-black flex items-center gap-2" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <Video className="w-8 h-8" /> Watch Party
+          </h1>
+          <p className="text-white/50 mt-1 text-sm">Watch together in sync with real-time chat</p>
         </div>
-        <Card>
-          <CardContent className="p-6 space-y-4">
-            <Input
-              placeholder="Party title (e.g. Movie Night)"
-              value={partyTitle}
-              onChange={e => setPartyTitle(e.target.value)}
-            />
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          <Input
+            placeholder="Party title (e.g. Movie Night)"
+            value={partyTitle}
+            onChange={e => setPartyTitle(e.target.value)}
+            className="h-11 text-white placeholder:text-white/30"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+          />
+          {/* Source tabs */}
+          <div className="space-y-2">
+            <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Video Source</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'youtube', label: 'YouTube URL', icon: Youtube, color: '#FF0000', placeholder: 'https://youtube.com/watch?v=...' },
+                { id: 'direct', label: 'Direct URL', icon: Video, color: '#00d4ff', placeholder: 'https://example.com/video.mp4' },
+              ].map(opt => (
+                <button key={opt.id}
+                  onClick={() => { setVideoUrl(''); }}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: `${opt.color}12`, border: `1px solid ${opt.color}30`, color: opt.color }}>
+                  <opt.icon className="w-4 h-4" /> {opt.label}
+                </button>
+              ))}
+            </div>
             <Input
               placeholder="YouTube URL or direct video URL"
               value={videoUrl}
               onChange={e => setVideoUrl(e.target.value)}
+              className="h-11 text-white placeholder:text-white/30"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
             {videoUrl && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#00d4ff' }}>
                 {detectType(videoUrl) === 'youtube'
-                  ? <><Youtube className="w-4 h-4 text-red-500" /> YouTube video detected</>
-                  : <><Video className="w-4 h-4" /> Direct video URL</>}
+                  ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
+                  : <><Video className="w-3.5 h-3.5" /> Direct video URL</>}
               </div>
             )}
-            <Button
-              className="w-full"
-              disabled={!videoUrl.trim() || createMutation.isPending}
-              onClick={() => createMutation.mutate()}
-            >
-              <Plus className="w-4 h-4 mr-2" /> Create Watch Party
-            </Button>
-          </CardContent>
-        </Card>
+            {videoUrl && getYouTubeId(videoUrl) && (
+              <img
+                src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
+                className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
+                alt="preview"
+              />
+            )}
+          </div>
+          <Button
+            className="w-full h-11 text-sm font-bold"
+            disabled={!videoUrl.trim() || createMutation.isPending}
+            onClick={() => createMutation.mutate()}
+            style={{ background: '#d4af37', color: '#000' }}
+          >
+            <Plus className="w-4 h-4 mr-2" /> Create Watch Party
+          </Button>
+        </div>
       </div>
     );
   }
@@ -287,7 +326,7 @@ export default function WatchPartyPage() {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   }
 
-  const ytId = party.video_type === 'youtube' ? getYouTubeId(party.video_url) : null;
+  // ytId now comes from the imported helper
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden" style={{ background: '#0B0B18' }}>
@@ -308,6 +347,15 @@ export default function WatchPartyPage() {
           title={`Join my Watch Party: ${party?.title}`}
           className="text-white [&_button]:text-white/60"
         />
+        {/* Video source picker for host/co-host */}
+        <VideoSourcePicker
+          compact
+          isHost={isHost}
+          isCoHost={false}
+          playlist={playlist}
+          onPlaylistChange={setPlaylist}
+          onSelect={changeVideo}
+        />
         {isHost && (
           <Button size="sm" onClick={() => endPartyMutation.mutate()}
             className="h-7 text-[10px] px-2" style={{ background: 'rgba(180,50,30,0.3)', color: '#ff8866', border: '1px solid rgba(200,80,30,0.3)' }}>
@@ -317,10 +365,10 @@ export default function WatchPartyPage() {
       </div>
 
       {/* ── VIDEO PLAYER — always visible at top on mobile ── */}
-      <div className="shrink-0 relative bg-black" style={{ aspectRatio: '16/9', width: '100%' }}>
-        {ytId ? (
+      <div className="shrink-0 relative bg-black group" data-video-container style={{ aspectRatio: '16/9', width: '100%' }}>
+        {party.video_type === 'youtube' ? (
           <YouTubeEmbed
-            videoId={ytId}
+            videoId={getYouTubeId(party.video_url)}
             isHost={isHost}
             syncData={isHost ? null : (syncData || party)}
             onStateChange={pushState}
@@ -333,6 +381,18 @@ export default function WatchPartyPage() {
             onStateChange={pushState}
           />
         )}
+        {/* Host / Co-Host controls overlay */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+          <VideoPlayerControls
+            playerRef={directVideoRef}
+            playerType={party.video_type === 'youtube' ? 'youtube' : 'direct'}
+            isHost={isHost}
+            isCoHost={false}
+            onPlay={() => pushState({ playing: true, currentTime: 0 })}
+            onPause={() => pushState({ playing: false, currentTime: 0 })}
+            syncStatus={!isHost ? 'synced' : null}
+          />
+        </div>
         {!isHost && (
           <div className="absolute top-2 right-2 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1"
             style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>

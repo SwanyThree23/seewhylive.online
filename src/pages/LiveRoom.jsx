@@ -64,6 +64,8 @@ import MonetizationDashboard from '../components/monetization/MonetizationDashbo
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
+import VideoPlayerControls from '../components/video/VideoPlayerControls';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -115,6 +117,9 @@ export default function LiveRoom() {
   const [videoOffUsers, setVideoOffUsers] = useState({});
   const [showEvmux, setShowEvmux] = useState(false);
   const [showPPV, setShowPPV] = useState(false);
+  const [panelVideo, setPanelVideo] = useState(null);
+  const [panelPlaylist, setPanelPlaylist] = useState([]);
+  const panelVideoRef = useRef(null);
   const timerRef = useRef(null);
 
   // Real browser media (mic + camera)
@@ -749,6 +754,50 @@ export default function LiveRoom() {
                 </TabsContent>
 
                 <TabsContent value="guests" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                  {/* Panel Video — host/co-host can load video for 20-person panel */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Panel Video</p>
+                      <VideoSourcePicker
+                        compact
+                        isHost={isHost}
+                        isCoHost={false}
+                        playlist={panelPlaylist}
+                        onPlaylistChange={setPanelPlaylist}
+                        onSelect={(src) => setPanelVideo(src)}
+                      />
+                    </div>
+                    {panelVideo && (
+                      <div className="rounded-xl overflow-hidden relative bg-black group" data-video-container style={{ aspectRatio: '16/9' }}>
+                        {panelVideo.type === 'youtube' && getYouTubeId(panelVideo.url) ? (
+                          <iframe
+                            src={`https://www.youtube.com/embed/${getYouTubeId(panelVideo.url)}?autoplay=1&controls=1`}
+                            className="w-full h-full"
+                            allow="autoplay; fullscreen"
+                            frameBorder="0"
+                            title="Panel Video"
+                          />
+                        ) : (
+                          <video
+                            ref={panelVideoRef}
+                            src={panelVideo.url}
+                            controls={isHost}
+                            autoPlay
+                            className="w-full h-full object-contain"
+                          />
+                        )}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+                          <VideoPlayerControls
+                            playerRef={panelVideoRef}
+                            playerType={panelVideo.type === 'youtube' ? 'youtube' : 'direct'}
+                            isHost={isHost}
+                            isCoHost={false}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Greenroom Queue — real-time director view */}
                   <GreenroomQueue roomId={roomId} isHost={isHost} />
 

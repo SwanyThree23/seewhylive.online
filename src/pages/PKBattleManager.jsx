@@ -17,6 +17,8 @@ import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import TournamentBracket from '../components/pk/TournamentBracket';
 import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 import BattleOverlay from '../components/pk/BattleOverlay';
+import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
+import VideoPlayerControls from '../components/video/VideoPlayerControls';
 
 /* ─── Earth Tone Palette (No Pink) ─── */
 var ET = {
@@ -442,6 +444,10 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
 ═══════════════════════════ */
 function ScoreboardTab({ battle, user, onBattleUpdate }) {
   var qc = useQueryClient();
+  var [battleVideo, setBattleVideo] = useState(null);
+  var [playlist, setPlaylist] = useState([]);
+  var isHost = battle && user && battle.creator_id === user.id;
+  var isCoHost = battle && user && battle.challenger_id === user.id;
 
   // Real-time subscription
   useEffect(function() {
@@ -462,11 +468,63 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
     );
   }
 
+  var ytVidId = battleVideo?.type === 'youtube' ? getYouTubeId(battleVideo.url) : null;
+
   return (
-    <BattleOverlay
-      battle={battle}
-      onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }}
-    />
+    <div className="space-y-4">
+      {/* Video panel for battle */}
+      {battleVideo && (
+        <div className="rounded-2xl overflow-hidden relative bg-black group" data-video-container style={{ aspectRatio: '16/9' }}>
+          {battleVideo.type === 'youtube' && ytVidId ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${ytVidId}?autoplay=1&controls=${isHost || isCoHost ? 1 : 0}`}
+              className="w-full h-full"
+              allow="autoplay; fullscreen"
+              frameBorder="0"
+              title="Battle Video"
+            />
+          ) : (
+            <video
+              src={battleVideo.url}
+              controls={isHost || isCoHost}
+              autoPlay
+              className="w-full h-full object-contain"
+            />
+          )}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+            <VideoPlayerControls
+              playerType={battleVideo.type === 'youtube' ? 'youtube' : 'direct'}
+              isHost={isHost}
+              isCoHost={isCoHost}
+              syncStatus={null}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Host/Co-Host video source picker */}
+      {(isHost || isCoHost) && (
+        <div className="flex items-center gap-3 px-1">
+          <VideoSourcePicker
+            isHost={isHost}
+            isCoHost={isCoHost}
+            playlist={playlist}
+            onPlaylistChange={setPlaylist}
+            onSelect={(src) => { setBattleVideo(src); }}
+          />
+          {battleVideo && (
+            <span className="text-xs text-white/40 truncate flex-1">
+              Playing: {battleVideo.title}
+            </span>
+          )}
+        </div>
+      )}
+
+      <BattleOverlay
+        battle={battle}
+        onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }}
+      />
+    </div>
   );
 }
 
