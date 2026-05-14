@@ -69,7 +69,8 @@ export default function SwanyBotWidget() {
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
   const convRef = useRef(null);
-  const synthRef = useRef(window.speechSynthesis);
+  // Keep synthRef as alias for convenience in handlers
+  const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const queryClient = useQueryClient();
 
   // Fetch current user
@@ -161,42 +162,63 @@ export default function SwanyBotWidget() {
      }
    }, [messages, audioEnabled]);
 
-  const speakMessage = (text) => {
+  const speakMessage = useCallback((text) => {
     if (!audioEnabled || !text) return;
+    if (!window.speechSynthesis) return;
 
-    // Ensure voices are loaded
-    const voices = synthRef.current.getVoices();
-    if (voices.length === 0) {
-      // Wait for voices to load
-      const voicesChanged = () => {
-        synthRef.current.removeEventListener('voiceschanged', voicesChanged);
-        speakMessage(text);
+    // Strip markdown for cleaner speech
+    const clean = text
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/`[^`]*`/g, '')
+      .replace(/\n+/g, ' ')
+      .trim()
+      .substring(0, 400); // cap length so it doesn't ramble
+
+    // Cancel any ongoing speech first
+    window.speechSynthesis.cancel();
+
+    const doSpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 0.92;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      utterance.lang = 'en-US';
+
+      // Pick best available voice — prefer a natural US English voice
+      const preferred = voices.find(v =>
+        v.name.includes('Google US English') ||
+        v.name.includes('Samantha') ||
+        v.name.includes('Alex') ||
+        (v.lang === 'en-US' && v.localService)
+      ) || voices.find(v => v.lang?.startsWith('en')) || voices[0];
+
+      if (preferred) utterance.voice = preferred;
+
+      // Chrome long-speech bug fix — keep synthesis alive
+      let resumeTimer;
+      utterance.onstart = () => {
+        resumeTimer = setInterval(() => {
+          if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        }, 5000);
       };
-      synthRef.current.addEventListener('voiceschanged', voicesChanged);
-      return;
-    }
+      utterance.onend = () => clearInterval(resumeTimer);
+      utterance.onerror = () => clearInterval(resumeTimer);
 
-    // Cancel any ongoing speech
-    synthRef.current.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.05;
-    utterance.volume = 0.85;
-    utterance.lang = 'en-US';
-
-    // Use a natural-sounding voice for SwanyBot
-    const nativeVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Google')) || voices[0];
-    utterance.voice = nativeVoice;
-
-    // Smooth playback with better audio context
-    utterance.onstart = () => {
-      if (synthRef.current) synthRef.current.pause();
-      synthRef.current.resume();
+      window.speechSynthesis.speak(utterance);
     };
 
-    synthRef.current.speak(utterance);
-  };
+    // If voices aren't loaded yet (common on first load), wait for them
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      doSpeak();
+    } else {
+      window.speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true });
+    }
+  }, [audioEnabled]);
 
   const initConversation = useCallback(async () => {
     if (convRef.current) return convRef.current;
@@ -384,7 +406,7 @@ export default function SwanyBotWidget() {
                   onClick={e => {
                     e.stopPropagation();
                     setAudioEnabled(!audioEnabled);
-                    if (audioEnabled) synthRef.current.cancel();
+                    if (audioEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
                   }}
                   className="w-6 h-6 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
                   title={audioEnabled ? 'Mute SwanyBot' : 'Unmute SwanyBot'}
@@ -396,7 +418,7 @@ export default function SwanyBotWidget() {
                   style={{ color: 'rgba(255,255,255,0.35)', transform: minimized ? 'rotate(180deg)' : 'rotate(0deg)' }}
                 />
                 <button
-                  onClick={e => { e.stopPropagation(); setOpen(false); setMinimized(false); synthRef.current.cancel(); }}
+                  onClick={e => { e.stopPropagation(); setOpen(false); setMinimized(false); if (window.speechSynthesis) window.speechSynthesis.cancel(); }}
                   className="w-6 h-6 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
                 >
                   <X className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.35)' }} />
