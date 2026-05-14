@@ -258,7 +258,7 @@ export default function SwanyBotWidget() {
     // Send greeting
     await base44.agents.addMessage(conv, {
       role: 'user',
-      content: "Yo! I just got here and I want to know what C Y LIVE is all about. Introduce yourself and break it down for me!",
+      content: "Yo! I just got here and I want to know what See - Why - LIVE is all about. Introduce yourself and break it down for me!",
     });
   }, [hasGreeted, initConversation]);
 
