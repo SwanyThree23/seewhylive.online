@@ -194,63 +194,113 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ── CATEGORY FILTER — horizontal scroll ── */}
-        <div className="sticky top-[3px] z-30 overflow-x-auto scrollbar-hide"
-          style={{ background: 'rgba(11,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', backdropFilter: 'blur(12px)' }}>
-          <div className="flex items-center gap-2 px-4 py-2.5" style={{ width: 'max-content', minWidth: '100%' }}>
-            {CATEGORIES.map(function(cat) {
-              var active = selectedCategory === cat;
-              return (
-                <button key={cat}
-                  onClick={function() { setSelectedCategory(cat); }}
-                  className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 whitespace-nowrap"
-                  style={{
-                    fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
-                    background: active ? '#d4af37' : 'rgba(255,255,255,0.05)',
-                    color: active ? '#000' : 'rgba(255,255,255,0.45)',
-                    border: active ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                  }}>
-                  {cat.toUpperCase()}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* ── PRIMARY ATTRACTIONS: 20-Person Panel, Watch Party, PK-Battle ── */}
+         <div className="px-4 pt-6 pb-4 space-y-3">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+             {/* 20-Person Panel Grid */}
+             <Link to={createPageUrl('LiveRoom')} className="group">
+               <motion.div
+                 whileHover={{ scale: 1.02 }}
+                 className="relative overflow-hidden rounded-2xl h-40 flex flex-col items-center justify-center cursor-pointer transition-all"
+                 style={{ background: 'linear-gradient(135deg, #1a0d2e 0%, #2d1b6b 50%, #1a0d2e 100%)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                 <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: '#d4af37' }} />
+                 <Users className="w-8 h-8 mb-2" style={{ color: '#d4af37' }} />
+                 <p className="font-black text-center text-sm" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                   20-PERSON PANEL
+                 </p>
+                 <p className="text-xs text-white/50 mt-1">Max participants</p>
+               </motion.div>
+             </Link>
 
-        {/* ── TABS ── */}
-        <div className="px-4 pt-4">
-          <div className="flex gap-1 p-1 rounded-xl max-w-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            {TABS.map(function(tab) {
-              var Icon = tab.icon;
-              var active = activeTab === tab.id;
-              return (
-                <button key={tab.id}
-                  onClick={function() { setActiveTab(tab.id); }}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold uppercase transition-all"
-                  style={{
-                    fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em',
-                    background: active ? 'rgba(212,175,55,0.15)' : 'transparent',
-                    color: active ? '#d4af37' : 'rgba(255,255,255,0.35)',
-                    border: active ? '1px solid rgba(212,175,55,0.25)' : '1px solid transparent',
-                  }}>
-                  <Icon className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="sm:hidden">{tab.id === 'live' ? 'Live' : tab.id === 'upcoming' ? 'Soon' : 'Groups'}</span>
-                </button>
-              );
-            })}
-          </div>
+             {/* Watch Party */}
+             <Link to={createPageUrl('WatchParty')} className="group">
+               <motion.div
+                 whileHover={{ scale: 1.02 }}
+                 className="relative overflow-hidden rounded-2xl h-40 flex flex-col items-center justify-center cursor-pointer transition-all"
+                 style={{ background: 'linear-gradient(135deg, #0d2818 0%, #1b6b2d 50%, #0d2818 100%)', border: '1px solid rgba(0,212,255,0.25)' }}>
+                 <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: '#00d4ff' }} />
+                 <Eye className="w-8 h-8 mb-2" style={{ color: '#00d4ff' }} />
+                 <p className="font-black text-center text-sm" style={{ color: '#00d4ff', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                   WATCH PARTY
+                 </p>
+                 <p className="text-xs text-white/50 mt-1">Stream together</p>
+               </motion.div>
+             </Link>
 
-          {/* Live count badge */}
-          {activeTab === 'live' && liveRooms.length > 0 && (
-            <div className="flex items-center gap-2 mt-3">
-              <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
-              <span className="text-sm font-bold" style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                {liveRooms.length} room{liveRooms.length !== 1 ? 's' : ''} live
-              </span>
-            </div>
-          )}
-        </div>
+             {/* PK-Battle */}
+             <Link to={createPageUrl('PKBattleManager')} className="group">
+               <motion.div
+                 whileHover={{ scale: 1.02 }}
+                 className="relative overflow-hidden rounded-2xl h-40 flex flex-col items-center justify-center cursor-pointer transition-all"
+                 style={{ background: 'linear-gradient(135deg, #2d1a0d 0%, #6b2d1b 50%, #2d1a0d 100%)', border: '1px solid rgba(204,119,85,0.25)' }}>
+                 <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: '#CC7755' }} />
+                 <Swords className="w-8 h-8 mb-2" style={{ color: '#CC7755' }} />
+                 <p className="font-black text-center text-sm" style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                   PK-BATTLE
+                 </p>
+                 <p className="text-xs text-white/50 mt-1">1v1 competition</p>
+               </motion.div>
+             </Link>
+           </div>
+         </div>
+
+         {/* ── CATEGORY FILTER — horizontal scroll ── */}
+         <div className="sticky top-[3px] z-30 overflow-x-auto scrollbar-hide"
+           style={{ background: 'rgba(11,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', backdropFilter: 'blur(12px)' }}>
+           <div className="flex items-center gap-2 px-4 py-2.5" style={{ width: 'max-content', minWidth: '100%' }}>
+             {CATEGORIES.map(function(cat) {
+               var active = selectedCategory === cat;
+               return (
+                 <button key={cat}
+                   onClick={function() { setSelectedCategory(cat); }}
+                   className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 whitespace-nowrap"
+                   style={{
+                     fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
+                     background: active ? '#d4af37' : 'rgba(255,255,255,0.05)',
+                     color: active ? '#000' : 'rgba(255,255,255,0.45)',
+                     border: active ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                   }}>
+                   {cat.toUpperCase()}
+                 </button>
+               );
+             })}
+           </div>
+         </div>
+
+         {/* ── TABS ── */}
+         <div className="px-4 pt-4">
+           <div className="flex gap-1 p-1 rounded-xl max-w-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+             {TABS.map(function(tab) {
+               var Icon = tab.icon;
+               var active = activeTab === tab.id;
+               return (
+                 <button key={tab.id}
+                   onClick={function() { setActiveTab(tab.id); }}
+                   className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold uppercase transition-all"
+                   style={{
+                     fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em',
+                     background: active ? 'rgba(212,175,55,0.15)' : 'transparent',
+                     color: active ? '#d4af37' : 'rgba(255,255,255,0.35)',
+                     border: active ? '1px solid rgba(212,175,55,0.25)' : '1px solid transparent',
+                   }}>
+                   <Icon className="w-3.5 h-3.5" />
+                   <span className="hidden sm:inline">{tab.label}</span>
+                   <span className="sm:hidden">{tab.id === 'live' ? 'Live' : tab.id === 'upcoming' ? 'Soon' : 'Groups'}</span>
+                 </button>
+               );
+             })}
+           </div>
+
+           {/* Live count badge */}
+           {activeTab === 'live' && liveRooms.length > 0 && (
+             <div className="flex items-center gap-2 mt-3">
+               <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+               <span className="text-sm font-bold" style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                 {liveRooms.length} room{liveRooms.length !== 1 ? 's' : ''} live
+               </span>
+             </div>
+           )}
+         </div>
 
         {/* ── ZEGOCLOUD MOBILE BANNER ── */}
         <div className="px-4 pt-4">
