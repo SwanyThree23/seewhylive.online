@@ -54,9 +54,19 @@ export default function ARIAWidget() {
   const convRef = useRef(null);
 
   useEffect(() => {
-    // Pulse the button after 4s to attract attention
-    const t = setTimeout(() => setPulse(true), 4000);
-    return () => clearTimeout(t);
+    // Auto-welcome on first visit
+    const hasSeenWelcome = localStorage.getItem('seewhy_aria_welcomed');
+    if (!hasSeenWelcome) {
+      const t = setTimeout(() => {
+        openAndGreet();
+        localStorage.setItem('seewhy_aria_welcomed', 'true');
+      }, 2000);
+      return () => clearTimeout(t);
+    } else {
+      // Pulse the button after 4s to attract attention
+      const t = setTimeout(() => setPulse(true), 4000);
+      return () => clearTimeout(t);
+    }
   }, []);
 
   useEffect(() => {
@@ -85,7 +95,7 @@ export default function ARIAWidget() {
     return unsub;
   }, [open, conversation]);
 
-  const openAndGreet = async () => {
+  const openAndGreet = useCallback(async () => {
     setOpen(true);
     setMinimized(false);
     setPulse(false);
@@ -102,7 +112,7 @@ export default function ARIAWidget() {
       role: 'user',
       content: "Yo! I just got here and I want to know what SeeWhy LIVE is all about. Introduce yourself and break it down for me!",
     });
-  };
+  }, [hasGreeted, initConversation]);
 
   const sendMessage = async (text) => {
     const trimmed = (text || input).trim();
