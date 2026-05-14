@@ -1,389 +1,344 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { base44 } from '@/api/base44Client';
+import {
+  Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
+  MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { Shield, Flag, AlertCircle, CheckCircle, Clock, User, Ban, Mic } from 'lucide-react';
-import { format } from 'date-fns';
 
-export default function ModerationDashboard() {
-  const [selectedTab, setSelectedTab] = useState('reports');
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [resolutionNotes, setResolutionNotes] = useState('');
-  const [actionTaken, setActionTaken] = useState('');
-  const queryClient = useQueryClient();
+const GOLD = '#D4AF37';
+const BURGUNDY = '#800020';
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+const VIOLATION_STYLES = {
+  harassment:    { color: '#FF6B35', bg: 'rgba(255,107,53,0.12)',  border: 'rgba(255,107,53,0.3)' },
+  spam:          { color: '#FFD700', bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.3)' },
+  hate_speech:   { color: '#FF1564', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
+  inappropriate: { color: '#FF8C00', bg: 'rgba(255,140,0,0.12)',   border: 'rgba(255,140,0,0.3)' },
+  safe:          { color: '#00FF88', bg: 'rgba(0,255,136,0.08)',   border: 'rgba(0,255,136,0.2)' },
+};
+
+const PRIORITY_STYLES = {
+  urgent: { color: '#FF1564', label: 'URGENT' },
+  high:   { color: '#FF6B35', label: 'HIGH' },
+  medium: { color: GOLD,       label: 'MEDIUM' },
+  low:    { color: 'rgba(255,255,255,0.3)', label: 'LOW' },
+};
+
+function StatCard({ icon: Icon, label, value, color = GOLD }) {
+  return (
+    <div className="rounded-xl p-3 flex items-center gap-2.5"
+      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+        style={{ background: `${color}18`, border: `1px solid ${color}30` }}>
+        <Icon className="w-4 h-4" style={{ color }} />
+      </div>
+      <div>
+        <div className="font-black text-lg leading-tight" style={{ color, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</div>
+        <div className="text-[9px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</div>
+      </div>
+    </div>
+  );
+}
+
+function FlaggedItem({ mod, onAction, user }) {
+  const vStyle = VIOLATION_STYLES[mod.violation_type] || VIOLATION_STYLES.inappropriate;
+  return (
+    <div className="rounded-xl p-3 space-y-2"
+      style={{ background: '#1A1A1A', border: `1px solid ${vStyle.border}` }}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+            style={{ background: vStyle.bg, color: vStyle.color, border: `1px solid ${vStyle.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {mod.content_type?.toUpperCase()}
+          </span>
+          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+            style={{ background: vStyle.bg, color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {mod.violation_type?.replace('_', ' ')}
+          </span>
+          {mod.auto_detected && (
+            <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+              style={{ background: 'rgba(255,215,0,0.12)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              AI
+            </span>
+          )}
+        </div>
+        <div className="text-right shrink-0">
+          <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Confidence</div>
+          <div className="text-[10px] font-black" style={{ color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {Math.round((mod.ai_confidence || 0) * 100)}%
+          </div>
+        </div>
+      </div>
+      {mod.ai_explanation && (
+        <p className="text-[10px] italic px-2 py-1 rounded"
+          style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.03)', borderLeft: `2px solid ${vStyle.color}` }}>
+          "{mod.ai_explanation}"
+        </p>
+      )}
+      {/* Confidence bar */}
+      <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+        <div className="h-full rounded-full" style={{ width: `${(mod.ai_confidence || 0) * 100}%`, background: vStyle.color }} />
+      </div>
+      <div className="flex gap-1.5 flex-wrap">
+        {[
+          { label: 'Hide', action: 'hidden', color: GOLD },
+          { label: 'Delete', action: 'deleted', color: '#FF4444' },
+          { label: 'Warn', action: 'warned', color: '#FFD700' },
+          { label: '✓ Safe', action: 'none_safe', color: '#00FF88' },
+        ].map(({ label, action, color }) => (
+          <button key={action}
+            onClick={() => onAction(mod, action)}
+            className="px-2.5 py-1 rounded-lg text-[8px] font-black uppercase transition-all"
+            style={{ background: `${color}12`, color, border: `1px solid ${color}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChatModEntry({ entry, onQuickAction, user }) {
+  return (
+    <div className="flex items-start gap-2.5 py-2 px-3 rounded-lg"
+      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+            style={{ background: 'rgba(255,100,100,0.12)', color: '#FF8080', border: '1px solid rgba(255,100,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {entry.action_type}
+          </span>
+          {entry.auto_detected && (
+            <span className="text-[7px] px-1 py-0.5 rounded font-black"
+              style={{ background: 'rgba(255,215,0,0.12)', color: '#FFD700' }}>AI</span>
+          )}
+          <span className="text-[9px] font-bold text-white">{entry.target_user_name || entry.target_user_id}</span>
+        </div>
+        {entry.reason && <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{entry.reason}</p>}
+        {entry.keywords_matched?.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {entry.keywords_matched.map((kw, i) => (
+              <span key={i} className="text-[7px] px-1 py-0.5 rounded"
+                style={{ background: 'rgba(255,100,0,0.12)', color: '#FF6B00', border: '1px solid rgba(255,100,0,0.2)' }}>{kw}</span>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col gap-1 shrink-0">
+        {[
+          { label: '5m', timeout: 5 },
+          { label: '30m', timeout: 30 },
+        ].map(({ label, timeout }) => (
+          <button key={label} onClick={() => onQuickAction(entry, 'timeout', timeout)}
+            className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
+            style={{ background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {label}
+          </button>
+        ))}
+        <button onClick={() => onQuickAction(entry, 'ban')}
+          className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
+          style={{ background: 'rgba(255,21,100,0.1)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          Ban
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ReportItem({ report, onAction, user }) {
+  const pri = PRIORITY_STYLES[report.priority] || PRIORITY_STYLES.medium;
+  return (
+    <div className="rounded-xl p-3 space-y-2"
+      style={{ background: '#1A1A1A', border: `1px solid ${pri.color}25` }}>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="flex items-center gap-1.5 flex-wrap mb-1">
+            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+              style={{ background: `${pri.color}15`, color: pri.color, border: `1px solid ${pri.color}30`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {pri.label}
+            </span>
+            <span className="text-[8px] px-1 py-0.5 rounded"
+              style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>{report.report_type}</span>
+          </div>
+          {report.description && <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{report.description}</p>}
+        </div>
+      </div>
+      <div className="flex gap-1.5">
+        {[
+          { label: 'Investigate', action: 'investigating', color: GOLD },
+          { label: 'Dismiss', action: 'dismissed', color: 'rgba(255,255,255,0.4)' },
+          { label: 'Escalate', action: 'escalated', color: '#FF4444' },
+        ].map(({ label, action, color }) => (
+          <button key={action} onClick={() => onAction(report, action)}
+            className="flex-1 py-1 rounded text-[8px] font-black uppercase"
+            style={{ background: `${color}12`, color, border: `1px solid ${color}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ModerationDashboardPage() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('room_id');
+  const [activeTab, setActiveTab] = useState('flagged');
+  const qc = useQueryClient();
+
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: moderations = [] } = useQuery({
+    queryKey: ['mod-content'],
+    queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
+    refetchInterval: 10000,
   });
-
-  const { data: reports = [], isLoading: reportsLoading } = useQuery({
+  const { data: chatMods = [] } = useQuery({
+    queryKey: ['chat-mods', roomId],
+    queryFn: () => roomId
+      ? base44.entities.ChatModeration.filter({ room_id: roomId }, '-created_date', 50)
+      : base44.entities.ChatModeration.list('-created_date', 50),
+    refetchInterval: 5000,
+  });
+  const { data: reports = [] } = useQuery({
     queryKey: ['reports'],
-    queryFn: () => base44.entities.Report.list('-created_date'),
+    queryFn: () => base44.entities.Report.filter({ status: 'pending' }, '-created_date', 30),
+    refetchInterval: 10000,
   });
 
-  const { data: actions = [], isLoading: actionsLoading } = useQuery({
-    queryKey: ['moderationActions'],
-    queryFn: () => base44.entities.ModerationAction.list('-created_date'),
-  });
-
-  const updateReportMutation = useMutation({
-    mutationFn: async ({ reportId, data }) => {
-      return await base44.entities.Report.update(reportId, data);
+  const reviewMut = useMutation({
+    mutationFn: ({ id, action }) => {
+      const updates = action === 'none_safe'
+        ? { action_taken: 'none', violation_type: 'safe', reviewed_by: user?.email, reviewed_at: new Date().toISOString() }
+        : { action_taken: action, reviewed_by: user?.email, reviewed_at: new Date().toISOString() };
+      return base44.entities.ContentModeration.update(id, updates);
     },
-    onSuccess: () => {
-      toast.success('Report updated');
-      queryClient.invalidateQueries(['reports']);
-      setSelectedReport(null);
-      setResolutionNotes('');
-      setActionTaken('');
-    },
+    onSuccess: () => { qc.invalidateQueries(['mod-content']); toast.success('Action taken'); },
   });
 
-  const handleResolveReport = (report, status) => {
-    updateReportMutation.mutate({
-      reportId: report.id,
-      data: {
-        status,
-        reviewed_by: user?.id,
-        reviewed_at: new Date().toISOString(),
-        resolution_notes: resolutionNotes || null,
-        action_taken: actionTaken || null,
-      },
-    });
-  };
+  const chatActionMut = useMutation({
+    mutationFn: ({ entry, action, timeout }) => base44.entities.ChatModeration.create({
+      room_id: entry.room_id || roomId,
+      moderator_id: user?.id,
+      target_user_id: entry.target_user_id,
+      target_user_name: entry.target_user_name,
+      action_type: action,
+      reason: `Manual action: ${action}${timeout ? ` ${timeout}min` : ''}`,
+      duration_minutes: timeout || 0,
+      auto_detected: false,
+    }),
+    onSuccess: () => { qc.invalidateQueries(['chat-mods', roomId]); toast.success('Action applied'); },
+  });
 
-  const priorityColors = {
-    low: 'bg-gray-100 text-gray-800',
-    medium: 'bg-blue-100 text-blue-800',
-    high: 'bg-orange-100 text-orange-800',
-    urgent: 'bg-red-100 text-red-800',
-  };
+  const reportMut = useMutation({
+    mutationFn: ({ id, action }) => base44.entities.Report.update(id, {
+      status: action,
+      reviewed_by: user?.id,
+      updated_date: new Date().toISOString(),
+    }),
+    onSuccess: () => { qc.invalidateQueries(['reports']); toast.success('Report updated'); },
+  });
 
-  const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    under_review: 'bg-blue-100 text-blue-800',
-    resolved: 'bg-green-100 text-green-800',
-    dismissed: 'bg-gray-100 text-gray-800',
-  };
+  const flagged = moderations.filter(m => m.action_taken === 'flagged' || (m.violation_type !== 'safe' && !m.reviewed_by));
+  const today = new Date().toDateString();
+  const todayFlags = moderations.filter(m => new Date(m.created_date).toDateString() === today);
+  const autoDetected = moderations.filter(m => m.auto_detected);
+  const humanOverrides = moderations.filter(m => m.reviewed_by && m.override_decision === 'reversed');
+  const avgConf = flagged.length > 0 ? flagged.reduce((a, m) => a + (m.ai_confidence || 0), 0) / flagged.length : 0;
 
-  const actionIcons = {
-    mute: Mic,
-    kick: User,
-    ban: Ban,
-    warning: AlertCircle,
-  };
-
-  const pendingReports = reports.filter(r => r.status === 'pending' || r.status === 'under_review');
-  const resolvedReports = reports.filter(r => r.status === 'resolved' || r.status === 'dismissed');
-  const activeActions = actions.filter(a => a.is_active);
+  const TABS = [
+    { id: 'flagged',  label: `🚩 Flagged (${flagged.length})` },
+    { id: 'chat',     label: `💬 Chat Mod (${chatMods.length})` },
+    { id: 'reports',  label: `📋 Reports (${reports.length})` },
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <Shield className="w-8 h-8" />
-        <div>
-          <h1 className="text-3xl font-bold">Moderation Dashboard</h1>
-          <p className="text-muted-foreground">Manage reports and moderation actions</p>
+    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+      {/* Header */}
+      <div className="px-4 md:px-8 py-4 flex items-center justify-between"
+        style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        <div className="flex items-center gap-2.5">
+          <Shield className="w-5 h-5" style={{ color: GOLD }} />
+          <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            Guardian AI
+          </span>
+          <span className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.25)' }}>Moderation</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Pending Reports</CardDescription>
-            <CardTitle className="text-3xl">{pendingReports.length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Flag className="w-4 h-4" />
-              <span>Requiring attention</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Active Actions</CardDescription>
-            <CardTitle className="text-3xl">{activeActions.length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Shield className="w-4 h-4" />
-              <span>Currently enforced</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Resolved Today</CardDescription>
-            <CardTitle className="text-3xl">
-              {resolvedReports.filter(r => {
-                const reviewDate = r.reviewed_at ? new Date(r.reviewed_at) : null;
-                const today = new Date();
-                return reviewDate && reviewDate.toDateString() === today.toDateString();
-              }).length}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="w-4 h-4" />
-              <span>Cases handled</span>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats row */}
+      <div className="px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <StatCard icon={Flag} label="Flags Today" value={todayFlags.length} color="#FF6B35" />
+          <StatCard icon={Zap} label="Actions Taken" value={moderations.filter(m => m.action_taken && m.action_taken !== 'none').length} color={GOLD} />
+          <StatCard icon={Eye} label="Auto-Detected" value={autoDetected.length} color="#8B5CF6" />
+          <StatCard icon={TrendingUp} label="Human Overrides" value={humanOverrides.length} color="#00F5FF" />
+        </div>
+        {/* Toxicity gauge */}
+        <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[8px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              AI Confidence Level
+            </span>
+            <span className="text-[10px] font-black" style={{ color: avgConf > 0.7 ? '#FF4444' : avgConf > 0.4 ? GOLD : '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {Math.round(avgConf * 100)}%
+            </span>
+          </div>
+          <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #FF1564)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #00FF88, #00F5FF)' }} />
+          </div>
+        </div>
       </div>
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList>
-          <TabsTrigger value="reports">
-            Reports ({pendingReports.length})
-          </TabsTrigger>
-          <TabsTrigger value="actions">
-            Actions ({activeActions.length})
-          </TabsTrigger>
-          <TabsTrigger value="history">
-            History
-          </TabsTrigger>
-        </TabsList>
+      {/* Tabs */}
+      <div className="flex" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        {TABS.map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            className="flex-1 py-3 text-[10px] font-black uppercase transition-all"
+            style={{
+              fontFamily: 'Barlow Condensed, sans-serif',
+              color: activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.3)',
+              background: activeTab === tab.id ? 'rgba(212,175,55,0.05)' : 'transparent',
+              borderBottom: activeTab === tab.id ? `2px solid ${GOLD}` : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="reports" className="space-y-4 mt-6">
-          {reportsLoading ? (
-            <div className="text-center py-12">Loading reports...</div>
-          ) : pendingReports.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                <p className="text-muted-foreground">All caught up! No pending reports.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            pendingReports.map((report) => (
-              <Card key={report.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className={priorityColors[report.priority]}>
-                          {report.priority}
-                        </Badge>
-                        <Badge className={statusColors[report.status]}>
-                          {report.status}
-                        </Badge>
-                        <Badge variant="outline">{report.report_type}</Badge>
-                      </div>
-                      <CardTitle className="text-lg">
-                        Report against User ID: {report.reported_user_id}
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        Reported by User ID: {report.reporter_id} • {format(new Date(report.created_date), 'PPp')}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="font-medium mb-1">Description:</p>
-                    <p className="text-sm text-muted-foreground">{report.description}</p>
-                  </div>
-
-                  {selectedReport?.id === report.id && (
-                    <div className="space-y-3 border-t pt-4">
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Action Taken</label>
-                        <Select value={actionTaken} onValueChange={setActionTaken}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select action" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="warning_issued">Warning Issued</SelectItem>
-                            <SelectItem value="user_muted">User Muted</SelectItem>
-                            <SelectItem value="user_banned">User Banned</SelectItem>
-                            <SelectItem value="no_action">No Action Required</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Resolution Notes</label>
-                        <Textarea
-                          value={resolutionNotes}
-                          onChange={(e) => setResolutionNotes(e.target.value)}
-                          placeholder="Add notes about your decision..."
-                          rows={3}
-                        />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleResolveReport(report, 'resolved')}
-                          disabled={updateReportMutation.isPending}
-                          size="sm"
-                        >
-                          Resolve
-                        </Button>
-                        <Button
-                          onClick={() => handleResolveReport(report, 'dismissed')}
-                          disabled={updateReportMutation.isPending}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Dismiss
-                        </Button>
-                        <Button
-                          onClick={() => setSelectedReport(null)}
-                          variant="ghost"
-                          size="sm"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedReport?.id !== report.id && (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => setSelectedReport(report)}
-                        size="sm"
-                      >
-                        Review
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          updateReportMutation.mutate({
-                            reportId: report.id,
-                            data: { status: 'under_review', reviewed_by: user?.id },
-                          });
-                        }}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Mark Under Review
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </TabsContent>
-
-        <TabsContent value="actions" className="space-y-4 mt-6">
-          {actionsLoading ? (
-            <div className="text-center py-12">Loading actions...</div>
-          ) : activeActions.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No active moderation actions.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            activeActions.map((action) => {
-              const Icon = actionIcons[action.action_type] || Shield;
-              return (
-                <Card key={action.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-                          <Icon className="w-5 h-5 text-red-600" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg capitalize">
-                            {action.action_type}
-                          </CardTitle>
-                          <CardDescription>
-                            Target: {action.target_user_id} • By: {action.moderator_id}
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <Badge variant={action.is_permanent ? 'destructive' : 'default'}>
-                          {action.is_permanent ? 'Permanent' : `${action.duration}m`}
-                        </Badge>
-                        {action.expires_at && (
-                          <span className="text-xs text-muted-foreground">
-                            Expires: {format(new Date(action.expires_at), 'PPp')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-sm font-medium">Reason:</p>
-                        <p className="text-sm text-muted-foreground">{action.reason}</p>
-                      </div>
-                      {action.notes && (
-                        <div>
-                          <p className="text-sm font-medium">Notes:</p>
-                          <p className="text-sm text-muted-foreground">{action.notes}</p>
-                        </div>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        Created: {format(new Date(action.created_date), 'PPp')}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </TabsContent>
-
-        <TabsContent value="history" className="space-y-4 mt-6">
-          {resolvedReports.map((report) => (
-            <Card key={report.id} className="opacity-75">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={statusColors[report.status]}>
-                        {report.status}
-                      </Badge>
-                      <Badge variant="outline">{report.report_type}</Badge>
-                    </div>
-                    <CardTitle className="text-base">
-                      Report against User ID: {report.reported_user_id}
-                    </CardTitle>
-                  </div>
-                  <Clock className="w-5 h-5 text-muted-foreground" />
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-2">{report.description}</p>
-                {report.resolution_notes && (
-                  <div className="mt-3 p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-medium mb-1">Resolution:</p>
-                    <p className="text-sm text-muted-foreground">{report.resolution_notes}</p>
-                    {report.action_taken && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Action: {report.action_taken}
-                      </p>
-                    )}
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground mt-2">
-                  Resolved: {report.reviewed_at ? format(new Date(report.reviewed_at), 'PPp') : 'N/A'}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+      {/* Content */}
+      <div className="p-4 md:p-6 space-y-2 max-w-4xl mx-auto">
+        {activeTab === 'flagged' && (
+          flagged.length === 0
+            ? <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Shield className="w-14 h-14" style={{ color: 'rgba(0,255,136,0.3)' }} />
+                <p className="font-black uppercase text-lg" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI: All Clear ✓</p>
+                <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No flagged content requires review</p>
+              </div>
+            : flagged.map(mod => (
+                <FlaggedItem key={mod.id} mod={mod} user={user}
+                  onAction={(m, action) => reviewMut.mutate({ id: m.id, action })} />
+              ))
+        )}
+        {activeTab === 'chat' && (
+          chatMods.length === 0
+            ? <p className="text-center py-10 text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>No chat moderation entries</p>
+            : chatMods.map(entry => (
+                <ChatModEntry key={entry.id} entry={entry} user={user}
+                  onQuickAction={(e, action, timeout) => chatActionMut.mutate({ entry: e, action, timeout })} />
+              ))
+        )}
+        {activeTab === 'reports' && (
+          reports.length === 0
+            ? <p className="text-center py-10 text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>No pending reports</p>
+            : reports.map(report => (
+                <ReportItem key={report.id} report={report} user={user}
+                  onAction={(r, action) => reportMut.mutate({ id: r.id, action })} />
+              ))
+        )}
+      </div>
     </div>
   );
 }

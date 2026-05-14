@@ -1,0 +1,366 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import {
+  Radio, Zap, AlertTriangle, CheckCircle, Eye, EyeOff, Copy,
+  RefreshCw, Power, StopCircle, Cpu, Wifi, Clock, Monitor,
+  ChevronDown, X
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
+
+const GOLD = '#D4AF37';
+const BURGUNDY = '#800020';
+
+const PLATFORM_ICONS = {
+  youtube:  { icon: '▶', color: '#FF0000', label: 'YouTube' },
+  tiktok:   { icon: '♫', color: '#69C9D0', label: 'TikTok' },
+  facebook: { icon: 'f', color: '#1877F2', label: 'Facebook' },
+  twitch:   { icon: '◉', color: '#9146FF', label: 'Twitch' },
+  rumble:   { icon: '◈', color: '#85C742', label: 'Rumble' },
+  custom:   { icon: '◎', color: GOLD,       label: 'Custom' },
+};
+
+function fmt(ms) {
+  if (!ms) return '00:00:00';
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return [h, m, sec].map(v => String(v).padStart(2, '0')).join(':');
+}
+
+function StatusBadge({ status }) {
+  const cfg = {
+    live:        { label: 'LIVE',        bg: 'rgba(0,255,136,0.12)', color: '#00FF88', border: 'rgba(0,255,136,0.3)', pulse: true },
+    connecting:  { label: 'CONNECTING',  bg: `rgba(212,175,55,0.12)`, color: GOLD, border: `rgba(212,175,55,0.3)`, spin: true },
+    offline:     { label: 'OFFLINE',     bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' },
+    error:       { label: 'ERROR',       bg: 'rgba(255,50,50,0.12)', color: '#FF4444', border: 'rgba(255,50,50,0.3)', flash: true },
+  }[status] || { label: status?.toUpperCase(), bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' };
+
+  return (
+    <span className="flex items-center gap-1 text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+      style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
+      {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
+      {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />}
+      {cfg.label}
+    </span>
+  );
+}
+
+function BitrateSparkline({ data, degraded }) {
+  if (!data?.length) return <div className="h-8 opacity-20 flex items-center justify-center text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No data</div>;
+  const chartData = data.map((v, i) => ({ v, i }));
+  return (
+    <ResponsiveContainer width="100%" height={28}>
+      <LineChart data={chartData}>
+        <Line type="monotone" dataKey="v" stroke={degraded ? '#FF4444' : GOLD} strokeWidth={1.5} dot={false} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+function StatPill({ label, value, color }) {
+  const c = color || (value === 'OK' ? '#00FF88' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#FF4444' : GOLD);
+  return (
+    <div className="flex flex-col items-center px-2 py-1 rounded"
+      style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
+      <span className="text-[9px] font-black" style={{ color: c, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</span>
+      <span className="text-[7px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{label}</span>
+    </div>
+  );
+}
+
+function RTMPCard({ dest, health, onToggle, onReconnect }) {
+  const platform = dest.platform?.toLowerCase() || 'custom';
+  const pCfg = PLATFORM_ICONS[platform] || PLATFORM_ICONS.custom;
+  const bitrate = health?.video_bitrate_kbps || 0;
+  const target = dest.bitrate_kbps || 4000;
+  const bitrateRatio = target > 0 ? (bitrate / target) : 0;
+  const bitrateDegraded = bitrateRatio < 0.8;
+
+  const fps = health?.current_fps || 0;
+  const latency = health?.network_latency_ms || 0;
+  const dropped = health?.dropped_frames_pct || 0;
+  const history = health?.bitrate_history || [];
+
+  return (
+    <div className="rounded-xl p-4 space-y-3"
+      style={{
+        background: '#1A1A1A',
+        border: dest.status === 'live' ? `1px solid rgba(212,175,55,0.3)` : '1px solid rgba(255,255,255,0.08)',
+        boxShadow: dest.status === 'live' ? `0 0 20px rgba(212,175,55,0.08)` : 'none',
+      }}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg font-black"
+            style={{ background: `${pCfg.color}15`, border: `1px solid ${pCfg.color}30`, color: pCfg.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {pCfg.icon}
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-white">{dest.label || pCfg.label}</p>
+            <StatusBadge status={dest.status} />
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {(dest.reconnect_count || 0) > 0 && (
+            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold"
+              style={{ background: 'rgba(255,165,0,0.15)', color: '#FFA500', border: '1px solid rgba(255,165,0,0.3)' }}>
+              ⚠ {dest.reconnect_count} reconnects
+            </span>
+          )}
+          {/* Toggle */}
+          <button onClick={() => onToggle(dest)}
+            className="w-9 h-5 rounded-full relative transition-all"
+            style={{ background: dest.is_enabled ? GOLD : 'rgba(255,255,255,0.1)' }}>
+            <motion.div animate={{ x: dest.is_enabled ? 16 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className="absolute top-0.5 w-4 h-4 rounded-full"
+              style={{ background: dest.is_enabled ? '#000' : 'rgba(255,255,255,0.4)' }} />
+          </button>
+        </div>
+      </div>
+
+      {/* Bitrate bar */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[7px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>BITRATE</span>
+          <span className="text-[8px] font-bold" style={{ color: bitrateDegraded ? '#FF4444' : GOLD }}>
+            {bitrate.toLocaleString()} / {target.toLocaleString()} kbps
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <motion.div className="h-full rounded-full"
+            style={{ background: bitrateDegraded ? '#FF4444' : GOLD }}
+            animate={{ width: `${Math.min(100, bitrateRatio * 100)}%` }}
+            transition={{ duration: 0.5 }} />
+        </div>
+        <div className="mt-1.5">
+          <BitrateSparkline data={history} degraded={bitrateDegraded} />
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="flex gap-1.5">
+        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#00FF88' : fps >= 24 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#00FF88' : latency < 300 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#00FF88' : dropped < 2 ? '#FFD700' : '#FF4444'} />
+      </div>
+
+      {/* Force reconnect */}
+      <button onClick={() => onReconnect(dest)}
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all"
+        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <RefreshCw className="w-3 h-3" /> Force Reconnect
+      </button>
+    </div>
+  );
+}
+
+function EndStreamModal({ onConfirm, onCancel }) {
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.8)' }}>
+      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
+        className="w-full max-w-sm rounded-2xl p-6 space-y-4"
+        style={{ background: '#1A1A1A', border: `1px solid rgba(128,0,32,0.4)` }}>
+        <div className="flex items-center gap-3">
+          <StopCircle className="w-8 h-8 text-red-400" />
+          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
+        </div>
+        <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.5)' }}>This will end the live stream for all viewers. This action cannot be undone.</p>
+        <div className="flex gap-2">
+          <button onClick={onConfirm}
+            className="flex-1 py-2.5 rounded-xl font-black uppercase text-[11px]"
+            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            End Stream
+          </button>
+          <button onClick={onCancel}
+            className="flex-1 py-2.5 rounded-xl font-black uppercase text-[11px]"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            Cancel
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export default function ControlRoomPage() {
+  const params = new URLSearchParams(window.location.search);
+  const roomId = params.get('room_id');
+  const qc = useQueryClient();
+
+  const [showStreamKey, setShowStreamKey] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [uptime, setUptime] = useState(0);
+
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: room } = useQuery({
+    queryKey: ['cr-room', roomId],
+    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
+    enabled: !!roomId,
+    refetchInterval: 8000,
+  });
+  const { data: destinations = [] } = useQuery({
+    queryKey: ['cr-rtmp', user?.id],
+    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user.id }),
+    enabled: !!user?.id,
+    refetchInterval: 5000,
+  });
+  const { data: session } = useQuery({
+    queryKey: ['cr-session', roomId],
+    queryFn: () => base44.entities.StreamSession.filter({ room_id: roomId }).then(r => r[0]),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
+  const { data: healthMetrics = [] } = useQuery({
+    queryKey: ['cr-health', roomId],
+    queryFn: () => base44.entities.StreamHealthMetric?.filter ? base44.entities.StreamHealthMetric.filter({ room_id: roomId }, '-created_date', 20) : Promise.resolve([]),
+    enabled: !!roomId,
+    refetchInterval: 5000,
+  });
+
+  // Uptime counter
+  useEffect(() => {
+    if (!session?.started_at) return;
+    const iv = setInterval(() => {
+      setUptime(Date.now() - new Date(session.started_at).getTime());
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [session?.started_at]);
+
+  const toggleDest = useMutation({
+    mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
+    onSuccess: () => qc.invalidateQueries(['cr-rtmp', user?.id]),
+  });
+  const reconnectDest = useMutation({
+    mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { status: 'connecting', reconnect_count: (dest.reconnect_count || 0) + 1 }),
+    onSuccess: () => { qc.invalidateQueries(['cr-rtmp', user?.id]); toast.success('Reconnecting…'); },
+  });
+  const goLiveMut = useMutation({
+    mutationFn: async () => {
+      await base44.entities.Room.update(roomId, { status: 'live', started_at: new Date().toISOString() });
+      if (session?.id) await base44.entities.StreamSession.update(session.id, { started_at: new Date().toISOString(), status: 'live' });
+    },
+    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
+  });
+  const endStreamMut = useMutation({
+    mutationFn: async () => {
+      await base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() });
+      if (session?.id) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
+    },
+    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); setShowEndModal(false); toast.success('Stream ended.'); },
+  });
+
+  const latestHealth = healthMetrics[0];
+  const liveCount = destinations.filter(d => d.status === 'live').length;
+  const enabledCount = destinations.filter(d => d.is_enabled).length;
+  const hasError = destinations.some(d => d.status === 'error');
+  const hasDegraded = destinations.some(d => d.status !== 'live' && d.is_enabled);
+  const overallHealth = hasError ? 'CRITICAL' : hasDegraded ? 'DEGRADED' : 'ALL HEALTHY';
+  const healthColor = overallHealth === 'ALL HEALTHY' ? '#00FF88' : overallHealth === 'DEGRADED' ? GOLD : '#FF4444';
+  const streamKey = session?.stream_key || 'sk-live-XXXXXXXXXXXX';
+  const isLive = room?.status === 'live';
+
+  return (
+    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+      <AnimatePresence>
+        {showEndModal && <EndStreamModal onConfirm={() => endStreamMut.mutate()} onCancel={() => setShowEndModal(false)} />}
+      </AnimatePresence>
+
+      {/* Header */}
+      <div className="px-4 md:px-8 py-4 flex items-center justify-between"
+        style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        <div className="flex items-center gap-2.5">
+          <Monitor className="w-5 h-5" style={{ color: GOLD }} />
+          <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            Control Room
+          </span>
+          {room && <span className="text-[10px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.06)' }}>{room.title}</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          {!isLive ? (
+            <motion.button whileTap={{ scale: 0.96 }}
+              onClick={() => goLiveMut.mutate()}
+              disabled={goLiveMut.isPending}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
+              style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, boxShadow: `0 0 20px rgba(128,0,32,0.4)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <Radio className="w-4 h-4" /> GO LIVE
+            </motion.button>
+          ) : (
+            <button onClick={() => setShowEndModal(true)}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
+              style={{ background: 'rgba(255,50,50,0.15)', color: '#FF4444', border: '1px solid rgba(255,50,50,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <StopCircle className="w-4 h-4" /> END STREAM
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Health Summary Bar */}
+      <div className="px-4 md:px-8 py-3 flex flex-wrap items-center gap-4"
+        style={{ background: '#161616', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full" style={{ background: healthColor }} />
+          <span className="text-[10px] font-black uppercase" style={{ color: healthColor, fontFamily: 'Barlow Condensed, sans-serif' }}>{overallHealth}</span>
+        </div>
+        <div className="flex items-center gap-1 text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <Radio className="w-3 h-3" /> <span>{liveCount}/{enabledCount} destinations</span>
+        </div>
+        <div className="flex items-center gap-1 text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <Clock className="w-3 h-3" />
+          <span className="font-mono">{fmt(uptime)}</span>
+        </div>
+        {latestHealth?.cpu_usage_pct != null && (
+          <div className="flex items-center gap-1.5">
+            <Cpu className="w-3 h-3" style={{ color: GOLD }} />
+            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div className="h-full rounded-full" style={{ width: `${latestHealth.cpu_usage_pct}%`, background: latestHealth.cpu_usage_pct > 85 ? '#FF4444' : GOLD }} />
+            </div>
+            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
+          </div>
+        )}
+        {/* Stream key */}
+        <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <span className="text-[9px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            {showStreamKey ? streamKey : '●'.repeat(Math.min(streamKey.length, 16))}
+          </span>
+          <button onClick={() => setShowStreamKey(s => !s)}>
+            {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
+          </button>
+          <button onClick={() => { navigator.clipboard.writeText(streamKey); toast.success('Stream key copied!'); }}>
+            <Copy className="w-3 h-3 text-white/40" />
+          </button>
+        </div>
+      </div>
+
+      {/* RTMP Cards Grid */}
+      <div className="p-4 md:p-8">
+        {destinations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Wifi className="w-12 h-12" style={{ color: 'rgba(212,175,55,0.2)' }} />
+            <p className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>No RTMP destinations configured</p>
+            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>Add destinations in Stream Setup → RTMP</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {destinations.map(dest => (
+              <RTMPCard
+                key={dest.id}
+                dest={dest}
+                health={healthMetrics.find(h => h.destination_id === dest.id) || latestHealth}
+                onToggle={(d) => toggleDest.mutate(d)}
+                onReconnect={(d) => reconnectDest.mutate(d)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,202 +1,245 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Rocket, Search, Users, Radio, Send } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Repeat, X, Search, Users, ArrowRight, Radio } from 'lucide-react';
 import { toast } from 'sonner';
-import { fireAlert } from './HostAlertCenter';
 
-export default function RaidPanel({ roomId, currentUser, viewerCount }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCreator, setSelectedCreator] = useState(null);
-  const [countdown, setCountdown] = useState(null);
-  const countdownRef = useRef(null);
-  const searchTimeout = useRef(null);
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+const GOLD = '#D4AF37';
+const BURGUNDY = '#800020';
+
+function RaidCountdownBanner({ raid, onJoin }) {
+  const [count, setCount] = useState(10);
+  const qc = useQueryClient();
 
   useEffect(() => {
-    searchTimeout.current = setTimeout(() => setDebouncedQuery(searchQuery), 300);
-    return () => clearTimeout(searchTimeout.current);
-  }, [searchQuery]);
-
-  const { data: liveRooms = [] } = useQuery({
-    queryKey: ['live-rooms-for-raid', debouncedQuery],
-    queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20),
-    enabled: true,
-  });
-
-  const filteredRooms = liveRooms.filter(r =>
-    r.host_id !== currentUser?.id &&
-    r.title?.toLowerCase().includes(debouncedQuery.toLowerCase())
-  );
-
-  const raidMutation = useMutation({
-    mutationFn: (data) => base44.entities.RaidEvent.create(data),
-    onSuccess: () => toast.success(`Raid sent to ${selectedCreator?.title}!`),
-  });
-
-  const startCountdown = () => {
-    if (!selectedCreator) return;
-    setCountdown(10);
-    countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(countdownRef.current);
-          executeRaid();
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const executeRaid = () => {
-    raidMutation.mutate({
-      from_creator_id: currentUser?.id,
-      from_creator_username: currentUser?.full_name || currentUser?.email,
-      from_room_id: roomId,
-      to_creator_id: selectedCreator?.host_id,
-      to_creator_username: selectedCreator?.title,
-      to_room_id: selectedCreator?.id,
-      viewer_count_sent: viewerCount,
-      status: 'active',
-    });
-    fireAlert({ type: 'milestone', duration: 8000, title: `🚀 Raiding ${selectedCreator?.title} with ${viewerCount} viewers!` });
-    setSelectedCreator(null);
-    setCountdown(null);
-  };
-
-  const cancelCountdown = () => {
-    clearInterval(countdownRef.current);
-    setCountdown(null);
-  };
+    if (count <= 0) {
+      base44.entities.RaidEvent.update(raid.id, { status: 'active' }).catch(() => {});
+      qc.invalidateQueries(['raid-incoming', raid.to_room_id]);
+      return;
+    }
+    const t = setTimeout(() => setCount(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [count]);
 
   return (
-    <div className="p-4 space-y-4 h-full overflow-y-auto">
-      <div className="flex items-center gap-2">
-        <Rocket className="w-5 h-5 text-[#f97316]" />
-        <h3 className="font-semibold text-white">Raid Another Creator</h3>
-      </div>
-
-      {/* Raid countdown overlay */}
-      <AnimatePresence>
-        {countdown !== null && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ backdropFilter: 'blur(8px)', background: 'rgba(13,6,24,0.9)' }}
-          >
-            <div className="text-center">
-              <p className="text-white/70 mb-2 text-lg">Raiding</p>
-              <p className="text-2xl font-bold text-[#f97316] mb-4">{selectedCreator?.title}</p>
-              <div className="relative mb-6">
-                {[3, 2, 1].map(ring => (
-                  <motion.div
-                    key={ring}
-                    className="absolute inset-0 rounded-full border-2 border-[#f97316]"
-                    animate={{ scale: [1, 1 + ring * 0.4], opacity: [0.6, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, delay: ring * 0.2 }}
-                  />
-                ))}
-                <div className="w-28 h-28 rounded-full bg-[#f97316] flex items-center justify-center mx-auto">
-                  <span className="text-5xl font-bold text-white font-mono">{countdown}</span>
-                </div>
-              </div>
-              <p className="text-white/50 mb-4">Sending {viewerCount} viewers...</p>
-              <Button variant="outline" onClick={cancelCountdown} className="border-white/20 text-white/60">
-                Cancel Raid
-              </Button>
-            </div>
-          </motion.div>
+    <motion.div initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -80, opacity: 0 }}
+      className="fixed top-16 left-0 right-0 z-50 mx-4 rounded-2xl p-4"
+      style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 40px rgba(212,175,55,0.25)` }}>
+      <div className="text-center space-y-2">
+        <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          🔁 RAID STARTING IN
+        </p>
+        <div className="text-6xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
+          {count}
+        </div>
+        <p className="text-[12px] font-bold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          We're raiding <span style={{ color: GOLD }}>{raid.to_creator_username}</span>! Come with us 🎲
+        </p>
+        {raid.raid_message && <p className="text-[10px] italic" style={{ color: 'rgba(255,255,255,0.4)' }}>"{raid.raid_message}"</p>}
+        {count <= 0 && (
+          <button onClick={() => onJoin(raid)}
+            className="flex items-center justify-center gap-2 mx-auto px-6 py-2.5 rounded-xl font-black uppercase text-[12px]"
+            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            JOIN THE RAID <ArrowRight className="w-4 h-4" />
+          </button>
         )}
-      </AnimatePresence>
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-        <Input
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Search live creators..."
-          className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/25"
-        />
       </div>
+    </motion.div>
+  );
+}
 
-      {/* Selected preview */}
-      {selectedCreator && countdown === null && (
-        <motion.div
-          initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
-          className="p-3 bg-[#f97316]/10 border border-[#f97316]/30 rounded-xl"
-        >
-          <p className="text-xs text-[#f97316] mb-2 font-semibold">Selected for Raid</p>
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar className="w-10 h-10">
-              <AvatarFallback className="bg-[#f97316]/20 text-[#f97316] font-bold">
-                {selectedCreator.title?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+function IncomingRaidBanner({ raid, onWelcome }) {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), 15000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed bottom-24 right-4 z-50 w-72 rounded-2xl p-4 space-y-2"
+          style={{ background: '#1A1A1A', border: `2px solid ${GOLD}`, boxShadow: `0 0 30px rgba(212,175,55,0.2)` }}>
+          <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-semibold text-white">{selectedCreator.title}</p>
-              <div className="flex items-center gap-1.5 text-[10px] text-white/40">
-                <Users className="w-3 h-3" />{selectedCreator.viewer_count || 0} viewers
-              </div>
+              <p className="text-[10px] font-black uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                🔁 Incoming Raid!
+              </p>
+              <p className="text-[11px] font-bold text-white mt-0.5">
+                <span style={{ color: GOLD }}>{raid.from_creator_username}</span> is raiding you with <strong>{raid.viewer_count_sent || 0}</strong> viewers!
+              </p>
+              {raid.raid_message && <p className="text-[9px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.4)' }}>"{raid.raid_message}"</p>}
             </div>
+            <button onClick={() => setVisible(false)}><X className="w-3.5 h-3.5 text-white/40" /></button>
           </div>
-          <p className="text-xs text-white/50 mb-3">
-            Send your <strong className="text-[#f97316]">{viewerCount}</strong> viewers to this stream?
-          </p>
-          <div className="flex gap-2">
-            <Button onClick={startCountdown} className="flex-1 bg-[#f97316] hover:bg-[#fb923c] text-white font-bold gap-1.5">
-              <Rocket className="w-4 h-4" /> Start Raid!
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setSelectedCreator(null)} className="text-white/40">
-              Cancel
-            </Button>
-          </div>
+          <button onClick={() => { onWelcome(); setVisible(false); }}
+            className="w-full py-2 rounded-xl font-black uppercase text-[10px]"
+            style={{ background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.3)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            👋 Welcome Raiders!
+          </button>
         </motion.div>
       )}
+    </AnimatePresence>
+  );
+}
 
-      {/* Live rooms list */}
-      <div className="space-y-2">
-        <p className="text-[10px] text-white/30 uppercase">Live Now</p>
-        {filteredRooms.length === 0 ? (
-          <p className="text-sm text-white/30 text-center py-6">No live creators found</p>
-        ) : filteredRooms.map(room => (
-          <motion.button
-            key={room.id}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setSelectedCreator(room)}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
-              selectedCreator?.id === room.id
-                ? 'border-[#f97316]/50 bg-[#f97316]/10'
-                : 'border-white/5 bg-white/3 hover:border-white/10'
-            }`}
-          >
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            </div>
-            <Avatar className="w-8 h-8 shrink-0">
-              <AvatarFallback className="bg-gradient-to-br from-[#800020] to-[#d4af37] text-white text-xs font-bold">
-                {room.title?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{room.title}</p>
-              <div className="flex items-center gap-2 text-[10px] text-white/40">
-                <Users className="w-3 h-3" />{room.viewer_count || 0}
-                {room.type && <span>· {room.type}</span>}
+function RaidLauncher({ room, currentUser, onClose }) {
+  const [search, setSearch] = useState('');
+  const [message, setMessage] = useState('');
+  const qc = useQueryClient();
+
+  const { data: liveRooms = [] } = useQuery({
+    queryKey: ['raid-targets'],
+    queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20),
+  });
+
+  const targets = liveRooms.filter(r => r.id !== room?.id && (
+    !search || r.title?.toLowerCase().includes(search.toLowerCase())
+  ));
+
+  const raidMut = useMutation({
+    mutationFn: async (target) => {
+      const raid = await base44.entities.RaidEvent.create({
+        from_room_id: room.id,
+        to_room_id: target.id,
+        from_creator_id: currentUser.id,
+        from_creator_username: currentUser.full_name || currentUser.email,
+        to_creator_id: target.host_id || '',
+        to_creator_username: target.title,
+        viewer_count_sent: room.viewer_count || 0,
+        raid_message: message.trim(),
+        status: 'pending',
+        initiated_at: new Date().toISOString(),
+      });
+      return raid;
+    },
+    onSuccess: () => { qc.invalidateQueries(['raid-active', room?.id]); toast.success('Raid initiated! Countdown starting…'); onClose(); },
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Search className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <input placeholder="Search rooms…" value={search} onChange={e => setSearch(e.target.value)}
+          className="flex-1 bg-transparent text-[11px] outline-none"
+          style={{ color: 'white' }} />
+      </div>
+      <textarea placeholder="Raid message (optional)" value={message} onChange={e => setMessage(e.target.value)}
+        rows={2} className="w-full px-3 py-2 rounded-lg resize-none text-[10px]"
+        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', outline: 'none' }} />
+      <div className="space-y-1 max-h-56 overflow-y-auto">
+        {targets.length === 0 && <p className="text-center py-3 text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No live rooms found</p>}
+        {targets.map(target => (
+          <div key={target.id} className="flex items-center justify-between px-3 py-2 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div>
+              <p className="text-[11px] font-bold text-white">{target.title}</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Users className="w-2.5 h-2.5 text-white/30" />
+                <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{target.viewer_count || 0} viewers</span>
+                {target.category && <span className="text-[8px] px-1 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>{target.category}</span>}
               </div>
             </div>
-          </motion.button>
+            <button onClick={() => raidMut.mutate(target)} disabled={raidMut.isPending}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase"
+              style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <Repeat className="w-2.5 h-2.5" /> Raid
+            </button>
+          </div>
         ))}
       </div>
     </div>
+  );
+}
+
+export default function RaidPanelButton({ room, currentUser, isHost }) {
+  const [open, setOpen] = useState(false);
+  const [activateRaid, setActiveRaid] = useState(null);
+  const [incomingRaid, setIncomingRaid] = useState(null);
+  const qc = useQueryClient();
+
+  // Poll for outgoing raid countdown
+  const { data: outgoingRaids = [] } = useQuery({
+    queryKey: ['raid-active', room?.id],
+    queryFn: () => base44.entities.RaidEvent.filter({ from_room_id: room?.id, status: 'pending' }),
+    enabled: !!room?.id && isHost,
+    refetchInterval: 3000,
+  });
+
+  // Poll for incoming raid
+  const { data: incomingRaids = [] } = useQuery({
+    queryKey: ['raid-incoming', room?.id],
+    queryFn: () => base44.entities.RaidEvent.filter({ to_room_id: room?.id, status: 'active' }),
+    enabled: !!room?.id,
+    refetchInterval: 5000,
+  });
+
+  useEffect(() => {
+    if (outgoingRaids.length > 0 && !activateRaid) setActiveRaid(outgoingRaids[0]);
+  }, [outgoingRaids]);
+  useEffect(() => {
+    if (incomingRaids.length > 0 && !incomingRaid) setIncomingRaid(incomingRaids[0]);
+  }, [incomingRaids]);
+
+  const welcomeRaiders = async () => {
+    if (!room?.id) return;
+    await base44.entities.Message.create({
+      room_id: room.id,
+      user_id: currentUser.id,
+      user_name: 'System',
+      content: `👋 Welcome raiders from ${incomingRaid?.from_creator_username}! Make yourselves at home!`,
+      type: 'system',
+    }).catch(() => {});
+    if (incomingRaid?.id) await base44.entities.RaidEvent.update(incomingRaid.id, { status: 'completed' }).catch(() => {});
+    setIncomingRaid(null);
+  };
+
+  const joinRaid = (raid) => {
+    window.location.href = `/Room?id=${raid.to_room_id}`;
+  };
+
+  return (
+    <>
+      <AnimatePresence>
+        {activateRaid && <RaidCountdownBanner raid={activateRaid} onJoin={joinRaid} />}
+        {incomingRaid && <IncomingRaidBanner raid={incomingRaid} onWelcome={welcomeRaiders} />}
+      </AnimatePresence>
+
+      {/* Raid button (host only) */}
+      {isHost && (
+        <>
+          <button onClick={() => setOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
+            title="Raid a creator"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <Repeat className="w-3.5 h-3.5" /> Raid
+          </button>
+
+          <AnimatePresence>
+            {open && (
+              <>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={() => setOpen(false)} />
+                <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                  className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-xs p-4"
+                  style={{ background: '#1A1A1A', borderLeft: `1px solid rgba(212,175,55,0.15)` }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="w-4 h-4" style={{ color: GOLD }} />
+                      <span className="font-black uppercase text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Raid</span>
+                    </div>
+                    <button onClick={() => setOpen(false)}><X className="w-4 h-4 text-white/40" /></button>
+                  </div>
+                  <RaidLauncher room={room} currentUser={currentUser} onClose={() => setOpen(false)} />
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </>
+      )}
+    </>
   );
 }
