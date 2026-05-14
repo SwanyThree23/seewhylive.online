@@ -57,12 +57,19 @@ import PayPerViewGate from '../components/live/PayPerViewGate';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import AIModeration from '../components/live/AIModeration';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
   Video, VideoOff, Monitor, Mic, MicOff, StopCircle, Circle,
   MessageSquare, Users, BarChart2, ShoppingBag, HelpCircle, Share2,
-  Clock, Crown, AlignLeft, DollarSign, Lock
+  Clock, Crown, AlignLeft, DollarSign, Lock, Sparkles
 } from 'lucide-react';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
@@ -706,13 +713,14 @@ export default function LiveRoom() {
               style={{ borderLeft: '1px solid rgba(212,175,55,0.1)', background: 'rgba(13,6,24,0.95)' }}
             >
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-                <TabsList className="shrink-0 grid grid-cols-5 bg-[rgba(13,6,24,0.9)] border-b border-[rgba(212,175,55,0.1)] rounded-none h-10 p-0">
+                <TabsList className="shrink-0 grid grid-cols-6 bg-[rgba(13,6,24,0.9)] border-b border-[rgba(212,175,55,0.1)] rounded-none h-10 p-0">
                   {[
                     { value: 'chat', icon: MessageSquare, label: 'Chat' },
                     { value: 'guests', icon: Users, label: 'Guests' },
                     { value: 'analytics', icon: BarChart2, label: 'Stats' },
-                    { value: 'goals', icon: ShoppingBag, label: 'Goals' },
-                    { value: 'aura', icon: AlignLeft, label: 'AURA' },
+                    { value: 'monetize', icon: DollarSign, label: 'Pay' },
+                    { value: 'aura', icon: Sparkles, label: 'AI' },
+                    { value: 'shorts', icon: Video, label: 'Shorts' },
                   ].map(tab => (
                     <TabsTrigger
                       key={tab.value}
@@ -795,19 +803,37 @@ export default function LiveRoom() {
                 </TabsContent>
 
                 <TabsContent value="goals" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                  <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
-                  <GoldenWall roomId={roomId} isExpanded={true} />
-                </TabsContent>
+                   <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
+                   <GoldenWall roomId={roomId} isExpanded={true} />
+                 </TabsContent>
 
-                <TabsContent value="aura" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                  <AuraPanel
-                    roomId={roomId}
-                    isHost={isHost}
-                    streamTitle={room?.title}
-                    viewerCount={viewerCount}
-                    isLive={isLive}
-                  />
-                </TabsContent>
+                 <TabsContent value="monetize" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                   <MonetizationDashboard roomId={roomId} />
+                   {!isHost && <PaymentMethodSelector creatorId={room?.creator_id} roomId={roomId} onPaymentComplete={() => toast.success('Payment processed!')} />}
+                   {isHost && <VideoShortRecorder roomId={roomId} creatorId={user?.id} />}
+                 </TabsContent>
+
+                 <TabsContent value="aura" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                   <AuraPanel
+                     roomId={roomId}
+                     isHost={isHost}
+                     streamTitle={room?.title}
+                     viewerCount={viewerCount}
+                     isLive={isLive}
+                   />
+                   {isHost && (
+                     <>
+                       <AIPersonaCustomizer roomId={roomId} sessionId={room?.current_session_id} onCustomized={() => toast.success('AI persona updated!')} />
+                       <AuraEmotionDisplay roomId={roomId} sessionId={room?.current_session_id} auraPersona={room?.aura_persona || 'hype'} />
+                       <SwanAIRecommendations roomId={roomId} currentLayout={layoutMode} viewerCount={viewerCount} />
+                     </>
+                   )}
+                 </TabsContent>
+
+                 <TabsContent value="shorts" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                   {isHost && <VideoShortRecorder roomId={roomId} creatorId={user?.id} />}
+                   {!isHost && <p className="text-xs text-white/50">Creator shorts feature</p>}
+                 </TabsContent>
               </Tabs>
             </motion.div>
           )}

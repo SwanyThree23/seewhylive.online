@@ -17,6 +17,7 @@ const LAYOUTS = [
   { label: '6', value: 6 },
   { label: '9', value: 9 },
   { label: '12', value: 12 },
+  { label: '16', value: 16 },
   { label: '20', value: 20 },
 ];
 
@@ -27,7 +28,8 @@ function getGridClass(count, maxSlots) {
   if (maxSlots <= 6) return 'grid-cols-3';
   if (maxSlots <= 9) return 'grid-cols-3';
   if (maxSlots <= 12) return 'grid-cols-4';
-  return 'grid-cols-4 md:grid-cols-5';
+  if (maxSlots <= 16) return 'grid-cols-4';
+  return 'grid-cols-5 md:grid-cols-5';
 }
 
 export default React.memo(function GuestGrid({ participants = [], isHost, onInvite, hostId, maxGuests = 20 }) {

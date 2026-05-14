@@ -1,0 +1,71 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "properties": {
+    "sender_id": {
+      "type": "string",
+      "description": "User sending payment"
+    },
+    "recipient_id": {
+      "type": "string",
+      "description": "Creator receiving payment"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Room where transaction occurred"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Total amount in USD"
+    },
+    "platform_cut": {
+      "type": "number",
+      "description": "10% platform fee"
+    },
+    "creator_payout": {
+      "type": "number",
+      "description": "90% to creator"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "paypal",
+        "cashapp",
+        "venmo",
+        "zelle",
+        "chime"
+      ],
+      "description": "Payment method used"
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "direct_support",
+        "paywall",
+        "subscription",
+        "ppv"
+      ],
+      "description": "Type of transaction"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "sender_id",
+    "recipient_id",
+    "amount",
+    "payment_method",
+    "transaction_type"
+  ]
+}

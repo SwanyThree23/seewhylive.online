@@ -6,43 +6,37 @@
       "type": "string",
       "description": "Creator user ID"
     },
-    "stripe_account_id": {
-      "type": "string",
-      "description": "Connected Stripe account ID"
-    },
-    "stripe_connected": {
-      "type": "boolean",
-      "default": false
-    },
     "pending_balance": {
       "type": "number",
       "default": 0,
-      "description": "Pending balance in USD from tips"
+      "description": "Amount pending withdrawal"
     },
-    "total_paid_out": {
+    "total_earned": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total all-time earnings"
     },
-    "last_payout_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "last_payout_amount": {
+    "total_platform_cut": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total platform cuts taken (10%)"
     },
-    "bank_last4": {
+    "last_payout_date": {
       "type": "string",
-      "description": "Last 4 digits of connected bank"
+      "format": "date-time",
+      "description": "Last withdrawal timestamp"
     },
-    "payout_schedule": {
+    "payout_method": {
       "type": "string",
       "enum": [
-        "manual",
-        "daily",
-        "weekly"
+        "paypal",
+        "cashapp",
+        "venmo",
+        "zelle",
+        "chime",
+        "bank_transfer"
       ],
-      "default": "manual"
+      "description": "Preferred payout method"
     }
   },
   "required": [
