@@ -62,6 +62,20 @@ export default function SwanyBotWidget() {
       const t = setTimeout(() => {
         openAndGreet();
         localStorage.setItem('seewhy_aria_welcomed', 'true');
+        // Speak welcome message to new users
+        setTimeout(() => {
+          const welcomeMessage = "Welcome to SeeWhy LIVE! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
+          const utterance = new SpeechSynthesisUtterance(welcomeMessage);
+          utterance.rate = 1;
+          utterance.pitch = 1;
+          utterance.volume = 0.8;
+          utterance.lang = 'en-US';
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length > 0) {
+            utterance.voice = voices.find(v => v.name.includes('Google')) || voices[0];
+          }
+          window.speechSynthesis.speak(utterance);
+        }, 1500);
       }, 2000);
       return () => clearTimeout(t);
     } else {

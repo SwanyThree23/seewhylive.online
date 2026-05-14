@@ -37,6 +37,7 @@ import AuraPanel from '../components/live/AuraPanel';
 import GoldenWall from '../components/live/GoldenWall';
 import SuperChatBar from '../components/live/SuperChatBar';
 import SignalBars from '../components/live/SignalBars';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
