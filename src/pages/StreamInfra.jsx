@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -167,6 +168,9 @@ function StreamTab({ user }) {
 
   return (
     <div className="space-y-4">
+      {/* Enhanced Ingest Panel */}
+      <EnhancedIngestPanel roomId="main" isHost={true} />
+
       {/* Status grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
