@@ -1,119 +1,130 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Video, Mic, Users, Clock, Radio } from 'lucide-react';
+import { Video, Mic, Users, Clock, Radio, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
+import { motion } from 'framer-motion';
 
 export default function RoomCard({ room, onJoin }) {
   const isLive = room.status === 'live';
   const isScheduled = room.status === 'scheduled';
 
-  const getStatusBadge = () => {
-    if (isLive) {
-      return (
-        <Badge className="bg-red-500 text-white animate-pulse">
-          <Radio className="w-3 h-3 mr-1" />
-          LIVE
-        </Badge>
-      );
-    }
-    if (isScheduled) {
-      return (
-        <Badge variant="outline">
-          <Clock className="w-3 h-3 mr-1" />
-          Scheduled
-        </Badge>
-      );
-    }
-    return <Badge variant="secondary">Ended</Badge>;
-  };
-
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-      <div className="relative h-48 bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
-        {room.thumbnail_url ? (
-          <img 
-            src={room.thumbnail_url} 
-            alt={room.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            {room.type === 'audio' ? (
-              <Mic className="w-16 h-16 text-white opacity-50" />
-            ) : (
-              <Video className="w-16 h-16 text-white opacity-50" />
-            )}
-          </div>
-        )}
-        <div className="absolute top-3 left-3">
-          {getStatusBadge()}
-        </div>
-        {isLive && (
-          <div className="absolute top-3 right-3 bg-black/70 px-2 py-1 rounded-full flex items-center gap-1">
-            <Users className="w-4 h-4 text-white" />
-            <span className="text-white text-sm font-medium">{room.viewer_count || 0}</span>
-          </div>
-        )}
-      </div>
-
-      <CardHeader>
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg line-clamp-2 group-hover:text-purple-600 transition-colors">
-            {room.title}
-          </CardTitle>
-          <Badge variant="outline" className="capitalize shrink-0">
-            {room.type}
-          </Badge>
-        </div>
-        {room.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-            {room.description}
-          </p>
-        )}
-      </CardHeader>
-
-      <CardContent className="space-y-3">
-        {room.tags && room.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {room.tags.slice(0, 3).map((tag, idx) => (
-              <Badge key={idx} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {room.tags.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{room.tags.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
-
-        {isScheduled && room.scheduled_start && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span>{format(new Date(room.scheduled_start), 'MMM d, h:mm a')}</span>
-          </div>
-        )}
-
-        <Link to={createPageUrl(`Room?id=${room.id}`)}>
-          <Button 
-            className="w-full"
-            variant={isLive ? "default" : "outline"}
-            onClick={(e) => {
-              if (onJoin) {
-                e.preventDefault();
-                onJoin(room);
+    <Link
+      to={isLive
+        ? createPageUrl(`LiveRoom?id=${room.id}`)
+        : createPageUrl(`Room?id=${room.id}`)
+      }
+      onClick={(e) => { if (onJoin) { e.preventDefault(); onJoin(room); } }}
+    >
+      <motion.div
+        whileTap={{ scale: 0.97 }}
+        className="relative rounded-2xl overflow-hidden cursor-pointer transition-all active:opacity-90"
+        style={{ background: 'rgba(28,18,12,0.95)', border: isLive ? '1px solid rgba(204,119,85,0.35)' : '1px solid rgba(255,255,255,0.07)' }}
+      >
+        {/* Thumbnail */}
+        <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+          {room.thumbnail_url ? (
+            <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center"
+              style={{ background: isLive
+                ? 'linear-gradient(135deg, #2C1810 0%, #3D2B1F 100%)'
+                : 'linear-gradient(135deg, #16100A 0%, #1A1200 100%)' }}>
+              {room.type === 'audio'
+                ? <Mic className="w-10 h-10 opacity-20" style={{ color: '#d4af37' }} />
+                : <Video className="w-10 h-10 opacity-20" style={{ color: '#d4af37' }} />
               }
-            }}
-          >
-            {isLive ? 'Join Now' : isScheduled ? 'View Details' : 'View Recording'}
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+            </div>
+          )}
+
+          {/* Status badge */}
+          <div className="absolute top-2 left-2">
+            {isLive ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black"
+                style={{ background: 'rgba(180,50,30,0.9)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                LIVE
+              </span>
+            ) : isScheduled ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <Clock className="w-2.5 h-2.5" /> SOON
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px]"
+                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                ENDED
+              </span>
+            )}
+          </div>
+
+          {/* Viewer count */}
+          {isLive && (
+            <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(0,0,0,0.7)' }}>
+              <Users className="w-3 h-3 text-white/70" />
+              <span className="text-[11px] font-bold text-white">{(room.viewer_count || 0).toLocaleString()}</span>
+            </div>
+          )}
+
+          {/* Type badge */}
+          <div className="absolute bottom-2 right-2">
+            <span className="text-[9px] px-1.5 py-0.5 rounded capitalize"
+              style={{ background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {room.type}
+            </span>
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="px-3 py-2.5">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-bold leading-snug line-clamp-2 flex-1"
+              style={{ color: 'rgba(255,255,255,0.9)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {room.title}
+            </p>
+            <ChevronRight className="w-4 h-4 mt-0.5 shrink-0" style={{ color: isLive ? '#CC7755' : 'rgba(255,255,255,0.2)' }} />
+          </div>
+
+          {room.description && (
+            <p className="text-xs mt-1 line-clamp-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              {room.description}
+            </p>
+          )}
+
+          {/* Tags */}
+          {room.tags && room.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {room.tags.slice(0, 3).map((tag, idx) => (
+                <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded-full capitalize"
+                  style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(196,168,130,0.6)', border: '1px solid rgba(212,175,55,0.12)' }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Schedule time */}
+          {isScheduled && room.scheduled_start && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <Clock className="w-3 h-3" style={{ color: '#d4af37' }} />
+              <span className="text-[11px]" style={{ color: '#d4af37' }}>
+                {format(new Date(room.scheduled_start), 'MMM d · h:mm a')}
+              </span>
+            </div>
+          )}
+
+          {/* Join CTA */}
+          {isLive && (
+            <div className="mt-2.5 w-full py-2 rounded-xl text-xs font-black text-center uppercase tracking-wide"
+              style={{ background: 'linear-gradient(135deg, rgba(107,68,35,0.6), rgba(212,175,55,0.3))', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+              <Radio className="inline w-3 h-3 mr-1" />Join Live
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </Link>
   );
 }

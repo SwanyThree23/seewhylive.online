@@ -81,9 +81,9 @@ export default function DiscoverPage() {
           backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
           backgroundSize: '40px 40px',
         }} />
-        <div className="relative max-w-7xl mx-auto px-6 py-10">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           {/* Stats row */}
-          <div className="flex flex-wrap items-center gap-6 mb-8">
+          <div className="flex items-center gap-4 sm:gap-6 mb-6 overflow-x-auto scrollbar-hide pb-1">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-[#FF1564] animate-pulse" />
               <span className="text-3xl font-black text-white" style={{ fontFamily: 'monospace' }}>
@@ -133,8 +133,9 @@ export default function DiscoverPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
         {/* Tab bar + genre filter */}
-        <div className="flex flex-wrap items-center gap-3 justify-between">
-          <div className="flex gap-1 bg-[#07070F] border border-[#16162A] rounded-xl p-1">
+        {/* Tabs — scrollable on mobile */}
+        <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
+          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
               { id: 'live', label: 'Live', icon: Radio },
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
@@ -143,45 +144,35 @@ export default function DiscoverPage() {
             ].map(t => {
               const Icon = t.icon;
               return (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    tab === t.id
-                      ? 'bg-[#FF1564] text-white'
-                      : 'text-white/40 hover:text-white/70'
-                  }`}
-                >
+                <button key={t.id} onClick={() => setTab(t.id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                    tab === t.id ? 'bg-[#CC7755] text-white' : 'text-white/40 hover:text-white/70'
+                  }`} style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
                   <Icon className="w-3.5 h-3.5" />
                   {t.label}
                   {t.id === 'live' && liveRooms.length > 0 && (
-                    <span className="bg-white/20 rounded-full px-1 text-[9px]">{liveRooms.length}</span>
+                    <span className="bg-white/20 rounded-full px-1.5 text-[9px]">{liveRooms.length}</span>
                   )}
                 </button>
               );
             })}
           </div>
-
-          {/* Genre pills */}
-          {(tab === 'live' || tab === 'scheduled') && (
-            <div className="flex items-center gap-1 overflow-x-auto pb-1">
-              <Filter className="w-3.5 h-3.5 text-white/30 shrink-0" />
-              {GENRES.map(g => (
-                <button
-                  key={g}
-                  onClick={() => setGenre(g)}
-                  className={`shrink-0 text-[10px] px-2.5 py-1 rounded-full border transition-all ${
-                    genre === g
-                      ? 'border-[#FF1564] text-[#FF1564] bg-[#FF1564]/10'
-                      : 'border-white/10 text-white/40 hover:border-white/20'
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
+
+        {/* Genre pills */}
+        {(tab === 'live' || tab === 'scheduled') && (
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-6 px-6 pb-1">
+            {GENRES.map(g => (
+              <button key={g} onClick={() => setGenre(g)}
+                className={`shrink-0 text-[10px] px-3 py-1.5 rounded-full border transition-all active:scale-95 whitespace-nowrap ${
+                  genre === g ? 'text-white' : 'border-white/10 text-white/40'
+                }`}
+                style={genre === g ? { background: 'rgba(204,119,85,0.2)', border: '1px solid rgba(204,119,85,0.4)', color: '#CC7755' } : {}}>
+                {g}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Content */}
         <AnimatePresence mode="wait">
