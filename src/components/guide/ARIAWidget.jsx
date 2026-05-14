@@ -142,18 +142,18 @@ export default function SwanyBotWidget() {
         localStorage.setItem('seewhy_aria_welcomed', 'true');
         // Speak welcome message to new users
         setTimeout(() => {
-          const welcomeMessage = "Welcome to C Y LIVE! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
-          const utterance = new SpeechSynthesisUtterance(welcomeMessage);
-          utterance.rate = 1;
-          utterance.pitch = 1;
-          utterance.volume = 0.8;
-          utterance.lang = 'en-US';
-          const voices = window.speechSynthesis.getVoices();
-          if (voices.length > 0) {
-            utterance.voice = voices.find(v => v.name.includes('Google')) || voices[0];
-          }
-          window.speechSynthesis.speak(utterance);
-        }, 1500);
+           const welcomeMessage = "Welcome to C Y LIVE! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
+           const utterance = new SpeechSynthesisUtterance(welcomeMessage);
+           utterance.rate = 0.95;
+           utterance.pitch = 1.05;
+           utterance.volume = 0.85;
+           utterance.lang = 'en-US';
+           const voices = window.speechSynthesis.getVoices();
+           if (voices.length > 0) {
+             utterance.voice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Google')) || voices[0];
+           }
+           window.speechSynthesis.speak(utterance);
+         }, 1500);
       }, 2000);
       return () => clearTimeout(t);
     } else {
@@ -178,7 +178,7 @@ export default function SwanyBotWidget() {
 
   const speakMessage = (text) => {
     if (!audioEnabled || !text) return;
-    
+
     // Ensure voices are loaded
     const voices = synthRef.current.getVoices();
     if (voices.length === 0) {
@@ -190,19 +190,26 @@ export default function SwanyBotWidget() {
       synthRef.current.addEventListener('voiceschanged', voicesChanged);
       return;
     }
-    
+
     // Cancel any ongoing speech
     synthRef.current.cancel();
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.volume = 0.8;
+    utterance.rate = 0.95;
+    utterance.pitch = 1.05;
+    utterance.volume = 0.85;
     utterance.lang = 'en-US';
-    
-    // Use a confident voice for SwanyBot
-    utterance.voice = voices.find(v => v.name.includes('Google')) || voices[0];
-    
+
+    // Use a natural-sounding voice for SwanyBot
+    const nativeVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Google')) || voices[0];
+    utterance.voice = nativeVoice;
+
+    // Smooth playback with better audio context
+    utterance.onstart = () => {
+      if (synthRef.current) synthRef.current.pause();
+      synthRef.current.resume();
+    };
+
     synthRef.current.speak(utterance);
   };
 
