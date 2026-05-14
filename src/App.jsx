@@ -20,6 +20,8 @@ import OverlayEditor from './pages/OverlayEditor';
 import CreatorDashboard from './pages/CreatorDashboard';
 import Welcome from './pages/Welcome';
 import PKBattle from './pages/PKBattle';
+import CoverPage from './pages/CoverPage';
+import BackPage from './pages/BackPage';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -89,6 +91,8 @@ const AuthenticatedApp = () => {
       <Route path="/CreatorDashboard" element={<LayoutWrapper currentPageName="CreatorDashboard"><CreatorDashboard /></LayoutWrapper>} />
       <Route path="/Welcome" element={<Welcome />} />
       <Route path="/PKBattle" element={<LayoutWrapper currentPageName="PKBattle"><PKBattle /></LayoutWrapper>} />
+      <Route path="/CoverPage" element={<CoverPage />} />
+      <Route path="/BackPage" element={<BackPage />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
