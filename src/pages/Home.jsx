@@ -13,6 +13,7 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import { motion, AnimatePresence } from 'framer-motion';
 
 var CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'Education', 'Business', 'Sports', 'Lifestyle'];
@@ -250,6 +251,11 @@ export default function Home() {
         {/* ── ZEGOCLOUD MOBILE BANNER ── */}
         <div className="px-4 pt-4">
           <ZEGOMobileAppBanner />
+        </div>
+
+        {/* ── YOUTUBE DISCOVERY ── */}
+        <div className="px-0 pt-6 pb-4 border-t border-white/5">
+          <YouTubeDiscovery />
         </div>
 
         {/* ── CONTENT ── */}
