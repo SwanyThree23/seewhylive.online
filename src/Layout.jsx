@@ -18,6 +18,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import BrandChyron from '@/components/live/BrandChyron';
 import SignalBars from '@/components/live/SignalBars';
+import GlobalChatWidget from '@/components/live/GlobalChatWidget';
 
 var MOBILE_NAV = [
   { name: 'Home',      icon: Home,          href: createPageUrl('Home') },
@@ -274,6 +275,9 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Brand chyron */}
       <BrandChyron />
+
+      {/* Global multilingual chat widget */}
+      <GlobalChatWidget />
 
       {/* ── MOBILE BOTTOM NAV ── */}
       <div className="md:hidden fixed bottom-[34px] left-0 right-0 z-40"
