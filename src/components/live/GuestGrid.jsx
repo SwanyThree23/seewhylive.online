@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, MoreHorizontal, X, Pin, Radio } from 'lucide-react';
 import GuestDestinationsPanel from './GuestDestinationsPanel';
+import GuestStreamingPermissions from './GuestStreamingPermissions';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
@@ -190,27 +191,11 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
               {isSpotlight ? <Minimize2 className="w-3 h-3 text-white" /> : <Maximize2 className="w-3 h-3 text-white" />}
             </button>
             {hostCtrl && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="w-6 h-6 rounded bg-black/60 hover:bg-white/20 flex items-center justify-center">
-                    <MoreHorizontal className="w-3 h-3 text-white" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-[#0d0618] border-[#d4af37]/20 text-white text-xs">
-                  <DropdownMenuItem className="text-xs cursor-pointer hover:bg-white/10">
-                    <MicOff className="w-3 h-3 mr-2" /> Mute
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-xs cursor-pointer hover:bg-white/10">
-                    <Pin className="w-3 h-3 mr-2" /> Pin
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-xs cursor-pointer hover:bg-white/10">
-                    <Radio className="w-3 h-3 mr-2" /> Stream Destinations
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-xs text-red-400 cursor-pointer hover:bg-red-900/20">
-                    <X className="w-3 h-3 mr-2" /> Remove
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <GuestStreamingPermissions
+                participant={participant}
+                isHost={hostCtrl}
+                onPermissionChange={() => {}}
+              />
             )}
           </div>
         )}
