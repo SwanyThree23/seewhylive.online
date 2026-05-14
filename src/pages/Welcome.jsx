@@ -80,7 +80,7 @@ export default function WelcomePage() {
             className="mb-6 px-4 py-2 rounded-full text-xs font-bold"
             style={{ background: `${G}20`, border: `1px solid ${G}40`, color: G, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
-            🟢 BETA — Invite Only
+            🔴 LIVE — Open to All
           </motion.div>
 
           {/* Main heading */}
