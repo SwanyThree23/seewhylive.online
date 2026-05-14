@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { LayoutDashboard, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, BarChart3, ExternalLink } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
@@ -49,6 +49,51 @@ export default function CreatorDashboardPage() {
             ))}
           </div>
         </motion.div>
+      </div>
+
+      {/* Quick Integration Links */}
+      <div className="bg-[rgba(13,6,24,0.6)] border-b border-[rgba(212,175,55,0.1)] px-4 md:px-8 py-4">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-xs font-semibold text-white/50 uppercase mb-3 tracking-widest">Quick Access</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <a
+              href="https://console.evmux.com/guest/840fa8ce-69fa-46a4-b361-c6982f4a52a6"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[rgba(212,175,55,0.08)] hover:bg-[rgba(212,175,55,0.15)] text-[#d4af37] text-xs font-semibold transition-all"
+            >
+              <span>Evmux Console</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <a
+              href="https://vdo.ninja/?view=Swan23&room=SCN&solo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[rgba(139,92,246,0.08)] hover:bg-[rgba(139,92,246,0.15)] text-purple-400 text-xs font-semibold transition-all"
+            >
+              <span>vdo.ninja</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <a
+              href="https://gobrunch.com/events/394017/597197"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[rgba(0,245,255,0.08)] hover:bg-[rgba(0,245,255,0.15)] text-cyan-400 text-xs font-semibold transition-all"
+            >
+              <span>GoBrunch Event</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <a
+              href="https://socialcontactnetwork.mn.co/share/biFSYntVmu5nh1LB"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[rgba(255,136,0,0.08)] hover:bg-[rgba(255,136,0,0.15)] text-orange-400 text-xs font-semibold transition-all"
+            >
+              <span>Community Network</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Content */}

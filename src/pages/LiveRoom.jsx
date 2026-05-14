@@ -45,6 +45,8 @@ import SignalBars from '../components/live/SignalBars';
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
 import ChatOverlay from '../components/live/ChatOverlay';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -94,6 +96,7 @@ export default function LiveRoom() {
   const [screenShareStream, setScreenShareStream] = useState(null);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [videoOffUsers, setVideoOffUsers] = useState({});
+  const [showEvmux, setShowEvmux] = useState(false);
   const timerRef = useRef(null);
 
   // Real browser media (mic + camera)
@@ -383,6 +386,16 @@ export default function LiveRoom() {
                 <LowerThirdsBanner onBannerChange={setBannerConfig} />
                 {isHost && activeBattle && <PKBattleSoundboard battleId={activeBattle.id} isBattleActive={!!activeBattle} />}
                 {isHost && <ChatModeration />}
+                <VdoNinjaGuestLink roomId={roomId} />
+                {isHost && (
+                  <button
+                    onClick={() => setShowEvmux(!showEvmux)}
+                    className="w-full px-3 py-2 rounded-lg text-xs font-bold text-white/60 hover:text-white transition-all"
+                    style={{ background: showEvmux ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showEvmux ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.08)'}` }}
+                  >
+                    {showEvmux ? 'Hide' : 'Show'} Evmux Web Source
+                  </button>
+                )}
                 <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsedSeconds} hostName={user?.full_name} room={room} />
                 <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name} viewerCount={viewerCount} />
                 <WebhookHooks roomId={roomId} isHost={isHost} />
@@ -619,6 +632,11 @@ export default function LiveRoom() {
 
               {/* Live chat overlay — floating for easy access */}
               {mobilePanel === 'stage' && <ChatOverlay roomId={roomId} isVisible={true} />}
+
+              {/* Evmux web source overlay */}
+              {showEvmux && (
+               <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />
+              )}
 
           {/* Bottom bar: layout controls */}
           <div className="h-9 shrink-0 flex items-center justify-center gap-2 border-t border-white/5 bg-[rgba(13,6,24,0.8)] px-4">

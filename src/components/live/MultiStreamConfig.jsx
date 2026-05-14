@@ -67,11 +67,12 @@ export default function MultiStreamConfig({ roomId, isHost }) {
   };
 
   const platforms = [
-    { id: 'twitch', label: 'Twitch', guide: 'Get from Twitch Creator Dashboard > Settings > Stream Key' },
-    { id: 'youtube', label: 'YouTube Live', guide: 'Get from YouTube Studio > Stream Settings' },
-    { id: 'facebook', label: 'Facebook Live', guide: 'Get from Facebook Live Producer' },
-    { id: 'tiktok', label: 'TikTok Live', guide: 'Get from TikTok Creator Center' },
-    { id: 'custom', label: 'Custom RTMP', guide: 'Enter any RTMP server URL' },
+   { id: 'twitch', label: 'Twitch', guide: 'Get from Twitch Creator Dashboard > Settings > Stream Key' },
+   { id: 'youtube', label: 'YouTube Live', guide: 'Get from YouTube Studio > Stream Settings' },
+   { id: 'facebook', label: 'Facebook Live', guide: 'Get from Facebook Live Producer' },
+   { id: 'tiktok', label: 'TikTok Live', guide: 'Get from TikTok Creator Center' },
+   { id: 'evmux', label: 'Evmux', guide: 'RTMP: rtmp1.us-east-1.evmux.com/live' },
+   { id: 'custom', label: 'Custom RTMP', guide: 'Enter any RTMP server URL' },
   ];
 
   if (!isHost) {
