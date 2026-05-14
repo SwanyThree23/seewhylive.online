@@ -175,7 +175,7 @@ export default function SwanyBotWidget() {
       .replace(/`[^`]*`/g, '')
       .replace(/\n+/g, ' ')
       .trim()
-      .substring(0, 400); // cap length so it doesn't ramble
+      .substring(0, 1200); // allow full scripted responses (most browsers support up to ~5000 chars)
 
     // Cancel any ongoing speech first
     window.speechSynthesis.cancel();
