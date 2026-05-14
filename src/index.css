@@ -119,4 +119,18 @@
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Earth Tone palette — PK Battle & tournament pages */
+  .text-terracotta { color: #CC7755; }
+  .text-moss { color: #6B7C4A; }
+  .text-clay { color: #A0522D; }
+  .text-sand { color: #C4A882; }
+  .text-cream { color: #F5F0E8; }
+  .bg-dark-earth { background-color: #2C1810; }
+  .bg-mid-earth { background-color: #3D2B1F; }
+  .border-terracotta { border-color: rgba(204,119,85,0.3); }
+  .glow-terracotta { box-shadow: 0 0 20px rgba(204,119,85,0.25); }
+  .gradient-earth {
+    background: linear-gradient(135deg, #800020 0%, #A0522D 40%, #d4af37 100%);
+  }
 }

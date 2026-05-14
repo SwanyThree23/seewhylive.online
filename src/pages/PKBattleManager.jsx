@@ -13,6 +13,23 @@ import {
   BarChart2, Shield, AlertCircle, Copy, Share2, Sparkles,
   ChevronRight, Play, Square, RefreshCw, Medal
 } from 'lucide-react';
+import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+
+/* ─── Earth Tone Palette ─── */
+var ET = {
+  burgundy: '#800020',
+  gold: '#d4af37',
+  terracotta: '#CC7755',
+  moss: '#6B7C4A',
+  clay: '#A0522D',
+  sand: '#C4A882',
+  cream: '#F5F0E8',
+  darkEarth: '#2C1810',
+  midEarth: '#3D2B1F',
+  bg: '#1A0F0A',
+};
 
 /* ─── Constants ─── */
 var GIFTS = [
@@ -114,7 +131,7 @@ function WinnerOverlay({ battle, onClose }) {
               animate={{ y: '110vh', opacity: 0, rotate: i * 37 }}
               transition={{ duration: 2 + (i % 3) * 0.5, delay: i * 0.08, repeat: Infinity }}
               className="absolute w-3 h-3 rounded-sm"
-              style={{ background: ['#d4af37', '#FF1564', '#00F5FF', '#00FF88', '#8B5CF6'][i % 5] }}
+              style={{ background: [ET.gold, ET.burgundy, ET.terracotta, ET.moss, ET.clay][i % 5] }}
             />
           );
         })}
@@ -702,7 +719,10 @@ function HistoryTab({ battles, user }) {
 var TABS = [
   { id: 'invitations', label: '📨 Invitations', sub: 'Challenge & Respond' },
   { id: 'scoreboard', label: '📊 Scoreboard', sub: 'Live Battle View' },
-  { id: 'history', label: '🏆 History', sub: 'Win/Loss Record' },
+  { id: 'matchmaking', label: '⚔️ Matchmaking', sub: 'Find Opponents' },
+  { id: 'tournament', label: '🏆 Tournament', sub: 'Bracket Play' },
+  { id: 'analytics', label: '📈 Analytics', sub: 'PK Stats' },
+  { id: 'history', label: '🗂 History', sub: 'Win/Loss Record' },
 ];
 
 export default function PKBattleManager() {
@@ -770,7 +790,7 @@ export default function PKBattleManager() {
   var activeBattleCount = battles.filter(function(b) { return b.status === 'active'; }).length;
 
   return (
-    <div className="min-h-screen" style={{ background: '#0B0B18', fontFamily: 'Rajdhani, sans-serif' }}>
+    <div className="min-h-screen" style={{ background: ET.bg, fontFamily: 'Rajdhani, sans-serif' }}>
       {/* Winner overlay */}
       <AnimatePresence>
         {showWinner && pendingWinner && (
@@ -779,7 +799,7 @@ export default function PKBattleManager() {
       </AnimatePresence>
 
       {/* Header */}
-      <div style={{ background: 'rgba(7,7,15,0.98)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
+      <div style={{ background: ET.darkEarth, borderBottom: '1px solid ' + ET.gold + '25' }}>
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center gap-4">
             <Link to={createPageUrl('LiveBattles')}>
@@ -818,8 +838,8 @@ export default function PKBattleManager() {
                   onClick={function() { setActiveTab(t.id); }}
                   className="flex flex-col items-start px-5 py-2 shrink-0 border-b-2 transition-all"
                   style={{
-                    borderBottomColor: active ? '#d4af37' : 'transparent',
-                    background: active ? 'rgba(212,175,55,0.06)' : 'transparent',
+                    borderBottomColor: active ? ET.gold : 'transparent',
+                    background: active ? ET.gold + '10' : 'transparent',
                   }}
                 >
                   <span className="text-xs font-bold uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em', color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>
@@ -873,6 +893,24 @@ export default function PKBattleManager() {
             )}
             {activeTab === 'scoreboard' && (
               <ScoreboardTab battle={currentBattle} user={user} />
+            )}
+            {activeTab === 'matchmaking' && (
+              <MatchmakingQueue user={user} />
+            )}
+            {activeTab === 'tournament' && (
+              <TournamentBracket />
+            )}
+            {activeTab === 'analytics' && (
+              <PKAnalyticsDashboard battles={battles} user={user} />
+            )}
+            {activeTab === 'matchmaking' && (
+              <MatchmakingQueue user={user} />
+            )}
+            {activeTab === 'tournament' && (
+              <TournamentBracket />
+            )}
+            {activeTab === 'analytics' && (
+              <PKAnalyticsDashboard battles={battles} user={user} />
             )}
             {activeTab === 'history' && (
               <HistoryTab battles={battles} user={user} />
