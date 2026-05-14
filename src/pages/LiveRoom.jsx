@@ -35,7 +35,7 @@ import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import GuestControls from '../components/live/GuestControls';
-import MultiStreamManager from '../components/live/MultiStreamManager';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import BattleMode from '../components/streaming/BattleMode';
 import AuraPanel from '../components/live/AuraPanel';
@@ -93,7 +93,6 @@ export default function LiveRoom() {
   const [screenShareStream, setScreenShareStream] = useState(null);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [videoOffUsers, setVideoOffUsers] = useState({});
-  const [streamDestinations, setStreamDestinations] = useState([]);
   const timerRef = useRef(null);
 
   // Real browser media (mic + camera)
@@ -371,11 +370,7 @@ export default function LiveRoom() {
                     setIsScreenSharing(false);
                   }}
                 />
-                <MultiStreamManager
-                  destinations={streamDestinations}
-                  onAdd={(dest) => setStreamDestinations([...streamDestinations, { id: Date.now(), ...dest }])}
-                  onRemove={(id) => setStreamDestinations(streamDestinations.filter(d => d.id !== id))}
-                />
+                <MultiStreamConfig roomId={roomId} isHost={isHost} />
                 <GuestControls
                   participants={participants}
                   onMuteGuest={(guestId) => {}}
