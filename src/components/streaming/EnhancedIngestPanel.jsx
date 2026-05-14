@@ -6,6 +6,20 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Radio, Copy, Eye, EyeOff, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import BitratePresets from './BitratePresets';
+import GuestStreamMonitor from './GuestStreamMonitor';
+
+const PLATFORM_PRESETS = [
+  { id: 'youtube',   label: 'YouTube',   color: '#ff0000', server: 'rtmp://a.rtmp.youtube.com/live2' },
+  { id: 'twitch',    label: 'Twitch',    color: '#9146ff', server: 'rtmp://live.twitch.tv/live' },
+  { id: 'facebook',  label: 'Facebook',  color: '#1877f2', server: 'rtmps://live-api-s.facebook.com:443/rtmp' },
+  { id: 'tiktok',    label: 'TikTok',    color: '#010101', server: 'rtmp://push.tiktokv.com/rtmp' },
+  { id: 'instagram', label: 'Instagram', color: '#e1306c', server: 'rtmps://live-upload.instagram.com:443/rtmp' },
+  { id: 'linkedin',  label: 'LinkedIn',  color: '#0a66c2', server: 'rtmps://stream.linkedin.com:443/media' },
+  { id: 'kick',      label: 'Kick',      color: '#53fc18', server: 'rtmp://fa723fc1b171.global-contribute.live-video.net/app' },
+  { id: 'dlive',     label: 'DLive',     color: '#ffd700', server: 'rtmp://stream.dlive.tv/live' },
+  { id: 'custom',    label: 'Custom',    color: '#8B6F47', server: '' },
+];
 
 export default function EnhancedIngestPanel({ roomId, isHost }) {
   const [activeTab, setActiveTab] = useState('rtmp');
@@ -13,8 +27,10 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
   const [rtmpKey, setRtmpKey] = useState('sk_abc123xyz789');
   const [whipUrl, setWhipUrl] = useState('https://ingest.seewhy.live/whip');
   const [whipAuth, setWhipAuth] = useState('Bearer token_abc123xyz789');
+  const [bitrate, setBitrate] = useState(3000);
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(null);
+  const [mockGuestStreaming] = useState(true);
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
@@ -188,28 +204,35 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
 
           {/* Guest Destinations Tab */}
           <TabsContent value="guests" className="space-y-3">
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Lock className="w-4 h-4 text-[#d4af37]" />
-                <h4 className="text-sm font-bold text-white">Guest Streaming Destinations</h4>
-                <Badge className="text-[8px] bg-purple-900/50 text-purple-300">BETA</Badge>
-              </div>
-              <p className="text-[10px] text-white/50 mb-3">Allow guests and speakers to stream their content from the studio to their own streaming destinations. Each guest gets individual RTMP/WHIP ingest points.</p>
+            <div className="space-y-3">
+              {/* Guest Stream Monitor */}
+              <GuestStreamMonitor guestName="Alex (YouTube)" isStreaming={mockGuestStreaming} />
+              <GuestStreamMonitor guestName="Jordan (Twitch)" isStreaming={false} />
 
-              <div className="space-y-2">
-                <div className="bg-white/5 border border-white/10 rounded p-2">
-                  <p className="text-[10px] font-semibold text-white mb-1">Available Methods:</p>
-                  <ul className="text-[9px] text-white/60 space-y-0.5">
-                    <li>✓ Direct RTMP: Guest sends RTMP stream to their own YouTube, Twitch, etc.</li>
-                    <li>✓ WHIP Protocol: Ultra-low latency WebRTC ingest for each guest feed</li>
-                    <li>✓ Per-Guest Permissions: Control who can access streaming features</li>
-                    <li>✓ Multi-Destination Support: Each guest configures up to 5 simulcast destinations</li>
-                  </ul>
+              <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <Lock className="w-4 h-4 text-[#d4af37]" />
+                  <h4 className="text-sm font-bold text-white">Guest Destinations</h4>
+                  <Badge className="text-[8px] bg-purple-900/50 text-purple-300">BETA</Badge>
                 </div>
+                
+                <div className="space-y-3">
+                  <BitratePresets selected={bitrate} onChange={setBitrate} />
 
-                <Button className="w-full bg-[#d4af37] text-black hover:bg-[#e6c158] font-bold text-sm">
-                  Configure Guest Destinations
-                </Button>
+                  <div className="bg-white/5 border border-white/10 rounded p-2">
+                    <p className="text-[10px] font-semibold text-white mb-1">Per-Guest Controls:</p>
+                    <ul className="text-[9px] text-white/60 space-y-0.5">
+                      <li>✓ Real-time bitrate/latency monitoring</li>
+                      <li>✓ Adaptive bitrate with fallback</li>
+                      <li>✓ Multi-destination support (5+ platforms)</li>
+                      <li>✓ Permission controls per guest</li>
+                    </ul>
+                  </div>
+
+                  <Button className="w-full bg-[#d4af37] text-black hover:bg-[#e6c158] font-bold text-sm">
+                    Manage Guest Streaming
+                  </Button>
+                </div>
               </div>
             </div>
           </TabsContent>
