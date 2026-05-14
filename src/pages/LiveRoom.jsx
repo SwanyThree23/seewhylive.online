@@ -553,7 +553,6 @@ export default function LiveRoom() {
                 <Monitor className="w-4 h-4" />
               </button>
             </div>
-          </div>
 
           {/* Pre-stream countdown (scheduled, not live) */}
           {room?.status === 'scheduled' && room?.scheduled_start && !isLive && (
@@ -561,27 +560,27 @@ export default function LiveRoom() {
           )}
 
           {/* Viewer points notification */}
-               {!isHost && <PointsNotification userId={user?.id} />}
+          {!isHost && <PointsNotification userId={user?.id} />}
 
-              {/* Live chat overlay — floating for easy access */}
-              {mobilePanel === 'stage' && <ChatOverlay roomId={roomId} isVisible={true} />}
+          {/* Live chat overlay — floating for easy access */}
+          {mobilePanel === 'stage' && <ChatOverlay roomId={roomId} isVisible={true} />}
 
-              {/* Evmux web source overlay */}
-              {showEvmux && (
-                <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />
-              )}
+          {/* Evmux web source overlay */}
+          {showEvmux && (
+            <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />
+          )}
 
-              {/* Live Transcription */}
-              <LiveTranscription isLive={room?.status === 'live'} roomId={roomId} />
+          {/* Live Transcription */}
+          <LiveTranscription isLive={room?.status === 'live'} roomId={roomId} />
 
-              {/* Engagement Badges */}
-              <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={room?.creator_id} />
+          {/* Engagement Badges */}
+          <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={room?.creator_id} />
 
-              {/* Tipping Overlay */}
-              <TippingOverlay roomId={roomId} creatorId={room?.creator_id} isVisible={true} />
+          {/* Tipping Overlay */}
+          <TippingOverlay roomId={roomId} creatorId={room?.creator_id} isVisible={true} />
 
-              {/* PPV Gate */}
-              {showPPV && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => setShowPPV(false)} />}
+          {/* PPV Gate */}
+          {showPPV && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => setShowPPV(false)} />}
 
           {/* Bottom bar: layout controls */}
           <div className="h-9 shrink-0 flex items-center justify-center gap-2 border-t border-white/5 bg-[rgba(13,6,24,0.8)] px-4">
@@ -601,7 +600,7 @@ export default function LiveRoom() {
             <div className="w-px h-4 bg-white/10 mx-1" />
             <p className="text-[10px] text-white/30 font-mono">{participants.length} on stage</p>
           </div>
-        </div>
+        </div>{/* end center stage */}
 
         {/* Toggle right sidebar (desktop only) */}
         <button
@@ -796,11 +795,11 @@ export default function LiveRoom() {
               </Tabs>
             </motion.div>
           )}
-          </AnimatePresence>
-          </div>
-          </div>
+        </AnimatePresence>
 
-          {/* Mobile media controls bar */}
+      </div>{/* end 3-column flex row */}
+
+      {/* Mobile media controls bar */}
       <div className="md:hidden shrink-0 flex items-center justify-around px-4 py-2"
         style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
         <button onClick={handleMicToggle}
