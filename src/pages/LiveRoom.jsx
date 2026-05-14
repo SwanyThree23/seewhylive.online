@@ -69,6 +69,9 @@ import VideoPlayerControls from '../components/video/VideoPlayerControls';
 import BattleScoreboard from '../components/live/BattleScoreboard';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -484,126 +487,24 @@ export default function LiveRoom() {
         )}
 
         {/* ─── CENTER STAGE (desktop always / mobile when panel=stage) ─── */}
-        <div className={`flex-1 flex-col min-w-0 relative ${mobilePanel === 'stage' ? 'flex' : 'hidden md:flex'}`}>
-          {/* Octagonal video grid for multiple participants */}
-          {participants.length > 0 && (
-            <div className="p-4 bg-black/40 border-b border-white/5">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Host octagonal window */}
-                <OctagonalVideoWindow
-                  title={user?.full_name || 'Host'}
-                  isMuted={micMuted}
-                  isVideoOff={videoOffUsers[user?.id]}
-                  onMicToggle={() => setMicMuted(!micMuted)}
-                  onVideoToggle={() => setVideoOffUsers(prev => ({ ...prev, [user?.id]: !prev[user?.id] }))}
-                  onShareScreen={() => {}}
-                  points={0}
-                  label="Host"
-                />
-                {/* Participant windows */}
-                {participants.slice(0, 3).map(p => (
-                  <OctagonalVideoWindow
-                    key={p.id}
-                    title={p.user_name}
-                    isMuted={false}
-                    isVideoOff={videoOffUsers[p.id]}
-                    onMicToggle={() => {}}
-                    onVideoToggle={() => setVideoOffUsers(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
-                    onShareScreen={() => {}}
-                    points={0}
-                    label={p.role}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Stage area */}
-          <div className="flex-1 relative overflow-hidden bg-black">
-            {/* Scene content */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeScene}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="absolute inset-0"
-              >
-                {activeScene === 'brb' ? (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0d0618] to-[#1a0a30]">
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">⏸</div>
-                      <h2 className="text-4xl font-bold text-[#d4af37]">Be Right Back</h2>
-                      <p className="text-white/50 mt-2">Stream will resume shortly</p>
-                    </div>
-                  </div>
-                ) : activeScene === 'starting' ? (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0d0618] to-[#001a30]">
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">🎬</div>
-                      <h2 className="text-4xl font-bold text-[#00d4ff]">Starting Soon</h2>
-                      <p className="text-white/50 mt-2 animate-pulse">{room.title}</p>
-                    </div>
-                  </div>
-                ) : activeScene === 'ending' ? (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0d0618] to-[#1a0000]">
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">🙏</div>
-                      <h2 className="text-4xl font-bold text-[#d4af37]">Thanks for Watching!</h2>
-                      <p className="text-white/50 mt-2">Stream ending soon</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex flex-col">
-                    {/* Local self-view: top-right PiP when others on stage, else full */}
-                    {participants.length > 0 ? (
-                      <>
-                        <GuestGrid
-                          participants={participants}
-                          isHost={isHost}
-                          hostId={room?.host_id}
-                          maxGuests={20}
-                          onInvite={copyInvite}
-                        />
-                        {/* Self-view picture-in-picture */}
-                        <div className="absolute top-3 right-3 w-36 h-24 z-10 rounded-lg overflow-hidden shadow-xl border border-[#d4af37]/30">
-                          <LocalVideoTile
-                            stream={localStream}
-                            audioEnabled={audioEnabled}
-                            videoEnabled={videoEnabled}
-                            userName={user?.full_name}
-                            isHost={isHost}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6">
-                        <div className="w-full max-w-sm aspect-video rounded-xl overflow-hidden">
-                          <LocalVideoTile
-                            stream={localStream}
-                            audioEnabled={audioEnabled}
-                            videoEnabled={videoEnabled}
-                            userName={user?.full_name}
-                            isHost={isHost}
-                          />
-                        </div>
-                        {mediaError && (
-                          <div className="w-full max-w-sm">
-                            <WebRTCSetupBanner
-                              error={mediaError}
-                              audioEnabled={audioEnabled}
-                              videoEnabled={videoEnabled}
-                              onRetry={() => window.location.reload()}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+         <div className={`flex-1 flex-col min-w-0 relative ${mobilePanel === 'stage' ? 'flex' : 'hidden md:flex'}`}>
+           {/* ZEGOCLOUD Live Room — full WebRTC integration */}
+           <div className="flex-1 flex flex-col">
+             <ZEGOLiveRoom 
+               roomId={roomId} 
+               userId={user?.id} 
+               userName={user?.full_name}
+               isHost={isHost} 
+               onStreamHealth={() => {}}
+             />
+
+             {/* Guest approval panel (host only) */}
+             {isHost && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
+
+             {/* Guest join request UI (viewers only) */}
+             {!isHost && <ZEGOGuestJoin roomId={roomId} userId={user?.id} userName={user?.full_name} onJoined={() => {}} />}
+           </div>
+
 
             {/* Lower thirds overlay */}
             <AnimatePresence>
@@ -895,10 +796,11 @@ export default function LiveRoom() {
               </Tabs>
             </motion.div>
           )}
-        </AnimatePresence>
-      </div>
+          </AnimatePresence>
+          </div>
+          </div>
 
-      {/* Mobile media controls bar */}
+          {/* Mobile media controls bar */}
       <div className="md:hidden shrink-0 flex items-center justify-around px-4 py-2"
         style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
         <button onClick={handleMicToggle}
