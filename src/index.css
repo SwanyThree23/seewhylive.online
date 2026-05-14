@@ -1,88 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+    /* SeeWhy LIVE v16 Broadcast Maximalism Design Tokens */
+    --ab: #0B0B18;          /* abyss - deepest bg */
+    --bu: #07070F;          /* bunker - card bg */
+    --go: #d4af37;          /* gold - primary accent */
+    --bl: #FF1564;          /* blood - live/alert red */
+    --cy: #00F5FF;          /* cyan - data/info */
+    --em: #00FF88;          /* emerald - success/live */
+    --pu: #8B5CF6;          /* purple - AI/AURA */
+    --or: #FF8C00;          /* orange - warning/fire */
+    --bg-card: rgba(11,11,24,0.95);
+    --bg-panel: rgba(7,7,15,0.98);
+    --border-gold: rgba(212,175,55,0.2);
+    --border-subtle: rgba(255,255,255,0.06);
 
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
+    /* Shadcn compat */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+    --card: 240 20% 8%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 20% 6%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 43 65% 53%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 240 10% 14%;
+    --secondary-foreground: 0 0% 80%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 0 0% 50%;
+    --accent: 340 90% 52%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 240 10% 14%;
+    --input: 240 10% 12%;
+    --ring: 43 65% 53%;
+    --chart-1: 340 90% 52%;
+    --chart-2: 180 100% 50%;
+    --chart-3: 43 65% 53%;
+    --chart-4: 260 80% 60%;
+    --chart-5: 120 100% 55%;
+    --radius: 0.5rem;
+    --sidebar-background: 240 20% 6%;
+    --sidebar-foreground: 0 0% 80%;
+    --sidebar-primary: 43 65% 53%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 240 10% 12%;
+    --sidebar-accent-foreground: 0 0% 80%;
+    --sidebar-border: 240 10% 14%;
+    --sidebar-ring: 43 65% 53%;
+
+    /* Fonts */
+    --font-display: 'Orbitron', monospace;
+    --font-body: 'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-heading: 'Barlow Condensed', sans-serif;
   }
 }
-
-
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    background-color: #0B0B18;
+    color: rgba(255,255,255,0.85);
   }
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    letter-spacing: 0.02em;
+  }
+  code, pre, .mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* SeeWhy LIVE utility classes */
+@layer utilities {
+  .font-display { font-family: var(--font-display); }
+  .font-body { font-family: var(--font-body); }
+  .font-mono-sw { font-family: var(--font-mono); }
+  .font-heading { font-family: var(--font-heading); }
+
+  .text-gold { color: #d4af37; }
+  .text-blood { color: #FF1564; }
+  .text-cyan-sw { color: #00F5FF; }
+  .text-emerald-sw { color: #00FF88; }
+  .text-purple-sw { color: #8B5CF6; }
+
+  .bg-abyss { background-color: #0B0B18; }
+  .bg-bunker { background-color: #07070F; }
+  .bg-gold { background-color: #d4af37; }
+  .bg-blood { background-color: #FF1564; }
+
+  .border-gold { border-color: rgba(212,175,55,0.2); }
+  .border-blood { border-color: rgba(255,21,100,0.3); }
+
+  .glow-gold { box-shadow: 0 0 20px rgba(212,175,55,0.25); }
+  .glow-blood { box-shadow: 0 0 20px rgba(255,21,100,0.3); }
+  .glow-cyan { box-shadow: 0 0 20px rgba(0,245,255,0.2); }
+
+  .gradient-brand {
+    background: linear-gradient(135deg, #FF1564 0%, #FFB800 35%, #00F5FF 65%, #8B5CF6 100%);
+  }
+  .gradient-gold {
+    background: linear-gradient(90deg, #d4af37, #f5e6a3, #d4af37);
+  }
+  .panel-bg {
+    background: rgba(7,7,15,0.95);
+    border: 1px solid rgba(212,175,55,0.12);
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 }

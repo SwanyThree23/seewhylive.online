@@ -1,201 +1,342 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Home, Radio, Users, DollarSign, Search as SearchIcon, Plus, Video, Zap, Film, LayoutDashboard, Layers, Swords, Trophy, Shield } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import {
+  Home, Radio, Users, DollarSign, Search as SearchIcon,
+  Plus, Video, Zap, Film, LayoutDashboard, Layers, Swords,
+  Trophy, Shield, Server, Sparkles, Menu, X, Globe,
+  Eye, MessageSquare, Star, ChevronDown
+} from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import BrandChyron from '@/components/live/BrandChyron';
 import SignalBars from '@/components/live/SignalBars';
 
+var PRIMARY_NAV = [
+  { name: 'Home', icon: Home, href: createPageUrl('Home') },
+  { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
+  { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
+  { name: 'Battles', icon: Swords, href: createPageUrl('LiveBattles') },
+  { name: 'Leaderboard', icon: Trophy, href: createPageUrl('Leaderboard') },
+  { name: 'Watch Party', icon: Eye, href: createPageUrl('WatchParty') },
+];
+
+var CREATOR_NAV = [
+  { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'Monetize', icon: DollarSign, href: createPageUrl('Monetization') },
+  { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
+  { name: 'Stream Setup', icon: Server, href: createPageUrl('StreamInfra') },
+];
+
+var ADMIN_NAV = [
+  { name: 'Admin', icon: Shield, href: createPageUrl('AdminDashboard') },
+  { name: 'Stage', icon: Layers, href: createPageUrl('StageCleanup') },
+  { name: 'RTMP', icon: Radio, href: createPageUrl('RTMPServer') },
+];
+
+var MOBILE_NAV = [
+  { name: 'Home', icon: Home, href: createPageUrl('Home') },
+  { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
+  { name: 'Live', icon: Radio, href: createPageUrl('LiveRoom') },
+  { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'More', icon: Menu, href: createPageUrl('Communities') },
+];
+
 export default function Layout({ children, currentPageName }) {
-  const [showSearch, setShowSearch] = useState(false);
-  const { data: user } = useQuery({
+  var [showSearch, setShowSearch] = useState(false);
+  var [showMobileMenu, setShowMobileMenu] = useState(false);
+  var location = useLocation();
+
+  var { data: user } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
 
-  // Register online presence globally
+  var { data: liveRooms } = useQuery({
+    queryKey: ['layout-live-count'],
+    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 1); },
+    refetchInterval: 15000,
+  });
+
   usePresenceHeartbeat();
 
-  const navigation = [
-    { name: 'Home', icon: Home, href: createPageUrl('Home') },
-    { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
-    { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
-    { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
-    { name: 'Monetization', icon: DollarSign, href: createPageUrl('Monetization') },
-    { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
-    { name: 'Battles', icon: Swords, href: createPageUrl('LiveBattles') },
-    { name: 'Leaderboard', icon: Trophy, href: createPageUrl('Leaderboard') },
-  ];
+  var liveCount = (liveRooms && liveRooms.length) || 0;
+  var isAdmin = user && user.role === 'admin';
 
-  const adminNav = [
-    { name: 'Admin', icon: Shield, href: createPageUrl('AdminDashboard') },
-    { name: 'Stage Cleanup', icon: Layers, href: createPageUrl('StageCleanup') },
-    { name: 'RTMP Server', icon: Radio, href: createPageUrl('RTMPServer') },
-  ];
-
-  const isAdmin = user?.role === 'admin';
-
-  // Global keyboard shortcut ⌘K / Ctrl+K for search
-  useEffect(() => {
-    const handler = (e) => {
+  useEffect(function() {
+    function handler(e) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setShowSearch(s => !s);
+        setShowSearch(function(s) { return !s; });
       }
-    };
+    }
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    return function() { window.removeEventListener('keydown', handler); };
   }, []);
 
-  return (
-    <div className="min-h-screen bg-background">
-      <AnimatePresence>
-        {showSearch && <GlobalSearch onClose={() => setShowSearch(false)} />}
-      </AnimatePresence>
-      <style>{`
-        :root {
-          --primary: 25 45% 35%;
-          --primary-foreground: 40 30% 95%;
-          --accent: 35 55% 45%;
-          --accent-foreground: 40 30% 95%;
-        }
-        .bg-gradient-to-br { background-image: linear-gradient(to bottom right, #8B6F47, #A0826D); }
-        .bg-gradient-to-r { background-image: linear-gradient(to right, #8B4513, #B8860B); }
-        .from-purple-600 { --tw-gradient-from: #8B4513; }
-        .to-pink-600 { --tw-gradient-to: #B8860B; }
-        .text-purple-600 { color: #8B4513; }
-        .text-purple-500 { color: #A0826D; }
-        .text-purple-700 { color: #6B3410; }
-        .bg-purple-50 { background-color: #F5F0EB; }
-        .bg-purple-500 { background-color: #8B4513; }
-        .hover\\:bg-purple-600:hover { background-color: #6B3410; }
-        .border-purple-300 { border-color: #C4A57B; }
-      `}</style>
-      {/* Top brand gradient line — permanent brand signature, never remove */}
-      <div className="fixed top-0 left-0 right-0 z-[101] h-[2px]" style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #00F5FF, #00FF88, #8B5CF6, transparent)' }} />
+  function isActive(href) {
+    var path = location.pathname;
+    var hrefPath = href.split('?')[0];
+    return path === hrefPath || path === '/' + currentPageName;
+  }
 
-      {/* Navigation */}
-      <header className="sticky top-[2px] z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
+  return (
+    <div className="min-h-screen" style={{ background: '#0B0B18' }}>
+      <AnimatePresence>
+        {showSearch && <GlobalSearch onClose={function() { setShowSearch(false); }} />}
+      </AnimatePresence>
+
+      {/* Brand gradient top line */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[101] h-[2px]"
+        style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #00F5FF, #00FF88, #8B5CF6, transparent)' }}
+      />
+
+      {/* Header */}
+      <header
+        className="sticky top-[2px] z-50 w-full"
+        style={{ background: 'rgba(7,7,15,0.98)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}
+      >
+        <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 md:px-6">
           {/* Logo */}
-          <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center">
-              <Video className="w-6 h-6 text-white" />
+          <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #800020, #d4af37)' }}
+            >
+              <Video className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl bg-gradient-to-r bg-clip-text text-transparent">
-              SeeWhy LIVE
-            </span>
-            <SignalBars count={5} active={true} size="xs" className="ml-1 opacity-70" />
+            <div className="hidden sm:flex flex-col">
+              <span
+                className="font-bold text-base leading-none"
+                style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37', letterSpacing: '0.05em' }}
+              >
+                SeeWhy
+              </span>
+              <span className="text-[9px] text-white/30 leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em' }}>
+                LIVE
+              </span>
+            </div>
+            <SignalBars count={5} active={liveCount > 0} size="xs" className="ml-1 opacity-60" />
           </Link>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPageName === item.name;
+          {/* Primary nav — desktop */}
+          <nav className="hidden lg:flex items-center gap-0.5">
+            {PRIMARY_NAV.map(function(item) {
+              var Icon = item.icon;
+              var active = isActive(item.href);
               return (
                 <Link key={item.name} to={item.href}>
-                  <Button 
-                    variant={isActive ? "default" : "ghost"}
-                    className="gap-2"
+                  <button
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
+                    style={{
+                      fontFamily: 'Barlow Condensed, sans-serif',
+                      letterSpacing: '0.07em',
+                      background: active ? 'rgba(212,175,55,0.1)' : 'transparent',
+                      color: active ? '#d4af37' : 'rgba(255,255,255,0.45)',
+                    }}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                     {item.name}
-                  </Button>
+                  </button>
                 </Link>
               );
             })}
           </nav>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-3">
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            {/* Search trigger */}
             <button
-              onClick={() => setShowSearch(true)}
-              className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors"
+              onClick={function() { setShowSearch(true); }}
+              className="hidden md:flex items-center gap-2 text-xs text-white/30 rounded-lg px-3 py-1.5 transition-all"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
             >
-              <SearchIcon className="w-4 h-4" />
-              <span className="text-xs">Search...</span>
-              <kbd className="text-[10px] bg-white border rounded px-1 ml-1">⌘K</kbd>
+              <SearchIcon className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Search</span>
+              <kbd className="text-[9px] bg-white/5 border border-white/10 rounded px-1">⌘K</kbd>
             </button>
-            <NotificationBell />
-            {isAdmin && adminNav.map(item => (
-              <Link key={item.name} to={item.href}>
-                <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-orange-600 border border-orange-300/40 hover:bg-orange-50">
-                  <item.icon className="w-3.5 h-3.5" />
-                  {item.name}
-                </Button>
-              </Link>
-            ))}
+
+            {/* Guardian AI badge */}
+            <Link to={createPageUrl('AIModeration')} className="hidden md:flex">
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase"
+                style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}
+              >
+                <Sparkles className="w-3 h-3" />
+                Guardian AI
+              </div>
+            </Link>
+
+            {/* Creator nav links */}
+            {CREATOR_NAV.map(function(item) {
+              var Icon = item.icon;
+              return (
+                <Link key={item.name} to={item.href} className="hidden xl:flex">
+                  <button
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase transition-all"
+                    style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}
+                  >
+                    <Icon className="w-3 h-3" />
+                    {item.name}
+                  </button>
+                </Link>
+              );
+            })}
+
+            {/* Admin links */}
+            {isAdmin && ADMIN_NAV.map(function(item) {
+              var Icon = item.icon;
+              return (
+                <Link key={item.name} to={item.href} className="hidden xl:flex">
+                  <button
+                    className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase transition-all"
+                    style={{ color: 'rgba(255,140,0,0.7)', border: '1px solid rgba(255,140,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  >
+                    <Icon className="w-3 h-3" />
+                    {item.name}
+                  </button>
+                </Link>
+              );
+            })}
+
+            {/* Studio */}
             <Link to={createPageUrl('LiveRoom')}>
-              <Button variant="ghost" size="sm" className="gap-1.5 text-xs hidden md:flex text-[#800020] border border-[#800020]/30 hover:bg-[#800020]/10">
-                <Radio className="w-3.5 h-3.5" />
+              <button
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
+                style={{ background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}
+              >
+                <Radio className="w-3 h-3 text-red-400" />
                 Studio
-              </Button>
+              </button>
             </Link>
+
+            {/* Create */}
             <Link to={createPageUrl('CreateRoom')}>
-              <Button className="gap-2 bg-gradient-to-r hover:opacity-90">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Create Room</span>
+              <Button
+                size="sm"
+                className="h-8 text-xs font-bold uppercase gap-1.5"
+                style={{ background: '#d4af37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Create</span>
               </Button>
             </Link>
+
+            <NotificationBell />
             <UserMenu user={user} isAdmin={isAdmin} />
+
+            {/* Mobile menu toggle */}
+            <button
+              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-white/50"
+              style={{ background: 'rgba(255,255,255,0.05)' }}
+              onClick={function() { setShowMobileMenu(function(v) { return !v; }); }}
+            >
+              {showMobileMenu ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
           </div>
         </div>
+
+        {/* Status bar */}
+        <div
+          className="flex items-center justify-center gap-2 py-1 text-[10px] font-bold uppercase tracking-wider"
+          style={{ background: liveCount > 0 ? 'rgba(255,21,100,0.08)' : 'rgba(0,255,136,0.06)', borderTop: '1px solid rgba(255,255,255,0.04)', fontFamily: 'Barlow Condensed, sans-serif' }}
+        >
+          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+          <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+            SeeWhy LIVE
+          </span>
+          <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
+          <span style={{ color: liveCount > 0 ? '#FF1564' : 'rgba(255,255,255,0.3)' }}>
+            {liveCount > 0 ? liveCount + ' streams live' : 'Platform Ready'}
+          </span>
+          <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
+          <Link to={createPageUrl('BetaStatus')} style={{ color: 'rgba(0,245,255,0.6)', textDecoration: 'underline' }}>
+            Status →
+          </Link>
+        </div>
+
+        {/* Mobile full menu */}
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="lg:hidden overflow-hidden"
+              style={{ background: 'rgba(7,7,15,0.99)', borderTop: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <div className="p-4 grid grid-cols-3 gap-2">
+                {[...PRIMARY_NAV, ...CREATOR_NAV].map(function(item) {
+                  var Icon = item.icon;
+                  return (
+                    <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
+                      <div className="flex flex-col items-center gap-1 py-2 rounded-xl text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <Icon className="w-4 h-4 text-yellow-400/60" />
+                        <span className="text-[9px] text-white/40 uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{item.name}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Mobile Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-white">
-        <nav className="flex items-center justify-around h-16 px-4">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentPageName === item.name;
+      {/* Main content */}
+      <main className="pb-[50px] md:pb-[34px]">
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </main>
+
+      {/* Permanent brand chyron */}
+      <BrandChyron />
+
+      {/* Mobile bottom nav */}
+      <div
+        className="md:hidden fixed bottom-[34px] left-0 right-0 z-40 h-14"
+        style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.12)' }}
+      >
+        <nav className="flex items-center justify-around h-full px-2">
+          {MOBILE_NAV.map(function(item) {
+            var Icon = item.icon;
+            var active = isActive(item.href);
             return (
-              <Link 
-                key={item.name} 
+              <Link
+                key={item.name}
                 to={item.href}
-                className={`flex flex-col items-center gap-1 ${
-                  isActive ? 'text-primary' : 'text-muted-foreground'
-                }`}
+                className="flex flex-col items-center gap-0.5 px-2"
+                style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.35)' }}
               >
                 <Icon className="w-5 h-5" />
-                <span className="text-xs">{item.name}</span>
+                <span className="text-[9px] uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                  {item.name}
+                </span>
               </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* Status Banner */}
-      <div className="bg-green-600 text-white text-xs font-semibold py-1.5 px-4 flex items-center justify-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-        SeeWhy LIVE — <strong>Production Ready</strong> · 34 features live · Multi-user enabled
-        <Link to={createPageUrl('BetaStatus')} className="underline hover:no-underline ml-1">View platform status →</Link>
-      </div>
-
-      {/* Main Content */}
-      <main className="pb-[50px] md:pb-[34px]">
-        <ErrorBoundary>{children}</ErrorBoundary>
-      </main>
-
-      {/* Permanent brand chyron — never remove */}
-      <BrandChyron />
-
       {/* Footer */}
-      <footer className="hidden md:block border-t bg-white/80 py-4 px-6 text-xs text-muted-foreground">
+      <footer
+        className="hidden md:block py-3 px-6 text-[10px]"
+        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
-          <span>© {new Date().getFullYear()} SeeWhy LIVE. All rights reserved.</span>
+          <span style={{ fontFamily: 'Share Tech Mono, monospace' }}>© {new Date().getFullYear()} SeeWhy LIVE</span>
           <div className="flex items-center gap-4">
-            <Link to={createPageUrl('TermsOfService')} className="hover:text-foreground transition-colors">Terms of Service</Link>
-            <Link to={createPageUrl('PrivacyPolicy')} className="hover:text-foreground transition-colors">Privacy Policy</Link>
-            <Link to={createPageUrl('BetaStatus')} className="hover:text-foreground transition-colors">Platform Status</Link>
+            <Link to={createPageUrl('TermsOfService')} className="hover:text-white/50 transition-colors">Terms</Link>
+            <Link to={createPageUrl('PrivacyPolicy')} className="hover:text-white/50 transition-colors">Privacy</Link>
+            <Link to={createPageUrl('BetaStatus')} className="hover:text-white/50 transition-colors">Status</Link>
           </div>
         </div>
       </footer>

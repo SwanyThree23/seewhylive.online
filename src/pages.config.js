@@ -102,6 +102,7 @@ import LiveBattles from './pages/LiveBattles';
 import AdminDashboard from './pages/AdminDashboard';
 import Leaderboard from './pages/Leaderboard';
 import GuestJoin from './pages/GuestJoin';
+import StreamInfra from './pages/StreamInfra';
 import __Layout from './Layout.jsx';
 
 
@@ -161,6 +162,7 @@ export const PAGES = {
     "AdminDashboard": AdminDashboard,
     "Leaderboard": Leaderboard,
     "GuestJoin": GuestJoin,
+    "StreamInfra": StreamInfra,
 }
 
 export const pagesConfig = {

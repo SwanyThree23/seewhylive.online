@@ -225,7 +225,7 @@ export default function LiveRoom() {
   }
 
   return (
-    <div className="h-screen bg-[#0d0618] text-white flex flex-col overflow-hidden" style={{ fontFamily: 'system-ui, sans-serif' }}>
+    <div className="h-screen bg-[#0B0B18] text-white flex flex-col overflow-hidden" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
       {/* Modals */}
       <ShareModal
         isOpen={shareOpen}
