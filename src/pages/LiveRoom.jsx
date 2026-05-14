@@ -66,6 +66,9 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -857,12 +860,18 @@ export default function LiveRoom() {
                  </TabsContent>
 
                  <TabsContent value="monetize" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                   {/* Real-time Battle Scoreboard */}
+                   <BattleScoreboard roomId={roomId} />
+                   {/* Virtual Currency Tips */}
+                   <VirtualCurrencyTips roomId={roomId} creatorId={room?.creator_id} currentUser={user} isHost={isHost} />
                    <MonetizationDashboard roomId={roomId} />
                    {!isHost && <PaymentMethodSelector creatorId={room?.creator_id} roomId={roomId} onPaymentComplete={() => toast.success('Payment processed!')} />}
                    {isHost && <VideoShortRecorder roomId={roomId} creatorId={user?.id} />}
                  </TabsContent>
 
                  <TabsContent value="aura" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                   {/* AI Stream Summary */}
+                   <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title} viewerCount={viewerCount} elapsedSeconds={elapsedSeconds} />
                    <AuraPanel
                      roomId={roomId}
                      isHost={isHost}
