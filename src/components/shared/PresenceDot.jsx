@@ -9,30 +9,50 @@ export function usePresenceHeartbeat(roomId) {
   useEffect(() => {
     if (!user?.id) return;
 
+    let presenceId = null;
+
     const upsertPresence = async () => {
-      const existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
-      const data = {
-        user_id: user.id,
-        user_name: user.full_name || user.email,
-        avatar_url: user.avatar_url || '',
-        status: 'online',
-        current_room_id: roomId || '',
-        last_seen: new Date().toISOString(),
-      };
-      if (existing[0]) {
-        await base44.entities.OnlinePresence.update(existing[0].id, data);
-      } else {
-        await base44.entities.OnlinePresence.create(data);
+      try {
+        const data = {
+          user_id: user.id,
+          user_name: user.full_name || user.email,
+          avatar_url: user.avatar_url || '',
+          status: 'online',
+          current_room_id: roomId || '',
+          last_seen: new Date().toISOString(),
+        };
+        if (presenceId) {
+          await base44.entities.OnlinePresence.update(presenceId, data);
+        } else {
+          const existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
+          if (existing[0]) {
+            presenceId = existing[0].id;
+            await base44.entities.OnlinePresence.update(presenceId, data);
+          } else {
+            const created = await base44.entities.OnlinePresence.create(data);
+            presenceId = created.id;
+          }
+        }
+      } catch (error) {
+        console.warn('Presence heartbeat failed:', error);
       }
     };
 
     upsertPresence();
-    const interval = setInterval(upsertPresence, 30000); // heartbeat every 30s
+    const interval = setInterval(upsertPresence, 60000); // heartbeat every 60s (increased from 30s)
 
     const markOffline = async () => {
-      const existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
-      if (existing[0]) {
-        await base44.entities.OnlinePresence.update(existing[0].id, { status: 'offline', last_seen: new Date().toISOString() });
+      try {
+        if (presenceId) {
+          await base44.entities.OnlinePresence.update(presenceId, { status: 'offline', last_seen: new Date().toISOString() });
+        } else {
+          const existing = await base44.entities.OnlinePresence.filter({ user_id: user.id });
+          if (existing[0]) {
+            await base44.entities.OnlinePresence.update(existing[0].id, { status: 'offline', last_seen: new Date().toISOString() });
+          }
+        }
+      } catch (error) {
+        console.warn('Mark offline failed:', error);
       }
     };
 
@@ -53,7 +73,9 @@ export default function PresenceDot({ userId, size = 'sm' }) {
       return results[0] || null;
     },
     enabled: !!userId,
-    refetchInterval: 35000,
+    refetchInterval: 65000, // increased from 35s to match heartbeat
+    retry: 1,
+    retryDelay: 1000,
   });
 
   const isOnline = presence?.status === 'online';
