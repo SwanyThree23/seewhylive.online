@@ -1,0 +1,45 @@
+{
+  "name": "SwanyBotConversation",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "conversation_id": {
+      "type": "string",
+      "description": "Agent conversation ID"
+    },
+    "title": {
+      "type": "string",
+      "description": "Conversation title/topic"
+    },
+    "message_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of messages in conversation"
+    },
+    "last_message": {
+      "type": "string",
+      "description": "Last message text"
+    },
+    "last_interaction": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last interaction timestamp"
+    },
+    "summary": {
+      "type": "string",
+      "description": "AI-generated conversation summary"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "conversation_id",
+    "title"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "name": "PollTemplate",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Template name",
+      "maxLength": 100
+    },
+    "question": {
+      "type": "string",
+      "description": "Poll question",
+      "maxLength": 200
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Poll answer options"
+    },
+    "timeout_seconds": {
+      "type": "number",
+      "description": "Default poll duration in seconds",
+      "default": 60
+    },
+    "allow_re_vote": {
+      "type": "boolean",
+      "default": false,
+      "description": "Allow re-voting by default"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "quick",
+        "engagement",
+        "decision",
+        "feedback",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "Template category"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false,
+      "description": "Share with other creators"
+    }
+  },
+  "required": [
+    "creator_id",
+    "name",
+    "question",
+    "options"
+  ]
+}

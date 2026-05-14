@@ -30,6 +30,26 @@
       ],
       "default": "active",
       "description": "Poll status"
+    },
+    "timeout_seconds": {
+      "type": "number",
+      "description": "Poll duration in seconds (null = no timeout)",
+      "default": null
+    },
+    "allow_re_vote": {
+      "type": "boolean",
+      "default": false,
+      "description": "Allow users to change their vote"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Poll creation timestamp"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Poll expiration time"
     }
   },
   "required": [
