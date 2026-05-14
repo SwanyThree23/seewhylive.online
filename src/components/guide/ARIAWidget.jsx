@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { X, Send, Mic, MicOff, MessageSquare, ChevronDown, Sparkles, Volume2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { X, Send, Mic, MicOff, MessageSquare, ChevronDown, Sparkles, Volume2, Clock, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const G = '#D4AF37';
@@ -20,6 +21,20 @@ const ARIA_PROMPTS = [
   'Help me stack that bag 💰',
   'How do I create a community? 🌍',
 ];
+
+const getQuickPrompts = (prefs) => {
+  const basePrompts = ARIA_PROMPTS;
+  const personalized = [];
+  
+  // Add personalized prompts based on preferences
+  prefs?.forEach(pref => {
+    if (pref.preference_type === 'favorite_topic') {
+      personalized.push(`🌟 Tell me more about ${pref.preference_value}`);
+    }
+  });
+  
+  return [...personalized, ...basePrompts].slice(0, 8);
+};
 
 function TypingDots() {
   return (
@@ -48,12 +63,75 @@ export default function SwanyBotWidget() {
   const [hasGreeted, setHasGreeted] = useState(false);
   const [pulse, setPulse] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
   const convRef = useRef(null);
   const synthRef = useRef(window.speechSynthesis);
+  const queryClient = useQueryClient();
+
+  // Fetch current user
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch user preferences
+  const { data: userPreferences } = useQuery({
+    queryKey: ['swanyBotPreferences', user?.id],
+    queryFn: () => user ? base44.entities.SwanyBotPreference.filter({ user_id: user.id }) : Promise.resolve([]),
+    enabled: !!user,
+  });
+
+  // Fetch conversation history
+  const { data: conversationHistory } = useQuery({
+    queryKey: ['swanyBotHistory', user?.id],
+    queryFn: () => user ? base44.entities.SwanyBotConversation.filter({ user_id: user.id }, '-last_interaction', 5) : Promise.resolve([]),
+    enabled: !!user,
+  });
+
+  // Save preferences
+  const savePreferenceMutation = useMutation({
+    mutationFn: async (pref) => {
+      if (!user) return;
+      const existing = userPreferences?.find(p => p.preference_type === pref.preference_type);
+      if (existing) {
+        await base44.entities.SwanyBotPreference.update(existing.id, { preference_value: pref.preference_value });
+      } else {
+        await base44.entities.SwanyBotPreference.create({
+          user_id: user.id,
+          ...pref,
+          created_at: new Date().toISOString(),
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['swanyBotPreferences', user?.id] });
+    },
+  });
+
+  // Save conversation
+  const saveConversationMutation = useMutation({
+    mutationFn: async (convData) => {
+      if (!user || !convRef.current) return;
+      const existing = conversationHistory?.find(c => c.conversation_id === convRef.current.id);
+      if (existing) {
+        await base44.entities.SwanyBotConversation.update(existing.id, {
+          message_count: convData.message_count,
+          last_message: convData.last_message,
+          last_interaction: new Date().toISOString(),
+        });
+      } else {
+        await base44.entities.SwanyBotConversation.create({
+          user_id: user.id,
+          conversation_id: convRef.current.id,
+          ...convData,
+          last_interaction: new Date().toISOString(),
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['swanyBotHistory', user?.id] });
+    },
+  });
 
   useEffect(() => {
     // Auto-welcome on first visit
@@ -182,6 +260,15 @@ export default function SwanyBotWidget() {
     setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
 
     await base44.agents.addMessage(conv, { role: 'user', content: trimmed });
+
+    // Auto-save conversation
+    if (messages.length > 0) {
+      saveConversationMutation.mutate({
+        title: messages[0]?.content?.substring(0, 50) || 'Chat',
+        message_count: messages.length + 1,
+        last_message: trimmed,
+      });
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -331,37 +418,63 @@ export default function SwanyBotWidget() {
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3" style={{ minHeight: 0 }}>
 
-                  {/* Empty state — quick prompts */}
-                  {messages.length === 0 && !loading && (
-                    <div className="space-y-3">
-                      <div className="text-center pt-4 pb-2">
-                        <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center"
-                          style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)' }}>
-                          <Sparkles className="w-6 h-6" style={{ color: G }} />
-                        </div>
-                        <p className="font-black text-sm uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                          SwanyBot in the Building 👑
-                        </p>
-                        <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          Your guide, your hype man — ask me anything!
-                        </p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {ARIA_PROMPTS.map(q => (
-                          <button key={q} onClick={() => quickAsk(q)}
-                            className="text-left px-2.5 py-2 rounded-lg text-[10px] font-bold transition-all active:scale-95 leading-tight"
-                            style={{
-                              background: 'rgba(212,175,55,0.06)',
-                              border: `1px solid ${G}18`,
-                              color: 'rgba(255,255,255,0.5)',
-                              fontFamily: 'Barlow Condensed, sans-serif'
-                            }}>
-                            {q}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* Empty state — history + quick prompts */}
+                   {messages.length === 0 && !loading && (
+                     <div className="space-y-3">
+                       <div className="text-center pt-4 pb-2">
+                         <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center"
+                           style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)' }}>
+                           <Sparkles className="w-6 h-6" style={{ color: G }} />
+                         </div>
+                         <p className="font-black text-sm uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                           SwanyBot in the Building 👑
+                         </p>
+                         <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                           Your guide, your hype man — ask me anything!
+                         </p>
+                       </div>
+
+                       {/* History quick access */}
+                       {conversationHistory && conversationHistory.length > 0 && (
+                         <div>
+                           <button
+                             onClick={() => setShowHistory(!showHistory)}
+                             className="w-full flex items-center gap-2 text-xs font-bold px-2 py-1.5 rounded-lg"
+                             style={{ background: `${G}18`, color: G, fontFamily: 'Barlow Condensed, sans-serif' }}
+                           >
+                             <Clock className="w-3 h-3" /> History ({conversationHistory.length})
+                           </button>
+                           {showHistory && (
+                             <div className="space-y-1 mt-2">
+                               {conversationHistory.slice(0, 3).map(conv => (
+                                 <div key={conv.id} className="text-xs p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                                   <p className="text-white/70 truncate">{conv.title}</p>
+                                   <p className="text-white/30 text-[9px] mt-0.5">
+                                     {new Date(conv.last_interaction).toLocaleDateString()}
+                                   </p>
+                                 </div>
+                               ))}
+                             </div>
+                           )}
+                         </div>
+                       )}
+
+                       <div className="grid grid-cols-2 gap-1.5">
+                         {getQuickPrompts(userPreferences).map(q => (
+                           <button key={q} onClick={() => quickAsk(q)}
+                             className="text-left px-2.5 py-2 rounded-lg text-[10px] font-bold transition-all active:scale-95 leading-tight"
+                             style={{
+                               background: 'rgba(212,175,55,0.06)',
+                               border: `1px solid ${G}18`,
+                               color: 'rgba(255,255,255,0.5)',
+                               fontFamily: 'Barlow Condensed, sans-serif'
+                             }}>
+                             {q}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+                   )}
 
                   {/* Messages */}
                   {messages.filter(m => m.role === 'user' || m.role === 'assistant').map((msg, i) => {
