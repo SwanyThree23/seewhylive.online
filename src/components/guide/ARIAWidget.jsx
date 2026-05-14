@@ -64,7 +64,7 @@ export default function SwanyBotWidget() {
         localStorage.setItem('seewhy_aria_welcomed', 'true');
         // Speak welcome message to new users
         setTimeout(() => {
-          const welcomeMessage = "Welcome to SeeWhy LIVE! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
+          const welcomeMessage = "Welcome to C Y LIVE! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
           const utterance = new SpeechSynthesisUtterance(welcomeMessage);
           utterance.rate = 1;
           utterance.pitch = 1;
@@ -166,7 +166,7 @@ export default function SwanyBotWidget() {
     // Send greeting
     await base44.agents.addMessage(conv, {
       role: 'user',
-      content: "Yo! I just got here and I want to know what SeeWhy LIVE is all about. Introduce yourself and break it down for me!",
+      content: "Yo! I just got here and I want to know what C Y LIVE is all about. Introduce yourself and break it down for me!",
     });
   }, [hasGreeted, initConversation]);
 
