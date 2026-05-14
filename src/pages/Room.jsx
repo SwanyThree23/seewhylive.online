@@ -28,6 +28,7 @@ import RaidPanelButton from '../components/live/RaidPanel';
 import GiftShopTray from '../components/live/GiftShopTray';
 import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -42,6 +43,9 @@ export default function RoomPage() {
   const [isRecording, setIsRecording] = useState(false);
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
+
+  // Real local camera/mic stream
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -381,9 +385,11 @@ export default function RoomPage() {
                         onUpdateParticipant={(id, updates) => 
                           updateParticipantMutation.mutate({ id, updates })
                         }
-                        localStream={null}
-                        localAudioEnabled={currentParticipant?.is_audio_enabled ?? true}
-                        localVideoEnabled={currentParticipant?.is_video_enabled ?? true}
+                        localStream={localStream}
+                        localAudioEnabled={audioEnabled}
+                        localVideoEnabled={videoEnabled}
+                        onToggleAudio={toggleAudio}
+                        onToggleVideo={toggleVideo}
                       />
                     </TabsContent>
                   ))}
@@ -425,36 +431,34 @@ export default function RoomPage() {
                      <>
                     <Button
                       size="lg"
-                      variant={currentParticipant.is_audio_enabled ? "default" : "destructive"}
+                      variant={audioEnabled ? "default" : "destructive"}
                       className="w-16 h-16 rounded-full"
-                      onClick={() => updateParticipantMutation.mutate({
-                        id: currentParticipant.id,
-                        updates: { is_audio_enabled: !currentParticipant.is_audio_enabled }
-                      })}
+                      onClick={() => {
+                        toggleAudio();
+                        updateParticipantMutation.mutate({
+                          id: currentParticipant.id,
+                          updates: { is_audio_enabled: !audioEnabled }
+                        });
+                      }}
                       disabled={!isSpeaker}
                     >
-                      {currentParticipant.is_audio_enabled ? (
-                        <Mic className="w-6 h-6" />
-                      ) : (
-                        <MicOff className="w-6 h-6" />
-                      )}
+                      {audioEnabled ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
                     </Button>
 
                     <Button
                       size="lg"
-                      variant={currentParticipant.is_video_enabled ? "default" : "outline"}
+                      variant={videoEnabled ? "default" : "outline"}
                       className="w-16 h-16 rounded-full"
-                      onClick={() => updateParticipantMutation.mutate({
-                        id: currentParticipant.id,
-                        updates: { is_video_enabled: !currentParticipant.is_video_enabled }
-                      })}
+                      onClick={() => {
+                        toggleVideo();
+                        updateParticipantMutation.mutate({
+                          id: currentParticipant.id,
+                          updates: { is_video_enabled: !videoEnabled }
+                        });
+                      }}
                       disabled={!isSpeaker}
                     >
-                      {currentParticipant.is_video_enabled ? (
-                        <Video className="w-6 h-6" />
-                      ) : (
-                        <VideoOff className="w-6 h-6" />
-                      )}
+                      {videoEnabled ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
                     </Button>
 
                     {!isSpeaker && (

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function StageView({ stage, participants, currentUserId, onUpdateParticipant, localStream, localAudioEnabled, localVideoEnabled }) {
+export default function StageView({ stage, participants, currentUserId, onUpdateParticipant, localStream, localAudioEnabled, localVideoEnabled, onToggleAudio, onToggleVideo }) {
   const stageParticipants = participants.filter(p => p.stage_id === stage.id);
   const currentParticipant = participants.find(p => p.user_id === currentUserId);
   const isCurrentUserSpeaker = currentParticipant && ['host', 'co-host', 'speaker', 'guest'].includes(currentParticipant.role);
@@ -34,12 +34,14 @@ export default function StageView({ stage, participants, currentUserId, onUpdate
         return 'grid-cols-1';
       case 'sidebar':
         return 'grid-cols-3';
-      default:
-        const count = speakers.length;
-        if (count <= 2) return 'grid-cols-2';
+      default: {
+        // total visible tiles = other speakers + (1 if current user is on stage)
+        const count = otherSpeakers.length + (isCurrentUserSpeaker ? 1 : 0);
+        if (count <= 1) return 'grid-cols-1';
         if (count <= 4) return 'grid-cols-2';
         if (count <= 6) return 'grid-cols-3';
         return 'grid-cols-4';
+      }
     }
   };
 
@@ -70,6 +72,8 @@ export default function StageView({ stage, participants, currentUserId, onUpdate
                 audioEnabled={localAudioEnabled}
                 videoEnabled={localVideoEnabled}
                 onUpdateParticipant={onUpdateParticipant}
+                onToggleAudio={onToggleAudio}
+                onToggleVideo={onToggleVideo}
               />
             )}
             {otherSpeakers.map((participant) => (
@@ -96,7 +100,7 @@ export default function StageView({ stage, participants, currentUserId, onUpdate
 }
 
 // Local camera tile — renders the current user's actual webcam feed inside the grid
-function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled, onUpdateParticipant }) {
+function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled, onUpdateParticipant, onToggleAudio, onToggleVideo }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -161,13 +165,13 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
         {/* Controls for current user — mic/cam toggles inline */}
         <div className="absolute top-2 right-2 flex gap-1">
           <button
-            onClick={() => onUpdateParticipant(participant.id, { is_audio_enabled: !participant.is_audio_enabled })}
+            onClick={() => { onToggleAudio?.(); onUpdateParticipant(participant.id, { is_audio_enabled: !audioEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
             style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#ef4444'}` }}>
             {audioEnabled ? <Mic className="w-3.5 h-3.5 text-green-400" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
           <button
-            onClick={() => onUpdateParticipant(participant.id, { is_video_enabled: !participant.is_video_enabled })}
+            onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
             style={{ background: videoEnabled ? 'rgba(96,165,250,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${videoEnabled ? '#60a5fa' : '#ef4444'}` }}>
             {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
