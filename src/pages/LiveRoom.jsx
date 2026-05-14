@@ -80,7 +80,8 @@ import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
-import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import PollLaunchBar from '../components/live/PollLaunchBar';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -254,6 +255,13 @@ export default function LiveRoom() {
   const isHost = room?.host_id === user?.id;
   const isLive = room?.status === 'live';
 
+  const { data: activePollData } = useQuery({
+    queryKey: ['livepoll', roomId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: !!roomId,
+    refetchInterval: 8000,
+  });
+
   const formatElapsed = (s) => {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
@@ -335,8 +343,8 @@ export default function LiveRoom() {
           />
         )}
 
-        {/* Quick Poll */}
-        <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />
+        {/* Poll Manager */}
+        <PollLaunchBar roomId={roomId} hostId={user?.id} isHost={isHost} activePoll={activePollData} />
 
         {/* Share */}
         <button onClick={() => setShareOpen(true)}
@@ -529,6 +537,14 @@ export default function LiveRoom() {
              {!isHost && <ZEGOGuestJoin roomId={roomId} userId={user?.id} userName={user?.full_name} onJoined={() => {}} />}
            </div>
 
+
+            {/* Live Poll Overlay — real-time voting on the broadcast canvas */}
+            <LivePollOverlay
+              roomId={roomId}
+              currentUser={user}
+              isHost={isHost}
+              position="bottom-left"
+            />
 
             {/* Lower thirds overlay */}
             <AnimatePresence>
