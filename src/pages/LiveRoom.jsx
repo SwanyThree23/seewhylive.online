@@ -47,6 +47,7 @@ import InteractivePollingSystem from '../components/live/InteractivePollingSyste
 import ChatOverlay from '../components/live/ChatOverlay';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import GuestConnector from '../components/live/GuestConnector';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -386,6 +387,7 @@ export default function LiveRoom() {
                 <LowerThirdsBanner onBannerChange={setBannerConfig} />
                 {isHost && activeBattle && <PKBattleSoundboard battleId={activeBattle.id} isBattleActive={!!activeBattle} />}
                 {isHost && <ChatModeration />}
+                {isHost && <GuestConnector roomId={roomId} roomName={room?.title} />}
                 <VdoNinjaGuestLink roomId={roomId} />
                 {isHost && (
                   <button
