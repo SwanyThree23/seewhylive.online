@@ -1,0 +1,54 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room ID"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who sent the message"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Display name of the sender"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content",
+      "maxLength": 500
+    },
+    "is_moderator": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether sender is a moderator"
+    },
+    "reactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "emoji": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Emoji reactions on the message"
+    },
+    "deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete flag"
+    }
+  },
+  "required": [
+    "room_id",
+    "user_id",
+    "user_name",
+    "content"
+  ]
+}

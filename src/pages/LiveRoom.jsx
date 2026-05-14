@@ -44,6 +44,7 @@ import SuperChatBar from '../components/live/SuperChatBar';
 import SignalBars from '../components/live/SignalBars';
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import ChatOverlay from '../components/live/ChatOverlay';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -614,7 +615,10 @@ export default function LiveRoom() {
           )}
 
           {/* Viewer points notification */}
-          {!isHost && <PointsNotification userId={user?.id} />}
+               {!isHost && <PointsNotification userId={user?.id} />}
+
+              {/* Live chat overlay — floating for easy access */}
+              {mobilePanel === 'stage' && <ChatOverlay roomId={roomId} isVisible={true} />}
 
           {/* Bottom bar: layout controls */}
           <div className="h-9 shrink-0 flex items-center justify-center gap-2 border-t border-white/5 bg-[rgba(13,6,24,0.8)] px-4">
