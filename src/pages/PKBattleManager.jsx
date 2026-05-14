@@ -16,6 +16,7 @@ import {
 import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import TournamentBracket from '../components/pk/TournamentBracket';
 import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import BattleOverlay from '../components/pk/BattleOverlay';
 
 /* ─── Earth Tone Palette (No Pink) ─── */
 var ET = {
@@ -439,17 +440,8 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
 /* ═══════════════════════════
    TAB: LIVE SCOREBOARD
 ═══════════════════════════ */
-function ScoreboardTab({ battle, user }) {
-  var [flyingGifts, setFlyingGifts] = useState([]);
-  var giftIdRef = useRef(0);
+function ScoreboardTab({ battle, user, onBattleUpdate }) {
   var qc = useQueryClient();
-  var timerRef = useRef(null);
-  var [timeLeft, setTimeLeft] = useState(battle ? battle.duration_seconds : 180);
-
-  var isActive = battle && battle.status === 'active';
-  var creatorScore = (battle && battle.creator_score) || 0;
-  var challengerScore = (battle && battle.challenger_score) || 0;
-  var totalPts = creatorScore + challengerScore;
 
   // Real-time subscription
   useEffect(function() {
@@ -459,46 +451,7 @@ function ScoreboardTab({ battle, user }) {
       qc.invalidateQueries(['pk-battles']);
     });
     return unsub;
-  }, [battle && battle.id, qc]);
-
-  // Timer
-  useEffect(function() {
-    if (!battle || !isActive) { return; }
-    var endsAt = new Date(battle.started_at).getTime() + battle.duration_seconds * 1000;
-    function tick() {
-      var rem = Math.max(0, Math.floor((endsAt - Date.now()) / 1000));
-      setTimeLeft(rem);
-    }
-    tick();
-    timerRef.current = setInterval(tick, 1000);
-    return function() { clearInterval(timerRef.current); };
-  }, [battle && battle.id, isActive]);
-
-  var addGiftMutation = useMutation({
-    mutationFn: function(vars) {
-      var update = {};
-      if (vars.side === 'creator') {
-        update.creator_score = creatorScore + vars.pts;
-        update.creator_tips = Math.floor(((battle && battle.creator_tips) || 0) + vars.usd * 100) / 100;
-      } else {
-        update.challenger_score = challengerScore + vars.pts;
-        update.challenger_tips = Math.floor(((battle && battle.challenger_tips) || 0) + vars.usd * 100) / 100;
-      }
-      return base44.entities.PKBattle.update(battle.id, update);
-    },
-    onSuccess: function() { qc.invalidateQueries(['pk-battles']); },
-  });
-
-  function sendGift(side, gift) {
-    if (!battle || !isActive) { toast.error('Battle is not active'); return; }
-    var id = ++giftIdRef.current;
-    setFlyingGifts(function(p) { return p.concat([{ id: id, emoji: gift.emoji, side: side }]); });
-    setTimeout(function() { setFlyingGifts(function(p) { return p.filter(function(g) { return g.id !== id; }); }); }, 1600);
-    addGiftMutation.mutate({ side: side, pts: gift.pts, usd: gift.usd });
-  }
-
-  var creatorPct = pct(creatorScore, challengerScore);
-  var challengerPct = 100 - creatorPct;
+  }, [battle && battle.id]);
 
   if (!battle) {
     return (
@@ -510,127 +463,10 @@ function ScoreboardTab({ battle, user }) {
   }
 
   return (
-    <div className="space-y-4 relative">
-      {/* Flying gifts */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-30">
-        <AnimatePresence>
-          {flyingGifts.map(function(g) { return <FlyingGift key={g.id} emoji={g.emoji} side={g.side === 'creator' ? 'left' : 'right'} />; })}
-        </AnimatePresence>
-      </div>
-
-      {/* Battle header */}
-      <div className="rounded-xl p-4" style={{ background: 'rgba(7,7,15,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            {isActive ? (
-              <Badge className="text-xs animate-pulse" style={{ background: 'rgba(255,21,100,0.2)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)' }}>🔴 LIVE</Badge>
-            ) : (
-              <Badge className="text-xs" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', border: 'none' }}>{battle.status.toUpperCase()}</Badge>
-            )}
-            <span className="text-sm font-bold text-white/80 truncate">{battle.title}</span>
-          </div>
-          <div className="font-black text-2xl tabular-nums" style={{ fontFamily: 'Orbitron, monospace', color: isActive ? '#d4af37' : 'rgba(255,255,255,0.3)' }}>
-            {fmt(timeLeft)}
-          </div>
-        </div>
-
-        {/* Big score comparison */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl mx-auto mb-1" style={{ background: 'rgba(59,130,246,0.2)', color: '#3b82f6' }}>
-              {battle.creator_name.charAt(0).toUpperCase()}
-            </div>
-            <p className="text-xs font-bold text-white/80 truncate">{battle.creator_name}</p>
-            <p className="text-3xl font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#3b82f6' }}>{creatorScore.toLocaleString()}</p>
-            <p className="text-[9px] text-white/30">pts</p>
-          </div>
-
-          <div className="flex flex-col items-center justify-center gap-1">
-            <Swords className="w-6 h-6 text-yellow-400" />
-            <div className="text-xs font-black text-yellow-400">VS</div>
-            <div className="text-[10px] text-white/30">{totalPts.toLocaleString()} total</div>
-          </div>
-
-          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl mx-auto mb-1" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
-              {(battle.challenger_name || '?').charAt(0).toUpperCase()}
-            </div>
-            <p className="text-xs font-bold text-white/80 truncate">{battle.challenger_name || 'Challenger'}</p>
-            <p className="text-3xl font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#ef4444' }}>{challengerScore.toLocaleString()}</p>
-            <p className="text-[9px] text-white/30">pts</p>
-          </div>
-        </div>
-
-        <ScoreBar
-          leftScore={creatorScore}
-          rightScore={challengerScore}
-          leftName={battle.creator_name}
-          rightName={battle.challenger_name || 'Challenger'}
-          leftColor="#3b82f6"
-          rightColor="#ef4444"
-        />
-      </div>
-
-      {/* Stats breakdown */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(59,130,246,0.2)' }}>
-          <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{battle.creator_name}</p>
-          <div className="grid grid-cols-2 gap-2">
-            <StatChip label="Tips $" value={'$' + (Math.floor((battle.creator_tips || 0) * 100) / 100).toFixed(2)} color="#3b82f6" />
-            <StatChip label="Subs" value={String(battle.creator_subs || 0)} color="#3b82f6" />
-          </div>
-        </div>
-        <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(239,68,68,0.2)' }}>
-          <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{battle.challenger_name || 'Challenger'}</p>
-          <div className="grid grid-cols-2 gap-2">
-            <StatChip label="Tips $" value={'$' + (Math.floor((battle.challenger_tips || 0) * 100) / 100).toFixed(2)} color="#ef4444" />
-            <StatChip label="Subs" value={String(battle.challenger_subs || 0)} color="#ef4444" />
-          </div>
-        </div>
-      </div>
-
-      {/* Gift buttons — only when active */}
-      {isActive && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl p-3" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
-            <p className="text-[10px] text-blue-400 font-bold uppercase text-center mb-2">{battle.creator_name}</p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {GIFTS.map(function(g) {
-                return (
-                  <button
-                    key={g.pts}
-                    onClick={function() { sendGift('creator', g); }}
-                    className="flex flex-col items-center py-2 rounded-xl transition-all hover:scale-105"
-                    style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}
-                  >
-                    <span className="text-lg">{g.emoji}</span>
-                    <span className="text-[9px] text-blue-300 font-bold">+{g.pts}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="rounded-xl p-3" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-            <p className="text-[10px] text-red-400 font-bold uppercase text-center mb-2">{battle.challenger_name || 'Challenger'}</p>
-            <div className="grid grid-cols-3 gap-1.5">
-              {GIFTS.map(function(g) {
-                return (
-                  <button
-                    key={g.pts}
-                    onClick={function() { sendGift('challenger', g); }}
-                    className="flex flex-col items-center py-2 rounded-xl transition-all hover:scale-105"
-                    style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
-                  >
-                    <span className="text-lg">{g.emoji}</span>
-                    <span className="text-[9px] text-red-300 font-bold">+{g.pts}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <BattleOverlay
+      battle={battle}
+      onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }}
+    />
   );
 }
 
@@ -892,7 +728,7 @@ export default function PKBattleManager() {
               <InvitationsTab user={user} battles={battles} onBattleSelect={handleBattleSelect} />
             )}
             {activeTab === 'scoreboard' && (
-              <ScoreboardTab battle={currentBattle} user={user} />
+              <ScoreboardTab battle={currentBattle} user={user} onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }} />
             )}
             {activeTab === 'matchmaking' && (
               <MatchmakingQueue user={user} />
