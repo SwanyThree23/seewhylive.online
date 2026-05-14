@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
 import ShareButtons from '../components/shared/ShareButtons';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -293,6 +294,7 @@ export default function RoomPage() {
               </Button>
               {isHost && (
                 <>
+                  <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
                   <Button
                     variant={isRecording ? 'destructive' : 'outline'}
                     size="sm"

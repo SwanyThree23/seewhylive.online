@@ -13,7 +13,7 @@ export default function RoomCard({ room, onJoin }) {
   return (
     <Link
       to={isLive
-        ? createPageUrl(`LiveRoom?id=${room.id}`)
+        ? `/Greenroom?room_id=${room.id}&destination_type=room`
         : createPageUrl(`Room?id=${room.id}`)
       }
       onClick={(e) => { if (onJoin) { e.preventDefault(); onJoin(room); } }}

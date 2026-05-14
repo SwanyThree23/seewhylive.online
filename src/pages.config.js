@@ -104,6 +104,7 @@ import Leaderboard from './pages/Leaderboard';
 import GuestJoin from './pages/GuestJoin';
 import StreamInfra from './pages/StreamInfra';
 import PKBattleManager from './pages/PKBattleManager';
+import Greenroom from './pages/Greenroom';
 import __Layout from './Layout.jsx';
 
 
@@ -165,6 +166,7 @@ export const PAGES = {
     "GuestJoin": GuestJoin,
     "StreamInfra": StreamInfra,
     "PKBattleManager": PKBattleManager,
+    "Greenroom": Greenroom,
 }
 
 export const pagesConfig = {
