@@ -1,0 +1,70 @@
+{
+  "name": "EngagementBadge",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Badge holder user ID"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Creator who awarded badge"
+    },
+    "badge_type": {
+      "type": "string",
+      "enum": [
+        "super_fan",
+        "top_supporter",
+        "raid_master",
+        "poll_champion",
+        "chat_legend",
+        "watch_streak",
+        "gifter",
+        "first_subscriber"
+      ],
+      "description": "Badge classification"
+    },
+    "title": {
+      "type": "string",
+      "description": "Badge display name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Badge flavor text"
+    },
+    "icon_url": {
+      "type": "string",
+      "description": "Badge icon/emoji URL"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "default": "common",
+      "description": "Badge rarity tier"
+    },
+    "points_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Points awarded with badge"
+    },
+    "awarded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When badge was earned"
+    },
+    "achievement_metric": {
+      "type": "object",
+      "description": "How badge was earned (e.g. {type: 'tips', value: 1000})"
+    }
+  },
+  "required": [
+    "user_id",
+    "badge_type",
+    "title"
+  ]
+}
