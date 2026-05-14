@@ -14,6 +14,10 @@ import CommunityCard from '../components/communities/CommunityCard';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 import { motion, AnimatePresence } from 'framer-motion';
 
 var CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'Education', 'Business', 'Sports', 'Lifestyle'];
@@ -256,6 +260,21 @@ export default function Home() {
         {/* ── YOUTUBE DISCOVERY ── */}
         <div className="px-0 pt-6 pb-4 border-t border-white/5">
           <YouTubeDiscovery />
+        </div>
+
+        {/* ── SOCIAL FEATURES ── */}
+        <div className="px-0 pt-6 pb-4 border-t border-white/5 space-y-6">
+          {/* Share & Bridge Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+            <ShareToSocial content={{ title: 'Check out SeeWhy LIVE - Stream, Connect, Engage!', url: window.location.href }} />
+            {user && <CreatorBridge user={user} />}
+          </div>
+
+          {/* Collaboration & Recommendations */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+            <CollaborationMatcher />
+            <ContentRecommendations />
+          </div>
         </div>
 
         {/* ── CONTENT ── */}
