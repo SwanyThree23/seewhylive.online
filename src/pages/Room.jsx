@@ -381,6 +381,9 @@ export default function RoomPage() {
                         onUpdateParticipant={(id, updates) => 
                           updateParticipantMutation.mutate({ id, updates })
                         }
+                        localStream={null}
+                        localAudioEnabled={currentParticipant?.is_audio_enabled ?? true}
+                        localVideoEnabled={currentParticipant?.is_video_enabled ?? true}
                       />
                     </TabsContent>
                   ))}
