@@ -72,12 +72,21 @@ import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import RewardShop from '../components/loyalty/RewardShop';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
   Video, VideoOff, Monitor, Mic, MicOff, StopCircle, Circle,
   MessageSquare, Users, BarChart2, ShoppingBag, HelpCircle, Share2,
-  Clock, Crown, AlignLeft, DollarSign, Lock, Sparkles
+  Clock, Crown, AlignLeft, DollarSign, Lock, Sparkles, Gift, Zap
 } from 'lucide-react';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
@@ -313,6 +322,21 @@ export default function LiveRoom() {
         </div>
 
         <ViewerCount count={viewerCount} peakViewers={peakViewers} />
+        <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={viewerCount} />
+
+        {/* Highlight Capture */}
+        {isHost && (
+          <StreamHighlightCapture
+            roomId={roomId}
+            sessionId={room?.current_session_id}
+            creatorId={room?.host_id}
+            elapsedSeconds={elapsedSeconds}
+            isHost={isHost}
+          />
+        )}
+
+        {/* Quick Poll */}
+        <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />
 
         {/* Share */}
         <button onClick={() => setShareOpen(true)}
@@ -561,6 +585,13 @@ export default function LiveRoom() {
 
           {/* Viewer points notification */}
           {!isHost && <PointsNotification userId={user?.id} />}
+          {/* Passive points earning (chat, watch time) */}
+          <PointsEarnWidget
+            userId={user?.id}
+            creatorId={room?.host_id}
+            roomId={roomId}
+            isHost={isHost}
+          />
 
           {/* Live chat overlay — floating for easy access */}
           {mobilePanel === 'stage' && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -621,12 +652,13 @@ export default function LiveRoom() {
               style={{ borderLeft: '1px solid rgba(212,175,55,0.1)', background: 'rgba(13,6,24,0.95)' }}
             >
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-                <TabsList className="shrink-0 grid grid-cols-6 bg-[rgba(13,6,24,0.9)] border-b border-[rgba(212,175,55,0.1)] rounded-none h-10 p-0">
+                <TabsList className="shrink-0 grid grid-cols-7 bg-[rgba(13,6,24,0.9)] border-b border-[rgba(212,175,55,0.1)] rounded-none h-10 p-0">
                   {[
                     { value: 'chat', icon: MessageSquare, label: 'Chat' },
                     { value: 'guests', icon: Users, label: 'Guests' },
                     { value: 'analytics', icon: BarChart2, label: 'Stats' },
                     { value: 'monetize', icon: DollarSign, label: 'Pay' },
+                    { value: 'loyalty', icon: Gift, label: 'Shop' },
                     { value: 'aura', icon: Sparkles, label: 'AI' },
                     { value: 'shorts', icon: Video, label: 'Shorts' },
                   ].map(tab => (
@@ -769,7 +801,26 @@ export default function LiveRoom() {
                    {isHost && <VideoShortRecorder roomId={roomId} creatorId={user?.id} />}
                  </TabsContent>
 
+                 <TabsContent value="loyalty" className="flex-1 overflow-y-auto m-0 p-3 space-y-4">
+                   {/* Host view: manage rewards + redemption queue */}
+                   {isHost ? (
+                     <>
+                       <RedemptionQueue creatorId={room?.host_id} roomId={roomId} />
+                       <RewardShopEditor creatorId={room?.host_id} />
+                     </>
+                   ) : (
+                     <>
+                       <ViewerLoyaltyCard userId={user?.id} creatorId={room?.host_id} />
+                       <RewardShop creatorId={room?.host_id} roomId={roomId} currentUser={user} />
+                     </>
+                   )}
+                 </TabsContent>
+
                  <TabsContent value="aura" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
+                   {/* AI Copilot — host only */}
+                   {isHost && (
+                     <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={viewerCount} />
+                   )}
                    {/* AI Stream Summary */}
                    <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title} viewerCount={viewerCount} elapsedSeconds={elapsedSeconds} />
                    <AuraPanel

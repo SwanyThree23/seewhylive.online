@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Plus, Youtube, Video, LogOut, List } from 'lucide-react';
+import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
@@ -22,6 +22,8 @@ import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
 import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
 import PartyReactionsOverlay from '../components/watchparty/PartyReactionsOverlay';
 import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
+import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
+import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 
 function detectType(url) { return detectVideoType(url); }
 
@@ -156,6 +158,7 @@ export default function WatchPartyPage() {
   const [reactionCount, setReactionCount] = useState(0);
   const [pollCount, setPollCount] = useState(0);
   const [playlist, setPlaylist] = useState([]);
+  const [theaterMode, setTheaterMode] = useState(false);
   const directVideoRef = useRef(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -329,7 +332,7 @@ export default function WatchPartyPage() {
   // ytId now comes from the imported helper
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden" style={{ background: '#0B0B18' }}>
+    <div className={`flex flex-col overflow-hidden transition-all duration-300 ${theaterMode ? 'h-screen fixed inset-0 z-50' : 'h-[calc(100vh-120px)]'}`} style={{ background: '#0B0B18' }}>
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: '#1A0F0A', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
         <h2 className="font-semibold text-white flex-1 truncate text-sm">{party.title}</h2>
@@ -356,6 +359,13 @@ export default function WatchPartyPage() {
           onPlaylistChange={setPlaylist}
           onSelect={changeVideo}
         />
+        {/* Theater Mode toggle */}
+        <button onClick={() => setTheaterMode(v => !v)}
+          className="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
+          style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? '#d4af37' : 'rgba(255,255,255,0.4)' }}
+          title="Theater Mode">
+          {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+        </button>
         {isHost && (
           <Button size="sm" onClick={() => endPartyMutation.mutate()}
             className="h-7 text-[10px] px-2" style={{ background: 'rgba(180,50,30,0.3)', color: '#ff8866', border: '1px solid rgba(200,80,30,0.3)' }}>
@@ -405,6 +415,11 @@ export default function WatchPartyPage() {
       {/* Viewer rail — horizontal scrolling avatars */}
       <ViewerRail members={members} hostId={party.host_id} />
 
+      {/* Hype Meter */}
+      <div className="shrink-0 px-3 py-1.5">
+        <PartyHypeMeter partyId={partyId} memberCount={members.length} />
+      </div>
+
       {/* Reactions overlay — entity-backed */}
       <div className="shrink-0 relative">
         <PartyReactionsOverlay
@@ -413,6 +428,9 @@ export default function WatchPartyPage() {
           currentTime={syncData?.current_time || party?.current_time || 0}
         />
       </div>
+
+      {/* Live Emoticon Storm bar */}
+      <LiveEmoticonStorm partyId={partyId} currentUser={user} />
 
       {/* Main area: panel grid + tabbed right panel */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
