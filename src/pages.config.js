@@ -103,6 +103,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Leaderboard from './pages/Leaderboard';
 import GuestJoin from './pages/GuestJoin';
 import StreamInfra from './pages/StreamInfra';
+import PKBattleManager from './pages/PKBattleManager';
 import __Layout from './Layout.jsx';
 
 
@@ -163,6 +164,7 @@ export const PAGES = {
     "Leaderboard": Leaderboard,
     "GuestJoin": GuestJoin,
     "StreamInfra": StreamInfra,
+    "PKBattleManager": PKBattleManager,
 }
 
 export const pagesConfig = {

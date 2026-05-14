@@ -24,7 +24,7 @@ var PRIMARY_NAV = [
   { name: 'Home', icon: Home, href: createPageUrl('Home') },
   { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
   { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
-  { name: 'Battles', icon: Swords, href: createPageUrl('LiveBattles') },
+  { name: 'Battles', icon: Swords, href: createPageUrl('PKBattleManager') },
   { name: 'Leaderboard', icon: Trophy, href: createPageUrl('Leaderboard') },
   { name: 'Watch Party', icon: Eye, href: createPageUrl('WatchParty') },
 ];

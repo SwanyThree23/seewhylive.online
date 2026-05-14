@@ -1,0 +1,112 @@
+{
+  "name": "PKBattle",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Battle host user ID"
+    },
+    "challenger_id": {
+      "type": "string",
+      "description": "Invited challenger user ID"
+    },
+    "creator_name": {
+      "type": "string"
+    },
+    "challenger_name": {
+      "type": "string"
+    },
+    "creator_avatar": {
+      "type": "string"
+    },
+    "challenger_avatar": {
+      "type": "string"
+    },
+    "creator_stream_url": {
+      "type": "string"
+    },
+    "challenger_stream_url": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined",
+        "active",
+        "ended",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 180
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "creator_score": {
+      "type": "number",
+      "default": 0
+    },
+    "challenger_score": {
+      "type": "number",
+      "default": 0
+    },
+    "creator_tips": {
+      "type": "number",
+      "default": 0
+    },
+    "challenger_tips": {
+      "type": "number",
+      "default": 0
+    },
+    "creator_subs": {
+      "type": "number",
+      "default": 0
+    },
+    "challenger_subs": {
+      "type": "number",
+      "default": 0
+    },
+    "winner_id": {
+      "type": "string"
+    },
+    "winner_name": {
+      "type": "string"
+    },
+    "reward_points": {
+      "type": "number",
+      "default": 500,
+      "description": "Points awarded to winner"
+    },
+    "reward_badge": {
+      "type": "string",
+      "default": "pk_champion"
+    },
+    "viewer_count": {
+      "type": "number",
+      "default": 0
+    },
+    "invite_message": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "creator_id",
+    "creator_name"
+  ]
+}
