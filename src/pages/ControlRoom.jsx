@@ -11,6 +11,7 @@ import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import DestinationsManager from '../components/streaming/DestinationsManager';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -245,8 +246,19 @@ export default function ControlRoomPage() {
   });
   const goLiveMut = useMutation({
     mutationFn: async () => {
+      // Update room & session status
       await base44.entities.Room.update(roomId, { status: 'live', started_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { started_at: new Date().toISOString(), status: 'live' });
+      
+      // Distribute to enabled RTMP destinations
+      const enabledDests = destinations.filter(d => d.is_enabled);
+      if (enabledDests.length > 0 && user?.id) {
+        await base44.functions.invoke('distributeStreamToRTMP', {
+          room_id: roomId,
+          creator_id: user.id,
+          destinations: enabledDests.map(d => ({ id: d.id, platform: d.platform, label: d.label })),
+        });
+      }
     },
     onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
   });
@@ -349,15 +361,14 @@ export default function ControlRoomPage() {
         </div>
       )}
 
-      {/* RTMP Cards Grid */}
+      {/* Destinations Manager */}
       <div className="p-4 md:p-8">
-        {destinations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Wifi className="w-12 h-12" style={{ color: 'rgba(212,175,55,0.2)' }} />
-            <p className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>No RTMP destinations configured</p>
-            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>Add destinations in Stream Setup → RTMP</p>
-          </div>
-        ) : (
+        <DestinationsManager userId={user?.id} />
+      </div>
+
+      {/* RTMP Cards Grid */}
+      {destinations.length > 0 && (
+        <div className="px-4 md:px-8 pb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {destinations.map(dest => (
               <RTMPCard
@@ -369,8 +380,8 @@ export default function ControlRoomPage() {
               />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
