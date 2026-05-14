@@ -15,7 +15,11 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
   }, [stream]);
 
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#0d0618] border-2 border-[#d4af37]/30">
+    <div className="relative w-full h-full overflow-hidden bg-[#0d0618]" style={{
+      clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+      border: '3px solid #d4af37',
+      boxShadow: '0 0 30px rgba(212,175,55,0.6), inset 0 0 20px rgba(212,175,55,0.3)'
+    }}>
       {stream && videoEnabled ? (
         <video
           ref={videoRef}
@@ -35,8 +39,8 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
       {/* Bottom overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          {isHost && <Badge className="text-[9px] bg-[#d4af37] text-black px-1.5 py-0">HOST</Badge>}
-          <span className="text-xs text-white font-semibold truncate max-w-[120px]">{userName}</span>
+          {isHost && <Badge className="text-[9px] bg-[#d4af37] text-black px-1.5 py-0 font-display" style={{ textShadow: '0 0 8px rgba(212,175,55,0.5)' }}>HOST</Badge>}
+          <span className="text-xs text-white font-semibold truncate max-w-[120px]" style={{ textShadow: '0 0 10px rgba(212,175,55,0.5)' }}>{userName}</span>
         </div>
         <div className="flex items-center gap-1">
           {audioEnabled

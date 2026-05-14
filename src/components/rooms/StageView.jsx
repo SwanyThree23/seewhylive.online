@@ -48,7 +48,7 @@ export default function StageView({ stage, participants, currentUserId, onUpdate
   return (
     <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl">{stage.name}</CardTitle>
+        <CardTitle className="text-xl font-display" style={{ textShadow: '0 0 20px rgba(212,175,55,0.6), 0 0 40px rgba(212,175,55,0.3)' }}>{stage.name}</CardTitle>
         <div className="flex items-center gap-2">
           <Badge variant="outline">
             {speakers.length} / {stage.max_speakers} on stage
@@ -125,7 +125,13 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
       exit={{ opacity: 0, scale: 0.9 }}
       className="relative"
     >
-      <div className="overflow-hidden rounded-xl" style={{ border: `2px solid ${getRoleColor(participant?.role)}40`, background: '#0d0618', aspectRatio: '4/3' }}>
+      <div className="overflow-hidden" style={{ 
+        clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+        border: `3px solid ${getRoleColor(participant?.role)}`,
+        background: '#0d0618',
+        aspectRatio: '4/3',
+        boxShadow: `0 0 30px ${getRoleColor(participant?.role)}66, inset 0 0 20px ${getRoleColor(participant?.role)}33`
+      }}>
         {/* Video feed */}
         {localStream && videoEnabled ? (
           <video
@@ -149,7 +155,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
         <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between"
           style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-white font-semibold truncate max-w-[100px]">{participant?.user_name}</span>
+            <span className="text-xs text-white font-semibold truncate max-w-[100px]" style={{ textShadow: '0 0 8px rgba(212,175,55,0.5)' }}>{participant?.user_name}</span>
             <span className="text-[9px] px-1.5 py-0 rounded font-black uppercase"
               style={{ background: getRoleColor(participant?.role), color: '#000' }}>
               {participant?.role}
@@ -202,25 +208,33 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant }) {
       exit={{ opacity: 0, scale: 0.9 }}
       className="relative"
     >
-      <Card className={`overflow-hidden ${speaking ? 'ring-2 ring-green-500' : ''}`}>
+      <Card className={`${speaking ? 'ring-2 ring-green-500' : ''}`}>
         <CardContent className="p-4">
           <div className="flex flex-col items-center gap-3">
             {/* Video/Avatar */}
             <div className="relative">
               {participant.is_video_enabled ? (
-                <div className="w-32 h-32 bg-gray-900 rounded-lg flex items-center justify-center">
+                <div className="w-32 h-32 bg-gray-900 flex items-center justify-center" style={{
+                  clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+                  boxShadow: '0 0 20px rgba(212,175,55,0.4)'
+                }}>
                   <Video className="w-8 h-8 text-gray-400" />
-                  <span className="absolute bottom-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
+                  <span className="absolute bottom-2 text-xs text-white bg-black/50 px-2 py-1" style={{ textShadow: '0 0 8px rgba(212,175,55,0.5)' }}>
                     Video Stream
                   </span>
                 </div>
               ) : (
-                <Avatar className="w-32 h-32">
-                  <AvatarImage src={participant.user_avatar} />
-                  <AvatarFallback className="text-2xl">
-                    {participant.user_name?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div style={{
+                  clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+                  boxShadow: '0 0 20px rgba(212,175,55,0.4)'
+                }}>
+                  <Avatar className="w-32 h-32">
+                    <AvatarImage src={participant.user_avatar} />
+                    <AvatarFallback className="text-2xl">
+                      {participant.user_name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
               )}
 
               {/* Status Indicator */}
@@ -247,7 +261,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant }) {
             {/* Name and Role */}
             <div className="text-center w-full">
               <div className="flex items-center justify-center gap-2">
-                <p className="font-medium truncate">{participant.user_name}</p>
+                <p className="font-medium truncate" style={{ textShadow: '0 0 10px rgba(212,175,55,0.5)' }}>{participant.user_name}</p>
                 {isCurrentUser && (
                   <Badge variant="outline" className="text-xs">You</Badge>
                 )}
