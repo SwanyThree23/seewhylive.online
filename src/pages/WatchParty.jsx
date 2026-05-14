@@ -305,56 +305,56 @@ export default function WatchPartyPage() {
         )}
       </div>
 
-      {/* Main area: video left, panel grid right, chat far right */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* ── VIDEO AREA ── */}
-        <div className="flex flex-col min-w-0" style={{ flex: '1 1 0', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-          {/* Player */}
-          <div className="flex-1 relative bg-black">
-            {ytId ? (
-              <YouTubeEmbed
-                videoId={ytId}
-                isHost={isHost}
-                syncData={isHost ? null : (syncData || party)}
-                onStateChange={pushState}
-              />
-            ) : (
-              <DirectPlayer
-                url={party.video_url}
-                isHost={isHost}
-                syncData={isHost ? null : (syncData || party)}
-                onStateChange={pushState}
-              />
-            )}
-            {!isHost && (
-              <div className="absolute top-3 right-3 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1"
-                style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                Live Sync
-              </div>
-            )}
-          </div>
-
-          {/* Reactions */}
-          <div className="shrink-0" style={{ background: '#1A0F0A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <ReactionOverlay partyId={partyId} currentUser={user} />
-          </div>
-        </div>
-
-        {/* ── 20-PERSON PANEL GRID ── */}
-        <div className="shrink-0 overflow-hidden" style={{ width: '280px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-          <PanelGrid
-            members={members}
-            currentUser={user}
-            hostId={party.host_id}
-            maxSlots={20}
+      {/* ── VIDEO PLAYER — always visible at top on mobile ── */}
+      <div className="shrink-0 relative bg-black" style={{ aspectRatio: '16/9', width: '100%' }}>
+        {ytId ? (
+          <YouTubeEmbed
+            videoId={ytId}
             isHost={isHost}
-            onInvite={copyInvite}
+            syncData={isHost ? null : (syncData || party)}
+            onStateChange={pushState}
           />
+        ) : (
+          <DirectPlayer
+            url={party.video_url}
+            isHost={isHost}
+            syncData={isHost ? null : (syncData || party)}
+            onStateChange={pushState}
+          />
+        )}
+        {!isHost && (
+          <div className="absolute top-2 right-2 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1"
+            style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            Live Sync
+          </div>
+        )}
+      </div>
+
+      {/* Reactions bar */}
+      <div className="shrink-0" style={{ background: '#1A0F0A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <ReactionOverlay partyId={partyId} currentUser={user} />
+      </div>
+
+      {/* Main area: panel grid + chat — side by side on desktop, stacked on mobile */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* ── 20-PERSON PANEL GRID ── */}
+        <div className="shrink-0 overflow-hidden border-b border-white/5 md:border-b-0 md:border-r"
+          style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="md:w-[280px]">
+            <PanelGrid
+              members={members}
+              currentUser={user}
+              hostId={party.host_id}
+              maxSlots={20}
+              isHost={isHost}
+              onInvite={copyInvite}
+            />
+          </div>
         </div>
 
         {/* ── CHAT ── */}
-        <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: '260px', background: '#0d0618' }}>
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#0d0618' }}>
           <div className="px-3 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <h3 className="text-[11px] font-semibold" style={{ color: '#d4af37' }}>Party Chat</h3>
           </div>
