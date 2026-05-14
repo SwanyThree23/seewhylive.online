@@ -18,8 +18,10 @@ import Monetization from './pages/Monetization';
 import Community from './pages/Community';
 import OverlayEditor from './pages/OverlayEditor';
 import CreatorDashboard from './pages/CreatorDashboard';
+import Welcome from './pages/Welcome';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { BackgroundProvider } from '@/lib/BackgroundManager';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -84,6 +86,7 @@ const AuthenticatedApp = () => {
       <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
       <Route path="/OverlayEditor" element={<LayoutWrapper currentPageName="OverlayEditor"><OverlayEditor /></LayoutWrapper>} />
       <Route path="/CreatorDashboard" element={<LayoutWrapper currentPageName="CreatorDashboard"><CreatorDashboard /></LayoutWrapper>} />
+      <Route path="/Welcome" element={<Welcome />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -93,6 +96,7 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
+    <BackgroundProvider>
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
@@ -102,6 +106,7 @@ function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
+    </BackgroundProvider>
   )
 }
 

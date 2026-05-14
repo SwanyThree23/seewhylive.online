@@ -17,6 +17,7 @@ import GlobalSearch from '@/components/shared/GlobalSearch';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
+import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
 import SignalBars from '@/components/live/SignalBars';
 import GlobalChatWidget from '@/components/live/GlobalChatWidget';
@@ -60,6 +61,7 @@ export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
+  var { backgroundStyle, backgrounds } = useBackground();
 
   var { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -95,7 +97,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#0B0B18' }}>
+    <div className="min-h-screen" style={backgrounds[backgroundStyle] || backgrounds.default}>
       <AnimatePresence>
         {showSearch && <GlobalSearch onClose={function() { setShowSearch(false); }} />}
       </AnimatePresence>

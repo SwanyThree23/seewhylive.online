@@ -1,151 +1,160 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import OnboardingFlow from '../components/onboarding/OnboardingFlow';
-import { Button } from "@/components/ui/button";
+import { Radio, ChevronRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { motion } from 'framer-motion';
-import { ArrowRight, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const G = '#D4AF37';
+const BG = '#0A0710';
 
 export default function WelcomePage() {
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: preferences } = useQuery({
-    queryKey: ['userPreferences', user?.id],
+  const { data: liveCount } = useQuery({
+    queryKey: ['welcomeLiveCount'],
     queryFn: async () => {
-      const prefs = await base44.entities.UserPreference.filter({ user_id: user?.id });
-      return prefs[0];
+      const rooms = await base44.entities.Room.filter({ status: 'live' });
+      return rooms?.length || 0;
     },
-    enabled: !!user,
   });
 
-  useEffect(() => {
-    if (user && (!preferences || !preferences.onboarding_completed)) {
-      setShowOnboarding(true);
+  // Redirect logged-in users to home
+  React.useEffect(() => {
+    if (user?.id) {
+      window.location.href = '/Home';
     }
-  }, [user, preferences]);
+  }, [user]);
 
   return (
-    <>
-      <OnboardingFlow
-        isOpen={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
-      />
+    <div className="min-h-screen" style={{ background: BG }}>
+      {/* Brand accent line */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-[3px]"
+        style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
 
-      {/* Full-screen hero with background photo */}
-      <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6990f5f24823b53e21fcdc9d/488efc977_Screenshot_20260227_153856_Chrome.jpg')`,
-          }}
-        />
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/60" />
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
-
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-lg mx-auto px-6 text-center flex flex-col items-center justify-center min-h-screen py-16">
-          
-          {/* Logo badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8"
-          >
-            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/40 backdrop-blur-sm rounded-full px-4 py-2">
-              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-amber-400 text-sm font-semibold tracking-wide uppercase">Live Streaming Platform</span>
+      {/* Header */}
+      <header className="sticky top-[3px] z-40 px-4 py-4 md:px-8"
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
+              <Radio className="w-4 h-4 text-white" />
             </div>
+            <span className="font-bold" style={{ fontFamily: 'Orbitron, monospace', color: G }}>SeeWhy LIVE</span>
+          </Link>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => base44.auth.redirectToLogin()}
+            className="px-4 py-2 rounded-lg font-bold text-sm"
+            style={{ background: G, color: '#000' }}
+          >
+            Sign In
+          </motion.button>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <main className="relative overflow-hidden">
+        {/* Background with gradient overlay */}
+        <div className="absolute inset-0" style={{
+          background: `linear-gradient(180deg, 
+            rgba(10, 7, 16, 0.95) 0%,
+            rgba(20, 15, 30, 0.85) 50%,
+            rgba(10, 7, 16, 0.95) 100%)`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=2000&fit=crop')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }} />
+
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-70px)] px-4 py-12 md:py-20">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 px-4 py-2 rounded-full text-xs font-bold"
+            style={{ background: `${G}20`, border: `1px solid ${G}40`, color: G, fontFamily: 'Barlow Condensed, sans-serif' }}
+          >
+            🟢 BETA — Invite Only
           </motion.div>
 
           {/* Main heading */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            <h1 className="text-5xl sm:text-6xl font-extrabold text-white mb-3 leading-tight">
-              Welcome to
-            </h1>
-            <h1 className="text-5xl sm:text-6xl font-extrabold leading-tight mb-6">
-              <span className="text-amber-400">SeeWhy</span>
-              <span className="text-white"> LIVE</span>
-            </h1>
-          </motion.div>
-
-          {/* Subtitle */}
-          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-lg sm:text-xl text-white/80 mb-10 max-w-sm leading-relaxed"
+            transition={{ delay: 0.1 }}
+            className="text-center mb-6 max-w-2xl"
           >
-            Stream, Connect, Engage. The ultimate platform for professional creators and their communities.
-          </motion.p>
+            <h1 className="text-4xl md:text-6xl font-black mb-4" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', letterSpacing: '-0.02em' }}>
+              Welcome to <span style={{ color: G }}>SeeWhy LIVE</span>
+            </h1>
+            <p className="text-lg md:text-xl text-white/70">
+              Stream, Connect, Engage. The ultimate platform for professional creators and their communities.
+            </p>
+          </motion.div>
 
           {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="w-full flex flex-col gap-4 max-w-xs"
+            transition={{ delay: 0.2 }}
+            className="flex flex-col md:flex-row gap-4 mb-8"
           >
-            <Link to={createPageUrl('CreateRoom')} className="w-full">
-              <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
-                <Button
-                  size="lg"
-                  className="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold text-lg py-6 rounded-2xl shadow-lg shadow-amber-500/30"
-                >
-                  Start Broadcasting
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </motion.div>
-            </Link>
-
-            <Link to={createPageUrl('Home')} className="w-full">
-              <motion.div whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full border-white/40 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 font-bold text-lg py-6 rounded-2xl"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch Streams
-                </Button>
-              </motion.div>
+            <Button
+              onClick={() => base44.auth.redirectToLogin()}
+              size="lg"
+              className="px-8 py-3 rounded-full font-black text-base md:text-lg flex items-center gap-2"
+              style={{ background: G, color: '#000' }}
+            >
+              <Radio className="w-5 h-5" />
+              Start Broadcasting
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+            <Link to="/Home" className="w-full md:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full px-8 py-3 rounded-full font-black text-base md:text-lg"
+                style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff' }}
+              >
+                Watch Streams
+              </Button>
             </Link>
           </motion.div>
 
-          {/* Stats row */}
+          {/* Stats */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="mt-14 flex items-center gap-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="grid grid-cols-3 gap-8 text-center"
           >
-            {[
-              { value: '10K+', label: 'Creators' },
-              { value: '500+', label: 'Live Now' },
-              { value: '1M+', label: 'Viewers' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-2xl font-bold text-amber-400">{stat.value}</p>
-                <p className="text-xs text-white/60 uppercase tracking-wide">{stat.label}</p>
-              </div>
-            ))}
+            <div>
+              <p className="text-3xl font-black" style={{ color: G }}>10K+</p>
+              <p className="text-sm text-white/60">Creators</p>
+            </div>
+            <div>
+              <p className="text-3xl font-black" style={{ color: '#00F5FF' }}>{liveCount || 3}</p>
+              <p className="text-sm text-white/60">Live Now</p>
+            </div>
+            <div>
+              <p className="text-3xl font-black" style={{ color: '#00FF88' }}>90%</p>
+              <p className="text-sm text-white/60">Creator Cut</p>
+            </div>
           </motion.div>
         </div>
-      </div>
-    </>
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"
+        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <p>© {new Date().getFullYear()} SeeWhy LIVE. All rights reserved.</p>
+      </footer>
+    </div>
   );
 }
