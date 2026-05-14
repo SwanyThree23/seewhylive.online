@@ -92,13 +92,26 @@ export default function SwanyBotWidget() {
       // Read out the last assistant message
       const lastMessage = messages[messages.length - 1];
       if (audioEnabled && lastMessage.role === 'assistant' && lastMessage.content) {
-        speakMessage(lastMessage.content);
+        // Small delay to ensure audio context is ready
+        setTimeout(() => speakMessage(lastMessage.content), 300);
       }
     }
   }, [messages, audioEnabled]);
 
   const speakMessage = (text) => {
-    if (!audioEnabled) return;
+    if (!audioEnabled || !text) return;
+    
+    // Ensure voices are loaded
+    const voices = synthRef.current.getVoices();
+    if (voices.length === 0) {
+      // Wait for voices to load
+      const voicesChanged = () => {
+        synthRef.current.removeEventListener('voiceschanged', voicesChanged);
+        speakMessage(text);
+      };
+      synthRef.current.addEventListener('voiceschanged', voicesChanged);
+      return;
+    }
     
     // Cancel any ongoing speech
     synthRef.current.cancel();
@@ -110,10 +123,7 @@ export default function SwanyBotWidget() {
     utterance.lang = 'en-US';
     
     // Use a confident voice for SwanyBot
-    const voices = synthRef.current.getVoices();
-    if (voices.length > 0) {
-      utterance.voice = voices.find(v => v.name.includes('Google')) || voices[0];
-    }
+    utterance.voice = voices.find(v => v.name.includes('Google')) || voices[0];
     
     synthRef.current.speak(utterance);
   };
@@ -130,10 +140,12 @@ export default function SwanyBotWidget() {
   }, []);
 
   useEffect(() => {
-    if (!open || !convRef.current) return;
-    const unsub = base44.agents.subscribeToConversation(convRef.current.id, (data) => {
-      setMessages(data.messages || []);
-      if (data.messages && data.messages.length > 0) setLoading(false);
+    if (!open || !conversation) return;
+    const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {
+      if (data.messages) {
+        setMessages(data.messages);
+        if (data.messages.length > 0) setLoading(false);
+      }
     });
     return unsub;
   }, [open, conversation]);
