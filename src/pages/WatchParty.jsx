@@ -16,6 +16,7 @@ import BattleTiers from '../components/watchparty/BattleTiers';
 import WatchQueue from '../components/watchparty/WatchQueue';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import HostControls from '../components/watchparty/HostControls';
+import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
 
 function getYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -369,6 +370,7 @@ export default function WatchPartyPage() {
               { id: 'playlist',    label: '🎵 Queue' },
               { id: 'battle',      label: '⚔️ Battle' },
               { id: 'leaderboard', label: '🏆 Ranks' },
+              { id: 'polls',       label: '📊 Polls' },
               { id: 'viewers',     label: '👥 Viewers' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActivePanel(tab.id)}
@@ -399,6 +401,14 @@ export default function WatchPartyPage() {
               <WatchQueue
                 isHost={isHost}
                 onSelect={(idx) => {}}
+              />
+            )}
+            {activePanel === 'polls' && (
+              <WatchPartyPoll
+                partyId={partyId}
+                roomId={party.room_id}
+                currentUser={user}
+                isHost={isHost}
               />
             )}
             {activePanel === 'viewers' && (
