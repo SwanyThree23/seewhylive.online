@@ -47,11 +47,13 @@ export default function SwanyBotWidget() {
   const [listening, setListening] = useState(false);
   const [hasGreeted, setHasGreeted] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
   const convRef = useRef(null);
+  const synthRef = useRef(window.speechSynthesis);
 
   useEffect(() => {
     // Auto-welcome on first visit
@@ -72,8 +74,35 @@ export default function SwanyBotWidget() {
   useEffect(() => {
     if (messages.length > 0) {
       messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      
+      // Read out the last assistant message
+      const lastMessage = messages[messages.length - 1];
+      if (audioEnabled && lastMessage.role === 'assistant' && lastMessage.content) {
+        speakMessage(lastMessage.content);
+      }
     }
-  }, [messages]);
+  }, [messages, audioEnabled]);
+
+  const speakMessage = (text) => {
+    if (!audioEnabled) return;
+    
+    // Cancel any ongoing speech
+    synthRef.current.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
+    utterance.lang = 'en-US';
+    
+    // Use a confident voice for SwanyBot
+    const voices = synthRef.current.getVoices();
+    if (voices.length > 0) {
+      utterance.voice = voices.find(v => v.name.includes('Google')) || voices[0];
+    }
+    
+    synthRef.current.speak(utterance);
+  };
 
   const initConversation = useCallback(async () => {
     if (convRef.current) return convRef.current;
@@ -112,7 +141,7 @@ export default function SwanyBotWidget() {
       role: 'user',
       content: "Yo! I just got here and I want to know what SeeWhy LIVE is all about. Introduce yourself and break it down for me!",
     });
-  }, [hasGreeted, initConversation]);
+  }, [hasGreeted, initConversation, audioEnabled]);
 
   const sendMessage = async (text) => {
     const trimmed = (text || input).trim();
@@ -233,7 +262,9 @@ export default function SwanyBotWidget() {
                 <div className="relative w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)', border: `1px solid ${G}30` }}>
                   <Sparkles className="w-4 h-4" style={{ color: G }} />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-black" />
+                  {audioEnabled && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-black animate-pulse" />
+                  )}
                 </div>
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -243,12 +274,23 @@ export default function SwanyBotWidget() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    setAudioEnabled(!audioEnabled);
+                    if (audioEnabled) synthRef.current.cancel();
+                  }}
+                  className="w-6 h-6 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
+                  title={audioEnabled ? 'Mute SwanyBot' : 'Unmute SwanyBot'}
+                >
+                  <Volume2 className="w-3.5 h-3.5" style={{ color: audioEnabled ? G : 'rgba(255,255,255,0.2)' }} />
+                </button>
                 <ChevronDown
                   className="w-4 h-4 transition-transform"
                   style={{ color: 'rgba(255,255,255,0.35)', transform: minimized ? 'rotate(180deg)' : 'rotate(0deg)' }}
                 />
                 <button
-                  onClick={e => { e.stopPropagation(); setOpen(false); setMinimized(false); }}
+                  onClick={e => { e.stopPropagation(); setOpen(false); setMinimized(false); synthRef.current.cancel(); }}
                   className="w-6 h-6 flex items-center justify-center rounded-lg transition-all hover:bg-white/10"
                 >
                   <X className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.35)' }} />
