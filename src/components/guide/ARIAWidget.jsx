@@ -153,22 +153,13 @@ export default function SwanyBotWidget() {
      if (messages.length > 0) {
        messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
 
-       // Read out the last assistant message
+       // Read out the last assistant message (always speak unless audio disabled)
        const lastMessage = messages[messages.length - 1];
        if (audioEnabled && lastMessage.role === 'assistant' && lastMessage.content) {
-         // Small delay to ensure audio context is ready
-         setTimeout(() => speakMessage(lastMessage.content), 600);
+         setTimeout(() => speakMessage(lastMessage.content), 300);
        }
      }
    }, [messages, audioEnabled]);
-
-   // Speak greeting when conversation opens
-   useEffect(() => {
-     if (open && conversation && messages.length > 0 && audioEnabled) {
-       const welcomeMessage = "Welcome to SeeWhy Live! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
-       setTimeout(() => speakMessage(welcomeMessage), 800);
-     }
-   }, [open, conversation, audioEnabled]);
 
   const speakMessage = (text) => {
     if (!audioEnabled || !text) return;
