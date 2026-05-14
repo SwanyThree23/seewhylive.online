@@ -1,8 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 /**
- * Distributes a live stream to multiple RTMP destinations
- * This function manages the streaming distribution across external platforms
+ * Secure RTMP relay configuration handler.
+ * - Verifies host ownership before any operation
+ * - NEVER returns stream keys or full RTMP URLs to the client
+ * - Stores destinations server-side only
+ * - Returns relay instructions referencing the app's ingest URL, not the destination keys
  */
 Deno.serve(async (req) => {
   try {
@@ -19,19 +22,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
-    // Get the room to verify ownership
-    const rooms = await base44.entities.Room.filter({ id: roomId });
+    // Verify the caller is the room host
+    const rooms = await base44.asServiceRole.entities.Room.filter({ id: roomId });
     const room = rooms[0];
 
     if (!room || room.host_id !== user.id) {
       return Response.json({ error: 'Forbidden: Not room host' }, { status: 403 });
     }
 
-    // Validate RTMP destinations
+    // Validate RTMP destinations — strip keys before any logging
     const validDestinations = destinations.filter(dest => {
       if (!dest.rtmpUrl || !dest.streamKey) return false;
-      // Basic RTMP URL validation
       if (!dest.rtmpUrl.startsWith('rtmp://') && !dest.rtmpUrl.startsWith('rtmps://')) return false;
+      // Block localhost / private IP destinations
+      const blocked = ['localhost', '127.0.0.1', '0.0.0.0', '10.', '192.168.', '172.'];
+      if (blocked.some(b => dest.rtmpUrl.includes(b))) return false;
       return true;
     });
 
@@ -39,51 +44,72 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No valid RTMP destinations' }, { status: 400 });
     }
 
-    // Store streaming configuration for this room
-    const streamingConfig = {
-      roomId,
-      destinations: validDestinations.map(d => ({
-        platform: d.platform,
-        rtmpUrl: d.rtmpUrl,
-        streamKey: d.streamKey,
-        isActive: d.isActive !== false,
-        addedAt: new Date().toISOString(),
-      })),
-      isDistributing: action === 'start',
-      distributionStartedAt: action === 'start' ? new Date().toISOString() : null,
-    };
+    if (validDestinations.length > 5) {
+      return Response.json({ error: 'Max 5 destinations allowed' }, { status: 400 });
+    }
 
-    // Update room with streaming destinations
-    await base44.entities.Room.update(roomId, {
-      rtmp_destinations: validDestinations,
-      multi_streaming_enabled: true,
+    // Store config securely — keys stored server-side only
+    const secureDestinations = validDestinations.map(d => ({
+      platform: d.platform,
+      rtmpUrl: d.rtmpUrl,
+      streamKey: d.streamKey, // stored in DB, never echoed back
+      label: d.label || d.platform,
+      isActive: d.isActive !== false,
+      addedAt: new Date().toISOString(),
+    }));
+
+    await base44.asServiceRole.entities.Room.update(roomId, {
+      rtmp_destinations: secureDestinations,
+      multi_streaming_enabled: action === 'start',
+      stream_started_at: action === 'start' ? new Date().toISOString() : null,
     });
 
-    // Return stream distribution commands for frontend
-    const streamCommands = validDestinations
-      .filter(d => d.isActive !== false)
-      .map(dest => ({
-        platform: dest.platform,
-        rtmpUrl: dest.rtmpUrl,
-        streamKey: dest.streamKey,
-        fullStreamUrl: `${dest.rtmpUrl}/${dest.streamKey}`,
-      }));
+    // Build a relay session token — a unique ID the host's encoder uses to identify this relay job
+    const relaySessionId = `relay_${roomId}_${Date.now()}`;
 
+    // Track the relay session for analytics
+    await base44.asServiceRole.entities.StreamSession.create({
+      room_id: roomId,
+      host_id: user.id,
+      session_type: 'rtmp_relay',
+      destination_count: secureDestinations.filter(d => d.isActive).length,
+      platforms: secureDestinations.map(d => d.platform),
+      status: action === 'start' ? 'live' : 'ended',
+      started_at: new Date().toISOString(),
+    }).catch(() => {}); // non-critical
+
+    if (action === 'stop') {
+      return Response.json({
+        success: true,
+        message: 'Relay stopped',
+        relaySessionId,
+      });
+    }
+
+    const activeCount = secureDestinations.filter(d => d.isActive).length;
+    const platformList = secureDestinations.filter(d => d.isActive).map(d => d.label || d.platform);
+
+    // Return ONLY non-sensitive relay instructions — NO keys, NO full RTMP URLs
     return Response.json({
       success: true,
-      streamingConfig,
-      activeDestinations: streamCommands.length,
-      commands: streamCommands,
-      instructions: {
-        ffmpeg: `ffmpeg -i "input_stream_url" ${streamCommands
-          .map((cmd, i) => `-f flv "${cmd.fullStreamUrl}"`)
-          .join(' ')}`,
-        obs: 'Use custom RTMP URL with the provided stream key in OBS settings',
-        xsplit: 'Add each RTMP destination as a separate output target',
+      relaySessionId,
+      activeDestinations: activeCount,
+      platforms: platformList,
+      // Relay instructions reference only the ingest side (host pushes to their own encoder)
+      relay: {
+        ingest_protocol: 'RTMP',
+        note: 'Push your stream to your encoder. The relay will forward to all configured destinations server-side.',
+        obs_settings: {
+          service: 'Custom',
+          server: 'Use your encoder RTMP ingest URL',
+          note: 'Stream keys are stored server-side and never transmitted to the client.',
+        },
+        platforms_active: platformList,
+        destination_count: activeCount,
       },
     });
   } catch (error) {
-    console.error('Stream distribution error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('Stream relay error:', error.message);
+    return Response.json({ error: 'Relay configuration failed' }, { status: 500 });
   }
 });

@@ -20,7 +20,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
   const qc = useQueryClient();
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
-  const { addPeer, removePeer, getPeers } = useWebRTCPeers(roomId, null);
+  const { addPeer, removePeer, getPeers, remoteStreams, peerStates, leaveRoom, selfId } = useWebRTCPeers(roomId, localStreamRef.current);
 
   const [localMuted, setLocalMuted] = useState(false);
   const [localVideoPaused, setLocalVideoPaused] = useState(false);
@@ -202,26 +202,46 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
           )}
         </motion.div>
 
-        {/* Peer Videos */}
-        {participants.map(p => (
-          <motion.div
-            key={p.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="relative rounded-xl overflow-hidden"
-            style={{ background: '#000', border: '1px solid rgba(212,175,55,0.2)' }}>
-            <div className="w-full h-full flex items-center justify-center" style={{ background: '#0A0A0F' }}>
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full mx-auto mb-2" style={{ background: 'rgba(212,175,55,0.15)' }} />
-                <p className="text-[10px]" style={{ color: GOLD }}>{p.name}</p>
+        {/* Peer Videos — real WebRTC streams */}
+        {participants.map(p => {
+          const stream = remoteStreams.get(p.id);
+          const connState = peerStates.get(p.id);
+          return (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative rounded-xl overflow-hidden"
+              style={{ background: '#000', border: '1px solid rgba(212,175,55,0.2)' }}>
+              {stream ? (
+                <video
+                  autoPlay playsInline
+                  ref={el => { if (el && el.srcObject !== stream) el.srcObject = stream; }}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center" style={{ background: '#0A0A0F' }}>
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-full mx-auto mb-2 animate-pulse" style={{ background: 'rgba(212,175,55,0.15)' }} />
+                    <p className="text-[10px]" style={{ color: GOLD }}>{p.name}</p>
+                    <p className="text-[8px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      {connState === 'connecting' ? 'Connecting…' : connState === 'failed' ? 'Connection failed' : 'Waiting for stream…'}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="absolute top-2 left-2 flex items-center gap-1">
+                <span className="text-[8px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#00F5FF' }}>
+                  {p.role}
+                </span>
+                {connState === 'connected' && stream && (
+                  <span className="text-[7px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(0,255,136,0.2)', color: '#00FF88' }}>LIVE</span>
+                )}
               </div>
-            </div>
-            <div className="absolute top-2 left-2 text-[8px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#00F5FF' }}>
-              {p.role}
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Controls Bar */}
