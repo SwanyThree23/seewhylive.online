@@ -32,6 +32,8 @@ import PKBattle from '../components/live/PKBattle';
 import WebhookHooks from '../components/live/WebhookHooks';
 import LivePoll from '../components/live/LivePoll';
 import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import BattleMode from '../components/streaming/BattleMode';
 import AuraPanel from '../components/live/AuraPanel';
@@ -86,6 +88,9 @@ export default function LiveRoom() {
   const [paymentsOpen, setPaymentsOpen] = useState(false);
   const [paywallUnlocked, setPaywallUnlocked] = useState(false);
   const [mobilePanel, setMobilePanel] = useState('stage');
+  const [screenShareStream, setScreenShareStream] = useState(null);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [videoOffUsers, setVideoOffUsers] = useState({});
   const timerRef = useRef(null);
 
   // Real browser media (mic + camera)
@@ -351,6 +356,18 @@ export default function LiveRoom() {
                 <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
                 <AudioPanel micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} participants={participants} />
                 <AudioMixer micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} />
+                <ScreenSharePanel 
+                  isSharing={isScreenSharing}
+                  onStartShare={(stream) => {
+                    setScreenShareStream(stream);
+                    setIsScreenSharing(true);
+                  }}
+                  onStopShare={() => {
+                    screenShareStream?.getTracks().forEach(t => t.stop());
+                    setScreenShareStream(null);
+                    setIsScreenSharing(false);
+                  }}
+                />
                 <LowerThirdsBanner onBannerChange={setBannerConfig} />
                 {isHost && activeBattle && <PKBattleSoundboard battleId={activeBattle.id} isBattleActive={!!activeBattle} />}
                 {isHost && <ChatModeration />}
@@ -411,6 +428,39 @@ export default function LiveRoom() {
 
         {/* ─── CENTER STAGE (desktop always / mobile when panel=stage) ─── */}
         <div className={`flex-1 flex-col min-w-0 relative ${mobilePanel === 'stage' ? 'flex' : 'hidden md:flex'}`}>
+          {/* Octagonal video grid for multiple participants */}
+          {participants.length > 0 && (
+            <div className="p-4 bg-black/40 border-b border-white/5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Host octagonal window */}
+                <OctagonalVideoWindow
+                  title={user?.full_name || 'Host'}
+                  isMuted={micMuted}
+                  isVideoOff={videoOffUsers[user?.id]}
+                  onMicToggle={() => setMicMuted(!micMuted)}
+                  onVideoToggle={() => setVideoOffUsers(prev => ({ ...prev, [user?.id]: !prev[user?.id] }))}
+                  onShareScreen={() => {}}
+                  points={0}
+                  label="Host"
+                />
+                {/* Participant windows */}
+                {participants.slice(0, 3).map(p => (
+                  <OctagonalVideoWindow
+                    key={p.id}
+                    title={p.user_name}
+                    isMuted={false}
+                    isVideoOff={videoOffUsers[p.id]}
+                    onMicToggle={() => {}}
+                    onVideoToggle={() => setVideoOffUsers(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
+                    onShareScreen={() => {}}
+                    points={0}
+                    label={p.role}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
           {/* Stage area */}
           <div className="flex-1 relative overflow-hidden bg-black">
             {/* Scene content */}
