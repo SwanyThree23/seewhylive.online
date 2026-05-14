@@ -1,0 +1,172 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { Loader2, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
+
+const LANGUAGES = [
+  { code: 'en', name: 'English' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'fr', name: 'French' },
+  { code: 'de', name: 'German' },
+  { code: 'it', name: 'Italian' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'zh', name: 'Chinese' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'ru', name: 'Russian' },
+];
+
+export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
+  const [transcription, setTranscription] = useState('');
+  const [translatedText, setTranslatedText] = useState('');
+  const [targetLanguage, setTargetLanguage] = useState('es');
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleTranscribe = async () => {
+    if (!recordingUrl) {
+      toast.error('No recording URL provided');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke('transcribeAudio', {
+        file_url: recordingUrl
+      });
+      setTranscription(res.data.transcription);
+      toast.success('Transcription complete');
+    } catch (err) {
+      toast.error('Transcription failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTranslate = async () => {
+    if (!transcription) {
+      toast.error('Transcribe first');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke('translateText', {
+        text: transcription,
+        target_language: LANGUAGES.find(l => l.code === targetLanguage)?.name || targetLanguage
+      });
+      setTranslatedText(res.data.translated_text);
+      toast.success('Translation complete');
+    } catch (err) {
+      toast.error('Translation failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+    >
+      <div>
+        <h3 className="text-sm font-bold text-white mb-3">Transcription & Translation</h3>
+        
+        <div className="space-y-3">
+          {/* Transcription Section */}
+          <div className="space-y-2">
+            <label className="text-[10px] text-white/60 uppercase font-semibold block">Transcribe Recording</label>
+            <Button
+              onClick={handleTranscribe}
+              disabled={loading || !recordingUrl}
+              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                  Transcribing...
+                </>
+              ) : (
+                'Transcribe to Text'
+              )}
+            </Button>
+            
+            {transcription && (
+              <div className="relative">
+                <textarea
+                  readOnly
+                  value={transcription}
+                  className="w-full h-32 bg-white/5 border border-white/10 rounded p-2 text-[9px] text-white/80 resize-none"
+                />
+                <button
+                  onClick={() => handleCopy(transcription)}
+                  className="absolute top-2 right-2 w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center"
+                >
+                  {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Translation Section */}
+          {transcription && (
+            <div className="space-y-2 pt-3 border-t border-white/10">
+              <div className="flex gap-2 items-center">
+                <label className="text-[10px] text-white/60 uppercase font-semibold flex-1">Translate To</label>
+                <select
+                  value={targetLanguage}
+                  onChange={(e) => setTargetLanguage(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[9px] text-white/80"
+                >
+                  {LANGUAGES.map(lang => (
+                    <option key={lang.code} value={lang.code}>{lang.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <Button
+                onClick={handleTranslate}
+                disabled={loading}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin mr-2" />
+                    Translating...
+                  </>
+                ) : (
+                  'Translate Text'
+                )}
+              </Button>
+
+              {translatedText && (
+                <div className="relative">
+                  <textarea
+                    readOnly
+                    value={translatedText}
+                    className="w-full h-32 bg-white/5 border border-white/10 rounded p-2 text-[9px] text-white/80 resize-none"
+                  />
+                  <button
+                    onClick={() => handleCopy(translatedText)}
+                    className="absolute top-2 right-2 w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center"
+                  >
+                    {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
