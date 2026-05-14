@@ -17,8 +17,9 @@ import WatchQueue from '../components/watchparty/WatchQueue';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import HostControls from '../components/watchparty/HostControls';
 import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
-import VideoQueue from '../components/watchparty/VideoQueue';
-import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
+import PartyReactionsOverlay from '../components/watchparty/PartyReactionsOverlay';
+import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
 
 function getYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -344,9 +345,13 @@ export default function WatchPartyPage() {
       {/* Viewer rail — horizontal scrolling avatars */}
       <ViewerRail members={members} hostId={party.host_id} />
 
-      {/* Reactions bar */}
-      <div className="shrink-0" style={{ background: '#1A0F0A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        <ReactionOverlay partyId={partyId} currentUser={user} onReact={() => setReactionCount(c => c + 1)} />
+      {/* Reactions overlay — entity-backed */}
+      <div className="shrink-0 relative">
+        <PartyReactionsOverlay
+          partyId={partyId}
+          currentUser={user}
+          currentTime={syncData?.current_time || party?.current_time || 0}
+        />
       </div>
 
       {/* Main area: panel grid + tabbed right panel */}
@@ -372,10 +377,11 @@ export default function WatchPartyPage() {
             {[
               { id: 'chat',        label: '💬 Chat' },
               { id: 'queue',       label: '🎵 Queue' },
+              { id: 'reactions',   label: '⚡ React' },
               { id: 'battle',      label: '⚔️ Battle' },
               { id: 'leaderboard', label: '🏆 Ranks' },
               { id: 'polls',       label: '📊 Polls' },
-              { id: 'analytics',   label: '📈 Stats' },
+              ...(isHost ? [{ id: 'analytics', label: '📈 Stats' }] : []),
               { id: 'viewers',     label: '👥 Viewers' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActivePanel(tab.id)}
@@ -403,16 +409,24 @@ export default function WatchPartyPage() {
               </>
             )}
             {activePanel === 'queue' && (
-              <VideoQueue
+              <VideoQueuePanel
+                partyId={partyId}
+                party={party}
                 isHost={isHost}
                 currentUser={user}
-                currentVideoUrl={party?.video_url}
                 onPlayVideo={(url) => {
                   if (isHost && party?.id) {
                     base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() });
                   }
                 }}
               />
+            )}
+            {activePanel === 'reactions' && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  Use the reaction bar below the video to react live. Recent reactions appear on the right side of the player.
+                </p>
+              </div>
             )}
             {activePanel === 'polls' && (
               <WatchPartyPoll
@@ -424,11 +438,9 @@ export default function WatchPartyPage() {
               />
             )}
             {activePanel === 'analytics' && (
-              <WatchPartyAnalytics
-                party={party}
-                members={members}
-                pollCount={pollCount}
-                reactionCount={reactionCount}
+              <PartyAnalyticsDashboard
+                partyId={partyId}
+                isHost={isHost}
               />
             )}
             {activePanel === 'viewers' && (
