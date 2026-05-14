@@ -26,6 +26,7 @@ import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPan
 import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
 import GiftShopTray from '../components/live/GiftShopTray';
+import TipWidget from '../components/live/TipWidget';
 import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
@@ -423,9 +424,12 @@ export default function RoomPage() {
             {/* Control Bar */}
             <div className="bg-white rounded-xl shadow-lg p-4">
               <div className="flex items-center justify-center gap-3">
-                {/* Gift Shop Tray for viewers */}
+                {/* Gift Shop Tray + Tip for viewers */}
                 {user && !isHost && (
-                  <GiftShopTray roomId={roomId} currentUser={user} />
+                  <>
+                    <GiftShopTray roomId={roomId} currentUser={user} />
+                    <TipWidget roomId={roomId} hostId={room.host_id} currentUser={user} />
+                  </>
                 )}
                 {currentParticipant && (
                      <>
