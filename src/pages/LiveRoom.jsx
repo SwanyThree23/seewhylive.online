@@ -38,6 +38,7 @@ import GoldenWall from '../components/live/GoldenWall';
 import SuperChatBar from '../components/live/SuperChatBar';
 import SignalBars from '../components/live/SignalBars';
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -601,8 +602,11 @@ export default function LiveRoom() {
                 </TabsList>
 
                 <TabsContent value="chat" className="flex-1 overflow-hidden m-0 p-0 flex flex-col">
-                  <div className="flex-1 overflow-hidden">
-                    <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
+                  <div className="flex-1 overflow-y-auto space-y-3 p-3">
+                    <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />
+                    <div className="border-t border-white/5 pt-3">
+                      <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
+                    </div>
                   </div>
                   <SuperChatBar
                     roomId={roomId}

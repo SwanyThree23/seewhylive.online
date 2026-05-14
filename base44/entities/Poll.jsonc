@@ -1,0 +1,41 @@
+{
+  "name": "Poll",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room ID"
+    },
+    "host_id": {
+      "type": "string",
+      "description": "Host who created the poll"
+    },
+    "question": {
+      "type": "string",
+      "description": "Poll question",
+      "maxLength": 200
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Poll answer options"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "closed"
+      ],
+      "default": "active",
+      "description": "Poll status"
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id",
+    "question",
+    "options"
+  ]
+}

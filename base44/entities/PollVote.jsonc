@@ -1,0 +1,28 @@
+{
+  "name": "PollVote",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room ID"
+    },
+    "poll_id": {
+      "type": "string",
+      "description": "Poll being voted on"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who voted"
+    },
+    "option_index": {
+      "type": "number",
+      "description": "Index of selected option (0-based)"
+    }
+  },
+  "required": [
+    "room_id",
+    "poll_id",
+    "user_id",
+    "option_index"
+  ]
+}
