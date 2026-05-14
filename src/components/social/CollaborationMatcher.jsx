@@ -6,27 +6,27 @@ import { Button } from '@/components/ui/button';
 const COLLAB_OPPORTUNITIES = [
   {
     id: 1,
+    name: 'Rick Astley',
+    type: 'Tournament Host',
+    interests: ['Competitions', 'Tournaments', 'Live Events'],
+    color: '#EF4444',
+    url: 'https://youtube.com/@rickastley',
+  },
+  {
+    id: 2,
     name: 'AI Verse Podcast',
-    type: 'Podcast Host',
-    interests: ['AI', 'Tech', 'Discussion'],
+    type: 'Podcast',
+    interests: ['AI', 'Creator Talk', 'Tech'],
     color: '#8B5CF6',
     url: 'https://youtube.com/@aiversepodcast',
   },
   {
-    id: 2,
-    name: 'Memoirs of a Shy Girl',
-    type: 'Creator',
-    interests: ['Stories', 'Personal', 'Authentic'],
-    color: '#EC4899',
-    url: 'https://youtube.com/@memoirsofashygirl',
-  },
-  {
     id: 3,
-    name: 'Domino Entertainment',
-    type: 'Entertainment',
-    interests: ['Comedy', 'Entertainment', 'Creative'],
-    color: '#F59E0B',
-    url: 'https://youtube.com/@dominoentertainment5513',
+    name: 'CreatorHub Academy',
+    type: 'Educational',
+    interests: ['Monetization', 'Growth', 'Strategy'],
+    color: '#10B981',
+    url: 'https://youtube.com/@creatorhubacademy',
   },
 ];
 
