@@ -4,6 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music } from 'lucide-react';
+import SoundboardWidget from './SoundboardWidget';
 
 const BG_MUSIC = [
   { id: 'none', label: 'No Music' },
@@ -127,6 +128,11 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
             >
               {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#0d0618]">{m.label}</option>)}
             </select>
+          </div>
+
+          {/* Soundboard */}
+          <div className="border-t border-white/5 pt-3">
+            <SoundboardWidget isVisible={true} disabled={false} />
           </div>
         </motion.div>
       )}

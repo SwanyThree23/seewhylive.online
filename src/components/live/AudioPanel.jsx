@@ -4,6 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Volume2, VolumeX, Music, Radio, Headphones, Settings2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SoundboardWidget from './SoundboardWidget';
 
 const AUDIO_PRESETS = [
   { id: 'normal', label: 'Normal', icon: '🎙️' },
@@ -160,6 +161,11 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   ))}
                 </div>
               )}
+
+              {/* Soundboard */}
+              <div className="border-t border-white/5 pt-3">
+                <SoundboardWidget isVisible={true} disabled={false} />
+              </div>
 
               {/* Audio only mode info */}
               <div className="bg-[#d4af37]/5 border border-[#d4af37]/15 rounded-lg p-2">
