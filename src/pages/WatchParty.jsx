@@ -12,6 +12,10 @@ import ViewerRail from '../components/watchparty/ViewerRail';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ShareButtons from '../components/shared/ShareButtons';
 import PanelGrid from '../components/watchparty/PanelGrid';
+import BattleTiers from '../components/watchparty/BattleTiers';
+import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import HostControls from '../components/watchparty/HostControls';
 
 function getYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -149,6 +153,7 @@ export default function WatchPartyPage() {
   const [partyTitle, setPartyTitle] = useState('');
   const [creating, setCreating] = useState(false);
   const [syncData, setSyncData] = useState(null);
+  const [activePanel, setActivePanel] = useState('chat'); // 'chat' | 'playlist' | 'battle' | 'leaderboard'
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -336,30 +341,73 @@ export default function WatchPartyPage() {
         <ReactionOverlay partyId={partyId} currentUser={user} />
       </div>
 
-      {/* Main area: panel grid + chat — side by side on desktop, stacked on mobile */}
+      {/* Main area: panel grid + tabbed right panel */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* ── 20-PERSON PANEL GRID ── */}
-        <div className="shrink-0 overflow-hidden border-b border-white/5 md:border-b-0 md:border-r"
-          style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          <div className="md:w-[280px]">
-            <PanelGrid
-              members={members}
-              currentUser={user}
-              hostId={party.host_id}
-              maxSlots={20}
-              isHost={isHost}
-              onInvite={copyInvite}
-            />
-          </div>
+
+        {/* ── 20-PERSON PANEL GRID — hidden on mobile to save space ── */}
+        <div className="hidden md:block shrink-0 overflow-hidden"
+          style={{ width: '220px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+          <PanelGrid
+            members={members}
+            currentUser={user}
+            hostId={party.host_id}
+            maxSlots={20}
+            isHost={isHost}
+            onInvite={copyInvite}
+          />
         </div>
 
-        {/* ── CHAT ── */}
+        {/* ── TABBED PANEL ── */}
         <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#0d0618' }}>
-          <div className="px-3 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <h3 className="text-[11px] font-semibold" style={{ color: '#d4af37' }}>Party Chat</h3>
+          {/* Tab bar */}
+          <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
+            {[
+              { id: 'chat',        label: '💬 Chat' },
+              { id: 'playlist',    label: '🎵 Playlist' },
+              { id: 'battle',      label: '⚔️ Battle' },
+              { id: 'leaderboard', label: '🏆 Ranks' },
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActivePanel(tab.id)}
+                className="flex-1 py-2 text-[9px] font-black uppercase transition-all"
+                style={{
+                  fontFamily: 'Barlow Condensed, sans-serif',
+                  letterSpacing: '0.06em',
+                  color: activePanel === tab.id ? '#d4af37' : 'rgba(255,255,255,0.3)',
+                  background: activePanel === tab.id ? 'rgba(212,175,55,0.07)' : 'transparent',
+                  borderBottom: activePanel === tab.id ? '2px solid #d4af37' : '2px solid transparent',
+                }}>
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <div className="flex-1 overflow-hidden">
-            <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+
+          {/* Tab content */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-2">
+            {activePanel === 'chat' && (
+              <>
+                {isHost && (
+                  <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
+                )}
+                <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+              </>
+            )}
+            {activePanel === 'playlist' && (
+              <CollabPlaylist
+                isHost={isHost}
+                currentUser={user}
+                onPlayVideo={(url, type) => {
+                  // Update party video url in place (host only)
+                  base44.entities.WatchParty.update(partyId, { video_url: url, video_type: type, current_time: 0, updated_at_ms: Date.now() });
+                  qc.invalidateQueries(['watchparty', partyId]);
+                }}
+              />
+            )}
+            {activePanel === 'battle' && (
+              <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+            )}
+            {activePanel === 'leaderboard' && (
+              <SocialLeaderboard members={members} />
+            )}
           </div>
         </div>
       </div>
