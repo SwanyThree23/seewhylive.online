@@ -11,14 +11,14 @@ const BORDER = 'rgba(212,175,55,0.18)';
 const CREAM = '#F5F0E8';
 
 const ARIA_PROMPTS = [
-  'How do I go live?',
-  'What are PK Battles?',
-  'How does tipping work?',
-  'Tell me about Aura AI',
-  'How do I earn loyalty points?',
-  'What is a Watch Party?',
-  'How do I monetize my streams?',
-  'How do I create a community?',
+  'How do I go live? 🎙',
+  'What are PK Battles? ⚔️',
+  'How do tips work? 💸',
+  'Explain Aura AI co-host 🤖',
+  'How do I earn loyalty points? 🏆',
+  'What is a Watch Party? 👀',
+  'Help me stack that bag 💰',
+  'How do I create a community? 🌍',
 ];
 
 function TypingDots() {
@@ -69,7 +69,7 @@ export default function ARIAWidget() {
     if (convRef.current) return convRef.current;
     const conv = await base44.agents.createConversation({
       agent_name: 'seewhy_guide',
-      metadata: { name: 'ARIA Guide Session' },
+      metadata: { name: 'SwanyBot Session' },
     });
     convRef.current = conv;
     setConversation(conv);
@@ -100,7 +100,7 @@ export default function ARIAWidget() {
     // Send greeting
     await base44.agents.addMessage(conv, {
       role: 'user',
-      content: "Hi! I'm new to SeeWhy LIVE. Can you introduce yourself and give me a quick overview of what I can do here?",
+      content: "Yo! I just got here and I want to know what SeeWhy LIVE is all about. Introduce yourself and break it down for me!",
     });
   };
 
@@ -227,9 +227,9 @@ export default function ARIAWidget() {
                 </div>
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                    ARIA
+                    SwanyBot
                   </p>
-                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>SeeWhy LIVE Guide</p>
+                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Your SeeWhy Guide 🔥</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -261,10 +261,10 @@ export default function ARIAWidget() {
                           <Sparkles className="w-6 h-6" style={{ color: G }} />
                         </div>
                         <p className="font-black text-sm uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                          Hi! I'm ARIA ✨
+                          SwanyBot in the Building 👑
                         </p>
                         <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          Your SeeWhy LIVE guide — ask me anything!
+                          Your guide, your hype man — ask me anything!
                         </p>
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
@@ -367,7 +367,7 @@ export default function ARIAWidget() {
                       value={input}
                       onChange={e => setInput(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder={listening ? '🎙 Listening…' : 'Ask ARIA anything…'}
+                      placeholder={listening ? '🎙 Listening…' : 'Ask SwanyBot anything…'}
                       className="flex-1 bg-transparent text-[11px] outline-none placeholder:text-white/25 min-w-0"
                       style={{ color: CREAM }}
                     />

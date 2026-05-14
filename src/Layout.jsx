@@ -282,7 +282,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Global multilingual chat widget */}
       <GlobalChatWidget />
 
-      {/* ARIA — Voice AI Guide */}
+      {/* SwanyBot — Voice AI Guide */}
       <ARIAWidget />
 
       {/* ── MOBILE BOTTOM NAV ── */}
