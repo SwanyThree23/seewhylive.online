@@ -42,8 +42,10 @@ var PRIMARY_NAV = [
 ];
 
 var CREATOR_NAV = [
-  { name: 'Dashboard',   icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
-  { name: 'Monetize',    icon: DollarSign,      href: createPageUrl('Monetization') },
+  { name: 'Dashboard',   icon: LayoutDashboard, href: '/CreatorDashboard' },
+  { name: 'Monetize',    icon: DollarSign,      href: '/Monetization' },
+  { name: 'Community',   icon: Users,           href: '/Community' },
+  { name: 'Branding',    icon: Sparkles,        href: '/OverlayEditor' },
   { name: 'Schedule',    icon: Radio,           href: createPageUrl('StreamScheduler') },
   { name: 'Stream Setup',icon: Server,          href: createPageUrl('StreamInfra') },
 ];
