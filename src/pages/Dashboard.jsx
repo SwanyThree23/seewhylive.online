@@ -3,281 +3,295 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import {
-  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line,
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer,
   CartesianGrid, Tooltip, PieChart, Pie, Cell
 } from 'recharts';
 import {
-  DollarSign, Radio, Users, TrendingUp, Settings, Star, Eye, Clock,
-  Plus, Calendar, MessageSquare, Gift, Target, ChevronRight, Zap,
-  Play, Film, BarChart2, Vote, Shield, CreditCard, Download
+  Radio, Users, DollarSign, TrendingUp, Eye, Clock, MessageSquare,
+  Heart, Zap, Plus, Video, BookOpen, Settings, ChevronRight,
+  Star, Play, Trash2, Edit, X, Check, FileText, Target, BarChart2,
+  Crown, Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
-const B = '#800020';
-const OB = '#0D0D0D';
-const OB2 = '#1A1A1A';
-const OB3 = '#2A1F1F';
+const GOLD = '#D4AF37';
+const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TABS = [
-  { id: 'overview',    label: 'Overview',    icon: BarChart2 },
-  { id: 'analytics',  label: 'Analytics',   icon: TrendingUp },
-  { id: 'content',    label: 'Content',     icon: Film },
-  { id: 'community',  label: 'Community',   icon: Users },
-  { id: 'monetize',   label: 'Monetize',    icon: DollarSign },
-  { id: 'settings',   label: 'Settings',    icon: Settings },
+  { id: 'overview',     label: '📊 Overview',     icon: BarChart2 },
+  { id: 'analytics',   label: '📈 Analytics',    icon: TrendingUp },
+  { id: 'content',     label: '🎬 Content',       icon: Video },
+  { id: 'community',   label: '👥 Community',     icon: Users },
+  { id: 'monetization',label: '💰 Monetization', icon: DollarSign },
+  { id: 'settings',    label: '⚙ Settings',      icon: Settings },
 ];
 
-function Stat({ label, value, icon: Icon, color = G }) {
+function Card({ children, className = '', style = {} }) {
   return (
-    <div className="rounded-xl p-4 space-y-2" style={{ background: OB2, border: `1px solid ${color}22` }}>
-      <div className="flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.35)', fontFamily: 'IBM Plex Mono, monospace' }}>{label}</span>
-        {Icon && <Icon className="w-4 h-4" style={{ color }} />}
-      </div>
-      <div className="text-2xl font-black" style={{ color, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</div>
+    <div className={`rounded-xl ${className}`}
+      style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
+      {children}
     </div>
   );
 }
 
-/* ── TAB 1: OVERVIEW ── */
+function StatTile({ label, value, sub, color = GOLD, icon: Icon }) {
+  return (
+    <Card>
+      <div className="p-4 flex items-start justify-between gap-2">
+        <div>
+          <p className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'rgba(245,230,211,0.35)', ...T }}>{label}</p>
+          <p className="text-2xl font-black leading-none" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
+          {sub && <p className="text-[9px] mt-1" style={{ color: 'rgba(245,230,211,0.3)' }}>{sub}</p>}
+        </div>
+        {Icon && <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
+          <Icon className="w-4 h-4" style={{ color }} />
+        </div>}
+      </div>
+    </Card>
+  );
+}
+
+/* ═══════════════ OVERVIEW TAB ═══════════════ */
 function OverviewTab({ user }) {
   const { data: payout } = useQuery({
-    queryKey: ['dash-payout', user?.id],
-    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: user.id }).then(r => r[0]),
+    queryKey: ['db-payout', user?.id],
+    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
   const { data: profile } = useQuery({
-    queryKey: ['dash-profile', user?.id],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user.id }).then(r => r[0]),
+    queryKey: ['db-profile', user?.id],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
   const { data: liveRooms = [] } = useQuery({
-    queryKey: ['dash-live', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }),
-    enabled: !!user?.id,
+    queryKey: ['db-live'],
+    queryFn: () => base44.entities.Room.filter({ status: 'live' }),
+    refetchInterval: 10000,
   });
   const { data: txns = [] } = useQuery({
-    queryKey: ['dash-txns-7', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id }, '-created_date', 200),
+    queryKey: ['db-txns7', user?.id],
+    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: activities = [] } = useQuery({
-    queryKey: ['dash-activity', user?.id],
-    queryFn: () => base44.entities.Activity.filter({ user_id: user.id }, '-created_date', 10),
+    queryKey: ['db-activities', user?.id],
+    queryFn: () => base44.entities.Activity.filter({ user_id: user?.id }, '-created_date', 10),
     enabled: !!user?.id,
   });
 
-  // Build last-7-days chart
+  // Last 7 days chart
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (6 - i));
-    return d.toLocaleDateString('en-US', { weekday: 'short' });
-  });
-  const chartData = days.map((day, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6 - i));
-    const ds = d.toDateString();
-    const total = txns.filter(t => new Date(t.created_date).toDateString() === ds)
-      .reduce((s, t) => s + (t.creator_amount || 0), 0);
-    return { day, total: Math.round(total * 100) / 100 };
+    const label = d.toLocaleDateString('en', { weekday: 'short' });
+    const total = txns.filter(t => {
+      const td = new Date(t.created_date);
+      return td.toDateString() === d.toDateString();
+    }).reduce((s, t) => s + (t.creator_amount || 0), 0);
+    return { label, total };
   });
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat label="Pending Balance" value={`$${Math.floor((payout?.pending_balance || 0) * 100) / 100}`} icon={DollarSign} color={G} />
-        <Stat label="Subscribers" value={profile?.subscriber_count || 0} icon={Users} color="#00F5FF" />
-        <Stat label="Hours Streamed" value={`${Math.round((profile?.total_hours_streamed || 0))}h`} icon={Clock} color="#8B5CF6" />
-        <Stat label="Live Now" value={liveRooms.length} icon={Radio} color="#FF1564" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatTile label="Pending Balance" value={`$${Math.floor(payout?.pending_balance || 0)}`} icon={DollarSign} color={GOLD} />
+        <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#00F5FF" />
+        <StatTile label="Hours Streamed" value={`${Math.floor(profile?.total_hours_streamed || 0)}h`} icon={Clock} color="#8B5CF6" />
+        <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#FF1564" sub="right now" />
       </div>
 
-      {/* Revenue chart */}
-      <div className="rounded-xl p-4" style={{ background: OB2, border: `1px solid ${G}20` }}>
-        <p className="text-[10px] uppercase tracking-widest mb-3 font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Revenue — Last 7 Days</p>
-        <ResponsiveContainer width="100%" height={140}>
-          <BarChart data={chartData} barSize={24}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="day" tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 9, fontFamily: 'IBM Plex Mono' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 9, fontFamily: 'IBM Plex Mono' }} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ background: OB2, border: `1px solid ${G}30`, color: CREAM, fontSize: 11 }} />
-            <Bar dataKey="total" fill={G} radius={[4,4,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <Card>
+        <div className="px-4 pt-4 pb-2">
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: CREAM + '50', ...T }}>Revenue — Last 7 Days</p>
+        </div>
+        <div className="px-4 pb-4" style={{ height: 180 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={days}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="label" tick={{ fill: 'rgba(245,230,211,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 9 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: '#1A1A1A', border: `1px solid ${GOLD}30`, color: CREAM }} />
+              <Bar dataKey="total" fill={GOLD} radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
 
-      {/* Quick actions */}
+      <Card>
+        <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Recent Activity</p>
+        </div>
+        <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+          {activities.length === 0
+            ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No recent activity</p>
+            : activities.map(a => (
+              <div key={a.id} className="flex items-center gap-3 px-4 py-2.5">
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: GOLD }} />
+                <p className="text-[11px] flex-1" style={{ color: CREAM + '70' }}>{a.title}</p>
+                <span className="text-[8px]" style={{ color: CREAM + '30' }}>{new Date(a.created_date).toLocaleDateString()}</span>
+              </div>
+            ))}
+        </div>
+      </Card>
+
       <div className="flex flex-wrap gap-2">
         {[
-          { label: 'Go Live', icon: Radio, href: '/LiveRoom', color: B },
-          { label: 'Schedule Stream', icon: Calendar, href: '/StreamScheduler', color: G },
-          { label: 'Create Post', icon: Plus, href: '/VideoPost', color: '#00FF88' },
-        ].map(a => (
-          <Link key={a.label} to={`/${a.label === 'Go Live' ? 'LiveRoom' : a.label === 'Schedule Stream' ? 'StreamScheduler' : 'VideoPost'}`}>
-            <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-              style={{ background: `${a.color}18`, color: a.color, border: `1px solid ${a.color}30`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              <a.icon className="w-3.5 h-3.5" /> {a.label}
+          { label: '📡 Go Live', href: createPageUrl('LiveRoom'), color: BURGUNDY },
+          { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: `rgba(212,175,55,0.15)` },
+          { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(0,245,255,0.1)` },
+        ].map(q => (
+          <Link key={q.label} to={q.href}>
+            <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
+              style={{ background: q.color, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+              {q.label}
             </button>
           </Link>
         ))}
       </div>
-
-      {/* Recent Activity */}
-      <div className="rounded-xl overflow-hidden" style={{ background: OB2, border: `1px solid rgba(255,255,255,0.07)` }}>
-        <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Recent Activity</span>
-        </div>
-        {activities.length === 0
-          ? <p className="text-center py-6 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No recent activity</p>
-          : activities.map(a => (
-            <div key={a.id} className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${G}15`, border: `1px solid ${G}25` }}>
-                <Zap className="w-3.5 h-3.5" style={{ color: G }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-bold" style={{ color: CREAM }}>{a.title}</p>
-                <p className="text-[9px]" style={{ color: 'rgba(245,230,211,0.3)' }}>{new Date(a.created_date).toLocaleString()}</p>
-              </div>
-            </div>
-          ))
-        }
-      </div>
     </div>
   );
 }
 
-/* ── TAB 2: ANALYTICS ── */
+/* ═══════════════ ANALYTICS TAB ═══════════════ */
 function AnalyticsTab({ user }) {
   const { data: roomAnalytics = [] } = useQuery({
-    queryKey: ['dash-room-analytics', user?.id],
-    queryFn: () => base44.entities.RoomAnalytics.filter({ host_id: user.id }, '-created_date', 50),
-    enabled: !!user?.id,
-  });
-  const { data: rooms = [] } = useQuery({
-    queryKey: ['dash-rooms', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id }, '-created_date', 20),
+    queryKey: ['db-roomanalytics', user?.id],
+    queryFn: () => base44.entities.RoomAnalytics.filter({ host_id: user?.id }, '-created_date', 20),
     enabled: !!user?.id,
   });
   const { data: follows = [] } = useQuery({
-    queryKey: ['dash-follows', user?.id],
-    queryFn: () => base44.entities.Follow.filter({ following_id: user.id }, '-created_date', 7),
+    queryKey: ['db-follows', user?.id],
+    queryFn: () => base44.entities.Follow.filter({ following_id: user?.id }, '-created_date', 50),
+    enabled: !!user?.id,
+  });
+  const { data: messages = [] } = useQuery({
+    queryKey: ['db-msgs', user?.id],
+    queryFn: () => base44.entities.Message.filter({ user_id: user?.id }),
+    enabled: !!user?.id,
+  });
+  const { data: destinations = [] } = useQuery({
+    queryKey: ['db-rtmp', user?.id],
+    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user?.id }),
     enabled: !!user?.id,
   });
 
   const peakViewers = roomAnalytics.reduce((m, r) => Math.max(m, r.peak_viewers || 0), 0);
-  const avgWatch = roomAnalytics.length > 0
+  const avgWatch = roomAnalytics.length
     ? Math.round(roomAnalytics.reduce((s, r) => s + (r.average_watch_time || 0), 0) / roomAnalytics.length)
     : 0;
-  const totalMsgs = roomAnalytics.reduce((s, r) => s + (r.total_messages || 0), 0);
+  const totalTips = roomAnalytics.reduce((s, r) => s + (r.total_tips || 0), 0);
+  const engagementRate = roomAnalytics.length
+    ? ((messages.length / Math.max(1, peakViewers)) * 100).toFixed(1) : '0.0';
 
-  const topStreams = [...rooms].sort((a, b) => {
-    const ra = roomAnalytics.find(r => r.room_id === a.id);
-    const rb = roomAnalytics.find(r => r.room_id === b.id);
-    return (rb?.peak_viewers || 0) - (ra?.peak_viewers || 0);
-  }).slice(0, 5);
+  const sortedRooms = [...roomAnalytics].sort((a, b) => (b.peak_viewers || 0) - (a.peak_viewers || 0)).slice(0, 5);
 
-  const RTMP_PLATFORMS = ['YouTube', 'TikTok', 'Facebook', 'Twitch', 'Rumble'];
-  const platColors = ['#FF0000', '#69C9D0', '#1877F2', '#9146FF', '#85C742'];
+  const platformData = destinations.map(d => ({
+    name: d.platform || d.label || 'Custom',
+    viewers: Math.floor(Math.random() * 200 + 50),
+  }));
+
+  const COLORS = [GOLD, '#00F5FF', '#8B5CF6', '#FF1564', '#00FF88'];
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <Stat label="Peak Viewers" value={peakViewers} icon={Eye} color={G} />
-        <Stat label="Avg Watch (s)" value={`${avgWatch}s`} icon={Clock} color="#00F5FF" />
-        <Stat label="Chat Messages" value={totalMsgs} icon={MessageSquare} color="#8B5CF6" />
-        <Stat label="New Followers" value={follows.length} icon={Users} color="#00FF88" />
-        <Stat label="Rooms" value={rooms.length} icon={Radio} color="#FF6B35" />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <StatTile label="Peak Viewers" value={peakViewers.toLocaleString()} icon={Eye} color={GOLD} />
+        <StatTile label="Avg Watch Time" value={`${avgWatch}m`} icon={Clock} color="#00F5FF" />
+        <StatTile label="New Followers" value={follows.length} icon={Users} color="#00FF88" />
+        <StatTile label="Chat Messages" value={messages.length} icon={MessageSquare} color="#8B5CF6" />
+        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#FF1564" />
+        <StatTile label="Tips Earned" value={`$${Math.floor(totalTips)}`} icon={DollarSign} color={GOLD} />
       </div>
 
-      {/* Top streams */}
-      <div className="rounded-xl overflow-hidden" style={{ background: OB2, border: `1px solid rgba(255,255,255,0.07)` }}>
+      {/* Top Streams table */}
+      <Card>
         <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Top Performing Streams</span>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Top Performing Streams</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-[10px]">
-            <thead><tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              {['Title', 'Date', 'Peak', 'Duration', 'Status'].map(h => (
-                <th key={h} className="px-4 py-2 text-left font-bold" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{h}</th>
-              ))}
-            </tr></thead>
+            <thead>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                {['Title','Date','Peak Viewers','Tips','Duration'].map(h => (
+                  <th key={h} className="px-4 py-2 text-left font-black uppercase tracking-wider" style={{ color: CREAM + '40', ...T }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
             <tbody>
-              {topStreams.map(r => {
-                const ra = roomAnalytics.find(a => a.room_id === r.id);
-                return (
+              {sortedRooms.length === 0
+                ? <tr><td colSpan={5} className="px-4 py-6 text-center" style={{ color: CREAM + '30' }}>No data yet</td></tr>
+                : sortedRooms.map(r => (
                   <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td className="px-4 py-2 font-bold truncate max-w-[140px]" style={{ color: CREAM }}>{r.title}</td>
-                    <td className="px-4 py-2" style={{ color: 'rgba(245,230,211,0.4)' }}>{new Date(r.created_date).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 font-black" style={{ color: G }}>{ra?.peak_viewers || 0}</td>
-                    <td className="px-4 py-2" style={{ color: 'rgba(245,230,211,0.4)' }}>{Math.round((ra?.total_watch_time || 0) / 60)}m</td>
-                    <td className="px-4 py-2">
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase"
-                        style={{ background: r.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)', color: r.status === 'live' ? '#FF1564' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                        {r.status}
-                      </span>
-                    </td>
+                    <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{r.room_id?.slice(0,8) || '—'}</td>
+                    <td className="px-4 py-2" style={{ color: CREAM + '40' }}>{new Date(r.created_date).toLocaleDateString()}</td>
+                    <td className="px-4 py-2 font-black" style={{ color: GOLD }}>{r.peak_viewers || 0}</td>
+                    <td className="px-4 py-2" style={{ color: '#00FF88' }}>${Math.floor(r.total_tips || 0)}</td>
+                    <td className="px-4 py-2" style={{ color: CREAM + '50' }}>{Math.floor((r.average_watch_time || 0))}m</td>
                   </tr>
-                );
-              })}
+                ))}
             </tbody>
           </table>
-          {topStreams.length === 0 && <p className="text-center py-6 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No stream data yet</p>}
         </div>
-      </div>
+      </Card>
 
       {/* Platform breakdown */}
-      <div className="rounded-xl p-4" style={{ background: OB2, border: `1px solid rgba(255,255,255,0.07)` }}>
-        <p className="text-[9px] uppercase tracking-widest mb-3 font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Platform Distribution</p>
-        <div className="space-y-2">
-          {RTMP_PLATFORMS.map((p, i) => {
-            const pct = Math.floor(Math.random() * 40 + 5);
-            return (
-              <div key={p} className="flex items-center gap-2">
-                <span className="w-14 text-[9px]" style={{ color: platColors[i] }}>{p}</span>
-                <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: platColors[i] }} />
+      {platformData.length > 0 && (
+        <Card>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Platform Breakdown</p>
+          </div>
+          <div className="p-4 space-y-2">
+            {platformData.map((p, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="text-[10px] w-20 shrink-0" style={{ color: CREAM + '60' }}>{p.name}</span>
+                <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${Math.min(100,(p.viewers/300)*100)}%`, background: COLORS[i % COLORS.length] }} />
                 </div>
-                <span className="text-[9px] w-8 text-right" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>{pct}%</span>
+                <span className="text-[9px] w-12 text-right" style={{ color: CREAM + '50' }}>{p.viewers}</span>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
 
-/* ── TAB 3: CONTENT ── */
+/* ═══════════════ CONTENT TAB ═══════════════ */
 function ContentTab({ user }) {
-  const qc = useQueryClient();
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [showCreate, setShowCreate] = useState(false);
   const [editVod, setEditVod] = useState(null);
-  const [form, setForm] = useState({ title: '', video_url: '', description: '', category: 'other', status: 'draft', tags: '' });
+  const [form, setForm] = useState({ title: '', video_url: '', description: '', category: 'other', status: 'draft', tags: [] });
+  const qc = useQueryClient();
 
   const { data: vods = [] } = useQuery({
-    queryKey: ['dash-vods', user?.id],
-    queryFn: () => base44.entities.VODVideo.filter({ creator_id: user.id }, '-created_date', 50),
+    queryKey: ['db-vods', user?.id],
+    queryFn: () => base44.entities.VODVideo.filter({ creator_id: user?.id }, '-created_date', 50),
     enabled: !!user?.id,
   });
   const { data: highlights = [] } = useQuery({
-    queryKey: ['dash-highlights', user?.id],
-    queryFn: () => base44.entities.StreamHighlight.filter({ creator_id: user.id }, '-created_date', 10),
+    queryKey: ['db-highlights', user?.id],
+    queryFn: () => base44.entities.StreamHighlight.filter({ creator_id: user?.id }, '-created_date', 10),
     enabled: !!user?.id,
   });
 
   const createMut = useMutation({
-    mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: user.id, tags: form.tags.split(',').map(t => t.trim()).filter(Boolean) }),
-    onSuccess: () => { qc.invalidateQueries(['dash-vods', user?.id]); setShowCreate(false); toast.success('VOD created'); },
+    mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: user?.id, views: 0 }),
+    onSuccess: () => { qc.invalidateQueries(['db-vods']); setShowCreate(false); toast.success('VOD created!'); },
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
-    onSuccess: () => { qc.invalidateQueries(['dash-vods', user?.id]); setEditVod(null); toast.success('VOD updated'); },
+    onSuccess: () => { qc.invalidateQueries(['db-vods']); setEditVod(null); toast.success('Updated!'); },
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.VODVideo.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['dash-vods', user?.id]); toast.success('Deleted'); },
+    onSuccess: () => qc.invalidateQueries(['db-vods']),
   });
 
   let filtered = vods.filter(v => {
@@ -289,651 +303,775 @@ function ContentTab({ user }) {
   if (sort === 'views') filtered = [...filtered].sort((a, b) => (b.views || 0) - (a.views || 0));
   if (sort === 'longest') filtered = [...filtered].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
 
-  const statusColors = { published: '#00FF88', draft: 'rgba(255,255,255,0.3)', unlisted: G };
+  const statusColors = { published: '#00FF88', draft: 'rgba(255,255,255,0.3)', unlisted: GOLD };
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-1 flex-wrap">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-1.5">
           {['all','published','draft','clips'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className="px-3 py-1 rounded-lg text-[9px] font-black uppercase"
-              style={{ background: filter === f ? `${G}20` : 'rgba(255,255,255,0.04)', color: filter === f ? G : 'rgba(255,255,255,0.4)', border: filter === f ? `1px solid ${G}40` : '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              className="px-3 py-1.5 rounded-lg font-black uppercase text-[9px]"
+              style={{ background: filter===f ? `${GOLD}20` : 'rgba(255,255,255,0.04)', color: filter===f ? GOLD : CREAM+'50', border: filter===f ? `1px solid ${GOLD}40` : '1px solid rgba(255,255,255,0.08)', ...T }}>
               {f}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <select value={sort} onChange={e => setSort(e.target.value)} className="h-7 px-2 rounded text-[9px]"
-            style={{ background: OB2, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+          <select value={sort} onChange={e => setSort(e.target.value)}
+            className="text-[10px] px-2 py-1.5 rounded-lg outline-none"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
             <option value="newest">Newest</option>
             <option value="views">Most Viewed</option>
             <option value="longest">Longest</option>
           </select>
           <button onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase"
-            style={{ background: B, color: G, border: `1px solid ${G}40`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
+            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
             <Plus className="w-3 h-3" /> Upload
           </button>
         </div>
       </div>
 
-      {(showCreate || editVod) && (
-        <div className="rounded-xl p-4 space-y-3" style={{ background: OB2, border: `1px solid ${G}25` }}>
-          <h4 className="font-black uppercase text-[11px]" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>{editVod ? 'Edit VOD' : 'New VOD'}</h4>
-          {['title','video_url','description'].map(field => (
-            <div key={field}>
-              <label className="text-[8px] uppercase tracking-widest" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{field.replace('_',' ')}</label>
-              <input value={editVod ? (editVod[field] || '') : form[field]}
-                onChange={e => editVod ? setEditVod(v => ({ ...v, [field]: e.target.value })) : setForm(f => ({ ...f, [field]: e.target.value }))}
-                className="mt-0.5 w-full h-8 px-2 rounded text-[11px]"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-            </div>
-          ))}
-          <div className="flex gap-2">
-            <select value={editVod ? editVod.status : form.status}
-              onChange={e => editVod ? setEditVod(v => ({ ...v, status: e.target.value })) : setForm(f => ({ ...f, status: e.target.value }))}
-              className="flex-1 h-8 px-2 rounded text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="unlisted">Unlisted</option>
-            </select>
-            <button onClick={() => editVod ? updateMut.mutate({ id: editVod.id, data: editVod }) : createMut.mutate()}
-              className="px-4 h-8 rounded-lg font-black uppercase text-[9px]"
-              style={{ background: G, color: OB, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              {editVod ? 'Save' : 'Create'}
-            </button>
-            <button onClick={() => { setShowCreate(false); setEditVod(null); }}
-              className="px-3 h-8 rounded-lg font-black uppercase text-[9px]"
-              style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {filtered.map(v => (
-          <div key={v.id} className="rounded-xl overflow-hidden" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-            <div className="aspect-video bg-black relative flex items-center justify-center" style={{ background: '#111' }}>
-              {v.thumbnail_url ? <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover" /> : <Film className="w-8 h-8 text-white/10" />}
-              <span className="absolute top-2 right-2 text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-                style={{ background: `${statusColors[v.status] || G}20`, color: statusColors[v.status] || G, border: `1px solid ${statusColors[v.status] || G}30`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <Card key={v.id}>
+            <div className="aspect-video relative overflow-hidden rounded-t-xl bg-black">
+              {v.thumbnail_url
+                ? <img src={v.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                : <div className="w-full h-full flex items-center justify-center">
+                    <Video className="w-6 h-6" style={{ color: GOLD + '40' }} />
+                  </div>}
+              <span className="absolute top-1.5 right-1.5 text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                style={{ background: `${statusColors[v.status] || CREAM}20`, color: statusColors[v.status] || CREAM, border: `1px solid ${statusColors[v.status] || CREAM}30` }}>
                 {v.status}
               </span>
             </div>
-            <div className="p-3">
-              <h4 className="text-[11px] font-bold truncate" style={{ color: CREAM }}>{v.title}</h4>
-              <div className="flex items-center justify-between mt-1.5">
-                <span className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-                  {(v.views || 0).toLocaleString()} views · {Math.floor((v.duration_seconds || 0) / 60)}m
-                </span>
+            <div className="p-2.5 space-y-1">
+              <p className="text-[10px] font-bold text-white leading-tight line-clamp-1">{v.title}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-[8px]" style={{ color: CREAM + '40' }}>{(v.views || 0).toLocaleString()} views</span>
                 <div className="flex gap-1">
-                  <button onClick={() => setEditVod(v)} className="text-[8px] px-2 py-0.5 rounded"
-                    style={{ background: `${G}12`, color: G, border: `1px solid ${G}25` }}>Edit</button>
-                  <button onClick={() => deleteMut.mutate(v.id)} className="text-[8px] px-2 py-0.5 rounded"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)' }}>Del</button>
+                  <button onClick={() => setEditVod(v)}
+                    className="w-5 h-5 flex items-center justify-center rounded"
+                    style={{ background: `${GOLD}15`, color: GOLD }}>
+                    <Edit className="w-2.5 h-2.5" />
+                  </button>
+                  <button onClick={() => deleteMut.mutate(v.id)}
+                    className="w-5 h-5 flex items-center justify-center rounded"
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444' }}>
+                    <Trash2 className="w-2.5 h-2.5" />
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
         ))}
-        {filtered.length === 0 && <p className="col-span-3 text-center py-10 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No videos</p>}
+        {filtered.length === 0 && <p className="col-span-4 text-center py-10 text-[11px]" style={{ color: CREAM + '30' }}>No content yet</p>}
       </div>
 
+      {/* Highlights */}
       {highlights.length > 0 && (
-        <div>
-          <p className="text-[9px] uppercase tracking-widest mb-2 font-bold" style={{ color: 'rgba(245,230,211,0.35)', fontFamily: 'IBM Plex Mono, monospace' }}>AI Highlights</p>
-          <div className="space-y-2">
-            {highlights.map(h => (
-              <div key={h.id} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.06)' }}>
-                <Play className="w-4 h-4" style={{ color: G }} />
-                <div className="flex-1">
-                  <span className="text-[10px] font-bold" style={{ color: CREAM }}>{h.highlight_type}</span>
-                  <span className="text-[8px] ml-2" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>@{h.start_time}s · {Math.round((h.ai_confidence || 0) * 100)}% conf</span>
+        <div className="space-y-2">
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '40', ...T }}>AI Highlights</p>
+          <div className="space-y-1.5">
+            {highlights.slice(0, 5).map(h => (
+              <Card key={h.id}>
+                <div className="flex items-center gap-3 p-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}30` }}>
+                    <Play className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold text-white">{h.title || 'Stream Highlight'}</p>
+                    <p className="text-[8px]" style={{ color: CREAM + '40' }}>
+                      {h.highlight_type} · {Math.floor((h.start_time||0)/60)}:{String((h.start_time||0)%60).padStart(2,'0')}
+                    </p>
+                  </div>
+                  <span className="text-[8px] font-black px-1.5 py-0.5 rounded"
+                    style={{ background: `${GOLD}15`, color: GOLD }}>
+                    {Math.round((h.ai_confidence || 0) * 100)}%
+                  </span>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
       )}
+
+      {/* Create modal */}
+      <AnimatePresence>
+        {(showCreate || editVod) && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }}
+              onClick={() => { setShowCreate(false); setEditVod(null); }} />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md rounded-2xl p-5 space-y-3"
+              style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+              <div className="flex items-center justify-between">
+                <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>{editVod ? 'Edit VOD' : 'Upload VOD'}</span>
+                <button onClick={() => { setShowCreate(false); setEditVod(null); }}><X className="w-4 h-4 text-white/40" /></button>
+              </div>
+              {[
+                { field: 'title', placeholder: 'Title' },
+                { field: 'video_url', placeholder: 'Video URL' },
+                { field: 'description', placeholder: 'Description' },
+              ].map(({ field, placeholder }) => (
+                <input key={field} placeholder={placeholder}
+                  value={(editVod ? editVod : form)[field] || ''}
+                  onChange={e => editVod ? setEditVod(v => ({ ...v, [field]: e.target.value })) : setForm(f => ({ ...f, [field]: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+              ))}
+              <div className="flex gap-2">
+                <select value={(editVod ? editVod : form).status}
+                  onChange={e => editVod ? setEditVod(v => ({ ...v, status: e.target.value })) : setForm(f => ({ ...f, status: e.target.value }))}
+                  className="flex-1 px-2 py-2 rounded-lg text-[10px] outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+                  {['draft','published','unlisted'].map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <select value={(editVod ? editVod : form).category}
+                  onChange={e => editVod ? setEditVod(v => ({ ...v, category: e.target.value })) : setForm(f => ({ ...f, category: e.target.value }))}
+                  className="flex-1 px-2 py-2 rounded-lg text-[10px] outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+                  {['gaming','music','education','talk','other'].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <button
+                onClick={() => editVod ? updateMut.mutate({ id: editVod.id, data: editVod }) : createMut.mutate()}
+                className="w-full py-2.5 rounded-xl font-black uppercase text-[11px]"
+                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+                {editVod ? 'Save Changes' : 'Create VOD'}
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-/* ── TAB 4: COMMUNITY ── */
+/* ═══════════════ COMMUNITY TAB ═══════════════ */
 function CommunityTab({ user }) {
+  const [selectedCommunity, setSelectedCommunity] = useState(null);
+  const [showPollForm, setShowPollForm] = useState(false);
+  const [pollForm, setPollForm] = useState({ question: '', options: ['',''], ends_at: '' });
   const qc = useQueryClient();
-  const [selCommunity, setSelCommunity] = useState(null);
-  const [showPoll, setShowPoll] = useState(false);
-  const [showChallenge, setShowChallenge] = useState(false);
-  const [pollForm, setPollForm] = useState({ question: '', options: ['', ''], ends_at: '', allow_multiple: false });
-  const [challengeForm, setChallengeForm] = useState({ title: '', description: '', type: 'engagement', goal_value: 100, reward_type: 'badge', start_date: '', end_date: '' });
 
   const { data: communities = [] } = useQuery({
-    queryKey: ['dash-communities', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user.id }),
+    queryKey: ['db-communities', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }),
     enabled: !!user?.id,
   });
-  const communityId = selCommunity || communities[0]?.id;
+  useEffect(() => { if (communities.length && !selectedCommunity) setSelectedCommunity(communities[0]?.id); }, [communities]);
 
   const { data: polls = [] } = useQuery({
-    queryKey: ['dash-polls', communityId],
-    queryFn: () => base44.entities.Poll.filter({ community_id: communityId }),
-    enabled: !!communityId,
+    queryKey: ['db-polls', selectedCommunity],
+    queryFn: () => base44.entities.Poll.filter({ community_id: selectedCommunity }),
+    enabled: !!selectedCommunity,
+    refetchInterval: 5000,
   });
   const { data: challenges = [] } = useQuery({
-    queryKey: ['dash-challenges', communityId],
-    queryFn: () => base44.entities.Challenge.filter({ community_id: communityId }),
-    enabled: !!communityId,
+    queryKey: ['db-challenges', selectedCommunity],
+    queryFn: () => base44.entities.Challenge.filter({ community_id: selectedCommunity }),
+    enabled: !!selectedCommunity,
   });
 
-  useEffect(() => { if (communities.length > 0 && !selCommunity) setSelCommunity(communities[0].id); }, [communities]);
-
-  const createPoll = useMutation({
+  const createPollMut = useMutation({
     mutationFn: () => base44.entities.Poll.create({
-      community_id: communityId,
-      creator_id: user.id,
+      community_id: selectedCommunity,
+      creator_id: user?.id,
       question: pollForm.question,
       options: pollForm.options.filter(Boolean).map(o => ({ text: o, votes: 0 })),
-      total_votes: 0,
+      ends_at: pollForm.ends_at || new Date(Date.now() + 60 * 60 * 1000).toISOString(),
       status: 'active',
-      ends_at: pollForm.ends_at,
-      allow_multiple: pollForm.allow_multiple,
+      total_votes: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(['dash-polls', communityId]); setShowPoll(false); toast.success('Poll created!'); },
+    onSuccess: () => { qc.invalidateQueries(['db-polls']); setShowPollForm(false); toast.success('Poll created!'); },
   });
-  const endPoll = useMutation({
+
+  const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
-    onSuccess: () => qc.invalidateQueries(['dash-polls', communityId]),
-  });
-  const createChallenge = useMutation({
-    mutationFn: () => base44.entities.Challenge.create({ ...challengeForm, community_id: communityId, creator_id: user.id, status: 'active', participant_count: 0 }),
-    onSuccess: () => { qc.invalidateQueries(['dash-challenges', communityId]); setShowChallenge(false); toast.success('Challenge created!'); },
+    onSuccess: () => qc.invalidateQueries(['db-polls']),
   });
 
   return (
-    <div className="space-y-5">
-      {communities.length > 1 && (
-        <select value={selCommunity || ''} onChange={e => setSelCommunity(e.target.value)}
-          className="h-9 px-3 rounded-xl text-[11px] w-full max-w-xs"
-          style={{ background: OB2, border: `1px solid ${G}25`, color: CREAM }}>
+    <div className="space-y-4">
+      {/* Community selector */}
+      <div className="flex items-center gap-2">
+        <select value={selectedCommunity || ''} onChange={e => setSelectedCommunity(e.target.value)}
+          className="flex-1 px-3 py-2 rounded-xl text-[11px] outline-none"
+          style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)`, color: CREAM }}>
           {communities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {communities.length === 0 && <option value="">No communities yet</option>}
         </select>
-      )}
+      </div>
 
-      {/* Polls */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Active Polls</span>
-          <button onClick={() => setShowPoll(true)}
-            className="flex items-center gap-1 px-3 py-1 rounded-lg text-[9px] font-black uppercase"
-            style={{ background: `${G}15`, color: G, border: `1px solid ${G}30`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+      {/* Polls section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', ...T }}>Active Polls</p>
+          <button onClick={() => setShowPollForm(true)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[9px]"
+            style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30`, ...T }}>
             <Plus className="w-3 h-3" /> Poll
           </button>
         </div>
 
-        {showPoll && (
-          <div className="rounded-xl p-3 space-y-2 mb-3" style={{ background: OB2, border: `1px solid ${G}25` }}>
-            <input placeholder="Question" value={pollForm.question} onChange={e => setPollForm(f => ({ ...f, question: e.target.value }))}
-              className="w-full h-8 px-2 rounded text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-            {pollForm.options.map((o, i) => (
-              <input key={i} placeholder={`Option ${i + 1}`} value={o} onChange={e => { const opts = [...pollForm.options]; opts[i] = e.target.value; setPollForm(f => ({ ...f, options: opts })); }}
-                className="w-full h-8 px-2 rounded text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-            ))}
-            {pollForm.options.length < 6 && (
-              <button onClick={() => setPollForm(f => ({ ...f, options: [...f.options, ''] }))}
-                className="text-[9px]" style={{ color: G }}>+ Add option</button>
-            )}
-            <input type="datetime-local" value={pollForm.ends_at} onChange={e => setPollForm(f => ({ ...f, ends_at: e.target.value }))}
-              className="w-full h-8 px-2 rounded text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-            <div className="flex gap-2">
-              <button onClick={() => createPoll.mutate()} className="px-4 h-8 rounded font-black uppercase text-[9px]"
-                style={{ background: G, color: OB, fontFamily: 'Barlow Condensed, sans-serif' }}>Create</button>
-              <button onClick={() => setShowPoll(false)} className="px-3 h-8 rounded text-[9px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Cancel</button>
-            </div>
-          </div>
-        )}
-
-        {polls.map(poll => {
+        {polls.filter(p => p.status === 'active').map(poll => {
+          const opts = Array.isArray(poll.options) ? poll.options : [];
           const total = poll.total_votes || 1;
           return (
-            <div key={poll.id} className="rounded-xl p-3 space-y-2 mb-2" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-              <div className="flex items-start justify-between">
-                <p className="text-[12px] font-bold" style={{ color: CREAM }}>{poll.question}</p>
-                <div className="flex gap-1">
-                  {poll.status === 'active' && (
-                    <button onClick={() => endPoll.mutate(poll.id)}
-                      className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
-                      style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>End</button>
-                  )}
+            <Card key={poll.id}>
+              <div className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-bold text-[12px] text-white">{poll.question}</p>
+                  <button onClick={() => endPollMut.mutate(poll.id)}
+                    className="text-[8px] px-2 py-1 rounded font-black uppercase shrink-0"
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>End</button>
+                </div>
+                <div className="space-y-1.5">
+                  {opts.map((o, i) => {
+                    const label = typeof o === 'object' ? o.text : o;
+                    const votes = typeof o === 'object' ? (o.votes || 0) : 0;
+                    const pct = Math.round((votes / total) * 100);
+                    return (
+                      <div key={i} className="space-y-0.5">
+                        <div className="flex justify-between text-[9px]">
+                          <span style={{ color: CREAM + '70' }}>{label}</span>
+                          <span style={{ color: GOLD, ...T }}>{pct}%</span>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: GOLD }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[8px]" style={{ color: CREAM + '30' }}>{poll.total_votes || 0} total votes</p>
+              </div>
+            </Card>
+          );
+        })}
+        {polls.filter(p => p.status === 'active').length === 0 && (
+          <p className="text-center py-4 text-[11px]" style={{ color: CREAM + '25' }}>No active polls</p>
+        )}
+      </div>
+
+      {/* Challenges section */}
+      <div className="space-y-3">
+        <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', ...T }}>Challenges</p>
+        {challenges.map(c => {
+          const progress = c.goal_value > 0 ? Math.min(100, Math.round((c.participant_count || 0) / c.goal_value * 100)) : 0;
+          return (
+            <Card key={c.id}>
+              <div className="p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-bold text-[11px] text-white">{c.title}</p>
+                  <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                    style={{ background: `${GOLD}15`, color: GOLD, ...T }}>{c.challenge_type}</span>
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex justify-between text-[8px]">
+                    <span style={{ color: CREAM + '40' }}>{c.participant_count || 0} / {c.goal_value || 0}</span>
+                    <span style={{ color: GOLD }}>{progress}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${progress}%`, background: GOLD }} />
+                  </div>
                 </div>
               </div>
-              {(poll.options || []).map((opt, i) => {
-                const pct = Math.round(((opt.votes || 0) / total) * 100);
-                return (
-                  <div key={i}>
-                    <div className="flex justify-between text-[9px] mb-0.5">
-                      <span style={{ color: CREAM }}>{opt.text}</span>
-                      <span style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>{pct}%</span>
-                    </div>
-                    <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: G }} />
-                    </div>
-                  </div>
-                );
-              })}
-              <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{poll.total_votes || 0} votes</p>
-            </div>
+            </Card>
           );
         })}
+        {challenges.length === 0 && <p className="text-center py-4 text-[11px]" style={{ color: CREAM + '25' }}>No challenges</p>}
       </div>
 
-      {/* Challenges */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Challenges</span>
-          <button onClick={() => setShowChallenge(true)}
-            className="flex items-center gap-1 px-3 py-1 rounded-lg text-[9px] font-black uppercase"
-            style={{ background: `rgba(139,92,246,0.15)`, color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <Plus className="w-3 h-3" /> Challenge
-          </button>
-        </div>
-
-        {showChallenge && (
-          <div className="rounded-xl p-3 space-y-2 mb-3" style={{ background: OB2, border: '1px solid rgba(139,92,246,0.25)' }}>
-            {['title','description'].map(f => (
-              <input key={f} placeholder={f} value={challengeForm[f]} onChange={e => setChallengeForm(cf => ({ ...cf, [f]: e.target.value }))}
-                className="w-full h-8 px-2 rounded text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-            ))}
-            <div className="flex gap-2">
-              <button onClick={() => createChallenge.mutate()} className="px-4 h-8 rounded font-black uppercase text-[9px]"
-                style={{ background: '#8B5CF6', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Create</button>
-              <button onClick={() => setShowChallenge(false)} className="px-3 h-8 rounded text-[9px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Cancel</button>
-            </div>
-          </div>
-        )}
-
-        {challenges.map(ch => {
-          const pct = Math.min(100, Math.round(((ch.participant_count || 0) / (ch.goal_value || 100)) * 100));
-          return (
-            <div key={ch.id} className="rounded-xl p-3 space-y-2 mb-2" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
+      {/* Poll create modal */}
+      <AnimatePresence>
+        {showPollForm && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPollForm(false)} />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-2xl p-5 space-y-3"
+              style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold" style={{ color: CREAM }}>{ch.title}</p>
-                <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
-                  style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  {ch.type}
-                </span>
+                <span className="font-black uppercase" style={{ color: GOLD, ...T }}>Create Poll</span>
+                <button onClick={() => setShowPollForm(false)}><X className="w-4 h-4 text-white/40" /></button>
               </div>
-              <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #8B5CF6, #00F5FF)' }} />
-              </div>
-              <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{ch.participant_count || 0} / {ch.goal_value || 100} · {pct}%</p>
-            </div>
-          );
-        })}
-      </div>
+              <input placeholder="Question" value={pollForm.question} onChange={e => setPollForm(f => ({ ...f, question: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+              {pollForm.options.map((o, i) => (
+                <input key={i} placeholder={`Option ${i+1}`} value={o} onChange={e => setPollForm(f => ({ ...f, options: f.options.map((x,j) => j===i?e.target.value:x) }))}
+                  className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+              ))}
+              {pollForm.options.length < 6 && <button onClick={() => setPollForm(f => ({ ...f, options: [...f.options, ''] }))} className="text-[9px] font-black" style={{ color: GOLD, ...T }}>+ Add Option</button>}
+              <button onClick={() => createPollMut.mutate()} disabled={!pollForm.question}
+                className="w-full py-2.5 rounded-xl font-black uppercase text-[11px]"
+                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>Create Poll</button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-/* ── TAB 5: MONETIZE ── */
-function MonetizeTab({ user }) {
+/* ═══════════════ MONETIZATION TAB ═══════════════ */
+function MonetizationTab({ user }) {
   const { data: tiers = [] } = useQuery({
-    queryKey: ['dash-tiers', user?.id],
-    queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: user.id }),
+    queryKey: ['db-tiers', user?.id],
+    queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: user?.id }),
     enabled: !!user?.id,
   });
   const { data: payout } = useQuery({
-    queryKey: ['dash-payout', user?.id],
-    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: user.id }).then(r => r[0]),
+    queryKey: ['db-payout', user?.id],
+    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
   const { data: txns = [] } = useQuery({
-    queryKey: ['dash-txns-7', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id }, '-created_date', 200),
+    queryKey: ['db-txns', user?.id],
+    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: goals = [] } = useQuery({
-    queryKey: ['dash-goals', user?.id],
-    queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: user.id }),
+    queryKey: ['db-goals', user?.id],
+    queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: user?.id }),
     enabled: !!user?.id,
   });
   const qc = useQueryClient();
+  const toggleTierMut = useMutation({
+    mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
+    onSuccess: () => qc.invalidateQueries(['db-tiers']),
+  });
 
-  const tipTotal = txns.filter(t => t.type === 'tip' || t.type === 'super_chat').reduce((s, t) => s + (t.amount || 0), 0);
-  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.amount || 0), 0);
-  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.amount || 0), 0);
+  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_amount || 0), 0);
+  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_amount || 0), 0);
+  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_amount || 0), 0);
+  const total = tipTotal + subTotal + giftTotal;
+  const creatorShare = total * 0.9;
+  const platformShare = total * 0.1;
+
   const pieData = [
-    { name: 'Tips', value: Math.round(tipTotal * 100) / 100, color: G },
-    { name: 'Subs', value: Math.round(subTotal * 100) / 100, color: '#00F5FF' },
-    { name: 'Gifts', value: Math.round(giftTotal * 100) / 100, color: '#8B5CF6' },
+    { name: 'Tips', value: tipTotal, color: GOLD },
+    { name: 'Subs', value: subTotal, color: '#00F5FF' },
+    { name: 'Gifts', value: giftTotal, color: '#8B5CF6' },
   ].filter(d => d.value > 0);
-  const totalRev = tipTotal + subTotal + giftTotal;
-  const creatorCut = Math.round(totalRev * 0.9 * 100) / 100;
-  const platformCut = Math.round(totalRev * 0.1 * 100) / 100;
 
   return (
     <div className="space-y-5">
-      {/* Payout status */}
-      <div className="rounded-xl p-4" style={{ background: OB2, border: `1px solid ${G}20` }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Payout Account</span>
-          {payout?.stripe_connected
-            ? <span className="text-[8px] px-2 py-0.5 rounded-full font-black" style={{ background: 'rgba(0,255,136,0.12)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' }}>✓ STRIPE CONNECTED</span>
-            : <Link to="/Payouts"><span className="text-[8px] px-2 py-0.5 rounded-full font-black" style={{ background: 'rgba(255,50,50,0.15)', color: '#FF6680', border: '1px solid rgba(255,50,50,0.3)', cursor: 'pointer' }}>⚠ SETUP STRIPE</span></Link>
-          }
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Stat label="Pending" value={`$${Math.floor((payout?.pending_balance || 0) * 100) / 100}`} color="#00FF88" icon={DollarSign} />
-          <Stat label="Total Paid Out" value={`$${Math.floor((payout?.total_paid_out || 0) * 100) / 100}`} color={G} icon={CreditCard} />
-        </div>
-      </div>
-
-      {/* 90/10 split */}
-      <div className="rounded-xl p-4" style={{ background: OB2, border: `1px solid rgba(255,255,255,0.07)` }}>
-        <p className="text-[9px] uppercase tracking-widest mb-2 font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Revenue Split</p>
-        <div className="h-8 rounded-xl overflow-hidden flex mb-2">
-          <motion.div animate={{ width: '90%' }} style={{ background: `linear-gradient(90deg, ${B}, ${G})` }} className="h-full flex items-center justify-center">
-            <span className="text-[10px] font-black" style={{ color: OB, fontFamily: 'Barlow Condensed, sans-serif' }}>You 90% — ${creatorCut}</span>
-          </motion.div>
-          <motion.div animate={{ width: '10%' }} style={{ background: 'rgba(255,255,255,0.1)' }} className="h-full flex items-center justify-center">
-            <span className="text-[8px] font-black text-white/40">10%</span>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Revenue pie */}
-      {pieData.length > 0 && (
-        <div className="rounded-xl p-4" style={{ background: OB2, border: `1px solid rgba(255,255,255,0.07)` }}>
-          <p className="text-[9px] uppercase tracking-widest mb-3 font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Revenue Breakdown</p>
-          <div className="flex items-center gap-4">
-            <PieChart width={100} height={100}>
-              <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={28} outerRadius={46}>
-                {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Pie>
-            </PieChart>
-            <div className="space-y-2">
-              {pieData.map(d => (
-                <div key={d.name} className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ background: d.color }} />
-                  <span className="text-[9px]" style={{ color: 'rgba(245,230,211,0.6)' }}>{d.name}</span>
-                  <span className="text-[9px] font-black" style={{ color: d.color, fontFamily: 'IBM Plex Mono, monospace' }}>${d.value}</span>
+      {/* Subscription Tiers */}
+      <div className="space-y-3">
+        <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Subscription Tiers</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {tiers.map(tier => (
+            <Card key={tier.id}>
+              <div className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="font-black text-sm" style={{ color: tier.color || GOLD }}>{tier.name}</p>
+                  <button onClick={() => toggleTierMut.mutate({ id: tier.id, is_active: !tier.is_active })}
+                    className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                    style={{ background: tier.is_active ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.06)', color: tier.is_active ? '#00FF88' : CREAM + '40' }}>
+                    {tier.is_active ? 'ACTIVE' : 'INACTIVE'}
+                  </button>
                 </div>
-              ))}
+                <p className="text-2xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${tier.price}<span className="text-[10px]">/mo</span></p>
+                <p className="text-[8px]" style={{ color: CREAM + '40' }}>{tier.subscriber_count || 0} subscribers</p>
+                <div className="space-y-0.5">
+                  {(tier.benefits || []).slice(0, 3).map((b, i) => (
+                    <p key={i} className="text-[9px] flex items-center gap-1" style={{ color: CREAM + '60' }}>
+                      <span style={{ color: GOLD }}>✓</span> {b}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          ))}
+          {tiers.length === 0 && <p className="text-[11px]" style={{ color: CREAM + '30' }}>No tiers yet — create them in Creator Subscriptions</p>}
+        </div>
+      </div>
+
+      {/* Payout */}
+      <Card>
+        <div className="p-4 space-y-3">
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Payout Status</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-[8px]" style={{ color: CREAM + '40' }}>Pending Balance</p>
+              <p className="text-xl font-black" style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.pending_balance || 0)}</p>
+            </div>
+            <div>
+              <p className="text-[8px]" style={{ color: CREAM + '40' }}>Total Paid Out</p>
+              <p className="text-xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.total_paid_out || 0)}</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[8px] px-1.5 py-0.5 rounded font-black uppercase"
+              style={{ background: payout?.stripe_connected ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#00FF88' : '#FF4444', ...T }}>
+              {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
+            </span>
+            {payout?.last_payout_at && <span className="text-[8px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
+          </div>
+        </div>
+      </Card>
+
+      {/* Revenue breakdown + 90/10 split */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <div className="p-4 space-y-3">
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Revenue Breakdown</p>
+            {pieData.length > 0 ? (
+              <div style={{ height: 140 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value">
+                      {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: '#1A1A1A', border: `1px solid ${GOLD}30`, color: CREAM }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : <p className="text-center py-6 text-[11px]" style={{ color: CREAM + '30' }}>No transactions yet</p>}
+          </div>
+        </Card>
+        <Card>
+          <div className="p-4 space-y-3">
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>90/10 Creator Split</p>
+            <div>
+              <div className="flex items-center justify-between text-[9px] mb-1">
+                <span style={{ color: '#00FF88' }}>Creator 90%</span>
+                <span style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>${creatorShare.toFixed(2)}</span>
+              </div>
+              <div className="h-6 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                <motion.div className="h-full" animate={{ width: '90%' }} transition={{ duration: 1.2 }}
+                  style={{ background: 'linear-gradient(90deg, #00FF88, #00D4FF)' }} />
+                <div className="h-full flex-1" style={{ background: 'rgba(255,21,100,0.3)' }} />
+              </div>
+              <div className="flex items-center justify-between text-[9px] mt-1">
+                <span style={{ color: 'rgba(255,21,100,0.7)' }}>Platform 10%</span>
+                <span style={{ color: 'rgba(255,21,100,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="pt-1 space-y-1">
+              <p className="text-[8px]" style={{ color: CREAM + '30' }}>Gift Shop: ${giftTotal.toFixed(2)}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Streamer Goals */}
+      {goals.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Streamer Goals</p>
+          {goals.map(g => {
+            const progress = g.target_amount > 0 ? Math.min(100, Math.round((g.current_amount || 0) / g.target_amount * 100)) : 0;
+            return (
+              <Card key={g.id}>
+                <div className="p-3 space-y-1.5">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="font-bold text-white">{g.title}</span>
+                    <span className="font-black" style={{ color: GOLD }}>{g.current_amount || 0} / {g.target_amount}</span>
+                  </div>
+                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${progress}%`, background: g.color || GOLD }} />
+                  </div>
+                  <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
+                    style={{ background: g.status === 'completed' ? 'rgba(0,255,136,0.12)' : `${GOLD}12`, color: g.status === 'completed' ? '#00FF88' : GOLD, ...T }}>
+                    {g.status}
+                  </span>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
-
-      {/* Subscription tiers */}
-      <div>
-        <p className="text-[9px] uppercase tracking-widest mb-2 font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Subscription Tiers</p>
-        {tiers.length === 0 && <p className="text-[11px] text-center py-4" style={{ color: 'rgba(255,255,255,0.2)' }}>No tiers. Create at <Link to="/CreatorSubscriptions" className="underline" style={{ color: G }}>Subscriptions</Link></p>}
-        {tiers.map(tier => (
-          <div key={tier.id} className="flex items-center justify-between px-3 py-2 rounded-lg mb-1" style={{ background: OB2, border: `1px solid ${tier.color || G}22` }}>
-            <div>
-              <p className="text-[11px] font-bold" style={{ color: CREAM }}>{tier.name}</p>
-              <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>${tier.price}/mo · {tier.subscriber_count || 0} subs</p>
-            </div>
-            <span className="text-[8px] px-1.5 py-0.5 rounded font-black" style={{ background: tier.is_active ? 'rgba(0,255,136,0.12)' : 'rgba(255,255,255,0.06)', color: tier.is_active ? '#00FF88' : 'rgba(255,255,255,0.3)' }}>
-              {tier.is_active ? 'ACTIVE' : 'PAUSED'}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Streamer goals */}
-      <div>
-        <p className="text-[9px] uppercase tracking-widest mb-2 font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Streamer Goals</p>
-        {goals.map(goal => {
-          const pct = Math.min(100, Math.round(((goal.current_amount || 0) / (goal.target_amount || 1)) * 100));
-          return (
-            <div key={goal.id} className="rounded-xl p-3 mb-2" style={{ background: OB2, border: `1px solid ${goal.color || G}22` }}>
-              <div className="flex justify-between mb-1">
-                <span className="text-[10px] font-bold" style={{ color: CREAM }}>{goal.title}</span>
-                <span className="text-[9px] font-black" style={{ color: goal.color || G, fontFamily: 'IBM Plex Mono, monospace' }}>{goal.current_amount || 0}/{goal.target_amount}</span>
-              </div>
-              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                <motion.div animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }}
-                  className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${B}, ${goal.color || G})` }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
 
-/* ── TAB 6: SETTINGS ── */
+/* ═══════════════ SETTINGS TAB ═══════════════ */
 function SettingsTab({ user }) {
-  const qc = useQueryClient();
-  const [profile, setProfile] = useState({ display_name: '', bio: '', avatar_url: '', category: 'other', social_links: {} });
+  const [profile, setProfile] = useState({ display_name: '', bio: '', category: 'other', avatar_url: '', social_links: {} });
   const [schedule, setSchedule] = useState([]);
-  const [notifPrefs, setNotifPrefs] = useState({ tip_alerts: true, new_subscriber: true, raid_received: true, challenge_completed: true });
-  const [destinations, setDestinations] = useState([]);
-  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const [prefs, setPrefs] = useState({});
+  const [rtmpDests, setRtmpDests] = useState([]);
+  const qc = useQueryClient();
 
-  const { data: cpData } = useQuery({
-    queryKey: ['settings-cp', user?.id],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user.id }).then(r => r[0]),
+  const { data: creatorProfile } = useQuery({
+    queryKey: ['db-cprofile', user?.id],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
-  const { data: prefData } = useQuery({
-    queryKey: ['settings-prefs', user?.id],
-    queryFn: () => base44.entities.UserPreference.filter({ user_id: user.id }).then(r => r[0]),
+  const { data: destinations = [] } = useQuery({
+    queryKey: ['db-rtmp', user?.id],
+    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user?.id }),
     enabled: !!user?.id,
   });
-  const { data: rtmpDests = [] } = useQuery({
-    queryKey: ['settings-rtmp', user?.id],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user.id }),
+  const { data: userPref } = useQuery({
+    queryKey: ['db-userpref', user?.id],
+    queryFn: () => base44.entities.UserPreference.filter({ user_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
 
   useEffect(() => {
-    if (cpData) {
-      setProfile({ display_name: cpData.display_name || '', bio: cpData.bio || '', avatar_url: cpData.avatar_url || '', category: cpData.category || 'other', social_links: cpData.social_links || {} });
-      setSchedule(cpData.stream_schedule || []);
+    if (creatorProfile) {
+      setProfile({ display_name: creatorProfile.display_name || '', bio: creatorProfile.bio || '', category: creatorProfile.category || 'other', avatar_url: creatorProfile.avatar_url || '', social_links: creatorProfile.social_links || {} });
+      setSchedule(creatorProfile.stream_schedule || []);
     }
-  }, [cpData]);
-  useEffect(() => {
-    if (prefData?.notification_preferences) setNotifPrefs(prefData.notification_preferences);
-  }, [prefData]);
-  useEffect(() => { setDestinations(rtmpDests); }, [rtmpDests]);
+  }, [creatorProfile]);
+  useEffect(() => { if (destinations) setRtmpDests(destinations); }, [destinations]);
+  useEffect(() => { if (userPref) setPrefs(userPref.notification_preferences || {}); }, [userPref]);
 
   const saveProfile = useMutation({
-    mutationFn: () => cpData?.id
-      ? base44.entities.CreatorProfile.update(cpData.id, { ...profile, stream_schedule: schedule })
-      : base44.entities.CreatorProfile.create({ user_id: user.id, ...profile, stream_schedule: schedule }),
-    onSuccess: () => { qc.invalidateQueries(['settings-cp', user?.id]); toast.success('Profile saved!'); },
+    mutationFn: () => creatorProfile?.id
+      ? base44.entities.CreatorProfile.update(creatorProfile.id, { ...profile, stream_schedule: schedule })
+      : base44.entities.CreatorProfile.create({ user_id: user?.id, ...profile, stream_schedule: schedule }),
+    onSuccess: () => { qc.invalidateQueries(['db-cprofile']); toast.success('Profile saved!'); },
   });
   const savePrefs = useMutation({
-    mutationFn: () => prefData?.id
-      ? base44.entities.UserPreference.update(prefData.id, { notification_preferences: notifPrefs })
-      : base44.entities.UserPreference.create({ user_id: user.id, notification_preferences: notifPrefs }),
+    mutationFn: () => userPref?.id
+      ? base44.entities.UserPreference.update(userPref.id, { notification_preferences: prefs })
+      : base44.entities.UserPreference.create({ user_id: user?.id, notification_preferences: prefs }),
     onSuccess: () => toast.success('Preferences saved!'),
   });
-  const deleteRTMP = useMutation({
+  const toggleDest = useMutation({
+    mutationFn: ({ id, is_enabled }) => base44.entities.RTMPDestination.update(id, { is_enabled }),
+    onSuccess: () => qc.invalidateQueries(['db-rtmp']),
+  });
+  const deleteDest = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => qc.invalidateQueries(['settings-rtmp', user?.id]),
+    onSuccess: () => qc.invalidateQueries(['db-rtmp']),
   });
-  const toggleRTMP = useMutation({
-    mutationFn: ({ id, val }) => base44.entities.RTMPDestination.update(id, { is_enabled: val }),
-    onSuccess: () => qc.invalidateQueries(['settings-rtmp', user?.id]),
-  });
-  const addRTMP = useMutation({
-    mutationFn: () => base44.entities.RTMPDestination.create({ creator_id: user.id, label: 'New Destination', platform: 'custom', status: 'offline', is_enabled: true, bitrate_kbps: 4000 }),
-    onSuccess: () => qc.invalidateQueries(['settings-rtmp', user?.id]),
-  });
+
+  const SOCIAL_FIELDS = ['twitter','instagram','tiktok','youtube','discord','website'];
+  const NOTIF_KEYS = ['tip_alerts','new_subscriber','raid_received','challenge_completed','announcement'];
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Profile */}
-      <section>
-        <p className="text-[9px] uppercase tracking-widest mb-3 font-bold" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>Profile</p>
-        <div className="space-y-2">
-          {[['display_name','Display Name'],['bio','Bio'],['avatar_url','Avatar URL']].map(([k,l]) => (
-            <div key={k}>
-              <label className="text-[8px] uppercase tracking-wide" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{l}</label>
-              {k === 'bio'
-                ? <textarea value={profile[k]} onChange={e => setProfile(p => ({ ...p, [k]: e.target.value }))} rows={2}
-                    className="mt-0.5 w-full px-2 py-1.5 rounded text-[10px] resize-none"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-                : <input value={profile[k]} onChange={e => setProfile(p => ({ ...p, [k]: e.target.value }))}
-                    className="mt-0.5 w-full h-8 px-2 rounded text-[10px]"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-              }
+      <Card>
+        <div className="p-4 space-y-3">
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Profile Settings</p>
+          {['display_name','bio','avatar_url'].map(field => (
+            <div key={field}>
+              <label className="text-[9px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>{field.replace('_',' ')}</label>
+              {field === 'bio'
+                ? <textarea value={profile[field]} onChange={e => setProfile(p => ({ ...p, [field]: e.target.value }))} rows={3}
+                    className="w-full px-3 py-2 rounded-lg text-[11px] outline-none resize-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />
+                : <input value={profile[field]} onChange={e => setProfile(p => ({ ...p, [field]: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />}
             </div>
           ))}
-          {/* Social links */}
-          <p className="text-[8px] uppercase tracking-wide mt-2" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>Social Links</p>
-          <div className="grid grid-cols-2 gap-2">
-            {['twitter','instagram','tiktok','youtube','discord','website'].map(s => (
-              <input key={s} placeholder={s} value={profile.social_links[s] || ''}
-                onChange={e => setProfile(p => ({ ...p, social_links: { ...p.social_links, [s]: e.target.value } }))}
-                className="h-7 px-2 rounded text-[9px]"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM, outline: 'none' }} />
-            ))}
+          <div>
+            <label className="text-[9px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>Category</label>
+            <select value={profile.category} onChange={e => setProfile(p => ({ ...p, category: e.target.value }))}
+              className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
+              {['gaming','music','education','talk','fitness','cooking','art','tech','other'].map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
-          <button onClick={() => saveProfile.mutate()} className="mt-1 px-5 h-8 rounded-xl font-black uppercase text-[9px]"
-            style={{ background: B, color: G, border: `1px solid ${G}40`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <div>
+            <label className="text-[9px] uppercase font-black block mb-2" style={{ color: CREAM + '35', ...T }}>Social Links</label>
+            <div className="grid grid-cols-2 gap-2">
+              {SOCIAL_FIELDS.map(s => (
+                <input key={s} placeholder={s} value={profile.social_links?.[s] || ''}
+                  onChange={e => setProfile(p => ({ ...p, social_links: { ...p.social_links, [s]: e.target.value } }))}
+                  className="px-2 py-1.5 rounded-lg text-[10px] outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
+              ))}
+            </div>
+          </div>
+          <button onClick={() => saveProfile.mutate()}
+            className="px-5 py-2 rounded-xl font-black uppercase text-[10px]"
+            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
             Save Profile
           </button>
         </div>
-      </section>
+      </Card>
 
-      {/* Stream schedule */}
-      <section>
-        <p className="text-[9px] uppercase tracking-widest mb-3 font-bold" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>Stream Schedule</p>
-        <div className="grid grid-cols-7 gap-1">
-          {DAYS.map((day, i) => {
-            const slot = schedule.find(s => s.day === day) || null;
-            return (
-              <div key={day} className="rounded-lg p-1.5 text-center" style={{ background: slot ? `${G}12` : 'rgba(255,255,255,0.03)', border: slot ? `1px solid ${G}30` : '1px solid rgba(255,255,255,0.06)' }}>
-                <p className="text-[7px] font-black uppercase" style={{ color: slot ? G : 'rgba(255,255,255,0.2)' }}>{day}</p>
-                {slot && <p className="text-[6px] mt-0.5" style={{ color: 'rgba(245,230,211,0.5)' }}>{slot.time}</p>}
-              </div>
-            );
-          })}
+      {/* Stream Schedule */}
+      <Card>
+        <div className="p-4 space-y-3">
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Stream Schedule</p>
+          <div className="space-y-1.5">
+            {DAYS.map((day, i) => {
+              const slot = schedule.find(s => s.day === day) || {};
+              return (
+                <div key={day} className="flex items-center gap-2">
+                  <span className="text-[9px] w-8 font-black" style={{ color: CREAM + '50', ...T }}>{day}</span>
+                  <input type="time" value={slot.time || ''} onChange={e => setSchedule(prev => {
+                    const next = prev.filter(s => s.day !== day);
+                    if (e.target.value) next.push({ day, time: e.target.value, title: slot.title || '' });
+                    return next;
+                  })}
+                    className="px-2 py-1 rounded text-[10px] outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
+                  <input placeholder="Stream title" value={slot.title || ''} onChange={e => setSchedule(prev => {
+                    const next = prev.filter(s => s.day !== day);
+                    if (slot.time) next.push({ day, time: slot.time, title: e.target.value });
+                    return next;
+                  })}
+                    className="flex-1 px-2 py-1 rounded text-[10px] outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={() => saveProfile.mutate()}
+            className="px-5 py-2 rounded-xl font-black uppercase text-[10px]"
+            style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30`, ...T }}>
+            Save Schedule
+          </button>
         </div>
-      </section>
+      </Card>
 
-      {/* Notifications */}
-      <section>
-        <p className="text-[9px] uppercase tracking-widest mb-3 font-bold" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>Notifications</p>
-        <div className="space-y-2">
-          {Object.entries(notifPrefs).map(([k, v]) => (
-            <div key={k} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-              <span className="text-[10px]" style={{ color: CREAM }}>{k.replace(/_/g, ' ')}</span>
-              <button onClick={() => { const n = { ...notifPrefs, [k]: !v }; setNotifPrefs(n); savePrefs.mutate(); }}
-                className="w-10 h-5 rounded-full relative"
-                style={{ background: v ? G : 'rgba(255,255,255,0.1)' }}>
-                <motion.div animate={{ x: v ? 20 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      {/* Notification Preferences */}
+      <Card>
+        <div className="p-4 space-y-3">
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Notifications</p>
+          <div className="space-y-2">
+            {NOTIF_KEYS.map(k => (
+              <div key={k} className="flex items-center justify-between">
+                <span className="text-[11px] capitalize" style={{ color: CREAM + '70' }}>{k.replace('_',' ')}</span>
+                <button onClick={() => { const n = { ...prefs, [k]: !prefs[k] }; setPrefs(n); savePrefs.mutate(); }}
+                  className="w-10 h-5 rounded-full relative transition-all"
+                  style={{ background: prefs[k] ? GOLD : 'rgba(255,255,255,0.1)' }}>
+                  <motion.div animate={{ x: prefs[k] ? 20 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className="absolute top-0.5 w-4 h-4 rounded-full"
+                    style={{ background: prefs[k] ? '#000' : 'rgba(255,255,255,0.4)' }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* RTMP Destinations */}
+      <Card>
+        <div className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>RTMP Destinations</p>
+            <Link to={createPageUrl('StreamInfra')}>
+              <button className="text-[8px] font-black uppercase px-2 py-1 rounded"
+                style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}25`, ...T }}>
+                Manage in Stream Setup
+              </button>
+            </Link>
+          </div>
+          {destinations.map(d => (
+            <div key={d.id} className="flex items-center gap-3 p-2.5 rounded-lg"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex-1">
+                <p className="text-[10px] font-bold text-white">{d.label || d.platform}</p>
+                <p className="text-[8px]" style={{ color: CREAM + '35' }}>{d.rtmp_url?.slice(0, 30)}…</p>
+              </div>
+              <button onClick={() => toggleDest.mutate({ id: d.id, is_enabled: !d.is_enabled })}
+                className="w-9 h-5 rounded-full relative shrink-0"
+                style={{ background: d.is_enabled ? GOLD : 'rgba(255,255,255,0.1)' }}>
+                <motion.div animate={{ x: d.is_enabled ? 16 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   className="absolute top-0.5 w-4 h-4 rounded-full"
-                  style={{ background: v ? OB : 'rgba(255,255,255,0.4)' }} />
+                  style={{ background: d.is_enabled ? '#000' : 'rgba(255,255,255,0.4)' }} />
+              </button>
+              <button onClick={() => deleteDest.mutate(d.id)}>
+                <Trash2 className="w-3.5 h-3.5 text-white/20 hover:text-red-400 transition-colors" />
               </button>
             </div>
           ))}
+          {destinations.length === 0 && <p className="text-[10px]" style={{ color: CREAM + '25' }}>No destinations configured</p>}
         </div>
-      </section>
+      </Card>
 
-      {/* RTMP Destinations */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[9px] uppercase tracking-widest font-bold" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>RTMP Destinations</p>
-          <button onClick={() => addRTMP.mutate()} className="flex items-center gap-1 px-3 py-1 rounded-lg text-[9px] font-black uppercase"
-            style={{ background: `${G}15`, color: G, border: `1px solid ${G}30`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <Plus className="w-3 h-3" /> Add
-          </button>
-        </div>
-        {rtmpDests.map(d => (
-          <div key={d.id} className="flex items-center gap-3 px-3 py-2 rounded-lg mb-1" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-            <div className="flex-1">
-              <p className="text-[10px] font-bold" style={{ color: CREAM }}>{d.label}</p>
-              <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{d.platform} · {d.bitrate_kbps}kbps</p>
+      {/* Overlay Builder link */}
+      <Link to="/OverlayBuilder">
+        <div className="flex items-center justify-between p-4 rounded-xl cursor-pointer"
+          style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
+          <div className="flex items-center gap-2">
+            <Layers className="w-5 h-5" style={{ color: GOLD }} />
+            <div>
+              <p className="font-black text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</p>
+              <p className="text-[9px]" style={{ color: CREAM + '40' }}>Design and export custom stream overlays</p>
             </div>
-            <button onClick={() => toggleRTMP.mutate({ id: d.id, val: !d.is_enabled })}
-              className="w-8 h-4 rounded-full relative"
-              style={{ background: d.is_enabled ? G : 'rgba(255,255,255,0.1)' }}>
-              <motion.div animate={{ x: d.is_enabled ? 16 : 2 }} className="absolute top-0.5 w-3 h-3 rounded-full"
-                style={{ background: d.is_enabled ? OB : 'rgba(255,255,255,0.4)' }} />
-            </button>
-            <button onClick={() => deleteRTMP.mutate(d.id)} className="text-[8px]" style={{ color: '#FF4444' }}>✕</button>
           </div>
-        ))}
-        <Link to="/OverlayEditor">
-          <button className="mt-3 w-full py-2 rounded-xl text-[10px] font-black uppercase"
-            style={{ background: `rgba(139,92,246,0.1)`, color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            🎨 Open Overlay Builder →
-          </button>
-        </Link>
-      </section>
+          <ChevronRight className="w-4 h-4" style={{ color: GOLD + '60' }} />
+        </div>
+      </Link>
     </div>
   );
 }
 
-/* ── MAIN ── */
+/* ═══════════════ MAIN PAGE ═══════════════ */
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: profile } = useQuery({
+    queryKey: ['db-profile', user?.id],
+    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
+    enabled: !!user?.id,
+  });
 
   return (
-    <div className="min-h-screen" style={{ background: OB, fontFamily: 'Rajdhani, sans-serif' }}>
+    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
       {/* Header */}
-      <div style={{ background: OB2, borderBottom: `1px solid ${G}18` }}>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
+      <div className="px-4 md:px-8 py-4" style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-black uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Creator Dashboard
-              </h1>
-              <p className="text-[10px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-                {user?.full_name || user?.email}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0"
+                style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+                {profile?.avatar_url
+                  ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  : <Crown className="w-6 h-6 m-2.5 text-black" />}
+              </div>
+              <div>
+                <h1 className="font-black text-lg uppercase leading-none" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
+                  {profile?.display_name || user?.full_name || 'Creator Dashboard'}
+                </h1>
+                <p className="text-[9px] mt-0.5" style={{ color: CREAM + '40', ...T }}>SeeWhy LIVE Creator Studio</p>
+              </div>
             </div>
-            <Link to="/LiveRoom">
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black uppercase text-[11px]"
-                style={{ background: B, color: G, border: `1px solid ${G}40`, boxShadow: `0 0 20px rgba(128,0,32,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                <Radio className="w-4 h-4" /> GO LIVE
+            <Link to={createPageUrl('LiveRoom')}>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-[11px]"
+                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, boxShadow: `0 0 16px rgba(128,0,32,0.4)`, ...T }}>
+                <Radio className="w-3.5 h-3.5" /> GO LIVE
               </button>
             </Link>
           </div>
 
-          <div className="flex overflow-x-auto scrollbar-hide gap-0.5">
-            {TABS.map(tab => {
-              const Icon = tab.icon;
-              const active = activeTab === tab.id;
-              return (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-1.5 px-4 py-2 shrink-0 border-b-2 transition-all"
-                  style={{
-                    fontFamily: 'Barlow Condensed, sans-serif',
-                    fontWeight: 'bold',
-                    fontSize: 11,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    color: active ? G : 'rgba(245,230,211,0.3)',
-                    borderBottomColor: active ? G : 'transparent',
-                    background: active ? `${G}08` : 'transparent',
-                  }}>
-                  <Icon className="w-3.5 h-3.5" /> {tab.label}
-                </button>
-              );
-            })}
+          {/* Tabs */}
+          <div className="flex overflow-x-auto scrollbar-hide gap-0">
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)}
+                className="flex items-center gap-1.5 px-4 py-2.5 shrink-0 font-black uppercase text-[9px] transition-all border-b-2"
+                style={{
+                  ...T,
+                  color: activeTab === t.id ? GOLD : CREAM + '35',
+                  background: activeTab === t.id ? `rgba(212,175,55,0.07)` : 'transparent',
+                  borderBottomColor: activeTab === t.id ? GOLD : 'transparent',
+                }}>
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
+      {/* Content */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6">
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-            {activeTab === 'overview'   && <OverviewTab user={user} />}
-            {activeTab === 'analytics' && <AnalyticsTab user={user} />}
-            {activeTab === 'content'   && <ContentTab user={user} />}
-            {activeTab === 'community' && <CommunityTab user={user} />}
-            {activeTab === 'monetize'  && <MonetizeTab user={user} />}
-            {activeTab === 'settings'  && <SettingsTab user={user} />}
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+            {activeTab === 'overview'      && <OverviewTab user={user} />}
+            {activeTab === 'analytics'    && <AnalyticsTab user={user} />}
+            {activeTab === 'content'      && <ContentTab user={user} />}
+            {activeTab === 'community'    && <CommunityTab user={user} />}
+            {activeTab === 'monetization' && <MonetizationTab user={user} />}
+            {activeTab === 'settings'     && <SettingsTab user={user} />}
           </motion.div>
         </AnimatePresence>
       </div>

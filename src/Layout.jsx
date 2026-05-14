@@ -8,7 +8,7 @@ import {
   Home, Radio, Users, DollarSign, Search as SearchIcon,
   Plus, Video, Zap, LayoutDashboard, Layers, Swords,
   Trophy, Shield, Server, Sparkles, Menu, X, Eye,
-  Bell, User, ChevronRight, Star
+  Bell, User, ChevronRight
 } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';

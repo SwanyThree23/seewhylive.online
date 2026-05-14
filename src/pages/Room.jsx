@@ -23,8 +23,11 @@ import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
 import ShareButtons from '../components/shared/ShareButtons';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
+import GiftShopTray from '../components/live/GiftShopTray';
 import LivePollWidget from '../components/live/LivePollWidget';
-import GiftTray from '../components/live/GiftTray';
+import { Link } from 'react-router-dom';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -297,6 +300,19 @@ export default function RoomPage() {
               {isHost && (
                 <>
                   <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
+                  <RaidPanelButton room={room} currentUser={user} isHost={isHost} />
+                  <Link to={`/ControlRoom?room_id=${roomId}`}>
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
+                      style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      📡 Control Room
+                    </button>
+                  </Link>
+                  <Link to={`/ModerationDashboard?room_id=${roomId}`}>
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
+                      style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      🛡 Moderation
+                    </button>
+                  </Link>
                   <Button
                     variant={isRecording ? 'destructive' : 'outline'}
                     size="sm"
@@ -324,9 +340,6 @@ export default function RoomPage() {
                     <Settings className="w-4 h-4" />
                   </Button>
                 </>
-              )}
-              {user && room?.host_id !== user?.id && (
-                <GiftTray roomId={roomId} currentUser={user} recipientId={room?.host_id} />
               )}
               <Button 
                 variant="destructive"
@@ -401,8 +414,12 @@ export default function RoomPage() {
             {/* Control Bar */}
             <div className="bg-white rounded-xl shadow-lg p-4">
               <div className="flex items-center justify-center gap-3">
+                {/* Gift Shop Tray for viewers */}
+                {user && !isHost && (
+                  <GiftShopTray roomId={roomId} currentUser={user} />
+                )}
                 {currentParticipant && (
-                  <>
+                     <>
                     <Button
                       size="lg"
                       variant={currentParticipant.is_audio_enabled ? "default" : "destructive"}
@@ -469,9 +486,6 @@ export default function RoomPage() {
                 <TabsTrigger value="analytics">
                   <TrendingUp className="w-4 h-4" />
                 </TabsTrigger>
-                <TabsTrigger value="polls">
-                  <MessageSquare className="w-4 h-4" />
-                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="chat" className="h-full mt-4">
@@ -505,10 +519,6 @@ export default function RoomPage() {
                 <CoStreamPanel roomId={roomId} />
               </TabsContent>
 
-              <TabsContent value="polls" className="h-full mt-4 overflow-auto">
-                <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
-              </TabsContent>
-
               <TabsContent value="analytics" className="h-full mt-4 overflow-auto">
                 {isHost ? (
                   <RoomAnalyticsPanel roomId={roomId} />
@@ -523,10 +533,18 @@ export default function RoomPage() {
 
             {/* Moderation Panel for Host */}
             {isHost && (
-              <div className="mt-4">
-                <ChatModerationPanel roomId={roomId} />
-              </div>
+             <div className="mt-4">
+               <ChatModerationPanel roomId={roomId} />
+             </div>
             )}
+            {/* Live Auctions - visible to all */}
+            <div className="mt-4">
+              <LiveAuctionWidget roomId={roomId} currentUser={user} isHost={isHost} />
+            </div>
+            {/* Live Poll Widget */}
+            <div className="mt-4">
+              <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
+            </div>
           </div>
         </div>
       </div>

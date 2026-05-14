@@ -1,279 +1,317 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Trophy, Flame, Clock, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, Star, Flame, Gift, Clock, ChevronDown, ChevronUp, Users, MessageSquare, DollarSign, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
-const B = '#800020';
-const OB = '#0D0D0D';
-const OB2 = '#1A1A1A';
+const GOLD = '#D4AF37';
+const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TIER_META = {
-  bronze:   { color: '#cd7f32', label: 'Bronze',   next: 'silver',   threshold: 500 },
-  silver:   { color: '#C0C0C0', label: 'Silver',   next: 'gold',     threshold: 2000 },
-  gold:     { color: G,         label: 'Gold',     next: 'platinum', threshold: 5000 },
-  platinum: { color: '#E5E4E2', label: 'Platinum', next: 'diamond',  threshold: 15000 },
-  diamond:  { color: '#b9f2ff', label: 'Diamond',  next: null,       threshold: null },
+const TIER_MAP = {
+  bronze:   { color: '#CD7F32', label: 'Bronze',   min: 0 },
+  silver:   { color: '#C0C0C0', label: 'Silver',   min: 500 },
+  gold:     { color: '#D4AF37', label: 'Gold',     min: 1500 },
+  platinum: { color: '#E5E4E2', label: 'Platinum', min: 5000 },
+  diamond:  { color: '#B9F2FF', label: 'Diamond',  min: 15000 },
 };
 
-function TierBadge({ tier }) {
-  const meta = TIER_META[tier] || TIER_META.bronze;
-  return (
-    <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase"
-      style={{ background: `${meta.color}18`, color: meta.color, border: `1px solid ${meta.color}40`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-      {meta.label}
-    </span>
-  );
+function tierFromPoints(pts) {
+  if (pts >= 15000) return 'diamond';
+  if (pts >= 5000)  return 'platinum';
+  if (pts >= 1500)  return 'gold';
+  if (pts >= 500)   return 'silver';
+  return 'bronze';
 }
 
-function LoyaltyCard({ loyalty }) {
-  const tier = loyalty?.loyalty_tier || 'bronze';
-  const meta = TIER_META[tier];
-  const pts = loyalty?.loyalty_points || 0;
-  const nextPts = meta.threshold || pts;
-  const pct = meta.threshold ? Math.min(100, Math.round((pts / meta.threshold) * 100)) : 100;
+function nextTierPoints(pts) {
+  const tiers = [500, 1500, 5000, 15000];
+  return tiers.find(t => t > pts) || null;
+}
+
+function LoyaltyCard({ loyalty, isMain = false }) {
+  const tier = tierFromPoints(loyalty?.loyalty_points || 0);
+  const tc = TIER_MAP[tier];
+  const next = nextTierPoints(loyalty?.loyalty_points || 0);
+  const progress = next ? Math.min(100, ((loyalty?.loyalty_points || 0) / next) * 100) : 100;
 
   return (
     <div className="rounded-2xl p-5 space-y-4"
-      style={{ background: `linear-gradient(135deg, ${OB2}, ${B}22)`, border: `2px solid ${meta.color}40`, boxShadow: `0 0 30px ${meta.color}15` }}>
-      <div className="flex items-start justify-between">
-        <div>
-          <TierBadge tier={tier} />
-          <div className="mt-2 text-4xl font-black" style={{ color: meta.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {pts.toLocaleString()}
-          </div>
-          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-            Loyalty Points
-          </div>
-        </div>
-        <div className="text-5xl">
-          {tier === 'diamond' ? '💎' : tier === 'platinum' ? '🏅' : tier === 'gold' ? '🥇' : tier === 'silver' ? '🥈' : '🥉'}
-        </div>
-      </div>
-
-      {meta.threshold && (
-        <div>
-          <div className="flex justify-between text-[8px] mb-1" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-            <span>Progress to {TIER_META[meta.next]?.label}</span>
-            <span>{pts} / {meta.threshold}</span>
-          </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-            <motion.div animate={{ width: `${pct}%` }} transition={{ duration: 1, ease: 'easeOut' }}
-              className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${B}, ${meta.color})` }} />
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1.5">
-          <Flame className="w-4 h-4" style={{ color: '#FF6B35' }} />
-          <span className="text-[11px] font-bold" style={{ color: CREAM }}>{loyalty?.streak_days || 0}d streak</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5" style={{ color: 'rgba(245,230,211,0.3)' }} />
-          <span className="text-[9px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-            {loyalty?.last_active ? new Date(loyalty.last_active).toLocaleDateString() : 'Never'}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RewardCard({ reward, userPoints, onRedeem }) {
-  const canRedeem = userPoints >= (reward.points_required || 0);
-  const rewardColors = { badge: G, discount_code: '#00FF88', exclusive_content: '#8B5CF6', shoutout: '#FF6B35', custom_emote: '#00F5FF' };
-  const c = rewardColors[reward.reward_type] || G;
-
-  return (
-    <div className="rounded-xl p-3 space-y-2" style={{ background: OB2, border: `1px solid ${canRedeem ? c : 'rgba(255,255,255,0.07)'}30` }}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-[11px] font-bold" style={{ color: CREAM }}>{reward.name}</p>
-          {reward.description && <p className="text-[8px] mt-0.5" style={{ color: 'rgba(245,230,211,0.3)' }}>{reward.description}</p>}
-        </div>
-        <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase shrink-0 ml-2"
-          style={{ background: `${c}15`, color: c, border: `1px solid ${c}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-          {reward.reward_type?.replace('_', ' ')}
-        </span>
-      </div>
+      style={{ background: `linear-gradient(135deg, #2A1F1F, #1A1A1A)`, border: `2px solid ${tc.color}40`, boxShadow: `0 0 30px ${tc.color}15` }}>
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-          {(reward.points_required || 0).toLocaleString()} pts
-        </span>
-        <button onClick={() => canRedeem && onRedeem(reward)}
-          className="px-3 h-7 rounded-lg font-black uppercase text-[8px]"
-          style={{
-            background: canRedeem ? B : 'rgba(255,255,255,0.04)',
-            color: canRedeem ? G : 'rgba(255,255,255,0.2)',
-            border: canRedeem ? `1px solid ${G}40` : '1px solid rgba(255,255,255,0.08)',
-            cursor: canRedeem ? 'pointer' : 'not-allowed',
-            fontFamily: 'Barlow Condensed, sans-serif',
-          }}>
-          {canRedeem ? 'Redeem' : 'Need more pts'}
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+            style={{ background: `${tc.color}20`, border: `1px solid ${tc.color}40` }}>
+            <Trophy className="w-6 h-6" style={{ color: tc.color }} />
+          </div>
+          <div>
+            <span className="font-black uppercase text-lg leading-none" style={{ color: tc.color, fontFamily: 'Orbitron, monospace' }}>{tc.label}</span>
+            <p className="text-[9px] mt-0.5" style={{ color: CREAM + '40', ...T }}>Loyalty Tier</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="font-black text-2xl leading-none" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
+            {(loyalty?.loyalty_points || 0).toLocaleString()}
+          </p>
+          <p className="text-[8px]" style={{ color: CREAM + '40', ...T }}>POINTS</p>
+        </div>
       </div>
-      {reward.claimed_count > 0 && (
-        <p className="text-[7px]" style={{ color: 'rgba(245,230,211,0.2)', fontFamily: 'IBM Plex Mono, monospace' }}>
-          {reward.claimed_count} claimed
-        </p>
-      )}
-    </div>
-  );
-}
 
-function HowToEarn() {
-  const [open, setOpen] = useState(false);
-  const rates = [
-    { action: 'Watch 1 minute', pts: 1 },
-    { action: 'Send a message', pts: 5 },
-    { action: 'Send a tip', pts: 10 },
-    { action: 'Send a reaction', pts: 2 },
-    { action: 'Join a room', pts: 5 },
-  ];
-  return (
-    <div className="rounded-xl overflow-hidden" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between px-4 py-3">
-        <span className="text-[9px] uppercase tracking-widest font-bold" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>How to Earn Points</span>
-        {open ? <ChevronUp className="w-3.5 h-3.5 text-white/30" /> : <ChevronDown className="w-3.5 h-3.5 text-white/30" />}
-      </button>
-      {open && (
-        <div className="px-4 pb-3 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          {rates.map(r => (
-            <div key={r.action} className="flex items-center justify-between py-1">
-              <span className="text-[10px]" style={{ color: 'rgba(245,230,211,0.6)' }}>{r.action}</span>
-              <span className="text-[10px] font-black" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>+{r.pts} pts</span>
-            </div>
-          ))}
+      {next && (
+        <div>
+          <div className="flex justify-between text-[8px] mb-1">
+            <span style={{ color: CREAM + '40' }}>{(loyalty?.loyalty_points || 0)} / {next}</span>
+            <span style={{ color: tc.color }}>{Math.round(progress)}% to next tier</span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+            <motion.div className="h-full rounded-full" animate={{ width: `${progress}%` }} transition={{ duration: 1.2 }}
+              style={{ background: `linear-gradient(90deg, ${tc.color}, ${GOLD})` }} />
+          </div>
+        </div>
+      )}
+
+      {isMain && (
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <Flame className="w-3.5 h-3.5" style={{ color: '#FF6B00' }} />
+            <span className="font-black text-sm" style={{ color: '#FF6B00' }}>{loyalty?.streak_days || 0}</span>
+            <span className="text-[8px]" style={{ color: CREAM + '40' }}>day streak</span>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-const TABS = ['My Card', 'Rewards', 'Points', 'Leaderboard'];
+function PointsBreakdownRow({ vp }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <button className="w-full flex items-center justify-between px-4 py-3" onClick={() => setExpanded(e => !e)}>
+        <div className="flex items-center gap-2">
+          <Star className="w-3.5 h-3.5" style={{ color: GOLD }} />
+          <span className="text-[11px] font-bold text-white">{vp.room_id?.slice(0, 16) || 'Room'}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="font-black text-sm" style={{ color: GOLD }}>{(vp.points || 0).toLocaleString()} pts</span>
+          {expanded ? <ChevronUp className="w-3.5 h-3.5 text-white/30" /> : <ChevronDown className="w-3.5 h-3.5 text-white/30" />}
+        </div>
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+            <div className="px-4 pb-3 grid grid-cols-2 gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              {[
+                { icon: Clock, label: 'Watch Mins', value: vp.watch_minutes || 0 },
+                { icon: MessageSquare, label: 'Messages', value: vp.messages_sent_count || 0 },
+                { icon: DollarSign, label: 'Tips Sent', value: vp.tips_sent_count || 0 },
+                { icon: Zap, label: 'Reactions', value: vp.reactions_sent_count || 0 },
+              ].map(({ icon: Icon, label, value }) => (
+                <div key={label} className="flex items-center gap-2 pt-2">
+                  <Icon className="w-3 h-3" style={{ color: GOLD + '70' }} />
+                  <div>
+                    <p className="text-[9px] font-black" style={{ color: GOLD }}>{value}</p>
+                    <p className="text-[7px]" style={{ color: CREAM + '35' }}>{label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function LoyaltyHubPage() {
-  const [activeTab, setActiveTab] = useState('My Card');
+  const [activeTab, setActiveTab] = useState('my_card');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: loyalties = [] } = useQuery({
-    queryKey: ['loyalty-me', user?.id],
-    queryFn: () => base44.entities.ViewerLoyalty.filter({ user_id: user.id }, '-loyalty_points', 20),
+  const { data: myLoyalties = [] } = useQuery({
+    queryKey: ['lh-loyalties', user?.id],
+    queryFn: () => base44.entities.ViewerLoyalty.filter({ user_id: user?.id }),
     enabled: !!user?.id,
   });
   const { data: viewerPoints = [] } = useQuery({
-    queryKey: ['viewer-pts', user?.id],
-    queryFn: () => base44.entities.ViewerPoints.filter({ user_id: user.id }, '-points', 20),
+    queryKey: ['lh-points', user?.id],
+    queryFn: () => base44.entities.ViewerPoints.filter({ user_id: user?.id }),
     enabled: !!user?.id,
   });
-  const { data: rewards = [] } = useQuery({
-    queryKey: ['loyalty-rewards'],
-    queryFn: () => base44.entities.LoyaltyReward.filter({ is_active: true }, '-points_required', 50),
+  const { data: allRewards = [] } = useQuery({
+    queryKey: ['lh-rewards'],
+    queryFn: () => base44.entities.LoyaltyReward.list('points_required', 30),
   });
   const { data: leaderboard = [] } = useQuery({
-    queryKey: ['loyalty-leaderboard'],
+    queryKey: ['lh-leaderboard'],
     queryFn: () => base44.entities.ViewerLoyalty.list('-loyalty_points', 10),
   });
 
-  const myLoyalty = loyalties[0];
-  const totalPts = loyalties.reduce((s, l) => s + (l.loyalty_points || 0), 0);
+  const mainLoyalty = myLoyalties[0];
+  const totalPoints = myLoyalties.reduce((s, l) => s + (l.loyalty_points || 0), 0);
+  const totalWatchTime = viewerPoints.reduce((s, v) => s + (v.watch_minutes || 0), 0);
+
+  const TABS = [
+    { id: 'my_card',   label: '🃏 My Card' },
+    { id: 'rewards',   label: '🎁 Rewards' },
+    { id: 'points',    label: '⭐ Points' },
+    { id: 'leaderboard', label: '🏆 Board' },
+  ];
 
   return (
-    <div className="min-h-screen" style={{ background: OB }}>
-      {/* Header */}
-      <div className="px-4 md:px-8 py-4" style={{ background: OB2, borderBottom: `1px solid ${G}18` }}>
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy className="w-5 h-5" style={{ color: G }} />
-            <h1 className="text-xl font-black uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Loyalty Hub</h1>
+    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+      <div className="px-4 md:px-6 py-4" style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5" style={{ color: GOLD }} />
+              <span className="font-black uppercase text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>Loyalty Hub</span>
+            </div>
+            <span className="text-[9px] px-2 py-0.5 rounded font-black uppercase"
+              style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30`, ...T }}>
+              {totalPoints.toLocaleString()} total pts
+            </span>
           </div>
-          <div className="flex gap-0.5">
-            {TABS.map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className="flex-1 py-2 text-[9px] font-black uppercase border-b-2 transition-all"
-                style={{ fontFamily: 'Barlow Condensed, sans-serif', color: activeTab === tab ? G : 'rgba(245,230,211,0.3)', borderBottomColor: activeTab === tab ? G : 'transparent', background: activeTab === tab ? `${G}08` : 'transparent' }}>
-                {tab}
+          <div className="flex gap-0">
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)}
+                className="flex-1 py-2 text-[9px] font-black uppercase transition-all border-b-2"
+                style={{ ...T, color: activeTab === t.id ? GOLD : CREAM + '35', borderBottomColor: activeTab === t.id ? GOLD : 'transparent', background: activeTab === t.id ? `${GOLD}07` : 'transparent' }}>
+                {t.label}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 md:px-8 py-5 space-y-4">
-        {activeTab === 'My Card' && (
-          <>
-            <LoyaltyCard loyalty={myLoyalty} />
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: 'Total Points', value: totalPts.toLocaleString(), icon: Star },
-                { label: 'Streak', value: `${myLoyalty?.streak_days || 0}d`, icon: Flame },
-              ].map(s => (
-                <div key={s.label} className="rounded-xl p-3 flex items-center gap-2" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <s.icon className="w-4 h-4" style={{ color: G }} />
-                  <div>
-                    <div className="font-black text-lg" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>{s.value}</div>
-                    <div className="text-[8px] uppercase" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{s.label}</div>
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-5 space-y-4">
+        <AnimatePresence mode="wait">
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+            {activeTab === 'my_card' && (
+              <div className="space-y-4">
+                {mainLoyalty
+                  ? <LoyaltyCard loyalty={mainLoyalty} isMain />
+                  : <div className="rounded-xl p-8 text-center" style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
+                      <Trophy className="w-10 h-10 mx-auto mb-3" style={{ color: GOLD + '30' }} />
+                      <p className="text-[12px] font-black uppercase" style={{ color: GOLD + '50', ...T }}>No loyalty data yet</p>
+                      <p className="text-[10px] mt-1" style={{ color: CREAM + '30' }}>Watch streams to earn loyalty points</p>
+                    </div>
+                }
+
+                {/* Stats row */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { icon: Clock, label: 'Watch Time', value: `${Math.floor(totalWatchTime / 60)}h ${totalWatchTime % 60}m` },
+                    { icon: Users, label: 'Rooms', value: viewerPoints.length },
+                    { icon: MessageSquare, label: 'Messages', value: viewerPoints.reduce((s, v) => s + (v.messages_sent_count || 0), 0) },
+                    { icon: DollarSign, label: 'Tips Sent', value: viewerPoints.reduce((s, v) => s + (v.tips_sent_count || 0), 0) },
+                  ].map(({ icon: Icon, label, value }) => (
+                    <div key={label} className="rounded-xl p-3 text-center"
+                      style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <Icon className="w-4 h-4 mx-auto mb-1" style={{ color: GOLD + '70' }} />
+                      <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{value}</p>
+                      <p className="text-[7px]" style={{ color: CREAM + '35', ...T }}>{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Creator tabs */}
+                {myLoyalties.slice(1).map(l => (
+                  <div key={l.id} className="rounded-xl p-3" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <p className="text-[9px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.creator_id?.slice(0,12)}</p>
+                    <LoyaltyCard loyalty={l} />
                   </div>
-                </div>
-              ))}
-            </div>
-            <HowToEarn />
-          </>
-        )}
-
-        {activeTab === 'Rewards' && (
-          <div className="space-y-2">
-            {rewards.length === 0 && <p className="text-center py-10 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No rewards available</p>}
-            {rewards.map(r => (
-              <RewardCard key={r.id} reward={r} userPoints={totalPts}
-                onRedeem={(rw) => toast?.success(`Redeemed: ${rw.name}`)} />
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'Points' && (
-          <div className="space-y-3">
-            <HowToEarn />
-            <div className="rounded-xl overflow-hidden" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-              <div className="px-4 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <span className="text-[8px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>Points by Creator</span>
+                ))}
               </div>
-              {viewerPoints.length === 0
-                ? <p className="text-center py-6 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No points yet</p>
-                : viewerPoints.map(vp => (
-                  <div key={vp.id} className="flex items-center justify-between px-4 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <span className="text-[10px]" style={{ color: CREAM }}>{vp.creator_id}</span>
-                    <span className="font-black text-[11px]" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>{(vp.points || 0).toLocaleString()} pts</span>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        )}
+            )}
 
-        {activeTab === 'Leaderboard' && (
-          <div className="space-y-2">
-            {leaderboard.map((l, i) => (
-              <div key={l.id} className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                style={{ background: i < 3 ? `${[G, '#C0C0C0', '#cd7f32'][i]}10` : OB2, border: `1px solid ${i < 3 ? [G, '#C0C0C0', '#cd7f32'][i] : 'rgba(255,255,255,0.07)'}25` }}>
-                <span className="text-lg shrink-0">{['🥇','🥈','🥉'][i] || `#${i+1}`}</span>
-                <div className="flex-1">
-                  <p className="text-[11px] font-bold" style={{ color: CREAM }}>{l.user_name || l.user_id}</p>
-                  <TierBadge tier={l.loyalty_tier || 'bronze'} />
-                </div>
-                <div className="text-right">
-                  <p className="font-black text-[13px]" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>{(l.loyalty_points || 0).toLocaleString()}</p>
-                  <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>{l.streak_days || 0}d 🔥</p>
+            {activeTab === 'rewards' && (
+              <div className="space-y-2">
+                {allRewards.length === 0
+                  ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No rewards available</p>
+                  : allRewards.map((r, i) => {
+                    const canRedeem = totalPoints >= r.points_required;
+                    return (
+                      <div key={r.id} className="rounded-xl p-3 flex items-center gap-3"
+                        style={{ background: '#1A1A1A', border: canRedeem ? `1px solid ${GOLD}35` : '1px solid rgba(255,255,255,0.07)' }}>
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
+                          style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}30` }}>
+                          {['🏅','🎟','🔒','📣','😎'][i % 5]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-[11px] text-white">{r.name}</p>
+                          <p className="text-[9px]" style={{ color: CREAM + '40' }}>{r.description}</p>
+                          <p className="text-[9px] font-black mt-0.5" style={{ color: GOLD }}>{r.points_required.toLocaleString()} pts</p>
+                        </div>
+                        <button disabled={!canRedeem}
+                          className="px-3 py-1.5 rounded-lg font-black uppercase text-[8px] shrink-0"
+                          style={{ background: canRedeem ? BURGUNDY : 'rgba(255,255,255,0.05)', color: canRedeem ? GOLD : CREAM + '25', border: canRedeem ? `1px solid ${GOLD}40` : '1px solid rgba(255,255,255,0.08)', ...T, cursor: canRedeem ? 'pointer' : 'not-allowed' }}>
+                          {canRedeem ? 'Redeem' : `Need ${(r.points_required - totalPoints).toLocaleString()} more`}
+                        </button>
+                      </div>
+                    );
+                  })}
+
+                {/* How to earn guide */}
+                <div className="rounded-xl p-4" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <p className="text-[10px] font-black uppercase mb-3" style={{ color: CREAM + '50', ...T }}>How to Earn Points</p>
+                  {[
+                    { icon: '⏱', label: 'Watch streams', rate: '1 pt / min' },
+                    { icon: '💬', label: 'Send messages', rate: '5 pts each' },
+                    { icon: '💰', label: 'Send tips', rate: '10 pts each' },
+                    { icon: '❤️', label: 'Reactions', rate: '2 pts each' },
+                    { icon: '⭐', label: 'Subscribe', rate: '100 pts bonus' },
+                  ].map(e => (
+                    <div key={e.label} className="flex items-center justify-between py-1.5 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                      <div className="flex items-center gap-2">
+                        <span>{e.icon}</span>
+                        <span className="text-[10px]" style={{ color: CREAM + '60' }}>{e.label}</span>
+                      </div>
+                      <span className="font-black text-[9px]" style={{ color: GOLD, ...T }}>{e.rate}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-            {leaderboard.length === 0 && <p className="text-center py-10 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No leaderboard data yet</p>}
-          </div>
-        )}
+            )}
+
+            {activeTab === 'points' && (
+              <div className="space-y-2">
+                {viewerPoints.length === 0
+                  ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No points data yet</p>
+                  : viewerPoints.map(vp => <PointsBreakdownRow key={vp.id} vp={vp} />)
+                }
+              </div>
+            )}
+
+            {activeTab === 'leaderboard' && (
+              <div className="space-y-1.5">
+                {leaderboard.map((l, i) => {
+                  const tier = tierFromPoints(l.loyalty_points || 0);
+                  const tc = TIER_MAP[tier];
+                  return (
+                    <div key={l.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
+                      style={{ background: i < 3 ? `${tc.color}08` : '#1A1A1A', border: i < 3 ? `1px solid ${tc.color}25` : '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black shrink-0"
+                        style={{ background: i < 3 ? `${tc.color}20` : 'rgba(255,255,255,0.06)', color: i < 3 ? tc.color : CREAM + '40' }}>
+                        {i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-[11px] text-white">{l.user_id?.slice(0, 12) || 'Anonymous'}</p>
+                        <span className="text-[7px] px-1 py-0.5 rounded font-black uppercase" style={{ background: `${tc.color}15`, color: tc.color }}>{tc.label}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{(l.loyalty_points || 0).toLocaleString()}</p>
+                        {l.streak_days > 0 && <p className="text-[7px]" style={{ color: '#FF6B00' }}>🔥 {l.streak_days}d</p>}
+                      </div>
+                    </div>
+                  );
+                })}
+                {leaderboard.length === 0 && <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No loyalty data yet</p>}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

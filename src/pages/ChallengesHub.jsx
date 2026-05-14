@@ -2,266 +2,332 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Zap, Trophy, Clock, Users, CheckCircle, BarChart2 } from 'lucide-react';
+import { Zap, Trophy, Clock, Users, Check, ChevronRight, Star, Target } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
-const B = '#800020';
-const OB = '#0D0D0D';
-const OB2 = '#1A1A1A';
+const GOLD = '#D4AF37';
+const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_COLORS = {
-  attendance: '#00F5FF',
-  engagement: G,
-  content:    '#8B5CF6',
-  referral:   '#00FF88',
+  attendance:  { color: '#00F5FF', label: 'ATTENDANCE' },
+  engagement:  { color: GOLD,      label: 'ENGAGEMENT' },
+  content:     { color: '#8B5CF6', label: 'CONTENT' },
+  referral:    { color: '#00FF88', label: 'REFERRAL' },
 };
 
-function Countdown({ endDate }) {
-  const [remaining, setRemaining] = useState('');
+function ChallengeCountdown({ endDate }) {
+  const [rem, setRem] = useState('');
   useEffect(() => {
-    const calc = () => {
+    const tick = () => {
       const diff = new Date(endDate).getTime() - Date.now();
-      if (diff <= 0) { setRemaining('Ended'); return; }
+      if (diff <= 0) { setRem('Ended'); return; }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
-      setRemaining(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
+      setRem(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
     };
-    calc();
-    const iv = setInterval(calc, 60000);
+    tick();
+    const iv = setInterval(tick, 60000);
     return () => clearInterval(iv);
   }, [endDate]);
-  return <span style={{ fontFamily: 'IBM Plex Mono, monospace' }}>{remaining}</span>;
+  return <span>{rem}</span>;
 }
 
-function ChallengeCard({ challenge, onJoin, isJoined, myProgress }) {
-  const pct = Math.min(100, Math.round(((challenge.participant_count || 0) / (challenge.goal_value || 100)) * 100));
-  const typeColor = TYPE_COLORS[challenge.type] || G;
-
-  return (
-    <div className="rounded-xl p-4 space-y-3"
-      style={{ background: OB2, border: `1px solid ${typeColor}22` }}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
-          <div className="flex flex-wrap gap-1.5 mb-1.5">
-            <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-              style={{ background: `${typeColor}15`, color: typeColor, border: `1px solid ${typeColor}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              {challenge.type}
-            </span>
-            {challenge.reward_type && (
-              <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
-                style={{ background: `${G}12`, color: G, border: `1px solid ${G}22`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                🏆 {challenge.reward_type}
-              </span>
-            )}
-          </div>
-          <h3 className="font-black text-[13px]" style={{ color: CREAM, fontFamily: 'Barlow Condensed, sans-serif' }}>{challenge.title}</h3>
-          {challenge.description && <p className="text-[9px] mt-0.5" style={{ color: 'rgba(245,230,211,0.4)' }}>{challenge.description}</p>}
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>Ends</p>
-          <p className="text-[9px] font-bold" style={{ color: typeColor, fontFamily: 'IBM Plex Mono, monospace' }}>
-            {challenge.end_date ? <Countdown endDate={challenge.end_date} /> : 'Ongoing'}
-          </p>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex justify-between text-[8px] mb-1" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-          <span><Users className="w-2.5 h-2.5 inline mr-0.5" />{challenge.participant_count || 0} participants</span>
-          <span>{pct}%</span>
-        </div>
-        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-          <motion.div animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }}
-            className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${B}, ${typeColor})` }} />
-        </div>
-      </div>
-
-      {isJoined
-        ? <div className="flex items-center gap-1.5 text-[9px]" style={{ color: '#00FF88' }}>
-            <CheckCircle className="w-3.5 h-3.5" /> Joined
-            {myProgress !== undefined && <span style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>· Progress: {myProgress}</span>}
-          </div>
-        : <button onClick={() => onJoin(challenge)}
-            className="w-full py-2 rounded-xl font-black uppercase text-[10px]"
-            style={{ background: B, color: G, border: `1px solid ${G}40`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            Join Challenge
-          </button>
-      }
-    </div>
-  );
-}
-
-function LeaderboardModal({ challenge, onClose }) {
+function LeaderboardDrawer({ challengeId, title, open, onClose }) {
   const { data: participants = [] } = useQuery({
-    queryKey: ['challenge-lb', challenge.id],
-    queryFn: () => base44.entities.ChallengeParticipant.filter({ challenge_id: challenge.id }, '-score', 20),
+    queryKey: ['ch-participants', challengeId],
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ challenge_id: challengeId }, '-score', 20),
+    enabled: open && !!challengeId,
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
-      onClick={onClose}>
-      <div className="w-full max-w-sm rounded-2xl overflow-hidden" style={{ background: OB2, border: `1px solid ${G}25` }}
-        onClick={e => e.stopPropagation()}>
-        <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <span className="font-black uppercase text-[11px]" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Leaderboard</span>
-          <button onClick={onClose} className="text-white/40 text-lg">×</button>
-        </div>
-        <div className="p-3 max-h-72 overflow-y-auto space-y-1.5">
-          {participants.map((p, i) => (
-            <div key={p.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg"
-              style={{ background: i < 3 ? `${[G,'#C0C0C0','#cd7f32'][i]}10` : 'rgba(255,255,255,0.03)', border: `1px solid ${i < 3 ? [G,'#C0C0C0','#cd7f32'][i] : 'rgba(255,255,255,0.06)'}25` }}>
-              <span className="text-base">{['🥇','🥈','🥉'][i] || `#${i+1}`}</span>
-              <span className="flex-1 text-[10px] font-bold" style={{ color: CREAM }}>{p.user_id}</span>
-              <span className="font-black text-[11px]" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>{p.score || 0}</span>
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl max-h-[60vh] overflow-y-auto"
+            style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+            <div className="px-4 py-3 sticky top-0 flex items-center justify-between" style={{ background: '#1A1A1A', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>🏆 {title}</span>
+              <button onClick={onClose} className="text-[9px]" style={{ color: CREAM + '40' }}>Close</button>
             </div>
-          ))}
-          {participants.length === 0 && <p className="text-center py-4 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No participants yet</p>}
+            <div className="p-3 space-y-1.5">
+              {participants.map((p, i) => (
+                <div key={p.id} className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                  style={{ background: i < 3 ? `rgba(212,175,55,0.07)` : 'rgba(255,255,255,0.03)', border: i < 3 ? `1px solid rgba(212,175,55,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
+                  <span className="w-6 text-center text-sm shrink-0">{i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold text-white">{p.user_id?.slice(0, 12)}</p>
+                    <p className="text-[8px]" style={{ color: CREAM + '40' }}>{p.completed ? '✓ Completed' : `Progress: ${p.progress || 0}`}</p>
+                  </div>
+                  <span className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{p.score || 0}</span>
+                </div>
+              ))}
+              {participants.length === 0 && <p className="text-center py-4 text-[10px]" style={{ color: CREAM + '30' }}>No participants yet</p>}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderboard }) {
+  const tc = TYPE_COLORS[challenge.challenge_type?.toLowerCase()] || { color: GOLD, label: 'CHALLENGE' };
+  const progress = challenge.goal_value > 0 ? Math.min(100, Math.round((challenge.participant_count || 0) / challenge.goal_value * 100)) : 0;
+  const hasJoined = !!myParticipation;
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ background: '#1A1A1A', border: `1px solid ${tc.color}20` }}>
+      <div className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 mb-1">
+              <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                style={{ background: `${tc.color}15`, color: tc.color, border: `1px solid ${tc.color}25`, ...T }}>
+                {tc.label}
+              </span>
+              {challenge.reward_type && (
+                <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
+                  style={{ background: `${GOLD}12`, color: GOLD, border: `1px solid ${GOLD}25`, ...T }}>
+                  {challenge.reward_type}
+                </span>
+              )}
+              <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
+                style={{ background: challenge.status === 'active' ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.06)', color: challenge.status === 'active' ? '#00FF88' : CREAM + '40', ...T }}>
+                {challenge.status}
+              </span>
+            </div>
+            <h4 className="font-black text-[12px] text-white">{challenge.title}</h4>
+            {challenge.description && <p className="text-[9px] mt-0.5" style={{ color: CREAM + '40' }}>{challenge.description}</p>}
+          </div>
+          {challenge.end_date && (
+            <div className="text-right shrink-0">
+              <p className="text-[7px]" style={{ color: CREAM + '30' }}>Ends in</p>
+              <p className="font-black text-[9px]" style={{ color: GOLD, ...T }}><ChallengeCountdown endDate={challenge.end_date} /></p>
+            </div>
+          )}
+        </div>
+
+        {/* Progress bar */}
+        <div>
+          <div className="flex justify-between text-[8px] mb-1">
+            <div className="flex items-center gap-1">
+              <Users className="w-2.5 h-2.5" style={{ color: CREAM + '40' }} />
+              <span style={{ color: CREAM + '50' }}>{challenge.participant_count || 0} joined</span>
+            </div>
+            <span style={{ color: tc.color }}>{progress}%</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+            <div className="h-full rounded-full" style={{ width: `${progress}%`, background: tc.color }} />
+          </div>
+        </div>
+
+        <div className="flex gap-1.5">
+          {!hasJoined && challenge.status === 'active' && (
+            <button onClick={() => onJoin(challenge)}
+              className="flex-1 py-2 rounded-xl font-black uppercase text-[10px]"
+              style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+              ⚡ Join Challenge
+            </button>
+          )}
+          {hasJoined && (
+            <div className="flex-1 py-2 rounded-xl text-center font-black uppercase text-[9px]"
+              style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
+              ✓ Joined · {myParticipation.progress || 0} progress
+            </div>
+          )}
+          <button onClick={showLeaderboard}
+            className="px-3 py-2 rounded-xl font-black uppercase text-[9px]"
+            style={{ background: `${GOLD}10`, color: GOLD, border: `1px solid ${GOLD}20`, ...T }}>
+            🏆
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-const TABS = ['Active', 'My Progress', 'Upcoming', 'Completed'];
-
 export default function ChallengesHubPage() {
-  const [activeTab, setActiveTab] = useState('Active');
-  const [lbChallenge, setLbChallenge] = useState(null);
+  const [activeTab, setActiveTab] = useState('active');
+  const [lbOpen, setLbOpen] = useState(null);
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: active = [] } = useQuery({
-    queryKey: ['challenges-active'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, 'end_date', 30),
+
+  const { data: activeChallenges = [] } = useQuery({
+    queryKey: ['ch-active'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, 'end_date', 20),
+    refetchInterval: 30000,
   });
-  const { data: upcoming = [] } = useQuery({
-    queryKey: ['challenges-upcoming'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'upcoming' }, 'start_date', 20),
+  const { data: upcomingChallenges = [] } = useQuery({
+    queryKey: ['ch-upcoming'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'upcoming' }, 'start_date', 10),
   });
   const { data: myParticipations = [] } = useQuery({
-    queryKey: ['challenges-my', user?.id],
-    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: user.id }, '-created_date', 30),
+    queryKey: ['ch-mine', user?.id],
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: user?.id }),
     enabled: !!user?.id,
   });
 
-  const joinedIds = new Set(myParticipations.map(p => p.challenge_id));
-  const completedParts = myParticipations.filter(p => p.completed);
-
   const joinMut = useMutation({
-    mutationFn: (ch) => base44.entities.ChallengeParticipant.create({
-      challenge_id: ch.id,
-      user_id: user.id,
+    mutationFn: (challenge) => base44.entities.ChallengeParticipant.create({
+      challenge_id: challenge.id,
+      user_id: user?.id,
       progress: 0,
       score: 0,
       completed: false,
     }),
-    onSuccess: () => { qc.invalidateQueries(['challenges-my', user?.id]); toast.success('Joined challenge!'); },
+    onSuccess: () => { qc.invalidateQueries(['ch-mine']); toast.success('Joined challenge!'); },
   });
 
+  const myCompleted = myParticipations.filter(p => p.completed);
+  const myActive = myParticipations.filter(p => !p.completed);
+
+  const TABS = [
+    { id: 'active',    label: `⚡ Active (${activeChallenges.length})` },
+    { id: 'my',        label: `📊 My Progress (${myParticipations.length})` },
+    { id: 'upcoming',  label: `🗓 Upcoming` },
+    { id: 'completed', label: `✅ Completed (${myCompleted.length})` },
+  ];
+
   return (
-    <div className="min-h-screen" style={{ background: OB }}>
-      <div className="px-4 md:px-8 py-4" style={{ background: OB2, borderBottom: `1px solid ${G}18` }}>
-        <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+      <AnimatePresence>
+        {lbOpen && <LeaderboardDrawer challengeId={lbOpen.id} title={lbOpen.title} open={true} onClose={() => setLbOpen(null)} />}
+      </AnimatePresence>
+
+      {/* Header */}
+      <div className="px-4 md:px-6 py-4" style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5" style={{ color: G }} />
-            <h1 className="text-xl font-black uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Challenges</h1>
+            <Zap className="w-5 h-5" style={{ color: GOLD }} />
+            <span className="font-black uppercase text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>Challenges Hub</span>
           </div>
-          <div className="flex gap-0.5">
-            {TABS.map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className="flex-1 py-2 text-[9px] font-black uppercase border-b-2 transition-all"
-                style={{ fontFamily: 'Barlow Condensed, sans-serif', color: activeTab === tab ? G : 'rgba(245,230,211,0.3)', borderBottomColor: activeTab === tab ? G : 'transparent', background: activeTab === tab ? `${G}08` : 'transparent' }}>
-                {tab}
+          <div className="flex overflow-x-auto scrollbar-hide gap-0">
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)}
+                className="px-4 py-2 shrink-0 text-[9px] font-black uppercase border-b-2 transition-all"
+                style={{ ...T, color: activeTab === t.id ? GOLD : CREAM + '35', borderBottomColor: activeTab === t.id ? GOLD : 'transparent', background: activeTab === t.id ? `${GOLD}07` : 'transparent' }}>
+                {t.label}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 md:px-8 py-5 space-y-3">
-        {activeTab === 'Active' && (
-          active.length === 0
-            ? <p className="text-center py-12 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No active challenges</p>
-            : active.map(ch => (
-              <div key={ch.id}>
-                <ChallengeCard challenge={ch}
-                  isJoined={joinedIds.has(ch.id)}
-                  myProgress={myParticipations.find(p => p.challenge_id === ch.id)?.progress}
-                  onJoin={(c) => joinMut.mutate(c)} />
-                <button onClick={() => setLbChallenge(ch)}
-                  className="w-full mt-1 py-1.5 rounded-lg text-[8px] font-black uppercase"
-                  style={{ background: 'rgba(255,255,255,0.03)', color: 'rgba(245,230,211,0.3)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  <BarChart2 className="w-3 h-3 inline mr-1" /> View Leaderboard
-                </button>
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-5 space-y-3">
+        <AnimatePresence mode="wait">
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+            {activeTab === 'active' && (
+              <div className="space-y-3">
+                {activeChallenges.length === 0
+                  ? <p className="text-center py-10 text-[11px]" style={{ color: CREAM + '25' }}>No active challenges</p>
+                  : activeChallenges.map(c => (
+                    <ChallengeCard key={c.id} challenge={c}
+                      onJoin={(ch) => joinMut.mutate(ch)}
+                      userId={user?.id}
+                      myParticipation={myParticipations.find(p => p.challenge_id === c.id)}
+                      showLeaderboard={() => setLbOpen(c)} />
+                  ))}
               </div>
-            ))
-        )}
+            )}
 
-        {activeTab === 'My Progress' && (
-          myParticipations.length === 0
-            ? <p className="text-center py-12 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>Join challenges to see your progress</p>
-            : myParticipations.map(part => {
-              const ch = [...active, ...upcoming].find(c => c.id === part.challenge_id);
-              return (
-                <div key={part.id} className="rounded-xl p-3 space-y-2" style={{ background: OB2, border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-bold" style={{ color: CREAM }}>{ch?.title || part.challenge_id}</p>
-                    {part.completed && <span className="text-[8px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(0,255,136,0.12)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' }}>✓ DONE</span>}
-                  </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${Math.min(100, ((part.progress || 0) / (ch?.goal_value || 100)) * 100)}%`, background: `linear-gradient(90deg, ${B}, ${G})` }} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-                      {part.progress || 0} / {ch?.goal_value || '?'} · Score: {part.score || 0}
-                    </span>
-                    <button onClick={() => ch && setLbChallenge(ch)} className="text-[7px]" style={{ color: G }}>Leaderboard</button>
-                  </div>
-                </div>
-              );
-            })
-        )}
-
-        {activeTab === 'Upcoming' && (
-          upcoming.length === 0
-            ? <p className="text-center py-12 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No upcoming challenges</p>
-            : upcoming.map(ch => (
-              <div key={ch.id} className="rounded-xl p-4 space-y-2" style={{ background: OB2, border: `1px solid rgba(255,255,255,0.07)` }}>
-                <div className="flex items-start justify-between">
-                  <h3 className="font-black text-[12px]" style={{ color: CREAM, fontFamily: 'Barlow Condensed, sans-serif' }}>{ch.title}</h3>
-                  <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase" style={{ background: `${G}12`, color: G, border: `1px solid ${G}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>UPCOMING</span>
-                </div>
-                {ch.start_date && (
-                  <p className="text-[9px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>
-                    Starts: <Countdown endDate={ch.start_date} />
-                  </p>
-                )}
+            {activeTab === 'my' && (
+              <div className="space-y-3">
+                {myParticipations.length === 0
+                  ? <p className="text-center py-10 text-[11px]" style={{ color: CREAM + '25' }}>You haven't joined any challenges yet</p>
+                  : myParticipations.map(p => {
+                    const challenge = [...activeChallenges, ...upcomingChallenges].find(c => c.id === p.challenge_id);
+                    const goalValue = challenge?.goal_value || 100;
+                    const progress = Math.min(100, Math.round(((p.progress || 0) / goalValue) * 100));
+                    return (
+                      <div key={p.id} className="rounded-xl p-4 space-y-2"
+                        style={{ background: '#1A1A1A', border: p.completed ? `1px solid rgba(0,255,136,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
+                        <div className="flex items-center justify-between">
+                          <p className="font-bold text-[11px] text-white">{challenge?.title || `Challenge ${p.challenge_id?.slice(0,8)}`}</p>
+                          <div className="flex items-center gap-1.5">
+                            {p.completed && (
+                              <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
+                                style={{ background: 'rgba(0,255,136,0.12)', color: '#00FF88', ...T }}>✓ DONE</span>
+                            )}
+                            <span className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{p.score || 0}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-0.5">
+                          <div className="flex justify-between text-[8px]">
+                            <span style={{ color: CREAM + '40' }}>Progress: {p.progress || 0}</span>
+                            <span style={{ color: GOLD }}>{progress}%</span>
+                          </div>
+                          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                            <div className="h-full rounded-full" style={{ width: `${progress}%`, background: GOLD }} />
+                          </div>
+                        </div>
+                        <button onClick={() => challenge && setLbOpen(challenge)}
+                          className="text-[8px] font-black uppercase" style={{ color: GOLD, ...T }}>
+                          🏆 View Leaderboard →
+                        </button>
+                      </div>
+                    );
+                  })}
               </div>
-            ))
-        )}
+            )}
 
-        {activeTab === 'Completed' && (
-          completedParts.length === 0
-            ? <p className="text-center py-12 text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>No completed challenges yet</p>
-            : completedParts.map(part => (
-              <div key={part.id} className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: OB2, border: `1px solid ${G}20` }}>
-                <Trophy className="w-6 h-6 shrink-0" style={{ color: G }} />
-                <div className="flex-1">
-                  <p className="text-[11px] font-bold" style={{ color: CREAM }}>{part.challenge_id}</p>
-                  <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)', fontFamily: 'IBM Plex Mono, monospace' }}>Score: {part.score || 0}{part.rank ? ` · Rank #${part.rank}` : ''}</p>
-                </div>
-                <CheckCircle className="w-5 h-5" style={{ color: '#00FF88' }} />
+            {activeTab === 'upcoming' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {upcomingChallenges.length === 0
+                  ? <p className="text-center py-10 text-[11px] col-span-2" style={{ color: CREAM + '25' }}>No upcoming challenges</p>
+                  : upcomingChallenges.map(c => {
+                    const tc = TYPE_COLORS[c.challenge_type?.toLowerCase()] || { color: GOLD, label: 'CHALLENGE' };
+                    const diff = new Date(c.start_date).getTime() - Date.now();
+                    const d = Math.floor(diff / 86400000);
+                    const h = Math.floor((diff % 86400000) / 3600000);
+                    return (
+                      <div key={c.id} className="rounded-xl p-4 space-y-2"
+                        style={{ background: '#1A1A1A', border: `1px solid ${tc.color}20` }}>
+                        <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                          style={{ background: `${tc.color}15`, color: tc.color, ...T }}>{tc.label}</span>
+                        <p className="font-bold text-[11px] text-white">{c.title}</p>
+                        <div className="flex items-center gap-1 text-[9px]">
+                          <Clock className="w-3 h-3" style={{ color: GOLD + '70' }} />
+                          <span style={{ color: GOLD }}>Starts in {d > 0 ? `${d}d ${h}h` : `${h}h`}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
-            ))
-        )}
+            )}
+
+            {activeTab === 'completed' && (
+              <div className="space-y-2">
+                {myCompleted.length === 0
+                  ? <p className="text-center py-10 text-[11px]" style={{ color: CREAM + '25' }}>No completed challenges yet</p>
+                  : myCompleted.map(p => (
+                    <div key={p.id} className="rounded-xl p-4 flex items-center gap-3"
+                      style={{ background: '#1A1A1A', border: `1px solid rgba(0,255,136,0.2)` }}>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                        style={{ background: 'rgba(0,255,136,0.12)', border: '1px solid rgba(0,255,136,0.25)' }}>
+                        <Check className="w-4 h-4" style={{ color: '#00FF88' }} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-[11px] text-white">Challenge {p.challenge_id?.slice(0, 8)}</p>
+                        <p className="text-[8px]" style={{ color: CREAM + '40' }}>
+                          Rank: {p.rank || '—'} · Completed {p.updated_date ? new Date(p.updated_date).toLocaleDateString() : ''}
+                        </p>
+                      </div>
+                      <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{p.score || 0} pts</p>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
-
-      <AnimatePresence>
-        {lbChallenge && <LeaderboardModal challenge={lbChallenge} onClose={() => setLbChallenge(null)} />}
-      </AnimatePresence>
     </div>
   );
 }
