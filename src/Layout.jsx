@@ -11,6 +11,7 @@ import {
   Bell, User, ChevronRight
 } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
+import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
@@ -187,7 +188,9 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </Link>
 
-            <NotificationBell />
+            <div className="relative">
+              <NotificationHub />
+            </div>
             <UserMenu user={user} isAdmin={isAdmin} />
 
             {/* Desktop creator/admin nav toggle */}

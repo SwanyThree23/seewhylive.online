@@ -1,0 +1,92 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Recipient user ID"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "tip",
+        "subscription",
+        "referral",
+        "mention",
+        "room_invite",
+        "challenge",
+        "announcement",
+        "moderation",
+        "poll_created",
+        "poll_closed",
+        "raid_incoming",
+        "raid_outgoing",
+        "engagement_milestone"
+      ],
+      "description": "Notification type"
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message"
+    },
+    "link": {
+      "type": "string",
+      "description": "Action link"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon name or emoji"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Read status"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "Sender user ID"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Sender display name"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Associated room ID"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Associated event ID (poll, raid, etc)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional data (amounts, percentages, etc)"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal",
+      "description": "Notification priority"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When notification becomes stale"
+    }
+  },
+  "required": [
+    "user_id",
+    "type",
+    "title",
+    "message"
+  ]
+}
