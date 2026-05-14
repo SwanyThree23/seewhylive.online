@@ -48,6 +48,8 @@ import ChatOverlay from '../components/live/ChatOverlay';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import GuestConnector from '../components/live/GuestConnector';
+import LiveTranscription from '../components/live/LiveTranscription';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -637,8 +639,14 @@ export default function LiveRoom() {
 
               {/* Evmux web source overlay */}
               {showEvmux && (
-               <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />
+                <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />
               )}
+
+              {/* Live Transcription */}
+              <LiveTranscription isLive={room?.status === 'live'} roomId={roomId} />
+
+              {/* Engagement Badges */}
+              <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={room?.creator_id} />
 
           {/* Bottom bar: layout controls */}
           <div className="h-9 shrink-0 flex items-center justify-center gap-2 border-t border-white/5 bg-[rgba(13,6,24,0.8)] px-4">
