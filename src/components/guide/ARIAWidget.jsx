@@ -37,7 +37,7 @@ function TypingDots() {
   );
 }
 
-export default function ARIAWidget() {
+export default function SwanyBotWidget() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState([]);
