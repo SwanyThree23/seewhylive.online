@@ -140,20 +140,6 @@ export default function SwanyBotWidget() {
       const t = setTimeout(() => {
         openAndGreet();
         localStorage.setItem('seewhy_aria_welcomed', 'true');
-        // Speak welcome message to new users
-        setTimeout(() => {
-           const welcomeMessage = "Welcome to C Y LIVE! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
-           const utterance = new SpeechSynthesisUtterance(welcomeMessage);
-           utterance.rate = 0.95;
-           utterance.pitch = 1.05;
-           utterance.volume = 0.85;
-           utterance.lang = 'en-US';
-           const voices = window.speechSynthesis.getVoices();
-           if (voices.length > 0) {
-             utterance.voice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Google')) || voices[0];
-           }
-           window.speechSynthesis.speak(utterance);
-         }, 1500);
       }, 2000);
       return () => clearTimeout(t);
     } else {
@@ -164,17 +150,25 @@ export default function SwanyBotWidget() {
   }, []);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      
-      // Read out the last assistant message
-      const lastMessage = messages[messages.length - 1];
-      if (audioEnabled && lastMessage.role === 'assistant' && lastMessage.content) {
-        // Small delay to ensure audio context is ready
-        setTimeout(() => speakMessage(lastMessage.content), 300);
-      }
-    }
-  }, [messages, audioEnabled]);
+     if (messages.length > 0) {
+       messagesEndRef.current && messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+
+       // Read out the last assistant message
+       const lastMessage = messages[messages.length - 1];
+       if (audioEnabled && lastMessage.role === 'assistant' && lastMessage.content) {
+         // Small delay to ensure audio context is ready
+         setTimeout(() => speakMessage(lastMessage.content), 600);
+       }
+     }
+   }, [messages, audioEnabled]);
+
+   // Speak greeting when conversation opens
+   useEffect(() => {
+     if (open && conversation && messages.length > 0 && audioEnabled) {
+       const welcomeMessage = "Welcome to SeeWhy Live! I'm SwanyBot, your personal guide. I'm here to help you discover streams, understand the platform, and get the most out of your experience. Feel free to ask me anything!";
+       setTimeout(() => speakMessage(welcomeMessage), 800);
+     }
+   }, [open, conversation, audioEnabled]);
 
   const speakMessage = (text) => {
     if (!audioEnabled || !text) return;
