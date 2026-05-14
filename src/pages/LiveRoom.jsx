@@ -50,6 +50,13 @@ import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import GuestConnector from '../components/live/GuestConnector';
 import LiveTranscription from '../components/live/LiveTranscription';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import TippingOverlay from '../components/live/TippingOverlay';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import AIModeration from '../components/live/AIModeration';
 
 import {
   Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
@@ -100,6 +107,7 @@ export default function LiveRoom() {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [videoOffUsers, setVideoOffUsers] = useState({});
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showPPV, setShowPPV] = useState(false);
   const timerRef = useRef(null);
 
   // Real browser media (mic + camera)
@@ -390,6 +398,11 @@ export default function LiveRoom() {
                 {isHost && activeBattle && <PKBattleSoundboard battleId={activeBattle.id} isBattleActive={!!activeBattle} />}
                 {isHost && <ChatModeration />}
                 {isHost && <GuestConnector roomId={roomId} roomName={room?.title} />}
+                <RealtimeLeaderboard roomId={roomId} creatorId={room?.creator_id} />
+                {isHost && <PerformanceDashboard roomId={roomId} sessionId={room?.current_session_id} />}
+                {isHost && <ClipGeneratorAI sessionId={room?.current_session_id} roomId={roomId} creatorId={room?.creator_id} />}
+                {isHost && <AIModeration roomId={roomId} isHost={isHost} />}
+                <SubscriptionGate creatorId={room?.creator_id} roomId={roomId} />
                 <VdoNinjaGuestLink roomId={roomId} />
                 {isHost && (
                   <button
@@ -647,6 +660,12 @@ export default function LiveRoom() {
 
               {/* Engagement Badges */}
               <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={room?.creator_id} />
+
+              {/* Tipping Overlay */}
+              <TippingOverlay roomId={roomId} creatorId={room?.creator_id} isVisible={true} />
+
+              {/* PPV Gate */}
+              {showPPV && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => setShowPPV(false)} />}
 
           {/* Bottom bar: layout controls */}
           <div className="h-9 shrink-0 flex items-center justify-center gap-2 border-t border-white/5 bg-[rgba(13,6,24,0.8)] px-4">
