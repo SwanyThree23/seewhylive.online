@@ -13,7 +13,7 @@ import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ShareButtons from '../components/shared/ShareButtons';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
-import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import WatchQueue from '../components/watchparty/WatchQueue';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import HostControls from '../components/watchparty/HostControls';
 
@@ -336,6 +336,9 @@ export default function WatchPartyPage() {
         )}
       </div>
 
+      {/* Viewer rail — horizontal scrolling avatars */}
+      <ViewerRail members={members} hostId={party.host_id} />
+
       {/* Reactions bar */}
       <div className="shrink-0" style={{ background: '#1A0F0A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
         <ReactionOverlay partyId={partyId} currentUser={user} />
@@ -363,9 +366,10 @@ export default function WatchPartyPage() {
           <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
             {[
               { id: 'chat',        label: '💬 Chat' },
-              { id: 'playlist',    label: '🎵 Playlist' },
+              { id: 'playlist',    label: '🎵 Queue' },
               { id: 'battle',      label: '⚔️ Battle' },
               { id: 'leaderboard', label: '🏆 Ranks' },
+              { id: 'viewers',     label: '👥 Viewers' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActivePanel(tab.id)}
                 className="flex-1 py-2 text-[9px] font-black uppercase transition-all"
@@ -392,14 +396,19 @@ export default function WatchPartyPage() {
               </>
             )}
             {activePanel === 'playlist' && (
-              <CollabPlaylist
+              <WatchQueue
                 isHost={isHost}
+                onSelect={(idx) => {}}
+              />
+            )}
+            {activePanel === 'viewers' && (
+              <PanelGrid
+                members={members}
                 currentUser={user}
-                onPlayVideo={(url, type) => {
-                  // Update party video url in place (host only)
-                  base44.entities.WatchParty.update(partyId, { video_url: url, video_type: type, current_time: 0, updated_at_ms: Date.now() });
-                  qc.invalidateQueries(['watchparty', partyId]);
-                }}
+                hostId={party.host_id}
+                maxSlots={20}
+                isHost={isHost}
+                onInvite={copyInvite}
               />
             )}
             {activePanel === 'battle' && (
