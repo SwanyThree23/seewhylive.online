@@ -125,40 +125,41 @@ export default function Home() {
         </motion.button>
       </motion.div>
       
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen" style={{ background: '#0B0B18' }}>
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-10 sm:py-16">
+      <div className="text-white py-10 sm:py-16" style={{ background: 'linear-gradient(135deg, #1A0F0A 0%, #2C1810 50%, #1a1200 100%)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-3xl sm:text-5xl font-bold mb-3">
+            <h1 className="text-3xl sm:text-5xl font-bold mb-3" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>
               Welcome to SeeWhy LIVE
             </h1>
-            <p className="text-base sm:text-xl text-purple-100 mb-6 sm:mb-8 px-2">
+            <p className="text-base sm:text-xl mb-6 sm:mb-8 px-2" style={{ color: 'rgba(196,168,130,0.8)' }}>
               Join live audio & video rooms, connect with communities, and stream together
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-2xl mx-auto px-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'rgba(196,168,130,0.5)' }} />
                 <Input
                   placeholder="Search rooms, topics..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 py-5 text-base bg-white/10 backdrop-blur border-white/20 text-white placeholder:text-white/60"
+                  className="pl-10 py-5 text-base text-white placeholder:text-white/40"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
                 />
               </div>
               <Link to={createPageUrl('CreateRoom')}>
-                <Button size="lg" className="w-full sm:w-auto bg-white text-purple-600 hover:bg-white/90 px-6">
+                <Button size="lg" className="w-full sm:w-auto px-6 font-bold" style={{ background: '#d4af37', color: '#000' }}>
                   <Plus className="w-5 h-5 mr-2" />
                   Create Room
                 </Button>
               </Link>
               <Link to={createPageUrl('VideoPost')}>
-                <Button size="lg" className="w-full sm:w-auto bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6">
+                <Button size="lg" className="w-full sm:w-auto text-white border px-6" style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(212,175,55,0.3)' }}>
                   <Video className="w-5 h-5 mr-2" />
                   Post Video
                 </Button>
@@ -168,28 +169,28 @@ export default function Home() {
             {/* Quick links */}
             <div className="flex flex-wrap gap-2 justify-center mt-4">
               <Link to={createPageUrl('FeaturedContent')}>
-                <span className="inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full border border-white/20 transition-all cursor-pointer">
-                  <Star className="w-3 h-3 text-yellow-300" /> Featured Channels & Videos
+                <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full cursor-pointer transition-all hover:text-white" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                  <Star className="w-3 h-3 text-yellow-400" /> Featured Channels & Videos
                 </span>
               </Link>
               <Link to={createPageUrl('LiveRoom')}>
-                <span className="inline-flex items-center gap-1.5 text-xs bg-red-600/40 hover:bg-red-600/60 text-white px-3 py-1.5 rounded-full border border-red-500/30 transition-all cursor-pointer">
-                  <Radio className="w-3 h-3 animate-pulse" /> Go Live Now
+                <span className="inline-flex items-center gap-1.5 text-xs text-white px-3 py-1.5 rounded-full cursor-pointer transition-all hover:opacity-80" style={{ background: 'rgba(180,50,30,0.3)', border: '1px solid rgba(200,80,30,0.3)' }}>
+                  <Radio className="w-3 h-3 animate-pulse text-orange-400" /> Go Live Now
                 </span>
               </Link>
               <Link to={createPageUrl('WatchParty')}>
-                <span className="inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full border border-white/20 transition-all cursor-pointer">
-                  <Video className="w-3 h-3" /> Watch Party
+                <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full cursor-pointer transition-all hover:text-white" style={{ background: 'rgba(107,124,74,0.15)', border: '1px solid rgba(107,124,74,0.3)' }}>
+                  <Video className="w-3 h-3 text-green-500" /> Watch Party
                 </span>
               </Link>
               <Link to={createPageUrl('VODLibrary')}>
-                <span className="inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full border border-white/20 transition-all cursor-pointer">
+                <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full cursor-pointer transition-all hover:text-white" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <Video className="w-3 h-3" /> VOD Library
                 </span>
               </Link>
               <Link to={createPageUrl('LiveBattles')}>
-                <span className="inline-flex items-center gap-1.5 text-xs bg-red-600/30 hover:bg-red-600/50 text-white px-3 py-1.5 rounded-full border border-red-500/30 transition-all cursor-pointer">
-                  <Swords className="w-3 h-3" /> PK Battles
+                <span className="inline-flex items-center gap-1.5 text-xs text-white px-3 py-1.5 rounded-full cursor-pointer transition-all hover:opacity-80" style={{ background: 'rgba(139,111,71,0.2)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                  <Swords className="w-3 h-3 text-yellow-400" /> PK Battles
                 </span>
               </Link>
             </div>
@@ -201,7 +202,7 @@ export default function Home() {
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-white border-b"
+        style={{ background: '#16100A', borderBottom: '1px solid rgba(212,175,55,0.1)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -227,7 +228,7 @@ export default function Home() {
         </div>
       </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8" style={{ color: 'rgba(255,255,255,0.85)' }}>
         <Tabs defaultValue="live" className="space-y-6 sm:space-y-8">
           <TabsList className="grid w-full max-w-md grid-cols-3 mx-auto">
             <TabsTrigger value="live" className="flex items-center gap-2">

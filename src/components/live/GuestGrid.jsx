@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, MoreHorizontal, X, Pin } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, MoreHorizontal, X, Pin, Radio } from 'lucide-react';
+import GuestDestinationsPanel from './GuestDestinationsPanel';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
@@ -32,6 +33,7 @@ export default React.memo(function GuestGrid({ participants = [], isHost, onInvi
   const [layoutSlots, setLayoutSlots] = useState(4);
   const [spotlightId, setSpotlightId] = useState(null);
   const [audioStates, setAudioStates] = useState({});
+  const [showDestsFor, setShowDestsFor] = useState(null);
 
   const speakers = participants
     .filter(p => ['host', 'co-host', 'speaker', 'guest'].includes(p.role))
@@ -45,6 +47,12 @@ export default React.memo(function GuestGrid({ participants = [], isHost, onInvi
 
   return (
     <div className="h-full bg-[rgba(13,6,24,0.7)] rounded-xl border border-[rgba(212,175,55,0.15)] flex flex-col overflow-hidden">
+      {/* Per-guest destinations panel (host only) */}
+      {isHost && showDestsFor && (
+        <div className="shrink-0 px-2 pt-2">
+          <GuestDestinationsPanel participantUserId={showDestsFor} guestName={participants.find(p => p.user_id === showDestsFor)?.user_name || 'Guest'} />
+        </div>
+      )}
       {/* Top bar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 shrink-0">
         <Badge className="bg-[#800020]/60 text-[#d4af37] border-[#d4af37]/30 text-[10px]">
@@ -194,6 +202,9 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-xs cursor-pointer hover:bg-white/10">
                     <Pin className="w-3 h-3 mr-2" /> Pin
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-xs cursor-pointer hover:bg-white/10">
+                    <Radio className="w-3 h-3 mr-2" /> Stream Destinations
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-xs text-red-400 cursor-pointer hover:bg-red-900/20">
                     <X className="w-3 h-3 mr-2" /> Remove

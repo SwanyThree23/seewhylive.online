@@ -11,6 +11,7 @@ import AggregatedChat from '../components/live/AggregatedChat';
 import ViewerRail from '../components/watchparty/ViewerRail';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ShareButtons from '../components/shared/ShareButtons';
+import PanelGrid from '../components/watchparty/PanelGrid';
 
 function getYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -278,89 +279,88 @@ export default function WatchPartyPage() {
   const ytId = party.video_type === 'youtube' ? getYouTubeId(party.video_url) : null;
 
   return (
-    <div className="h-[calc(100vh-120px)] flex gap-0 overflow-hidden">
-      {/* ── VIDEO AREA ── */}
-      <div className="flex-1 flex flex-col bg-black min-w-0">
-        {/* Top bar */}
-        <div className="flex items-center gap-3 px-4 py-2 bg-gray-900 border-b border-white/10 shrink-0">
-          <h2 className="font-semibold text-white flex-1 truncate">{party.title}</h2>
-          <Badge variant="outline" className="text-white border-white/30 gap-1">
-            <Users className="w-3 h-3" /> {members.length}
-          </Badge>
-          {!isHost && (
-            <Badge className="bg-blue-600 text-white text-xs">Synced to host</Badge>
-          )}
-          {isHost && (
-            <Badge className="bg-green-600 text-white text-xs">You are host</Badge>
-          )}
-          <ShareButtons
-            url={window.location.href}
-            title={`Join my Watch Party: ${party?.title}`}
-            className="text-white [&_button]:text-white/60 [&_button:hover]:text-white"
-          />
-          {isHost && (
-            <Button size="sm" variant="destructive" onClick={() => endPartyMutation.mutate()}>
-              <LogOut className="w-3 h-3 mr-1" /> End
-            </Button>
-          )}
+    <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden" style={{ background: '#0B0B18' }}>
+      {/* Top bar */}
+      <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: '#1A0F0A', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
+        <h2 className="font-semibold text-white flex-1 truncate text-sm">{party.title}</h2>
+        <div className="flex items-center gap-1 text-[11px]" style={{ color: '#d4af37' }}>
+          <Users className="w-3 h-3" /> {members.length}/20
         </div>
-
-        {/* Viewer rail */}
-        <ViewerRail members={members} hostId={party.host_id} maxVisible={20} />
-
-        {/* Player */}
-        <div className="flex-1 relative">
-          {ytId ? (
-            <YouTubeEmbed
-              videoId={ytId}
-              isHost={isHost}
-              syncData={isHost ? null : (syncData || party)}
-              onStateChange={pushState}
-            />
-          ) : (
-            <DirectPlayer
-              url={party.video_url}
-              isHost={isHost}
-              syncData={isHost ? null : (syncData || party)}
-              onStateChange={pushState}
-            />
-          )}
-          {!isHost && (
-            <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              Live Sync
-            </div>
-          )}
-        </div>
-
-        {/* Reactions */}
-        <div className="relative bg-gray-900 border-t border-white/10 shrink-0">
-          <ReactionOverlay partyId={partyId} currentUser={user} />
-          {!isHost && (
-            <div className="px-4 pb-2 text-[10px] text-white/30 text-center">
-              Playback controlled by host · Watching in sync
-            </div>
-          )}
-        </div>
+        {!isHost && (
+          <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(107,124,74,0.2)', color: '#6B7C4A', border: '1px solid rgba(107,124,74,0.3)' }}>Synced</span>
+        )}
+        {isHost && (
+          <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)' }}>Host</span>
+        )}
+        <ShareButtons
+          url={window.location.href}
+          title={`Join my Watch Party: ${party?.title}`}
+          className="text-white [&_button]:text-white/60"
+        />
+        {isHost && (
+          <Button size="sm" onClick={() => endPartyMutation.mutate()}
+            className="h-7 text-[10px] px-2" style={{ background: 'rgba(180,50,30,0.3)', color: '#ff8866', border: '1px solid rgba(200,80,30,0.3)' }}>
+            <LogOut className="w-3 h-3 mr-1" /> End
+          </Button>
+        )}
       </div>
 
-      {/* ── CHAT SIDEBAR ── */}
-      <div className="w-80 shrink-0 border-l border-gray-200 dark:border-white/10 flex flex-col bg-white dark:bg-gray-900">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10 shrink-0">
-          <h3 className="font-semibold text-sm">Party Chat</h3>
-          <div className="mt-2 space-y-1 max-h-20 overflow-y-auto">
-            {members.map(m => (
-              <div key={m.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold">
-                  {m.user_name?.charAt(0)?.toUpperCase()}
-                </div>
-                {m.user_name}
+      {/* Main area: video left, panel grid right, chat far right */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* ── VIDEO AREA ── */}
+        <div className="flex flex-col min-w-0" style={{ flex: '1 1 0', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+          {/* Player */}
+          <div className="flex-1 relative bg-black">
+            {ytId ? (
+              <YouTubeEmbed
+                videoId={ytId}
+                isHost={isHost}
+                syncData={isHost ? null : (syncData || party)}
+                onStateChange={pushState}
+              />
+            ) : (
+              <DirectPlayer
+                url={party.video_url}
+                isHost={isHost}
+                syncData={isHost ? null : (syncData || party)}
+                onStateChange={pushState}
+              />
+            )}
+            {!isHost && (
+              <div className="absolute top-3 right-3 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1"
+                style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                Live Sync
               </div>
-            ))}
+            )}
+          </div>
+
+          {/* Reactions */}
+          <div className="shrink-0" style={{ background: '#1A0F0A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <ReactionOverlay partyId={partyId} currentUser={user} />
           </div>
         </div>
-        <div className="flex-1 overflow-hidden">
-          <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+
+        {/* ── 20-PERSON PANEL GRID ── */}
+        <div className="shrink-0 overflow-hidden" style={{ width: '280px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+          <PanelGrid
+            members={members}
+            currentUser={user}
+            hostId={party.host_id}
+            maxSlots={20}
+            isHost={isHost}
+            onInvite={copyInvite}
+          />
+        </div>
+
+        {/* ── CHAT ── */}
+        <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: '260px', background: '#0d0618' }}>
+          <div className="px-3 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <h3 className="text-[11px] font-semibold" style={{ color: '#d4af37' }}>Party Chat</h3>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+          </div>
         </div>
       </div>
     </div>
