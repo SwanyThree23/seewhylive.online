@@ -6,11 +6,11 @@ import { toast } from 'sonner';
 import { Trophy, Plus, Play, Users, Swords, Crown, ChevronRight, Calendar, Zap } from 'lucide-react';
 
 var ET = {
-  burgundy: '#800020',
+  rust: '#6B4423',
   gold: '#d4af37',
   terracotta: '#CC7755',
   moss: '#6B7C4A',
-  clay: '#A0522D',
+  clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
   darkEarth: '#2C1810',
@@ -265,7 +265,7 @@ export default function TournamentBracket() {
             <Button
               onClick={startTournament}
               className="w-full h-10 font-black text-sm gap-2 uppercase tracking-wider"
-              style={{ background: 'linear-gradient(90deg, ' + ET.burgundy + ', ' + ET.clay + ')', color: '#fff' }}
+              style={{ background: 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.clay + ')', color: '#fff' }}
             >
               <Play className="w-4 h-4" /> Generate Bracket & Start
             </Button>

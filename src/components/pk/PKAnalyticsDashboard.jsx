@@ -3,11 +3,11 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContai
 import { Trophy, TrendingUp, Swords, Star, Clock, Users, DollarSign, Zap, Crown, Target } from 'lucide-react';
 
 var ET = {
-  burgundy: '#800020',
+  rust: '#6B4423',
   gold: '#d4af37',
   terracotta: '#CC7755',
   moss: '#6B7C4A',
-  clay: '#A0522D',
+  clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
   darkEarth: '#2C1810',
@@ -158,20 +158,20 @@ export default function PKAnalyticsDashboard({ battles, user }) {
                 <stop offset="95%" stopColor={ET.gold} stopOpacity={0} />
               </linearGradient>
               <linearGradient id="lossGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={ET.burgundy} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={ET.burgundy} stopOpacity={0} />
+                <stop offset="5%" stopColor={ET.rust} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={ET.rust} stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis dataKey="month" tick={{ fill: ET.sand + '60', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: ET.sand + '40', fontSize: 9 }} axisLine={false} tickLine={false} />
             <Tooltip content={CustomTooltip} />
             <Area type="monotone" dataKey="wins" stroke={ET.gold} strokeWidth={2} fill="url(#winsGrad)" name="wins" />
-            <Area type="monotone" dataKey="losses" stroke={ET.burgundy} strokeWidth={2} fill="url(#lossGrad)" name="losses" />
+            <Area type="monotone" dataKey="losses" stroke={ET.rust} strokeWidth={2} fill="url(#lossGrad)" name="losses" />
           </AreaChart>
         </ResponsiveContainer>
         <div className="flex items-center gap-4 mt-2">
           <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: ET.gold }} /><span className="text-[10px]" style={{ color: ET.sand + '70' }}>Wins</span></div>
-          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: ET.burgundy }} /><span className="text-[10px]" style={{ color: ET.sand + '70' }}>Losses</span></div>
+          <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: ET.rust }} /><span className="text-[10px]" style={{ color: ET.sand + '70' }}>Losses</span></div>
         </div>
       </div>
 

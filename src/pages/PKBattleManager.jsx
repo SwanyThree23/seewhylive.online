@@ -17,13 +17,13 @@ import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import TournamentBracket from '../components/pk/TournamentBracket';
 import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 
-/* ─── Earth Tone Palette ─── */
+/* ─── Earth Tone Palette (No Pink) ─── */
 var ET = {
-  burgundy: '#800020',
+  rust: '#6B4423',
   gold: '#d4af37',
   terracotta: '#CC7755',
   moss: '#6B7C4A',
-  clay: '#A0522D',
+  clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
   darkEarth: '#2C1810',
@@ -131,7 +131,7 @@ function WinnerOverlay({ battle, onClose }) {
               animate={{ y: '110vh', opacity: 0, rotate: i * 37 }}
               transition={{ duration: 2 + (i % 3) * 0.5, delay: i * 0.08, repeat: Infinity }}
               className="absolute w-3 h-3 rounded-sm"
-              style={{ background: [ET.gold, ET.burgundy, ET.terracotta, ET.moss, ET.clay][i % 5] }}
+              style={{ background: [ET.gold, ET.rust, ET.terracotta, ET.moss, ET.clay][i % 5] }}
             />
           );
         })}
@@ -873,7 +873,7 @@ export default function PKBattleManager() {
               onClick={function() { startMutation.mutate(currentBattle); }}
               disabled={startMutation.isPending}
               className="gap-1.5 font-bold"
-              style={{ background: 'linear-gradient(90deg, #FF1564, #d4af37)', color: '#000' }}
+              style={{ background: 'linear-gradient(90deg, #8B6F47, #d4af37)', color: '#fff' }}
             >
               <Play className="w-3 h-3" /> Start Battle
             </Button>

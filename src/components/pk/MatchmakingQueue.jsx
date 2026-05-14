@@ -9,11 +9,11 @@ import { Users, Zap, Clock, Swords, LogIn, LogOut, Shield, Trophy, Star } from '
 
 /* Earth tone palette */
 var ET = {
-  burgundy: '#800020',
+  rust: '#6B4423',
   gold: '#d4af37',
   terracotta: '#CC7755',
   moss: '#6B7C4A',
-  clay: '#A0522D',
+  clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
   darkEarth: '#2C1810',
@@ -146,7 +146,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
           <Button
             onClick={joinQueue}
             className="w-full h-10 font-black text-sm gap-2 uppercase tracking-wider"
-            style={{ background: 'linear-gradient(90deg, ' + ET.burgundy + ', ' + ET.gold + ')', color: '#fff', letterSpacing: '0.07em' }}
+            style={{ background: 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.gold + ')', color: '#fff', letterSpacing: '0.07em' }}
           >
             <LogIn className="w-4 h-4" /> Join Matchmaking Queue
           </Button>
@@ -193,7 +193,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
               {matchedWith.level} · {matchedWith.category} · {matchedWith.viewers.toLocaleString()} viewers
             </p>
             <div className="flex gap-2">
-              <Button size="sm" className="flex-1 font-bold text-xs" style={{ background: ET.burgundy, color: '#fff' }}>
+              <Button size="sm" className="flex-1 font-bold text-xs" style={{ background: ET.rust, color: '#fff' }}>
                 Accept Match
               </Button>
               <Button
