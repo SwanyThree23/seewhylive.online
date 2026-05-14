@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Pin, Send, Image as ImageIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
-import moment from 'moment';
+import { MessageSquare, Heart, MessageCircle, Pin } from 'lucide-react';
+
+const G = '#D4AF37';
+const PANEL = '#0F0B1A';
+const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function DiscussionFeed({ communityId }) {
   const [newPost, setNewPost] = useState('');
-  const [replyTo, setReplyTo] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -21,235 +17,119 @@ export default function DiscussionFeed({ communityId }) {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: discussions = [], isLoading } = useQuery({
-    queryKey: ['discussions', communityId],
-    queryFn: () => base44.entities.Discussion.filter(
-      { community_id: communityId, parent_id: null },
-      '-created_date'
-    ),
+  const { data: discussions } = useQuery({
+    queryKey: ['communityDiscussions', communityId],
+    queryFn: () =>
+      base44.entities.Discussion.filter(
+        { community_id: communityId, parent_id: null },
+        '-created_date',
+        50
+      ),
+    enabled: !!communityId,
   });
 
   const createPostMutation = useMutation({
-    mutationFn: (postData) => base44.entities.Discussion.create(postData),
+    mutationFn: async (content) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      return base44.entities.Discussion.create({
+        community_id: communityId,
+        user_id: user.id,
+        user_name: user.full_name,
+        content,
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['discussions', communityId] });
+      queryClient.invalidateQueries({ queryKey: ['communityDiscussions', communityId] });
       setNewPost('');
-      setReplyTo(null);
-      toast.success('Posted!');
     },
   });
-
-  const handlePost = () => {
-    if (!newPost.trim()) return;
-    
-    createPostMutation.mutate({
-      community_id: communityId,
-      user_id: user.id,
-      user_name: user.full_name,
-      user_avatar: user.avatar_url,
-      content: newPost,
-      parent_id: replyTo?.id,
-    });
-  };
-
-  if (isLoading) {
-    return <div className="space-y-4">
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
-      ))}
-    </div>;
-  }
 
   return (
     <div className="space-y-4">
-      {/* Create Post */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex gap-3">
-            <Avatar>
-              <AvatarImage src={user?.avatar_url} />
-              <AvatarFallback>{user?.full_name?.[0]}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-3">
-              {replyTo && (
-                <div className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-md flex justify-between items-center">
-                  <span>Replying to {replyTo.user_name}</span>
-                  <Button variant="ghost" size="sm" onClick={() => setReplyTo(null)}>
-                    Cancel
-                  </Button>
-                </div>
-              )}
-              <Textarea
-                placeholder="Share your thoughts with the community..."
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                className="min-h-[100px]"
-              />
-              <div className="flex justify-between items-center">
-                <Button variant="ghost" size="icon">
-                  <ImageIcon className="w-4 h-4" />
-                </Button>
-                <Button onClick={handlePost} disabled={!newPost.trim()}>
-                  <Send className="w-4 h-4 mr-2" />
-                  Post
-                </Button>
-              </div>
-            </div>
+      {/* New Post */}
+      {user?.id && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 rounded-lg"
+          style={{ background: PANEL, border: `1px solid ${BORDER}` }}
+        >
+          <div className="flex gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
+            <textarea
+              placeholder="Share your thoughts with the community..."
+              value={newPost}
+              onChange={(e) => setNewPost(e.target.value)}
+              className="flex-1 bg-transparent text-sm outline-none resize-none text-white placeholder-white/40"
+              rows="3"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex justify-end gap-2">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              onClick={() => setNewPost('')}
+              className="px-4 py-1.5 rounded text-xs font-bold"
+              style={{ background: 'rgba(255,255,255,0.03)' }}
+            >
+              Cancel
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              onClick={() => createPostMutation.mutate(newPost)}
+              disabled={!newPost.trim()}
+              className="px-4 py-1.5 rounded text-xs font-bold transition-all disabled:opacity-50"
+              style={{ background: G, color: '#000' }}
+            >
+              Post
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
 
-      {/* Discussion Posts */}
-      <AnimatePresence>
-        {discussions.map((discussion) => (
-          <DiscussionCard
-            key={discussion.id}
-            discussion={discussion}
-            onReply={(disc) => {
-              setReplyTo(disc);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            communityId={communityId}
-          />
+      {/* Discussions */}
+      <div className="space-y-3">
+        {discussions?.map((post, idx) => (
+          <motion.div
+            key={post.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            className="p-4 rounded-lg"
+            style={{ background: PANEL, border: `1px solid ${BORDER}` }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500" />
+                <div>
+                  <p className="text-sm font-bold text-white">{post.user_name}</p>
+                  <p className="text-[10px] text-white/40">{new Date(post.created_date).toLocaleDateString()}</p>
+                </div>
+              </div>
+              {post.is_pinned && <Pin className="w-4 h-4" style={{ color: G }} />}
+            </div>
+
+            {/* Content */}
+            <p className="text-sm text-white/80 mb-3">{post.content}</p>
+
+            {/* Stats */}
+            <div className="flex gap-4 text-[10px] text-white/60">
+              <button className="flex items-center gap-1 hover:text-white/80 transition-colors">
+                <Heart className="w-3.5 h-3.5" />
+                {post.likes_count || 0}
+              </button>
+              <button className="flex items-center gap-1 hover:text-white/80 transition-colors">
+                <MessageCircle className="w-3.5 h-3.5" />
+                {post.replies_count || 0}
+              </button>
+            </div>
+          </motion.div>
         ))}
-      </AnimatePresence>
+      </div>
 
-      {discussions.length === 0 && (
-        <div className="text-center py-12">
-          <MessageCircle className="w-16 h-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-          <h3 className="text-lg font-semibold mb-2">No discussions yet</h3>
-          <p className="text-muted-foreground">Be the first to start a conversation!</p>
-        </div>
+      {!discussions || discussions.length === 0 && (
+        <p className="text-center text-white/40 py-8">No discussions yet. Be the first to share!</p>
       )}
     </div>
-  );
-}
-
-function DiscussionCard({ discussion, onReply, communityId }) {
-  const [showReplies, setShowReplies] = useState(false);
-  const queryClient = useQueryClient();
-
-  const { data: replies = [] } = useQuery({
-    queryKey: ['discussion-replies', discussion.id],
-    queryFn: () => base44.entities.Discussion.filter(
-      { parent_id: discussion.id },
-      'created_date'
-    ),
-    enabled: showReplies,
-  });
-
-  const likeMutation = useMutation({
-    mutationFn: () => base44.entities.Discussion.update(discussion.id, {
-      likes_count: discussion.likes_count + 1,
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['discussions', communityId] });
-    },
-  });
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-    >
-      <Card className={discussion.is_pinned ? 'border-purple-500' : ''}>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={discussion.user_avatar} />
-                <AvatarFallback>{discussion.user_name?.[0]}</AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold">{discussion.user_name}</p>
-                  {discussion.is_pinned && (
-                    <Pin className="w-3 h-3 text-purple-500" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {moment(discussion.created_date).fromNow()}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {discussion.title && (
-            <h3 className="font-semibold text-lg">{discussion.title}</h3>
-          )}
-          <p className="text-sm whitespace-pre-wrap">{discussion.content}</p>
-
-          {discussion.images?.length > 0 && (
-            <div className="grid grid-cols-2 gap-2">
-              {discussion.images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt=""
-                  className="rounded-lg w-full h-48 object-cover"
-                />
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center gap-4 pt-2 border-t">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => likeMutation.mutate()}
-              className="flex items-center gap-2"
-            >
-              <Heart className="w-4 h-4" />
-              {discussion.likes_count > 0 && (
-                <span className="text-xs">{discussion.likes_count}</span>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowReplies(!showReplies)}
-              className="flex items-center gap-2"
-            >
-              <MessageCircle className="w-4 h-4" />
-              {discussion.replies_count > 0 && (
-                <span className="text-xs">{discussion.replies_count}</span>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onReply(discussion)}
-            >
-              Reply
-            </Button>
-          </div>
-
-          {/* Replies */}
-          {showReplies && replies.length > 0 && (
-            <div className="ml-8 space-y-3 pt-4 border-t">
-              {replies.map((reply) => (
-                <div key={reply.id} className="flex gap-3">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={reply.user_avatar} />
-                    <AvatarFallback>{reply.user_name?.[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 bg-muted p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold">{reply.user_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {moment(reply.created_date).fromNow()}
-                      </p>
-                    </div>
-                    <p className="text-sm">{reply.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
   );
 }
