@@ -5,8 +5,7 @@ import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Radio, Clock, TrendingUp, Search, Plus, Filter, Activity, Zap, Video, Star, Swords } from 'lucide-react';
+import { Radio, Clock, Users, Search, Plus, Video, Star, Swords, Eye, Zap, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
@@ -15,358 +14,328 @@ import ActivitySidebar from '../components/shared/ActivitySidebar';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Home() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showProfileSetup, setShowProfileSetup] = useState(false);
-  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
-  const [showQuickActions, setShowQuickActions] = useState(false);
-  const qc = useQueryClient();
+var CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'Education', 'Business', 'Sports', 'Lifestyle'];
 
-  // Real-time room updates
-  useEffect(() => {
-    const unsub = base44.entities.Room.subscribe(() => {
+var QUICK_ACTIONS = [
+  { label: 'Go Live',      icon: Radio,   href: 'LiveRoom',       color: '#CC7755', bg: 'rgba(204,119,85,0.15)',   border: 'rgba(204,119,85,0.3)' },
+  { label: 'Watch Party',  icon: Eye,     href: 'WatchParty',     color: '#6B7C4A', bg: 'rgba(107,124,74,0.15)',   border: 'rgba(107,124,74,0.3)' },
+  { label: 'PK Battles',   icon: Swords,  href: 'PKBattleManager',color: '#d4af37', bg: 'rgba(212,175,55,0.12)',   border: 'rgba(212,175,55,0.25)' },
+  { label: 'Featured',     icon: Star,    href: 'FeaturedContent',color: '#8B6F47', bg: 'rgba(139,111,71,0.15)',   border: 'rgba(139,111,71,0.3)' },
+  { label: 'VOD Library',  icon: Video,   href: 'VODLibrary',     color: 'rgba(255,255,255,0.5)', bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)' },
+  { label: 'Create Room',  icon: Plus,    href: 'CreateRoom',     color: '#d4af37', bg: 'rgba(212,175,55,0.12)',   border: 'rgba(212,175,55,0.25)' },
+];
+
+var TABS = [
+  { id: 'live',        label: 'Live Now',   icon: Radio  },
+  { id: 'upcoming',   label: 'Upcoming',  icon: Clock  },
+  { id: 'communities',label: 'Community', icon: Users  },
+];
+
+export default function Home() {
+  var [searchQuery, setSearchQuery]         = useState('');
+  var [selectedCategory, setSelectedCategory] = useState('All');
+  var [activeTab, setActiveTab]             = useState('live');
+  var [showOnboarding, setShowOnboarding]   = useState(false);
+  var [showProfileSetup, setShowProfileSetup] = useState(false);
+  var [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  var [showQuickActions, setShowQuickActions] = useState(false);
+  var qc = useQueryClient();
+
+  useEffect(function() {
+    var unsub = base44.entities.Room.subscribe(function() {
       qc.invalidateQueries(['rooms']);
     });
     return unsub;
   }, [qc]);
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
 
-  const { data: preferences } = useQuery({
-    queryKey: ['userPreferences', user?.id],
-    queryFn: async () => {
-      const prefs = await base44.entities.UserPreference.filter({ user_id: user?.id });
+  var { data: preferences } = useQuery({
+    queryKey: ['userPreferences', user && user.id],
+    queryFn: async function() {
+      var prefs = await base44.entities.UserPreference.filter({ user_id: user.id });
       return prefs[0];
     },
     enabled: !!user,
   });
 
-  const { data: creatorProfile } = useQuery({
-    queryKey: ['creatorProfile', user?.id],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
+  var { data: creatorProfile } = useQuery({
+    queryKey: ['creatorProfile', user && user.id],
+    queryFn: function() { return base44.entities.CreatorProfile.filter({ user_id: user.id }).then(function(r) { return r[0]; }); },
     enabled: !!user,
   });
 
-  useEffect(() => {
+  useEffect(function() {
     if (!user) return;
     if (!preferences || !preferences.onboarding_completed) {
-      setTimeout(() => setShowOnboarding(true), 1000);
+      setTimeout(function() { setShowOnboarding(true); }, 1000);
     } else if (creatorProfile === null || creatorProfile === undefined) {
-      // Onboarding done but no creator profile yet — prompt after short delay
-      setTimeout(() => setShowProfileSetup(true), 1500);
+      setTimeout(function() { setShowProfileSetup(true); }, 1500);
     }
   }, [user, preferences, creatorProfile]);
 
-  const { data: liveRooms = [], isLoading: loadingLive } = useQuery({
+  var { data: liveRooms = [], isLoading: loadingLive } = useQuery({
     queryKey: ['rooms', 'live'],
-    queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20),
-    refetchInterval: 15000,
+    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20); },
+    refetchInterval: 10000,
   });
 
-  const { data: scheduledRooms = [], isLoading: loadingScheduled } = useQuery({
+  var { data: scheduledRooms = [], isLoading: loadingScheduled } = useQuery({
     queryKey: ['rooms', 'scheduled'],
-    queryFn: () => base44.entities.Room.filter({ status: 'scheduled' }, 'scheduled_start', 10),
+    queryFn: function() { return base44.entities.Room.filter({ status: 'scheduled' }, 'scheduled_start', 10); },
   });
 
-  const { data: communities = [], isLoading: loadingCommunities } = useQuery({
+  var { data: communities = [], isLoading: loadingCommunities } = useQuery({
     queryKey: ['communities'],
-    queryFn: () => base44.entities.Community.list('-member_count', 12),
+    queryFn: function() { return base44.entities.Community.list('-member_count', 12); },
   });
 
-  const categories = ['all', 'music', 'gaming', 'tech', 'education', 'business', 'entertainment', 'sports', 'lifestyle'];
-
-  const filteredRooms = (rooms) => {
-    return rooms.filter(room => {
-      const matchesSearch = !searchQuery || 
+  function filterRooms(rooms) {
+    return rooms.filter(function(room) {
+      var matchSearch = !searchQuery ||
         room.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        room.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesCategory = selectedCategory === 'all' || 
-        room.tags?.includes(selectedCategory);
-      
-      return matchesSearch && matchesCategory;
+        (room.description && room.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      var matchCat = selectedCategory === 'All' ||
+        (room.tags && room.tags.includes(selectedCategory.toLowerCase()));
+      return matchSearch && matchCat;
     });
-  };
+  }
+
+  function SkeletonCards(count) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {Array.from({ length: count }).map(function(_, i) {
+          return <div key={i} className="h-48 rounded-2xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />;
+        })}
+      </div>
+    );
+  }
 
   return (
     <>
-      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
-      <CreatorProfileSetup user={user} isOpen={showProfileSetup} onClose={() => setShowProfileSetup(false)} />
-      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
-      <QuickActionPanel isOpen={showQuickActions} onClose={() => setShowQuickActions(false)} />
-      
-      {/* Floating Action Buttons */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.5, type: 'spring' }}
-        className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-30 flex flex-col gap-3"
-      >
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: 90 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowQuickActions(true)}
-          className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg flex items-center justify-center hover:shadow-xl"
-        >
-          <Zap className="w-6 h-6" />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowActivitySidebar(true)}
-          className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg flex items-center justify-center hover:shadow-xl"
-        >
-          <Activity className="w-6 h-6" />
-        </motion.button>
-      </motion.div>
-      
+      <OnboardingFlow isOpen={showOnboarding} onClose={function() { setShowOnboarding(false); }} />
+      <CreatorProfileSetup user={user} isOpen={showProfileSetup} onClose={function() { setShowProfileSetup(false); }} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={function() { setShowActivitySidebar(false); }} />
+      <QuickActionPanel isOpen={showQuickActions} onClose={function() { setShowQuickActions(false); }} />
+
+      {/* Floating quick-action FAB */}
+      <motion.button
+        initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.6, type: 'spring' }}
+        whileTap={{ scale: 0.9 }}
+        onClick={function() { setShowActivitySidebar(true); }}
+        className="fixed bottom-28 right-4 z-30 w-12 h-12 rounded-full flex items-center justify-center shadow-xl md:bottom-8"
+        style={{ background: 'linear-gradient(135deg, #3D2B1F, #6B4423)', border: '1px solid rgba(212,175,55,0.3)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+        <Activity className="w-5 h-5 text-yellow-300" />
+      </motion.button>
+
       <div className="min-h-screen" style={{ background: '#0B0B18' }}>
-      {/* Hero Section */}
-      <div className="text-white py-10 sm:py-16" style={{ background: 'linear-gradient(135deg, #1A0F0A 0%, #2C1810 50%, #1a1200 100%)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl sm:text-5xl font-bold mb-3" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>
-              Welcome to SeeWhy LIVE
-            </h1>
-            <p className="text-base sm:text-xl mb-6 sm:mb-8 px-2" style={{ color: 'rgba(196,168,130,0.8)' }}>
-              Join live audio & video rooms, connect with communities, and stream together
-            </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-2xl mx-auto px-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'rgba(196,168,130,0.5)' }} />
-                <Input
-                  placeholder="Search rooms, topics..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 py-5 text-base text-white placeholder:text-white/40"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
-                />
-              </div>
-              <Link to={createPageUrl('CreateRoom')}>
-                <Button size="lg" className="w-full sm:w-auto px-6 font-bold" style={{ background: '#d4af37', color: '#000' }}>
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create Room
-                </Button>
-              </Link>
-              <Link to={createPageUrl('VideoPost')}>
-                <Button size="lg" className="w-full sm:w-auto text-white border px-6" style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(212,175,55,0.3)' }}>
-                  <Video className="w-5 h-5 mr-2" />
-                  Post Video
-                </Button>
-              </Link>
-            </div>
+        {/* ── HERO ── */}
+        <div className="relative overflow-hidden px-4 pt-6 pb-5"
+          style={{ background: 'linear-gradient(160deg, #1A0F0A 0%, #2C1810 60%, #1a1200 100%)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
 
-            {/* Quick links */}
-            <div className="flex flex-wrap gap-2 justify-center mt-4">
-              <Link to={createPageUrl('FeaturedContent')}>
-                <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full cursor-pointer transition-all hover:text-white" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <Star className="w-3 h-3 text-yellow-400" /> Featured Channels & Videos
-                </span>
-              </Link>
-              <Link to={createPageUrl('LiveRoom')}>
-                <span className="inline-flex items-center gap-1.5 text-xs text-white px-3 py-1.5 rounded-full cursor-pointer transition-all hover:opacity-80" style={{ background: 'rgba(180,50,30,0.3)', border: '1px solid rgba(200,80,30,0.3)' }}>
-                  <Radio className="w-3 h-3 animate-pulse text-orange-400" /> Go Live Now
-                </span>
-              </Link>
-              <Link to={createPageUrl('WatchParty')}>
-                <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full cursor-pointer transition-all hover:text-white" style={{ background: 'rgba(107,124,74,0.15)', border: '1px solid rgba(107,124,74,0.3)' }}>
-                  <Video className="w-3 h-3 text-green-500" /> Watch Party
-                </span>
-              </Link>
-              <Link to={createPageUrl('VODLibrary')}>
-                <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full cursor-pointer transition-all hover:text-white" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <Video className="w-3 h-3" /> VOD Library
-                </span>
-              </Link>
-              <Link to={createPageUrl('LiveBattles')}>
-                <span className="inline-flex items-center gap-1.5 text-xs text-white px-3 py-1.5 rounded-full cursor-pointer transition-all hover:opacity-80" style={{ background: 'rgba(139,111,71,0.2)', border: '1px solid rgba(212,175,55,0.25)' }}>
-                  <Swords className="w-3 h-3 text-yellow-400" /> PK Battles
-                </span>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Category Filter */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        style={{ background: '#16100A', borderBottom: '1px solid rgba(212,175,55,0.1)' }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <Filter className="w-5 h-5 text-muted-foreground shrink-0" />
-            {categories.map((category, index) => (
+          {/* Live indicator pill */}
+          {liveRooms.length > 0 && (
+            <div className="flex justify-center mb-3">
               <motion.div
-                key={category}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Button
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="capitalize shrink-0"
-                >
-                  {category}
-                </Button>
+                animate={{ opacity: [0.7, 1, 0.7] }} transition={{ duration: 2, repeat: Infinity }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold"
+                style={{ background: 'rgba(204,119,85,0.2)', border: '1px solid rgba(204,119,85,0.4)', color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+                <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                {liveRooms.length} STREAMS LIVE NOW
               </motion.div>
-            ))}
+            </div>
+          )}
+
+          <h1 className="text-center text-3xl sm:text-4xl font-black mb-1"
+            style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>
+            SeeWhy LIVE
+          </h1>
+          <p className="text-center text-sm mb-5" style={{ color: 'rgba(196,168,130,0.7)' }}>
+            Stream · Battle · Watch Together
+          </p>
+
+          {/* Search bar — full width on mobile */}
+          <div className="relative max-w-2xl mx-auto mb-4">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(212,175,55,0.5)' }} />
+            <Input
+              placeholder="Search rooms, topics, creators..."
+              value={searchQuery}
+              onChange={function(e) { setSearchQuery(e.target.value); }}
+              className="w-full pl-10 h-12 text-sm text-white placeholder:text-white/30 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(212,175,55,0.2)', fontSize: 14 }}
+            />
+          </div>
+
+          {/* Quick action grid — 3 cols on mobile, 6 on desktop */}
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-w-2xl mx-auto">
+            {QUICK_ACTIONS.map(function(action) {
+              var Icon = action.icon;
+              return (
+                <Link key={action.label} to={createPageUrl(action.href)}>
+                  <motion.div whileTap={{ scale: 0.92 }}
+                    className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl cursor-pointer transition-all active:opacity-80"
+                    style={{ background: action.bg, border: '1px solid ' + action.border }}>
+                    <Icon className="w-5 h-5" style={{ color: action.color }} />
+                    <span className="text-[10px] font-bold text-center leading-tight"
+                      style={{ color: action.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+                      {action.label}
+                    </span>
+                  </motion.div>
+                </Link>
+              );
+            })}
           </div>
         </div>
-      </motion.div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8" style={{ color: 'rgba(255,255,255,0.85)' }}>
-        <Tabs defaultValue="live" className="space-y-6 sm:space-y-8">
-          <TabsList className="grid w-full max-w-md grid-cols-3 mx-auto">
-            <TabsTrigger value="live" className="flex items-center gap-2">
-              <Radio className="w-4 h-4" />
-              Live Now
-            </TabsTrigger>
-            <TabsTrigger value="scheduled" className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Upcoming
-            </TabsTrigger>
-            <TabsTrigger value="communities" className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Communities
-            </TabsTrigger>
-          </TabsList>
+        {/* ── CATEGORY FILTER — horizontal scroll ── */}
+        <div className="sticky top-[3px] z-30 overflow-x-auto scrollbar-hide"
+          style={{ background: 'rgba(11,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', backdropFilter: 'blur(12px)' }}>
+          <div className="flex items-center gap-2 px-4 py-2.5" style={{ width: 'max-content', minWidth: '100%' }}>
+            {CATEGORIES.map(function(cat) {
+              var active = selectedCategory === cat;
+              return (
+                <button key={cat}
+                  onClick={function() { setSelectedCategory(cat); }}
+                  className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 whitespace-nowrap"
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
+                    background: active ? '#d4af37' : 'rgba(255,255,255,0.05)',
+                    color: active ? '#000' : 'rgba(255,255,255,0.45)',
+                    border: active ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                  }}>
+                  {cat.toUpperCase()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-          {/* Live Rooms */}
-          <TabsContent value="live" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Live Now</h2>
-                <p className="text-muted-foreground">Join active conversations happening right now</p>
-              </div>
-              {liveRooms.length > 0 && (
-                <div className="flex items-center gap-2 text-red-500 animate-pulse">
-                  <div className="w-2 h-2 rounded-full bg-red-500" />
-                  <span className="font-medium">{liveRooms.length} Live</span>
+        {/* ── TABS ── */}
+        <div className="px-4 pt-4">
+          <div className="flex gap-1 p-1 rounded-xl max-w-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            {TABS.map(function(tab) {
+              var Icon = tab.icon;
+              var active = activeTab === tab.id;
+              return (
+                <button key={tab.id}
+                  onClick={function() { setActiveTab(tab.id); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold uppercase transition-all"
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em',
+                    background: active ? 'rgba(212,175,55,0.15)' : 'transparent',
+                    color: active ? '#d4af37' : 'rgba(255,255,255,0.35)',
+                    border: active ? '1px solid rgba(212,175,55,0.25)' : '1px solid transparent',
+                  }}>
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.id === 'live' ? 'Live' : tab.id === 'upcoming' ? 'Soon' : 'Groups'}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Live count badge */}
+          {activeTab === 'live' && liveRooms.length > 0 && (
+            <div className="flex items-center gap-2 mt-3">
+              <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+              <span className="text-sm font-bold" style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {liveRooms.length} room{liveRooms.length !== 1 ? 's' : ''} live
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* ── CONTENT ── */}
+        <div className="px-4 pt-4 pb-4">
+          <AnimatePresence mode="wait">
+
+            {/* LIVE ROOMS */}
+            {activeTab === 'live' && (
+              <motion.div key="live" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                {loadingLive ? SkeletonCards(6) : filterRooms(liveRooms).length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {filterRooms(liveRooms).map(function(room, i) {
+                      return (
+                        <motion.div key={room.id}
+                          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}>
+                          <RoomCard room={room} />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 gap-4">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                      style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                      <Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.4)' }} />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-white/60">No live rooms right now</p>
+                      <p className="text-sm text-white/30 mt-1">Be the first to go live!</p>
+                    </div>
+                    <Link to={createPageUrl('LiveRoom')}>
+                      <Button className="font-bold" style={{ background: '#d4af37', color: '#000' }}>
+                        <Radio className="w-4 h-4 mr-2" /> Go Live Now
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* UPCOMING */}
+            {activeTab === 'upcoming' && (
+              <motion.div key="upcoming" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                {loadingScheduled ? SkeletonCards(4) : filterRooms(scheduledRooms).length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {filterRooms(scheduledRooms).map(function(room, i) {
+                      return (
+                        <motion.div key={room.id}
+                          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}>
+                          <RoomCard room={room} />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 gap-3">
+                    <Clock className="w-12 h-12" style={{ color: 'rgba(196,168,130,0.3)' }} />
+                    <p className="text-white/40 text-sm">No upcoming rooms scheduled</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* COMMUNITIES */}
+            {activeTab === 'communities' && (
+              <motion.div key="communities" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-bold text-white/60">Trending Communities</p>
+                  <Link to={createPageUrl('Communities')}>
+                    <span className="text-xs" style={{ color: '#d4af37' }}>View All →</span>
+                  </Link>
                 </div>
-              )}
-            </div>
-
-            {loadingLive ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-72 sm:h-96 bg-muted animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : filteredRooms(liveRooms).length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {filteredRooms(liveRooms).map((room, index) => (
-                  <motion.div
-                    key={room.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.03, y: -5 }}
-                  >
-                    <RoomCard room={room} />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <Radio className="w-16 h-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No live rooms right now</h3>
-                <p className="text-muted-foreground mb-4">Be the first to start a conversation!</p>
-                <Link to={createPageUrl('CreateRoom')}>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Room
-                  </Button>
-                </Link>
-              </div>
+                {loadingCommunities ? SkeletonCards(6) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {communities.map(function(community, i) {
+                      return (
+                        <motion.div key={community.id}
+                          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}>
+                          <CommunityCard community={community} />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.div>
             )}
-          </TabsContent>
 
-          {/* Scheduled Rooms */}
-          <TabsContent value="scheduled" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">Upcoming Rooms</h2>
-              <p className="text-muted-foreground">Schedule reminders for rooms you don't want to miss</p>
-            </div>
-
-            {loadingScheduled ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-72 sm:h-96 bg-muted animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : filteredRooms(scheduledRooms).length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {filteredRooms(scheduledRooms).map((room, index) => (
-                  <motion.div
-                    key={room.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.03, y: -5 }}
-                  >
-                    <RoomCard room={room} />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No scheduled rooms</h3>
-                <p className="text-muted-foreground">Check back later for upcoming events</p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Communities */}
-          <TabsContent value="communities" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Trending Communities</h2>
-                <p className="text-muted-foreground">Join communities to stay connected</p>
-              </div>
-              <Link to={createPageUrl('Communities')}>
-                <Button variant="outline">View All</Button>
-              </Link>
-            </div>
-
-            {loadingCommunities ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-64 sm:h-72 bg-muted animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {communities.map((community, index) => (
-                  <motion.div
-                    key={community.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.03, y: -5 }}
-                  >
-                    <CommunityCard community={community} />
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
+          </AnimatePresence>
+        </div>
       </div>
     </>
   );

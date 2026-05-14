@@ -4,12 +4,11 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Home, Radio, Users, DollarSign, Search as SearchIcon,
-  Plus, Video, Zap, Film, LayoutDashboard, Layers, Swords,
-  Trophy, Shield, Server, Sparkles, Menu, X, Globe,
-  Eye, MessageSquare, Star, ChevronDown
+  Plus, Video, Zap, LayoutDashboard, Layers, Swords,
+  Trophy, Shield, Server, Sparkles, Menu, X, Eye,
+  Bell, User, ChevronRight
 } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
@@ -20,34 +19,34 @@ import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import BrandChyron from '@/components/live/BrandChyron';
 import SignalBars from '@/components/live/SignalBars';
 
+var MOBILE_NAV = [
+  { name: 'Home',      icon: Home,          href: createPageUrl('Home') },
+  { name: 'Discover',  icon: SearchIcon,    href: createPageUrl('Discover') },
+  { name: 'LIVE',      icon: Radio,         href: createPageUrl('LiveRoom'),   isCenter: true },
+  { name: 'Battles',   icon: Swords,        href: createPageUrl('PKBattleManager') },
+  { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+];
+
 var PRIMARY_NAV = [
-  { name: 'Home', icon: Home, href: createPageUrl('Home') },
-  { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
-  { name: 'Communities', icon: Users, href: createPageUrl('Communities') },
-  { name: 'Battles', icon: Swords, href: createPageUrl('PKBattleManager') },
-  { name: 'Leaderboard', icon: Trophy, href: createPageUrl('Leaderboard') },
-  { name: 'Watch Party', icon: Eye, href: createPageUrl('WatchParty') },
+  { name: 'Home',       icon: Home,           href: createPageUrl('Home') },
+  { name: 'Discover',   icon: SearchIcon,     href: createPageUrl('Discover') },
+  { name: 'Communities',icon: Users,          href: createPageUrl('Communities') },
+  { name: 'Battles',    icon: Swords,         href: createPageUrl('PKBattleManager') },
+  { name: 'Leaderboard',icon: Trophy,         href: createPageUrl('Leaderboard') },
+  { name: 'Watch Party',icon: Eye,            href: createPageUrl('WatchParty') },
 ];
 
 var CREATOR_NAV = [
-  { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
-  { name: 'Monetize', icon: DollarSign, href: createPageUrl('Monetization') },
-  { name: 'Schedule', icon: Radio, href: createPageUrl('StreamScheduler') },
-  { name: 'Stream Setup', icon: Server, href: createPageUrl('StreamInfra') },
+  { name: 'Dashboard',   icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'Monetize',    icon: DollarSign,      href: createPageUrl('Monetization') },
+  { name: 'Schedule',    icon: Radio,           href: createPageUrl('StreamScheduler') },
+  { name: 'Stream Setup',icon: Server,          href: createPageUrl('StreamInfra') },
 ];
 
 var ADMIN_NAV = [
   { name: 'Admin', icon: Shield, href: createPageUrl('AdminDashboard') },
   { name: 'Stage', icon: Layers, href: createPageUrl('StageCleanup') },
-  { name: 'RTMP', icon: Radio, href: createPageUrl('RTMPServer') },
-];
-
-var MOBILE_NAV = [
-  { name: 'Home', icon: Home, href: createPageUrl('Home') },
-  { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
-  { name: 'Live', icon: Radio, href: createPageUrl('LiveRoom') },
-  { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
-  { name: 'More', icon: Menu, href: createPageUrl('Communities') },
+  { name: 'RTMP',  icon: Radio,  href: createPageUrl('RTMPServer') },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -62,8 +61,8 @@ export default function Layout({ children, currentPageName }) {
 
   var { data: liveRooms } = useQuery({
     queryKey: ['layout-live-count'],
-    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 1); },
-    refetchInterval: 15000,
+    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20); },
+    refetchInterval: 10000,
   });
 
   usePresenceHeartbeat();
@@ -94,56 +93,47 @@ export default function Layout({ children, currentPageName }) {
         {showSearch && <GlobalSearch onClose={function() { setShowSearch(false); }} />}
       </AnimatePresence>
 
-      {/* Brand gradient top line */}
-      <div
-        className="fixed top-0 left-0 right-0 z-[101] h-[2px]"
-        style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #00F5FF, #00FF88, #8B5CF6, transparent)' }}
-      />
+      {/* Brand accent line */}
+      <div className="fixed top-0 left-0 right-0 z-[101] h-[3px]"
+        style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
 
-      {/* Header */}
-      <header
-        className="sticky top-[2px] z-50 w-full"
-        style={{ background: 'rgba(7,7,15,0.98)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}
-      >
-        <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-4 md:px-6">
+      {/* ── HEADER ── */}
+      <header className="sticky top-[3px] z-50 w-full"
+        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+
+        <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo */}
-          <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #800020, #d4af37)' }}
-            >
+          <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0 active:opacity-70 transition-opacity">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
               <Video className="w-5 h-5 text-white" />
             </div>
-            <div className="hidden sm:flex flex-col">
-              <span
-                className="font-bold text-base leading-none"
-                style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37', letterSpacing: '0.05em' }}
-              >
-                SeeWhy
-              </span>
-              <span className="text-[9px] text-white/30 leading-none" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em' }}>
-                LIVE
-              </span>
+            <div className="flex flex-col">
+              <span className="font-bold text-base leading-none"
+                style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37', letterSpacing: '0.05em' }}>SeeWhy</span>
+              <span className="text-[9px] text-white/30 leading-none"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
             </div>
-            <SignalBars count={5} active={liveCount > 0} size="xs" className="ml-1 opacity-60" />
+            {liveCount > 0 && (
+              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(180,50,30,0.25)', border: '1px solid rgba(200,80,30,0.3)' }}>
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+                <span className="text-[9px] font-bold text-orange-300">{liveCount}</span>
+              </div>
+            )}
           </Link>
 
-          {/* Primary nav — desktop */}
+          {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-0.5">
             {PRIMARY_NAV.map(function(item) {
               var Icon = item.icon;
               var active = isActive(item.href);
               return (
                 <Link key={item.name} to={item.href}>
-                  <button
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
-                    style={{
-                      fontFamily: 'Barlow Condensed, sans-serif',
-                      letterSpacing: '0.07em',
+                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
+                    style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
                       background: active ? 'rgba(212,175,55,0.1)' : 'transparent',
-                      color: active ? '#d4af37' : 'rgba(255,255,255,0.45)',
-                    }}
-                  >
+                      color: active ? '#d4af37' : 'rgba(255,255,255,0.45)' }}>
                     <Icon className="w-3.5 h-3.5" />
                     {item.name}
                   </button>
@@ -153,184 +143,183 @@ export default function Layout({ children, currentPageName }) {
           </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
-            {/* Search trigger */}
-            <button
-              onClick={function() { setShowSearch(true); }}
-              className="hidden md:flex items-center gap-2 text-xs text-white/30 rounded-lg px-3 py-1.5 transition-all"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-            >
-              <SearchIcon className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">Search</span>
-              <kbd className="text-[9px] bg-white/5 border border-white/10 rounded px-1">⌘K</kbd>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            {/* Mobile search */}
+            <button onClick={function() { setShowSearch(true); }}
+              className="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <SearchIcon className="w-4.5 h-4.5 text-white/50" style={{ width: 18, height: 18 }} />
             </button>
 
-            {/* Guardian AI badge */}
-            <Link to={createPageUrl('AIModeration')} className="hidden md:flex">
-              <div
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase"
-                style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}
-              >
-                <Sparkles className="w-3 h-3" />
-                Guardian AI
-              </div>
-            </Link>
-
-            {/* Creator nav links */}
-            {CREATOR_NAV.map(function(item) {
-              var Icon = item.icon;
-              return (
-                <Link key={item.name} to={item.href} className="hidden xl:flex">
-                  <button
-                    className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase transition-all"
-                    style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}
-                  >
-                    <Icon className="w-3 h-3" />
-                    {item.name}
-                  </button>
-                </Link>
-              );
-            })}
-
-            {/* Admin links */}
-            {isAdmin && ADMIN_NAV.map(function(item) {
-              var Icon = item.icon;
-              return (
-                <Link key={item.name} to={item.href} className="hidden xl:flex">
-                  <button
-                    className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase transition-all"
-                    style={{ color: 'rgba(255,140,0,0.7)', border: '1px solid rgba(255,140,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                  >
-                    <Icon className="w-3 h-3" />
-                    {item.name}
-                  </button>
-                </Link>
-              );
-            })}
-
-            {/* Studio */}
-            <Link to={createPageUrl('LiveRoom')}>
-              <button
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
-                style={{ background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}
-              >
-                <Radio className="w-3 h-3 text-red-400" />
-                Studio
+            {/* Go Live — mobile prominent */}
+            <Link to={createPageUrl('LiveRoom')} className="md:hidden">
+              <button className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black uppercase transition-all active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                <Radio className="w-3.5 h-3.5" />
+                Live
               </button>
             </Link>
 
-            {/* Create */}
-            <Link to={createPageUrl('CreateRoom')}>
-              <Button
-                size="sm"
-                className="h-8 text-xs font-bold uppercase gap-1.5"
-                style={{ background: '#d4af37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Create</span>
+            {/* Desktop: Studio + Create */}
+            <Link to={createPageUrl('LiveRoom')} className="hidden md:flex">
+              <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold uppercase transition-all"
+                style={{ background: 'rgba(107,68,35,0.25)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <Radio className="w-3.5 h-3.5" />
+                Studio
+              </button>
+            </Link>
+            <Link to={createPageUrl('CreateRoom')} className="hidden md:flex">
+              <Button size="sm" className="h-9 text-xs font-bold uppercase gap-1.5"
+                style={{ background: '#d4af37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                <Plus className="w-3.5 h-3.5" />Create
               </Button>
+            </Link>
+
+            {/* Guardian AI — desktop */}
+            <Link to={createPageUrl('AIModeration')} className="hidden xl:flex">
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase"
+                style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <Sparkles className="w-3 h-3" />AI
+              </div>
             </Link>
 
             <NotificationBell />
             <UserMenu user={user} isAdmin={isAdmin} />
 
+            {/* Desktop creator/admin nav toggle */}
+            <button className="hidden lg:flex w-9 h-9 items-center justify-center rounded-xl transition-all"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              onClick={function() { setShowMobileMenu(function(v) { return !v; }); }}>
+              {showMobileMenu ? <X className="w-4 h-4 text-white/50" /> : <Menu className="w-4 h-4 text-white/50" />}
+            </button>
+
             {/* Mobile menu toggle */}
-            <button
-              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-white/50"
-              style={{ background: 'rgba(255,255,255,0.05)' }}
-              onClick={function() { setShowMobileMenu(function(v) { return !v; }); }}
-            >
-              {showMobileMenu ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            <button className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              onClick={function() { setShowMobileMenu(function(v) { return !v; }); }}>
+              {showMobileMenu ? <X className="w-4 h-4 text-white/50" /> : <Menu className="w-4 h-4 text-white/50" />}
             </button>
           </div>
         </div>
 
-        {/* Status bar */}
-        <div
-          className="flex items-center justify-center gap-2 py-1 text-[10px] font-bold uppercase tracking-wider"
-          style={{ background: liveCount > 0 ? 'rgba(255,21,100,0.08)' : 'rgba(0,255,136,0.06)', borderTop: '1px solid rgba(255,255,255,0.04)', fontFamily: 'Barlow Condensed, sans-serif' }}
-        >
-          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span style={{ color: 'rgba(255,255,255,0.5)' }}>
-            SeeWhy LIVE
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
-          <span style={{ color: liveCount > 0 ? '#FF1564' : 'rgba(255,255,255,0.3)' }}>
-            {liveCount > 0 ? liveCount + ' streams live' : 'Platform Ready'}
-          </span>
-          <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
-          <Link to={createPageUrl('BetaStatus')} style={{ color: 'rgba(0,245,255,0.6)', textDecoration: 'underline' }}>
-            Status →
-          </Link>
-        </div>
+        {/* Live ticker bar */}
+        {liveCount > 0 && (
+          <div className="flex items-center justify-between px-4 py-1 text-[10px] font-bold"
+            style={{ background: 'rgba(180,50,30,0.12)', borderTop: '1px solid rgba(200,80,30,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>SeeWhy LIVE</span>
+              <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
+              <span style={{ color: '#CC7755' }}>{liveCount} stream{liveCount !== 1 ? 's' : ''} live now</span>
+            </div>
+            <Link to={createPageUrl('Discover')} style={{ color: '#d4af37' }}>
+              Watch <ChevronRight className="inline w-3 h-3" />
+            </Link>
+          </div>
+        )}
 
-        {/* Mobile full menu */}
+        {/* Expanded menu — mobile & desktop */}
         <AnimatePresence>
           {showMobileMenu && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="lg:hidden overflow-hidden"
-              style={{ background: 'rgba(7,7,15,0.99)', borderTop: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <div className="p-4 grid grid-cols-3 gap-2">
-                {[...PRIMARY_NAV, ...CREATOR_NAV].map(function(item) {
-                  var Icon = item.icon;
-                  return (
-                    <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
-                      <div className="flex flex-col items-center gap-1 py-2 rounded-xl text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <Icon className="w-4 h-4 text-yellow-400/60" />
-                        <span className="text-[9px] text-white/40 uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{item.name}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
+              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden" style={{ background: 'rgba(7,7,15,0.99)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="p-4 space-y-3">
+                {/* All sections in a scrollable grid */}
+                <p className="text-[9px] text-white/20 uppercase font-bold tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Navigate</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {[...PRIMARY_NAV, ...CREATOR_NAV].map(function(item) {
+                    var Icon = item.icon;
+                    var active = isActive(item.href);
+                    return (
+                      <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
+                        <div className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-center transition-all active:scale-95"
+                          style={{ background: active ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.06)' }}>
+                          <Icon className="w-5 h-5" style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
+                          <span className="text-[9px] uppercase font-bold leading-tight" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>{item.name}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                {isAdmin && (
+                  <>
+                    <p className="text-[9px] text-orange-400/50 uppercase font-bold tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Admin</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {ADMIN_NAV.map(function(item) {
+                        var Icon = item.icon;
+                        return (
+                          <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
+                            <div className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-center"
+                              style={{ background: 'rgba(255,140,0,0.06)', border: '1px solid rgba(255,140,0,0.15)' }}>
+                              <Icon className="w-4 h-4 text-orange-400/70" />
+                              <span className="text-[9px] text-orange-400/60 uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{item.name}</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
 
-      {/* Main content */}
-      <main className="pb-[50px] md:pb-[34px]">
+      {/* Main */}
+      <main className="pb-[96px] md:pb-10">
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
 
-      {/* Permanent brand chyron */}
+      {/* Brand chyron */}
       <BrandChyron />
 
-      {/* Mobile bottom nav */}
-      <div
-        className="md:hidden fixed bottom-[34px] left-0 right-0 z-40 h-14"
-        style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.12)' }}
-      >
-        <nav className="flex items-center justify-around h-full px-2">
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <div className="md:hidden fixed bottom-[34px] left-0 right-0 z-40"
+        style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
+        <nav className="flex items-end justify-around px-2 pt-2 pb-safe" style={{ height: 60 }}>
           {MOBILE_NAV.map(function(item) {
             var Icon = item.icon;
             var active = isActive(item.href);
+
+            if (item.isCenter) {
+              return (
+                <Link key={item.name} to={item.href} className="flex flex-col items-center -mt-5">
+                  <motion.div
+                    whileTap={{ scale: 0.92 }}
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
+                    style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)', boxShadow: '0 4px 20px rgba(212,175,55,0.4)' }}>
+                    <Icon className="w-6 h-6 text-black" />
+                  </motion.div>
+                  <span className="text-[9px] font-black mt-1 uppercase"
+                    style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37', letterSpacing: '0.1em' }}>{item.name}</span>
+                </Link>
+              );
+            }
+
             return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="flex flex-col items-center gap-0.5 px-2"
-                style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.35)' }}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-[9px] uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
-                  {item.name}
-                </span>
+              <Link key={item.name} to={item.href}
+                className="flex flex-col items-center gap-1 px-3 pb-1 transition-all active:scale-90"
+                style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)' }}>
+                <div className="relative">
+                  <Icon className="w-5 h-5" />
+                  {active && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                      style={{ background: '#d4af37' }} />
+                  )}
+                </div>
+                <span className="text-[9px] uppercase font-bold"
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{item.name}</span>
               </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* Footer */}
-      <footer
-        className="hidden md:block py-3 px-6 text-[10px]"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}
-      >
+      {/* Desktop footer */}
+      <footer className="hidden md:block py-3 px-6 text-[10px]"
+        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
           <span style={{ fontFamily: 'Share Tech Mono, monospace' }}>© {new Date().getFullYear()} SeeWhy LIVE</span>
           <div className="flex items-center gap-4">
