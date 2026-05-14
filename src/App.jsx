@@ -6,6 +6,10 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import Greenroom from './pages/Greenroom';
+import Dashboard from './pages/Dashboard';
+import LoyaltyHub from './pages/LoyaltyHub';
+import ChallengesHub from './pages/ChallengesHub';
+import OverlayBuilder from './pages/OverlayBuilder';
 import ControlRoom from './pages/ControlRoom';
 import ModerationDashboard from './pages/ModerationDashboard';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -62,6 +66,10 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/Greenroom" element={<LayoutWrapper currentPageName="Greenroom"><Greenroom /></LayoutWrapper>} />
+      <Route path="/dashboard" element={<LayoutWrapper currentPageName="Dashboard"><Dashboard /></LayoutWrapper>} />
+      <Route path="/LoyaltyHub" element={<LayoutWrapper currentPageName="LoyaltyHub"><LoyaltyHub /></LayoutWrapper>} />
+      <Route path="/ChallengesHub" element={<LayoutWrapper currentPageName="ChallengesHub"><ChallengesHub /></LayoutWrapper>} />
+      <Route path="/OverlayBuilder" element={<LayoutWrapper currentPageName="OverlayBuilder"><OverlayBuilder /></LayoutWrapper>} />
       <Route path="/ControlRoom" element={<LayoutWrapper currentPageName="ControlRoom"><ControlRoom /></LayoutWrapper>} />
       <Route path="/ModerationDashboard" element={<LayoutWrapper currentPageName="ModerationDashboard"><ModerationDashboard /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />

@@ -8,7 +8,7 @@ import {
   Home, Radio, Users, DollarSign, Search as SearchIcon,
   Plus, Video, Zap, LayoutDashboard, Layers, Swords,
   Trophy, Shield, Server, Sparkles, Menu, X, Eye,
-  Bell, User, ChevronRight
+  Bell, User, ChevronRight, Star
 } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import UserMenu from '@/components/shared/UserMenu';
@@ -35,6 +35,8 @@ var PRIMARY_NAV = [
   { name: 'Battles',    icon: Swords,         href: createPageUrl('PKBattleManager') },
   { name: 'Leaderboard',icon: Trophy,         href: createPageUrl('Leaderboard') },
   { name: 'Watch Party',icon: Eye,            href: createPageUrl('WatchParty') },
+  { name: 'Loyalty',    icon: Trophy,         href: '/LoyaltyHub' },
+  { name: 'Challenges', icon: Zap,            href: '/ChallengesHub' },
 ];
 
 var CREATOR_NAV = [

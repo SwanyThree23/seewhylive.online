@@ -106,6 +106,10 @@ import StreamInfra from './pages/StreamInfra';
 import PKBattleManager from './pages/PKBattleManager';
 import Greenroom from './pages/Greenroom';
 import ControlRoom from './pages/ControlRoom';
+import Dashboard from './pages/Dashboard';
+import LoyaltyHub from './pages/LoyaltyHub';
+import ChallengesHub from './pages/ChallengesHub';
+import OverlayBuilder from './pages/OverlayBuilder';
 import __Layout from './Layout.jsx';
 
 
@@ -169,6 +173,11 @@ export const PAGES = {
     "PKBattleManager": PKBattleManager,
     "Greenroom": Greenroom,
     "ControlRoom": ControlRoom,
+    "ModerationDashboard": ModerationDashboard,
+    "Dashboard": Dashboard,
+    "LoyaltyHub": LoyaltyHub,
+    "ChallengesHub": ChallengesHub,
+    "OverlayBuilder": OverlayBuilder,
 }
 
 export const pagesConfig = {
