@@ -17,6 +17,8 @@ import WatchQueue from '../components/watchparty/WatchQueue';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import HostControls from '../components/watchparty/HostControls';
 import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
+import VideoQueue from '../components/watchparty/VideoQueue';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 
 function getYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -154,7 +156,9 @@ export default function WatchPartyPage() {
   const [partyTitle, setPartyTitle] = useState('');
   const [creating, setCreating] = useState(false);
   const [syncData, setSyncData] = useState(null);
-  const [activePanel, setActivePanel] = useState('chat'); // 'chat' | 'playlist' | 'battle' | 'leaderboard'
+  const [activePanel, setActivePanel] = useState('chat');
+  const [reactionCount, setReactionCount] = useState(0);
+  const [pollCount, setPollCount] = useState(0);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -342,7 +346,7 @@ export default function WatchPartyPage() {
 
       {/* Reactions bar */}
       <div className="shrink-0" style={{ background: '#1A0F0A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        <ReactionOverlay partyId={partyId} currentUser={user} />
+        <ReactionOverlay partyId={partyId} currentUser={user} onReact={() => setReactionCount(c => c + 1)} />
       </div>
 
       {/* Main area: panel grid + tabbed right panel */}
@@ -367,10 +371,11 @@ export default function WatchPartyPage() {
           <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
             {[
               { id: 'chat',        label: '💬 Chat' },
-              { id: 'playlist',    label: '🎵 Queue' },
+              { id: 'queue',       label: '🎵 Queue' },
               { id: 'battle',      label: '⚔️ Battle' },
               { id: 'leaderboard', label: '🏆 Ranks' },
               { id: 'polls',       label: '📊 Polls' },
+              { id: 'analytics',   label: '📈 Stats' },
               { id: 'viewers',     label: '👥 Viewers' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActivePanel(tab.id)}
@@ -397,10 +402,16 @@ export default function WatchPartyPage() {
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
               </>
             )}
-            {activePanel === 'playlist' && (
-              <WatchQueue
+            {activePanel === 'queue' && (
+              <VideoQueue
                 isHost={isHost}
-                onSelect={(idx) => {}}
+                currentUser={user}
+                currentVideoUrl={party?.video_url}
+                onPlayVideo={(url) => {
+                  if (isHost && party?.id) {
+                    base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() });
+                  }
+                }}
               />
             )}
             {activePanel === 'polls' && (
@@ -409,6 +420,15 @@ export default function WatchPartyPage() {
                 roomId={party.room_id}
                 currentUser={user}
                 isHost={isHost}
+                onPollLaunched={() => setPollCount(c => c + 1)}
+              />
+            )}
+            {activePanel === 'analytics' && (
+              <WatchPartyAnalytics
+                party={party}
+                members={members}
+                pollCount={pollCount}
+                reactionCount={reactionCount}
               />
             )}
             {activePanel === 'viewers' && (
