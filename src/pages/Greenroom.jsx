@@ -212,7 +212,7 @@ export default function GreenroomPage() {
 
   const deviceCheckPassed = (deviceState.cameraOn || deviceState.micOn) || bypassDeviceCheck;
   const destCfg = DEST_COLORS[destType] || DEST_COLORS.room;
-  const isHost = room?.host_id === user?.id || destType === 'new_room';
+  const isHost = room?.host_id === user?.id || destType === 'new_room' || (!roomId && (destType === 'room' || destType === 'panel'));
 
   const readyMut = useMutation({
     mutationFn: async () => {
@@ -298,6 +298,10 @@ export default function GreenroomPage() {
         device_check_passed: deviceCheckPassed,
         role_requested: 'co-host',
       }).catch(() => {});
+      // Go Live / Panel always enters SeeWhyLIVEv17
+      if (!roomId || destType === 'room' || destType === 'panel') {
+        return `/SeeWhyLIVEv17?direct=1`;
+      }
       return `/Room?id=${roomId}`;
     },
     onSuccess: (path) => { window.location.href = path; },
