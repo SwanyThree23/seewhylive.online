@@ -1433,9 +1433,86 @@ function TipAlertBanner({ alert, onDismiss }) {
   );
 }
 
+// ── LIVE CAMERA FEED ─────────────────────────────────────────────
+function LiveCameraFeed({ camOn, micOn, onToggleCam, onToggleMic }) {
+  var videoRef = useRef(null);
+  var streamRef = useRef(null);
+  var [streamActive, setStreamActive] = useState(false);
+  var [elapsed, setElapsed] = useState(0);
+
+  useEffect(function() {
+    var timer = setInterval(function(){ setElapsed(function(e){ return e+1; }); }, 1000);
+    return function(){ clearInterval(timer); };
+  }, []);
+
+  useEffect(function() {
+    navigator.mediaDevices && navigator.mediaDevices.getUserMedia({ video: camOn, audio: micOn })
+      .then(function(stream) {
+        streamRef.current = stream;
+        if (videoRef.current) { videoRef.current.srcObject = stream; }
+        setStreamActive(true);
+      })
+      .catch(function() { setStreamActive(false); });
+    return function() {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(function(t){ t.stop(); });
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
+  // Toggle camera tracks
+  useEffect(function() {
+    if (!streamRef.current) return;
+    streamRef.current.getVideoTracks().forEach(function(t){ t.enabled = camOn; });
+  }, [camOn]);
+
+  // Toggle mic tracks
+  useEffect(function() {
+    if (!streamRef.current) return;
+    streamRef.current.getAudioTracks().forEach(function(t){ t.enabled = micOn; });
+  }, [micOn]);
+
+  return (
+    <div style={{position:"relative",width:"100%",height:320,background:"#000",borderRadius:12,overflow:"hidden",border:"2px solid #8B0000",boxShadow:"0 0 24px rgba(196,30,58,0.4)"}}>
+      {/* Live video */}
+      <video ref={videoRef} autoPlay muted playsInline style={{width:"100%",height:"100%",objectFit:"cover",display:streamActive&&camOn?"block":"none"}} />
+
+      {/* Cam off placeholder */}
+      {(!streamActive || !camOn) && (
+        <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0D0D0D,#1a0000)",gap:10}}>
+          <span style={{fontSize:48}}>📵</span>
+          <span style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim}}>{!streamActive?"Camera unavailable":"Camera off"}</span>
+        </div>
+      )}
+
+      {/* LIVE badge */}
+      <div style={{position:"absolute",top:10,left:10,display:"flex",alignItems:"center",gap:6,background:"rgba(139,0,0,0.85)",padding:"4px 10px",borderRadius:6,border:"1px solid #C41E3A"}}>
+        <div style={{width:8,height:8,borderRadius:"50%",background:G.red,animation:"liveRing 1.2s ease-in-out infinite"}} />
+        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.white,letterSpacing:2}}>LIVE</span>
+      </div>
+
+      {/* Timer */}
+      <div style={{position:"absolute",top:10,right:10,background:"rgba(0,0,0,0.7)",padding:"4px 10px",borderRadius:6,fontFamily:G.fMon,fontSize:11,color:G.gold}}>
+        {fmtTime(elapsed)}
+      </div>
+
+      {/* Cam / Mic quick toggles */}
+      <div style={{position:"absolute",bottom:10,left:0,right:0,display:"flex",justifyContent:"center",gap:12}}>
+        <button onClick={onToggleCam} style={{width:44,height:44,borderRadius:"50%",border:"2px solid "+(camOn?G.cyan:"#555"),background:camOn?"rgba(0,229,255,0.2)":"rgba(0,0,0,0.6)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          {camOn?"📷":"📵"}
+        </button>
+        <button onClick={onToggleMic} style={{width:44,height:44,borderRadius:"50%",border:"2px solid "+(micOn?G.green:"#555"),background:micOn?"rgba(48,209,88,0.2)":"rgba(0,0,0,0.6)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          {micOn?"🎙️":"🔇"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── STREAM TAB ───────────────────────────────────────────────────
-function StreamTab() {
-  var [joined, setJoined] = useState(false);
+function StreamTab({ autoStart }) {
+  var [joined, setJoined] = useState(!!autoStart);
   var [camOn, setCamOn] = useState(true);
   var [micOn, setMicOn] = useState(true);
   var [bitrate, setBitrate] = useState(2500);
@@ -1463,9 +1540,7 @@ function StreamTab() {
     setTimeout(function(){ setFloatingGifts(function(g){ return g.filter(function(x){ return x.id!==id; }); }); }, 2600);
   }
 
-  function handleTipAlert(alert){
-    setTipAlert(alert);
-  }
+  function handleTipAlert(alert){ setTipAlert(alert); }
 
   return (
     <div>
@@ -1488,7 +1563,9 @@ function StreamTab() {
         </div>
       ) : (
         <div>
-          <ZEGOLiveRoom roomID="test" userID="user1" userName="Host" role="host" appID={0} serverSecret="" onLeave={function(){setJoined(false);}} />
+          <div style={{padding:"10px 16px 0"}}>
+            <LiveCameraFeed camOn={camOn} micOn={micOn} onToggleCam={function(){setCamOn(function(v){return !v;});}} onToggleMic={function(){setMicOn(function(v){return !v;});}} />
+          </div>
           <LiveAnalytics />
           <OctagonalVideoGrid guests={[]} hostName="Host" />
           <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
@@ -1564,7 +1641,7 @@ export default function SeeWhyLIVEv17() {
       {/* Body */}
       <div className="sw-body">
         {tab === "home" && <HomeTab onJoinRoom={function(room){setTab("stream");}} />}
-        {tab === "stream" && <StreamTab />}
+        {tab === "stream" && <StreamTab autoStart={skipCover} />}
         {tab === "dashboard" && <DashboardTab />}
         {tab === "community" && <CommunityTab />}
         {tab === "discover" && (
