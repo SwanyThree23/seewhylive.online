@@ -423,12 +423,257 @@ function StreamAnalytics() {
   );
 }
 
-// ── PK BATTLE ────────────────────────────────────────────────────
-function PKBattleScoreboard() {
+// ── PK BATTLE ENGINE ─────────────────────────────────────────────
+var PK_DURATION = 60; // seconds per round
+var PK_GIFTS = [
+  { id:"rose",   emoji:"🌹", gems:1,   label:"Rose" },
+  { id:"heart",  emoji:"❤️",  gems:5,   label:"Heart" },
+  { id:"bomb",   emoji:"💣",  gems:10,  label:"Bomb" },
+  { id:"crown",  emoji:"👑",  gems:50,  label:"Crown" },
+  { id:"rocket", emoji:"🚀",  gems:100, label:"Rocket" },
+  { id:"diamond",emoji:"💎",  gems:500, label:"Diamond" },
+];
+
+function PKBattleEngine({ myName, onEnd }) {
+  // battle state
+  var [phase, setPhase] = useState("idle"); // idle | challenge | active | ended
+  var [opponentName, setOpponentName] = useState("");
+  var [challengeInput, setChallengeInput] = useState("");
+  var [timeLeft, setTimeLeft] = useState(PK_DURATION);
+  var [scores, setScores] = useState({ me: 0, them: 0 });
+  var [events, setEvents] = useState([]);
+  var [winner, setWinner] = useState(null);
+  var timerRef = useRef(null);
+  var eventListRef = useRef(null);
+
+  // computed percentages
+  var total = scores.me + scores.them;
+  var pctMe = total === 0 ? 50 : Math.round((scores.me / total) * 100);
+  var pctThem = 100 - pctMe;
+  var meWinning = pctMe > pctThem;
+
+  // simulate opponent gifts during active battle
+  useEffect(function() {
+    if (phase !== "active") return;
+    var interval = setInterval(function() {
+      var gift = PK_GIFTS[Math.floor(Math.random() * (PK_GIFTS.length - 2))];
+      addEvent("them", gift);
+    }, Math.random() * 4000 + 2000);
+    return function() { clearInterval(interval); };
+  }, [phase]);
+
+  // countdown timer
+  useEffect(function() {
+    if (phase !== "active") return;
+    timerRef.current = setInterval(function() {
+      setTimeLeft(function(t) {
+        if (t <= 1) {
+          clearInterval(timerRef.current);
+          endBattle();
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return function() { clearInterval(timerRef.current); };
+  }, [phase]);
+
+  // auto-scroll events
+  useEffect(function() {
+    if (eventListRef.current) {
+      eventListRef.current.scrollTop = eventListRef.current.scrollHeight;
+    }
+  }, [events]);
+
+  function addEvent(side, gift) {
+    var gemVal = gift.gems;
+    setScores(function(s) {
+      return side === "me"
+        ? { me: s.me + gemVal, them: s.them }
+        : { me: s.me, them: s.them + gemVal };
+    });
+    setEvents(function(ev) {
+      return ev.concat([{
+        id: Date.now() + Math.random(),
+        side: side,
+        name: side === "me" ? (myName || "You") : (opponentName || "Opponent"),
+        gift: gift,
+        ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      }]).slice(-30);
+    });
+  }
+
+  function startChallenge() {
+    if (!challengeInput.trim()) return;
+    setOpponentName(challengeInput.trim());
+    setPhase("challenge");
+  }
+
+  function acceptBattle() {
+    setPhase("active");
+    setTimeLeft(PK_DURATION);
+    setScores({ me: 0, them: 0 });
+    setEvents([]);
+    setWinner(null);
+  }
+
+  function endBattle() {
+    setPhase("ended");
+    setScores(function(s) {
+      setWinner(s.me >= s.them ? (myName || "You") : opponentName);
+      return s;
+    });
+    clearInterval(timerRef.current);
+  }
+
+  function resetBattle() {
+    setPhase("idle");
+    setOpponentName("");
+    setChallengeInput("");
+    setScores({ me: 0, them: 0 });
+    setEvents([]);
+    setWinner(null);
+    setTimeLeft(PK_DURATION);
+  }
+
+  // ── IDLE: send challenge ──────────────────────────────────────
+  if (phase === "idle") return (
+    <div className="card card-r" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #8B0000",display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontSize:16}}>⚔️</span>
+        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.crimsonBright,letterSpacing:2}}>PK BATTLE</span>
+      </div>
+      <div style={{padding:"14px 16px"}}>
+        <div style={{fontFamily:G.fMon,fontSize:11,color:G.gray,marginBottom:10}}>Challenge another live streamer to a gift battle</div>
+        <input className="inp" placeholder="Enter opponent username…" value={challengeInput} onChange={function(e){setChallengeInput(e.target.value);}} style={{marginBottom:10}} />
+        <button className="btn btn-r" style={{width:"100%"}} onClick={startChallenge}>⚔️ SEND CHALLENGE</button>
+      </div>
+    </div>
+  );
+
+  // ── CHALLENGE: waiting for accept ────────────────────────────
+  if (phase === "challenge") return (
+    <div className="card card-r" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #8B0000"}}>
+        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.crimsonBright,letterSpacing:2}}>⚔️ PK BATTLE — PENDING</span>
+      </div>
+      <div style={{padding:"14px 16px",textAlign:"center"}}>
+        <div style={{fontSize:32,marginBottom:8}}>⏳</div>
+        <div style={{fontFamily:G.fRaj,fontSize:14,color:G.white,marginBottom:4}}>Challenge sent to <span style={{color:G.gold}}>{opponentName}</span></div>
+        <div style={{fontFamily:G.fMon,fontSize:10,color:G.gray,marginBottom:16}}>Waiting for them to accept…</div>
+        {/* Simulate accept for demo */}
+        <button className="btn btn-g" style={{width:"100%",marginBottom:8}} onClick={acceptBattle}>✅ SIMULATE ACCEPT</button>
+        <button className="btn btn-outline" style={{width:"100%",fontSize:11}} onClick={resetBattle}>Cancel</button>
+      </div>
+    </div>
+  );
+
+  // ── ENDED: show winner ────────────────────────────────────────
+  if (phase === "ended") return (
+    <div className="card card-r" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #8B0000"}}>
+        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.crimsonBright,letterSpacing:2}}>⚔️ BATTLE ENDED</span>
+      </div>
+      <div style={{padding:"20px 16px",textAlign:"center"}}>
+        <div style={{fontSize:40,marginBottom:8}}>🏆</div>
+        <div style={{fontFamily:G.fBeb,fontSize:28,color:G.gold,marginBottom:4}}>{winner} WINS!</div>
+        <div style={{fontFamily:G.fMon,fontSize:11,color:G.gray,marginBottom:16}}>
+          {myName||"You"}: 💎 {scores.me} &nbsp;|&nbsp; {opponentName}: 💎 {scores.them}
+        </div>
+        {/* final bar */}
+        <div style={{position:"relative",height:28,borderRadius:14,overflow:"hidden",background:"#1a1a1a",marginBottom:16,display:"flex"}}>
+          <div style={{width:pctMe+"%",background:"linear-gradient(90deg,#8B0000,#C41E3A)",transition:"width 1s ease",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <span style={{fontFamily:G.fMon,fontSize:10,color:G.white}}>{pctMe}%</span>
+          </div>
+          <div style={{flex:1,background:"linear-gradient(90deg,#1a3a5c,#00E5FF33)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <span style={{fontFamily:G.fMon,fontSize:10,color:G.cyan}}>{pctThem}%</span>
+          </div>
+          <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:14,zIndex:2}}>⚔️</div>
+        </div>
+        <button className="btn btn-g" style={{width:"100%"}} onClick={resetBattle}>🔄 NEW BATTLE</button>
+      </div>
+    </div>
+  );
+
+  // ── ACTIVE: live battle UI ────────────────────────────────────
   return (
     <div className="card card-r" style={{margin:"0 16px 14px"}}>
-      <div style={{padding:"10px 14px"}}>
-        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.crimsonBright,letterSpacing:2}}>⚔️ PK BATTLE</span>
+      {/* Header + timer */}
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #8B0000",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.crimsonBright,letterSpacing:2}}>⚔️ PK BATTLE LIVE</span>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontFamily:G.fMon,fontSize:13,color:timeLeft <= 10 ? G.red : G.gold}} className={timeLeft <= 10 ? "pulse" : ""}>
+            {fmtTime(timeLeft)}
+          </div>
+          <button onClick={endBattle} style={{fontFamily:G.fMon,fontSize:9,color:G.gray,background:"none",border:"1px solid #333",borderRadius:4,padding:"2px 6px",cursor:"pointer"}}>END</button>
+        </div>
+      </div>
+
+      {/* Split-screen streamer names */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",padding:"10px 14px",gap:8}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontFamily:G.fBeb,fontSize:18,color:G.crimsonBright}}>{myName || "You"}</div>
+          <div style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>💎 {scores.me}</div>
+        </div>
+        <div style={{fontFamily:G.fBeb,fontSize:22,color:G.white}}>VS</div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontFamily:G.fBeb,fontSize:18,color:G.cyan}}>{opponentName}</div>
+          <div style={{fontFamily:G.fMon,fontSize:11,color:G.cyan}}>💎 {scores.them}</div>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{margin:"0 14px 12px",position:"relative",height:32,borderRadius:16,overflow:"hidden",background:"#1a1a1a",display:"flex",boxShadow:"0 0 12px rgba(196,30,58,0.3)"}}>
+        <div className="battle-bar-l" style={{width:pctMe+"%",background:"linear-gradient(90deg,#8B0000,#C41E3A)",display:"flex",alignItems:"center",paddingLeft:8,minWidth:0}}>
+          <span style={{fontFamily:G.fMon,fontSize:10,color:G.white,whiteSpace:"nowrap"}}>{pctMe}%</span>
+        </div>
+        <div className="battle-bar-r" style={{flex:1,background:"linear-gradient(90deg,#00445555,#00E5FF44)",display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:8,minWidth:0}}>
+          <span style={{fontFamily:G.fMon,fontSize:10,color:G.cyan,whiteSpace:"nowrap"}}>{pctThem}%</span>
+        </div>
+        <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:16,zIndex:2,filter:"drop-shadow(0 0 6px #fff)"}}>⚔️</div>
+      </div>
+
+      {/* Who's winning banner */}
+      <div style={{textAlign:"center",marginBottom:10}}>
+        <span className="pill" style={{background:meWinning?"rgba(139,0,0,0.3)":"rgba(0,229,255,0.1)",border:"1px solid "+(meWinning?G.crimsonBright:G.cyan),color:meWinning?G.crimsonBright:G.cyan,fontFamily:G.fOrb,fontSize:9,letterSpacing:2}}>
+          {meWinning ? "🔴 "+( myName||"YOU")+" LEADING" : "🔵 "+opponentName+" LEADING"}
+        </span>
+      </div>
+
+      {/* Gift buttons */}
+      <div style={{padding:"0 14px 10px"}}>
+        <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginBottom:6,letterSpacing:1}}>SEND GIFT TO SUPPORT YOUR STREAM</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+          {PK_GIFTS.map(function(gift) {
+            return (
+              <button key={gift.id} className="snd-btn" onClick={function(){addEvent("me",gift);}}
+                style={{padding:"8px 4px"}}>
+                <span style={{fontSize:20}}>{gift.emoji}</span>
+                <span style={{fontFamily:G.fMon,fontSize:8,color:G.gold}}>💎{gift.gems}</span>
+                <span style={{fontFamily:G.fRaj,fontSize:9,color:G.gray}}>{gift.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Live event feed */}
+      <div style={{margin:"0 14px 14px",borderTop:"1px solid #1a1a1a",paddingTop:8}}>
+        <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginBottom:6,letterSpacing:1}}>LIVE GIFT FEED</div>
+        <div ref={eventListRef} style={{maxHeight:120,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
+          {events.length === 0 && <div style={{fontFamily:G.fMon,fontSize:10,color:G.grayDim,textAlign:"center",padding:"8px 0"}}>Waiting for gifts…</div>}
+          {events.map(function(ev) {
+            var isMe = ev.side === "me";
+            return (
+              <div key={ev.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 6px",borderRadius:6,background:isMe?"rgba(139,0,0,0.15)":"rgba(0,229,255,0.07)",borderLeft:"2px solid "+(isMe?G.crimsonBright:G.cyan)}}>
+                <span style={{fontSize:14}}>{ev.gift.emoji}</span>
+                <span style={{fontFamily:G.fRaj,fontSize:11,color:isMe?G.crimsonBright:G.cyan,flex:1}}>{ev.name}</span>
+                <span style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>+💎{ev.gift.gems}</span>
+                <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{ev.ts}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -498,6 +743,7 @@ function StreamTab() {
           <OctagonalVideoGrid guests={[]} hostName="Host" />
           <ScreenShare />
           <GuestControls />
+          <PKBattleEngine myName="Host" />
           <MultiStreamRTMP roomID="test" />
           <StreamAnalytics />
           <LiveChat />
