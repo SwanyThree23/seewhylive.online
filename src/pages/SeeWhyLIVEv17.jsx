@@ -98,6 +98,29 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .battle-bar-l{transition:width .8s cubic-bezier(.34,1.56,.64,1)}
 .battle-bar-r{transition:width .8s cubic-bezier(.34,1.56,.64,1)}
 .zego-container{width:100%;height:420px;border-radius:12px;overflow:hidden;background:#000;position:relative;border:1px solid #8B0000}
+/* ── Panel Grid ── */
+.panel-grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:6px}
+.panel-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:6px}
+.panel-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:6px}
+.panel-tile{aspect-ratio:9/14;position:relative;border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;background:#161616;border:1px solid #1a1a1a}
+.panel-tile:hover{transform:scale(1.04)}
+.panel-tile.focused{border:2px solid #C8FF00;box-shadow:0 0 12px #C8FF0066;z-index:2}
+.panel-tile.speaking{border:2px solid #00E5FF;box-shadow:0 0 8px #00E5FF55}
+.panel-tile.muted{opacity:.7}
+.pt-avatar{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
+.pt-name{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-family:'Share Tech Mono',monospace;font-size:7px;color:#fff;letter-spacing:.5px;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px}
+.pt-role{position:absolute;top:3px;left:3px;font-size:7px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.5px;padding:1px 4px;border-radius:3px}
+.pt-mic{position:absolute;top:3px;right:3px;font-size:10px;line-height:1}
+.pt-reaction{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:16px;animation:floatUp 1.5s ease-out forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}
+/* ── Bigo Expanded Tile ── */
+.bigo-expanded{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.bigo-main-oct{width:200px;height:200px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:3px solid #C8FF00;box-shadow:0 0 30px #C8FF0066}
+.bigo-mini-ring{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;max-width:340px}
+.bigo-mini-oct{width:60px;height:60px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:2px solid #333;cursor:pointer;transition:border-color .2s}
+.bigo-mini-oct.on{border-color:#C8FF00}
+.bigo-mini-oct:hover{border-color:#D4AF37}
+/* old grid kept for compat */
 .oct-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px}
 .oct-tile{aspect-ratio:1;position:relative;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;cursor:pointer;transition:transform .2s}
 .oct-tile:hover{transform:scale(1.05)}
@@ -163,35 +186,270 @@ function ZEGOLiveRoom({ roomID, userID, userName, role, appID, serverSecret, onL
   );
 }
 
-// ── OCTAGONAL VIDEO GRID ─────────────────────────────────────────
-function OctagonalVideoGrid({ guests, hostName }) {
-  var [activeIdx, setActiveIdx] = useState(0);
-  var [layout, setLayout] = useState("oct");
-  var allParticipants = [{ name: hostName || "Host", role: "HOST", active: true }].concat((guests || []).slice(0, 7).map(function(g) { return { name: g.name, role: "GUEST", active: g.live }; }));
-  var tileColors = [G.crimsonBright, G.gold, G.cyan, G.volt, G.purple, G.orange, G.green, G.white];
+// ── PANEL GRID + BIGO OCTAGONAL VIEW ─────────────────────────────
+var TILE_COLORS = [G.crimsonBright,G.gold,G.cyan,G.volt,G.purple,G.orange,G.green,"#FF69B4","#FF8C00","#39FF14","#FF007F","#1E90FF","#FFD700","#FF4500","#00CED1","#9400D3","#ADFF2F","#DC143C","#00BFFF","#FF6347"];
+var REACTION_EMOJIS = ["🔥","❤️","😂","👏","💯","🚀","💎","👑","😍","🤩"];
+var DEMO_NAMES = ["Host","MixMaster","StarGirl","DrumKing","VibezQn","LitKid","GoldenFlo","CyphaBoss","SlickTalk","WaveRider","HypeLord","ReggaeQ","BeatDrop","SoulSis","TrapGod","NeonKing","PopDiva","JazzHnd","UrbanVibe","CloudTop"];
+
+function PanelGrid({ participants, onTileClick, focusedIdx }) {
+  var count = participants.length;
+  var gridClass = count <= 6 ? "panel-grid-3" : count <= 12 ? "panel-grid-4" : "panel-grid-5";
 
   return (
-    <div className="card card-v" style={{margin:"0 16px 14px"}}>
-      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:16}}>⬡</span>
-          <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>OCTAGONAL GRID</span>
-          <span className="pill pill-v">{allParticipants.length} LIVE</span>
-        </div>
+    <div className={gridClass}>
+      {participants.map(function(p, i) {
+        var color = TILE_COLORS[i % TILE_COLORS.length];
+        var isFocused = focusedIdx === i;
+        var classes = "panel-tile" + (isFocused ? " focused" : "") + (p.speaking ? " speaking" : "") + (!p.micOn ? " muted" : "");
+        return (
+          <div key={p.id} className={classes} onClick={function(){onTileClick(i);}}
+            style={{background:"linear-gradient(160deg,"+color+"18,#080808)"}}>
+            <div className="pt-avatar">
+              <span style={{fontSize: count<=6?28:count<=12?22:16}}>{p.avatar}</span>
+              {p.reaction && <span className="pt-reaction">{p.reaction}</span>}
+            </div>
+            <div className="pt-role" style={{background:p.isHost?"rgba(196,30,58,0.7)":p.isCoHost?"rgba(212,175,55,0.5)":"rgba(0,0,0,0.4)",color:p.isHost?G.crimsonBright:p.isCoHost?G.gold:G.gray}}>
+              {p.isHost?"HOST":p.isCoHost?"CO":""}
+            </div>
+            <div className="pt-mic">{p.micOn?"🎙️":"🔇"}</div>
+            <div className="pt-name" style={{color:color}}>{p.name}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BigoExpandedView({ participants, focusedIdx, onChangeFocus, onClose }) {
+  var main = participants[focusedIdx] || participants[0];
+  var color = TILE_COLORS[focusedIdx % TILE_COLORS.length];
+  return (
+    <div className="bigo-expanded" onClick={onClose}>
+      <div style={{textAlign:"center",marginBottom:12}}>
+        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:3}}>⬡ BIGO LIVE VIEW</span>
+        <span style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginLeft:10}}>tap outside to close</span>
       </div>
-      <div className="oct-grid">
-        {allParticipants.map(function(p, i) {
+      {/* Main focus octagon */}
+      <div style={{position:"relative"}} onClick={function(e){e.stopPropagation();}}>
+        <div className="bigo-main-oct" style={{background:"linear-gradient(135deg,"+color+"33,#000)"}}>
+          <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
+            <span style={{fontSize:56}}>{main ? main.avatar : "👤"}</span>
+            <span style={{fontFamily:G.fBeb,fontSize:20,color:color}}>{main ? main.name : ""}</span>
+            <span style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>{main&&main.isHost?"HOST ·":""} {main&&main.micOn?"🎙️ LIVE":"🔇 MUTED"}</span>
+          </div>
+        </div>
+        {/* Speaking ring */}
+        {main && main.speaking && <div style={{position:"absolute",inset:-6,borderRadius:"50%",border:"3px solid "+G.cyan,animation:"liveRing 1.2s ease-in-out infinite",pointerEvents:"none"}} />}
+      </div>
+      {/* Mini octagons */}
+      <div className="bigo-mini-ring" onClick={function(e){e.stopPropagation();}}>
+        {participants.map(function(p, i) {
+          var c = TILE_COLORS[i % TILE_COLORS.length];
           return (
-            <div key={i} className={"oct-tile"+(i===activeIdx?" active":"")} onClick={function(){setActiveIdx(i);}} style={{background:"linear-gradient(135deg,"+(tileColors[i]||G.gray)+"22,#000)"}}>
-              <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
-                <span style={{fontSize:22}}>{p.name[0]}</span>
-                <span style={{fontFamily:G.fMon,fontSize:7,color:tileColors[i]||G.gray}}>{p.name.split(" ")[0]}</span>
+            <div key={p.id} className={"bigo-mini-oct"+(i===focusedIdx?" on":"")}
+              style={{background:"linear-gradient(135deg,"+c+"22,#000)"}}
+              onClick={function(){onChangeFocus(i);}}>
+              <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                <span style={{fontSize:20}}>{p.avatar}</span>
+                <span style={{fontFamily:G.fMon,fontSize:6,color:c}}>{p.name.split(" ")[0].slice(0,6)}</span>
               </div>
+              {!p.micOn && <div style={{position:"absolute",top:2,right:2,fontSize:8}}>🔇</div>}
             </div>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
+  // Build 20-person panel if no props given
+  var defaultParticipants = DEMO_NAMES.slice(0, 20).map(function(name, i) {
+    return {
+      id: "p"+i, name: name,
+      avatar: ["🎤","🎧","🎸","🥁","🎹","🎺","🎻","🪗","🎵","🎶","🎼","🎙️","🎚️","🎛️","📻","🔊","🎤","🥁","🎹","🎸"][i],
+      isHost: i===0, isCoHost: i===1,
+      micOn: Math.random()>0.3, speaking: Math.random()>0.7,
+      reaction: null, color: TILE_COLORS[i],
+    };
+  });
+
+  var [participants, setParticipants] = useState(propParticipants || defaultParticipants);
+  var [focusedIdx, setFocusedIdx] = useState(0);
+  var [bigoOpen, setBigoOpen] = useState(false);
+  var [viewMode, setViewMode] = useState("panel"); // panel | bigo
+  var [reactionQueue, setReactionQueue] = useState([]);
+  var [chatMsg, setChatMsg] = useState("");
+  var [chatLog, setChatLog] = useState([
+    {id:1, from:"Host", text:"Welcome everyone!", color:G.crimsonBright},
+    {id:2, from:"MixMaster", text:"LFG! 🔥", color:G.gold},
+  ]);
+  var chatRef = useRef(null);
+
+  // Simulate speaking + reactions
+  useEffect(function() {
+    var interval = setInterval(function() {
+      setParticipants(function(prev) {
+        return prev.map(function(p) {
+          return Object.assign({}, p, { speaking: Math.random() > 0.75 });
+        });
+      });
+    }, 2000);
+    return function(){clearInterval(interval);};
+  }, []);
+
+  // Simulate incoming reactions
+  useEffect(function() {
+    var interval = setInterval(function() {
+      var randIdx = Math.floor(Math.random() * participants.length);
+      var emoji = REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
+      setParticipants(function(prev) {
+        return prev.map(function(p, i) {
+          if (i !== randIdx) return p;
+          return Object.assign({}, p, { reaction: emoji });
+        });
+      });
+      setTimeout(function() {
+        setParticipants(function(prev) {
+          return prev.map(function(p, i) {
+            if (i !== randIdx) return p;
+            return Object.assign({}, p, { reaction: null });
+          });
+        });
+      }, 1500);
+    }, 2500);
+    return function(){clearInterval(interval);};
+  }, [participants.length]);
+
+  // Simulate incoming chat
+  useEffect(function() {
+    var interval = setInterval(function() {
+      var p = participants[Math.floor(Math.random() * participants.length)];
+      var lines = ["Let's go!","🔥🔥🔥","Hype in the chat!","This is LIT","💎💎","Real talk","Bars!","No cap 🧢","W stream","Sending love ❤️"];
+      var text = lines[Math.floor(Math.random() * lines.length)];
+      setChatLog(function(log) {
+        return log.concat([{id:Date.now(),from:p.name,text:text,color:TILE_COLORS[participants.indexOf(p)%TILE_COLORS.length]}]).slice(-40);
+      });
+    }, 1800);
+    return function(){clearInterval(interval);};
+  }, [participants]);
+
+  useEffect(function(){
+    if(chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  }, [chatLog]);
+
+  function toggleMic(idx) {
+    setParticipants(function(prev){
+      return prev.map(function(p,i){return i===idx?Object.assign({},p,{micOn:!p.micOn}):p;});
+    });
+  }
+
+  function sendReaction(emoji) {
+    setParticipants(function(prev){
+      return prev.map(function(p,i){return i===0?Object.assign({},p,{reaction:emoji}):p;});
+    });
+    setTimeout(function(){
+      setParticipants(function(prev){
+        return prev.map(function(p,i){return i===0?Object.assign({},p,{reaction:null}):p;});
+      });
+    }, 1500);
+  }
+
+  function sendChat(e) {
+    e && e.preventDefault();
+    if(!chatMsg.trim()) return;
+    setChatLog(function(log){return log.concat([{id:Date.now(),from:"You",text:chatMsg,color:G.volt}]).slice(-40);});
+    setChatMsg("");
+  }
+
+  var liveCount = participants.filter(function(p){return p.speaking||p.micOn;}).length;
+
+  return (
+    <>
+      {bigoOpen && (
+        <BigoExpandedView
+          participants={participants}
+          focusedIdx={focusedIdx}
+          onChangeFocus={setFocusedIdx}
+          onClose={function(){setBigoOpen(false);}}
+        />
+      )}
+
+      <div className="card card-v" style={{margin:"0 16px 14px"}}>
+        {/* Header */}
+        <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:14}}>⬡</span>
+            <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>LIVE PANEL</span>
+            <span className="pill pill-v">{participants.length} IN ROOM</span>
+            <span className="pill pill-c">{liveCount} ACTIVE</span>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            <button onClick={function(){setBigoOpen(true);}} style={{padding:"3px 8px",background:"rgba(200,255,0,0.1)",border:"1px solid "+G.volt,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:G.volt}}>⬡ BIGO</button>
+            <button onClick={function(){setViewMode(viewMode==="panel"?"mini":"panel");}} style={{padding:"3px 8px",background:"rgba(0,229,255,0.08)",border:"1px solid "+G.cyan,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:G.cyan}}>
+              {viewMode==="panel"?"▦ MINI":"▤ FULL"}
+            </button>
+          </div>
+        </div>
+
+        {/* Panel Grid */}
+        <PanelGrid
+          participants={viewMode==="mini"?participants.slice(0,8):participants}
+          onTileClick={function(i){setFocusedIdx(i);setBigoOpen(true);}}
+          focusedIdx={focusedIdx}
+        />
+
+        {/* Focused participant info bar */}
+        {participants[focusedIdx] && (
+          <div style={{margin:"0 10px 8px",padding:"8px 12px",background:"rgba(200,255,0,0.05)",border:"1px solid rgba(200,255,0,0.15)",borderRadius:8,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:22}}>{participants[focusedIdx].avatar}</span>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:G.fBeb,fontSize:16,color:G.volt}}>{participants[focusedIdx].name}</div>
+              <div style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>
+                {participants[focusedIdx].isHost?"👑 HOST · ":""}
+                {participants[focusedIdx].isCoHost?"🥈 CO-HOST · ":""}
+                {participants[focusedIdx].micOn?"🎙️ MIC ON":"🔇 MUTED"}
+                {participants[focusedIdx].speaking?" · 🔊 SPEAKING":""}
+              </div>
+            </div>
+            <button onClick={function(){toggleMic(focusedIdx);}} style={{padding:"4px 10px",background:participants[focusedIdx].micOn?"rgba(139,0,0,0.4)":"rgba(0,229,255,0.1)",border:"1px solid "+(participants[focusedIdx].micOn?G.crimsonBright:G.cyan),borderRadius:6,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:participants[focusedIdx].micOn?G.crimsonBright:G.cyan}}>
+              {participants[focusedIdx].micOn?"MUTE":"UNMUTE"}
+            </button>
+          </div>
+        )}
+
+        {/* Reaction bar */}
+        <div style={{padding:"6px 12px 8px",display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+          {REACTION_EMOJIS.map(function(e){
+            return (
+              <button key={e} onClick={function(){sendReaction(e);}} style={{width:32,height:32,borderRadius:8,border:"1px solid #222",background:"#161616",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",transition:"transform .1s"}}
+                onMouseDown={function(el){el.currentTarget.style.transform="scale(0.85)"}}
+                onMouseUp={function(el){el.currentTarget.style.transform="scale(1)"}}>
+                {e}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Inline chat */}
+        <div style={{margin:"0 10px",borderTop:"1px solid #1a1a1a"}}>
+          <div ref={chatRef} style={{height:90,overflowY:"auto",padding:"6px 4px",display:"flex",flexDirection:"column",gap:3}}>
+            {chatLog.map(function(m){
+              return (
+                <div key={m.id} style={{fontFamily:G.fRaj,fontSize:11,lineHeight:1.3}}>
+                  <span style={{color:m.color,fontWeight:700}}>{m.from}: </span>
+                  <span style={{color:"rgba(255,255,255,0.75)"}}>{m.text}</span>
+                </div>
+              );
+            })}
+          </div>
+          <form onSubmit={sendChat} style={{display:"flex",gap:6,padding:"6px 4px 10px"}}>
+            <input className="inp" style={{flex:1,fontSize:11,padding:"6px 10px"}} placeholder="Say something to the room…" value={chatMsg} onChange={function(e){setChatMsg(e.target.value);}} />
+            <button type="submit" className="btn btn-v" style={{padding:"6px 12px",fontSize:11}}>SEND</button>
+          </form>
+        </div>
+      </div>
+    </>
   );
 }
 
