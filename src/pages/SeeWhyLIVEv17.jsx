@@ -1,4 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
+import { GiftTray, GiftAnimationOverlay, GiftLeaderboard, TipAlertOverlay } from "@/components/live/GiftSystem";
+import ViewerControlsPanel from "@/components/live/ViewerControlsPanel";
+import ZEGOSettingsDrawer, { StreamHealthHUD } from "@/components/live/ZEGOSettingsDrawer";
+import TipNowModal, { SubscribeButton } from "@/components/live/TipNowModal";
+import { MerchStrip } from "@/components/merch/MerchWidget";
+import { WhisperToast } from "@/components/live/DMWhisperPanel";
+import { Link } from "react-router-dom";
 
 // ── DESIGN TOKENS ────────────────────────────────────────────────
 var G = {
@@ -1511,7 +1520,7 @@ function LiveCameraFeed({ camOn, micOn, onToggleCam, onToggleMic }) {
 }
 
 // ── STREAM TAB ───────────────────────────────────────────────────
-function StreamTab({ autoStart }) {
+function StreamTab({ autoStart, currentUser }) {
   var [joined, setJoined] = useState(!!autoStart);
   var [camOn, setCamOn] = useState(true);
   var [micOn, setMicOn] = useState(true);
@@ -1520,6 +1529,14 @@ function StreamTab({ autoStart }) {
   var [latency, setLatency] = useState(120);
   var [floatingGifts, setFloatingGifts] = useState([]);
   var [tipAlert, setTipAlert] = useState(null);
+  var [giftQueue, setGiftQueue] = useState([]);
+  var [showViewerControls, setShowViewerControls] = useState(false);
+  var [showZEGOSettings, setShowZEGOSettings] = useState(false);
+  var [showTipModal, setShowTipModal] = useState(false);
+  var [whisperToast, setWhisperToast] = useState(null);
+  var [shopPinned, setShopPinned] = useState(false);
+  var isHost = true; // host view in StreamTab
+  var roomId = "live-" + (currentUser?.id || "host");
 
   // Simulate stream health fluctuation
   useEffect(function(){
@@ -1536,6 +1553,7 @@ function StreamTab({ autoStart }) {
     var id = Date.now()+Math.random();
     var x = 15 + Math.random()*70;
     setFloatingGifts(function(g){ return g.concat([Object.assign({},gift,{id:id,x:x,sender:"You",big:gift.gems>=100})]); });
+    setGiftQueue(function(q){ return q.concat([Object.assign({},gift,{sender_name: currentUser?.full_name || "You"})]); });
     setTipAlert({type:"tip",name:"You",amount:(gift.gems*0.1).toFixed(2),msg:gift.name+" sent!",color:G.gold});
     setTimeout(function(){ setFloatingGifts(function(g){ return g.filter(function(x){ return x.id!==id; }); }); }, 2600);
   }
@@ -1546,6 +1564,17 @@ function StreamTab({ autoStart }) {
     <div>
       <GiftAnimationLayer gifts={floatingGifts} />
       <TipAlertBanner alert={tipAlert} onDismiss={function(){setTipAlert(null);}} />
+      {/* Gift animation overlay */}
+      <GiftAnimationOverlay queue={giftQueue} onDone={function(){ setGiftQueue(function(q){ return q.slice(1); }); }} />
+      {/* Whisper toast */}
+      <WhisperToast whisper={whisperToast} onDismiss={function(){ setWhisperToast(null); }} />
+      {/* Viewer controls */}
+      {showViewerControls && <ViewerControlsPanel roomId={roomId} currentUser={currentUser} onClose={function(){ setShowViewerControls(false); }} />}
+      {/* ZEGO Settings */}
+      {showZEGOSettings && <ZEGOSettingsDrawer roomId={roomId} streamKey="seewhy-live-key" onClose={function(){ setShowZEGOSettings(false); }} />}
+      {/* Tip modal */}
+      {showTipModal && <TipNowModal roomId={roomId} currentUser={currentUser} hostId={currentUser?.id} onClose={function(){ setShowTipModal(false); }} />}
+
       {!joined ? (
         <div style={{padding:"20px 16px",display:"flex",flexDirection:"column",gap:10}}>
           <div style={{fontFamily:G.fBeb,fontSize:26,color:G.white,textAlign:"center"}}>READY TO GO LIVE?</div>
@@ -1563,9 +1592,32 @@ function StreamTab({ autoStart }) {
         </div>
       ) : (
         <div>
+          {/* Stream Health HUD */}
+          <StreamHealthHUD sessionId={roomId} onClick={function(){ setShowZEGOSettings(true); }} />
+          {/* Gift Leaderboard (host) */}
+          {isHost && <GiftLeaderboard roomId={roomId} />}
+          {/* Merch strip if pinned */}
+          {shopPinned && <MerchStrip roomId={roomId} currentUser={currentUser} hostId={currentUser?.id} />}
+
           <div style={{padding:"10px 16px 0"}}>
             <LiveCameraFeed camOn={camOn} micOn={micOn} onToggleCam={function(){setCamOn(function(v){return !v;});}} onToggleMic={function(){setMicOn(function(v){return !v;});}} />
           </div>
+
+          {/* Host control bar */}
+          {isHost && (
+            <div style={{display:"flex",gap:6,padding:"8px 16px",overflowX:"auto"}}>
+              <button onClick={function(){ setShowZEGOSettings(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>⚙️ SETTINGS</button>
+              <button onClick={function(){ setShopPinned(function(v){ return !v; }); }} style={{padding:"6px 12px",background:shopPinned?"rgba(128,0,32,0.3)":"rgba(255,255,255,0.04)",border:"1px solid "+(shopPinned?"#800020":"#333"),borderRadius:6,color:shopPinned?G.gold:G.gray,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>📦 {shopPinned?"CLOSE SHOP":"OPEN SHOP"}</button>
+              <SubscribeButton creatorId={currentUser?.id} roomId={roomId} currentUser={currentUser} />
+            </div>
+          )}
+
+          {/* Viewer controls bar */}
+          <div style={{display:"flex",gap:6,padding:"4px 16px 8px",overflowX:"auto"}}>
+            <button onClick={function(){ setShowViewerControls(true); }} style={{padding:"6px 12px",background:"rgba(255,255,255,0.04)",border:"1px solid #333",borderRadius:6,color:G.gray,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>⚙️ CONTROLS</button>
+            <button onClick={function(){ setShowTipModal(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>💰 TIP NOW</button>
+          </div>
+
           <LiveAnalytics />
           <OctagonalVideoGrid guests={[]} hostName="Host" />
           <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
@@ -1586,18 +1638,49 @@ function StreamTab({ autoStart }) {
 }
 
 // ── DASHBOARD TAB ────────────────────────────────────────────────
-function DashboardTab() {
+function DashboardTab({ currentUser }) {
+  var [dashTab, setDashTab] = useState("overview");
   return (
     <div style={{padding:"16px"}}>
       <div style={{fontFamily:G.fBeb,fontSize:28,color:G.gold}}>$1,247.80</div>
       <div style={{fontFamily:G.fMon,fontSize:10,color:G.gray}}>Total earnings (90% split)</div>
-      <StreamAnalytics />
-      <Leaderboard />
-      <VODLibrary />
-      <SwanyBotMemory />
-      <CustomBackground />
+      {/* Sub-tabs */}
+      <div style={{display:"flex",gap:0,margin:"12px 0",borderBottom:"1px solid #1a1a1a"}}>
+        {["overview","shop"].map(function(t){
+          return (
+            <button key={t} onClick={function(){setDashTab(t);}} style={{padding:"7px 14px",background:"none",border:"none",borderBottom:"2px solid "+(dashTab===t?G.gold:"transparent"),cursor:"pointer",fontFamily:G.fMon,fontSize:9,letterSpacing:1,color:dashTab===t?G.gold:G.gray}}>
+              {t.toUpperCase()}
+            </button>
+          );
+        })}
+      </div>
+      {dashTab==="overview" && (
+        <div>
+          <StreamAnalytics />
+          <Leaderboard />
+          <VODLibrary />
+          <SwanyBotMemory />
+          <CustomBackground />
+        </div>
+      )}
+      {dashTab==="shop" && (
+        <div>
+          {/* Lazy-load ShopDashboard */}
+          <ShopDashboardInline creatorId={currentUser?.id} />
+        </div>
+      )}
     </div>
   );
+}
+
+function ShopDashboardInline({ creatorId }) {
+  var [loaded, setLoaded] = useState(false);
+  var [ShopComp, setShopComp] = useState(null);
+  useEffect(function(){
+    import("@/components/merch/ShopDashboard").then(function(m){ setShopComp(function(){ return m.default; }); setLoaded(true); });
+  },[]);
+  if (!loaded || !ShopComp) return <div style={{color:G.gray,fontFamily:G.fMon,fontSize:10,padding:20,textAlign:"center"}}>Loading shop…</div>;
+  return <ShopComp creatorId={creatorId} />;
 }
 
 // ── COMMUNITY TAB ────────────────────────────────────────────────
@@ -1616,6 +1699,16 @@ export default function SeeWhyLIVEv17() {
   var skipCover = urlParams.get("direct") === "1" || urlParams.get("tab") === "stream";
   var [tab, setTab] = useState(urlParams.get("tab") || "stream");
   var [entered, setEntered] = useState(skipCover);
+  var [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(function(){ base44.auth.me().then(setCurrentUser).catch(function(){}); }, []);
+
+  var { data: unreadDMs = [] } = useQuery({
+    queryKey: ["unread-dms", currentUser?.id],
+    queryFn: function() { return base44.entities.DirectMessage.filter({ recipient_id: currentUser?.id, is_read: false }); },
+    enabled: !!currentUser?.id,
+    refetchInterval: 15000,
+  });
 
   useEffect(function(){
     var style = document.createElement("style");
@@ -1632,8 +1725,15 @@ export default function SeeWhyLIVEv17() {
       {/* Header */}
       <div className="sw-hdr">
         <div className="sw-logo">SeeWhy LIVE v17.0</div>
-        <div style={{display:"flex",gap:6}}>
+        <div style={{display:"flex",gap:6,alignItems:"center"}}>
           <NotificationsHub onClose={function(){}} />
+          {/* DM icon with unread badge */}
+          <Link to="/messages" style={{position:"relative",textDecoration:"none"}}>
+            <div style={{width:34,height:34,borderRadius:8,background:"rgba(128,0,32,0.2)",border:"1px solid rgba(212,175,55,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,cursor:"pointer"}}>💬</div>
+            {unreadDMs.length > 0 && (
+              <div style={{position:"absolute",top:-4,right:-4,background:"#C41E3A",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:8,color:"#fff",fontWeight:700}}>{unreadDMs.length}</div>
+            )}
+          </Link>
           <div style={{color:G.gray,fontFamily:G.fMon,fontSize:10}}>●●●</div>
         </div>
       </div>
@@ -1641,8 +1741,8 @@ export default function SeeWhyLIVEv17() {
       {/* Body */}
       <div className="sw-body">
         {tab === "home" && <HomeTab onJoinRoom={function(room){setTab("stream");}} />}
-        {tab === "stream" && <StreamTab autoStart={skipCover} />}
-        {tab === "dashboard" && <DashboardTab />}
+        {tab === "stream" && <StreamTab autoStart={skipCover} currentUser={currentUser} />}
+        {tab === "dashboard" && <DashboardTab currentUser={currentUser} />}
         {tab === "community" && <CommunityTab />}
         {tab === "discover" && (
           <div style={{padding:"16px"}}>

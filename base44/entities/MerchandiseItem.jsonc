@@ -1,0 +1,80 @@
+{
+  "name": "MerchandiseItem",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator who owns the item"
+    },
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price_usd": {
+      "type": "number",
+      "description": "Price in USD"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "apparel",
+        "accessories",
+        "digital",
+        "music",
+        "prints",
+        "other"
+      ],
+      "default": "apparel"
+    },
+    "sizes_available": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Available sizes"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Internal SKU"
+    },
+    "stock": {
+      "type": "number",
+      "description": "Inventory count (null=unlimited)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_live_exclusive": {
+      "type": "boolean",
+      "default": false,
+      "description": "Only available during live streams"
+    },
+    "is_limited": {
+      "type": "boolean",
+      "default": false,
+      "description": "Limited edition"
+    },
+    "times_sold": {
+      "type": "number",
+      "default": 0
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "creator_id",
+    "name",
+    "price_usd"
+  ]
+}

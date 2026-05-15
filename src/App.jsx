@@ -23,6 +23,7 @@ import PKBattle from './pages/PKBattle';
 import CoverPage from './pages/CoverPage';
 import BackPage from './pages/BackPage';
 import SeeWhyLIVEv17 from './pages/SeeWhyLIVEv17';
+import Messages from './pages/Messages';
 import CreatorPublicProfile from './pages/CreatorPublicProfile';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
       <Route path="/CoverPage" element={<CoverPage />} />
       <Route path="/BackPage" element={<BackPage />} />
       <Route path="/SeeWhyLIVEv17" element={<SeeWhyLIVEv17 />} />
+      <Route path="/messages" element={<LayoutWrapper currentPageName="Messages"><Messages /></LayoutWrapper>} />
       <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

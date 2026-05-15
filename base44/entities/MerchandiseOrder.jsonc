@@ -1,0 +1,84 @@
+{
+  "name": "MerchandiseOrder",
+  "type": "object",
+  "properties": {
+    "buyer_id": {
+      "type": "string",
+      "description": "Buyer user ID"
+    },
+    "buyer_name": {
+      "type": "string",
+      "description": "Buyer display name"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Seller/creator user ID"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "MerchandiseItem ID"
+    },
+    "item_name": {
+      "type": "string",
+      "description": "Snapshot of item name"
+    },
+    "total_usd": {
+      "type": "number",
+      "description": "Total order amount in USD"
+    },
+    "creator_payout": {
+      "type": "number",
+      "description": "90% creator cut"
+    },
+    "platform_cut": {
+      "type": "number",
+      "description": "10% platform fee"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "size": {
+      "type": "string",
+      "description": "Selected size if applicable"
+    },
+    "color": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Room where purchase was made"
+    },
+    "ordered_during_stream": {
+      "type": "boolean",
+      "default": false,
+      "description": "Purchased during a live stream"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "shipped",
+        "delivered",
+        "cancelled",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "shipping_address": {
+      "type": "string"
+    },
+    "tracking_number": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "buyer_id",
+    "buyer_name",
+    "creator_id",
+    "item_id",
+    "item_name",
+    "total_usd"
+  ]
+}
