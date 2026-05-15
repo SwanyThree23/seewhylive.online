@@ -135,6 +135,9 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .vod-thumb{height:90px;background:linear-gradient(135deg,#1a0000,#0a0a1a);display:flex;align-items:center;justify-content:center;font-size:32px;position:relative}
 .rtmp-dest{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#161616;border-radius:8px;margin-bottom:6px;border:1px solid #1a1a1a}
 .watch-tile{border-radius:10px;overflow:hidden;border:1px solid #1a1a1a;background:#161616;cursor:pointer}
+@keyframes giftFloat{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-120px) scale(1.2)}100%{opacity:0;transform:translateY(-200px) scale(0.8)}}
+.tip-alert{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9990;min-width:220px;max-width:320px;padding:12px 18px;border-radius:12px;display:flex;align-items:center;gap:10;border:1px solid;animation:tipSlide .4s ease-out}
+@keyframes tipSlide{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 `;
 
 // ── ZEGOCLOUD LIVE ROOM ──────────────────────────────────────────
@@ -964,6 +967,431 @@ function LiveChat() {
   );
 }
 
+// ── DM / WHISPER SYSTEM ──────────────────────────────────────────
+var DM_NAMES = ["MixMaster","StarGirl","DrumKing","VibezQn","LitKid","GoldenFlo","CyphaBoss","SlickTalk"];
+function DMWhisper() {
+  var [open, setOpen] = useState(false);
+  var [selected, setSelected] = useState(DM_NAMES[0]);
+  var [threads, setThreads] = useState({});
+  var [input, setInput] = useState("");
+  var [unread, setUnread] = useState({MixMaster:1, StarGirl:2});
+  var msgRef = useRef(null);
+
+  // simulate incoming DM
+  useEffect(function(){
+    var interval = setInterval(function(){
+      var sender = DM_NAMES[Math.floor(Math.random()*DM_NAMES.length)];
+      var lines = ["Yo let me hop in 🔥","Can you hear me?","Battle me rn ⚔️","W stream fr","Send me the link","Bro this is LIVE 💎","Let's collab!"];
+      var text = lines[Math.floor(Math.random()*lines.length)];
+      setThreads(function(t){
+        var prev = t[sender]||[];
+        return Object.assign({},t,{[sender]:prev.concat([{id:Date.now(),from:sender,text:text,ts:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}])});
+      });
+      setUnread(function(u){ return Object.assign({},u,{[sender]:(u[sender]||0)+1}); });
+    }, 5000);
+    return function(){clearInterval(interval);};
+  },[]);
+
+  useEffect(function(){
+    if(msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
+  },[threads, selected]);
+
+  var totalUnread = Object.values(unread).reduce(function(a,b){return a+b;},0);
+  var currentThread = threads[selected]||[];
+
+  function send(e){ e&&e.preventDefault(); if(!input.trim()) return;
+    setThreads(function(t){ var prev=t[selected]||[]; return Object.assign({},t,{[selected]:prev.concat([{id:Date.now(),from:"You",text:input,ts:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}])}); });
+    setInput(""); }
+
+  function selectUser(name){ setSelected(name); setUnread(function(u){ return Object.assign({},u,{[name]:0}); }); }
+
+  return (
+    <div className="card card-p" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}} onClick={function(){setOpen(!open);}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14}}>💬</span>
+          <span style={{fontFamily:G.fOrb,fontSize:10,color:G.purple,letterSpacing:2}}>DM / WHISPER</span>
+          {totalUnread>0 && <span style={{background:G.crimsonBright,color:"#fff",borderRadius:10,padding:"1px 6px",fontFamily:G.fMon,fontSize:9,fontWeight:700}}>{totalUnread}</span>}
+        </div>
+        <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
+      </div>
+      {open && (
+        <div>
+          {/* Contact list */}
+          <div style={{display:"flex",overflowX:"auto",gap:6,padding:"8px 10px",borderBottom:"1px solid #1a1a1a"}}>
+            {DM_NAMES.map(function(name){
+              var u = unread[name]||0;
+              var isActive = selected===name;
+              return (
+                <button key={name} onClick={function(){selectUser(name);}}
+                  style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 8px",borderRadius:8,border:"1px solid "+(isActive?G.purple:"#222"),background:isActive?"rgba(191,95,255,0.12)":"#161616",cursor:"pointer",position:"relative"}}>
+                  <span style={{fontSize:18}}>🎤</span>
+                  <span style={{fontFamily:G.fMon,fontSize:7,color:isActive?G.purple:G.gray}}>{name.slice(0,6)}</span>
+                  {u>0&&<span style={{position:"absolute",top:1,right:1,background:G.crimsonBright,borderRadius:"50%",width:14,height:14,fontSize:8,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon}}>{u}</span>}
+                </button>
+              );
+            })}
+          </div>
+          {/* Thread */}
+          <div ref={msgRef} style={{height:130,overflowY:"auto",padding:"8px 12px",display:"flex",flexDirection:"column",gap:4}}>
+            {currentThread.length===0 && <div style={{color:G.grayDim,fontFamily:G.fMon,fontSize:10,textAlign:"center",marginTop:20}}>No messages yet. Say hi!</div>}
+            {currentThread.map(function(m){
+              var isMe = m.from==="You";
+              return (
+                <div key={m.id} style={{display:"flex",flexDirection:"column",alignItems:isMe?"flex-end":"flex-start"}}>
+                  <div style={{maxWidth:"80%",padding:"6px 10px",borderRadius:10,background:isMe?"rgba(191,95,255,0.2)":"rgba(255,255,255,0.06)",border:"1px solid "+(isMe?"rgba(191,95,255,0.4)":"#222"),fontFamily:G.fRaj,fontSize:12,color:isMe?G.purple:G.white}}>
+                    {m.text}
+                  </div>
+                  <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,marginTop:2}}>{m.ts}</span>
+                </div>
+              );
+            })}
+          </div>
+          <form onSubmit={send} style={{display:"flex",gap:6,padding:"6px 10px 10px"}}>
+            <input className="inp" style={{flex:1,fontSize:11,padding:"6px 10px"}} placeholder={"Whisper to "+selected+"…"} value={input} onChange={function(e){setInput(e.target.value);}} />
+            <button type="submit" style={{padding:"6px 12px",background:"rgba(191,95,255,0.2)",border:"1px solid "+G.purple,borderRadius:6,cursor:"pointer",fontFamily:G.fMon,fontSize:10,color:G.purple}}>SEND</button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── GIFT ANIMATION OVERLAY ───────────────────────────────────────
+var GIFT_CATALOG = [
+  {id:"rose",emoji:"🌹",name:"Rose",gems:1,color:"#FF69B4"},
+  {id:"heart",emoji:"❤️",name:"Heart",gems:5,color:"#FF4444"},
+  {id:"bomb",emoji:"💣",name:"Bomb",gems:10,color:G.orange},
+  {id:"crown",emoji:"👑",name:"Crown",gems:50,color:G.gold},
+  {id:"rocket",emoji:"🚀",name:"Rocket",gems:100,color:G.cyan},
+  {id:"unicorn",emoji:"🦄",name:"Unicorn",gems:200,color:G.purple},
+  {id:"diamond",emoji:"💎",name:"Diamond",gems:500,color:"#00BFFF"},
+  {id:"galaxy",emoji:"🌌",name:"Galaxy",gems:1000,color:G.volt},
+];
+
+function GiftAnimationLayer({ gifts }) {
+  return (
+    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:8888,overflow:"hidden"}}>
+      {gifts.map(function(g){
+        return (
+          <div key={g.id} style={{position:"absolute",left:g.x+"%",bottom:"20%",animation:"giftFloat 2.5s ease-out forwards",textAlign:"center"}}>
+            <div style={{fontSize:g.big?52:32,filter:"drop-shadow(0 0 12px "+g.color+")"}}>{g.emoji}</div>
+            <div style={{fontFamily:G.fBeb,fontSize:g.big?16:11,color:g.color,textShadow:"0 0 8px "+g.color}}>{g.sender}</div>
+            <div style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>💎{g.gems}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function GiftShop({ onSend }) {
+  var [open, setOpen] = useState(false);
+  var [sending, setSending] = useState(null);
+
+  function sendGift(gift){
+    setSending(gift.id);
+    onSend && onSend(gift);
+    setTimeout(function(){setSending(null);},600);
+  }
+
+  return (
+    <div className="card card-g" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}} onClick={function(){setOpen(!open);}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14}}>🎁</span>
+          <span style={{fontFamily:G.fOrb,fontSize:10,color:G.gold,letterSpacing:2}}>GIFT SHOP</span>
+          <span className="pill pill-g">ANIMATED</span>
+        </div>
+        <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
+      </div>
+      {open && (
+        <div style={{padding:"10px",display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+          {GIFT_CATALOG.map(function(g){
+            var isSending = sending===g.id;
+            return (
+              <button key={g.id} onClick={function(){sendGift(g);}}
+                style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",borderRadius:10,border:"1px solid "+(isSending?g.color:"#222"),background:isSending?"rgba(255,255,255,0.08)":"#161616",cursor:"pointer",transition:"all .15s",transform:isSending?"scale(0.9)":"scale(1)"}}>
+                <span style={{fontSize:isSending?28:22,transition:"font-size .15s"}}>{g.emoji}</span>
+                <span style={{fontFamily:G.fMon,fontSize:7,color:g.color}}>{g.name}</span>
+                <span style={{fontFamily:G.fMon,fontSize:8,color:G.gold}}>💎{g.gems}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── STREAM CONTROLS (CAM/AUDIO/HEALTH) ───────────────────────────
+function StreamControls({ camOn, setCamOn, micOn, setMicOn, bitrate, fps, latency }) {
+  var [quality, setQuality] = useState("720p");
+  var [noiseCancel, setNoiseCancel] = useState(true);
+  var [echo, setEcho] = useState(true);
+  var healthColor = latency<200?G.green:latency<400?G.orange:G.red;
+
+  return (
+    <div className="card card-c" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a"}}>
+        <span style={{fontFamily:G.fOrb,fontSize:10,color:G.cyan,letterSpacing:2}}>🎛️ STREAM CONTROLS</span>
+      </div>
+      <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:10}}>
+        {/* Cam / Mic toggles */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <button onClick={function(){setCamOn(!camOn);}}
+            style={{padding:"10px",borderRadius:8,border:"1px solid "+(camOn?G.cyan:"#333"),background:camOn?"rgba(0,229,255,0.1)":"#161616",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+            <span style={{fontSize:22}}>{camOn?"📷":"📵"}</span>
+            <span style={{fontFamily:G.fMon,fontSize:9,color:camOn?G.cyan:G.grayDim}}>CAM {camOn?"ON":"OFF"}</span>
+          </button>
+          <button onClick={function(){setMicOn(!micOn);}}
+            style={{padding:"10px",borderRadius:8,border:"1px solid "+(micOn?G.green:"#333"),background:micOn?"rgba(48,209,88,0.1)":"#161616",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+            <span style={{fontSize:22}}>{micOn?"🎙️":"🔇"}</span>
+            <span style={{fontFamily:G.fMon,fontSize:9,color:micOn?G.green:G.grayDim}}>MIC {micOn?"ON":"OFF"}</span>
+          </button>
+        </div>
+        {/* Quality */}
+        <div>
+          <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginBottom:5,letterSpacing:1}}>VIDEO QUALITY</div>
+          <div style={{display:"flex",gap:5}}>
+            {["480p","720p","1080p","4K"].map(function(q){
+              return (
+                <button key={q} onClick={function(){setQuality(q);}}
+                  style={{flex:1,padding:"5px 0",borderRadius:6,border:"1px solid "+(quality===q?G.cyan:"#333"),background:quality===q?"rgba(0,229,255,0.1)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:quality===q?G.cyan:G.grayDim}}>
+                  {q}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {/* Audio enhancements */}
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={function(){setNoiseCancel(!noiseCancel);}}
+            style={{flex:1,padding:"6px 4px",borderRadius:7,border:"1px solid "+(noiseCancel?G.green:"#333"),background:noiseCancel?"rgba(48,209,88,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:8,color:noiseCancel?G.green:G.grayDim}}>
+            🎚️ NOISE CANCEL {noiseCancel?"ON":"OFF"}
+          </button>
+          <button onClick={function(){setEcho(!echo);}}
+            style={{flex:1,padding:"6px 4px",borderRadius:7,border:"1px solid "+(echo?G.green:"#333"),background:echo?"rgba(48,209,88,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:8,color:echo?G.green:G.grayDim}}>
+            🔊 ECHO CANCEL {echo?"ON":"OFF"}
+          </button>
+        </div>
+        {/* Health metrics */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+          {[
+            {label:"BITRATE",value:bitrate+"kbps",color:G.cyan},
+            {label:"FPS",value:fps,color:G.volt},
+            {label:"LATENCY",value:latency+"ms",color:healthColor},
+          ].map(function(m){
+            return (
+              <div key={m.label} style={{padding:"8px 6px",background:"#0D0D0D",borderRadius:7,border:"1px solid #1a1a1a",textAlign:"center"}}>
+                <div style={{fontFamily:G.fBeb,fontSize:16,color:m.color}}>{m.value}</div>
+                <div style={{fontFamily:G.fMon,fontSize:7,color:G.grayDim,letterSpacing:1}}>{m.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MONETIZATION WIDGET ──────────────────────────────────────────
+var SUB_TIERS = [
+  {id:"basic",label:"Fan",price:4.99,color:G.cyan,perks:["Badge","Emotes"]},
+  {id:"pro",label:"Supporter",price:9.99,color:G.gold,perks:["All Fan perks","VIP Chat","PK Votes"]},
+  {id:"vip",label:"VIP",price:24.99,color:G.purple,perks:["All Supporter perks","DM Host","Exclusive content"]},
+];
+
+function MonetizationWidget({ onTipAlert }) {
+  var [open, setOpen] = useState(false);
+  var [subOpen, setSubOpen] = useState(false);
+  var [tipAmt, setTipAmt] = useState("");
+  var [tipMsg, setTipMsg] = useState("");
+  var [recentSubs, setRecentSubs] = useState([
+    {name:"StarGirl",tier:"VIP",ts:"2m ago"},
+    {name:"LitKid",tier:"Fan",ts:"5m ago"},
+  ]);
+
+  // Simulate new subs
+  useEffect(function(){
+    var names = ["WaveRider","HypeLord","BeatDrop","NeonKing","CloudTop","TrapGod"];
+    var interval = setInterval(function(){
+      var name = names[Math.floor(Math.random()*names.length)];
+      var tier = SUB_TIERS[Math.floor(Math.random()*SUB_TIERS.length)];
+      setRecentSubs(function(s){ return [{name:name,tier:tier.label,ts:"just now"}].concat(s).slice(0,5); });
+      onTipAlert && onTipAlert({type:"sub",name:name,tier:tier.label,color:tier.color});
+    }, 12000);
+    return function(){clearInterval(interval);};
+  },[]);
+
+  function sendTip(e){ e&&e.preventDefault();
+    if(!tipAmt) return;
+    onTipAlert && onTipAlert({type:"tip",name:"You",amount:tipAmt,msg:tipMsg,color:G.gold});
+    setTipAmt(""); setTipMsg("");
+  }
+
+  return (
+    <div className="card card-g" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}} onClick={function(){setOpen(!open);}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14}}>💰</span>
+          <span style={{fontFamily:G.fOrb,fontSize:10,color:G.gold,letterSpacing:2}}>MONETIZATION</span>
+        </div>
+        <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
+      </div>
+      {open && (
+        <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:12}}>
+          {/* Tip form */}
+          <div>
+            <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:6}}>SEND TIP</div>
+            <form onSubmit={sendTip} style={{display:"flex",flexDirection:"column",gap:6}}>
+              <div style={{display:"flex",gap:5}}>
+                {[1,5,10,20,50].map(function(v){
+                  return <button type="button" key={v} onClick={function(){setTipAmt(v);}}
+                    style={{flex:1,padding:"5px 0",borderRadius:6,border:"1px solid "+(tipAmt===v?G.gold:"#333"),background:tipAmt===v?"rgba(212,175,55,0.15)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:10,color:tipAmt===v?G.gold:G.gray}}>${v}</button>;
+                })}
+              </div>
+              <input className="inp" style={{fontSize:11}} placeholder="Add a message…" value={tipMsg} onChange={function(e){setTipMsg(e.target.value);}} />
+              <button type="submit" className="btn btn-g" style={{width:"100%"}}>💰 SEND TIP ${tipAmt||"?"}</button>
+            </form>
+          </div>
+          {/* Sub tiers */}
+          <div>
+            <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:6,cursor:"pointer",display:"flex",justifyContent:"space-between"}} onClick={function(){setSubOpen(!subOpen);}}>
+              SUBSCRIPTION TIERS <span>{subOpen?"▲":"▼"}</span>
+            </div>
+            {subOpen && SUB_TIERS.map(function(t){
+              return (
+                <div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:8,border:"1px solid "+t.color+"44",background:t.color+"0A",marginBottom:6}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontFamily:G.fBeb,fontSize:16,color:t.color}}>{t.label}</div>
+                    <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{t.perks.join(" · ")}</div>
+                  </div>
+                  <div>
+                    <div style={{fontFamily:G.fBeb,fontSize:16,color:G.gold}}>${t.price}<span style={{fontSize:9,color:G.grayDim}}>/mo</span></div>
+                    <button style={{padding:"3px 8px",background:t.color+"22",border:"1px solid "+t.color,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:8,color:t.color}}>JOIN</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Recent subs */}
+          <div>
+            <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:6}}>RECENT SUBSCRIBERS</div>
+            {recentSubs.map(function(s,i){
+              return (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                  <span style={{fontSize:14}}>⭐</span>
+                  <span style={{fontFamily:G.fRaj,fontSize:12,color:G.white,flex:1}}>{s.name}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>{s.tier}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{s.ts}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── LIVE ANALYTICS DASHBOARD ─────────────────────────────────────
+function LiveAnalytics() {
+  var [open, setOpen] = useState(true);
+  var [viewers, setViewers] = useState(1247);
+  var [peakViewers, setPeakViewers] = useState(1247);
+  var [engagement, setEngagement] = useState(82);
+  var [revenue, setRevenue] = useState(142.50);
+  var [newFollows, setNewFollows] = useState(37);
+  var [history, setHistory] = useState([60,70,75,80,88,82,79,85,90,82]);
+  var [chatRate, setChatRate] = useState(24);
+  var [giftRate, setGiftRate] = useState(8);
+
+  useEffect(function(){
+    var interval = setInterval(function(){
+      setViewers(function(v){
+        var n = Math.max(100, v + Math.floor((Math.random()-0.4)*80));
+        setPeakViewers(function(p){ return Math.max(p,n); });
+        return n;
+      });
+      setEngagement(function(e){ return Math.min(100,Math.max(10,e+(Math.random()-0.5)*8)); });
+      setRevenue(function(r){ return r + Math.random()*2.5; });
+      setNewFollows(function(f){ return f + (Math.random()>0.7?1:0); });
+      setChatRate(function(c){ return Math.max(1,Math.round(c+(Math.random()-0.5)*6)); });
+      setGiftRate(function(g){ return Math.max(0,Math.round(g+(Math.random()-0.5)*3)); });
+      setHistory(function(h){ return h.concat([Math.round(Math.min(100,Math.max(10,h[h.length-1]+(Math.random()-0.5)*15)))]).slice(-10); });
+    }, 3000);
+    return function(){clearInterval(interval);};
+  },[]);
+
+  var maxH = Math.max.apply(null,history)||1;
+
+  return (
+    <div className="card card-v" style={{margin:"0 16px 14px"}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}} onClick={function(){setOpen(!open);}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14}}>📊</span>
+          <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>LIVE ANALYTICS</span>
+          <span className="pill pill-v">{viewers.toLocaleString()} VIEWERS</span>
+        </div>
+        <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
+      </div>
+      {open && (
+        <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:10}}>
+          {/* Main stats grid */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+            {[
+              {label:"VIEWERS",value:viewers.toLocaleString(),sub:"Peak: "+peakViewers.toLocaleString(),color:G.cyan,icon:"👁️"},
+              {label:"ENGAGEMENT",value:Math.round(engagement)+"%",sub:"Interaction rate",color:G.volt,icon:"⚡"},
+              {label:"REVENUE",value:"$"+revenue.toFixed(2),sub:"This session",color:G.gold,icon:"💰"},
+              {label:"NEW FOLLOWS",value:"+"+newFollows,sub:"Since going live",color:G.green,icon:"❤️"},
+            ].map(function(s){
+              return (
+                <div key={s.label} style={{padding:"10px",background:"#0D0D0D",borderRadius:8,border:"1px solid #1a1a1a"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:4}}>
+                    <span style={{fontSize:12}}>{s.icon}</span>
+                    <span style={{fontFamily:G.fMon,fontSize:7,color:G.grayDim,letterSpacing:1}}>{s.label}</span>
+                  </div>
+                  <div style={{fontFamily:G.fBeb,fontSize:22,color:s.color,lineHeight:1}}>{s.value}</div>
+                  <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,marginTop:2}}>{s.sub}</div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Sparkline chart */}
+          <div>
+            <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,marginBottom:5,letterSpacing:1}}>VIEWER TREND (LIVE)</div>
+            <div style={{display:"flex",alignItems:"flex-end",gap:3,height:40,background:"#0D0D0D",borderRadius:6,padding:"4px 6px",border:"1px solid #1a1a1a"}}>
+              {history.map(function(v,i){
+                return (
+                  <div key={i} style={{flex:1,borderRadius:2,background:"linear-gradient(180deg,"+G.volt+","+G.cyan+"66)",height:((v/maxH)*100)+"%",minHeight:3,transition:"height .5s ease"}} />
+                );
+              })}
+            </div>
+          </div>
+          {/* Rate meters */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {[
+              {label:"CHAT/MIN",value:chatRate,max:50,color:G.cyan},
+              {label:"GIFTS/MIN",value:giftRate,max:20,color:G.gold},
+            ].map(function(m){
+              return (
+                <div key={m.label} style={{padding:"8px",background:"#0D0D0D",borderRadius:7,border:"1px solid #1a1a1a"}}>
+                  <div style={{fontFamily:G.fMon,fontSize:7,color:G.grayDim,letterSpacing:1,marginBottom:4}}>{m.label}</div>
+                  <div style={{fontFamily:G.fBeb,fontSize:18,color:m.color,marginBottom:4}}>{m.value}</div>
+                  <div style={{height:4,background:"#1a1a1a",borderRadius:2,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:Math.min(100,(m.value/m.max)*100)+"%",background:m.color,borderRadius:2,transition:"width .5s ease"}} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── COVER PAGE ───────────────────────────────────────────────────
 function CoverPage({ onEnter }) {
   return (
@@ -984,28 +1412,96 @@ function HomeTab({ onJoinRoom }) {
   );
 }
 
+// ── TIP ALERT BANNER ─────────────────────────────────────────────
+function TipAlertBanner({ alert, onDismiss }) {
+  useEffect(function(){
+    var t = setTimeout(onDismiss, 3500);
+    return function(){clearTimeout(t);};
+  },[alert]);
+
+  if(!alert) return null;
+  var isTip = alert.type==="tip";
+  var color = isTip ? G.gold : alert.color || G.cyan;
+  return (
+    <div className="tip-alert" style={{background:"rgba(0,0,0,0.92)",borderColor:color}}>
+      <span style={{fontSize:26}}>{isTip?"💰":"⭐"}</span>
+      <div>
+        <div style={{fontFamily:G.fBeb,fontSize:16,color:color}}>{alert.name} {isTip?"tipped $"+alert.amount:"subscribed · "+alert.tier}</div>
+        {isTip && alert.msg && <div style={{fontFamily:G.fRaj,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{alert.msg}</div>}
+      </div>
+    </div>
+  );
+}
+
 // ── STREAM TAB ───────────────────────────────────────────────────
 function StreamTab() {
   var [joined, setJoined] = useState(false);
+  var [camOn, setCamOn] = useState(true);
+  var [micOn, setMicOn] = useState(true);
+  var [bitrate, setBitrate] = useState(2500);
+  var [fps, setFps] = useState(30);
+  var [latency, setLatency] = useState(120);
+  var [floatingGifts, setFloatingGifts] = useState([]);
+  var [tipAlert, setTipAlert] = useState(null);
+
+  // Simulate stream health fluctuation
+  useEffect(function(){
+    if(!joined) return;
+    var interval = setInterval(function(){
+      setBitrate(function(b){ return Math.round(Math.max(800, b+(Math.random()-0.4)*200)); });
+      setFps(function(f){ return Math.max(24,Math.min(60,f+(Math.random()>0.8?-6:Math.random()>0.8?6:0))); });
+      setLatency(function(l){ return Math.round(Math.max(40,l+(Math.random()-0.45)*40)); });
+    }, 4000);
+    return function(){clearInterval(interval);};
+  },[joined]);
+
+  function handleGiftSend(gift){
+    var id = Date.now()+Math.random();
+    var x = 15 + Math.random()*70;
+    setFloatingGifts(function(g){ return g.concat([Object.assign({},gift,{id:id,x:x,sender:"You",big:gift.gems>=100})]); });
+    setTipAlert({type:"tip",name:"You",amount:(gift.gems*0.1).toFixed(2),msg:gift.name+" sent!",color:G.gold});
+    setTimeout(function(){ setFloatingGifts(function(g){ return g.filter(function(x){ return x.id!==id; }); }); }, 2600);
+  }
+
+  function handleTipAlert(alert){
+    setTipAlert(alert);
+  }
 
   return (
     <div>
+      <GiftAnimationLayer gifts={floatingGifts} />
+      <TipAlertBanner alert={tipAlert} onDismiss={function(){setTipAlert(null);}} />
       {!joined ? (
-        <div style={{padding:"16px"}}>
-          <button className="btn btn-g" style={{width:"100%",fontSize:14}} onClick={function(){setJoined(true);}}>🔴 GO LIVE</button>
+        <div style={{padding:"20px 16px",display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{fontFamily:G.fBeb,fontSize:26,color:G.white,textAlign:"center"}}>READY TO GO LIVE?</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            <button onClick={function(){setCamOn(!camOn);}}
+              style={{padding:"12px",borderRadius:8,border:"1px solid "+(camOn?G.cyan:"#333"),background:camOn?"rgba(0,229,255,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:10,color:camOn?G.cyan:G.grayDim}}>
+              {camOn?"📷 CAM ON":"📵 CAM OFF"}
+            </button>
+            <button onClick={function(){setMicOn(!micOn);}}
+              style={{padding:"12px",borderRadius:8,border:"1px solid "+(micOn?G.green:"#333"),background:micOn?"rgba(48,209,88,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:10,color:micOn?G.green:G.grayDim}}>
+              {micOn?"🎙️ MIC ON":"🔇 MIC OFF"}
+            </button>
+          </div>
+          <button className="btn btn-g" style={{width:"100%",fontSize:16,padding:"14px"}} onClick={function(){setJoined(true);}}>🔴 GO LIVE NOW</button>
         </div>
       ) : (
         <div>
           <ZEGOLiveRoom roomID="test" userID="user1" userName="Host" role="host" appID={0} serverSecret="" onLeave={function(){setJoined(false);}} />
-          <Soundboard />
+          <LiveAnalytics />
           <OctagonalVideoGrid guests={[]} hostName="Host" />
+          <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
+          <GiftShop onSend={handleGiftSend} />
+          <MonetizationWidget onTipAlert={handleTipAlert} />
+          <DMWhisper />
+          <Soundboard />
           <ScreenShare />
           <GuestControls />
           <PKBattleEngine myName="Host" />
           <MultiStreamRTMP roomID="test" />
-          <StreamAnalytics />
           <LiveChat />
-          <button className="btn btn-r" style={{margin:"16px",width:"calc(100% - 32px)"}} onClick={function(){setJoined(false);}}>END STREAM</button>
+          <button className="btn btn-r" style={{margin:"16px",width:"calc(100% - 32px)"}} onClick={function(){setJoined(false);}}>■ END STREAM</button>
         </div>
       )}
     </div>
