@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 var CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'Education', 'Business', 'Sports', 'Lifestyle'];
 
 var QUICK_ACTIONS = [
-  { label: 'Go Live',      icon: Radio,   href: 'LiveRoom',       color: '#CC7755', bg: 'rgba(204,119,85,0.15)',   border: 'rgba(204,119,85,0.3)' },
+  { label: 'Go Live',      icon: Radio,   href: '/SeeWhyLIVEv17', color: '#CC7755', bg: 'rgba(204,119,85,0.15)',   border: 'rgba(204,119,85,0.3)' },
   { label: 'Watch Party',  icon: Eye,     href: 'WatchParty',     color: '#6B7C4A', bg: 'rgba(107,124,74,0.15)',   border: 'rgba(107,124,74,0.3)' },
   { label: 'PK Battles',   icon: Swords,  href: 'PKBattleManager',color: '#d4af37', bg: 'rgba(212,175,55,0.12)',   border: 'rgba(212,175,55,0.25)' },
   { label: 'Featured',     icon: Star,    href: 'FeaturedContent',color: '#8B6F47', bg: 'rgba(139,111,71,0.15)',   border: 'rgba(139,111,71,0.3)' },
@@ -177,8 +177,9 @@ export default function Home() {
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-w-2xl mx-auto">
             {QUICK_ACTIONS.map(function(action) {
               var Icon = action.icon;
+              var href = action.href.startsWith('/') ? action.href : createPageUrl(action.href);
               return (
-                <Link key={action.label} to={createPageUrl(action.href)}>
+                <Link key={action.label} to={href}>
                   <motion.div whileTap={{ scale: 0.92 }}
                     className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl cursor-pointer transition-all active:opacity-80"
                     style={{ background: action.bg, border: '1px solid ' + action.border }}>
@@ -198,7 +199,7 @@ export default function Home() {
          <div className="px-4 pt-6 pb-4 space-y-3">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
              {/* 20-Person Panel Grid */}
-             <Link to={createPageUrl('LiveRoom')} className="group">
+             <Link to="/SeeWhyLIVEv17" className="group">
                <motion.div
                  whileHover={{ scale: 1.02 }}
                  className="relative overflow-hidden rounded-2xl h-40 flex flex-col items-center justify-center cursor-pointer transition-all"
@@ -356,7 +357,7 @@ export default function Home() {
                       <p className="font-bold text-white/60">No live rooms right now</p>
                       <p className="text-sm text-white/30 mt-1">Be the first to go live!</p>
                     </div>
-                    <Link to={createPageUrl('LiveRoom')}>
+                    <Link to="/SeeWhyLIVEv17">
                       <Button className="font-bold" style={{ background: '#d4af37', color: '#000' }}>
                         <Radio className="w-4 h-4 mr-2" /> Go Live Now
                       </Button>
