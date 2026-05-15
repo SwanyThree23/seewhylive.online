@@ -26,7 +26,7 @@ import SwanyBotWidget from '@/components/guide/ARIAWidget';
 var MOBILE_NAV = [
   { name: 'Home',      icon: Home,          href: createPageUrl('Home') },
   { name: 'Discover',  icon: SearchIcon,    href: createPageUrl('Discover') },
-  { name: 'LIVE',      icon: Radio,         href: '/SeeWhyLIVEv17',   isCenter: true },
+  { name: 'LIVE',      icon: Radio,         href: '/SeeWhyLIVEv17?direct=1',   isCenter: true },
   { name: 'Battles',   icon: Swords,        href: createPageUrl('PKBattleManager') },
   { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
 ];
@@ -161,7 +161,7 @@ export default function Layout({ children, currentPageName }) {
             </button>
 
             {/* Go Live — mobile prominent */}
-            <Link to="/SeeWhyLIVEv17" className="md:hidden">
+            <Link to="/SeeWhyLIVEv17?direct=1" className="md:hidden">
               <button className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-black uppercase transition-all active:scale-95"
                 style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
                 <Radio className="w-3.5 h-3.5" />
@@ -170,7 +170,7 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             {/* Desktop: Studio + Create */}
-            <Link to="/SeeWhyLIVEv17" className="hidden md:flex">
+            <Link to="/SeeWhyLIVEv17?direct=1" className="hidden md:flex">
               <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-bold uppercase transition-all"
                 style={{ background: 'rgba(107,68,35,0.25)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <Radio className="w-3.5 h-3.5" />

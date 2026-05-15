@@ -1535,8 +1535,10 @@ function CommunityTab() {
 
 // ── MAIN APP ─────────────────────────────────────────────────────
 export default function SeeWhyLIVEv17() {
-  var [tab, setTab] = useState("home");
-  var [entered, setEntered] = useState(false);
+  var urlParams = new URLSearchParams(window.location.search);
+  var skipCover = urlParams.get("direct") === "1" || urlParams.get("tab") === "stream";
+  var [tab, setTab] = useState(urlParams.get("tab") || "stream");
+  var [entered, setEntered] = useState(skipCover);
 
   useEffect(function(){
     var style = document.createElement("style");
