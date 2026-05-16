@@ -4,13 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  Mic, MicOff, Video, VideoOff, PhoneOff, Users, Globe,
-  Radio, Plus, Crown, LogOut, Copy, Maximize2, Minimize2,
-  ChevronLeft, ChevronRight, Swords, BarChart2, Shield,
-  Monitor, Settings, Zap,
+  Mic, MicOff, Video, VideoOff, PhoneOff, Users,
+  Radio, LogOut, Copy, Maximize2, Minimize2,
+  ChevronLeft, ChevronRight, Swords, Monitor,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { motion as m } from 'framer-motion';
 
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
@@ -522,6 +520,8 @@ export default function BroadcastStudio() {
                 maxSlots={20}
                 isHost={canManage}
                 onInvite={copyLink}
+                remoteStreams={remoteStreams}
+                peerUserIds={peerUserIds}
               />
             </motion.div>
           )}

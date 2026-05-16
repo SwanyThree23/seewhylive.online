@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Trophy, Zap, Crown } from 'lucide-react';
+import { Swords, Crown } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const TIERS = [
   { id: 'bronze',   label: 'Bronze',   emoji: '🥉', color: '#cd7f32', pts: 10,  bg: 'rgba(205,127,50,0.12)',  border: 'rgba(205,127,50,0.3)' },
@@ -25,22 +27,59 @@ function FloatingBurst({ tier, onDone }) {
 }
 
 export default function BattleTiers({ partyId, currentUser, members = [], hostId }) {
-  const [scores, setScores] = useState({});       // { userId: totalPts }
-  const [bursts, setBursts] = useState([]);        // [{id, tier}]
-  const [myPts, setMyPts] = useState(0);
+  const qc = useQueryClient();
+  const [bursts, setBursts] = useState([]);
   const burstId = useRef(0);
 
-  const sendTier = (tier) => {
-    if (!currentUser) return;
-    const uid = currentUser.id;
-    setScores(prev => ({ ...prev, [uid]: (prev[uid] || 0) + tier.pts }));
-    setMyPts(p => p + tier.pts);
+  // Fetch all tier events from the DB (Message entity, type battle_tier)
+  const { data: tierMessages = [] } = useQuery({
+    queryKey: ['battle-tiers', partyId],
+    queryFn: () => base44.entities.Message.filter({ room_id: partyId, message_type: 'battle_tier' }),
+    enabled: !!partyId,
+  });
+
+  // Real-time subscription so every client sees new awards instantly
+  useEffect(() => {
+    if (!partyId) return;
+    const unsub = base44.entities.Message.subscribe((event) => {
+      if (event.data?.room_id !== partyId || event.data?.message_type !== 'battle_tier') return;
+      qc.invalidateQueries(['battle-tiers', partyId]);
+    });
+    return unsub;
+  }, [partyId, qc]);
+
+  // Derive scores from messages
+  const scores = useMemo(() => {
+    const map = {};
+    tierMessages.forEach(msg => {
+      try {
+        const { userId, pts } = JSON.parse(msg.content);
+        map[userId] = (map[userId] || 0) + pts;
+      } catch {}
+    });
+    return map;
+  }, [tierMessages]);
+
+  const myPts = currentUser ? (scores[currentUser.id] || 0) : 0;
+
+  const sendTier = async (tier) => {
+    if (!currentUser || !partyId) return;
+    // Optimistic burst animation
     const id = ++burstId.current;
     setBursts(p => [...p, { id, tier }]);
     setTimeout(() => setBursts(p => p.filter(b => b.id !== id)), 1300);
+    // Persist to DB
+    await base44.entities.Message.create({
+      room_id: partyId,
+      user_id: currentUser.id,
+      user_name: currentUser.full_name || currentUser.email,
+      message_type: 'battle_tier',
+      content: JSON.stringify({ userId: currentUser.id, pts: tier.pts, tierId: tier.id }),
+    });
+    qc.invalidateQueries(['battle-tiers', partyId]);
   };
 
-  // Sorted leaderboard
+  // Sorted leaderboard derived from DB scores
   const board = members
     .map(m => ({ name: m.user_name, uid: m.user_id, pts: scores[m.user_id] || 0 }))
     .sort((a, b) => b.pts - a.pts)
