@@ -88,6 +88,19 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
     };
   }, [videoId]);
 
+  // Periodic sync push every 3s so viewers stay in sync during continuous playback
+  useEffect(() => {
+    if (!isHost) return;
+    const iv = setInterval(() => {
+      if (!playerRef.current?.getPlayerState) return;
+      const state = playerRef.current.getPlayerState();
+      if (state === window.YT?.PlayerState?.PLAYING) {
+        onStateChange({ playing: true, currentTime: playerRef.current.getCurrentTime() || 0 });
+      }
+    }, 3000);
+    return () => clearInterval(iv);
+  }, [isHost, onStateChange]);
+
   // Sync from host
   useEffect(() => {
     if (isHost || !playerRef.current || !syncData) return;
@@ -119,6 +132,16 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
       currentTime: videoRef.current.currentTime,
     });
   };
+
+  // Periodic sync push every 3s so viewers stay in sync during continuous playback
+  useEffect(() => {
+    if (!isHost) return;
+    const iv = setInterval(() => {
+      if (!videoRef.current || videoRef.current.paused) return;
+      onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
+    }, 3000);
+    return () => clearInterval(iv);
+  }, [isHost, onStateChange]);
 
   useEffect(() => {
     if (isHost || !videoRef.current || !syncData) return;
