@@ -9,6 +9,7 @@ import {
   ChevronLeft, ChevronRight, Swords, Monitor,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
@@ -200,6 +201,7 @@ function CreateScreen({ onSubmit, isPending }) {
             placeholder="Broadcast title…"
             value={title}
             onChange={e => setTitle(e.target.value)}
+            maxLength={120}
             className="h-11 text-white placeholder:text-white/30"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
           />
@@ -227,6 +229,7 @@ function CreateScreen({ onSubmit, isPending }) {
               placeholder="YouTube URL or direct video URL (optional)…"
               value={videoUrl}
               onChange={e => setVideoUrl(e.target.value)}
+              maxLength={2048}
               className="h-10 text-white placeholder:text-white/30"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
@@ -345,11 +348,12 @@ export default function BroadcastStudio() {
 
   const createMut = useMutation({
     mutationFn: async ({ title, videoUrl, mode }) => {
-      const type = videoUrl ? detectVideoType(videoUrl) : 'live';
+      const safeUrl = (videoUrl && isSafeUrl(videoUrl)) ? videoUrl : '';
+      const type = safeUrl ? detectVideoType(safeUrl) : 'live';
       const p = await base44.entities.WatchParty.create({
         host_id: user.id,
-        title: title || 'Broadcast Studio',
-        video_url: videoUrl || '',
+        title: clampStr(title, LIMITS.ROOM_TITLE) || 'Broadcast Studio',
+        video_url: safeUrl,
         video_type: type,
         status: 'active',
         participant_count: 1,
@@ -399,8 +403,9 @@ export default function BroadcastStudio() {
     );
   }
 
-  const ytId = party.video_type === 'youtube' ? getYouTubeId(party.video_url) : null;
-  const hasVideo = !!party.video_url;
+  const safeVideoUrl = isSafeUrl(party.video_url) ? party.video_url : '';
+  const ytId = party.video_type === 'youtube' ? getYouTubeId(safeVideoUrl) : null;
+  const hasVideo = !!safeVideoUrl;
   const showVideoPlayer = (studioMode === 'watch' || studioMode === 'hybrid') && hasVideo;
 
   const RIGHT_TABS = [
@@ -542,7 +547,7 @@ export default function BroadcastStudio() {
                 />
               ) : (
                 <DirectPlayer
-                  url={party.video_url}
+                  url={safeVideoUrl}
                   isHost={isHost}
                   syncData={isHost ? null : (syncData || party)}
                   onStateChange={pushState}

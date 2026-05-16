@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { LIMITS } from '@/lib/security';
 
 const REACTIONS = ['😂', '❤️', '🔥', '👏', '😮', '🎉', '💯', '🤩', '😍'];
 
@@ -34,7 +35,7 @@ export default function ReactionOverlay({ partyId, currentUser }) {
       if (!REACTIONS.includes(emoji)) return;
       const id = ++idRef.current;
       const x = Math.random() * 200 - 100;
-      setReactions(p => [...p, { id, emoji, x }]);
+      setReactions(p => [...p.slice(-(LIMITS.REACTION_BUFFER - 1)), { id, emoji, x }]);
       setTimeout(() => setReactions(p => p.filter(r => r.id !== id)), 2400);
     });
     return unsub;
@@ -47,7 +48,7 @@ export default function ReactionOverlay({ partyId, currentUser }) {
     // Optimistic local reaction
     const id = ++idRef.current;
     const x = Math.random() * 200 - 100;
-    setReactions(p => [...p, { id, emoji, x }]);
+    setReactions(p => [...p.slice(-(LIMITS.REACTION_BUFFER - 1)), { id, emoji, x }]);
     setTimeout(() => setReactions(p => p.filter(r => r.id !== id)), 2400);
     // Broadcast to all party members
     await base44.entities.Message.create({
