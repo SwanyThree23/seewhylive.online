@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import AuraPanelDrawer from "@/components/live/AuraPanelDrawer";
 import SwanDirectorPanel, { SwanDirectorHUD } from "@/components/live/SwanDirectorPanel";
 import ClipCreatorSheet from "@/components/live/ClipCreatorSheet";
+import { MerchShopV2, ViewerControlsV2, InRoomSubWidgetV2, TipAlertConfig, EngagementDashboardV2 } from "@/components/live/v162Components";
 
 // ── DESIGN TOKENS ────────────────────────────────────────────────
 var G = {
@@ -66,7 +67,7 @@ function lsSet(key, val) {
 // ── CSS ──────────────────────────────────────────────────────────
 var CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&family=Bebas+Neue&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:hidden}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:#0D0D0D}::-webkit-scrollbar-thumb{background:#8B0000;border-radius:2px}
 .sw-root{display:flex;flex-direction:column;min-height:100vh;max-width:430px;margin:0 auto;background:#080808;position:relative}
@@ -148,16 +149,20 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .rtmp-dest{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#161616;border-radius:8px;margin-bottom:6px;border:1px solid #1a1a1a}
 .watch-tile{border-radius:10px;overflow:hidden;border:1px solid #1a1a1a;background:#161616;cursor:pointer}
 @keyframes giftFloat{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-120px) scale(1.2)}100%{opacity:0;transform:translateY(-200px) scale(0.8)}}
-@keyframes giftFly{0%{opacity:0;transform:translateY(40px) scale(0.5) rotate(-10deg)}20%{opacity:1;transform:translateY(0) scale(1.15) rotate(5deg)}80%{opacity:1;transform:translateY(-80px) scale(1) rotate(-3deg)}100%{opacity:0;transform:translateY(-180px) scale(0.7) rotate(8deg)}}
-.gift-fly{animation:giftFly 2.8s ease-out forwards}
-.tip-alert{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9990;min-width:220px;max-width:320px;padding:12px 18px;border-radius:12px;display:flex;align-items:center;gap:10;border:1px solid;animation:tipSlide .4s ease-out}
+.tip-alert{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9990;min-width:220px;max-width:320px;padding:12px 18px;border-radius:12px;display:flex;align-items:center;gap:10px;border:1px solid;animation:tipSlide .4s ease-out}
 @keyframes tipSlide{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.engage-ring{animation:engageRing 2s ease-in-out infinite}
-@keyframes engageRing{0%,100%{box-shadow:0 0 0 0 rgba(200,255,0,0.5)}50%{box-shadow:0 0 0 10px rgba(200,255,0,0)}}
-.gift-legendary-glow{filter:drop-shadow(0 0 18px #FFD700) drop-shadow(0 0 36px #FFD70066)}
-.gift-epic-glow{filter:drop-shadow(0 0 14px #BF5FFF) drop-shadow(0 0 28px #BF5FFF66)}
-.gift-rare-glow{filter:drop-shadow(0 0 10px #0A84FF)}
-.gift-common-glow{filter:drop-shadow(0 0 6px #888)}
+.tip-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);width:92%;max-width:400px;z-index:9992;animation:toastIn .4s ease,toastOut .4s ease 3.6s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+.gift-fly{position:absolute;animation:giftFly 2.5s ease-out forwards;pointer-events:none}
+@keyframes giftFly{0%{transform:translateY(0) scale(.6);opacity:1}60%{opacity:1}100%{transform:translateY(-90vh) scale(1.3);opacity:0}}
+.gift-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100vh;z-index:9991;pointer-events:none;overflow:hidden}
+.drawer{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#0D0D0D;border-top:2px solid #8B0000;border-radius:20px 20px 0 0;z-index:9500;animation:drawerUp .3s ease-out}
+@keyframes drawerUp{from{transform:translateX(-50%) translateY(100%)}to{transform:translateX(-50%) translateY(0)}}
+.overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9499}
+.engage-ring{animation:engageRing 2s ease infinite}
+@keyframes engageRing{0%,100%{box-shadow:0 0 0 0 rgba(200,255,0,.4)}50%{box-shadow:0 0 0 12px rgba(200,255,0,0)}}
+.coin-spin{animation:coinSpin .5s ease-out}@keyframes coinSpin{0%{transform:scale(0) rotateY(0deg)}100%{transform:scale(1) rotateY(360deg)}}
 `;
 
 // ── ZEGOCLOUD LIVE ROOM ──────────────────────────────────────────
@@ -987,120 +992,138 @@ function LiveChat() {
   );
 }
 
-// ── DM / WHISPER SYSTEM ──────────────────────────────────────────
-var DM_NAMES = ["MixMaster","StarGirl","DrumKing","VibezQn","LitKid","GoldenFlo","CyphaBoss","SlickTalk"];
-function DMWhisper() {
+// ── DM / WHISPER SYSTEM (v16.2) ──────────────────────────────────
+var DM_PANELISTS = [
+  {id:"p1",name:"VibeN",role:"cohost",online:true,color:G.gold},
+  {id:"p2",name:"CaliBones",role:"guest",online:true,color:G.cyan},
+  {id:"p3",name:"WestCoast",role:"guest",online:false,color:G.purple},
+  {id:"p4",name:"JayDomino",role:"guest",online:true,color:G.green},
+];
+
+function DMWhisper({ localName }) {
   var [open, setOpen] = useState(false);
-  var [selected, setSelected] = useState(DM_NAMES[0]);
-  var [threads, setThreads] = useState({});
+  var [view, setView] = useState("list");
+  var [selected, setSelected] = useState(null);
+  var [threads, setThreads] = useState({
+    p1:[{from:"VibeN",text:"Ready to go live!",ts:Date.now()-300000,whisper:false},{from:"Host",text:"Let's get it 🎲",ts:Date.now()-240000,whisper:false}],
+    p2:[{from:"CaliBones",text:"Can you hear me ok?",ts:Date.now()-120000,whisper:true}],
+    p3:[],p4:[],
+  });
   var [input, setInput] = useState("");
-  var [unread, setUnread] = useState({MixMaster:1, StarGirl:2});
-  var msgRef = useRef(null);
+  var [isWhisper, setIsWhisper] = useState(false);
+  var endRef = useRef(null);
+  var me = localName || "Host";
 
-  // simulate incoming DM
-  useEffect(function(){
-    var interval = setInterval(function(){
-      var sender = DM_NAMES[Math.floor(Math.random()*DM_NAMES.length)];
-      var lines = ["Yo let me hop in 🔥","Can you hear me?","Battle me rn ⚔️","W stream fr","Send me the link","Bro this is LIVE 💎","Let's collab!"];
-      var text = lines[Math.floor(Math.random()*lines.length)];
-      setThreads(function(t){
-        var prev = t[sender]||[];
-        return Object.assign({},t,{[sender]:prev.concat([{id:Date.now(),from:sender,text:text,ts:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}])});
-      });
-      setUnread(function(u){ return Object.assign({},u,{[sender]:(u[sender]||0)+1}); });
-    }, 5000);
-    return function(){clearInterval(interval);};
-  },[]);
+  useEffect(function(){ if(endRef.current) endRef.current.scrollIntoView({behavior:"smooth"}); },[selected,threads]);
 
-  useEffect(function(){
-    if(msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
-  },[threads, selected]);
+  function unreadCount(pid){ return (threads[pid]||[]).filter(function(m){return m.from!==me&&!m.read;}).length; }
+  var totalUnread = DM_PANELISTS.reduce(function(s,p){return s+unreadCount(p.id);},0);
 
-  var totalUnread = Object.values(unread).reduce(function(a,b){return a+b;},0);
-  var currentThread = threads[selected]||[];
-
-  function send(e){ e&&e.preventDefault(); if(!input.trim()) return;
-    setThreads(function(t){ var prev=t[selected]||[]; return Object.assign({},t,{[selected]:prev.concat([{id:Date.now(),from:"You",text:input,ts:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}])}); });
-    setInput(""); }
-
-  function selectUser(name){ setSelected(name); setUnread(function(u){ return Object.assign({},u,{[name]:0}); }); }
+  function sendMsg(){
+    if(!input.trim()||!selected) return;
+    var msg={from:me,text:input.trim(),ts:Date.now(),whisper:isWhisper};
+    setThreads(function(t){var n=Object.assign({},t);n[selected.id]=(n[selected.id]||[]).concat([msg]);return n;});
+    setInput("");
+  }
 
   return (
     <div className="card card-p" style={{margin:"0 16px 14px"}}>
-      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}} onClick={function(){setOpen(!open);}}>
+      <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}} onClick={function(){setOpen(!open);setView("list");}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:14}}>💬</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.purple,letterSpacing:2}}>DM / WHISPER</span>
-          {totalUnread>0 && <span style={{background:G.crimsonBright,color:"#fff",borderRadius:10,padding:"1px 6px",fontFamily:G.fMon,fontSize:9,fontWeight:700}}>{totalUnread}</span>}
+          {totalUnread>0&&<span style={{background:G.crimsonBright,color:"#fff",borderRadius:10,padding:"1px 6px",fontFamily:G.fMon,fontSize:9,fontWeight:700}}>{totalUnread}</span>}
+          <span className="pill pill-r" style={{fontSize:7}}>PANELISTS ONLY</span>
         </div>
         <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
       </div>
-      {open && (
+      {open && view==="list" && (
         <div>
-          {/* Contact list */}
-          <div style={{display:"flex",overflowX:"auto",gap:6,padding:"8px 10px",borderBottom:"1px solid #1a1a1a"}}>
-            {DM_NAMES.map(function(name){
-              var u = unread[name]||0;
-              var isActive = selected===name;
-              return (
-                <button key={name} onClick={function(){selectUser(name);}}
-                  style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 8px",borderRadius:8,border:"1px solid "+(isActive?G.purple:"#222"),background:isActive?"rgba(191,95,255,0.12)":"#161616",cursor:"pointer",position:"relative"}}>
-                  <span style={{fontSize:18}}>🎤</span>
-                  <span style={{fontFamily:G.fMon,fontSize:7,color:isActive?G.purple:G.gray}}>{name.slice(0,6)}</span>
-                  {u>0&&<span style={{position:"absolute",top:1,right:1,background:G.crimsonBright,borderRadius:"50%",width:14,height:14,fontSize:8,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon}}>{u}</span>}
-                </button>
-              );
-            })}
-          </div>
-          {/* Thread */}
-          <div ref={msgRef} style={{height:130,overflowY:"auto",padding:"8px 12px",display:"flex",flexDirection:"column",gap:4}}>
-            {currentThread.length===0 && <div style={{color:G.grayDim,fontFamily:G.fMon,fontSize:10,textAlign:"center",marginTop:20}}>No messages yet. Say hi!</div>}
-            {currentThread.map(function(m){
-              var isMe = m.from==="You";
-              return (
-                <div key={m.id} style={{display:"flex",flexDirection:"column",alignItems:isMe?"flex-end":"flex-start"}}>
-                  <div style={{maxWidth:"80%",padding:"6px 10px",borderRadius:10,background:isMe?"rgba(191,95,255,0.2)":"rgba(255,255,255,0.06)",border:"1px solid "+(isMe?"rgba(191,95,255,0.4)":"#222"),fontFamily:G.fRaj,fontSize:12,color:isMe?G.purple:G.white}}>
-                    {m.text}
+          <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,padding:"6px 14px",letterSpacing:1}}>WHISPER=private · DM=seen after stream</div>
+          {DM_PANELISTS.map(function(p){
+            var msgs=threads[p.id]||[];var last=msgs.length?msgs[msgs.length-1]:null;var unread=unreadCount(p.id);
+            return (
+              <div key={p.id} onClick={function(){setSelected(p);setView("chat");}} style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
+                <div style={{position:"relative"}}>
+                  <div style={{width:38,height:38,borderRadius:"50%",background:"radial-gradient(circle,"+p.color+"33,#080808)",border:"2px solid "+(p.online?p.color:G.grayDim),display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fOrb,fontSize:13,color:p.color}}>{p.name[0]}</div>
+                  <div style={{position:"absolute",bottom:0,right:0,width:9,height:9,borderRadius:"50%",background:p.online?G.green:G.grayDim,border:"2px solid #080808"}} />
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",justifyContent:"space-between"}}>
+                    <span style={{fontFamily:G.fRaj,fontSize:13,fontWeight:700,color:G.white}}>{p.name}</span>
+                    <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{p.role}</span>
                   </div>
-                  <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,marginTop:2}}>{m.ts}</span>
+                  <div style={{fontFamily:G.fRaj,fontSize:11,color:G.gray,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{last?(last.whisper?"🤫 ":"")+last.text:"No messages yet"}</div>
+                </div>
+                {unread>0&&<div style={{width:17,height:17,borderRadius:"50%",background:G.crimsonBright,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:8,color:"#fff"}}>{unread}</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {open && view==="chat" && selected && (
+        <div>
+          <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a",display:"flex",alignItems:"center",gap:8}}>
+            <button onClick={function(){setView("list");}} style={{background:"none",border:"none",color:G.gold,fontSize:16,cursor:"pointer"}}>←</button>
+            <div style={{width:28,height:28,borderRadius:"50%",background:"radial-gradient(circle,"+selected.color+"33,#080808)",border:"2px solid "+selected.color,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fOrb,fontSize:11,color:selected.color}}>{selected.name[0]}</div>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:G.fRaj,fontSize:13,fontWeight:700,color:G.white}}>{selected.name}</div>
+              <div style={{fontFamily:G.fMon,fontSize:8,color:G.gray}}>{selected.online?"● online":"○ offline"}</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:5}}>
+              <span style={{fontFamily:G.fMon,fontSize:8,color:isWhisper?G.purple:G.gray}}>WHISPER</span>
+              <div onClick={function(){setIsWhisper(function(w){return !w;});}} style={{width:26,height:15,borderRadius:8,background:isWhisper?G.purple:G.grayDim,position:"relative",cursor:"pointer",transition:"background .2s"}}>
+                <div style={{position:"absolute",top:2,left:isWhisper?13:2,width:11,height:11,borderRadius:"50%",background:G.white,transition:"left .18s"}} />
+              </div>
+            </div>
+          </div>
+          <div style={{height:150,overflowY:"auto",padding:"10px 14px",display:"flex",flexDirection:"column",gap:6}}>
+            {(threads[selected.id]||[]).map(function(m,i){
+              var isMe=m.from===me;
+              return (
+                <div key={i} style={{display:"flex",justifyContent:isMe?"flex-end":"flex-start"}}>
+                  <div style={{maxWidth:"78%",padding:"7px 11px",borderRadius:isMe?"12px 12px 2px 12px":"12px 12px 12px 2px",background:isMe?G.crimson+"dd":G.surfaceBg,border:"1px solid "+(m.whisper?G.purple:isMe?G.crimsonBright+"55":"#222")}}>
+                    {m.whisper&&<div style={{fontFamily:G.fMon,fontSize:7,color:G.purple,marginBottom:2}}>🤫 WHISPER</div>}
+                    <div style={{fontFamily:G.fRaj,fontSize:12,color:G.white}}>{m.text}</div>
+                    <div style={{fontFamily:G.fMon,fontSize:7,color:G.grayDim,marginTop:2,textAlign:isMe?"right":"left"}}>{new Date(m.ts).toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"})}</div>
+                  </div>
                 </div>
               );
             })}
+            <div ref={endRef} />
           </div>
-          <form onSubmit={send} style={{display:"flex",gap:6,padding:"6px 10px 10px"}}>
-            <input className="inp" style={{flex:1,fontSize:11,padding:"6px 10px"}} placeholder={"Whisper to "+selected+"…"} value={input} onChange={function(e){setInput(e.target.value);}} />
-            <button type="submit" style={{padding:"6px 12px",background:"rgba(191,95,255,0.2)",border:"1px solid "+G.purple,borderRadius:6,cursor:"pointer",fontFamily:G.fMon,fontSize:10,color:G.purple}}>SEND</button>
-          </form>
+          <div style={{display:"flex",gap:6,padding:"8px 14px 12px"}}>
+            <input className="inp" style={{flex:1,padding:"7px 10px",fontSize:11,border:"1px solid "+(isWhisper?G.purple:G.grayDim)}} placeholder={isWhisper?"🤫 Whisper privately...":"Message "+selected.name+"..."} value={input} onChange={function(e){setInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")sendMsg();}} />
+            <button className="btn btn-r" style={{padding:"7px 12px",fontSize:11}} onClick={sendMsg}>{isWhisper?"🤫":"▶"}</button>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-// ── GIFT ANIMATION OVERLAY ───────────────────────────────────────
+// ── GIFT ANIMATION OVERLAY (v16.2) ───────────────────────────────
 var GIFT_CATALOG = [
-  {id:"rose",emoji:"🌹",name:"Rose",gems:1,color:"#FF69B4"},
-  {id:"heart",emoji:"❤️",name:"Heart",gems:5,color:"#FF4444"},
-  {id:"bomb",emoji:"💣",name:"Bomb",gems:10,color:G.orange},
-  {id:"crown",emoji:"👑",name:"Crown",gems:50,color:G.gold},
-  {id:"rocket",emoji:"🚀",name:"Rocket",gems:100,color:G.cyan},
-  {id:"unicorn",emoji:"🦄",name:"Unicorn",gems:200,color:G.purple},
-  {id:"diamond",emoji:"💎",name:"Diamond",gems:500,color:"#00BFFF"},
-  {id:"galaxy",emoji:"🌌",name:"Galaxy",gems:1000,color:G.volt},
+  {id:"domino",emoji:"🎲",name:"Domino",gems:5,color:"#C41E3A",scale:1},
+  {id:"heart",emoji:"💖",name:"Heart",gems:10,color:"#E91E8C",scale:1.1},
+  {id:"money",emoji:"💸",name:"Money Bag",gems:25,color:G.gold,scale:1.2},
+  {id:"crown",emoji:"👑",name:"Crown",gems:50,color:G.goldBright||"#FFD700",scale:1.4},
+  {id:"lightning",emoji:"⚡",name:"Lightning",gems:100,color:G.volt,scale:1.6},
+  {id:"rocket",emoji:"🚀",name:"Rocket",gems:200,color:G.cyan,scale:1.8},
+  {id:"bone",emoji:"🦴",name:"Cali Bone",gems:500,color:G.cyan,scale:2.2},
+  {id:"domino_set",emoji:"🎯",name:"Full Set",gems:1000,color:G.gold,scale:2.8},
 ];
-
-var RARITY_GLOW_CLASS = { legendary:"gift-legendary-glow", epic:"gift-epic-glow", rare:"gift-rare-glow", common:"gift-common-glow" };
 
 function GiftAnimationLayer({ gifts }) {
   return (
-    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:8888,overflow:"hidden"}}>
+    <div className="gift-overlay">
       {gifts.map(function(g){
-        var glowCls = RARITY_GLOW_CLASS[g.rarity] || "gift-common-glow";
+        var gx = 10+Math.floor(Math.abs(((g.id||0)*37)%80));
         return (
-          <div key={g.id} className="gift-fly" style={{position:"absolute",left:g.x+"%",bottom:"20%",textAlign:"center"}}>
-            <div className={glowCls} style={{fontSize:g.big?56:34}}>{g.emoji}</div>
-            <div style={{fontFamily:G.fBeb,fontSize:g.big?16:11,color:g.color||G.gold,textShadow:"0 0 8px "+(g.color||G.gold)}}>{g.sender}</div>
-            <div style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>💎{g.gems}</div>
+          <div key={g.id} className="gift-fly" style={{left:(g.x||gx)+"%",bottom:0,textAlign:"center"}}>
+            <div style={{fontSize:(g.scale||1)*26+"px",filter:"drop-shadow(0 0 12px "+(g.color||G.gold)+")"}}>{g.emoji}</div>
+            <div style={{fontFamily:G.fBeb,fontSize:(g.scale||1)*9+"px",color:g.color||G.gold}}>{g.name}</div>
+            {g.sender&&<div style={{fontFamily:G.fMon,fontSize:8,color:"rgba(255,255,255,0.7)"}}>{g.sender}</div>}
           </div>
         );
       })}
@@ -1108,14 +1131,18 @@ function GiftAnimationLayer({ gifts }) {
   );
 }
 
-function GiftShop({ onSend }) {
+function GiftShop({ onSend, gemBalance }) {
   var [open, setOpen] = useState(false);
   var [sending, setSending] = useState(null);
+  var [recentGift, setRecentGift] = useState(null);
+  var bal = gemBalance || 150;
 
   function sendGift(gift){
+    if(bal < gift.gems) return;
     setSending(gift.id);
     onSend && onSend(gift);
-    setTimeout(function(){setSending(null);},600);
+    setRecentGift(gift.name);
+    setTimeout(function(){setSending(null); setRecentGift(null);},2000);
   }
 
   return (
@@ -1125,22 +1152,30 @@ function GiftShop({ onSend }) {
           <span style={{fontSize:14}}>🎁</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.gold,letterSpacing:2}}>GIFT SHOP</span>
           <span className="pill pill-g">ANIMATED</span>
+          <span style={{fontFamily:G.fMon,fontSize:9,color:G.purple}}>💎{bal}</span>
         </div>
         <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
       </div>
       {open && (
-        <div style={{padding:"10px",display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
-          {GIFT_CATALOG.map(function(g){
-            var isSending = sending===g.id;
-            return (
-              <button key={g.id} onClick={function(){sendGift(g);}}
-                style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",borderRadius:10,border:"1px solid "+(isSending?g.color:"#222"),background:isSending?"rgba(255,255,255,0.08)":"#161616",cursor:"pointer",transition:"all .15s",transform:isSending?"scale(0.9)":"scale(1)"}}>
-                <span style={{fontSize:isSending?28:22,transition:"font-size .15s"}}>{g.emoji}</span>
-                <span style={{fontFamily:G.fMon,fontSize:7,color:g.color}}>{g.name}</span>
-                <span style={{fontFamily:G.fMon,fontSize:8,color:G.gold}}>💎{g.gems}</span>
-              </button>
-            );
-          })}
+        <div style={{padding:"10px"}}>
+          {recentGift&&<div className="coin-spin" style={{textAlign:"center",padding:"6px",background:"rgba(212,175,55,.1)",marginBottom:8,borderRadius:8}}><span style={{fontFamily:G.fBeb,fontSize:14,color:G.gold}}>✨ {recentGift} SENT!</span></div>}
+          <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,letterSpacing:1,marginBottom:8}}>90% OF GEM VALUE → REAL TIP TO CREATOR</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+            {GIFT_CATALOG.map(function(g){
+              var ok = bal >= g.gems;
+              var isSending = sending===g.id;
+              var split = calcSplit(g.gems*GEM_TO_USD);
+              return (
+                <button key={g.id} onClick={function(){sendGift(g);}} disabled={!ok}
+                  style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 4px",borderRadius:10,border:"1px solid "+(isSending?g.color:ok?g.color+"44":"#111"),background:isSending?"rgba(255,255,255,0.08)":ok?G.surfaceBg:"#0a0a0a",cursor:ok?"pointer":"not-allowed",opacity:ok?1:.4,transition:"all .15s",transform:isSending?"scale(0.9)":"scale(1)"}}>
+                  <span style={{fontSize:(g.scale||1)*14+"px",lineHeight:1,filter:ok?"drop-shadow(0 0 6px "+g.color+")":"none"}}>{g.emoji}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:7,color:ok?g.color:G.grayDim}}>{g.name}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:8,color:G.gold}}>💎{g.gems}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:7,color:G.green}}>≈${split.creator.toFixed(2)}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
@@ -1355,7 +1390,7 @@ function LiveAnalytics() {
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:14}}>📊</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>LIVE ANALYTICS</span>
-          <span className="pill pill-v engage-ring">{viewers.toLocaleString()} VIEWERS</span>
+          <span className="pill pill-v">{viewers.toLocaleString()} VIEWERS</span>
         </div>
         <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
       </div>
@@ -1435,22 +1470,29 @@ function HomeTab({ onJoinRoom }) {
   );
 }
 
-// ── TIP ALERT BANNER ─────────────────────────────────────────────
+// ── TIP ALERT BANNER (v16.2) ─────────────────────────────────────
 function TipAlertBanner({ alert, onDismiss }) {
   useEffect(function(){
-    var t = setTimeout(onDismiss, 3500);
+    if(!alert) return;
+    var t = setTimeout(onDismiss, 4200);
     return function(){clearTimeout(t);};
   },[alert]);
 
   if(!alert) return null;
   var isTip = alert.type==="tip";
   var color = isTip ? G.gold : alert.color || G.cyan;
+  var split = isTip && alert.amount ? calcSplit(parseFloat(alert.amount)||0) : null;
   return (
-    <div className="tip-alert" style={{background:"rgba(0,0,0,0.92)",borderColor:color}}>
-      <span style={{fontSize:26}}>{isTip?"💰":"⭐"}</span>
-      <div>
-        <div style={{fontFamily:G.fBeb,fontSize:16,color:color}}>{alert.name} {isTip?"tipped $"+alert.amount:"subscribed · "+alert.tier}</div>
-        {isTip && alert.msg && <div style={{fontFamily:G.fRaj,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{alert.msg}</div>}
+    <div className="tip-toast">
+      <div style={{background:"linear-gradient(135deg,#1a0000dd,#0D0D0Ddd)",border:"2px solid "+color,borderRadius:12,padding:"12px 16px",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",gap:12}}>
+        <div style={{fontSize:30}}>{isTip?"💰":"⭐"}</div>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:G.fOrb,fontSize:10,color:color,letterSpacing:2}}>TIP RECEIVED!</div>
+          <div style={{fontFamily:G.fBeb,fontSize:18,color:G.white,lineHeight:1}}>{alert.name} {isTip?"sent a tip":"subscribed"}{alert.tier?" · "+alert.tier:""}</div>
+          {isTip&&alert.msg&&<div style={{fontFamily:G.fRaj,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{alert.msg}</div>}
+          {split&&<div style={{fontFamily:G.fMon,fontSize:9,color:G.green,marginTop:2}}>+{fmtMoney(split.creator)} to you · {fmtMoney(split.platform)} platform</div>}
+        </div>
+        {isTip&&alert.amount&&<div style={{fontFamily:G.fBeb,fontSize:22,color:color}}>{fmtMoney(parseFloat(alert.amount)||0)}</div>}
       </div>
     </div>
   );
@@ -1647,12 +1689,17 @@ function StreamTab({ autoStart, currentUser }) {
             <button onClick={function(){ setShowTipModal(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>💰 TIP NOW</button>
           </div>
 
+          <EngagementDashboardV2 />
           <LiveAnalytics />
           <OctagonalVideoGrid guests={[]} hostName="Host" />
           <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
-          <GiftShop onSend={handleGiftSend} />
+          <ViewerControlsV2 />
+          <InRoomSubWidgetV2 creatorName="SwanyThree" />
+          <GiftShop onSend={handleGiftSend} gemBalance={150} />
+          <TipAlertConfig />
+          <MerchShopV2 />
           <MonetizationWidget onTipAlert={handleTipAlert} />
-          <DMWhisper />
+          <DMWhisper localName={currentUser?.full_name || "Host"} />
           <Soundboard />
           <ScreenShare />
           <GuestControls />
@@ -1754,16 +1801,17 @@ export default function SeeWhyLIVEv17() {
       {/* Header */}
       <div className="sw-hdr">
         <div className="sw-logo">SeeWhy LIVE v17.0</div>
-        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+        <div style={{display:"flex",gap:5,alignItems:"center"}}>
+          <span className="pill pill-v" style={{fontSize:7}}>⚡ ZEGO</span>
+          <span className="pill pill-p" style={{fontSize:7}}>🛡 v16.2</span>
           <NotificationsHub onClose={function(){}} />
           {/* DM icon with unread badge */}
           <Link to="/messages" style={{position:"relative",textDecoration:"none"}}>
-            <div style={{width:34,height:34,borderRadius:8,background:"rgba(128,0,32,0.2)",border:"1px solid rgba(212,175,55,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,cursor:"pointer"}}>💬</div>
+            <div style={{width:32,height:32,borderRadius:8,background:"rgba(128,0,32,0.2)",border:"1px solid rgba(212,175,55,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer"}}>💬</div>
             {unreadDMs.length > 0 && (
-              <div style={{position:"absolute",top:-4,right:-4,background:"#C41E3A",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:8,color:"#fff",fontWeight:700}}>{unreadDMs.length}</div>
+              <div style={{position:"absolute",top:-4,right:-4,background:"#C41E3A",borderRadius:"50%",width:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:8,color:"#fff",fontWeight:700}}>{unreadDMs.length}</div>
             )}
           </Link>
-          <div style={{color:G.gray,fontFamily:G.fMon,fontSize:10}}>●●●</div>
         </div>
       </div>
 
