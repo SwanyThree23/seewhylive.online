@@ -26,7 +26,7 @@ import SwanyBotWidget from '@/components/guide/ARIAWidget';
 var MOBILE_NAV = [
   { name: 'Home',      icon: Home,          href: createPageUrl('Home') },
   { name: 'Discover',  icon: SearchIcon,    href: createPageUrl('Discover') },
-  { name: 'LIVE',      icon: Radio,         href: '/SeeWhyLIVEv17?direct=1',   isCenter: true },
+  { name: 'Studio',    icon: Radio,         href: '/BroadcastStudio',           isCenter: true },
   { name: 'Battles',   icon: Swords,        href: createPageUrl('PKBattleManager') },
   { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
 ];
@@ -38,6 +38,7 @@ var PRIMARY_NAV = [
   { name: 'Battles',    icon: Swords,         href: createPageUrl('PKBattleManager') },
   { name: 'Leaderboard',icon: Trophy,         href: createPageUrl('Leaderboard') },
   { name: 'Watch Party',icon: Eye,            href: createPageUrl('WatchParty') },
+  { name: 'Studio',    icon: Radio,          href: '/BroadcastStudio' },
   { name: 'Loyalty',    icon: Trophy,         href: '/LoyaltyHub' },
   { name: 'Challenges', icon: Zap,            href: '/ChallengesHub' },
 ];
