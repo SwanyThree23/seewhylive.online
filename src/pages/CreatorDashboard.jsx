@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { LayoutDashboard, BarChart3, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, BarChart3, ExternalLink, Scissors, Mail } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
+import { Link } from 'react-router-dom';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -23,11 +24,30 @@ export default function CreatorDashboardPage() {
       {/* Header */}
       <div className="px-4 py-8 md:px-8 border-b" style={{ borderColor: 'rgba(212,175,55,0.12)' }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <BarChart3 className="w-6 h-6" style={{ color: G }} />
-            <h1 className="text-3xl font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              Creator Dashboard
-            </h1>
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-6 h-6" style={{ color: G }} />
+              <h1 className="text-3xl font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Creator Dashboard
+              </h1>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Link to="/onboarding">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background:'rgba(128,0,32,0.15)', border:'1px solid rgba(128,0,32,0.35)', color:'#ff9999', fontFamily:'Barlow Condensed', letterSpacing:1 }}>
+                  ✨ SETUP GUIDE
+                </button>
+              </Link>
+              <Link to="/clips">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.25)', color:G, fontFamily:'Barlow Condensed', letterSpacing:1 }}>
+                  ✂️ CLIPS
+                </button>
+              </Link>
+              <Link to="/newsletter">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background:'rgba(200,255,0,0.06)', border:'1px solid rgba(200,255,0,0.2)', color:'#C8FF00', fontFamily:'Barlow Condensed', letterSpacing:1 }}>
+                  📧 NEWSLETTER
+                </button>
+              </Link>
+            </div>
           </div>
           <p className="text-white/60">Analytics, earnings, and audience insights</p>
 

@@ -24,6 +24,9 @@ import CoverPage from './pages/CoverPage';
 import BackPage from './pages/BackPage';
 import SeeWhyLIVEv17 from './pages/SeeWhyLIVEv17';
 import Messages from './pages/Messages';
+import OnboardingPage from './pages/Onboarding';
+import ClipsLibraryPage from './pages/ClipsLibrary';
+import NewsletterHubPage from './pages/NewsletterHub';
 import CreatorPublicProfile from './pages/CreatorPublicProfile';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -98,6 +101,9 @@ const AuthenticatedApp = () => {
       <Route path="/BackPage" element={<BackPage />} />
       <Route path="/SeeWhyLIVEv17" element={<SeeWhyLIVEv17 />} />
       <Route path="/messages" element={<LayoutWrapper currentPageName="Messages"><Messages /></LayoutWrapper>} />
+      <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route path="/clips" element={<LayoutWrapper currentPageName="ClipsLibrary"><ClipsLibraryPage /></LayoutWrapper>} />
+      <Route path="/newsletter" element={<LayoutWrapper currentPageName="NewsletterHub"><NewsletterHubPage /></LayoutWrapper>} />
       <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -173,6 +173,22 @@ export default function Home() {
             />
           </div>
 
+          {/* New Creator CTA */}
+          {user && !creatorProfile && (
+            <div className="max-w-2xl mx-auto mb-4">
+              <Link to="/onboarding">
+                <motion.div whileTap={{ scale: 0.97 }}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer"
+                  style={{ background: 'linear-gradient(90deg, rgba(128,0,32,0.3), rgba(212,175,55,0.15))', border: '1px solid rgba(212,175,55,0.35)' }}>
+                  <div>
+                    <div className="font-black text-sm" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>🚀 NEW CREATOR? START HERE →</div>
+                    <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>Set up your profile, branding, and first stream in 7 steps</div>
+                  </div>
+                  <div className="text-xl ml-3">✨</div>
+                </motion.div>
+              </Link>
+            </div>
+          )}
           {/* Quick action grid — 3 cols on mobile, 6 on desktop */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 max-w-2xl mx-auto">
             {QUICK_ACTIONS.map(function(action) {

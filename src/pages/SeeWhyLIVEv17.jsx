@@ -8,6 +8,9 @@ import TipNowModal, { SubscribeButton } from "@/components/live/TipNowModal";
 import { MerchStrip } from "@/components/merch/MerchWidget";
 import { WhisperToast } from "@/components/live/DMWhisperPanel";
 import { Link } from "react-router-dom";
+import AuraPanelDrawer from "@/components/live/AuraPanelDrawer";
+import SwanDirectorPanel, { SwanDirectorHUD } from "@/components/live/SwanDirectorPanel";
+import ClipCreatorSheet from "@/components/live/ClipCreatorSheet";
 
 // ── DESIGN TOKENS ────────────────────────────────────────────────
 var G = {
@@ -1535,8 +1538,13 @@ function StreamTab({ autoStart, currentUser }) {
   var [showTipModal, setShowTipModal] = useState(false);
   var [whisperToast, setWhisperToast] = useState(null);
   var [shopPinned, setShopPinned] = useState(false);
+  var [showAura, setShowAura] = useState(false);
+  var [showSwan, setShowSwan] = useState(false);
+  var [showClip, setShowClip] = useState(false);
+  var [elapsed, setElapsed] = useState(0);
   var isHost = true; // host view in StreamTab
   var roomId = "live-" + (currentUser?.id || "host");
+  useEffect(function(){ if(!joined) return; var t = setInterval(function(){ setElapsed(function(e){ return e+1; }); }, 1000); return function(){ clearInterval(t); }; }, [joined]);
 
   // Simulate stream health fluctuation
   useEffect(function(){
@@ -1574,6 +1582,12 @@ function StreamTab({ autoStart, currentUser }) {
       {showZEGOSettings && <ZEGOSettingsDrawer roomId={roomId} streamKey="seewhy-live-key" onClose={function(){ setShowZEGOSettings(false); }} />}
       {/* Tip modal */}
       {showTipModal && <TipNowModal roomId={roomId} currentUser={currentUser} hostId={currentUser?.id} onClose={function(){ setShowTipModal(false); }} />}
+      {/* Aura panel */}
+      {showAura && <AuraPanelDrawer roomId={roomId} hostId={currentUser?.id} onClose={function(){ setShowAura(false); }} />}
+      {/* Swan director */}
+      {showSwan && <SwanDirectorPanel roomId={roomId} hostId={currentUser?.id} onClose={function(){ setShowSwan(false); }} />}
+      {/* Clip creator */}
+      {showClip && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={currentUser?.id} elapsedSeconds={elapsed} roomTitle="My Stream" onClose={function(){ setShowClip(false); }} />}
 
       {!joined ? (
         <div style={{padding:"20px 16px",display:"flex",flexDirection:"column",gap:10}}>
@@ -1603,10 +1617,14 @@ function StreamTab({ autoStart, currentUser }) {
             <LiveCameraFeed camOn={camOn} micOn={micOn} onToggleCam={function(){setCamOn(function(v){return !v;});}} onToggleMic={function(){setMicOn(function(v){return !v;});}} />
           </div>
 
+          {/* Swan HUD */}
+          {isHost && joined && <SwanDirectorHUD roomId={roomId} hostId={currentUser?.id} onOpenPanel={function(){ setShowSwan(true); }} />}
           {/* Host control bar */}
           {isHost && (
             <div style={{display:"flex",gap:6,padding:"8px 16px",overflowX:"auto"}}>
               <button onClick={function(){ setShowZEGOSettings(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>⚙️ SETTINGS</button>
+              <button onClick={function(){ setShowAura(true); }} style={{padding:"6px 12px",background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:6,color:"#8B5CF6",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>🤖 AURA</button>
+              <button onClick={function(){ setShowClip(true); }} style={{padding:"6px 12px",background:"rgba(200,255,0,0.06)",border:"1px solid rgba(200,255,0,0.2)",borderRadius:6,color:"#C8FF00",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>✂️ CLIP</button>
               <button onClick={function(){ setShopPinned(function(v){ return !v; }); }} style={{padding:"6px 12px",background:shopPinned?"rgba(128,0,32,0.3)":"rgba(255,255,255,0.04)",border:"1px solid "+(shopPinned?"#800020":"#333"),borderRadius:6,color:shopPinned?G.gold:G.gray,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>📦 {shopPinned?"CLOSE SHOP":"OPEN SHOP"}</button>
               <SubscribeButton creatorId={currentUser?.id} roomId={roomId} currentUser={currentUser} />
             </div>
