@@ -148,8 +148,16 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .rtmp-dest{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#161616;border-radius:8px;margin-bottom:6px;border:1px solid #1a1a1a}
 .watch-tile{border-radius:10px;overflow:hidden;border:1px solid #1a1a1a;background:#161616;cursor:pointer}
 @keyframes giftFloat{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-120px) scale(1.2)}100%{opacity:0;transform:translateY(-200px) scale(0.8)}}
+@keyframes giftFly{0%{opacity:0;transform:translateY(40px) scale(0.5) rotate(-10deg)}20%{opacity:1;transform:translateY(0) scale(1.15) rotate(5deg)}80%{opacity:1;transform:translateY(-80px) scale(1) rotate(-3deg)}100%{opacity:0;transform:translateY(-180px) scale(0.7) rotate(8deg)}}
+.gift-fly{animation:giftFly 2.8s ease-out forwards}
 .tip-alert{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9990;min-width:220px;max-width:320px;padding:12px 18px;border-radius:12px;display:flex;align-items:center;gap:10;border:1px solid;animation:tipSlide .4s ease-out}
 @keyframes tipSlide{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.engage-ring{animation:engageRing 2s ease-in-out infinite}
+@keyframes engageRing{0%,100%{box-shadow:0 0 0 0 rgba(200,255,0,0.5)}50%{box-shadow:0 0 0 10px rgba(200,255,0,0)}}
+.gift-legendary-glow{filter:drop-shadow(0 0 18px #FFD700) drop-shadow(0 0 36px #FFD70066)}
+.gift-epic-glow{filter:drop-shadow(0 0 14px #BF5FFF) drop-shadow(0 0 28px #BF5FFF66)}
+.gift-rare-glow{filter:drop-shadow(0 0 10px #0A84FF)}
+.gift-common-glow{filter:drop-shadow(0 0 6px #888)}
 `;
 
 // ── ZEGOCLOUD LIVE ROOM ──────────────────────────────────────────
@@ -1081,14 +1089,17 @@ var GIFT_CATALOG = [
   {id:"galaxy",emoji:"🌌",name:"Galaxy",gems:1000,color:G.volt},
 ];
 
+var RARITY_GLOW_CLASS = { legendary:"gift-legendary-glow", epic:"gift-epic-glow", rare:"gift-rare-glow", common:"gift-common-glow" };
+
 function GiftAnimationLayer({ gifts }) {
   return (
     <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:8888,overflow:"hidden"}}>
       {gifts.map(function(g){
+        var glowCls = RARITY_GLOW_CLASS[g.rarity] || "gift-common-glow";
         return (
-          <div key={g.id} style={{position:"absolute",left:g.x+"%",bottom:"20%",animation:"giftFloat 2.5s ease-out forwards",textAlign:"center"}}>
-            <div style={{fontSize:g.big?52:32,filter:"drop-shadow(0 0 12px "+g.color+")"}}>{g.emoji}</div>
-            <div style={{fontFamily:G.fBeb,fontSize:g.big?16:11,color:g.color,textShadow:"0 0 8px "+g.color}}>{g.sender}</div>
+          <div key={g.id} className="gift-fly" style={{position:"absolute",left:g.x+"%",bottom:"20%",textAlign:"center"}}>
+            <div className={glowCls} style={{fontSize:g.big?56:34}}>{g.emoji}</div>
+            <div style={{fontFamily:G.fBeb,fontSize:g.big?16:11,color:g.color||G.gold,textShadow:"0 0 8px "+(g.color||G.gold)}}>{g.sender}</div>
             <div style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>💎{g.gems}</div>
           </div>
         );
@@ -1344,7 +1355,7 @@ function LiveAnalytics() {
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:14}}>📊</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>LIVE ANALYTICS</span>
-          <span className="pill pill-v">{viewers.toLocaleString()} VIEWERS</span>
+          <span className="pill pill-v engage-ring">{viewers.toLocaleString()} VIEWERS</span>
         </div>
         <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
       </div>
