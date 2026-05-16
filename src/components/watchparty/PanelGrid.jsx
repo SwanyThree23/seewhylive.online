@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -15,11 +15,17 @@ function getColor(name) {
   return COLORS[idx];
 }
 
-function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, isSpotlit, canManage }) {
-  // Use actual mic state from member record; default on if not explicitly set to false
+function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, isSpotlit, canManage, remoteStream }) {
   var speaking = member.is_audio_enabled !== false;
   var color = getColor(member.user_name);
   var isHostMember = member.user_id === hostId;
+  var videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current && remoteStream) {
+      videoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   return (
     <motion.div
@@ -34,28 +40,37 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, isSpotl
         background: 'linear-gradient(135deg, #1A0F0A, #0d0618)',
       }}
     >
-      {/* Center avatar */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-        <Avatar className="w-10 h-10 border-2" style={{ borderColor: color + '60' }}>
-          <AvatarFallback className="text-white font-bold text-sm" style={{ background: color + '40' }}>
-            {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
-          </AvatarFallback>
-        </Avatar>
-        {speaking && (
-          <div className="flex items-end gap-0.5">
-            {[2, 4, 3, 5, 2].map(function(h, i) {
-              return (
-                <motion.div key={i}
-                  animate={{ height: [h, h * 2, h] }}
-                  transition={{ duration: 0.35, repeat: Infinity, delay: i * 0.06 }}
-                  className="w-0.5 rounded-full"
-                  style={{ height: h, background: '#d4af37' }}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {/* Live video stream (when WebRTC connected) or avatar fallback */}
+      {remoteStream ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+          <Avatar className="w-10 h-10 border-2" style={{ borderColor: color + '60' }}>
+            <AvatarFallback className="text-white font-bold text-sm" style={{ background: color + '40' }}>
+              {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
+            </AvatarFallback>
+          </Avatar>
+          {speaking && (
+            <div className="flex items-end gap-0.5">
+              {[2, 4, 3, 5, 2].map(function(h, i) {
+                return (
+                  <motion.div key={i}
+                    animate={{ height: [h, h * 2, h] }}
+                    transition={{ duration: 0.35, repeat: Infinity, delay: i * 0.06 }}
+                    className="w-0.5 rounded-full"
+                    style={{ height: h, background: '#d4af37' }}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Bottom bar */}
       <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1"
@@ -120,7 +135,7 @@ function EmptyTile({ onClick, canInvite }) {
   );
 }
 
-export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost }) {
+export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds }) {
   var [spotlitId, setSpotlitId] = useState(null);
   var [slots, setSlots] = useState(maxSlots);
 
@@ -181,10 +196,12 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
           </div>
           <div className="flex gap-1.5 h-16 shrink-0 overflow-x-auto">
             {rest.map(function(m) {
+              var peerId = Array.from((peerUserIds || new Map()).entries()).find(function([, uid]) { return uid === m.user_id; })?.[0];
+              var stream = peerId ? remoteStreams?.get(peerId) : undefined;
               return (
                 <div key={m.id} className="w-24 shrink-0 h-full">
                   <PanelTile member={m} isHost={isHost} hostId={hostId} isCurrentUser={currentUser && m.user_id === currentUser.id}
-                    onSpotlight={setSpotlitId} isSpotlit={false} canManage={isHost} />
+                    onSpotlight={setSpotlitId} isSpotlit={false} canManage={isHost} remoteStream={stream} />
                 </div>
               );
             })}
@@ -194,10 +211,12 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
         <div className={'flex-1 p-2 grid ' + gridCols + ' gap-1.5 content-start overflow-auto'}>
           <AnimatePresence>
             {members.slice(0, slots).map(function(m) {
+              var peerId = Array.from((peerUserIds || new Map()).entries()).find(function([, uid]) { return uid === m.user_id; })?.[0];
+              var stream = peerId ? remoteStreams?.get(peerId) : undefined;
               return (
                 <PanelTile key={m.id} member={m} isHost={isHost} hostId={hostId}
                   isCurrentUser={currentUser && m.user_id === currentUser.id}
-                  onSpotlight={setSpotlitId} isSpotlit={false} canManage={isHost} />
+                  onSpotlight={setSpotlitId} isSpotlit={false} canManage={isHost} remoteStream={stream} />
               );
             })}
             {Array.from({ length: emptyCount }).map(function(_, i) {
