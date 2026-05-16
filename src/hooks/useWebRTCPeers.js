@@ -5,6 +5,10 @@ const ICE_SERVERS = {
   iceServers: [
     { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
     { urls: ['stun:stun.cloudflare.com:3478'] },
+    // TURN relay — ensures connectivity behind symmetric NAT/firewalls
+    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
   ],
   iceCandidatePoolSize: 10,
 };
@@ -45,7 +49,10 @@ export function useWebRTCPeers(roomId, localStream) {
       if (!msg || msg.room_id !== roomId) return;
       if (msg.to_peer && msg.to_peer !== selfIdRef.current) return; // not for us
 
-      if (msg.signal_type === 'offer' && msg.from_peer !== selfIdRef.current) {
+      if (msg.signal_type === 'peer_join' && msg.from_peer !== selfIdRef.current) {
+        // New peer announced themselves — we (existing peer) send them an offer
+        addPeer(msg.from_peer);
+      } else if (msg.signal_type === 'offer' && msg.from_peer !== selfIdRef.current) {
         await handleIncomingOffer(msg.from_peer, msg.sdp);
       } else if (msg.signal_type === 'answer' && msg.from_peer !== selfIdRef.current) {
         await handleIncomingAnswer(msg.from_peer, msg.sdp);
@@ -162,6 +169,11 @@ export function useWebRTCPeers(roomId, localStream) {
     return Array.from(peersRef.current.entries()).map(([id, { pc }]) => ({ id, connection: pc }));
   }, []);
 
+  // Broadcast presence to all existing peers so they send us offers
+  const announceJoin = useCallback(() => {
+    sendSignal(null, 'peer_join', {});
+  }, [sendSignal]);
+
   const leaveRoom = useCallback(() => {
     sendSignal(null, 'peer_left', {});
     peersRef.current.forEach(({ pc }) => pc.close());
@@ -182,6 +194,7 @@ export function useWebRTCPeers(roomId, localStream) {
     addPeer,
     removePeer,
     leaveRoom,
+    announceJoin,
     getPeers,
     peersRef,
     remoteStreams,   // Map<peerId, MediaStream> — bind to <video srcObject={...}>
