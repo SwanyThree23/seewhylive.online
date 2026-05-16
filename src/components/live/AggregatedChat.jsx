@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { clampStr, LIMITS } from '@/lib/security';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -92,7 +93,7 @@ export default function AggregatedChat({ roomId, currentUser, isHost }) {
 
   const sendMessage = async () => {
     if (!input.trim() || !currentUser) return;
-    const content = input.trim();
+    const content = clampStr(input.trim(), LIMITS.CHAT_MESSAGE);
     setInput('');
     await base44.entities.Message.create({
       room_id: roomId,
@@ -103,8 +104,8 @@ export default function AggregatedChat({ roomId, currentUser, isHost }) {
     });
   };
 
-  const translateAll = async () => {
-    const untranslated = messages.filter(m => !translationMap[m.id]);
+  const translateAll = useCallback(async () => {
+    const untranslated = messages.filter(m => !translationMap[m.id]).slice(0, LIMITS.TRANSLATE_BATCH);
     if (untranslated.length === 0) return;
     setIsTranslating(true);
     try {
@@ -133,11 +134,16 @@ ${untranslated.map(m => `ID: ${m.id} | "${m.content}"`).join('\n')}`,
     } finally {
       setIsTranslating(false);
     }
-  };
+  }, [messages, translationMap, targetLang]);
 
+  // Debounce auto-translation so rapid message bursts don't fire multiple LLM calls
+  const translateTimerRef = useRef(null);
   useEffect(() => {
-    if (translateEnabled && messages.length > 0) translateAll();
-  }, [translateEnabled, messages.length]);
+    if (!translateEnabled || messages.length === 0) return;
+    clearTimeout(translateTimerRef.current);
+    translateTimerRef.current = setTimeout(() => translateAll(), 800);
+    return () => clearTimeout(translateTimerRef.current);
+  }, [translateEnabled, messages.length, targetLang]);
 
   const platCfg = (p) => PLATFORM_ICONS[p] || PLATFORM_ICONS.platform;
 
@@ -218,6 +224,7 @@ ${untranslated.map(m => `ID: ${m.id} | "${m.content}"`).join('\n')}`,
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage()}
           placeholder="Send a message..."
+          maxLength={LIMITS.CHAT_MESSAGE}
           className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37]/50"
         />
         <Button

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Users, CheckCircle, XCircle, CheckCheck, X, Clock } from 'lucide-react';
+import { clampStr, safeSrc, LIMITS } from '@/lib/security';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -26,8 +27,9 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
         {/* Avatar */}
         <div className="w-9 h-9 rounded-full overflow-hidden shrink-0"
           style={{ border: `1px solid rgba(212,175,55,0.25)` }}>
-          {entry.avatar_url
-            ? <img src={entry.avatar_url} className="w-full h-full object-cover" alt="" />
+          {safeSrc(entry.avatar_url)
+            ? <img src={safeSrc(entry.avatar_url)} className="w-full h-full object-cover" alt=""
+                onError={e => { e.currentTarget.style.display = 'none'; }} />
             : <div className="w-full h-full flex items-center justify-center font-black text-sm"
                 style={{ background: BURGUNDY, color: GOLD }}>{(entry.user_name || 'U')[0]}</div>}
         </div>
@@ -57,8 +59,9 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
           <input placeholder="Reason (optional)" value={denyReason} onChange={e => setDenyReason(e.target.value)}
             className="flex-1 h-7 px-2 rounded text-[10px]"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}
-            onKeyDown={e => { if (e.key === 'Enter') onDeny(entry, denyReason); }} />
-          <button onClick={() => onDeny(entry, denyReason)}
+            maxLength={LIMITS.DENY_REASON}
+            onKeyDown={e => { if (e.key === 'Enter') onDeny(entry, clampStr(denyReason, LIMITS.DENY_REASON)); }} />
+          <button onClick={() => onDeny(entry, clampStr(denyReason, LIMITS.DENY_REASON))}
             className="h-7 px-3 rounded text-[9px] font-black uppercase"
             style={{ background: `rgba(128,0,32,0.4)`, color: '#ff6680', border: '1px solid rgba(128,0,32,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Deny
@@ -89,6 +92,7 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
 
 export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit }) {
   const [open, setOpen] = useState(false);
+  const admittingRef = useRef(false);
   const qc = useQueryClient();
 
   const { data: waitlist = [] } = useQuery({
@@ -128,8 +132,14 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
     onSuccess: () => qc.invalidateQueries(['greenroom-waitlist', roomId]),
   });
 
-  const admitAll = () => {
-    waitlist.forEach(e => admitMut.mutate(e));
+  const admitAll = async () => {
+    if (admittingRef.current) return;
+    admittingRef.current = true;
+    for (const e of waitlist) {
+      admitMut.mutate(e);
+      await new Promise(r => setTimeout(r, 150));
+    }
+    admittingRef.current = false;
   };
 
   const count = waitlist.length;
