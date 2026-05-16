@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-
 var G = {
   black:"#080808", darkBg:"#0D0D0D", cardBg:"#111111",
   surfaceBg:"#161616", crimson:"#8B0000", crimsonBright:"#C41E3A",
