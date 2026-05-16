@@ -22,7 +22,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
   const localStreamRef = useRef(null);
   // Track stream in state so useWebRTCPeers receives it after async init
   const [localStream, setLocalStream] = useState(null);
-  const { addPeer, removePeer, getPeers, remoteStreams, peerStates, leaveRoom, announceJoin, selfId } = useWebRTCPeers(roomId, localStream);
+  const { addPeer, removePeer, getPeers, remoteStreams, peerStates, peerUserIds, leaveRoom, announceJoin, selfId } = useWebRTCPeers(roomId, localStream);
 
   // Stable refs for cleanup closure (avoids stale state captures)
   const leaveRoomRef = useRef(leaveRoom);
@@ -100,8 +100,8 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
         setLocalStream(stream); // update state so WebRTC hook gets the stream
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
         setConnecting(false);
-        // Announce to existing peers that we've joined with a live stream
-        announceJoinRef.current?.();
+        // Announce with our userId so peers can map streams to participants
+        announceJoinRef.current?.(userId);
       } catch (err) {
         if (mounted) {
           setError(err.message || 'Failed to access camera/microphone');
@@ -224,8 +224,10 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
 
         {/* Peer Videos — real WebRTC streams */}
         {participants.map(p => {
-          const stream = remoteStreams.get(p.id);
-          const connState = peerStates.get(p.id);
+          // Find peerId whose announceJoin userId matches this participant's user_id
+          const peerId = Array.from(peerUserIds.entries()).find(([, uid]) => uid === p.user_id)?.[0];
+          const stream = peerId ? remoteStreams.get(peerId) : undefined;
+          const connState = peerId ? peerStates.get(peerId) : undefined;
           return (
             <motion.div
               key={p.id}

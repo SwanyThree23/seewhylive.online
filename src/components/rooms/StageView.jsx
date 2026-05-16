@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function StageView({ stage, participants, currentUserId, onUpdateParticipant, localStream, localAudioEnabled, localVideoEnabled, onToggleAudio, onToggleVideo }) {
+export default function StageView({ stage, participants, currentUserId, onUpdateParticipant, localStream, localAudioEnabled, localVideoEnabled, onToggleAudio, onToggleVideo, remoteStreams, peerUserIds }) {
   const stageParticipants = participants.filter(p => p.stage_id === stage.id);
   const currentParticipant = participants.find(p => p.user_id === currentUserId);
   const isCurrentUserSpeaker = currentParticipant && ['host', 'co-host', 'speaker', 'guest'].includes(currentParticipant.role);
@@ -82,6 +82,8 @@ export default function StageView({ stage, participants, currentUserId, onUpdate
                 participant={participant}
                 isCurrentUser={false}
                 onUpdateParticipant={onUpdateParticipant}
+                remoteStreams={remoteStreams}
+                peerUserIds={peerUserIds}
               />
             ))}
           </AnimatePresence>
@@ -188,8 +190,18 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
   );
 }
 
-function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant }) {
+function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remoteStreams, peerUserIds }) {
   const [speaking, setSpeaking] = useState(false);
+  const videoRef = useRef(null);
+
+  const peerId = Array.from((peerUserIds || new Map()).entries()).find(([, uid]) => uid === participant.user_id)?.[0];
+  const remoteStream = peerId ? remoteStreams?.get(peerId) : undefined;
+
+  useEffect(() => {
+    if (videoRef.current && remoteStream) {
+      videoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   const getRoleColor = (role) => {
     switch(role) {
@@ -213,16 +225,17 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant }) {
           <div className="flex flex-col items-center gap-3">
             {/* Video/Avatar */}
             <div className="relative">
-              {participant.is_video_enabled ? (
-                <div className="w-32 h-32 bg-gray-900 flex items-center justify-center" style={{
-                  clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
-                  boxShadow: '0 0 20px rgba(212,175,55,0.4)'
-                }}>
-                  <Video className="w-8 h-8 text-gray-400" />
-                  <span className="absolute bottom-2 text-xs text-white bg-black/50 px-2 py-1" style={{ textShadow: '0 0 8px rgba(212,175,55,0.5)' }}>
-                    Video Stream
-                  </span>
-                </div>
+              {participant.is_video_enabled && remoteStream ? (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-32 h-32 object-cover"
+                  style={{
+                    clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+                    boxShadow: '0 0 20px rgba(212,175,55,0.4)'
+                  }}
+                />
               ) : (
                 <div style={{
                   clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',

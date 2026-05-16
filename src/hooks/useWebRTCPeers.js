@@ -25,6 +25,7 @@ export function useWebRTCPeers(roomId, localStream) {
   const localStreamRef = useRef(localStream);
   const [remoteStreams, setRemoteStreams] = useState(new Map()); // peerId → MediaStream
   const [peerStates, setPeerStates] = useState(new Map()); // peerId → connectionState string
+  const [peerUserIds, setPeerUserIds] = useState(new Map()); // peerId → userId
   const selfIdRef = useRef(`peer_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
 
   useEffect(() => {
@@ -50,7 +51,10 @@ export function useWebRTCPeers(roomId, localStream) {
       if (msg.to_peer && msg.to_peer !== selfIdRef.current) return; // not for us
 
       if (msg.signal_type === 'peer_join' && msg.from_peer !== selfIdRef.current) {
-        // New peer announced themselves — we (existing peer) send them an offer
+        // New peer announced themselves — record their userId and send an offer
+        if (msg.user_id) {
+          setPeerUserIds(prev => new Map(prev).set(msg.from_peer, msg.user_id));
+        }
         addPeer(msg.from_peer);
       } else if (msg.signal_type === 'offer' && msg.from_peer !== selfIdRef.current) {
         await handleIncomingOffer(msg.from_peer, msg.sdp);
@@ -163,15 +167,16 @@ export function useWebRTCPeers(roomId, localStream) {
     }
     setRemoteStreams(prev => { const m = new Map(prev); m.delete(peerId); return m; });
     setPeerStates(prev => { const m = new Map(prev); m.delete(peerId); return m; });
+    setPeerUserIds(prev => { const m = new Map(prev); m.delete(peerId); return m; });
   }, []);
 
   const getPeers = useCallback(() => {
     return Array.from(peersRef.current.entries()).map(([id, { pc }]) => ({ id, connection: pc }));
   }, []);
 
-  // Broadcast presence to all existing peers so they send us offers
-  const announceJoin = useCallback(() => {
-    sendSignal(null, 'peer_join', {});
+  // Broadcast presence (with optional userId) so existing peers send us offers
+  const announceJoin = useCallback((userId) => {
+    sendSignal(null, 'peer_join', userId ? { user_id: userId } : {});
   }, [sendSignal]);
 
   const leaveRoom = useCallback(() => {
@@ -199,5 +204,6 @@ export function useWebRTCPeers(roomId, localStream) {
     peersRef,
     remoteStreams,   // Map<peerId, MediaStream> — bind to <video srcObject={...}>
     peerStates,      // Map<peerId, connectionState>
+    peerUserIds,     // Map<peerId, userId> — maps peer back to Base44 user
   };
 }
