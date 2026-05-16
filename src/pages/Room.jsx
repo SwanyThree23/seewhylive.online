@@ -30,6 +30,7 @@ import TipWidget from '../components/live/TipWidget';
 import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -47,6 +48,20 @@ export default function RoomPage() {
 
   // Real local camera/mic stream
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
+
+  // WebRTC peer mesh — connects to all other participants via STUN/TURN
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(roomId, localStream);
+  const announceJoinRef = useRef(announceJoin);
+  const leaveRoomRef = useRef(leaveRoom);
+  useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
+  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
+  const announcedRef = useRef(false);
+  useEffect(() => {
+    if (!localStream || !user?.id || announcedRef.current) return;
+    announcedRef.current = true;
+    announceJoinRef.current?.(user.id);
+  }, [localStream, user?.id]);
+  useEffect(() => { return () => leaveRoomRef.current?.(); }, []);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -383,7 +398,7 @@ export default function RoomPage() {
                         stage={stage}
                         participants={participants}
                         currentUserId={user?.id}
-                        onUpdateParticipant={(id, updates) => 
+                        onUpdateParticipant={(id, updates) =>
                           updateParticipantMutation.mutate({ id, updates })
                         }
                         localStream={localStream}
@@ -391,6 +406,8 @@ export default function RoomPage() {
                         localVideoEnabled={videoEnabled}
                         onToggleAudio={toggleAudio}
                         onToggleVideo={toggleVideo}
+                        remoteStreams={remoteStreams}
+                        peerUserIds={peerUserIds}
                       />
                     </TabsContent>
                   ))}
