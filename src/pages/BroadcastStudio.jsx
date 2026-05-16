@@ -24,6 +24,7 @@ import PartyReactionsOverlay from '../components/watchparty/PartyReactionsOverla
 import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import HostControls from '../components/watchparty/HostControls';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -266,6 +267,14 @@ export default function BroadcastStudio() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [theaterMode, setTheaterMode] = useState(false);
   const [syncData, setSyncData] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [elapsed, setElapsed] = useState(0);
+
+  // Elapsed timer for clip timestamps
+  useEffect(() => {
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -310,10 +319,23 @@ export default function BroadcastStudio() {
   }, [localStream, user?.id]);
   useEffect(() => () => leaveRef.current?.(), []);
 
+  const [hypeLevel, setHypeLevel] = useState(0);
+
   const isHost = party?.host_id === user?.id;
   const myMember = members.find(m => m.user_id === user?.id);
   const isCoHost = myMember?.role === 'cohost';
   const canManage = isHost || isCoHost;
+
+  // AI highlight detector — auto-clips when hype + sentiment spike
+  useHighlightDetector({
+    partyId,
+    roomId: partyId,
+    isHost,
+    user,
+    messages: chatMessages,
+    hypeLevel,
+    elapsedSeconds: elapsed,
+  });
 
   const onTimeSync = useCallback((data) => setSyncData(data), []);
   const { pushState } = useSyncEngine({ party, isHost, onTimeSync });
@@ -574,7 +596,7 @@ export default function BroadcastStudio() {
 
           {/* Hype meter */}
           <div className="shrink-0 px-3 py-1">
-            <PartyHypeMeter partyId={partyId} memberCount={members.length} />
+            <PartyHypeMeter partyId={partyId} memberCount={members.length} onHypeChange={setHypeLevel} />
           </div>
 
           {/* Viewer rail */}
@@ -619,7 +641,7 @@ export default function BroadcastStudio() {
 
             {/* 💬 MULTILINGUAL CHAT */}
             {activeTab === 'chat' && (
-              <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} />
+              <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} onMessagesChange={setChatMessages} />
             )}
 
             {/* ⚔️ PK BATTLE */}
