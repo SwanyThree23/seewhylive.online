@@ -16,7 +16,8 @@ function getColor(name) {
 }
 
 function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, isSpotlit, canManage }) {
-  var [speaking] = useState(Math.random() > 0.6);
+  // Use actual mic state from member record; default on if not explicitly set to false
+  var speaking = member.is_audio_enabled !== false;
   var color = getColor(member.user_name);
   var isHostMember = member.user_id === hostId;
 

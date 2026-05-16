@@ -20,13 +20,22 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
   const qc = useQueryClient();
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
-  const { addPeer, removePeer, getPeers, remoteStreams, peerStates, leaveRoom, selfId } = useWebRTCPeers(roomId, localStreamRef.current);
+  // Track stream in state so useWebRTCPeers receives it after async init
+  const [localStream, setLocalStream] = useState(null);
+  const { addPeer, removePeer, getPeers, remoteStreams, peerStates, leaveRoom, announceJoin, selfId } = useWebRTCPeers(roomId, localStream);
+
+  // Stable refs for cleanup closure (avoids stale state captures)
+  const leaveRoomRef = useRef(leaveRoom);
+  const announceJoinRef = useRef(announceJoin);
+  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
 
   const [localMuted, setLocalMuted] = useState(false);
   const [localVideoPaused, setLocalVideoPaused] = useState(false);
   const [participants, setParticipants] = useState([]);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const mediaInitialized = useRef(false);
 
   // Fetch ZEGO config & room state
   const { data: zegoConfig } = useQuery({
@@ -71,8 +80,14 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     }),
   });
 
-  // Initialize local media and join signaling
+  // Initialize local media once and announce presence to peers
   useEffect(() => {
+    if (mediaInitialized.current) return;
+    if (!isHost && zegoStream?.status !== 'live') return;
+
+    mediaInitialized.current = true;
+    let mounted = true;
+
     const initMedia = async () => {
       try {
         setConnecting(true);
@@ -80,24 +95,29 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
           audio: { echoCancellation: true, noiseSuppression: true },
           video: { width: { ideal: 1280 }, height: { ideal: 720 } },
         });
+        if (!mounted) { stream.getTracks().forEach(t => t.stop()); return; }
         localStreamRef.current = stream;
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-        }
+        setLocalStream(stream); // update state so WebRTC hook gets the stream
+        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
         setConnecting(false);
+        // Announce to existing peers that we've joined with a live stream
+        announceJoinRef.current?.();
       } catch (err) {
-        setError(err.message || 'Failed to access camera/microphone');
-        setConnecting(false);
+        if (mounted) {
+          setError(err.message || 'Failed to access camera/microphone');
+          setConnecting(false);
+        }
       }
     };
 
-    if (isHost || zegoStream?.status === 'live') {
-      initMedia();
-    }
+    initMedia();
 
     return () => {
+      mounted = false;
+      leaveRoomRef.current?.();
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop());
+        localStreamRef.current = null;
       }
     };
   }, [isHost, zegoStream?.status]);

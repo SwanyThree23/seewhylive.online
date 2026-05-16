@@ -179,6 +179,16 @@ export default function WatchPartyPage() {
 
   const isHost = party?.host_id === user?.id;
 
+  // Real-time member roster — keep 20-person panel in sync instantly
+  useEffect(() => {
+    if (!partyId) return;
+    const unsub = base44.entities.WatchPartyMember.subscribe((event) => {
+      if (event.data?.party_id !== partyId) return;
+      qc.invalidateQueries(['watchparty-members', partyId]);
+    });
+    return unsub;
+  }, [partyId, qc]);
+
   // Join party on load
   useEffect(() => {
     if (!party || !user) return;
