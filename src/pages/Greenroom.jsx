@@ -60,10 +60,8 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
     if (!entry) return;
     if (entry.status === 'admitted') {
       toast.success('You\'ve been admitted!');
-      const dest = new URLSearchParams(window.location.search).get('destination_type');
       const roomId = new URLSearchParams(window.location.search).get('room_id');
-      if (dest === 'panel') window.location.href = `/Room?id=${roomId}`;
-      else window.location.href = `/Room?id=${roomId}`;
+      window.location.href = `/LiveRoom?id=${roomId}`;
     }
     if (entry.status === 'denied') {
       toast.error('The host isn\'t admitting new guests right now');
@@ -246,7 +244,7 @@ export default function GreenroomPage() {
           category: newRoomCategory,
           is_public: true,
         });
-        return { action: 'navigate', path: `/Room?id=${newRoom.id}` };
+        return { action: 'navigate', path: `/LiveRoom?id=${newRoom.id}` };
       }
 
       if (destType === 'watch_party') {
@@ -302,7 +300,7 @@ export default function GreenroomPage() {
       if (!roomId || destType === 'room' || destType === 'panel') {
         return `/SeeWhyLIVEv17?direct=1`;
       }
-      return `/Room?id=${roomId}`;
+      return `/LiveRoom?id=${roomId}`;
     },
     onSuccess: (path) => { window.location.href = path; },
   });
