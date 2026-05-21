@@ -175,6 +175,36 @@
   50%       { opacity: 0.3; }
 }
 
+/* Generic pulse (opacity) — used by AI dots, status indicators */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+
+/* Beat (scale) — hand-raise, urgent timers */
+@keyframes beat {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.14); }
+}
+
+/* Gift float up and fade — WatchPartyTab reactions */
+@keyframes giftRise {
+  0%   { opacity: 0.9; transform: scale(0.4) translateY(0); }
+  100% { opacity: 0;   transform: scale(1.4) translateY(-90px); }
+}
+
+/* Thinking dots — AI loading indicators */
+@keyframes thinkDot {
+  0%, 100% { opacity: 0.2; transform: scale(0.75); }
+  50%       { opacity: 1;   transform: scale(1); }
+}
+
+/* Slide up entry */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+
 /* ============================================================
    RESET & BASE
    ============================================================ */
