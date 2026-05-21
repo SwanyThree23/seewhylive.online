@@ -2,7 +2,13 @@
 
 const Anthropic = require('@anthropic-ai/sdk');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+let _anthropicClient = null;
+function getClient() {
+  if (!_anthropicClient) {
+    _anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return _anthropicClient;
+}
 
 const MODEL = 'claude-sonnet-4-20250514';
 const SYSTEM_PROMPT =
@@ -75,7 +81,7 @@ function resolveItem(item) {
  */
 async function generateGreeting(username) {
   try {
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 128,
       system: SYSTEM_PROMPT,
@@ -106,7 +112,7 @@ async function generateGreeting(username) {
 async function generateHype(giftName, giftValue, username) {
   try {
     const dollarAmount = (giftValue / 100).toFixed(2);
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 128,
       system: SYSTEM_PROMPT,
@@ -139,7 +145,7 @@ async function generateHype(giftName, giftValue, username) {
  */
 async function generateShoutout(username, tier) {
   try {
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 128,
       system: SYSTEM_PROMPT,

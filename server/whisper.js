@@ -5,7 +5,13 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openaiClient = null;
+function getOpenAIClient() {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 // 5 seconds of audio at 44.1 kHz, stereo, 16-bit PCM
 // 44100 samples/sec × 2 channels × 2 bytes/sample × 5 seconds
@@ -88,7 +94,7 @@ function flushBuffer(roomId, onTranscript) {
       return;
     }
 
-    openaiClient.audio.transcriptions
+    getOpenAIClient().audio.transcriptions
       .create({
         model: 'whisper-1',
         file: fs.createReadStream(tmpFile)
