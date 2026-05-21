@@ -19,6 +19,9 @@ import WashingtonClassicTab from './components/WashingtonClassicTab.jsx';
 import MonetizeTab from './components/MonetizeTab.jsx';
 import AuraTab from './components/AuraTab.jsx';
 import SwanAITab from './components/SwanAITab.jsx';
+import AvatarHubTab from './components/AvatarHubTab.jsx';
+import MusicStudioTab from './components/MusicStudioTab.jsx';
+import CreatorDiscoveryTab from './components/CreatorDiscoveryTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -42,8 +45,11 @@ const TABS = [
   { id: 'schedule', label: '📅 SCHED' },
   { id: 'classic',  label: '🎲 DC' },
   { id: 'money',    label: '💰 MONEY' },
-  { id: 'aura',     label: '🤖 AURA' },
-  { id: 'swanai',   label: '🎯 SWANAI' },
+  { id: 'aura',      label: '🤖 AURA' },
+  { id: 'swanai',    label: '🎯 SWANAI' },
+  { id: 'avatar',    label: '🎭 AVATAR' },
+  { id: 'music',     label: '🎵 STUDIO' },
+  { id: 'discover',  label: '🔭 DISCOVER' },
 ];
 
 export default function App() {
@@ -365,6 +371,21 @@ export default function App() {
           <SwanAITab
             isLive={isLive}
             viewerCount={viewerCount}
+          />
+        )}
+        {activeTab === 'avatar' && (
+          <AvatarHubTab
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'music' && (
+          <MusicStudioTab
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'discover' && (
+          <CreatorDiscoveryTab
+            addToast={addToast}
           />
         )}
       </main>
