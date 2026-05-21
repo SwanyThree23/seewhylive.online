@@ -103,6 +103,16 @@ echo "Server npm install complete"
 
 # 9. Install frontend dependencies and build
 cd "$SEEWHY_DIR/frontend"
+
+# Create frontend .env if not present
+if [ ! -f "$SEEWHY_DIR/frontend/.env" ]; then
+  cat > "$SEEWHY_DIR/frontend/.env" << FRONTENV
+VITE_SOCKET_URL=https://srv1581658.hstgr.cloud:3001
+VITE_STRIPE_PUBLISHABLE_KEY=pk_live_REPLACE_ME
+FRONTENV
+  echo "Created frontend .env"
+fi
+
 npm install 2>&1 | tail -5
 npm run build 2>&1 | tail -10
 echo "Frontend build complete"
