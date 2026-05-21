@@ -442,21 +442,24 @@ io.on('connection', function(socket) {
 
           swanybot.onViewerJoin(roomId, username, socket.id);
 
-          if (ack) {
-            ack({
-              routerRtpCapabilities: routerCaps,
-              sendTransport:         sendTransport.params,
-              recvTransport:         recvTransport.params,
-              existingProducers:     existingProducers
-            });
-          }
+          const ackPayload = {
+            routerRtpCapabilities: routerCaps,
+            sendTransport:         sendTransport.params,
+            recvTransport:         recvTransport.params,
+            existingProducers:     existingProducers
+          };
+
+          // Emit as socket event (for listeners like RoomTab) AND ack callback
+          io.to(socket.id).emit('join-room-ack', ackPayload);
+          if (ack) ack(ackPayload);
         })
         .catch(function(err) {
           logger.error('[join-room] mediasoup setup failed: ' + err.message);
+          io.to(socket.id).emit('join-room-ack', { error: 'MediaSoup setup failed: ' + err.message });
           if (ack) ack({ error: 'MediaSoup setup failed: ' + err.message });
         });
     } else {
-      // Viewer
+      // Viewer — ensure router exists so they can subscribe to producers
       const guestList = [];
       room.guests.forEach(function(g) {
         guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
@@ -467,7 +470,21 @@ io.on('connection', function(socket) {
 
       swanybot.onViewerJoin(roomId, username, socket.id);
 
-      if (ack) ack({ joined: true });
+      // Create router so viewer can subscribe; emit join-room-ack as connection signal
+      mediasoup.getOrCreateRouter(roomId)
+        .then(function() {
+          const routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
+          const existingProducers = mediasoup.getRoomProducers(roomId);
+          const viewerAck = { joined: true, routerRtpCapabilities: routerCaps, existingProducers: existingProducers };
+          io.to(socket.id).emit('join-room-ack', viewerAck);
+          if (ack) ack(viewerAck);
+        })
+        .catch(function(err) {
+          logger.warn('[join-room] viewer router setup error: ' + err.message);
+          // Viewers can still join without RTC — just no stream subscription
+          io.to(socket.id).emit('join-room-ack', { joined: true });
+          if (ack) ack({ joined: true });
+        });
     }
   });
 
@@ -486,6 +503,24 @@ io.on('connection', function(socket) {
       logger.error('[get-rtp-capabilities] ' + err.message);
       if (ack) ack({ error: err.message });
     }
+  });
+
+  // ── create-transport ──────────────────────────────────────────────────
+  // Called by mediasoup-client after loading device RTP capabilities
+  socket.on('create-transport', function(data, ack) {
+    const roomId = socket.data.roomId;
+    if (!roomId) {
+      if (ack) ack({ error: 'Must join room before creating transport' });
+      return;
+    }
+    mediasoup.createWebRtcTransport(roomId)
+      .then(function(transport) {
+        if (ack) ack(transport.params);
+      })
+      .catch(function(err) {
+        logger.error('[create-transport] ' + err.message);
+        if (ack) ack({ error: err.message });
+      });
   });
 
   // ── transport-connect ──────────────────────────────────────────────────
