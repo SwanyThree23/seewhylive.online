@@ -7,19 +7,25 @@ import BrandingTab from './components/BrandingTab.jsx';
 import EmbedTab from './components/EmbedTab.jsx';
 import SwanyBotTab from './components/SwanyBotTab.jsx';
 import AnalyticsTab from './components/AnalyticsTab.jsx';
+import RTMPFanoutTab from './components/RTMPFanoutTab.jsx';
+import PushStreamTab from './components/PushStreamTab.jsx';
+import ClipEngineTab from './components/ClipEngineTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
 
 const APP_ID = '6990f5f24823b53e21fcdc9d';
 const TABS = [
-  { id: 'room', label: '🎙 ROOM' },
-  { id: 'fades', label: '⚡ FADES' },
-  { id: 'brand', label: '🎨 BRAND' },
-  { id: 'embed', label: '🎬 EMBED' },
-  { id: 'bot', label: '🤖 SWANYBOT' },
-  { id: 'data', label: '📊 DATA' },
-  { id: 'keys', label: '🔑 KEYS' }
+  { id: 'room',   label: '🎙 ROOM' },
+  { id: 'fades',  label: '⚡ FADES' },
+  { id: 'brand',  label: '🎨 BRAND' },
+  { id: 'embed',  label: '🎬 EMBED' },
+  { id: 'bot',    label: '🤖 SWANYBOT' },
+  { id: 'data',   label: '📊 DATA' },
+  { id: 'keys',   label: '🔑 KEYS' },
+  { id: 'fanout', label: '📡 FANOUT' },
+  { id: 'push',   label: '📺 PUSH' },
+  { id: 'clips',  label: '🎞 CLIPS' },
 ];
 
 export default function App() {
@@ -273,6 +279,24 @@ export default function App() {
             userId={userId}
             guests={guests}
             role={role}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'fanout' && (
+          <RTMPFanoutTab
+            isLive={isLive}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'push' && (
+          <PushStreamTab
+            isLive={isLive}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'clips' && (
+          <ClipEngineTab
+            isLive={isLive}
             addToast={addToast}
           />
         )}
