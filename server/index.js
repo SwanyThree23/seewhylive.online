@@ -119,6 +119,7 @@ vault.initDb();
 // ─── Express app ──────────────────────────────────────────────────────────
 const app    = express();
 const server = createServer(app);
+app.set('trust proxy', 1);
 
 // Stripe webhook needs raw body - register BEFORE express.json()
 app.post(
