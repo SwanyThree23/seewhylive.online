@@ -334,6 +334,28 @@ app.get('/api/keys/meta/:guestId', function(req, res) {
   }
 });
 
+// ─── AI Chat proxy ───────────────────────────────────────────────────────
+app.post('/api/ai/chat', function(req, res) {
+  const body    = req.body;
+  const system  = typeof body.system  === 'string' ? body.system.slice(0, 2000) : '';
+  const message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
+  if (!message) { res.status(400).json({ error: 'message required' }); return; }
+  const { Anthropic } = require('@anthropic-ai/sdk');
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 256,
+    system: system || 'You are a helpful assistant for SeeWhy LIVE.',
+    messages: [{ role: 'user', content: message }]
+  }).then(function(r) {
+    const text = r.content && r.content[0] && r.content[0].text ? r.content[0].text : '';
+    res.json({ text: text });
+  }).catch(function(err) {
+    logger.error('[ai/chat] ' + err.message);
+    res.status(500).json({ error: 'AI error: ' + err.message });
+  });
+});
+
 // ─── Socket.io Auth Middleware ────────────────────────────────────────────
 
 io.use(function(socket, next) {
