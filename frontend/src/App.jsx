@@ -10,6 +10,15 @@ import AnalyticsTab from './components/AnalyticsTab.jsx';
 import RTMPFanoutTab from './components/RTMPFanoutTab.jsx';
 import PushStreamTab from './components/PushStreamTab.jsx';
 import ClipEngineTab from './components/ClipEngineTab.jsx';
+import WatchPartyTab from './components/WatchPartyTab.jsx';
+import GreenRoomTab from './components/GreenRoomTab.jsx';
+import InsForgeTab from './components/InsForgeTab.jsx';
+import AnalyticsDeepDiveTab from './components/AnalyticsDeepDiveTab.jsx';
+import ScheduleTab from './components/ScheduleTab.jsx';
+import WashingtonClassicTab from './components/WashingtonClassicTab.jsx';
+import MonetizeTab from './components/MonetizeTab.jsx';
+import AuraTab from './components/AuraTab.jsx';
+import SwanAITab from './components/SwanAITab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -23,9 +32,18 @@ const TABS = [
   { id: 'bot',    label: '🤖 SWANYBOT' },
   { id: 'data',   label: '📊 DATA' },
   { id: 'keys',   label: '🔑 KEYS' },
-  { id: 'fanout', label: '📡 FANOUT' },
-  { id: 'push',   label: '📺 PUSH' },
-  { id: 'clips',  label: '🎞 CLIPS' },
+  { id: 'fanout',   label: '📡 FANOUT' },
+  { id: 'push',     label: '📺 PUSH' },
+  { id: 'clips',    label: '🎞 CLIPS' },
+  { id: 'watch',    label: '📺 WATCH' },
+  { id: 'green',    label: '🟢 GREEN' },
+  { id: 'forge',    label: '⚙️ FORGE' },
+  { id: 'deepdata', label: '📊 DEEP' },
+  { id: 'schedule', label: '📅 SCHED' },
+  { id: 'classic',  label: '🎲 DC' },
+  { id: 'money',    label: '💰 MONEY' },
+  { id: 'aura',     label: '🤖 AURA' },
+  { id: 'swanai',   label: '🎯 SWANAI' },
 ];
 
 export default function App() {
@@ -298,6 +316,55 @@ export default function App() {
           <ClipEngineTab
             isLive={isLive}
             addToast={addToast}
+          />
+        )}
+        {activeTab === 'watch' && (
+          <WatchPartyTab
+            guests={guests}
+          />
+        )}
+        {activeTab === 'green' && (
+          <GreenRoomTab
+            guests={guests}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'forge' && (
+          <InsForgeTab
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'deepdata' && (
+          <AnalyticsDeepDiveTab
+            viewerCount={viewerCount}
+            gifts={gifts}
+          />
+        )}
+        {activeTab === 'schedule' && (
+          <ScheduleTab
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'classic' && (
+          <WashingtonClassicTab
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'money' && (
+          <MonetizeTab
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'aura' && (
+          <AuraTab
+            isLive={isLive}
+            viewerCount={viewerCount}
+          />
+        )}
+        {activeTab === 'swanai' && (
+          <SwanAITab
+            isLive={isLive}
+            viewerCount={viewerCount}
           />
         )}
       </main>
