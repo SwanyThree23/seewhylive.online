@@ -23,10 +23,13 @@ class SeeWhyRTC {
     this.device = new mediasoupClient.Device();
 
     // Get RTP capabilities from server
+    // Server returns { routerRtpCapabilities: caps } — extract the inner caps object
     const rtpCapabilities = await new Promise((resolve, reject) => {
       socket.emit('get-rtp-capabilities', { roomId }, (data) => {
         if (data && data.error) return reject(new Error(data.error));
-        resolve(data);
+        if (!data) return reject(new Error('No RTP capabilities returned'));
+        const caps = data.routerRtpCapabilities ? data.routerRtpCapabilities : data;
+        resolve(caps);
       });
     });
 
@@ -37,6 +40,7 @@ class SeeWhyRTC {
   }
 
   async _createSendTransport() {
+    if (this.role === 'viewer') return;
     if (!this.device.canProduce('video') && !this.device.canProduce('audio')) return;
 
     const params = await new Promise((resolve, reject) => {
