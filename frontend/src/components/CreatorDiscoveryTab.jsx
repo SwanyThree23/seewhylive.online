@@ -1,0 +1,133 @@
+import React, { useState } from 'react';
+
+var CREATORS = [
+  { id: 'c1', name: 'CaliBonesOG',  handle: 'calibonesog',  flag: '🇺🇸', category: 'Domino',  followers: 12400, live: true,  viewers: 892,  color: '#C01838' },
+  { id: 'c2', name: 'VibeNBones',   handle: 'vibenbones',   flag: '🇺🇸', category: 'Music',   followers: 8200,  live: false, viewers: 0,    color: '#5A8FFF' },
+  { id: 'c3', name: 'LyricQueen',   handle: 'lyricqueen',   flag: '🇳🇬', category: 'Music',   followers: 6700,  live: true,  viewers: 1203, color: '#C084FC' },
+  { id: 'c4', name: 'TechNerd42',   handle: 'technerd42',   flag: '🇺🇸', category: 'Tech',    followers: 4500,  live: true,  viewers: 4213, color: '#00DEC0' },
+  { id: 'c5', name: 'DJ_Cipher',    handle: 'djcipher',     flag: '🇯🇲', category: 'Music',   followers: 3900,  live: false, viewers: 0,    color: '#00C9A7' },
+  { id: 'c6', name: 'ZenFitPro',    handle: 'zenfitpro',    flag: '🇨🇦', category: 'Fitness', followers: 2800,  live: false, viewers: 0,    color: '#00C96A' },
+  { id: 'c7', name: 'BeatKing_X',   handle: 'beatkingx',    flag: '🇬🇧', category: 'Music',   followers: 2300,  live: true,  viewers: 387,  color: '#C8FF00' },
+  { id: 'c8', name: 'NeonBeats',    handle: 'neonbeats',    flag: '🇰🇷', category: 'Music',   followers: 1900,  live: false, viewers: 0,    color: '#FF1493' },
+];
+
+var CATS = ['All', 'Domino', 'Music', 'Tech', 'Fitness'];
+
+var CAT_COLORS = { Domino: '#C9A84C', Music: '#C084FC', Tech: '#00C9A7', Fitness: '#00C96A', All: '#7A6F90' };
+
+function fmtFollowers(n) {
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return String(n);
+}
+
+export default function CreatorDiscoveryTab({ addToast }) {
+  var [filter,    setFilter]    = useState('All');
+  var [sortBy,    setSortBy]    = useState('live');
+  var [following, setFollowing] = useState({ c1: true });
+
+  function toggleFollow(id, name) {
+    setFollowing(function(p) {
+      var next = Object.assign({}, p, { [id]: !p[id] });
+      if (addToast) addToast(next[id] ? 'Following ' + name : 'Unfollowed ' + name, 'info');
+      return next;
+    });
+  }
+
+  var visible = CREATORS.filter(function(c) {
+    return filter === 'All' || c.category === filter;
+  }).sort(function(a, b) {
+    if (sortBy === 'live') {
+      if (a.live !== b.live) return a.live ? -1 : 1;
+      return b.viewers - a.viewers;
+    }
+    if (sortBy === 'followers') return b.followers - a.followers;
+    if (sortBy === 'viewers')   return b.viewers - a.viewers;
+    return 0;
+  });
+
+  var liveCount = CREATORS.filter(function(c) { return c.live; }).length;
+
+  return (
+    <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
+      {/* Header */}
+      <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.22)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#00DEC0', letterSpacing: 3 }}>🔭 CREATOR DISCOVERY</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{CREATORS.length} creators · {liveCount} live now</div>
+        </div>
+        <select
+          value={sortBy}
+          onChange={function(e) { setSortBy(e.target.value); }}
+          style={{ background: 'rgba(7,5,10,.9)', border: '1px solid #241C34', borderRadius: 7, padding: '5px 8px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+          <option value="live">Sort: LIVE</option>
+          <option value="followers">Sort: FOLLOWERS</option>
+          <option value="viewers">Sort: VIEWERS</option>
+        </select>
+      </div>
+
+      {/* Category filter */}
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
+        {CATS.map(function(c) {
+          var active = filter === c;
+          var color  = CAT_COLORS[c] || '#7A6F90';
+          return (
+            <button key={c} onClick={function() { setFilter(c); }}
+              style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 12px', color: active ? color : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+              {c.toUpperCase()}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Creator list */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {visible.map(function(c) {
+          var isFollowing = Boolean(following[c.id]);
+          return (
+            <div key={c.id} style={{ background: c.live ? 'rgba(22,16,32,.9)' : 'rgba(15,12,20,.7)', border: '1px solid ' + (c.live ? c.color + '33' : '#241C34'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Avatar */}
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: c.color + '18', border: '2px solid ' + c.color + (c.live ? 'aa' : '33'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, position: 'relative' }}>
+                {c.flag}
+                {c.live && (
+                  <div style={{ position: 'absolute', bottom: -3, right: -3, background: '#FF1A3C', border: '2px solid #07050A', borderRadius: 999, width: 10, height: 10 }} />
+                )}
+              </div>
+
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: c.live ? '#EDE8F5' : '#7A6F90', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {c.name}
+                  </span>
+                  {c.live && (
+                    <span style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', flexShrink: 0 }}>LIVE</span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ background: (CAT_COLORS[c.category] || '#7A6F90') + '18', border: '1px solid ' + (CAT_COLORS[c.category] || '#7A6F90') + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, color: CAT_COLORS[c.category] || '#7A6F90' }}>
+                    {c.category}
+                  </span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>
+                    {fmtFollowers(c.followers)} followers
+                  </span>
+                  {c.live && c.viewers > 0 && (
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C8FF00' }}>
+                      👁 {c.viewers.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Follow button */}
+              <button
+                onClick={function() { toggleFollow(c.id, c.name); }}
+                style={{ background: isFollowing ? c.color + '22' : 'rgba(201,168,76,.12)', border: '1px solid ' + (isFollowing ? c.color + '66' : '#C9A84C44'), borderRadius: 7, padding: '6px 12px', color: isFollowing ? c.color : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0, minWidth: 68, textAlign: 'center' }}>
+                {isFollowing ? '✓ FOLLOWING' : '+ FOLLOW'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
