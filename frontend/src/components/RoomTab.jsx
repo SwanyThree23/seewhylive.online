@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import OctCell from './OctCell.jsx';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
 import rtcManager from '../webrtc.js';
@@ -40,7 +40,78 @@ function LowerThird({ name, role, isMuted, isCamOff, isLive }) {
   );
 }
 
-export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userId, username, role, roomId, branding, addToast }) {
+function OverlayBanner({ banner }) {
+  if (!banner || !banner.visible || !banner.text) return null;
+  var isTop = banner.position === 'top';
+  return (
+    <div style={{ position: 'absolute', [isTop ? 'top' : 'bottom']: 0, left: 0, right: 0, zIndex: 30, pointerEvents: 'none', padding: isTop ? '10px 16px 20px' : '20px 16px 10px', background: isTop ? 'linear-gradient(rgba(7,5,10,.85),transparent)' : 'linear-gradient(transparent,rgba(7,5,10,.85))' }}>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: banner.color || '#C9A84C', letterSpacing: 4, textShadow: '0 2px 10px rgba(0,0,0,.9)', textAlign: 'center' }}>
+        {banner.text}
+      </div>
+    </div>
+  );
+}
+
+function OverlayCountdown({ countdown }) {
+  var [rem, setRem] = useState(0);
+  useEffect(function() {
+    if (!countdown || !countdown.visible || !countdown.targetTs) return;
+    function tick() { setRem(Math.max(0, countdown.targetTs - Math.floor(Date.now() / 1000))); }
+    tick();
+    var t = setInterval(tick, 1000);
+    return function() { clearInterval(t); };
+  }, [countdown && countdown.targetTs, countdown && countdown.visible]);
+
+  if (!countdown || !countdown.visible) return null;
+  var h   = Math.floor(rem / 3600);
+  var m   = Math.floor((rem % 3600) / 60);
+  var s   = rem % 60;
+  var str = (h > 0 ? String(h).padStart(2, '0') + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  return (
+    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'none', textAlign: 'center', background: 'rgba(7,5,10,.75)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 12, padding: '14px 24px', backdropFilter: 'blur(8px)' }}>
+      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 3, marginBottom: 4 }}>{countdown.label || 'STARTING SOON'}</div>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#C9A84C', letterSpacing: 6, lineHeight: 1 }}>{str}</div>
+    </div>
+  );
+}
+
+function OverlayScoreBug({ scoreBug }) {
+  if (!scoreBug || !scoreBug.visible) return null;
+  return (
+    <div style={{ position: 'absolute', bottom: 12, right: 12, zIndex: 30, pointerEvents: 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(10,7,18,.88)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, overflow: 'hidden', backdropFilter: 'blur(4px)' }}>
+        <div style={{ padding: '5px 10px', textAlign: 'center', borderRight: '1px solid rgba(201,168,76,.2)' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#EDE8F5', letterSpacing: 2 }}>{scoreBug.team1.name || 'TEAM 1'}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: '#C9A84C', lineHeight: 1 }}>{scoreBug.team1.score}</div>
+        </div>
+        <div style={{ padding: '5px 8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', letterSpacing: 1 }}>{scoreBug.label || ''}</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 800, fontSize: 10, color: '#FF6B81' }}>VS</div>
+        </div>
+        <div style={{ padding: '5px 10px', textAlign: 'center', borderLeft: '1px solid rgba(201,168,76,.2)' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#EDE8F5', letterSpacing: 2 }}>{scoreBug.team2.name || 'TEAM 2'}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: '#C9A84C', lineHeight: 1 }}>{scoreBug.team2.score}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OverlayCustomLT({ lowerThirds, guestId }) {
+  if (!lowerThirds) return null;
+  var lt = lowerThirds[guestId];
+  if (!lt || !lt.visible) return null;
+  return (
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 25, pointerEvents: 'none', padding: '24px 10px 8px', background: 'linear-gradient(transparent,rgba(7,5,10,.9))' }}>
+      <div style={{ borderLeft: '3px solid #C9A84C', paddingLeft: 7 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#EDE8F5', letterSpacing: 2, lineHeight: 1, textShadow: '0 2px 8px rgba(0,0,0,.9)' }}>{lt.name}</div>
+        {lt.title && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', marginTop: 2, letterSpacing: 1 }}>{lt.title}</div>}
+      </div>
+    </div>
+  );
+}
+
+export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userId, username, role, roomId, branding, addToast, overlayConfig }) {
   var [stageLayout,  setStageLayout]  = useState('panel');
   var [stageGuests,  setStageGuests]  = useState([userId]);
   var [handQueue,    setHandQueue]    = useState([]);
@@ -221,7 +292,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       )}
 
       {/* Stage root */}
-      <div className="stage-root">
+      <div className="stage-root" style={{ position: 'relative' }}>
 
         {/* Stage toolbar */}
         <div className="stage-toolbar">
@@ -348,7 +419,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     onMuteToggle={isOwn ? toggleMute : null}
                     onCamToggle={isOwn ? toggleCam : null}
                   />
-                  <LowerThird name={g.username || gid} role={g.role || 'viewer'} isMuted={isOwn && isMuted} isCamOff={isOwn && isCamOff} isLive={isLive} />
+                  {overlayConfig && overlayConfig.lowerThirds && overlayConfig.lowerThirds[gid] && overlayConfig.lowerThirds[gid].visible
+                    ? <OverlayCustomLT lowerThirds={overlayConfig.lowerThirds} guestId={gid} />
+                    : <LowerThird name={g.username || gid} role={g.role || 'viewer'} isMuted={isOwn && isMuted} isCamOff={isOwn && isCamOff} isLive={isLive} />
+                  }
                   {!isOwn && role === 'host' && (
                     <button onClick={function(e) { e.stopPropagation(); removeFromStage(gid); }}
                       style={{ position: 'absolute', top: 5, left: 5, zIndex: 30, background: 'rgba(255,26,60,.7)', border: 'none', borderRadius: 4, width: 20, height: 20, color: '#fff', fontSize: 10, cursor: 'pointer' }}>✕</button>
@@ -445,6 +519,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 );
               })}
             </div>
+          </div>
+        )}
+        {/* Stage overlays */}
+        {overlayConfig && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 28, pointerEvents: 'none' }}>
+            <OverlayBanner    banner={overlayConfig.banner} />
+            <OverlayCountdown countdown={overlayConfig.countdown} />
+            <OverlayScoreBug  scoreBug={overlayConfig.scoreBug} />
           </div>
         )}
       </div>
