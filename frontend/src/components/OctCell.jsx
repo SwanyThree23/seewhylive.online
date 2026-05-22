@@ -126,7 +126,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
     }
   }, [isCamOff, isOwnCell]);
 
-  // Remote cell: subscribe to producer
+  // Remote cell: subscribe to video + audio producers
   useEffect(function() {
     if (isOwnCell || !rtcManager || !guest) return;
     if (!guest.producerId) return;
@@ -135,13 +135,26 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
     async function subscribeRemote() {
       try {
         setLoading(true);
-        var stream = await rtcManager.subscribeToProducer(guest.producerId);
+        var videoStream = await rtcManager.subscribeToProducer(guest.producerId);
         if (cancelled) return;
-        streamRef.current = stream;
-        if (videoRef.current) videoRef.current.srcObject = stream;
+
+        var combined = new MediaStream(videoStream.getTracks());
+
+        if (guest.audioProducerId) {
+          try {
+            var audioStream = await rtcManager.subscribeToProducer(guest.audioProducerId);
+            audioStream.getAudioTracks().forEach(function(t) { combined.addTrack(t); });
+          } catch(ae) {
+            console.warn('[OctCell] audio subscribe failed:', ae.message);
+          }
+        }
+
+        if (cancelled) return;
+        streamRef.current = combined;
+        if (videoRef.current) videoRef.current.srcObject = combined;
         setOnline(true);
         setLoading(false);
-        initAnalyser(stream);
+        initAnalyser(combined);
       } catch(e) {
         if (!cancelled) { setLoading(false); console.error('[OctCell] subscribe error:', e); }
       }
@@ -149,7 +162,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
     subscribeRemote();
     return function() { cancelled = true; };
-  }, [isOwnCell, rtcManager, guest && guest.producerId]);
+  }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
 
   function initAnalyser(stream) {
     try {
