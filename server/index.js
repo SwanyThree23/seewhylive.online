@@ -635,6 +635,40 @@ io.on('connection', function(socket) {
     }
   });
 
+  // ── producer-pause ─────────────────────────────────────────────────────
+  socket.on('producer-pause', function(data) {
+    const producerId = data.producerId;
+    const roomId     = socket.data.roomId;
+    if (!producerId) return;
+    mediasoup.pauseProducer(producerId);
+    if (roomId) io.to(roomId).emit('producer-paused', { producerId: producerId });
+  });
+
+  // ── producer-resume ────────────────────────────────────────────────────
+  socket.on('producer-resume', function(data) {
+    const producerId = data.producerId;
+    const roomId     = socket.data.roomId;
+    if (!producerId) return;
+    mediasoup.resumeProducer(producerId);
+    if (roomId) io.to(roomId).emit('producer-resumed', { producerId: producerId });
+  });
+
+  // ── stage-invite ───────────────────────────────────────────────────────
+  socket.on('stage-invite', function(data) {
+    const roomId  = data.roomId || socket.data.roomId;
+    const guestId = data.guestId;
+    if (!roomId || !guestId) return;
+    io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
+  });
+
+  // ── stage-remove ───────────────────────────────────────────────────────
+  socket.on('stage-remove', function(data) {
+    const roomId  = data.roomId || socket.data.roomId;
+    const guestId = data.guestId;
+    if (!roomId || !guestId) return;
+    io.to(roomId).emit('stage-remove', { guestId: guestId });
+  });
+
   // ── chat-message ───────────────────────────────────────────────────────
   socket.on('chat-message', function(data) {
     const roomId   = data.roomId || socket.data.roomId;
@@ -757,10 +791,11 @@ io.on('connection', function(socket) {
 
   // ── hand-raise ─────────────────────────────────────────────────────────
   socket.on('hand-raise', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId || socket.data.guestId;
+    const roomId   = data.roomId || socket.data.roomId;
+    const guestId  = data.guestId  || socket.data.guestId;
+    const username = data.username || socket.data.username || guestId;
     if (!roomId) return;
-    io.to(roomId).emit('hand-raise', { guestId: guestId, ts: Math.floor(Date.now() / 1000) });
+    io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── fades-event ────────────────────────────────────────────────────────
