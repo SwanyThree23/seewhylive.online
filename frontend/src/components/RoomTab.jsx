@@ -74,19 +74,33 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       }
     });
     socket.on('hand-raise', function(data) {
-      if (!data) return;
-      var gid = data.guestId;
+      if (!data || role !== 'host') return;
+      var gid   = data.guestId;
       var gname = data.username || gid;
       setHandQueue(function(q) {
         var already = q.find(function(x) { return x.guestId === gid; });
         if (already) return q;
         return q.concat([{ guestId: gid, username: gname, raisedAt: Date.now() }]);
       });
-      if (role === 'host') addToast('✋ ' + gname + ' wants to join the stage', 'info');
+      addToast('✋ ' + gname + ' wants to join the stage', 'info');
+    });
+    socket.on('stage-invite', function(data) {
+      if (!data || !data.guestId) return;
+      setStageGuests(function(s) {
+        if (s.indexOf(data.guestId) >= 0) return s;
+        if (s.length >= MAX_STAGE) return s;
+        return s.concat([data.guestId]);
+      });
+    });
+    socket.on('stage-remove', function(data) {
+      if (!data || !data.guestId) return;
+      setStageGuests(function(s) { return s.filter(function(x) { return x !== data.guestId; }); });
     });
     return function() {
       socket.off('join-room-ack');
       socket.off('hand-raise');
+      socket.off('stage-invite');
+      socket.off('stage-remove');
     };
   }, [socket, role]);
 

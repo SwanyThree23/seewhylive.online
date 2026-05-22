@@ -160,8 +160,41 @@ export default function App() {
     });
 
     socket.on('new-producer', (data) => {
-      if (!data) return;
-      // RTC manager will handle subscription, notify UI
+      if (!data || !data.guestId || !data.producerId || data.kind !== 'video') return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid === data.guestId) return Object.assign({}, g, { producerId: data.producerId });
+          return g;
+        });
+      });
+    });
+
+    socket.on('join-room-ack', function(ackData) {
+      if (!ackData || !Array.isArray(ackData.existingProducers)) return;
+      var videoProducers = ackData.existingProducers.filter(function(p) { return p.kind === 'video'; });
+      if (videoProducers.length === 0) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          var match = null;
+          for (var i = 0; i < videoProducers.length; i++) {
+            if (videoProducers[i].guestId === gid) { match = videoProducers[i]; break; }
+          }
+          if (match) return Object.assign({}, g, { producerId: match.producerId });
+          return g;
+        });
+      });
+    });
+
+    socket.on('producer-closed', (data) => {
+      if (!data || !data.producerId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          if (g.producerId === data.producerId) return Object.assign({}, g, { producerId: null });
+          return g;
+        });
+      });
     });
 
     return () => {
@@ -176,6 +209,8 @@ export default function App() {
       socket.off('broadcast-ended');
       socket.off('fades-event');
       socket.off('new-producer');
+      socket.off('join-room-ack');
+      socket.off('producer-closed');
     };
   }, [userId, username, role, addToast]);
 
