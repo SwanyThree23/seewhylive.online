@@ -23,6 +23,7 @@ import AvatarHubTab from './components/AvatarHubTab.jsx';
 import MusicStudioTab from './components/MusicStudioTab.jsx';
 import CreatorDiscoveryTab from './components/CreatorDiscoveryTab.jsx';
 import StateRankingsTab from './components/StateRankingsTab.jsx';
+import UploadTab from './components/UploadTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -52,6 +53,7 @@ const TABS = [
   { id: 'music',     label: '🎵 STUDIO' },
   { id: 'discover',  label: '🔭 DISCOVER' },
   { id: 'rankings',  label: '🏅 RANKS' },
+  { id: 'upload',    label: '📤 UPLOAD' },
 ];
 
 export default function App() {
@@ -392,6 +394,9 @@ export default function App() {
         )}
         {activeTab === 'rankings' && (
           <StateRankingsTab />
+        )}
+        {activeTab === 'upload' && (
+          <UploadTab addToast={addToast} />
         )}
       </main>
 
