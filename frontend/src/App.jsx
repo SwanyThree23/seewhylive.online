@@ -23,6 +23,7 @@ import AvatarHubTab from './components/AvatarHubTab.jsx';
 import MusicStudioTab from './components/MusicStudioTab.jsx';
 import CreatorDiscoveryTab from './components/CreatorDiscoveryTab.jsx';
 import StateRankingsTab from './components/StateRankingsTab.jsx';
+import ShowcaseTab from './components/ShowcaseTab.jsx';
 import UploadTab from './components/UploadTab.jsx';
 import OverlayTab from './components/OverlayTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
@@ -54,6 +55,7 @@ const TABS = [
   { id: 'music',     label: '🎵 STUDIO' },
   { id: 'discover',  label: '🔭 DISCOVER' },
   { id: 'rankings',  label: '🏅 RANKS' },
+  { id: 'showcase',  label: '🏆 SHOWCASE' },
   { id: 'upload',    label: '📤 UPLOAD' },
   { id: 'overlay',   label: '🎬 OVERLAY' },
 ];
@@ -541,6 +543,9 @@ export default function App() {
         )}
         {activeTab === 'rankings' && (
           <StateRankingsTab />
+        )}
+        {activeTab === 'showcase' && (
+          <ShowcaseTab addToast={addToast} />
         )}
         {activeTab === 'upload' && (
           <UploadTab addToast={addToast} />
