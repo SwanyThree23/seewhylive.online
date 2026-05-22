@@ -85,12 +85,12 @@ export default function ReplayTab({ addToast }) {
   function addToReel(clip) {
     for (var j = 0; j < reel.length; j++) {
       if (reel[j].id === clip.id) {
-        addToast('Already in highlight reel', 'info');
+        addToast('⚠️ Already in highlight reel', 'info');
         return;
       }
     }
     setReel(function(prev) { return prev.concat([Object.assign({}, clip)]); });
-    addToast('Added to reel: ' + clip.title.slice(0, 20), 'info');
+    addToast('✂️ Added to reel: ' + clip.title.slice(0, 20), 'info');
   }
 
   function removeFromReel(id) {
@@ -245,7 +245,7 @@ export default function ReplayTab({ addToast }) {
           <button
             onClick={function() {
               var label = exportLabels[exportMode] || exportMode;
-              addToast(label + ' exported! Creator gets 90% of revenue.', 'success');
+              addToast('📤 ' + label + ' exported! Creator gets 90% of revenue.', 'success');
             }}
             style={{ background: 'linear-gradient(135deg,' + TEAL + ',' + TEAL_H + ')', border: 'none', borderRadius: 6, padding: '5px 10px', color: BG0, fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}
           >EXPORT</button>
@@ -342,7 +342,7 @@ export default function ReplayTab({ addToast }) {
                     >+ ADD TO REEL</button>
                   ) : (
                     <button
-                      onClick={function() { removeFromReel(clip.id); addToast('Removed from reel', 'info'); }}
+                      onClick={function() { removeFromReel(clip.id); }}
                       style={{ background: 'rgba(107,95,130,.12)', border: '1px solid rgba(107,95,130,.35)', borderRadius: 6, padding: '5px 10px', color: MUTED, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
                     >— REMOVE REEL</button>
                   )}
@@ -372,11 +372,11 @@ export default function ReplayTab({ addToast }) {
               </div>
               <div style={{ display: 'flex', gap: 5 }}>
                 <button
-                  onClick={function() { addToast('Highlight reel exported! Creator gets 90%', 'success'); }}
+                  onClick={function() { addToast('🎬 Highlight reel exported! Creator gets 90%', 'success'); }}
                   style={{ background: 'linear-gradient(135deg,' + PURP + ',' + PURP_H + ')', border: 'none', borderRadius: 6, padding: '5px 10px', color: '#fff', fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
                 >🎬 EXPORT</button>
                 <button
-                  onClick={function() { addToast('Shared to Techmunity!', 'info'); }}
+                  onClick={function() { addToast('📤 Shared to Techmunity!', 'info'); }}
                   style={{ background: 'rgba(155,77,202,.15)', border: '1px solid rgba(155,77,202,.4)', borderRadius: 6, padding: '5px 10px', color: PURP_H, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
                 >📤 SHARE</button>
               </div>

@@ -26,6 +26,12 @@ import StateRankingsTab from './components/StateRankingsTab.jsx';
 import ShowcaseTab from './components/ShowcaseTab.jsx';
 import UploadTab from './components/UploadTab.jsx';
 import OverlayTab from './components/OverlayTab.jsx';
+import PortalTab from './components/PortalTab.jsx';
+import CollabTab from './components/CollabTab.jsx';
+import N8nTab from './components/N8nTab.jsx';
+import MerchTab from './components/MerchTab.jsx';
+import ReplayTab from './components/ReplayTab.jsx';
+import MCPTab from './components/MCPTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -58,6 +64,12 @@ const TABS = [
   { id: 'showcase',  label: '🏆 SHOWCASE' },
   { id: 'upload',    label: '📤 UPLOAD' },
   { id: 'overlay',   label: '🎬 OVERLAY' },
+  { id: 'portal',    label: '🌐 PORTAL' },
+  { id: 'collab',    label: '🤝 COLLAB' },
+  { id: 'n8n',       label: '⚙ N8N' },
+  { id: 'merch',     label: '👕 MERCH' },
+  { id: 'replay',    label: '▶ REPLAY' },
+  { id: 'mcp',       label: '🔌 MCP' },
 ];
 
 export default function App() {
@@ -561,6 +573,24 @@ export default function App() {
             userId={userId}
             username={username}
           />
+        )}
+        {activeTab === 'portal' && (
+          <PortalTab addToast={addToast} />
+        )}
+        {activeTab === 'collab' && (
+          <CollabTab addToast={addToast} userId={userId} username={username} />
+        )}
+        {activeTab === 'n8n' && (
+          <N8nTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'merch' && (
+          <MerchTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'replay' && (
+          <ReplayTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'mcp' && (
+          <MCPTab addToast={addToast} />
         )}
       </main>
 
