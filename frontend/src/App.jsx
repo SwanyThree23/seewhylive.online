@@ -117,7 +117,22 @@ export default function App() {
     socket.on('disconnect', () => setConnected(false));
 
     socket.on('roster-update', (data) => {
-      if (data && data.guests) setGuests(data.guests);
+      if (!data || !data.guests) return;
+      setGuests(function(prev) {
+        return data.guests.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          var existing = null;
+          for (var i = 0; i < prev.length; i++) {
+            var pid = prev[i].guestId ? prev[i].guestId : prev[i].userId;
+            if (pid === gid) { existing = prev[i]; break; }
+          }
+          if (!existing) return g;
+          var merged = Object.assign({}, g);
+          if (existing.producerId)      merged.producerId      = existing.producerId;
+          if (existing.audioProducerId) merged.audioProducerId = existing.audioProducerId;
+          return merged;
+        });
+      });
     });
 
     socket.on('viewer-count', (data) => {
@@ -160,29 +175,32 @@ export default function App() {
     });
 
     socket.on('new-producer', (data) => {
-      if (!data || !data.guestId || !data.producerId || data.kind !== 'video') return;
+      if (!data || !data.guestId || !data.producerId) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
           var gid = g.guestId ? g.guestId : g.userId;
-          if (gid === data.guestId) return Object.assign({}, g, { producerId: data.producerId });
-          return g;
+          if (gid !== data.guestId) return g;
+          var update = Object.assign({}, g);
+          if (data.kind === 'video') update.producerId      = data.producerId;
+          if (data.kind === 'audio') update.audioProducerId = data.producerId;
+          return update;
         });
       });
     });
 
     socket.on('join-room-ack', function(ackData) {
       if (!ackData || !Array.isArray(ackData.existingProducers)) return;
-      var videoProducers = ackData.existingProducers.filter(function(p) { return p.kind === 'video'; });
-      if (videoProducers.length === 0) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
           var gid = g.guestId ? g.guestId : g.userId;
-          var match = null;
-          for (var i = 0; i < videoProducers.length; i++) {
-            if (videoProducers[i].guestId === gid) { match = videoProducers[i]; break; }
+          var update = Object.assign({}, g);
+          for (var i = 0; i < ackData.existingProducers.length; i++) {
+            var p = ackData.existingProducers[i];
+            if (p.guestId !== gid) continue;
+            if (p.kind === 'video') update.producerId      = p.producerId;
+            if (p.kind === 'audio') update.audioProducerId = p.producerId;
           }
-          if (match) return Object.assign({}, g, { producerId: match.producerId });
-          return g;
+          return update;
         });
       });
     });
@@ -191,8 +209,10 @@ export default function App() {
       if (!data || !data.producerId) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
-          if (g.producerId === data.producerId) return Object.assign({}, g, { producerId: null });
-          return g;
+          var update = Object.assign({}, g);
+          if (g.producerId      === data.producerId) update.producerId      = null;
+          if (g.audioProducerId === data.producerId) update.audioProducerId = null;
+          return update;
         });
       });
     });
