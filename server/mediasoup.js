@@ -250,6 +250,30 @@ function closeProducer(producerId) {
   delete producers[producerId];
 }
 
+function pauseProducer(producerId) {
+  const entry = producers[producerId];
+  if (!entry) return;
+  entry.producer.pause().catch(function(err) {
+    console.error('Error pausing producer:', producerId, err);
+  });
+}
+
+function resumeProducer(producerId) {
+  const entry = producers[producerId];
+  if (!entry) return;
+  entry.producer.resume().catch(function(err) {
+    console.error('Error resuming producer:', producerId, err);
+  });
+}
+
+function getProducerIdsByGuest(guestId) {
+  var ids = [];
+  Object.keys(producers).forEach(function(pid) {
+    if (producers[pid].guestId === guestId) ids.push(pid);
+  });
+  return ids;
+}
+
 // ─── Consumer management ─────────────────────────────────────────────────
 
 /**
@@ -377,6 +401,9 @@ module.exports = {
   createProducer,
   createConsumer,
   closeProducer,
+  pauseProducer,
+  resumeProducer,
+  getProducerIdsByGuest,
   getRouterRtpCapabilities,
   getRoomProducers,
   cleanupRoom,
