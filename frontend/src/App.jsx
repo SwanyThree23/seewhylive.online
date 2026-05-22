@@ -242,6 +242,43 @@ export default function App() {
       addToast('✓ Stream fanout reconnected' + attempt, 'success');
     });
 
+    socket.on('guest-unmuted', (data) => {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          return Object.assign({}, g, { remoteMuted: false });
+        });
+      });
+    });
+
+    socket.on('guest-kicked', (data) => {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.filter(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          return gid !== data.guestId;
+        });
+      });
+      addToast('A guest was removed from the room', 'info');
+    });
+
+    socket.on('you-were-kicked', () => {
+      addToast('⚠ You were removed from this room by the host', 'error');
+    });
+
+    socket.on('role-changed', (data) => {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          return Object.assign({}, g, { role: data.role });
+        });
+      });
+    });
+
     return () => {
       socket.off('connect');
       socket.off('disconnect');
@@ -260,6 +297,10 @@ export default function App() {
       socket.off('muted');
       socket.off('fanout-failed');
       socket.off('fanout-restarted');
+      socket.off('guest-unmuted');
+      socket.off('guest-kicked');
+      socket.off('you-were-kicked');
+      socket.off('role-changed');
     };
   }, [userId, username, role, addToast]);
 
@@ -421,6 +462,10 @@ export default function App() {
           <GreenRoomTab
             guests={guests}
             addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            userId={userId}
+            role={role}
           />
         )}
         {activeTab === 'forge' && (

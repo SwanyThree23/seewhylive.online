@@ -680,6 +680,79 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('guest-muted', { guestId: guestId });
   });
 
+  // ── unmute-guest ───────────────────────────────────────────────────────
+  socket.on('unmute-guest', function(data) {
+    const roomId  = data.roomId || socket.data.roomId;
+    const guestId = data.guestId;
+    if (!roomId || !guestId) return;
+    if (socket.data.role !== 'host') return;
+    const producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    producerIds.forEach(function(pid) { mediasoup.resumeProducer(pid); });
+    io.to(roomId).emit('guest-unmuted', { guestId: guestId });
+  });
+
+  // ── kick-guest ─────────────────────────────────────────────────────────
+  socket.on('kick-guest', function(data) {
+    const roomId  = data.roomId || socket.data.roomId;
+    const guestId = data.guestId;
+    if (!roomId || !guestId) return;
+    if (socket.data.role !== 'host') return;
+
+    const producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    producerIds.forEach(function(pid) { mediasoup.closeProducer(pid); });
+
+    const room = rooms.get(roomId);
+    if (room) {
+      room.guests.forEach(function(g, sid) {
+        if (g.guestId === guestId) {
+          room.guests.delete(sid);
+          const targetSocket = io.sockets.sockets.get(sid);
+          if (targetSocket) {
+            targetSocket.leave(roomId);
+            targetSocket.emit('you-were-kicked', { roomId: roomId });
+          }
+        }
+      });
+    }
+
+    io.to(roomId).emit('guest-kicked', { guestId: guestId });
+
+    if (room) {
+      const guestList = [];
+      room.guests.forEach(function(g) {
+        guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
+      });
+      io.to(roomId).emit('roster-update', { guests: guestList });
+    }
+  });
+
+  // ── promote-guest ──────────────────────────────────────────────────────
+  socket.on('promote-guest', function(data) {
+    const roomId  = data.roomId || socket.data.roomId;
+    const guestId = data.guestId;
+    const newRole = data.role;
+    if (!roomId || !guestId || !newRole) return;
+    if (socket.data.role !== 'host') return;
+    const validRoles = ['cohost', 'guest', 'viewer'];
+    if (validRoles.indexOf(newRole) === -1) return;
+
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    room.guests.forEach(function(g, sid) {
+      if (g.guestId === guestId) {
+        g.role = newRole;
+        io.to(sid).emit('role-changed', { guestId: guestId, role: newRole });
+      }
+    });
+
+    const guestList = [];
+    room.guests.forEach(function(g) {
+      guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
+    });
+    io.to(roomId).emit('roster-update', { guests: guestList });
+  });
+
   // ── chat-message ───────────────────────────────────────────────────────
   socket.on('chat-message', function(data) {
     const roomId   = data.roomId || socket.data.roomId;
