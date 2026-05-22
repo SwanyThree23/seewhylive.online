@@ -160,6 +160,29 @@ class SeeWhyRTC {
     }, 2000);
   }
 
+  async replaceTrack(kind, newTrack) {
+    if (!this.producers[kind]) return;
+    try {
+      await this.producers[kind].replaceTrack({ track: newTrack });
+    } catch(e) {
+      console.error('[RTC] replaceTrack error:', e);
+    }
+  }
+
+  pauseProducer(kind) {
+    if (this.producers[kind]) {
+      this.producers[kind].pause();
+      this.socket.emit('producer-pause', { roomId: this.roomId, producerId: this.producers[kind].id });
+    }
+  }
+
+  resumeProducer(kind) {
+    if (this.producers[kind]) {
+      this.producers[kind].resume();
+      this.socket.emit('producer-resume', { roomId: this.roomId, producerId: this.producers[kind].id });
+    }
+  }
+
   closeProducer(kind) {
     if (this.producers[kind]) {
       this.producers[kind].close();
