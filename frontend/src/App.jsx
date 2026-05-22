@@ -407,6 +407,8 @@ export default function App() {
             guests={guests}
             roomId={APP_ID}
             isLive={isLive}
+            role={role}
+            userId={userId}
           />
         )}
         {activeTab === 'brand' && (
