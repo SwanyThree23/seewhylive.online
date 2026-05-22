@@ -889,6 +889,62 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('overlay-update', { overlay: data.overlay });
   });
 
+  // ── watch-party ────────────────────────────────────────────────────────
+  socket.on('watch-party-url', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.videoId) return;
+    io.to(roomId).emit('watch-party-url', { videoId: data.videoId, url: data.url || '' });
+  });
+
+  socket.on('watch-party-play', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('watch-party-play', { position: data.position || 0, timestamp: data.timestamp || Date.now() });
+  });
+
+  socket.on('watch-party-pause', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('watch-party-pause', { position: data.position || 0 });
+  });
+
+  socket.on('watch-party-seek', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId || typeof data.position !== 'number') return;
+    io.to(roomId).emit('watch-party-seek', { position: data.position });
+  });
+
+  // ── bot-manual-message ─────────────────────────────────────────────────
+  socket.on('bot-manual-message', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.message) return;
+    const msg = String(data.message).substring(0, 300);
+    io.to(roomId).emit('chat-message', {
+      userId: 'swanybot',
+      username: '🤖 SwanyBot',
+      text: msg,
+      ts: Date.now(),
+      isBot: true
+    });
+    io.to(roomId).emit('bot-log', {
+      event: 'manual',
+      message: msg,
+      ts: Date.now()
+    });
+  });
+
+  socket.on('bot-add-trigger', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.trigger) return;
+    io.to(roomId).emit('bot-trigger-added', { trigger: data.trigger });
+  });
+
+  socket.on('bot-remove-trigger', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.triggerId) return;
+    io.to(roomId).emit('bot-trigger-removed', { triggerId: data.triggerId });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     const roomId = data.roomId || socket.data.roomId;
