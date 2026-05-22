@@ -261,6 +261,11 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
             🔇 MUTED
           </div>
         )}
+        {!isOwnCell && guest && guest.remoteMuted && (
+          <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,26,60,.75)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff' }}>
+            🔇 MUTED
+          </div>
+        )}
 
         {/* Connection quality dot */}
         <div className={'conn-dot conn-dot--' + connQuality} />
