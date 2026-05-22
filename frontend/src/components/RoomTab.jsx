@@ -111,22 +111,50 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
   );
 }
 
-export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userId, username, role, roomId, branding, addToast, overlayConfig }) {
-  var [stageLayout,  setStageLayout]  = useState('panel');
-  var [stageGuests,  setStageGuests]  = useState([userId]);
-  var [handQueue,    setHandQueue]    = useState([]);
-  var [featuredId,   setFeaturedId]   = useState(userId);
-  var [isMuted,      setIsMuted]      = useState(false);
-  var [isCamOff,     setIsCamOff]     = useState(false);
-  var [isScreenShare,setIsScreenShare]= useState(false);
-  var [showConfig,   setShowConfig]   = useState(false);
-  var [mediaConfig,  setMediaConfig]  = useState(null);
-  var [chatOpen,     setChatOpen]     = useState(true);
-  var [chatInput,    setChatInput]    = useState('');
-  var [rtcReady,     setRtcReady]     = useState(false);
-  var [showGuests,   setShowGuests]   = useState(false);
+var GO_LIVE_PLATFORMS = [
+  { id: 'seewhy',   name: 'SeeWhy LIVE', color: '#C9A84C', icon: '📡', locked: true  },
+  { id: 'youtube',  name: 'YouTube',     color: '#FF0000', icon: '▶',  locked: false },
+  { id: 'twitch',   name: 'Twitch',      color: '#9146FF', icon: '⬡',  locked: false },
+  { id: 'facebook', name: 'Facebook',    color: '#1877F2', icon: 'f',  locked: false },
+  { id: 'tiktok',   name: 'TikTok',      color: '#69C9D0', icon: '♪',  locked: false },
+  { id: 'kick',     name: 'Kick',        color: '#53FC18', icon: 'K',  locked: false },
+  { id: 'rumble',   name: 'Rumble',      color: '#85C742', icon: 'R',  locked: false },
+];
+
+export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userId, username, role, roomId, branding, addToast, overlayConfig, viewerCount }) {
+  var [stageLayout,    setStageLayout]    = useState('panel');
+  var [stageGuests,    setStageGuests]    = useState([userId]);
+  var [handQueue,      setHandQueue]      = useState([]);
+  var [featuredId,     setFeaturedId]     = useState(userId);
+  var [isMuted,        setIsMuted]        = useState(false);
+  var [isCamOff,       setIsCamOff]       = useState(false);
+  var [isScreenShare,  setIsScreenShare]  = useState(false);
+  var [showConfig,     setShowConfig]     = useState(false);
+  var [mediaConfig,    setMediaConfig]    = useState(null);
+  var [chatOpen,       setChatOpen]       = useState(true);
+  var [chatInput,      setChatInput]      = useState('');
+  var [rtcReady,       setRtcReady]       = useState(false);
+  var [showGuests,     setShowGuests]     = useState(false);
+  var [showGoLiveModal, setShowGoLiveModal] = useState(false);
+  var [glDests,        setGlDests]        = useState({ seewhy: true });
+  var [glKeys,         setGlKeys]         = useState({});
+  var [uptime,         setUptime]         = useState(0);
+  var liveStartRef   = useRef(null);
   var chatEndRef     = useRef(null);
   var screenStreamRef = useRef(null);
+
+  useEffect(function() {
+    if (isLive && !liveStartRef.current) liveStartRef.current = Date.now();
+    if (!isLive) { liveStartRef.current = null; setUptime(0); }
+  }, [isLive]);
+
+  useEffect(function() {
+    if (!isLive) return;
+    var t = setInterval(function() {
+      if (liveStartRef.current) setUptime(Math.floor((Date.now() - liveStartRef.current) / 1000));
+    }, 1000);
+    return function() { clearInterval(t); };
+  }, [isLive]);
 
   useEffect(function() {
     if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -175,15 +203,35 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     };
   }, [socket, role]);
 
+  function fmtUptime(s) {
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    var mm = m < 10 ? '0' + m : String(m);
+    var ss = sec < 10 ? '0' + sec : String(sec);
+    return h > 0 ? h + ':' + mm + ':' + ss : mm + ':' + ss;
+  }
+
   function sendChat() {
     if (!chatInput.trim() || !socket) return;
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: chatInput.trim() });
     setChatInput('');
   }
 
-  function goLive() {
+  function openGoLive() {
+    setShowGoLiveModal(true);
+  }
+
+  function confirmGoLive() {
     if (!socket) return;
-    socket.emit('go-live', { roomId: roomId, destinations: [] });
+    var dests = [];
+    GO_LIVE_PLATFORMS.forEach(function(p) {
+      if (glDests[p.id]) {
+        dests.push({ id: p.id, key: glKeys[p.id] || '', rtmp: p.rtmp || '' });
+      }
+    });
+    socket.emit('go-live', { roomId: roomId, destinations: dests });
+    setShowGoLiveModal(false);
   }
 
   function endBroadcast() {
@@ -556,6 +604,92 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         </div>
       )}
 
+      {/* Live stats strip */}
+      {isLive && (
+        <div style={{ display: 'flex', gap: 6, padding: '5px 12px', background: 'rgba(7,5,10,.8)', borderTop: '1px solid rgba(255,26,60,.15)', flexShrink: 0, overflowX: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 5px #FF1A3C' }} />
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>LIVE</span>
+          </div>
+          <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>⏱</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtUptime(uptime)}</span>
+          </div>
+          <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>👁</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#EDE8F5' }}>{viewerCount || 0}</span>
+          </div>
+          <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>🎙</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: stageGuests.length > 0 ? '#00C9A7' : '#7A6F90' }}>{stageGuests.length} on stage</span>
+          </div>
+          {isMuted && (
+            <>
+              <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF1A3C' }}>⚠ MUTED</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Go Live modal */}
+      {showGoLiveModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(4px)', padding: 16 }}>
+          <div style={{ background: '#0F0C14', border: '1px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '20px', maxWidth: 380, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', letterSpacing: 4, marginBottom: 4 }}>🔴 GO LIVE</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 16 }}>Select destinations · SeeWhy is always included</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+              {GO_LIVE_PLATFORMS.map(function(p) {
+                var isOn = Boolean(glDests[p.id]);
+                return (
+                  <div key={p.id} style={{ background: isOn ? p.color + '0d' : 'rgba(22,16,32,.5)', border: '1px solid ' + (isOn ? p.color + '55' : '#241C34'), borderRadius: 8, padding: '10px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 6, background: p.color + '22', border: '1px solid ' + p.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: p.color, flexShrink: 0 }}>{p.icon}</div>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isOn ? '#EDE8F5' : '#7A6F90', flex: 1 }}>{p.name}</span>
+                      {p.locked ? (
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>ALWAYS ON</span>
+                      ) : (
+                        <button
+                          onClick={function() { setGlDests(function(d) { return Object.assign({}, d, { [p.id]: !d[p.id] }); }); }}
+                          style={{ width: 38, height: 20, borderRadius: 10, background: isOn ? p.color : '#241C34', border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+                          <div style={{ position: 'absolute', top: 2, left: isOn ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
+                        </button>
+                      )}
+                    </div>
+                    {isOn && !p.locked && (
+                      <input
+                        value={glKeys[p.id] || ''}
+                        onChange={function(e) { var v = e.target.value; setGlKeys(function(k) { return Object.assign({}, k, { [p.id]: v }); }); }}
+                        placeholder={'Stream key for ' + p.name + '...'}
+                        type="password"
+                        autoComplete="off"
+                        style={{ marginTop: 8, width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 10, boxSizing: 'border-box' }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() { setShowGoLiveModal(false); }}
+                style={{ flex: 1, padding: '11px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button onClick={confirmGoLive}
+                style={{ flex: 2, padding: '11px', background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                🔴 GO LIVE NOW
+              </button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', textAlign: 'center', marginTop: 10 }}>
+              Destinations with no key will use your saved vault key.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Media controls bar */}
       <div className="media-controls-bar">
         <button onClick={toggleMute} className={'mc-btn' + (isMuted ? ' mc-btn--danger' : ' mc-btn--active')}>
@@ -576,7 +710,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         </button>
         <div className="mc-divider" />
         {role === 'host' && !isLive && (
-          <button onClick={goLive} className="mc-btn mc-btn--live" style={{ minWidth: 56 }}>
+          <button onClick={openGoLive} className="mc-btn mc-btn--live" style={{ minWidth: 56 }}>
             <span className="mc-btn-icon">🔴</span>
             <span className="mc-btn-label">GO LIVE</span>
           </button>
