@@ -217,6 +217,31 @@ export default function App() {
       });
     });
 
+    socket.on('guest-muted', (data) => {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          return Object.assign({}, g, { remoteMuted: true });
+        });
+      });
+      addToast('Host muted a guest', 'info');
+    });
+
+    socket.on('muted', () => {
+      addToast('⚠ Your chat has been restricted by SwanyBot', 'error');
+    });
+
+    socket.on('fanout-failed', () => {
+      addToast('⚠ Stream fanout lost — attempting to reconnect', 'error');
+    });
+
+    socket.on('fanout-restarted', (data) => {
+      var attempt = data && data.attempt ? ' (attempt ' + data.attempt + ')' : '';
+      addToast('✓ Stream fanout reconnected' + attempt, 'success');
+    });
+
     return () => {
       socket.off('connect');
       socket.off('disconnect');
@@ -231,6 +256,10 @@ export default function App() {
       socket.off('new-producer');
       socket.off('join-room-ack');
       socket.off('producer-closed');
+      socket.off('guest-muted');
+      socket.off('muted');
+      socket.off('fanout-failed');
+      socket.off('fanout-restarted');
     };
   }, [userId, username, role, addToast]);
 
