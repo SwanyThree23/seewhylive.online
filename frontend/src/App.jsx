@@ -428,6 +428,7 @@ export default function App() {
             socket={socketRef.current}
             botLogs={botLogs}
             roomId={APP_ID}
+            addToast={addToast}
           />
         )}
         {activeTab === 'data' && (
@@ -467,6 +468,10 @@ export default function App() {
         {activeTab === 'watch' && (
           <WatchPartyTab
             guests={guests}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            addToast={addToast}
           />
         )}
         {activeTab === 'green' && (
