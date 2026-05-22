@@ -669,6 +669,17 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('stage-remove', { guestId: guestId });
   });
 
+  // ── mute-guest ─────────────────────────────────────────────────────────
+  socket.on('mute-guest', function(data) {
+    const roomId  = data.roomId || socket.data.roomId;
+    const guestId = data.guestId;
+    if (!roomId || !guestId) return;
+    if (socket.data.role !== 'host') return;
+    const producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    producerIds.forEach(function(pid) { mediasoup.pauseProducer(pid); });
+    io.to(roomId).emit('guest-muted', { guestId: guestId });
+  });
+
   // ── chat-message ───────────────────────────────────────────────────────
   socket.on('chat-message', function(data) {
     const roomId   = data.roomId || socket.data.roomId;
