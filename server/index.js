@@ -882,6 +882,13 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── overlay-update ────────────────────────────────────────────────────
+  socket.on('overlay-update', function(data) {
+    const roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.overlay) return;
+    io.to(roomId).emit('overlay-update', { overlay: data.overlay });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     const roomId = data.roomId || socket.data.roomId;
