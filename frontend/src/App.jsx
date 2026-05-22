@@ -24,6 +24,7 @@ import MusicStudioTab from './components/MusicStudioTab.jsx';
 import CreatorDiscoveryTab from './components/CreatorDiscoveryTab.jsx';
 import StateRankingsTab from './components/StateRankingsTab.jsx';
 import UploadTab from './components/UploadTab.jsx';
+import OverlayTab from './components/OverlayTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -54,6 +55,7 @@ const TABS = [
   { id: 'discover',  label: '🔭 DISCOVER' },
   { id: 'rankings',  label: '🏅 RANKS' },
   { id: 'upload',    label: '📤 UPLOAD' },
+  { id: 'overlay',   label: '🎬 OVERLAY' },
 ];
 
 export default function App() {
@@ -88,6 +90,7 @@ export default function App() {
   const [fadesScores, setFadesScores] = useState({ team1: 0, team2: 0 });
   const [giftFloats, setGiftFloats] = useState([]);
   const [ppvToken, setPpvToken] = useState(() => sessionStorage.getItem('sw_ppv_token') || null);
+  const [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
 
   const socketRef = useRef(null);
   const uptimeRef = useRef(null);
@@ -279,6 +282,11 @@ export default function App() {
       });
     });
 
+    socket.on('overlay-update', (data) => {
+      if (!data || !data.overlay) return;
+      setOverlayConfig(data.overlay);
+    });
+
     return () => {
       socket.off('connect');
       socket.off('disconnect');
@@ -301,6 +309,7 @@ export default function App() {
       socket.off('guest-kicked');
       socket.off('you-were-kicked');
       socket.off('role-changed');
+      socket.off('overlay-update');
     };
   }, [userId, username, role, addToast]);
 
@@ -387,6 +396,7 @@ export default function App() {
             roomId={APP_ID}
             branding={branding}
             addToast={addToast}
+            overlayConfig={overlayConfig}
           />
         )}
         {activeTab === 'fades' && (
@@ -526,6 +536,18 @@ export default function App() {
         )}
         {activeTab === 'upload' && (
           <UploadTab addToast={addToast} />
+        )}
+        {activeTab === 'overlay' && (
+          <OverlayTab
+            overlayConfig={overlayConfig}
+            setOverlayConfig={setOverlayConfig}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            guests={guests}
+            userId={userId}
+            username={username}
+          />
         )}
       </main>
 
