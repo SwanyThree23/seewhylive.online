@@ -397,6 +397,7 @@ export default function App() {
             branding={branding}
             addToast={addToast}
             overlayConfig={overlayConfig}
+            viewerCount={viewerCount}
           />
         )}
         {activeTab === 'fades' && (
