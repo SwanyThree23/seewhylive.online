@@ -15,10 +15,13 @@ var QUICK_PROMPTS = [
   { label: 'DOMINO',  prompt: 'Drop a domino culture knowledge bomb for the audience.' },
 ];
 
+var INITIAL_MSG = { role: 'aura', text: '🤖 AURA ONLINE — SeeWhy LIVE v33 suite active. Washington Classic energy IMMACULATE! 🎲', time: fmtTime() };
+
 export default function AuraTab({ isLive, viewerCount }) {
-  var [msgs, setMsgs]     = useState([{ role: 'aura', text: '🤖 AURA ONLINE — SeeWhy LIVE v33 suite active. Washington Classic energy IMMACULATE! 🎲', time: fmtTime() }]);
-  var [input, setInput]   = useState('');
-  var [loading, setLoading] = useState(false);
+  var [msgs, setMsgs]         = useState([INITIAL_MSG]);
+  var [input, setInput]       = useState('');
+  var [loading, setLoading]   = useState(false);
+  var [autoHype, setAutoHype] = useState(false);
   var chatRef = useRef(null);
 
   useEffect(function() {
@@ -48,21 +51,38 @@ export default function AuraTab({ isLive, viewerCount }) {
       });
   }, [isLive, viewerCount]);
 
+  useEffect(function() {
+    if (!autoHype || !isLive) return;
+    var interval = setInterval(function() {
+      var rnd = QUICK_PROMPTS[Math.floor(Math.random() * QUICK_PROMPTS.length)];
+      callAura(rnd.prompt, null);
+    }, 45000);
+    return function() { clearInterval(interval); };
+  }, [autoHype, isLive, callAura]);
+
   function send() {
     if (!input.trim() || loading) return;
     callAura(input, input);
     setInput('');
   }
 
+  function clearChat() {
+    setMsgs([{ role: 'aura', text: '🤖 AURA ONLINE — SeeWhy LIVE v33 suite active. Washington Classic energy IMMACULATE! 🎲', time: fmtTime() }]);
+  }
+
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
-      {/* Header */}
       <div style={{ background: 'rgba(155,77,202,.1)', border: '1px solid rgba(155,77,202,.3)', borderRadius: 10, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'radial-gradient(circle,rgba(192,132,252,.35),rgba(155,77,202,.15))', border: '2px solid rgba(155,77,202,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🤖</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C084FC', letterSpacing: 2 }}>AURA AI CO-HOST</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>claude-sonnet-4 · v33 · Washington Classic</div>
         </div>
+        <button
+          onClick={function() { setAutoHype(function(v) { return !v; }); }}
+          style={{ background: autoHype && isLive ? 'rgba(192,132,252,.25)' : 'rgba(155,77,202,.08)', border: '1px solid ' + (autoHype && isLive ? 'rgba(192,132,252,.6)' : 'rgba(155,77,202,.25)'), borderRadius: 6, padding: '4px 9px', color: autoHype && isLive ? '#C084FC' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+          {autoHype ? 'AUTO ON' : 'AUTO'}
+        </button>
         {loading && (
           <div style={{ display: 'flex', gap: 3 }}>
             {[0, 1, 2].map(function(i) {
@@ -72,7 +92,13 @@ export default function AuraTab({ isLive, viewerCount }) {
         )}
       </div>
 
-      {/* Quick prompts */}
+      {autoHype && isLive && (
+        <div style={{ background: 'rgba(192,132,252,.08)', border: '1px solid rgba(192,132,252,.3)', borderRadius: 6, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C084FC', animation: 'pulse 1.2s ease infinite' }} />
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC', letterSpacing: 1 }}>AUTO-HYPE ACTIVE · fires every 45s</span>
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {QUICK_PROMPTS.map(function(qp) {
           return (
@@ -87,7 +113,20 @@ export default function AuraTab({ isLive, viewerCount }) {
         })}
       </div>
 
-      {/* Chat messages */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>CHAT LOG</span>
+          <div style={{ background: 'rgba(155,77,202,.18)', border: '1px solid rgba(155,77,202,.3)', borderRadius: 10, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC' }}>
+            {msgs.length}
+          </div>
+        </div>
+        <button
+          onClick={clearChat}
+          style={{ background: 'rgba(255,60,60,.07)', border: '1px solid rgba(255,60,60,.2)', borderRadius: 5, padding: '3px 8px', color: '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+          🗑 CLEAR
+        </button>
+      </div>
+
       <div ref={chatRef} style={{ background: 'rgba(15,12,20,.8)', border: '1px solid rgba(155,77,202,.2)', borderRadius: 10, padding: '10px', height: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {msgs.map(function(m, i) {
           return (
@@ -111,7 +150,6 @@ export default function AuraTab({ isLive, viewerCount }) {
         )}
       </div>
 
-      {/* Input */}
       <div style={{ display: 'flex', gap: 8 }}>
         <input
           value={input}
