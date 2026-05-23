@@ -60,6 +60,13 @@ function fmtTs(ts) {
   return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+function fmtUptime(sec) {
+  var h = Math.floor(sec / 3600);
+  var m = Math.floor((sec % 3600) / 60);
+  var s = sec % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
 var LIVE_LOG_POOL = [
   { level: 'INFO',  msg: 'WebRTC ICE candidate pair selected via TURN relay' },
   { level: 'INFO',  msg: 'Gift event: Crown ×1 ($10.00) from SwanyFan99' },
@@ -75,7 +82,10 @@ var LIVE_LOG_POOL = [
   { level: 'WARN',  msg: 'coturn session limit 80% — 16/20 slots used' },
 ];
 
-export default function InsForgeTab({ addToast }) {
+var RTMP_BITRATES = ['6140 kbps', '6380 kbps', '6520 kbps', '6290 kbps'];
+var WEBRTC_WORKERS = ['2 workers', '3 workers'];
+
+export default function InsForgeTab({ addToast, isLive }) {
   var [services,    setServices]    = useState(INITIAL_SERVICES.map(function(s) { return Object.assign({}, s); }));
   var [refreshing,  setRefreshing]  = useState(false);
   var [lastRefresh, setLastRefresh] = useState(null);
@@ -84,9 +94,12 @@ export default function InsForgeTab({ addToast }) {
   var [liveLogs,    setLiveLogs]    = useState(MOCK_LOGS.map(function(l) { return Object.assign({}, l); }));
   var [actionLog,   setActionLog]   = useState([]);
   var [running,     setRunning]     = useState(null);
+  var [uptimeSec,   setUptimeSec]   = useState(0);
 
-  var refreshRef = useRef(null);
+  var refreshRef   = useRef(null);
+  var rtmpIdx      = useRef(0);
 
+  // Live log ticker (always running)
   useEffect(function() {
     var id = setInterval(function() {
       var pick = LIVE_LOG_POOL[Math.floor(Math.random() * LIVE_LOG_POOL.length)];
@@ -96,6 +109,68 @@ export default function InsForgeTab({ addToast }) {
     }, 4000);
     return function() { clearInterval(id); };
   }, []);
+
+  // Live service metric simulation
+  useEffect(function() {
+    if (!isLive) {
+      setUptimeSec(0);
+      return;
+    }
+
+    // Uptime counter — 1-second tick
+    var uptimeId = setInterval(function() {
+      setUptimeSec(function(prev) { return prev + 1; });
+    }, 1000);
+
+    // Service metric updates — 8-second tick
+    var metricsId = setInterval(function() {
+      rtmpIdx.current = (rtmpIdx.current + 1) % RTMP_BITRATES.length;
+      var nextBitrate = RTMP_BITRATES[rtmpIdx.current];
+      var nextWorkers = WEBRTC_WORKERS[Math.floor(Math.random() * WEBRTC_WORKERS.length)];
+
+      // Occasionally jitter one non-stable service to warn then back
+      var jitterTarget = null;
+      if (Math.random() < 0.25) {
+        var jitterPool = ['rtmp', 'webrtc', 'turn', 'nginx'];
+        jitterTarget = jitterPool[Math.floor(Math.random() * jitterPool.length)];
+      }
+
+      setServices(function(prev) {
+        return prev.map(function(s) {
+          // DB and Vault always stay stable
+          if (s.id === 'db' || s.id === 'vault') return s;
+
+          if (s.id === 'rtmp') {
+            return Object.assign({}, s, {
+              val: nextBitrate,
+              status: jitterTarget === 'rtmp' ? 'warn' : 'healthy',
+            });
+          }
+          if (s.id === 'webrtc') {
+            return Object.assign({}, s, {
+              val: nextWorkers,
+              status: jitterTarget === 'webrtc' ? 'warn' : 'healthy',
+            });
+          }
+          if (jitterTarget === s.id) {
+            return Object.assign({}, s, { status: 'warn' });
+          }
+          // Restore any previously-jittered service back to healthy
+          if (s.status === 'warn') {
+            return Object.assign({}, s, { status: 'healthy' });
+          }
+          return s;
+        });
+      });
+    }, 8000);
+
+    return function() {
+      clearInterval(uptimeId);
+      clearInterval(metricsId);
+      // Restore services to healthy on live end
+      setServices(INITIAL_SERVICES.map(function(s) { return Object.assign({}, s); }));
+    };
+  }, [isLive]);
 
   function runAction(action) {
     if (running) return;
@@ -173,10 +248,10 @@ export default function InsForgeTab({ addToast }) {
   }, []);
 
   var healthy = services.filter(function(s) { return s.status === 'healthy'; }).length;
-  var warning = services.filter(function(s) { return s.status === 'warning'; }).length;
+  var warning = services.filter(function(s) { return s.status === 'warning' || s.status === 'warn'; }).length;
   var errors  = services.filter(function(s) { return s.status === 'error'; }).length;
 
-  var statusColors = { healthy: '#00C96A', warning: '#C9A84C', error: '#FF1A3C' };
+  var statusColors = { healthy: '#00C96A', warning: '#C9A84C', warn: '#C9A84C', error: '#FF1A3C' };
   var levelColors  = { INFO: '#00C9A7',    WARN: '#C9A84C',    ERROR: '#FF1A3C' };
 
   var ITABS = [['status', '⚙ STATUS'], ['logs', '📋 LOGS'], ['system', '💻 SYSTEM'], ['actions', '⚡ ACTIONS']];
@@ -194,6 +269,17 @@ export default function InsForgeTab({ addToast }) {
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
+
+      {/* Stream Active status bar */}
+      {isLive && (
+        <div style={{ background: 'rgba(0,201,106,.1)', border: '1px solid rgba(0,201,106,.3)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 8px #FF1A3C', animation: 'pulse 1s infinite' }} />
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#00C96A', letterSpacing: 2 }}>🔴 STREAM ACTIVE</span>
+          </div>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#00C96A', letterSpacing: 1 }}>{fmtUptime(uptimeSec)}</span>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 10, padding: '10px 14px' }}>
