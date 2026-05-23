@@ -324,31 +324,84 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   });
   var featuredGuest = allGuestMap[featuredId] || stagePeers[0] || { guestId: userId, username: username, role: role };
 
-  var panelClass = 'stage-panel stage-panel--' + Math.min(6, stagePeers.length);
+  // Panel grid columns based on peer count
+  var peerCount = Math.min(6, stagePeers.length);
+  var panelGridCols = peerCount <= 1 ? '1fr' : peerCount <= 2 ? '1fr 1fr' : peerCount <= 4 ? '1fr 1fr' : '1fr 1fr 1fr';
+
+  // mc-btn base style helper
+  function mcBtnStyle(variant) {
+    var base = {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 2,
+      padding: '8px 12px',
+      minWidth: 44,
+      border: '1px solid',
+      borderRadius: 8,
+      cursor: 'pointer',
+      fontFamily: "'Barlow Condensed',sans-serif",
+      fontWeight: 700,
+      fontSize: 9,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      flexShrink: 0,
+      transition: 'background 0.15s',
+    };
+    if (variant === 'danger') {
+      return Object.assign({}, base, {
+        background: 'rgba(255,26,60,.2)',
+        borderColor: 'rgba(255,26,60,.5)',
+        color: '#FF6B81',
+      });
+    }
+    if (variant === 'live') {
+      return Object.assign({}, base, {
+        background: 'linear-gradient(135deg,#800020,#C01838)',
+        borderColor: '#C01838',
+        color: '#C9A84C',
+      });
+    }
+    if (variant === 'active') {
+      return Object.assign({}, base, {
+        background: 'rgba(0,222,192,.1)',
+        borderColor: 'rgba(0,222,192,.35)',
+        color: '#00DEC0',
+      });
+    }
+    // default / inactive
+    return Object.assign({}, base, {
+      background: 'rgba(22,16,32,.7)',
+      borderColor: '#241C34',
+      color: '#7A6F90',
+    });
+  }
 
   return (
-    <div className="room-root">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0F0C14', overflow: 'hidden', fontFamily: "'Barlow Condensed',sans-serif" }}>
       {showConfig && <MediaConfigPanel onClose={function() { setShowConfig(false); }} onApply={handleMediaApply} addToast={addToast} />}
 
       {/* Broadcast bar */}
       {isLive && (
-        <div className="broadcast-bar">
-          <div className="broadcast-bar-dot" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px', background: 'rgba(255,26,60,.08)', borderBottom: '1px solid rgba(255,26,60,.25)', flexShrink: 0 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 6px #FF1A3C', animation: 'liveBlink 1s infinite', flexShrink: 0 }} />
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>BROADCASTING LIVE</span>
           {isMuted && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF1A3C', marginLeft: 'auto' }}>⚠ YOU ARE MUTED</span>}
         </div>
       )}
 
       {/* Stage root */}
-      <div className="stage-root" style={{ position: 'relative' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
 
         {/* Stage toolbar */}
-        <div className="stage-toolbar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', background: 'rgba(10,7,18,.9)', borderBottom: '1px solid #241C34', flexShrink: 0, overflowX: 'auto' }}>
           {LAYOUTS.map(function(l) {
+            var isActive = stageLayout === l.id;
             return (
               <button key={l.id}
                 onClick={function() { setStageLayout(l.id); }}
-                className={'stage-layout-btn' + (stageLayout === l.id ? ' stage-layout-btn--active' : '')}>
+                style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '4px 8px', background: isActive ? 'rgba(0,222,192,.12)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isActive ? 'rgba(0,222,192,.4)' : '#241C34'), borderRadius: 4, color: isActive ? '#00DEC0' : '#7A6F90', cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
                 {l.label}
               </button>
             );
@@ -358,7 +411,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '4px 8px', background: showGuests ? 'rgba(90,143,255,.15)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (showGuests ? 'rgba(90,143,255,.4)' : '#241C34'), borderRadius: 4, color: showGuests ? '#5A8FFF' : '#7A6F90', cursor: 'pointer', flexShrink: 0 }}>
             👥 {guests.length}
           </button>
-          <span className="stage-capacity">{stagePeers.length}/{MAX_STAGE} ON STAGE</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginLeft: 'auto', flexShrink: 0 }}>{stagePeers.length}/{MAX_STAGE} ON STAGE</span>
         </div>
 
         {/* GUESTS LIST MODE */}
@@ -396,7 +449,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* SOLO layout */}
         {!showGuests && stageLayout === 'solo' && (
-          <div className="stage-featured" style={{ flex: 1 }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative', background: '#0a0710' }}>
             {featuredGuest ? (
               <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <OctCell
@@ -432,7 +485,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 )}
               </div>
             ) : (
-              <div className="stage-featured-offline">
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#7A6F90' }}>
                 <div style={{ fontSize: 36 }}>🎙</div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: 'rgba(201,168,76,.4)', letterSpacing: 3 }}>NO SIGNAL</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>Waiting for camera...</div>
@@ -443,13 +496,15 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* PANEL layout */}
         {!showGuests && stageLayout === 'panel' && (
-          <div className={panelClass}>
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: panelGridCols, gap: 2, padding: 2, overflow: 'hidden', background: '#0a0710', alignContent: 'start' }}>
             {stagePeers.map(function(g) {
               var gid  = g.guestId ? g.guestId : (g.userId ? g.userId : 'x');
               var isOwn = gid === userId;
+              var isFeatured = gid === featuredId;
               return (
-                <div key={gid} className={'stage-panel-cell' + (gid === featuredId ? ' stage-panel-cell--featured' : '')}
-                  onClick={function() { setFeaturedId(gid); }}>
+                <div key={gid}
+                  onClick={function() { setFeaturedId(gid); }}
+                  style={{ position: 'relative', border: '2px solid ' + (isFeatured ? '#00DEC0' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', aspectRatio: '16/9', background: '#0a0710' }}>
                   <OctCell
                     guest={g}
                     sz={120}
@@ -483,8 +538,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* TALK layout */}
         {!showGuests && stageLayout === 'talk' && (
-          <div className="stage-talk">
-            <div className="stage-talk-main">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', background: '#0a0710', gap: 2, padding: 2 }}>
+            <div style={{ flex: 1, position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#0a0710' }}>
               {featuredGuest && (
                 <>
                   <OctCell
@@ -508,12 +563,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 </>
               )}
             </div>
-            <div className="stage-talk-sidebar">
+            <div style={{ width: 120, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', flexShrink: 0 }}>
               {stagePeers.filter(function(g) { var gid = g.guestId ? g.guestId : g.userId; return gid !== featuredId; }).map(function(g) {
                 var gid  = g.guestId ? g.guestId : (g.userId ? g.userId : 'x');
                 var isOwn = gid === userId;
                 return (
-                  <div key={gid} className="stage-talk-mini" onClick={function() { setFeaturedId(gid); }}>
+                  <div key={gid}
+                    onClick={function() { setFeaturedId(gid); }}
+                    style={{ position: 'relative', borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)', cursor: 'pointer', aspectRatio: '16/9', background: '#0a0710', flexShrink: 0 }}>
                     <OctCell guest={g} sz={90} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null}
                       mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false}
                       onMuteToggle={isOwn ? toggleMute : null} onCamToggle={isOwn ? toggleCam : null} />
@@ -533,8 +590,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* SCREEN layout */}
         {!showGuests && stageLayout === 'screen' && (
-          <div className="stage-screen">
-            <div className="stage-screen-main">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', background: '#0a0710', gap: 2, padding: 2 }}>
+            <div style={{ flex: 1, position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#0a0710' }}>
               {isScreenShare ? (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
                   <div style={{ textAlign: 'center' }}>
@@ -554,12 +611,12 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 </div>
               )}
             </div>
-            <div className="stage-screen-pip">
+            <div style={{ width: 100, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', flexShrink: 0 }}>
               {stagePeers.map(function(g) {
                 var gid  = g.guestId ? g.guestId : (g.userId ? g.userId : 'x');
                 var isOwn = gid === userId;
                 return (
-                  <div key={gid} className="stage-screen-pip-cell">
+                  <div key={gid} style={{ position: 'relative', borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)', background: '#0a0710', aspectRatio: '16/9', flexShrink: 0 }}>
                     <OctCell guest={g} sz={80} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null}
                       mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false}
                       onMuteToggle={isOwn ? toggleMute : null} onCamToggle={isOwn ? toggleCam : null} />
@@ -581,15 +638,15 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
       {/* Hand raise queue (host only) */}
       {role === 'host' && handQueue.length > 0 && (
-        <div className="hand-queue-panel">
-          <div className="hand-queue-header">
+        <div style={{ background: 'rgba(22,16,32,.9)', borderTop: '1px solid rgba(201,168,76,.2)', padding: '6px 10px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1 }}>
             <span>✋ RAISE QUEUE ({handQueue.length})</span>
           </div>
           {handQueue.map(function(item) {
             return (
-              <div key={item.guestId} className="hand-queue-item">
+              <div key={item.guestId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0' }}>
                 <span style={{ fontSize: 14 }}>✋</span>
-                <span className="hand-queue-name">{item.username}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.username}</span>
                 <button onClick={function() { inviteToStage(item); }}
                   style={{ background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 5, padding: '3px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
                   INVITE
@@ -691,48 +748,49 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       )}
 
       {/* Media controls bar */}
-      <div className="media-controls-bar">
-        <button onClick={toggleMute} className={'mc-btn' + (isMuted ? ' mc-btn--danger' : ' mc-btn--active')}>
-          <span className="mc-btn-icon">{isMuted ? '🔇' : '🎙'}</span>
-          <span className="mc-btn-label">{isMuted ? 'MUTED' : 'MIC'}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: 'rgba(10,7,18,.95)', borderTop: '1px solid #241C34', flexShrink: 0, overflowX: 'auto' }}>
+        <button onClick={toggleMute} style={mcBtnStyle(isMuted ? 'danger' : 'active')}>
+          <span style={{ fontSize: 14 }}>{isMuted ? '🔇' : '🎙'}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>{isMuted ? 'MUTED' : 'MIC'}</span>
         </button>
-        <button onClick={toggleCam} className={'mc-btn' + (isCamOff ? ' mc-btn--danger' : ' mc-btn--active')}>
-          <span className="mc-btn-icon">{isCamOff ? '📵' : '📷'}</span>
-          <span className="mc-btn-label">{isCamOff ? 'OFF' : 'CAM'}</span>
+        <button onClick={toggleCam} style={mcBtnStyle(isCamOff ? 'danger' : 'active')}>
+          <span style={{ fontSize: 14 }}>{isCamOff ? '📵' : '📷'}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>{isCamOff ? 'OFF' : 'CAM'}</span>
         </button>
-        <button onClick={toggleScreenShare} className={'mc-btn' + (isScreenShare ? ' mc-btn--danger' : '')}>
-          <span className="mc-btn-icon">🖥</span>
-          <span className="mc-btn-label">{isScreenShare ? 'STOP' : 'SCREEN'}</span>
+        <button onClick={toggleScreenShare} style={mcBtnStyle(isScreenShare ? 'danger' : '')}>
+          <span style={{ fontSize: 14 }}>🖥</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>{isScreenShare ? 'STOP' : 'SCREEN'}</span>
         </button>
-        <button onClick={function() { setShowConfig(true); }} className="mc-btn">
-          <span className="mc-btn-icon">⚙️</span>
-          <span className="mc-btn-label">CONFIG</span>
+        <button onClick={function() { setShowConfig(true); }} style={mcBtnStyle('')}>
+          <span style={{ fontSize: 14 }}>⚙️</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>CONFIG</span>
         </button>
-        <div className="mc-divider" />
+        <div style={{ width: 1, background: '#241C34', alignSelf: 'stretch', flexShrink: 0, margin: '2px 4px' }} />
         {role === 'host' && !isLive && (
-          <button onClick={openGoLive} className="mc-btn mc-btn--live" style={{ minWidth: 56 }}>
-            <span className="mc-btn-icon">🔴</span>
-            <span className="mc-btn-label">GO LIVE</span>
+          <button onClick={openGoLive} style={Object.assign({}, mcBtnStyle('live'), { minWidth: 56 })}>
+            <span style={{ fontSize: 14 }}>🔴</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>GO LIVE</span>
           </button>
         )}
         {role === 'host' && isLive && (
-          <button onClick={endBroadcast} className="mc-btn mc-btn--danger" style={{ minWidth: 56 }}>
-            <span className="mc-btn-icon">⏹</span>
-            <span className="mc-btn-label">END</span>
+          <button onClick={endBroadcast} style={Object.assign({}, mcBtnStyle('danger'), { minWidth: 56 })}>
+            <span style={{ fontSize: 14 }}>⏹</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>END</span>
           </button>
         )}
         {role !== 'host' && (
-          <button onClick={sendHandRaise} className="mc-btn" style={{ animation: 'beat 1.5s infinite' }}>
-            <span className="mc-btn-icon">✋</span>
-            <span className="mc-btn-label">RAISE</span>
+          <button onClick={sendHandRaise} style={Object.assign({}, mcBtnStyle(''), { animation: 'beat 1.5s infinite' })}>
+            <span style={{ fontSize: 14 }}>✋</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>RAISE</span>
           </button>
         )}
       </div>
 
       {/* Collapsible chat */}
-      <div className="chat-collapsed">
-        <button className="chat-toggle-btn" onClick={function() { setChatOpen(function(v) { return !v; }); }}>
-          <span>💬 LIVE CHAT {chat.length > 0 ? '(' + chat.length + ')' : ''}</span>
+      <div style={{ borderTop: '1px solid #241C34', background: 'rgba(10,7,18,.9)', flexShrink: 0 }}>
+        <button onClick={function() { setChatOpen(function(v) { return !v; }); }}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#EDE8F5' }}>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>💬 LIVE CHAT {chat.length > 0 ? '(' + chat.length + ')' : ''}</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9 }}>{chatOpen ? '▼' : '▲'}</span>
         </button>
         {chatOpen && (
