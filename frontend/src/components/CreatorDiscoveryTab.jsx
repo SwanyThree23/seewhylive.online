@@ -20,10 +20,23 @@ function fmtFollowers(n) {
   return String(n);
 }
 
+var CREATOR_BIO = {
+  c1: { bio: 'Domino legend from Cali. Washington Classic organizer. FADES pioneer.', streams: 214, totalViews: '1.2M' },
+  c2: { bio: "VibeN'Bones bringing that smooth soulful energy. Collab ready.", streams: 87, totalViews: '340k' },
+  c3: { bio: 'Lyric Queen — R&B vocals with a Nigerian twist. Multi-genre artist.', streams: 63, totalViews: '210k' },
+  c4: { bio: 'Tech content, dev streams, AI discussions. Building in public since 2021.', streams: 401, totalViews: '2.1M' },
+  c5: { bio: 'DJ Cipher drops fire sets live every weekend. From Kingston to the world.', streams: 56, totalViews: '180k' },
+  c6: { bio: 'Zen Fit Pro — morning fitness streams, nutrition, mindset coaching.', streams: 38, totalViews: '95k' },
+  c7: { bio: 'Beat King X producing chart-ready tracks live on SeeWhy. UK bass vibes.', streams: 29, totalViews: '72k' },
+  c8: { bio: 'Neon Beats — Korean EDM producer. Lo-fi to techno, all live.', streams: 17, totalViews: '44k' },
+};
+
 export default function CreatorDiscoveryTab({ addToast }) {
   var [filter,    setFilter]    = useState('All');
   var [sortBy,    setSortBy]    = useState('live');
   var [following, setFollowing] = useState({ c1: true });
+  var [search,    setSearch]    = useState('');
+  var [profile,   setProfile]   = useState(null);
 
   function toggleFollow(id, name) {
     setFollowing(function(p) {
@@ -34,7 +47,9 @@ export default function CreatorDiscoveryTab({ addToast }) {
   }
 
   var visible = CREATORS.filter(function(c) {
-    return filter === 'All' || c.category === filter;
+    var matchesCat = filter === 'All' || c.category === filter;
+    var matchesSearch = !search.trim() || c.name.toLowerCase().indexOf(search.toLowerCase()) !== -1 || c.handle.toLowerCase().indexOf(search.toLowerCase()) !== -1;
+    return matchesCat && matchesSearch;
   }).sort(function(a, b) {
     if (sortBy === 'live') {
       if (a.live !== b.live) return a.live ? -1 : 1;
@@ -65,6 +80,14 @@ export default function CreatorDiscoveryTab({ addToast }) {
         </select>
       </div>
 
+      {/* Search */}
+      <input
+        value={search}
+        onChange={function(e) { setSearch(e.target.value); }}
+        placeholder="Search creators..."
+        style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, outline: 'none' }}
+      />
+
       {/* Category filter */}
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
         {CATS.map(function(c) {
@@ -79,12 +102,55 @@ export default function CreatorDiscoveryTab({ addToast }) {
         })}
       </div>
 
+      {/* Profile detail panel */}
+      {profile && (
+        <div style={{ background: 'rgba(22,16,32,.95)', border: '1px solid ' + profile.color + '44', borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 12, background: profile.color + '18', border: '2px solid ' + profile.color + 'aa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>{profile.flag}</div>
+              <div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 16, color: '#EDE8F5' }}>{profile.name}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>@{profile.handle}</div>
+              </div>
+            </div>
+            <button onClick={function() { setProfile(null); }} style={{ background: 'none', border: '1px solid #241C34', borderRadius: 6, padding: '3px 8px', color: '#7A6F90', fontSize: 10, cursor: 'pointer' }}>✕</button>
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: '#B0A0C0', lineHeight: 1.6, marginBottom: 10 }}>{(CREATOR_BIO[profile.id] || {bio:''}).bio}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+            {[
+              ['FOLLOWERS', fmtFollowers(profile.followers), profile.color],
+              ['STREAMS', String((CREATOR_BIO[profile.id] || {streams:0}).streams), '#5A8FFF'],
+              ['TOTAL VIEWS', (CREATOR_BIO[profile.id] || {totalViews:'0'}).totalViews, '#00C9A7'],
+            ].map(function(stat) {
+              return (
+                <div key={stat[0]} style={{ background: stat[2] + '0E', border: '1px solid ' + stat[2] + '25', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: stat[2], lineHeight: 1 }}>{stat[1]}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', letterSpacing: 1 }}>{stat[0]}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+            <button
+              onClick={function() { toggleFollow(profile.id, profile.name); }}
+              style={{ flex: 1, padding: '8px', background: Boolean(following[profile.id]) ? profile.color + '22' : 'rgba(201,168,76,.12)', border: '1px solid ' + (Boolean(following[profile.id]) ? profile.color + '66' : '#C9A84C44'), borderRadius: 7, color: Boolean(following[profile.id]) ? profile.color : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              {Boolean(following[profile.id]) ? '✓ FOLLOWING' : '+ FOLLOW'}
+            </button>
+            <button
+              onClick={function() { if (addToast) addToast('Collab request sent to ' + profile.name, 'success'); }}
+              style={{ flex: 1, padding: '8px', background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 7, color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              🤝 COLLAB
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Creator list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {visible.map(function(c) {
           var isFollowing = Boolean(following[c.id]);
           return (
-            <div key={c.id} style={{ background: c.live ? 'rgba(22,16,32,.9)' : 'rgba(15,12,20,.7)', border: '1px solid ' + (c.live ? c.color + '33' : '#241C34'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div key={c.id} onClick={function() { setProfile(profile && profile.id === c.id ? null : c); }} style={{ background: c.live ? 'rgba(22,16,32,.9)' : 'rgba(15,12,20,.7)', border: '1px solid ' + (profile && profile.id === c.id ? c.color + '88' : c.live ? c.color + '33' : '#241C34'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
               {/* Avatar */}
               <div style={{ width: 44, height: 44, borderRadius: 10, background: c.color + '18', border: '2px solid ' + c.color + (c.live ? 'aa' : '33'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, position: 'relative' }}>
                 {c.flag}
@@ -120,7 +186,7 @@ export default function CreatorDiscoveryTab({ addToast }) {
 
               {/* Follow button */}
               <button
-                onClick={function() { toggleFollow(c.id, c.name); }}
+                onClick={function(e) { e.stopPropagation(); toggleFollow(c.id, c.name); }}
                 style={{ background: isFollowing ? c.color + '22' : 'rgba(201,168,76,.12)', border: '1px solid ' + (isFollowing ? c.color + '66' : '#C9A84C44'), borderRadius: 7, padding: '6px 12px', color: isFollowing ? c.color : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0, minWidth: 68, textAlign: 'center' }}>
                 {isFollowing ? '✓ FOLLOWING' : '+ FOLLOW'}
               </button>

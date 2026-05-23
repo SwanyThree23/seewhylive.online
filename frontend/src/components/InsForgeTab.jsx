@@ -60,14 +60,72 @@ function fmtTs(ts) {
   return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+var LIVE_LOG_POOL = [
+  { level: 'INFO',  msg: 'WebRTC ICE candidate pair selected via TURN relay' },
+  { level: 'INFO',  msg: 'Gift event: Crown ×1 ($10.00) from SwanyFan99' },
+  { level: 'INFO',  msg: 'RTMP keyframe received — stream healthy' },
+  { level: 'WARN',  msg: 'mediasoup worker CPU 78% — monitoring' },
+  { level: 'INFO',  msg: 'Chat message flood detected — SwanyBot throttled' },
+  { level: 'INFO',  msg: 'New viewer joined room 6990f5f2 (total: 314)' },
+  { level: 'INFO',  msg: 'Schedule event "Friday Night Dominos" started' },
+  { level: 'INFO',  msg: 'PM2 heartbeat OK' },
+  { level: 'ERROR', msg: 'Stripe webhook signature mismatch on retry 2/3' },
+  { level: 'INFO',  msg: 'DB WAL checkpoint completed — 1,204 pages flushed' },
+  { level: 'INFO',  msg: 'SSL cert check: 79 days remaining' },
+  { level: 'WARN',  msg: 'coturn session limit 80% — 16/20 slots used' },
+];
+
 export default function InsForgeTab({ addToast }) {
   var [services,    setServices]    = useState(INITIAL_SERVICES.map(function(s) { return Object.assign({}, s); }));
   var [refreshing,  setRefreshing]  = useState(false);
   var [lastRefresh, setLastRefresh] = useState(null);
   var [tab,         setTab]         = useState('status');
   var [countdown,   setCountdown]   = useState(AUTO_REFRESH_SEC);
+  var [liveLogs,    setLiveLogs]    = useState(MOCK_LOGS.map(function(l) { return Object.assign({}, l); }));
+  var [actionLog,   setActionLog]   = useState([]);
+  var [running,     setRunning]     = useState(null);
 
   var refreshRef = useRef(null);
+
+  useEffect(function() {
+    var id = setInterval(function() {
+      var pick = LIVE_LOG_POOL[Math.floor(Math.random() * LIVE_LOG_POOL.length)];
+      setLiveLogs(function(prev) {
+        return [Object.assign({}, pick, { ts: Date.now() })].concat(prev.slice(0, 49));
+      });
+    }, 4000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  function runAction(action) {
+    if (running) return;
+    setRunning(action.id);
+    var entry = { ts: Date.now(), label: action.label, status: 'running', output: '' };
+    setActionLog(function(prev) { return [entry].concat(prev.slice(0, 19)); });
+    setTimeout(function() {
+      var outputs = {
+        pm2restart:  '✓ seewhylive-backend restarted (pid 0) [online]',
+        pm2logs:     '✓ Fetched 50 lines from PM2 log buffer',
+        nginxtest:   '✓ nginx: the configuration file syntax is ok',
+        nginxreload:  '✓ nginx -s reload sent (workers gracefully cycled)',
+        diskcheck:   '✓ /opt/seewhy: 12% used (2.1G / 18G)',
+        memcheck:    '✓ Mem: 19.4MB / 1.5GB used',
+        dbbackup:    '✓ seewhy.db → seewhy.db.bak (2.1 MB copied)',
+        sslcheck:    '✓ seewhylive.online — valid 79 days remaining',
+      };
+      var out = outputs[action.id] || '✓ Done';
+      setActionLog(function(prev) {
+        if (prev.length === 0) return prev;
+        var updated = prev.map(function(e, i) {
+          if (i === 0) return Object.assign({}, e, { status: 'done', output: out });
+          return e;
+        });
+        return updated;
+      });
+      setRunning(null);
+      if (addToast) addToast(action.label + ' complete', 'success');
+    }, 1200 + Math.floor(Math.random() * 800));
+  }
 
   function doRefresh() {
     setRefreshing(true);
@@ -121,7 +179,18 @@ export default function InsForgeTab({ addToast }) {
   var statusColors = { healthy: '#00C96A', warning: '#C9A84C', error: '#FF1A3C' };
   var levelColors  = { INFO: '#00C9A7',    WARN: '#C9A84C',    ERROR: '#FF1A3C' };
 
-  var TABS = [['status', '⚙ STATUS'], ['logs', '📋 LOGS'], ['system', '💻 SYSTEM']];
+  var ITABS = [['status', '⚙ STATUS'], ['logs', '📋 LOGS'], ['system', '💻 SYSTEM'], ['actions', '⚡ ACTIONS']];
+
+  var VPS_ACTIONS = [
+    { id: 'pm2restart',  label: 'RESTART PM2',     icon: '🔄', cmd: 'pm2 restart seewhylive-backend',  color: '#00C9A7' },
+    { id: 'pm2logs',     label: 'TAIL PM2 LOGS',   icon: '📋', cmd: 'pm2 logs --lines 50',              color: '#5A8FFF' },
+    { id: 'nginxtest',   label: 'TEST NGINX CFG',  icon: '⚡', cmd: 'nginx -t',                         color: '#C084FC' },
+    { id: 'nginxreload', label: 'RELOAD NGINX',    icon: '🔃', cmd: 'nginx -s reload',                  color: '#C9A84C' },
+    { id: 'diskcheck',   label: 'DISK USAGE',      icon: '💾', cmd: 'df -h /opt/seewhy',                color: '#00C96A' },
+    { id: 'memcheck',    label: 'MEMORY',          icon: '🧠', cmd: 'free -h',                          color: '#FF6B35' },
+    { id: 'dbbackup',    label: 'BACKUP DB',       icon: '🗄', cmd: 'cp seewhy.db seewhy.db.bak',        color: '#FF1A3C' },
+    { id: 'sslcheck',    label: 'SSL STATUS',      icon: '🔒', cmd: 'certbot certificates',             color: '#C8FF00' },
+  ];
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
@@ -155,7 +224,7 @@ export default function InsForgeTab({ addToast }) {
 
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 4, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3 }}>
-        {TABS.map(function(t) {
+        {ITABS.map(function(t) {
           var isActive = tab === t[0];
           return (
             <button key={t[0]} onClick={function() { setTab(t[0]); }}
@@ -200,16 +269,19 @@ export default function InsForgeTab({ addToast }) {
       {tab === 'logs' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2 }}>RECENT EVENTS</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>{MOCK_LOGS.length} entries</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2 }}>LIVE LOG STREAM</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#00C96A', boxShadow: '0 0 4px #00C96A' }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>LIVE · {liveLogs.length} entries</span>
+            </div>
           </div>
-          {MOCK_LOGS.map(function(log, i) {
+          {liveLogs.map(function(log, i) {
             var lc = levelColors[log.level] || '#7A6F90';
             return (
-              <div key={i} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '7px 10px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+              <div key={i} style={{ background: i === 0 ? 'rgba(0,201,167,.05)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (i === 0 ? 'rgba(0,201,167,.2)' : '#241C34'), borderRadius: 8, padding: '7px 10px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <span style={{ background: lc + '18', border: '1px solid ' + lc + '33', borderRadius: 4, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: lc, letterSpacing: 1, flexShrink: 0, marginTop: 1 }}>{log.level}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: '#EDE8F5', lineHeight: 1.4, wordBreak: 'break-word' }}>{log.msg}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: i === 0 ? '#EDE8F5' : '#A899BE', lineHeight: 1.4, wordBreak: 'break-word' }}>{log.msg}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', marginTop: 2 }}>{fmtTs(log.ts)}</div>
                 </div>
               </div>
@@ -262,6 +334,50 @@ export default function InsForgeTab({ addToast }) {
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ACTIONS ── */}
+      {tab === 'actions' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, padding: '0 2px' }}>VPS QUICK ACTIONS</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
+            {VPS_ACTIONS.map(function(a) {
+              var isRunning = running === a.id;
+              return (
+                <button key={a.id} onClick={function() { runAction(a); }} disabled={running !== null}
+                  style={{ background: isRunning ? a.color + '18' : 'rgba(22,16,32,.8)', border: '1px solid ' + (isRunning ? a.color + '55' : '#241C34'), borderRadius: 10, padding: '10px 8px', cursor: running !== null ? 'not-allowed' : 'pointer', opacity: running && !isRunning ? 0.5 : 1, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ fontSize: 18 }}>{a.icon}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: isRunning ? a.color : '#EDE8F5', letterSpacing: 1 }}>{isRunning ? '...' : a.label}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', wordBreak: 'break-all' }}>{a.cmd}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {actionLog.length > 0 && (
+            <div style={{ background: 'rgba(7,5,10,.9)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, marginBottom: 6 }}>ACTION LOG</div>
+              {actionLog.map(function(entry, i) {
+                return (
+                  <div key={i} style={{ marginBottom: 8, borderBottom: i < actionLog.length - 1 ? '1px solid #1A1428' : 'none', paddingBottom: i < actionLog.length - 1 ? 8 : 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5' }}>{entry.label}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: entry.status === 'done' ? '#00C96A' : '#C9A84C' }}>{entry.status === 'done' ? 'DONE' : 'RUNNING...'}</span>
+                    </div>
+                    {entry.output && (
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', wordBreak: 'break-word', lineHeight: 1.5 }}>{entry.output}</div>
+                    )}
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', marginTop: 2 }}>{fmtTs(entry.ts)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={{ background: 'rgba(255,107,53,.06)', border: '1px solid rgba(255,107,53,.2)', borderRadius: 8, padding: '8px 12px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B35', letterSpacing: 1 }}>⚠ Actions above simulate VPS commands. In production, connect to a secure SSH exec endpoint on the backend to run real commands.</div>
           </div>
         </div>
       )}
