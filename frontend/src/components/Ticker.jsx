@@ -1,8 +1,8 @@
+'use strict';
 import React, { useEffect, useRef, useState } from 'react';
 
 export default function Ticker({ chat, isLive }) {
   var [tickerText, setTickerText] = useState('SeeWhy LIVE · Washington Classic · Domino Entertainment · VibeN\'Bones · @dominoentertainment5513 · @aiversepodcast · @memoirsofashygirl');
-  var [pos, setPos] = useState(0);
   var animRef = useRef(null);
   var containerRef = useRef(null);
 
@@ -36,7 +36,7 @@ export default function Ticker({ chat, isLive }) {
   }, [tickerText]);
 
   return (
-    <div className="ticker-strip" style={{
+    <div style={{
       position: 'fixed',
       bottom: 0,
       left: 0,
@@ -50,7 +50,7 @@ export default function Ticker({ chat, isLive }) {
       alignItems: 'center'
     }}>
       {isLive && (
-        <span className="ticker-live-badge" style={{ flexShrink: 0, background: '#800020', color: '#fff', padding: '2px 6px', fontSize: '10px', fontFamily: 'Bebas Neue, sans-serif', marginLeft: '8px' }}>
+        <span style={{ flexShrink: 0, background: '#800020', color: '#fff', padding: '2px 6px', fontSize: '10px', fontFamily: "'Bebas Neue',sans-serif", marginLeft: '8px', letterSpacing: 1 }}>
           LIVE
         </span>
       )}
@@ -62,7 +62,7 @@ export default function Ticker({ chat, isLive }) {
             whiteSpace: 'nowrap',
             top: '50%',
             transform: 'translateY(-50%)',
-            fontFamily: 'Barlow Condensed, sans-serif',
+            fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: '12px',
             color: '#B0A0C0',
             letterSpacing: '0.05em'
