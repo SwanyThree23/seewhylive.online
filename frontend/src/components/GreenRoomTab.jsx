@@ -26,22 +26,27 @@ function RoleBadge({ role }) {
   );
 }
 
-export default function GreenRoomTab({ guests, addToast, socket, roomId, userId, role }) {
-  var [section,   setSection]   = useState('roster');
-  var [banned,    setBanned]    = useState(['TrollUser99', 'SpamBot_001']);
-  var [newBan,    setNewBan]    = useState('');
-  var [handQueue, setHandQueue] = useState([]);
-  var [stageList, setStageList] = useState([userId || '']);
-  var [showNotes, setShowNotes] = useState('WELCOME VIEWERS!\n\n---\n[0:00] Intro + housekeeping\n[5:00] Domino match begins\n[45:00] Halftime break + gifts\n[60:00] Final match\n[90:00] Prize + wrap-up\n');
-  var [segments,  setSegments]  = useState([
+export default function GreenRoomTab({ guests, addToast, socket, roomId, userId, role, isLive }) {
+  var [section,        setSection]        = useState('roster');
+  var [banned,         setBanned]         = useState(['TrollUser99', 'SpamBot_001']);
+  var [newBan,         setNewBan]         = useState('');
+  var [handQueue,      setHandQueue]      = useState([]);
+  var [stageList,      setStageList]      = useState([userId || '']);
+  var [showNotes,      setShowNotes]      = useState('WELCOME VIEWERS!\n\n---\n[0:00] Intro + housekeeping\n[5:00] Domino match begins\n[45:00] Halftime break + gifts\n[60:00] Final match\n[90:00] Prize + wrap-up\n');
+  var [segments,       setSegments]       = useState([
     { id: 'sg1', time: '0:00',  title: 'Intro + housekeeping',      done: true  },
     { id: 'sg2', time: '5:00',  title: 'Match 1 begins',            done: true  },
     { id: 'sg3', time: '45:00', title: 'Halftime break',            done: false },
     { id: 'sg4', time: '60:00', title: 'Finals match',              done: false },
     { id: 'sg5', time: '90:00', title: 'Prize ceremony + wrap-up',  done: false },
   ]);
-  var [newSegTime,  setNewSegTime]  = useState('');
-  var [newSegTitle, setNewSegTitle] = useState('');
+  var [newSegTime,     setNewSegTime]     = useState('');
+  var [newSegTitle,    setNewSegTitle]    = useState('');
+  var [audioOnly,      setAudioOnly]      = useState(false);
+  var [privateRoom,    setPrivateRoom]    = useState(false);
+  var [paywallOn,      setPaywallOn]      = useState(false);
+  var [paywallCents,   setPaywallCents]   = useState(500);
+  var [paywallInput,   setPaywallInput]   = useState('5.00');
 
   var isHost = role === 'host';
 
@@ -178,32 +183,92 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     setSegments(function(p) { return p.filter(function(s) { return s.id !== id; }); });
   }
 
+  function toggleAudioOnly() {
+    var next = !audioOnly;
+    setAudioOnly(next);
+    if (socket) socket.emit('room-audio-only', { roomId: roomId, audioOnly: next });
+    if (addToast) addToast(next ? '🎙️ Audio-only mode ON — video feeds hidden' : '📹 Video restored', next ? 'info' : 'success');
+  }
+
+  function togglePrivateRoom() {
+    var next = !privateRoom;
+    setPrivateRoom(next);
+    if (socket) socket.emit('room-private', { roomId: roomId, privateRoom: next });
+    if (addToast) addToast(next ? '🔒 Room locked — invite only' : '🔓 Room unlocked — public access', next ? 'info' : 'success');
+  }
+
+  function togglePaywall() {
+    var next = !paywallOn;
+    setPaywallOn(next);
+    if (socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: next, amountCents: paywallCents });
+    if (addToast) addToast(next ? '💰 Paywall ON — $' + (Math.floor(paywallCents) / 100).toFixed(2) + ' entry' : '🚪 Paywall removed', next ? 'info' : 'success');
+  }
+
+  function savePaywallAmount() {
+    var parsed = parseFloat(paywallInput);
+    if (isNaN(parsed) || parsed < 0) { if (addToast) addToast('Invalid amount', 'error'); return; }
+    var cents = Math.floor(parsed * 100);
+    setPaywallCents(cents);
+    setPaywallInput((Math.floor(cents) / 100).toFixed(2));
+    if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: true, amountCents: cents });
+    if (addToast) addToast('Paywall price set: $' + (Math.floor(cents) / 100).toFixed(2), 'success');
+  }
+
   var SECTIONS = [
-    { id: 'roster', label: '👥 ROSTER' },
-    { id: 'stage',  label: '🎭 STAGE'  },
-    { id: 'guard',  label: '🛡 GUARD'  },
-    { id: 'ban',    label: '🚫 BAN'    },
-    { id: 'notes',  label: '📋 NOTES'  },
+    { id: 'roster',   label: '👥 ROSTER'   },
+    { id: 'stage',    label: '🎭 STAGE'    },
+    { id: 'guard',    label: '🛡 GUARD'    },
+    { id: 'ban',      label: '🚫 BAN'      },
+    { id: 'notes',    label: '📋 NOTES'    },
+    { id: 'settings', label: '⚙️ ROOM'     },
   ];
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 450 }}>
 
+      {/* Status badges row */}
+      {(audioOnly || privateRoom || paywallOn) && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {audioOnly && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 999, padding: '3px 10px' }}>
+              <span style={{ fontSize: 10 }}>🎙️</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#5A8FFF', letterSpacing: 1 }}>AUDIO ONLY</span>
+            </div>
+          )}
+          {privateRoom && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '3px 10px' }}>
+              <span style={{ fontSize: 10 }}>🔒</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#C9A84C', letterSpacing: 1 }}>PRIVATE</span>
+            </div>
+          )}
+          {paywallOn && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,201,106,.1)', border: '1px solid rgba(0,201,106,.3)', borderRadius: 999, padding: '3px 10px' }}>
+              <span style={{ fontSize: 10 }}>💰</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#00C96A', letterSpacing: 1 }}>${(Math.floor(paywallCents) / 100).toFixed(2)} ENTRY</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Sub-nav */}
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {SECTIONS.map(function(t) {
           var active = section === t.id;
           var badge  = t.id === 'stage' && handQueue.length > 0;
+          var dotOn  = t.id === 'settings' && (audioOnly || privateRoom || paywallOn);
           return (
             <button
               key={t.id}
               onClick={function() { setSection(t.id); }}
-              style={{ flex: 1, position: 'relative', background: active ? 'rgba(128,0,32,.3)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? '#C01838' : '#241C34'), borderRadius: 6, padding: '7px 0', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+              style={{ flex: 1, minWidth: 0, position: 'relative', background: active ? 'rgba(128,0,32,.3)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? '#C01838' : '#241C34'), borderRadius: 6, padding: '7px 0', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
               {t.label}
               {badge && (
                 <span style={{ position: 'absolute', top: -5, right: -5, width: 15, height: 15, borderRadius: '50%', background: '#FF1A3C', color: '#fff', fontFamily: "'DM Mono',monospace", fontSize: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #07050A' }}>
                   {handQueue.length}
                 </span>
+              )}
+              {dotOn && !badge && (
+                <span style={{ position: 'absolute', top: -4, right: -4, width: 8, height: 8, borderRadius: '50%', background: '#C9A84C', border: '1px solid #07050A' }} />
               )}
             </button>
           );
@@ -560,6 +625,156 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               style={{ width: '100%', background: 'rgba(7,5,10,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box' }}
             />
           </div>
+        </div>
+      )}
+
+      {/* ── SETTINGS ───────────────────────────────────────────────────────── */}
+      {section === 'settings' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, marginBottom: -4 }}>ROOM MODE CONTROLS</div>
+
+          {/* Audio-Only Toggle */}
+          <div style={{ background: audioOnly ? 'rgba(90,143,255,.08)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (audioOnly ? 'rgba(90,143,255,.4)' : '#241C34'), borderRadius: 12, padding: '14px 16px', transition: 'border-color .2s' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 16 }}>🎙️</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: audioOnly ? '#5A8FFF' : '#EDE8F5' }}>Audio-Only Mode</span>
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', lineHeight: 1.5 }}>
+                  {audioOnly
+                    ? 'All cameras off — waveform / avatar indicators only. Saves bandwidth and battery.'
+                    : 'Enable to hide all video feeds. Great for podcast-style streams or low-bandwidth sessions.'}
+                </div>
+              </div>
+              <button
+                onClick={toggleAudioOnly}
+                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: audioOnly ? '#5A8FFF' : '#241C34', border: '2px solid ' + (audioOnly ? '#5A8FFF' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
+                <div style={{ position: 'absolute', top: 3, left: audioOnly ? 26 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+              </button>
+            </div>
+            {audioOnly && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(90,143,255,.2)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {['🎵 Chill stream', '🎙️ Talk show', '📻 Radio vibe', '🎧 DJ session'].map(function(tag) {
+                  return (
+                    <span key={tag} style={{ background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.25)', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 9, color: '#5A8FFF' }}>
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Private Room Toggle */}
+          <div style={{ background: privateRoom ? 'rgba(201,168,76,.06)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (privateRoom ? 'rgba(201,168,76,.4)' : '#241C34'), borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 16 }}>{privateRoom ? '🔒' : '🔓'}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: privateRoom ? '#C9A84C' : '#EDE8F5' }}>Private Room</span>
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', lineHeight: 1.5 }}>
+                  {privateRoom
+                    ? 'Invite-only access. New viewers need a direct link or your approval to join.'
+                    : 'Currently public — anyone can discover and join your stream. Lock for invite-only.'}
+                </div>
+              </div>
+              <button
+                onClick={togglePrivateRoom}
+                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: privateRoom ? '#C9A84C' : '#241C34', border: '2px solid ' + (privateRoom ? '#C9A84C' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
+                <div style={{ position: 'absolute', top: 3, left: privateRoom ? 26 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+              </button>
+            </div>
+            {privateRoom && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(201,168,76,.2)' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', marginBottom: 6 }}>INVITE LINK</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', background: 'rgba(7,5,10,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '7px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {'https://seewhylive.online/join/' + (roomId || 'live') + '?private=1'}
+                  </div>
+                  <button
+                    onClick={function() {
+                      var link = 'https://seewhylive.online/join/' + (roomId || 'live') + '?private=1';
+                      if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }
+                      if (addToast) addToast('Invite link copied', 'success');
+                    }}
+                    style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 6, padding: '6px 12px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
+                    📋 COPY
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Paywall Toggle */}
+          <div style={{ background: paywallOn ? 'rgba(0,201,106,.06)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (paywallOn ? 'rgba(0,201,106,.4)' : '#241C34'), borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 16 }}>💰</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: paywallOn ? '#00C96A' : '#EDE8F5' }}>Paid Entry (Paywall)</span>
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', lineHeight: 1.5 }}>
+                  {paywallOn
+                    ? 'Viewers pay $' + (Math.floor(paywallCents) / 100).toFixed(2) + ' to enter. You keep 90% — platform takes 10%.'
+                    : 'Charge a ticket price to enter your room. You set the amount.'}
+                </div>
+              </div>
+              <button
+                onClick={togglePaywall}
+                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: paywallOn ? '#00C96A' : '#241C34', border: '2px solid ' + (paywallOn ? '#00C96A' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
+                <div style={{ position: 'absolute', top: 3, left: paywallOn ? 26 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+              </button>
+            </div>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid ' + (paywallOn ? 'rgba(0,201,106,.2)' : '#1A1428') }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 6 }}>ENTRY PRICE</div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(7,5,10,.8)', border: '1px solid ' + (paywallOn ? 'rgba(0,201,106,.3)' : '#241C34'), borderRadius: 8, padding: '0 10px', flex: 1 }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: paywallOn ? '#00C96A' : '#7A6F90', marginRight: 4 }}>$</span>
+                  <input
+                    value={paywallInput}
+                    onChange={function(e) { setPaywallInput(e.target.value); }}
+                    onBlur={savePaywallAmount}
+                    onKeyDown={function(e) { if (e.key === 'Enter') { e.target.blur(); } }}
+                    style={{ background: 'none', border: 'none', outline: 'none', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 12, width: '100%', padding: '9px 0' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {[1, 2, 5, 10].map(function(amt) {
+                    var active = Math.floor(paywallCents) === amt * 100;
+                    return (
+                      <button
+                        key={amt}
+                        onClick={function() {
+                          setPaywallCents(amt * 100);
+                          setPaywallInput(amt.toFixed(2));
+                          if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: true, amountCents: amt * 100 });
+                        }}
+                        style={{ background: active ? 'rgba(0,201,106,.2)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (active ? 'rgba(0,201,106,.4)' : '#241C34'), borderRadius: 6, padding: '5px 8px', color: active ? '#00C96A' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                        ${amt}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {paywallOn && (
+                <div style={{ marginTop: 8, display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>
+                  <span>You receive: <span style={{ color: '#00C96A' }}>${(Math.floor(paywallCents * 0.90) / 100).toFixed(2)}</span></span>
+                  <span>Platform: <span style={{ color: '#7A6F90' }}>${(Math.floor(paywallCents * 0.10) / 100).toFixed(2)}</span></span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Host-only note */}
+          {!isHost && (
+            <div style={{ background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '10px 12px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81', textAlign: 'center' }}>
+              ⚠️ Only the host can change room settings
+            </div>
+          )}
+
         </div>
       )}
     </div>
