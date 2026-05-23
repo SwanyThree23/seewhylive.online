@@ -20,26 +20,30 @@ function fmtBytes(n) {
   return (Math.floor(n / 1024)) + ' KB';
 }
 
-export default function UploadTab({ addToast }) {
-  var [tab,         setTab]         = useState('youtube');
-  var [ytFile,      setYtFile]      = useState(null);
-  var [title,       setTitle]       = useState('');
-  var [desc,        setDesc]        = useState('');
-  var [privacy,     setPrivacy]     = useState('public');
-  var [category,    setCategory]    = useState('Entertainment');
-  var [uploading,   setUploading]   = useState(false);
-  var [progress,    setProgress]    = useState(0);
-  var [ytApiKey,    setYtApiKey]    = useState('');
-  var [showApiCfg,  setShowApiCfg]  = useState(false);
-  var [history,     setHistory]     = useState(SEED_HISTORY);
+export default function UploadTab({ addToast, isLive }) {
+  var [tab,           setTab]           = useState('youtube');
+  var [ytFile,        setYtFile]        = useState(null);
+  var [title,         setTitle]         = useState('');
+  var [desc,          setDesc]          = useState('');
+  var [privacy,       setPrivacy]       = useState('public');
+  var [category,      setCategory]      = useState('Entertainment');
+  var [uploading,     setUploading]     = useState(false);
+  var [progress,      setProgress]      = useState(0);
+  var [ytApiKey,      setYtApiKey]      = useState('');
+  var [showApiCfg,    setShowApiCfg]    = useState(false);
+  var [history,       setHistory]       = useState(SEED_HISTORY);
+  var [duration,      setDuration]      = useState(null);
+  var [durationError, setDurationError] = useState('');
+  var [uploadProgress, setUploadProgress] = useState(0);
 
   var [deviceFiles, setDeviceFiles] = useState([]);
   var [previewUrl,  setPreviewUrl]  = useState('');
   var [isDragging,  setIsDragging]  = useState(false);
 
-  var ytInputRef     = useRef(null);
-  var deviceInputRef = useRef(null);
-  var progressRef    = useRef(null);
+  var ytInputRef       = useRef(null);
+  var deviceInputRef   = useRef(null);
+  var progressRef      = useRef(null);
+  var uploadProgRef    = useRef(null);
 
   function handleYtFilePick(e) {
     var f = e.target.files && e.target.files[0];
@@ -47,15 +51,36 @@ export default function UploadTab({ addToast }) {
     if (!f.type.startsWith('video/')) { addToast && addToast('Select a video file', 'error'); return; }
     setYtFile(f);
     setTitle(f.name.replace(/\.[^.]+$/, ''));
+    setDuration(null);
+    setDurationError('');
+
+    var videoEl = document.createElement('video');
+    var objUrl = URL.createObjectURL(f);
+    videoEl.src = objUrl;
+    videoEl.addEventListener('loadedmetadata', function() {
+      var dur = videoEl.duration;
+      URL.revokeObjectURL(objUrl);
+      setDuration(dur);
+      if (dur > 600) {
+        setDurationError('Video must be 10 minutes or less');
+        addToast && addToast('Video must be 10 minutes or less', 'error');
+      } else {
+        setDurationError('');
+      }
+    });
   }
 
   function startUpload() {
     if (!ytFile) { addToast && addToast('Select a video file first', 'error'); return; }
+    if (durationError) { addToast && addToast('Video must be 10 minutes or less', 'error'); return; }
     if (!title.trim()) { addToast && addToast('Enter a title', 'error'); return; }
     if (!ytApiKey.trim()) { setShowApiCfg(true); addToast && addToast('Configure YouTube API key first', 'error'); return; }
     setUploading(true);
     setProgress(0);
+    setUploadProgress(0);
     var pct = 0;
+    var upPct = 0;
+
     progressRef.current = setInterval(function() {
       pct += Math.floor(Math.random() * 4) + 1;
       if (pct >= 100) {
@@ -68,17 +93,30 @@ export default function UploadTab({ addToast }) {
         setYtFile(null);
         setTitle('');
         setDesc('');
+        setDuration(null);
+        setDurationError('');
         addToast && addToast('✓ Uploaded to YouTube', 'success');
       } else {
         setProgress(pct);
       }
     }, 180);
+
+    uploadProgRef.current = setInterval(function() {
+      upPct += Math.floor(3 + Math.random() * 4);
+      if (upPct >= 100) {
+        upPct = 100;
+        clearInterval(uploadProgRef.current);
+      }
+      setUploadProgress(upPct);
+    }, 100);
   }
 
   function cancelUpload() {
     if (progressRef.current) clearInterval(progressRef.current);
+    if (uploadProgRef.current) clearInterval(uploadProgRef.current);
     setUploading(false);
     setProgress(0);
+    setUploadProgress(0);
     addToast && addToast('Upload cancelled', 'info');
   }
 
@@ -117,6 +155,12 @@ export default function UploadTab({ addToast }) {
   }
 
   var progColor = progress < 40 ? '#5A8FFF' : progress < 80 ? '#C9A84C' : '#00C9A7';
+  var uploadProgColor = uploadProgress < 40 ? '#5A8FFF' : uploadProgress < 80 ? '#C9A84C' : '#00C9A7';
+
+  var durationDisplay = '';
+  if (duration !== null) {
+    durationDisplay = Math.floor(duration / 60) + ':' + String(Math.floor(duration % 60)).padStart(2, '0');
+  }
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 480 }}>
@@ -129,6 +173,14 @@ export default function UploadTab({ addToast }) {
         </div>
         <div style={{ fontSize: 28 }}>🎬</div>
       </div>
+
+      {/* isLive tip card */}
+      {isLive && (
+        <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7', lineHeight: 1.5 }}>Tip: you can clip your current live stream instead of uploading</span>
+        </div>
+      )}
 
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 4 }}>
@@ -148,22 +200,46 @@ export default function UploadTab({ addToast }) {
         <>
           {/* File pick */}
           <div onClick={function() { if (!uploading) ytInputRef.current && ytInputRef.current.click(); }}
-            style={{ border: '2px dashed rgba(255,68,68,.3)', borderRadius: 10, padding: '20px', textAlign: 'center', background: ytFile ? 'rgba(255,68,68,.05)' : 'rgba(22,16,32,.5)', cursor: uploading ? 'not-allowed' : 'pointer' }}>
+            style={{ border: '2px dashed ' + (durationError ? 'rgba(255,26,60,.7)' : 'rgba(255,68,68,.3)'), borderRadius: 10, padding: '20px', textAlign: 'center', background: durationError ? 'rgba(255,26,60,.07)' : (ytFile ? 'rgba(255,68,68,.05)' : 'rgba(22,16,32,.5)'), cursor: uploading ? 'not-allowed' : 'pointer' }}>
             <input ref={ytInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleYtFilePick} />
             {ytFile ? (
               <>
                 <div style={{ fontSize: 28, marginBottom: 6 }}>🎬</div>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5' }}>{ytFile.name}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>{fmtBytes(ytFile.size)}</div>
+                {duration !== null && (
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: durationError ? '#FF6B81' : '#00C9A7', marginTop: 4 }}>
+                    Duration: {durationDisplay}{durationError ? ' — TOO LONG' : ' ✓'}
+                  </div>
+                )}
+                {durationError && (
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81', marginTop: 3 }}>
+                    {durationError}
+                  </div>
+                )}
               </>
             ) : (
               <>
                 <div style={{ fontSize: 28, marginBottom: 6 }}>▶</div>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#7A6F90' }}>TAP TO SELECT VIDEO</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>mp4 · mov · webm · avi</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginTop: 2 }}>Max 10 minutes</div>
               </>
             )}
           </div>
+
+          {/* Upload progress bar */}
+          {uploading && (
+            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#EDE8F5' }}>UPLOAD PROGRESS</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: uploadProgColor }}>{uploadProgress}%</span>
+              </div>
+              <div style={{ height: 6, background: '#161020', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: uploadProgress + '%', background: 'linear-gradient(90deg,' + uploadProgColor + '88,' + uploadProgColor + ')', borderRadius: 3, transition: 'width .2s' }} />
+              </div>
+            </div>
+          )}
 
           {/* Metadata */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -195,7 +271,7 @@ export default function UploadTab({ addToast }) {
             </div>
           </div>
 
-          {/* Progress */}
+          {/* Progress (YouTube-side) */}
           {uploading && (
             <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -212,8 +288,8 @@ export default function UploadTab({ addToast }) {
           <div style={{ display: 'flex', gap: 8 }}>
             {!uploading ? (
               <button onClick={startUpload}
-                style={{ flex: 2, padding: '10px', background: 'linear-gradient(135deg,rgba(255,0,0,.25),rgba(192,0,0,.15))', border: '1px solid rgba(255,68,68,.4)', borderRadius: 8, color: '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-                ▶ UPLOAD TO YOUTUBE
+                style={{ flex: 2, padding: '10px', background: durationError ? 'rgba(255,26,60,.08)' : 'linear-gradient(135deg,rgba(255,0,0,.25),rgba(192,0,0,.15))', border: '1px solid ' + (durationError ? 'rgba(255,26,60,.35)' : 'rgba(255,68,68,.4)'), borderRadius: 8, color: durationError ? '#FF6B81' : '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: durationError ? 'not-allowed' : 'pointer', opacity: durationError ? 0.6 : 1 }}>
+                {durationError ? '✕ VIDEO TOO LONG' : '▶ UPLOAD TO YOUTUBE'}
               </button>
             ) : (
               <button onClick={cancelUpload}
