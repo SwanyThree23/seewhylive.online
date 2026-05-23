@@ -3,12 +3,13 @@ import OctCell from './OctCell.jsx';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
 import rtcManager from '../webrtc.js';
 
-var MAX_STAGE = 6;
+var MAX_STAGE = 9;
 var LAYOUTS = [
-  { id: 'panel',  label: '⊞ PANEL' },
-  { id: 'solo',   label: '◻ SOLO'  },
-  { id: 'talk',   label: '⊡ TALK'  },
-  { id: 'screen', label: '🖥 SCRN'  },
+  { id: 'panel',  label: '⊞ PANEL'  },
+  { id: 'solo',   label: '◻ SOLO'   },
+  { id: 'talk',   label: '⊡ TALK'   },
+  { id: 'screen', label: '🖥 SCRN'   },
+  { id: 'expand', label: '⛶ EXPAND' },
 ];
 
 function RolePill({ role }) {
@@ -123,6 +124,7 @@ var GO_LIVE_PLATFORMS = [
 
 export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userId, username, role, roomId, branding, addToast, overlayConfig, viewerCount }) {
   var [stageLayout,    setStageLayout]    = useState('panel');
+  var [expandedId,     setExpandedId]     = useState(null);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [handQueue,      setHandQueue]      = useState([]);
   var [featuredId,     setFeaturedId]     = useState(userId);
@@ -530,9 +532,102 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     <button onClick={function(e) { e.stopPropagation(); removeFromStage(gid); }}
                       style={{ position: 'absolute', top: 5, left: 5, zIndex: 30, background: 'rgba(255,26,60,.7)', border: 'none', borderRadius: 4, width: 20, height: 20, color: '#fff', fontSize: 10, cursor: 'pointer' }}>✕</button>
                   )}
+                  {/* Expand button — Bigo style */}
+                  <button
+                    onClick={function(e) { e.stopPropagation(); setExpandedId(gid); setStageLayout('expand'); }}
+                    title="Expand panel"
+                    style={{ position: 'absolute', top: 5, right: 5, zIndex: 30, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 4, width: 20, height: 20, color: '#EDE8F5', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⛶</button>
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* EXPAND layout — Bigo-style: one large cell + thumbnail strip */}
+        {!showGuests && stageLayout === 'expand' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', gap: 2, padding: 2, overflow: 'hidden', background: '#0a0710' }}>
+            {/* Main large panel */}
+            <div style={{ flex: 1, position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#070510' }}>
+              {(function() {
+                var expId = expandedId || (stagePeers[0] ? (stagePeers[0].guestId || stagePeers[0].userId) : null);
+                var expGuest = null;
+                for (var i = 0; i < stagePeers.length; i++) {
+                  var sg = stagePeers[i];
+                  if ((sg.guestId || sg.userId) === expId) { expGuest = sg; break; }
+                }
+                if (!expGuest && stagePeers.length > 0) expGuest = stagePeers[0];
+                if (!expGuest) return null;
+                var expGid = expGuest.guestId || expGuest.userId;
+                var expIsOwn = expGid === userId;
+                return (
+                  <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                    <OctCell
+                      guest={expGuest}
+                      sz={480}
+                      isHost={role === 'host'}
+                      fadesMode={false}
+                      branding={branding}
+                      onTap={null}
+                      socket={socket}
+                      roomId={roomId}
+                      userId={userId}
+                      rtcManager={rtcReady ? rtcManager : null}
+                      mediaConfig={expIsOwn ? mediaConfig : null}
+                      isMuted={expIsOwn ? isMuted : false}
+                      isCamOff={expIsOwn ? isCamOff : false}
+                      onMuteToggle={expIsOwn ? toggleMute : null}
+                      onCamToggle={expIsOwn ? toggleCam : null}
+                    />
+                    <LowerThird name={expGuest.username || expGid} role={expGuest.role || 'viewer'} isMuted={expIsOwn && isMuted} isCamOff={expIsOwn && isCamOff} isLive={isLive} />
+                    {/* Collapse back to panel */}
+                    <button
+                      onClick={function() { setStageLayout('panel'); setExpandedId(null); }}
+                      style={{ position: 'absolute', top: 10, right: 10, zIndex: 40, background: 'rgba(0,0,0,.75)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 6, padding: '4px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
+                      ✕ COLLAPSE
+                    </button>
+                    {/* Expand badge */}
+                    <div style={{ position: 'absolute', top: 10, left: 10, background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.4)', borderRadius: 4, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7', letterSpacing: 1 }}>
+                      ⛶ EXPANDED
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Thumbnail strip — other cells */}
+            <div style={{ width: 118, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', flexShrink: 0 }}>
+              {stagePeers.map(function(g) {
+                var gid = g.guestId ? g.guestId : (g.userId ? g.userId : 'x');
+                var isExpanded = gid === (expandedId || (stagePeers[0] ? (stagePeers[0].guestId || stagePeers[0].userId) : null));
+                var isOwn = gid === userId;
+                return (
+                  <div key={gid}
+                    onClick={function() { setExpandedId(gid); }}
+                    style={{ position: 'relative', flexShrink: 0, height: 78, border: '2px solid ' + (isExpanded ? '#00DEC0' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', background: '#0a0710' }}>
+                    <OctCell
+                      guest={g}
+                      sz={114}
+                      isHost={role === 'host'}
+                      fadesMode={false}
+                      branding={branding}
+                      onTap={null}
+                      socket={socket}
+                      roomId={roomId}
+                      userId={userId}
+                      rtcManager={rtcReady ? rtcManager : null}
+                      mediaConfig={isOwn ? mediaConfig : null}
+                      isMuted={isOwn ? isMuted : false}
+                      isCamOff={isOwn ? isCamOff : false}
+                      onMuteToggle={null}
+                      onCamToggle={null}
+                    />
+                    {isExpanded && (
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,201,167,.3)', padding: '2px 0', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#00C9A7' }}>EXPANDED</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
