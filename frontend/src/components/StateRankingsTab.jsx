@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 var SEASON = 2026;
 var WEEK   = 8;
@@ -24,157 +24,410 @@ var REGION_COLORS = {
 
 var MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' };
 var REGIONS = ['All', 'West', 'Southwest', 'Southeast', 'Northeast', 'Midwest'];
+var VIEWS = ['RANKINGS', 'SCHEDULE', 'STATS'];
 
-export default function StateRankingsTab() {
+var SCHEDULE = [
+  { home: 'WA', away: 'TX', date: 'Sat Jun 7',  time: '2:00 PM ET',  venue: 'Pacific Classic Arena' },
+  { home: 'CA', away: 'NY', date: 'Sat Jun 7',  time: '4:00 PM ET',  venue: 'West Coast Domino Hall' },
+  { home: 'GA', away: 'FL', date: 'Sun Jun 8',  time: '1:00 PM ET',  venue: 'Southeast Domino Center' },
+  { home: 'IL', away: 'NC', date: 'Sun Jun 8',  time: '3:30 PM ET',  venue: 'Midwest Tiles Arena' },
+  { home: 'TX', away: 'CA', date: 'Fri Jun 13', time: '7:00 PM ET',  venue: 'SeeWhy LIVE Arena' },
+];
+
+function getEmojiForAbbr(abbr, rankingsList) {
+  var i;
+  for (i = 0; i < rankingsList.length; i++) {
+    if (rankingsList[i].state_abbr === abbr) {
+      return rankingsList[i].state_emoji;
+    }
+  }
+  return '';
+}
+
+export default function StateRankingsTab({ isLive, addToast }) {
   var [region,   setRegion]   = useState('All');
   var [expanded, setExpanded] = useState(null);
+  var [view,     setView]     = useState('RANKINGS');
+  var [rankings, setRankings] = useState(RANKINGS.map(function(r) {
+    return {
+      rank:       r.rank,
+      rank_prev:  r.rank_prev,
+      change:     r.change,
+      state_name: r.state_name,
+      state_abbr: r.state_abbr,
+      state_emoji: r.state_emoji,
+      region:     r.region,
+      points:     r.points,
+      losses:     r.losses,
+      streak:     r.streak,
+      tiles_diff: r.tiles_diff,
+    };
+  }));
 
-  var visible = RANKINGS.filter(function(r) {
+  useEffect(function() {
+    if (!isLive) { return; }
+    var timer = setInterval(function() {
+      setRankings(function(prev) {
+        var updated = prev.map(function(r) {
+          return {
+            rank:        r.rank,
+            rank_prev:   r.rank_prev,
+            change:      r.change,
+            state_name:  r.state_name,
+            state_abbr:  r.state_abbr,
+            state_emoji: r.state_emoji,
+            region:      r.region,
+            points:      r.points,
+            losses:      r.losses,
+            streak:      r.streak,
+            tiles_diff:  r.tiles_diff,
+          };
+        });
+
+        // Pick a random entry from indices 2–7 (never #1 WA at index 0)
+        var targetIdx = 2 + Math.floor(Math.random() * 6);
+        var delta     = 1 + Math.floor(Math.random() * 3);
+        var direction = Math.random() < 0.5 ? 1 : -1;
+        updated[targetIdx].points = updated[targetIdx].points + direction * delta;
+
+        // Re-sort by points descending, keep index 0 (WA) locked at rank 1
+        var locked  = updated[0];
+        var rest    = updated.slice(1);
+        rest.sort(function(a, b) { return b.points - a.points; });
+        var sorted  = [locked].concat(rest);
+
+        // Recompute rank and change fields
+        var i;
+        for (i = 0; i < sorted.length; i++) {
+          var oldRank  = sorted[i].rank;
+          var newRank  = i + 1;
+          sorted[i].rank_prev = oldRank;
+          sorted[i].change    = oldRank - newRank;
+          sorted[i].rank      = newRank;
+        }
+
+        return sorted;
+      });
+    }, 2800);
+
+    return function() { clearInterval(timer); };
+  }, [isLive]);
+
+  // --- RANKINGS view helpers ---
+  var visible = rankings.filter(function(r) {
     return region === 'All' || r.region === region;
   });
+
+  // --- STATS view helpers ---
+  var totalMatches = WEEK * 4;
+  var pointsSum = 0;
+  var j;
+  for (j = 0; j < rankings.length; j++) {
+    pointsSum = pointsSum + rankings[j].points;
+  }
+  var avgPoints    = Math.floor(pointsSum / rankings.length);
+  var pointsLeader = rankings[0].state_name;
+  var maxPts       = rankings[0].points;
+  var i;
+  for (i = 1; i < rankings.length; i++) {
+    if (rankings[i].points > maxPts) { maxPts = rankings[i].points; }
+  }
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
 
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.12),rgba(128,0,32,.1))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '12px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-          <div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 3 }}>🏅 STATE RANKINGS</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>Season {SEASON} · Week {WEEK} · National Domino Federation</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{RANKINGS.length}</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>STATES RANKED</div>
-          </div>
-        </div>
-
-        {/* Top-3 podium */}
-        <div style={{ display: 'flex', gap: 6 }}>
-          {RANKINGS.slice(0, 3).map(function(r) {
-            return (
-              <div key={r.rank} style={{ flex: 1, background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '6px 8px', textAlign: 'center' }}>
-                <div style={{ fontSize: 20 }}>{r.state_emoji}</div>
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', marginTop: 2 }}>{r.state_abbr}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C' }}>{r.points} pts</div>
-                <div style={{ fontSize: 12, marginTop: 2 }}>{MEDALS[r.rank]}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Region filter */}
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
-        {REGIONS.map(function(reg) {
-          var active = region === reg;
-          var color  = reg === 'All' ? '#C9A84C' : (REGION_COLORS[reg] || '#7A6F90');
+      {/* Tab switcher — appears at very top */}
+      <div style={{ display: 'flex', gap: 4, background: 'rgba(22,16,32,.9)', border: '1px solid #241C34', borderRadius: 10, padding: 4 }}>
+        {VIEWS.map(function(v) {
+          var active = view === v;
           return (
-            <button key={reg} onClick={function() { setRegion(reg); }}
-              style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
-              {reg.toUpperCase()}
+            <button
+              key={v}
+              onClick={function() { setView(v); }}
+              style={{
+                flex: 1,
+                background:   active ? 'rgba(201,168,76,.18)' : 'transparent',
+                border:       active ? '1px solid rgba(201,168,76,.45)' : '1px solid transparent',
+                borderRadius: 7,
+                padding:      '6px 4px',
+                color:        active ? '#C9A84C' : '#7A6F90',
+                fontFamily:   "'Barlow Condensed',sans-serif",
+                fontWeight:   700,
+                fontSize:     11,
+                letterSpacing: 1.5,
+                cursor:       'pointer',
+              }}
+            >
+              {v}
             </button>
           );
         })}
       </div>
 
-      {/* Column headers */}
-      <div style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, padding: '0 8px' }}>
-        {['#', 'CHG', 'STATE', 'PTS', 'W-L', 'TILES', 'STK'].map(function(h, i) {
-          return (
-            <div key={h} style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', textAlign: i >= 3 ? 'center' : 'left' }}>{h}</div>
-          );
-        })}
-      </div>
+      {/* ===== RANKINGS VIEW ===== */}
+      {view === 'RANKINGS' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-      {/* Rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {visible.map(function(r) {
-          var rc    = REGION_COLORS[r.region] || '#7A6F90';
-          var wins  = WEEK - r.losses;
-          var isTop = r.rank <= 3;
-          var isExp = expanded === r.rank;
+          {/* Header */}
+          <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.12),rgba(128,0,32,.1))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 3 }}>🏅 STATE RANKINGS</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>Season {SEASON} · Week {WEEK} · National Domino Federation</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{rankings.length}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>STATES RANKED</div>
+              </div>
+            </div>
 
-          return (
-            <div key={r.rank}>
+            {/* Top-3 podium */}
+            <div style={{ display: 'flex', gap: 6 }}>
+              {rankings.slice(0, 3).map(function(r) {
+                return (
+                  <div key={r.rank} style={{ flex: 1, background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '6px 8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 20 }}>{r.state_emoji}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', marginTop: 2 }}>{r.state_abbr}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C' }}>{r.points} pts</div>
+                    <div style={{ fontSize: 12, marginTop: 2 }}>{MEDALS[r.rank]}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Region filter */}
+          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
+            {REGIONS.map(function(reg) {
+              var active = region === reg;
+              var color  = reg === 'All' ? '#C9A84C' : (REGION_COLORS[reg] || '#7A6F90');
+              return (
+                <button key={reg} onClick={function() { setRegion(reg); }}
+                  style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+                  {reg.toUpperCase()}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Column headers */}
+          <div style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, padding: '0 8px' }}>
+            {['#', 'CHG', 'STATE', 'PTS', 'W-L', 'TILES', 'STK'].map(function(h, i) {
+              return (
+                <div key={h} style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', textAlign: i >= 3 ? 'center' : 'left' }}>{h}</div>
+              );
+            })}
+          </div>
+
+          {/* Rows */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {visible.map(function(r) {
+              var rc    = REGION_COLORS[r.region] || '#7A6F90';
+              var wins  = WEEK - r.losses;
+              var isTop = r.rank <= 3;
+              var isExp = expanded === r.rank;
+
+              return (
+                <div key={r.state_abbr}>
+                  <div
+                    onClick={function() { setExpanded(isExp ? null : r.rank); }}
+                    style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, alignItems: 'center', background: isTop ? 'rgba(201,168,76,.07)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isTop ? 'rgba(201,168,76,.25)' : '#241C34'), borderRadius: isExp ? '8px 8px 0 0' : 8, padding: '8px', cursor: 'pointer' }}>
+
+                    {/* Rank */}
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: isTop ? 16 : 13, color: isTop ? '#C9A84C' : '#7A6F90', textAlign: 'center', lineHeight: 1 }}>
+                      {MEDALS[r.rank] || r.rank}
+                    </div>
+
+                    {/* Change */}
+                    <div style={{ textAlign: 'center' }}>
+                      {r.change > 0 && <span style={{ color: '#00C96A', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>▲{r.change}</span>}
+                      {r.change < 0 && <span style={{ color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>▼{Math.abs(r.change)}</span>}
+                      {r.change === 0 && <span style={{ color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>—</span>}
+                    </div>
+
+                    {/* State */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 }}>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>{r.state_emoji}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.state_name}</div>
+                        <div style={{ background: rc + '18', border: '1px solid ' + rc + '33', borderRadius: 999, display: 'inline-block', padding: '0 5px', fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: rc }}>{r.region}</div>
+                      </div>
+                    </div>
+
+                    {/* Points */}
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: isTop ? '#C9A84C' : '#EDE8F5', textAlign: 'center' }}>{r.points}</div>
+
+                    {/* W-L */}
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, textAlign: 'center' }}>
+                      <span style={{ color: '#00C96A' }}>{wins}</span>
+                      <span style={{ color: '#7A6F90' }}>-</span>
+                      <span style={{ color: r.losses > 0 ? '#FF6B81' : '#7A6F90' }}>{r.losses}</span>
+                    </div>
+
+                    {/* Tiles diff */}
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.tiles_diff > 0 ? '#00C96A' : r.tiles_diff < 0 ? '#FF1A3C' : '#7A6F90', textAlign: 'center', fontWeight: 700 }}>
+                      {r.tiles_diff > 0 ? '+' : ''}{r.tiles_diff}
+                    </div>
+
+                    {/* Streak */}
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.streak > 0 ? '#C8FF00' : '#7A6F90', textAlign: 'center', fontWeight: r.streak > 0 ? 700 : 400 }}>
+                      {r.streak > 0 ? 'W' + r.streak : '—'}
+                    </div>
+                  </div>
+
+                  {/* Expanded detail */}
+                  {isExp && (
+                    <div style={{ background: 'rgba(7,5,10,.95)', border: '1px solid rgba(201,168,76,.2)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '10px 14px', display: 'flex', gap: 20 }}>
+                      <div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>PREV RANK</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>#{r.rank_prev}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WIN RATE</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00C9A7' }}>{Math.floor(wins / WEEK * 100)}%</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>SEASON</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{SEASON}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WEEK</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{WEEK}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Legend */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', padding: '4px 2px', borderTop: '1px solid #241C34', paddingTop: 8 }}>
+            {[['▲ moved up','#00C96A'],['▼ moved down','#FF1A3C'],['— no change','#7A6F90'],['TILES = tile differential','#C9A84C'],['STK = win streak','#C8FF00']].map(function(item) {
+              return <span key={item[0]} style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: item[1] }}>{item[0]}</span>;
+            })}
+          </div>
+
+        </div>
+      )}
+
+      {/* ===== SCHEDULE VIEW ===== */}
+      {view === 'SCHEDULE' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', letterSpacing: 3, paddingLeft: 2 }}>📅 UPCOMING MATCHUPS</div>
+
+          {SCHEDULE.map(function(match, idx) {
+            var homeEmoji = getEmojiForAbbr(match.home, rankings);
+            var awayEmoji = getEmojiForAbbr(match.away, rankings);
+            return (
               <div
-                onClick={function() { setExpanded(isExp ? null : r.rank); }}
-                style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, alignItems: 'center', background: isTop ? 'rgba(201,168,76,.07)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isTop ? 'rgba(201,168,76,.25)' : '#241C34'), borderRadius: isExp ? '8px 8px 0 0' : 8, padding: '8px', cursor: 'pointer' }}>
+                key={idx}
+                style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}
+              >
+                {/* Teams */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 22 }}>{homeEmoji}</span>
+                    <div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: '#EDE8F5' }}>{match.home}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>HOME</div>
+                    </div>
+                  </div>
 
-                {/* Rank */}
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: isTop ? 16 : 13, color: isTop ? '#C9A84C' : '#7A6F90', textAlign: 'center', lineHeight: 1 }}>
-                  {MEDALS[r.rank] || r.rank}
-                </div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', letterSpacing: 2 }}>VS</div>
 
-                {/* Change */}
-                <div style={{ textAlign: 'center' }}>
-                  {r.change > 0 && <span style={{ color: '#00C96A', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>▲{r.change}</span>}
-                  {r.change < 0 && <span style={{ color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>▼{Math.abs(r.change)}</span>}
-                  {r.change === 0 && <span style={{ color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>—</span>}
-                </div>
-
-                {/* State */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>{r.state_emoji}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.state_name}</div>
-                    <div style={{ background: rc + '18', border: '1px solid ' + rc + '33', borderRadius: 999, display: 'inline-block', padding: '0 5px', fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: rc }}>{r.region}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: 'row-reverse' }}>
+                    <span style={{ fontSize: 22 }}>{awayEmoji}</span>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: '#EDE8F5' }}>{match.away}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>AWAY</div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Points */}
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: isTop ? '#C9A84C' : '#EDE8F5', textAlign: 'center' }}>{r.points}</div>
-
-                {/* W-L */}
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, textAlign: 'center' }}>
-                  <span style={{ color: '#00C96A' }}>{wins}</span>
-                  <span style={{ color: '#7A6F90' }}>-</span>
-                  <span style={{ color: r.losses > 0 ? '#FF6B81' : '#7A6F90' }}>{r.losses}</span>
-                </div>
-
-                {/* Tiles diff */}
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.tiles_diff > 0 ? '#00C96A' : r.tiles_diff < 0 ? '#FF1A3C' : '#7A6F90', textAlign: 'center', fontWeight: 700 }}>
-                  {r.tiles_diff > 0 ? '+' : ''}{r.tiles_diff}
-                </div>
-
-                {/* Streak */}
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.streak > 0 ? '#C8FF00' : '#7A6F90', textAlign: 'center', fontWeight: r.streak > 0 ? 700 : 400 }}>
-                  {r.streak > 0 ? 'W' + r.streak : '—'}
+                {/* Date / time / venue */}
+                <div style={{ borderTop: '1px solid #241C34', paddingTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                  <div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', fontWeight: 700 }}>{match.date} · {match.time}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginTop: 2 }}>{match.venue}</div>
+                  </div>
+                  <button
+                    onClick={function() { if (addToast) { addToast('Reminder set for ' + match.home + ' vs ' + match.away + ' · ' + match.date, 'success'); } }}
+                    style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '5px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, letterSpacing: 1, cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    🔔 SET REMINDER
+                  </button>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Expanded detail */}
-              {isExp && (
-                <div style={{ background: 'rgba(7,5,10,.95)', border: '1px solid rgba(201,168,76,.2)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '10px 14px', display: 'flex', gap: 20 }}>
-                  <div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>PREV RANK</div>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>#{r.rank_prev}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WIN RATE</div>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00C9A7' }}>{Math.floor(wins / WEEK * 100)}%</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>SEASON</div>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{SEASON}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WEEK</div>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{WEEK}</div>
-                  </div>
-                </div>
-              )}
+      {/* ===== STATS VIEW ===== */}
+      {view === 'STATS' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', letterSpacing: 3, paddingLeft: 2 }}>📊 SEASON STATS</div>
+
+          {/* Summary grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+
+            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 3 }}>TOTAL STATES</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', lineHeight: 1 }}>8</div>
             </div>
-          );
-        })}
-      </div>
 
-      {/* Legend */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', padding: '4px 2px', borderTop: '1px solid #241C34', paddingTop: 8 }}>
-        {[['▲ moved up','#00C96A'],['▼ moved down','#FF1A3C'],['— no change','#7A6F90'],['TILES = tile differential','#C9A84C'],['STK = win streak','#C8FF00']].map(function(item) {
-          return <span key={item[0]} style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: item[1] }}>{item[0]}</span>;
-        })}
-      </div>
+            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 3 }}>MATCHES PLAYED</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#EDE8F5', lineHeight: 1 }}>{totalMatches}</div>
+            </div>
+
+            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 3 }}>AVG POINTS</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#00DEC0', lineHeight: 1 }}>{avgPoints}</div>
+            </div>
+
+            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 3 }}>POINTS LEADER</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', lineHeight: 1.1, marginTop: 2 }}>{pointsLeader}</div>
+            </div>
+
+          </div>
+
+          {/* Mini bar chart */}
+          <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 12, letterSpacing: 1 }}>POINTS BY STATE</div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
+              {rankings.map(function(r) {
+                var barHeight = Math.floor((r.points / maxPts) * 72);
+                var barColor  = REGION_COLORS[r.region] || '#7A6F90';
+                return (
+                  <div key={r.state_abbr} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: '100%', height: barHeight, background: barColor + 'CC', borderRadius: '3px 3px 0 0', minHeight: 4 }}></div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: barColor, fontWeight: 700, textAlign: 'center' }}>{r.state_abbr}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', textAlign: 'center' }}>{r.points}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Region color legend */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '0 2px' }}>
+            {Object.keys(REGION_COLORS).map(function(reg) {
+              return (
+                <div key={reg} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: REGION_COLORS[reg] }}></div>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{reg}</span>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
