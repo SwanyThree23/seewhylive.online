@@ -571,7 +571,7 @@ export default function App() {
           />
         )}
         {activeTab === 'rankings' && (
-          <StateRankingsTab />
+          <StateRankingsTab isLive={isLive} addToast={addToast} />
         )}
         {activeTab === 'showcase' && (
           <ShowcaseTab addToast={addToast} />
