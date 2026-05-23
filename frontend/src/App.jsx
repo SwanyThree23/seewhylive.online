@@ -520,6 +520,7 @@ export default function App() {
             roomId={APP_ID}
             userId={userId}
             role={role}
+            isLive={isLive}
           />
         )}
         {activeTab === 'forge' && (
