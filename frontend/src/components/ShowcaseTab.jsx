@@ -72,6 +72,7 @@ function StateBadge(p) {
 
 export default function ShowcaseTab(p) {
   var addToast = p.addToast;
+  var isLive   = p.isLive;
 
   var [sub,      setSub]      = useState('ranks');
   var [detail,   setDetail]   = useState(null);
@@ -95,12 +96,38 @@ export default function ShowcaseTab(p) {
   var [timer,    setTimer]    = useState(300);
   var battleRef = useRef(null);
 
+  // live clip capture
+  var [liveClipCount,  setLiveClipCount]  = useState(0);
+  var [captureFlash,   setCaptureFlash]   = useState(false);
+  var [liveClipTimes,  setLiveClipTimes]  = useState([]);
+  var captureRef = useRef(null);
+  var flashRef   = useRef(null);
+
   function getState(id) {
     for (var i = 0; i < STATES.length; i++) {
       if (STATES[i].id === id) return STATES[i];
     }
     return null;
   }
+
+  // Live clip auto-capture
+  useEffect(function() {
+    if (!isLive) return;
+    captureRef.current = setInterval(function() {
+      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLiveClipCount(function(n) { return n + 1; });
+      setLiveClipTimes(function(prev) { return prev.concat([ts]); });
+      setCaptureFlash(true);
+      if (addToast) addToast('🎬 Live clip captured', 'success');
+      flashRef.current = setTimeout(function() {
+        setCaptureFlash(false);
+      }, 800);
+    }, 15000);
+    return function() {
+      clearInterval(captureRef.current);
+      clearTimeout(flashRef.current);
+    };
+  }, [isLive]);
 
   // Match simulation
   useEffect(function() {
@@ -153,6 +180,8 @@ export default function ShowcaseTab(p) {
     return function() {
       clearInterval(simRef.current);
       clearInterval(battleRef.current);
+      clearInterval(captureRef.current);
+      clearTimeout(flashRef.current);
     };
   }, []);
 
@@ -212,8 +241,8 @@ export default function ShowcaseTab(p) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: '#07050A' }}>
 
-      {/* Sub-tab bar */}
-      <div style={{ display: 'flex', overflowX: 'auto', background: '#0F0C14', borderBottom: '1px solid rgba(201,168,76,.12)', flexShrink: 0, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+      {/* Sub-tab bar with LIVE CAPTURE indicator */}
+      <div style={{ display: 'flex', overflowX: 'auto', background: '#0F0C14', borderBottom: '1px solid rgba(201,168,76,.12)', flexShrink: 0, msOverflowStyle: 'none', scrollbarWidth: 'none', alignItems: 'center' }}>
         {SUBS.map(function(t) {
           var on = sub === t[0];
           return (
@@ -223,6 +252,15 @@ export default function ShowcaseTab(p) {
             </button>
           );
         })}
+        {isLive && (
+          <div style={{ marginLeft: 'auto', marginRight: 8, display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+            <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#FF1A3C', boxShadow: captureFlash ? '0 0 8px 3px rgba(255,26,60,.9)' : '0 0 4px 1px rgba(255,26,60,.4)', transition: 'box-shadow .3s' }} />
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', letterSpacing: 1 }}>CAPTURING</span>
+            {liveClipCount > 0 && (
+              <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#FF6B81' }}>{liveClipCount}</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -245,6 +283,41 @@ export default function ShowcaseTab(p) {
                 })}
               </div>
             </div>
+
+            {/* NEW LIVE CLIPS section */}
+            {liveClipCount > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#FF6B81', letterSpacing: 2, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C' }} />
+                  NEW LIVE CLIPS
+                  <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#FF6B81' }}>{liveClipCount}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {(function() {
+                    var clips = [];
+                    for (var i = 0; i < liveClipCount; i++) {
+                      var clipNum = i + 1;
+                      var clipTime = liveClipTimes[i] || '';
+                      clips.push(
+                        <div key={i} style={{ background: 'rgba(255,26,60,.06)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ fontSize: 16, flexShrink: 0 }}>📹</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5' }}>Live Clip #{clipNum}</div>
+                            {clipTime && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>Captured at {clipTime}</div>}
+                          </div>
+                          <span style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#FF6B81', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                            <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: '#FF1A3C' }} />
+                            LIVE
+                          </span>
+                        </div>
+                      );
+                    }
+                    return clips;
+                  })()}
+                </div>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: 5, marginBottom: 9 }}>
               {[['rank','RANK'],['pts','PTS'],['wl','W-L']].map(function(pair) {
                 var isA = sortBy === pair[0];
