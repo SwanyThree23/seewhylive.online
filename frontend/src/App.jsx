@@ -367,48 +367,48 @@ export default function App() {
 
   if (splash) {
     return (
-      <div className="splash-screen">
-        <div className="splash-inner">
-          <div className="splash-title">SeeWhy LIVE</div>
-          <div className="splash-version">v33.0</div>
-          <div className="splash-tags">
-            <span className="tag-merge">MERGE BUILD</span>
-            <span className="tag-prod">PRODUCTION</span>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F0C14', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 64, color: '#EDE8F5', letterSpacing: 4, lineHeight: 1 }}>SeeWhy LIVE</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: '#7A6F90', marginTop: 8 }}>v33.0</div>
+          <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'center' }}>
+            <span style={{ background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 4, padding: '3px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, fontWeight: 700 }}>MERGE BUILD</span>
+            <span style={{ background: 'rgba(128,0,32,.2)', border: '1px solid rgba(128,0,32,.5)', borderRadius: 4, padding: '3px 10px', color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, fontWeight: 700 }}>PRODUCTION</span>
           </div>
-          <div className="splash-brands">Washington Classic × Domino Entertainment × VibeN'Bones</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#7A6F90', marginTop: 16 }}>Washington Classic × Domino Entertainment × VibeN'Bones</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="app-root">
+    <div style={{ minHeight: '100vh', background: '#0F0C14', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif" }}>
       {/* Header HUD */}
-      <header className="hud-header">
-        <div className="hud-left">
-          <span className="hud-logo">SeeWhy LIVE</span>
-          <span className="hud-version">v33.0</span>
-          {isLive && <span className="hud-live-badge">● LIVE</span>}
-          {!connected && <span className="hud-offline-badge">OFFLINE</span>}
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#EDE8F5', letterSpacing: 2 }}>SeeWhy LIVE</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>v33.0</span>
+          {isLive && <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 4, padding: '2px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
+          {!connected && <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>OFFLINE</span>}
         </div>
-        <div className="hud-center">
-          {isLive && <span className="hud-uptime">{formatUptime(uptime)}</span>}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#00C9A7' }}>{formatUptime(uptime)}</span>}
         </div>
-        <div className="hud-right">
-          <span className="hud-viewers">👁 {viewerCount}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'flex-end' }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>👁 {viewerCount}</span>
           <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 6 }}>
             {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
           </span>
-          <span className="hud-room">{APP_ID.substring(0, 8)}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>{APP_ID.substring(0, 8)}</span>
         </div>
       </header>
 
       {/* Tab Bar */}
-      <nav className="tab-bar">
+      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(7,5,10,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4 }}>
         {TABS.map(function(tab) { return (
           <button
             key={tab.id}
-            className={'tab-btn' + (activeTab === tab.id ? ' tab-btn--active' : '')}
+            style={{ background: activeTab === tab.id ? '#800020' : 'rgba(22,16,32,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#EDE8F5' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
             onClick={function() { setActiveTab(tab.id); }}
           >
             {tab.label}
@@ -417,7 +417,7 @@ export default function App() {
       </nav>
 
       {/* Tab Content */}
-      <main className="tab-content">
+      <main style={{ padding: '16px', flex: 1 }}>
         {activeTab === 'room' && (
           <RoomTab
             socket={socketRef.current}
@@ -646,7 +646,13 @@ export default function App() {
 }
 
 // StreamKeysTab inline (7th tab)
-function StreamKeysTab({ socket, userId, guests, role, addToast }) {
+function StreamKeysTab(props) {
+  var socket = props.socket;
+  var userId = props.userId;
+  var guests = props.guests;
+  var role = props.role;
+  var addToast = props.addToast;
+
   var [platform, setPlatform] = useState('youtube');
   var [streamKey, setStreamKey] = useState('');
   var [saving, setSaving] = useState(false);
@@ -660,13 +666,13 @@ function StreamKeysTab({ socket, userId, guests, role, addToast }) {
     { id: 'custom', label: 'Custom RTMP' }
   ];
 
-  useEffect(() => {
+  useEffect(function() {
     fetch('/api/keys/meta/' + userId)
-      .then((r) => r.json())
-      .then((data) => {
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
         if (data && Array.isArray(data)) setSavedKeys(data);
       })
-      .catch((e) => console.error('fetch keys meta error:', e));
+      .catch(function(e) { console.error('fetch keys meta error:', e); });
   }, [userId]);
 
   function handleSave() {
@@ -677,86 +683,103 @@ function StreamKeysTab({ socket, userId, guests, role, addToast }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guestId: userId, destId: platform, plainKey: streamKey })
     })
-      .then((r) => r.json())
-      .then((data) => {
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
         setSaving(false);
         if (data && data.saved) {
           setStreamKey('');
           addToast('🔒 Encrypted & Vaulted', 'success');
-          setSavedKeys((prev) => {
-            var filtered = prev.filter((k) => k.destId !== platform);
+          setSavedKeys(function(prev) {
+            var filtered = prev.filter(function(k) { return k.destId !== platform; });
             return [...filtered, { destId: platform, createdAt: Date.now() }];
           });
         } else {
           addToast('Save failed', 'error');
         }
       })
-      .catch((e) => { setSaving(false); addToast('Save error: ' + e.message, 'error'); });
+      .catch(function(e) { setSaving(false); addToast('Save error: ' + e.message, 'error'); });
   }
 
   function handleDelete(destId) {
     fetch('/api/keys/delete', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guestId: userId, destId })
+      body: JSON.stringify({ guestId: userId, destId: destId })
     })
-      .then((r) => r.json())
-      .then((data) => {
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
         if (data && data.deleted) {
-          setSavedKeys((prev) => prev.filter((k) => k.destId !== destId));
+          setSavedKeys(function(prev) { return prev.filter(function(k) { return k.destId !== destId; }); });
           addToast('Key deleted', 'info');
         }
       })
-      .catch((e) => addToast('Delete error: ' + e.message, 'error'));
+      .catch(function(e) { addToast('Delete error: ' + e.message, 'error'); });
   }
 
+  var glassCard = { background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 12, padding: '16px' };
+  var panelTitle = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#EDE8F5', letterSpacing: 2, margin: '0 0 4px 0' };
+  var panelSub = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', margin: '0 0 12px 0' };
+  var formRow = { marginBottom: 10 };
+  var inputStyle = { background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, width: '100%', boxSizing: 'border-box' };
+  var btnGold = { background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, padding: '9px 18px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, cursor: 'pointer' };
+  var btnDelete = { background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '4px 10px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' };
+  var keyRow = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.04)' };
+  var keyPlatform = { fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', flex: 1 };
+  var keyStatus = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00C9A7' };
+  var keyDate = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' };
+  var mutedText = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' };
+
   return (
-    <div className="tab-panel">
-      <div className="glass-card" style={{marginBottom: '1rem'}}>
-        <h2 className="panel-title">🔑 STREAM KEYS VAULT</h2>
-        <p className="panel-sub">Keys are encrypted with AES-256-GCM. They cannot be retrieved after saving.</p>
-        <div className="form-row">
-          <select className="select-input" value={platform} onChange={(e) => setPlatform(e.target.value)}>
-            {PLATFORMS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+    <div style={{ padding: '8px 0' }}>
+      <div style={Object.assign({}, glassCard, { marginBottom: '1rem' })}>
+        <h2 style={panelTitle}>🔑 STREAM KEYS VAULT</h2>
+        <p style={panelSub}>Keys are encrypted with AES-256-GCM. They cannot be retrieved after saving.</p>
+        <div style={formRow}>
+          <select style={inputStyle} value={platform} onChange={function(e) { setPlatform(e.target.value); }}>
+            {PLATFORMS.map(function(p) { return <option key={p.id} value={p.id}>{p.label}</option>; })}
           </select>
         </div>
-        <div className="form-row">
+        <div style={formRow}>
           <input
-            className="text-input"
+            style={inputStyle}
             type="password"
             placeholder="Paste your stream key..."
             value={streamKey}
-            onChange={(e) => setStreamKey(e.target.value)}
+            onChange={function(e) { setStreamKey(e.target.value); }}
             autoComplete="off"
           />
         </div>
-        <button className="btn-gold" onClick={handleSave} disabled={saving}>
+        <button style={btnGold} onClick={handleSave} disabled={saving}>
           {saving ? 'Encrypting...' : '🔒 SAVE TO VAULT'}
         </button>
       </div>
 
-      <div className="glass-card">
-        <h3 className="panel-title">Saved Keys</h3>
-        {savedKeys.length === 0 && <p className="muted-text">No keys saved yet.</p>}
-        {savedKeys.map((k) => (
-          <div key={k.destId} className="key-row">
-            <span className="key-platform">{k.destId.toUpperCase()}</span>
-            <span className="key-status">🔒 Encrypted</span>
-            <span className="key-date">{new Date(k.createdAt).toLocaleDateString()}</span>
-            <button className="btn-delete" onClick={() => handleDelete(k.destId)}>Delete</button>
-          </div>
-        ))}
+      <div style={glassCard}>
+        <h3 style={panelTitle}>Saved Keys</h3>
+        {savedKeys.length === 0 && <p style={mutedText}>No keys saved yet.</p>}
+        {savedKeys.map(function(k) {
+          return (
+            <div key={k.destId} style={keyRow}>
+              <span style={keyPlatform}>{k.destId.toUpperCase()}</span>
+              <span style={keyStatus}>🔒 Encrypted</span>
+              <span style={keyDate}>{new Date(k.createdAt).toLocaleDateString()}</span>
+              <button style={btnDelete} onClick={function() { handleDelete(k.destId); }}>Delete</button>
+            </div>
+          );
+        })}
       </div>
 
       {role === 'host' && (
-        <div className="glass-card" style={{marginTop: '1rem'}}>
-          <h3 className="panel-title">Guest Key Status (Host View)</h3>
-          {guests.map((g) => (
-            <div key={g.guestId || g.userId} className="key-row">
-              <span className="key-platform">{g.username || g.guestId}</span>
-              <span className="key-status muted-text">Key status visible to host only</span>
-            </div>
-          ))}
+        <div style={Object.assign({}, glassCard, { marginTop: '1rem' })}>
+          <h3 style={panelTitle}>Guest Key Status (Host View)</h3>
+          {guests.map(function(g) {
+            return (
+              <div key={g.guestId || g.userId} style={keyRow}>
+                <span style={keyPlatform}>{g.username || g.guestId}</span>
+                <span style={mutedText}>Key status visible to host only</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
