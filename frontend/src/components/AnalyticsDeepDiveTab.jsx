@@ -16,6 +16,9 @@ var ENG_DATA = [72, 68, 81, 76, 85, 79, 88, 83, 91, 87, 94, 89];
 var REV_DATA = [45, 52, 38, 71, 83, 67, 94, 88, 102, 95, 118, 134];
 var TOP_COUNTRIES = [['🇺🇸', 'USA', 38], ['🇳🇬', 'Nigeria', 14], ['🇬🇧', 'UK', 11], ['🇧🇷', 'Brazil', 9], ['🇯🇵', 'Japan', 7]];
 
+var RETENTION = [100, 96, 91, 88, 85, 79, 74, 68, 63, 57, 52, 49, 44, 41, 38, 35, 33, 31, 30, 29];
+var HOURLY    = [142, 287, 612, 934, 1408, 2102, 2847, 2694, 2211, 1837, 1402, 987, 623, 401, 244, 178, 134, 97, 72, 54, 42, 31, 24, 18];
+
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
 var TYPE_COLORS = { tip: '#00C9A7', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
@@ -94,6 +97,46 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts }) {
             </div>
           );
         })}
+      </div>
+
+      {/* Retention curve */}
+      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC', letterSpacing: 2, marginBottom: 8 }}>VIEWER RETENTION CURVE</div>
+        <div style={{ position: 'relative', height: 50, display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          {RETENTION.map(function(v, i) {
+            var h = (v / 100) * 100;
+            var hue = Math.floor((v / 100) * 120);
+            var color = 'hsl(' + hue + ',90%,55%)';
+            return (
+              <div key={i} style={{ flex: 1, height: h + '%', background: color, borderRadius: '2px 2px 0 0', opacity: 0.8, minHeight: 3 }} />
+            );
+          })}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>0:00</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC' }}>AVG HOLD: {RETENTION[Math.floor(RETENTION.length / 2)]}%</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>+20m</span>
+        </div>
+      </div>
+
+      {/* Hourly viewers */}
+      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0', letterSpacing: 2, marginBottom: 8 }}>HOURLY VIEWERS — TODAY</div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 50 }}>
+          {HOURLY.map(function(v, i) {
+            var peak = Math.max.apply(null, HOURLY);
+            var h = Math.floor((v / peak) * 100);
+            var isPeak = v === peak;
+            return (
+              <div key={i} style={{ flex: 1, height: h + '%', background: isPeak ? 'linear-gradient(180deg,#C8FF00,#00DEC0)' : 'linear-gradient(180deg,#00DEC055,#00DEC022)', borderRadius: '2px 2px 0 0', minHeight: 3 }} />
+            );
+          })}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>12AM</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C8FF00' }}>PEAK: {Math.max.apply(null, HOURLY).toLocaleString()} @ 6PM</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>11PM</span>
+        </div>
       </div>
 
       {/* 90/10 split */}
