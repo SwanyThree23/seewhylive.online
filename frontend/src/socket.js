@@ -1,8 +1,8 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://srv1581658.hstgr.cloud:3001';
+var SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://srv1581658.hstgr.cloud:3001';
 
-let socket = null;
+var socket = null;
 
 export function getSocket(token) {
   if (socket && socket.connected) return socket;
@@ -14,7 +14,7 @@ export function getSocket(token) {
     reconnectionAttempts: Infinity,
     timeout: 20000
   });
-  socket.on('connect_error', (err) => {
+  socket.on('connect_error', function(err) {
     console.error('[Socket] Connection error:', err.message);
   });
   return socket;

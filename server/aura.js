@@ -1,8 +1,8 @@
 'use strict';
 
-const Anthropic = require('@anthropic-ai/sdk');
+var Anthropic = require('@anthropic-ai/sdk');
 
-let _anthropicClient = null;
+var _anthropicClient = null;
 function getClient() {
   if (!_anthropicClient) {
     _anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -10,33 +10,29 @@ function getClient() {
   return _anthropicClient;
 }
 
-const MODEL = 'claude-sonnet-4-20250514';
-const SYSTEM_PROMPT =
+var MODEL = 'claude-sonnet-4-20250514';
+var SYSTEM_PROMPT =
   'You are AURA, the AI co-host for SeeWhy LIVE Washington Classic stream. ' +
   'You are energetic, hype, and supportive of domino culture. ' +
   'Keep responses under 2 sentences. Match the energy of the room.';
 
-const RATE_LIMIT_MS = 8000;
+var RATE_LIMIT_MS = 8000;
 
-let lastEmitTime = 0;
-const queue = []; // Array of { type, params, callback }
-let drainScheduled = false;
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
+var lastEmitTime = 0;
+var queue = []; // Array of { type, params, callback }
+var drainScheduled = false;
 
 function scheduleNextDrain(delay) {
   if (drainScheduled) return;
   drainScheduled = true;
   setTimeout(function drainQueue() {
     drainScheduled = false;
-    const now = Date.now();
+    var now = Date.now();
     if (queue.length === 0) return;
 
-    const elapsed = now - lastEmitTime;
+    var elapsed = now - lastEmitTime;
     if (elapsed >= RATE_LIMIT_MS) {
-      const item = queue.shift();
+      var item = queue.shift();
       lastEmitTime = Date.now();
 
       resolveItem(item).then(function(text) {
@@ -45,13 +41,11 @@ function scheduleNextDrain(delay) {
         } catch (cbErr) {
           console.error('[AURA] callback threw:', cbErr.message);
         }
-        // If more items remain, schedule another drain
         if (queue.length > 0) {
           scheduleNextDrain(RATE_LIMIT_MS);
         }
       });
     } else {
-      // Not enough time passed yet; reschedule for the remaining window
       scheduleNextDrain(RATE_LIMIT_MS - elapsed);
     }
   }, delay);
@@ -70,18 +64,9 @@ function resolveItem(item) {
   return Promise.resolve('SeeWhy LIVE is live! 🔥');
 }
 
-// ---------------------------------------------------------------------------
-// Public API functions
-// ---------------------------------------------------------------------------
-
-/**
- * Generates an energetic welcome message for a new viewer.
- * @param {string} username
- * @returns {Promise<string>}
- */
 async function generateGreeting(username) {
   try {
-    const response = await getClient().messages.create({
+    var response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 128,
       system: SYSTEM_PROMPT,
@@ -102,17 +87,10 @@ async function generateGreeting(username) {
   }
 }
 
-/**
- * Generates hype copy for a gift event.
- * @param {string} giftName
- * @param {number} giftValue  cents
- * @param {string} username
- * @returns {Promise<string>}
- */
 async function generateHype(giftName, giftValue, username) {
   try {
-    const dollarAmount = (giftValue / 100).toFixed(2);
-    const response = await getClient().messages.create({
+    var dollarAmount = (giftValue / 100).toFixed(2);
+    var response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 128,
       system: SYSTEM_PROMPT,
@@ -137,15 +115,9 @@ async function generateHype(giftName, giftValue, username) {
   }
 }
 
-/**
- * Generates a hype shoutout for a new subscriber.
- * @param {string} username
- * @param {string} tier
- * @returns {Promise<string>}
- */
 async function generateShoutout(username, tier) {
   try {
-    const response = await getClient().messages.create({
+    var response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 128,
       system: SYSTEM_PROMPT,
@@ -168,24 +140,14 @@ async function generateShoutout(username, tier) {
   }
 }
 
-/**
- * Queues an AURA message request to be sent respecting the 8-second rate limit.
- * @param {'greeting'|'hype'|'shoutout'} type
- * @param {object} params
- * @param {function} callback  called with the generated text string
- */
 function queueMessage(type, params, callback) {
   queue.push({ type: type, params: params, callback: callback });
 
-  const now = Date.now();
-  const elapsed = now - lastEmitTime;
-  const delay = elapsed >= RATE_LIMIT_MS ? 0 : RATE_LIMIT_MS - elapsed;
+  var now = Date.now();
+  var elapsed = now - lastEmitTime;
+  var delay = elapsed >= RATE_LIMIT_MS ? 0 : RATE_LIMIT_MS - elapsed;
   scheduleNextDrain(delay);
 }
-
-// ---------------------------------------------------------------------------
-// Exports
-// ---------------------------------------------------------------------------
 
 module.exports = {
   generateGreeting: generateGreeting,

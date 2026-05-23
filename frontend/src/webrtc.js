@@ -22,13 +22,11 @@ class SeeWhyRTC {
     this.role = role;
     this.device = new mediasoupClient.Device();
 
-    // Get RTP capabilities from server
-    // Server returns { routerRtpCapabilities: caps } — extract the inner caps object
-    const rtpCapabilities = await new Promise((resolve, reject) => {
-      socket.emit('get-rtp-capabilities', { roomId }, (data) => {
+    var rtpCapabilities = await new Promise(function(resolve, reject) {
+      socket.emit('get-rtp-capabilities', { roomId: roomId }, function(data) {
         if (data && data.error) return reject(new Error(data.error));
         if (!data) return reject(new Error('No RTP capabilities returned'));
-        const caps = data.routerRtpCapabilities ? data.routerRtpCapabilities : data;
+        var caps = data.routerRtpCapabilities ? data.routerRtpCapabilities : data;
         resolve(caps);
       });
     });
@@ -43,8 +41,9 @@ class SeeWhyRTC {
     if (this.role === 'viewer') return;
     if (!this.device.canProduce('video') && !this.device.canProduce('audio')) return;
 
-    const params = await new Promise((resolve, reject) => {
-      this.socket.emit('create-transport', { roomId: this.roomId, direction: 'send' }, (data) => {
+    var self = this;
+    var params = await new Promise(function(resolve, reject) {
+      self.socket.emit('create-transport', { roomId: self.roomId, direction: 'send' }, function(data) {
         if (data && data.error) return reject(new Error(data.error));
         resolve(data);
       });
@@ -52,15 +51,15 @@ class SeeWhyRTC {
 
     this.sendTransport = this.device.createSendTransport(params);
 
-    this.sendTransport.on('connect', ({ dtlsParameters }, callback, errback) => {
-      this.socket.emit('transport-connect', { transportId: this.sendTransport.id, dtlsParameters }, (ack) => {
+    this.sendTransport.on('connect', function({ dtlsParameters }, callback, errback) {
+      self.socket.emit('transport-connect', { transportId: self.sendTransport.id, dtlsParameters: dtlsParameters }, function(ack) {
         if (ack && ack.error) return errback(new Error(ack.error));
         callback();
       });
     });
 
-    this.sendTransport.on('produce', ({ kind, rtpParameters }, callback, errback) => {
-      this.socket.emit('produce', { transportId: this.sendTransport.id, kind, rtpParameters }, (data) => {
+    this.sendTransport.on('produce', function({ kind, rtpParameters }, callback, errback) {
+      self.socket.emit('produce', { transportId: self.sendTransport.id, kind: kind, rtpParameters: rtpParameters }, function(data) {
         if (data && data.error) return errback(new Error(data.error));
         callback({ id: data.producerId });
       });
@@ -68,8 +67,9 @@ class SeeWhyRTC {
   }
 
   async _createRecvTransport() {
-    const params = await new Promise((resolve, reject) => {
-      this.socket.emit('create-transport', { roomId: this.roomId, direction: 'recv' }, (data) => {
+    var self = this;
+    var params = await new Promise(function(resolve, reject) {
+      self.socket.emit('create-transport', { roomId: self.roomId, direction: 'recv' }, function(data) {
         if (data && data.error) return reject(new Error(data.error));
         resolve(data);
       });
@@ -77,8 +77,8 @@ class SeeWhyRTC {
 
     this.recvTransport = this.device.createRecvTransport(params);
 
-    this.recvTransport.on('connect', ({ dtlsParameters }, callback, errback) => {
-      this.socket.emit('transport-connect', { transportId: this.recvTransport.id, dtlsParameters }, (ack) => {
+    this.recvTransport.on('connect', function({ dtlsParameters }, callback, errback) {
+      self.socket.emit('transport-connect', { transportId: self.recvTransport.id, dtlsParameters: dtlsParameters }, function(ack) {
         if (ack && ack.error) return errback(new Error(ack.error));
         callback();
       });
@@ -88,11 +88,11 @@ class SeeWhyRTC {
   async publishStream(stream) {
     if (!this.sendTransport) throw new Error('Send transport not initialized');
 
-    const videoTrack = stream.getVideoTracks()[0];
-    const audioTrack = stream.getAudioTracks()[0];
+    var videoTrack = stream.getVideoTracks()[0];
+    var audioTrack = stream.getAudioTracks()[0];
 
     if (videoTrack) {
-      const videoProducer = await this.sendTransport.produce({
+      var videoProducer = await this.sendTransport.produce({
         track: videoTrack,
         encodings: [
           { maxBitrate: 100000, scaleResolutionDownBy: 4 },
@@ -105,7 +105,7 @@ class SeeWhyRTC {
     }
 
     if (audioTrack) {
-      const audioProducer = await this.sendTransport.produce({ track: audioTrack });
+      var audioProducer = await this.sendTransport.produce({ track: audioTrack });
       this.producers['audio'] = audioProducer;
     }
   }
@@ -114,21 +114,22 @@ class SeeWhyRTC {
     if (!this.recvTransport) throw new Error('Recv transport not initialized');
     if (!this.device.loaded) throw new Error('Device not loaded');
 
-    const consumerParams = await new Promise((resolve, reject) => {
-      this.socket.emit('consume', {
-        transportId: this.recvTransport.id,
-        producerId,
-        rtpCapabilities: this.device.rtpCapabilities
-      }, (data) => {
+    var self = this;
+    var consumerParams = await new Promise(function(resolve, reject) {
+      self.socket.emit('consume', {
+        transportId: self.recvTransport.id,
+        producerId: producerId,
+        rtpCapabilities: self.device.rtpCapabilities
+      }, function(data) {
         if (data && data.error) return reject(new Error(data.error));
         resolve(data);
       });
     });
 
-    const consumer = await this.recvTransport.consume(consumerParams);
+    var consumer = await this.recvTransport.consume(consumerParams);
     this.consumers[producerId] = consumer;
 
-    const stream = new MediaStream([consumer.track]);
+    var stream = new MediaStream([consumer.track]);
     return stream;
   }
 
@@ -139,21 +140,22 @@ class SeeWhyRTC {
 
   _emit(event, data) {
     if (!this.listeners[event]) return;
-    this.listeners[event].forEach((cb) => cb(data));
+    this.listeners[event].forEach(function(cb) { return cb(data); });
   }
 
   _startStatsMonitor() {
-    this.statsInterval = setInterval(async () => {
-      if (!this.sendTransport) return;
+    var self = this;
+    this.statsInterval = setInterval(async function() {
+      if (!self.sendTransport) return;
       try {
-        const stats = await this.sendTransport.getStats();
-        let bytesSent = 0;
-        stats.forEach((report) => {
+        var stats = await self.sendTransport.getStats();
+        var bytesSent = 0;
+        stats.forEach(function(report) {
           if (report.type === 'outbound-rtp' && report.bytesSent) {
             bytesSent += report.bytesSent;
           }
         });
-        this._emit('stats', { bytesSent });
+        self._emit('stats', { bytesSent: bytesSent });
       } catch (e) {
         // stats not critical
       }
@@ -192,8 +194,8 @@ class SeeWhyRTC {
 
   destroy() {
     if (this.statsInterval) clearInterval(this.statsInterval);
-    Object.values(this.producers).forEach((p) => p.close());
-    Object.values(this.consumers).forEach((c) => c.close());
+    Object.values(this.producers).forEach(function(p) { return p.close(); });
+    Object.values(this.consumers).forEach(function(c) { return c.close(); });
     if (this.sendTransport) this.sendTransport.close();
     if (this.recvTransport) this.recvTransport.close();
     this.producers = {};
@@ -201,5 +203,5 @@ class SeeWhyRTC {
   }
 }
 
-const rtcManager = new SeeWhyRTC();
+var rtcManager = new SeeWhyRTC();
 export default rtcManager;

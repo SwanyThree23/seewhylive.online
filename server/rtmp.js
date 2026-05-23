@@ -6,15 +6,15 @@
  * plus writes HLS and DASH manifests for in-app playback.
  */
 
-const { spawn } = require('child_process');
-const EventEmitter = require('events');
-const fs = require('fs');
-const path = require('path');
+var { spawn } = require('child_process');
+var EventEmitter = require('events');
+var fs = require('fs');
+var path = require('path');
 
-const emitter = new EventEmitter();
+var emitter = new EventEmitter();
 
 // ─── Platform RTMP base URLs ──────────────────────────────────────────────
-const RTMP_BASE_URLS = {
+var RTMP_BASE_URLS = {
   youtube:  'rtmp://a.rtmp.youtube.com/live2',
   tiktok:   'rtmp://push.rtmp.tiktok.com/live',
   twitch:   'rtmp://live.twitch.tv/live',
@@ -24,21 +24,17 @@ const RTMP_BASE_URLS = {
 
 // ─── Internal state ───────────────────────────────────────────────────────
 // roomId → { process, destinations, restartCount, lastRestart, healthTimer }
-const fanouts = new Map();
+var fanouts = new Map();
 
-const MAX_RESTARTS  = 3;
-const BASE_BACKOFF  = 2000;  // ms
-const HEALTH_INTERVAL = 30000; // ms
-const LOG_DIR = '/var/log/seewhy';
-const HLS_DIR = '/var/www/html/hls';
-const DASH_DIR = '/var/www/html/dash';
+var MAX_RESTARTS  = 3;
+var BASE_BACKOFF  = 2000;  // ms
+var HEALTH_INTERVAL = 30000; // ms
+var LOG_DIR = '/var/log/seewhy';
+var HLS_DIR = '/var/www/html/hls';
+var DASH_DIR = '/var/www/html/dash';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
-/**
- * Ensure a directory exists, creating it recursively if needed.
- * @param {string} dir
- */
 function ensureDir(dir) {
   try {
     fs.mkdirSync(dir, { recursive: true });
@@ -49,38 +45,30 @@ function ensureDir(dir) {
   }
 }
 
-/**
- * Build the FFmpeg argument array for a room's fanout.
- * @param {string} roomId
- * @param {Array<{platform: string, rtmpUrl: string, streamKey: string}>} destinations
- * @returns {string[]}
- */
 function buildFfmpegArgs(roomId, destinations) {
-  const inputUrl = 'rtmp://localhost:1935/live/' + roomId;
-  const hlsPath  = HLS_DIR + '/' + roomId + '/index.m3u8';
-  const dashPath = DASH_DIR + '/' + roomId + '/manifest.mpd';
+  var inputUrl = 'rtmp://localhost:1935/live/' + roomId;
+  var hlsPath  = HLS_DIR + '/' + roomId + '/index.m3u8';
+  var dashPath = DASH_DIR + '/' + roomId + '/manifest.mpd';
 
   ensureDir(HLS_DIR + '/' + roomId);
   ensureDir(DASH_DIR + '/' + roomId);
 
-  const args = [
+  var args = [
     '-re',
     '-i', inputUrl,
     '-loglevel', 'warning'
   ];
 
-  // One copy-output per RTMP destination
-  for (let i = 0; i < destinations.length; i++) {
-    const dest = destinations[i];
-    let baseUrl = RTMP_BASE_URLS[dest.platform];
+  for (var i = 0; i < destinations.length; i++) {
+    var dest = destinations[i];
+    var baseUrl = RTMP_BASE_URLS[dest.platform];
     if (dest.platform === 'custom' || !baseUrl) {
       baseUrl = dest.rtmpUrl;
     }
-    const fullUrl = baseUrl + '/' + dest.streamKey;
+    var fullUrl = baseUrl + '/' + dest.streamKey;
     args.push('-c', 'copy', '-f', 'flv', fullUrl);
   }
 
-  // HLS output
   args.push(
     '-c', 'copy',
     '-f', 'hls',
@@ -90,7 +78,6 @@ function buildFfmpegArgs(roomId, destinations) {
     hlsPath
   );
 
-  // DASH output
   args.push(
     '-c', 'copy',
     '-f', 'dash',
@@ -100,41 +87,30 @@ function buildFfmpegArgs(roomId, destinations) {
   return args;
 }
 
-/**
- * Open (or create) a write stream for FFmpeg stderr logging.
- * @param {string} roomId
- * @returns {fs.WriteStream}
- */
 function openLogStream(roomId) {
   ensureDir(LOG_DIR);
-  const logFile = LOG_DIR + '/ffmpeg-' + roomId + '.log';
+  var logFile = LOG_DIR + '/ffmpeg-' + roomId + '.log';
   return fs.createWriteStream(logFile, { flags: 'a' });
 }
 
 // ─── Core fanout control ──────────────────────────────────────────────────
 
-/**
- * Start the FFmpeg fanout process for a room.
- * @param {string} roomId
- * @param {string} hostGuestId
- * @param {Array<{platform: string, rtmpUrl: string, streamKey: string}>} destinations
- */
 function startFanout(roomId, hostGuestId, destinations) {
   if (fanouts.has(roomId)) {
     stopFanout(roomId);
   }
 
-  const args = buildFfmpegArgs(roomId, destinations);
-  const logStream = openLogStream(roomId);
+  var args = buildFfmpegArgs(roomId, destinations);
+  var logStream = openLogStream(roomId);
 
-  const ts = new Date().toISOString();
+  var ts = new Date().toISOString();
   logStream.write('[' + ts + '] Starting FFmpeg: ffmpeg ' + args.join(' ') + '\n');
 
-  const proc = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
+  var proc = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
 
   proc.stderr.pipe(logStream, { end: false });
 
-  const entry = {
+  var entry = {
     process:      proc,
     destinations: destinations,
     restartCount: 0,
@@ -147,51 +123,43 @@ function startFanout(roomId, hostGuestId, destinations) {
   fanouts.set(roomId, entry);
 
   proc.on('error', function(err) {
-    const errTs = new Date().toISOString();
+    var errTs = new Date().toISOString();
     logStream.write('[' + errTs + '] FFmpeg process error: ' + err.message + '\n');
     console.error('FFmpeg error for room', roomId, err);
   });
 
   proc.on('exit', function(code, signal) {
-    const exitTs = new Date().toISOString();
+    var exitTs = new Date().toISOString();
     logStream.write('[' + exitTs + '] FFmpeg exited code=' + code + ' signal=' + signal + '\n');
-    // Health monitor will detect the dead process and handle restart
   });
 
-  // Health monitor
   entry.healthTimer = setInterval(function() {
     healthCheck(roomId);
   }, HEALTH_INTERVAL);
 
-  emitter.emit('fanout-started', { roomId, hostGuestId, destinations });
+  emitter.emit('fanout-started', { roomId: roomId, hostGuestId: hostGuestId, destinations: destinations });
   console.log('FFmpeg fanout started for room', roomId, 'to', destinations.length, 'destinations');
 }
 
-/**
- * Check if the FFmpeg process for a room is alive; restart if not.
- * Exponential backoff; after MAX_RESTARTS emits 'fanout-failed'.
- * @param {string} roomId
- */
 function healthCheck(roomId) {
-  const entry = fanouts.get(roomId);
+  var entry = fanouts.get(roomId);
   if (!entry) return;
 
-  const proc = entry.process;
-  const alive = proc.exitCode === null && !proc.killed;
+  var proc = entry.process;
+  var alive = proc.exitCode === null && !proc.killed;
 
   if (alive) return;
 
-  // Process is dead
   if (entry.restartCount >= MAX_RESTARTS) {
     entry.logStream.write('[' + new Date().toISOString() + '] Max restarts reached, giving up.\n');
     clearInterval(entry.healthTimer);
     fanouts.delete(roomId);
-    emitter.emit('fanout-failed', { roomId });
+    emitter.emit('fanout-failed', { roomId: roomId });
     console.error('FFmpeg fanout permanently failed for room', roomId);
     return;
   }
 
-  const backoff = BASE_BACKOFF * Math.pow(2, entry.restartCount);
+  var backoff = BASE_BACKOFF * Math.pow(2, entry.restartCount);
   entry.restartCount += 1;
   entry.lastRestart = Date.now();
 
@@ -200,11 +168,11 @@ function healthCheck(roomId) {
   );
 
   setTimeout(function() {
-    const current = fanouts.get(roomId);
-    if (!current) return; // room was stopped cleanly in the meantime
+    var current = fanouts.get(roomId);
+    if (!current) return;
 
-    const args = buildFfmpegArgs(roomId, current.destinations);
-    const newProc = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    var args = buildFfmpegArgs(roomId, current.destinations);
+    var newProc = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
     newProc.stderr.pipe(current.logStream, { end: false });
 
     newProc.on('error', function(err) {
@@ -212,24 +180,19 @@ function healthCheck(roomId) {
     });
 
     current.process = newProc;
-    emitter.emit('fanout-restarted', { roomId, attempt: current.restartCount });
+    emitter.emit('fanout-restarted', { roomId: roomId, attempt: current.restartCount });
     console.log('FFmpeg fanout restarted for room', roomId, '(attempt', current.restartCount + ')');
   }, backoff);
 }
 
-/**
- * Stop the FFmpeg fanout for a room and clean up.
- * @param {string} roomId
- */
 function stopFanout(roomId) {
-  const entry = fanouts.get(roomId);
+  var entry = fanouts.get(roomId);
   if (!entry) return;
 
   clearInterval(entry.healthTimer);
 
   try {
     entry.process.kill('SIGTERM');
-    // Give it 3 seconds then force-kill
     setTimeout(function() {
       try {
         if (entry.process.exitCode === null) {
@@ -245,17 +208,12 @@ function stopFanout(roomId) {
   entry.logStream.end();
 
   fanouts.delete(roomId);
-  emitter.emit('fanout-stopped', { roomId });
+  emitter.emit('fanout-stopped', { roomId: roomId });
   console.log('FFmpeg fanout stopped for room', roomId);
 }
 
-/**
- * Return the current status of a room's fanout.
- * @param {string} roomId
- * @returns {Object|null}
- */
 function getFanoutStatus(roomId) {
-  const entry = fanouts.get(roomId);
+  var entry = fanouts.get(roomId);
   if (!entry) return null;
 
   return {
@@ -264,16 +222,16 @@ function getFanoutStatus(roomId) {
     restartCount: entry.restartCount,
     lastRestart:  entry.lastRestart,
     destinations: entry.destinations.map(function(d) {
-      return { platform: d.platform };  // omit stream keys from status
+      return { platform: d.platform };
     })
   };
 }
 
 // ─── Exports ──────────────────────────────────────────────────────────────
 module.exports = {
-  startFanout,
-  stopFanout,
-  getFanoutStatus,
+  startFanout: startFanout,
+  stopFanout: stopFanout,
+  getFanoutStatus: getFanoutStatus,
   on:   emitter.on.bind(emitter),
   off:  emitter.off.bind(emitter),
   emit: emitter.emit.bind(emitter)
