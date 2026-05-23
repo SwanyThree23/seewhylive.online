@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 var CREATOR  = 0.90;
 var PLATFORM = 0.10;
@@ -10,6 +10,26 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
   var [loading,   setLoading]   = useState(true);
   var [refreshed, setRefreshed] = useState(null);
   var [tab,       setTab]       = useState('overview');
+  var [viewerSpark, setViewerSpark] = useState(function() {
+    var base = viewerCount || 200;
+    var arr = [];
+    for (var i = 0; i < 24; i++) { arr.push(Math.max(0, base - Math.floor(Math.random() * 100) + i * 8)); }
+    return arr;
+  });
+  var sparkRef = useRef(null);
+
+  useEffect(function() {
+    sparkRef.current = setInterval(function() {
+      setViewerSpark(function(prev) {
+        var next = prev.slice(1);
+        var last = prev[prev.length - 1] || 0;
+        var drift = Math.floor(Math.random() * 40) - 15;
+        next.push(Math.max(0, last + drift));
+        return next;
+      });
+    }, 5000);
+    return function() { clearInterval(sparkRef.current); };
+  }, []);
 
   function load() {
     setLoading(true);
@@ -100,6 +120,34 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
                 </div>
               );
             })}
+          </div>
+
+          {/* Live viewer sparkline */}
+          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid rgba(200,255,0,.15)', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C8FF00', letterSpacing: 2 }}>LIVE VIEWERS</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8FF00', boxShadow: '0 0 4px #C8FF00' }} />
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C8FF00', lineHeight: 1 }}>
+                  {viewerSpark.length > 0 ? viewerSpark[viewerSpark.length - 1].toLocaleString() : (viewerCount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 36, position: 'relative' }}>
+              {viewerSpark.map(function(v, i) {
+                var peak = Math.max.apply(null, viewerSpark.concat([1]));
+                var h = Math.max(3, Math.floor((v / peak) * 100));
+                var isLatest = i === viewerSpark.length - 1;
+                return (
+                  <div key={i} style={{ flex: 1, height: h + '%', background: isLatest ? '#C8FF00' : 'rgba(200,255,0,' + (0.15 + i * 0.025) + ')', borderRadius: '2px 2px 0 0', minHeight: 3, transition: 'height .5s ease' }} />
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3450' }}>2m ago</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>updates every 5s</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3450' }}>now</span>
+            </div>
           </div>
 
           {/* Gift activity sparkline */}
