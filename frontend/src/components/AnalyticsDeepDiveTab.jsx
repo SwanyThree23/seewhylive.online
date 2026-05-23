@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 var CREATOR = 0.90;
 var PLATFORM = 0.10;
@@ -23,12 +23,55 @@ function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
 var TYPE_COLORS = { tip: '#00C9A7', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
 
-export default function AnalyticsDeepDiveTab({ viewerCount, gifts }) {
-  var totalGross   = BASE_TXN.reduce(function(s, t) { return s + t.amount; }, 0);
+export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
+  var [engData, setEngData] = useState(ENG_DATA.slice());
+  var [revData, setRevData] = useState(REV_DATA.slice());
+  var [txns, setTxns] = useState(BASE_TXN.slice());
+
+  useEffect(function() {
+    if (!isLive) { return; }
+    var interval = setInterval(function() {
+      var newEng = Math.floor(60 + Math.random() * 40);
+      setEngData(function(prev) {
+        return prev.slice(1).concat([newEng]);
+      });
+      setRevData(function(prev) {
+        var last = prev[prev.length - 1];
+        var newRev = Math.floor(last + Math.random() * 20 - 5);
+        if (newRev < 10) { newRev = 10; }
+        return prev.slice(1).concat([newRev]);
+      });
+    }, 4500);
+    return function() { clearInterval(interval); };
+  }, [isLive]);
+
+  useEffect(function() {
+    if (!isLive) { return; }
+    var interval = setInterval(function() {
+      var types = ['tip', 'subscription', 'fades_boost'];
+      var creators = ['SwanyThree', 'CaliBonesOG'];
+      var newType = types[Math.floor(Math.random() * types.length)];
+      var newCreator = creators[Math.floor(Math.random() * creators.length)];
+      var newAmount = Math.floor(200 + Math.random() * 2000);
+      var newTx = {
+        id: 'live_' + Date.now(),
+        type: newType,
+        amount: newAmount,
+        creator: newCreator,
+        stream: 'Live Stream'
+      };
+      setTxns(function(prev) {
+        return prev.concat([newTx]).slice(-10);
+      });
+    }, 7000);
+    return function() { clearInterval(interval); };
+  }, [isLive]);
+
+  var totalGross   = txns.reduce(function(s, t) { return s + t.amount; }, 0);
   var totalCreator = Math.floor(totalGross * CREATOR);
   var totalPlatform = Math.floor(totalGross * PLATFORM);
-  var peakEng      = Math.max.apply(null, ENG_DATA);
-  var peakRev      = Math.max.apply(null, REV_DATA);
+  var peakEng      = Math.max.apply(null, engData);
+  var peakRev      = Math.max.apply(null, revData);
   var viewers      = viewerCount || 2847;
 
   return (
@@ -54,9 +97,14 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts }) {
 
       {/* Engagement chart */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>ENGAGEMENT — LAST 12 MIN</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+          ENGAGEMENT — LAST 12 MIN
+          {isLive && (
+            <span style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', marginLeft: 6 }}>● LIVE</span>
+          )}
+        </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 50 }}>
-          {ENG_DATA.map(function(v, i) {
+          {engData.map(function(v, i) {
             return (
               <div key={i} style={{ flex: 1, background: 'linear-gradient(180deg,#5A8FFF,#2A6BFF88)', borderRadius: '3px 3px 0 0', height: (v / peakEng * 100) + '%', minHeight: 4 }} />
             );
@@ -73,7 +121,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts }) {
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>REVENUE TREND</div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 44 }}>
-          {REV_DATA.map(function(v, i) {
+          {revData.map(function(v, i) {
             return (
               <div key={i} style={{ flex: 1, background: 'linear-gradient(180deg,#C9A84C,#80002088)', borderRadius: '3px 3px 0 0', height: (v / peakRev * 100) + '%', minHeight: 4 }} />
             );
@@ -155,7 +203,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts }) {
       {/* Ledger */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>TRANSACTION LEDGER</div>
-        {BASE_TXN.map(function(tx) {
+        {txns.map(function(tx) {
           var c = TYPE_COLORS[tx.type] || '#7A6F90';
           var creatorAmt = Math.floor(tx.amount * CREATOR);
           return (

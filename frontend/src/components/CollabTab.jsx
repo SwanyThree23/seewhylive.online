@@ -37,12 +37,88 @@ var COLLAB_CREATORS = [
 var INVITE_TYPES  = ['LIVE COLLAB', 'PODCAST GUEST', 'WATCH PARTY', 'MUSIC SESSION', 'TOURNAMENT MATCH'];
 var SPLIT_OPTIONS = ['50/50', '60/40', '70/30', 'host', 'guest'];
 
-export default function CollabTab({ addToast }) {
-  var [requests,   setRequests]   = useState(COLLAB_REQUESTS.map(function(r) { return Object.assign({}, r); }));
-  var [section,    setSection]    = useState('requests');
-  var [inviteMsg,  setInviteMsg]  = useState('');
-  var [inviteType, setInviteType] = useState('LIVE COLLAB');
+var CANNED_LINES = [
+  'Great chemistry! Keep it going 🔥',
+  'Should we do a giveaway?',
+  'Chat is loving this collab!',
+  'Let\'s plug each other\'s channels',
+  'This is going viral 📈'
+];
+
+var SEED_CHATS = {
+  cr3: [
+    { from: 'JoyceMoore', text: 'Hey! Ready to go live together? 💜', ts: '19:30' },
+    { from: 'you', text: 'Absolutely! Let me get the stream set up 🎙', ts: '19:31' },
+    { from: 'JoyceMoore', text: 'My audience is pumped — should we start with your intro or mine?', ts: '19:32' },
+  ]
+};
+
+export default function CollabTab({ addToast, isLive, userId, username }) {
+  var [requests,    setRequests]    = useState(COLLAB_REQUESTS.map(function(r) { return Object.assign({}, r); }));
+  var [section,     setSection]     = useState('requests');
+  var [inviteMsg,   setInviteMsg]   = useState('');
+  var [inviteType,  setInviteType]  = useState('LIVE COLLAB');
   var [inviteSplit, setInviteSplit] = useState('50/50');
+  var [chatMsgs,    setChatMsgs]    = useState(Object.assign({}, SEED_CHATS));
+  var [chatInputs,  setChatInputs]  = useState({});
+
+  var chatBoxRefs = useRef({});
+
+  /* ── Auto-scroll on new messages ── */
+  useEffect(function() {
+    var ids = Object.keys(chatBoxRefs.current);
+    for (var i = 0; i < ids.length; i++) {
+      var el = chatBoxRefs.current[ids[i]];
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
+    }
+  }, [chatMsgs]);
+
+  /* ── Auto-append partner messages when isLive ── */
+  useEffect(function() {
+    if (!isLive) return;
+    var timer = setInterval(function() {
+      var activeCollabs = [];
+      for (var i = 0; i < COLLAB_REQUESTS.length; i++) {
+        if (COLLAB_REQUESTS[i].status === 'accepted') {
+          activeCollabs.push(COLLAB_REQUESTS[i]);
+        }
+      }
+      if (activeCollabs.length === 0) return;
+      var randIdx = Math.floor(Math.random() * activeCollabs.length);
+      var collab = activeCollabs[randIdx];
+      var lineIdx = Math.floor(Math.random() * CANNED_LINES.length);
+      var line = CANNED_LINES[lineIdx];
+      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      var msg = { from: collab.from, text: line, ts: ts };
+      setChatMsgs(function(prev) {
+        var arr = (prev[collab.id] || []).concat([msg]);
+        var next = Object.assign({}, prev);
+        next[collab.id] = arr;
+        return next;
+      });
+    }, 6000);
+    return function() { clearInterval(timer); };
+  }, [isLive]);
+
+  function sendChat(collabId, fromName) {
+    var inputText = chatInputs[collabId] || '';
+    if (!inputText) return;
+    var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    var msg = { from: 'you', text: inputText, ts: ts };
+    setChatMsgs(function(prev) {
+      var arr = (prev[collabId] || []).concat([msg]);
+      var next = Object.assign({}, prev);
+      next[collabId] = arr;
+      return next;
+    });
+    setChatInputs(function(prev) {
+      var next = Object.assign({}, prev);
+      next[collabId] = '';
+      return next;
+    });
+  }
 
   function acceptRequest(id) {
     var req = null;
@@ -304,6 +380,8 @@ export default function CollabTab({ addToast }) {
               </div>
             )}
             {activeCollabs.map(function(req) {
+              var msgs = chatMsgs[req.id] || [];
+              var inputVal = chatInputs[req.id] || '';
               return (
                 <div
                   key={req.id}
@@ -341,7 +419,7 @@ export default function CollabTab({ addToast }) {
                     </div>
 
                     {/* Action buttons */}
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                       <button
                         onClick={function() { addToast('📡 Collab stream shared to all platforms!', 'info'); }}
                         style={{ flex: 1, background: 'linear-gradient(135deg,rgba(0,222,192,.16),rgba(0,222,192,.07))', border: '1px solid rgba(0,222,192,.35)', borderRadius: 8, padding: '9px 0', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
@@ -353,6 +431,54 @@ export default function CollabTab({ addToast }) {
                         ✕ END COLLAB
                       </button>
                     </div>
+
+                    {/* Mini chat panel */}
+                    <div
+                      ref={function(el) { chatBoxRefs.current[req.id] = el; }}
+                      style={{ maxHeight: 120, overflowY: 'auto', background: 'rgba(7,5,10,.7)', border: '1px solid rgba(0,222,192,.12)', borderRadius: 8, padding: 8, marginBottom: 8 }}>
+                      {msgs.length === 0 && (
+                        <div style={{ fontFamily: fM, fontSize: 9, color: MUTED, textAlign: 'center', padding: '8px 0' }}>
+                          No messages yet — say hi!
+                        </div>
+                      )}
+                      {msgs.map(function(m, idx) {
+                        var fromColor = m.from === 'you' ? TEAL_H : req.color;
+                        return (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5, lineHeight: 1.4 }}>
+                            <span style={{ fontFamily: fM, fontSize: 8, color: MUTED, flexShrink: 0 }}>{m.ts}</span>
+                            <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 11, color: fromColor, flexShrink: 0 }}>{m.from}</span>
+                            <span style={{ fontFamily: fM, fontSize: 10, color: TEXT }}>{m.text}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Chat input row */}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input
+                        type="text"
+                        value={inputVal}
+                        onChange={function(e) {
+                          var val = e.target.value;
+                          setChatInputs(function(prev) {
+                            var next = Object.assign({}, prev);
+                            next[req.id] = val;
+                            return next;
+                          });
+                        }}
+                        onKeyDown={function(e) {
+                          if (e.key === 'Enter') { sendChat(req.id, req.from); }
+                        }}
+                        placeholder={'Message ' + req.from + '…'}
+                        style={{ flex: 1, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(0,222,192,.18)', borderRadius: 7, padding: '7px 10px', color: TEXT, fontFamily: fM, fontSize: 10, outline: 'none' }}
+                      />
+                      <button
+                        onClick={function() { sendChat(req.id, req.from); }}
+                        style={{ background: 'linear-gradient(135deg,rgba(0,222,192,.22),rgba(0,222,192,.10))', border: '1px solid rgba(0,222,192,.4)', borderRadius: 7, padding: '7px 13px', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                        SEND
+                      </button>
+                    </div>
+
                   </div>
                 </div>
               );
