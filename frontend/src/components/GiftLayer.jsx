@@ -6,7 +6,7 @@ export default function GiftLayer({ giftFloats }) {
   return (
     <div className="gift-layer" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 800 }}>
       {giftFloats.map((g) => {
-        const left = 10 + (Math.abs(g.floatId % 80));
+        var left = 10 + (Math.abs(g.floatId % 80));
         return (
           <div
             key={g.floatId}

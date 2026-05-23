@@ -1,25 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
+var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
 export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle }) {
-  const videoRef    = useRef(null);
-  const analyserRef = useRef(null);
-  const animRef     = useRef(null);
-  const audioCtxRef = useRef(null);
-  const streamRef   = useRef(null);
-  const [speaking,    setSpeaking]    = useState(false);
-  const [online,      setOnline]      = useState(false);
-  const [loading,     setLoading]     = useState(false);
-  const [connQuality, setConnQuality] = useState('green');
-  const [eqBars,      setEqBars]      = useState([0,0,0,0,0,0,0,0]);
-  const [camError,    setCamError]    = useState('');
+  var videoRef    = useRef(null);
+  var analyserRef = useRef(null);
+  var animRef     = useRef(null);
+  var audioCtxRef = useRef(null);
+  var streamRef   = useRef(null);
+  var [speaking,    setSpeaking]    = useState(false);
+  var [online,      setOnline]      = useState(false);
+  var [loading,     setLoading]     = useState(false);
+  var [connQuality, setConnQuality] = useState('green');
+  var [eqBars,      setEqBars]      = useState([0,0,0,0,0,0,0,0]);
+  var [camError,    setCamError]    = useState('');
 
-  const size      = sz || 200;
-  const guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
-  const guestName = guest && guest.username ? guest.username : guestId;
-  const isOwnCell = guestId === userId;
-  const color     = fadesMode && guest && guest.teamColor ? guest.teamColor : (branding && branding.gold ? branding.gold : '#C9A84C');
+  var size      = sz || 200;
+  var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
+  var guestName = guest && guest.username ? guest.username : guestId;
+  var isOwnCell = guestId === userId;
+  var color     = fadesMode && guest && guest.teamColor ? guest.teamColor : (branding && branding.gold ? branding.gold : '#C9A84C');
 
   // Own cell: getUserMedia and publish
   useEffect(function() {

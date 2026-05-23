@@ -3,19 +3,23 @@ import Hls from 'hls.js';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+var stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
-const PPV_PRICE_USD = 4.99;
-const CREATOR_SHARE = 0.90;
-const PREVIEW_SECONDS = 120;
+var PPV_PRICE_USD = 4.99;
+var CREATOR_SHARE = 0.90;
+var PREVIEW_SECONDS = 120;
 
 function PaywallForm({ onUnlock, roomId, addToast }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState(null);
+  var stripe = useStripe();
+  var elements = useElements();
+  var processingState = useState(false);
+  var processing = processingState[0];
+  var setProcessing = processingState[1];
+  var errorState = useState(null);
+  var error = errorState[0];
+  var setError = errorState[1];
 
-  const creatorAmt = (PPV_PRICE_USD * CREATOR_SHARE).toFixed(2);
+  var creatorAmt = (PPV_PRICE_USD * CREATOR_SHARE).toFixed(2);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -24,27 +28,27 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
     setError(null);
 
     try {
-      const res = await fetch('/api/ppv/create', {
+      var res = await fetch('/api/ppv/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, viewerId: 'viewer-' + Date.now(), priceUsd: PPV_PRICE_USD })
       });
-      const data = await res.json();
+      var data = await res.json();
       if (!data || !data.clientSecret) throw new Error('No client secret returned');
 
-      const cardEl = elements.getElement(CardElement);
-      const result = await stripe.confirmCardPayment(data.clientSecret, {
+      var cardEl = elements.getElement(CardElement);
+      var result = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: { card: cardEl }
       });
 
       if (result.error) throw new Error(result.error.message);
 
-      const verifyRes = await fetch('/api/ppv/verify', {
+      var verifyRes = await fetch('/api/ppv/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentIntentId: data.paymentIntentId, roomId, viewerId: 'viewer-' + Date.now() })
       });
-      const verifyData = await verifyRes.json();
+      var verifyData = await verifyRes.json();
       if (!verifyData || !verifyData.token) throw new Error('Payment verification failed');
 
       sessionStorage.setItem('sw_ppv_token', verifyData.token);
@@ -74,45 +78,54 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
 }
 
 export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
-  const videoRef = useRef(null);
-  const hlsRef = useRef(null);
-  const [showPaywall, setShowPaywall] = useState(false);
-  const [previewTimer, setPreviewTimer] = useState(PREVIEW_SECONDS);
-  const [previewExpired, setPreviewExpired] = useState(false);
-  const [playerReady, setPlayerReady] = useState(false);
-  const [embedCode, setEmbedCode] = useState('');
+  var videoRef = useRef(null);
+  var hlsRef = useRef(null);
+  var showPaywallState = useState(false);
+  var showPaywall = showPaywallState[0];
+  var setShowPaywall = showPaywallState[1];
+  var previewTimerState = useState(PREVIEW_SECONDS);
+  var previewTimer = previewTimerState[0];
+  var setPreviewTimer = previewTimerState[1];
+  var previewExpiredState = useState(false);
+  var previewExpired = previewExpiredState[0];
+  var setPreviewExpired = previewExpiredState[1];
+  var playerReadyState = useState(false);
+  var setPlayerReady = playerReadyState[1];
+  var embedCodeState = useState('');
+  var embedCode = embedCodeState[0];
+  var setEmbedCode = embedCodeState[1];
 
-  const HLS_URL = 'https://srv1581658.hstgr.cloud/hls/' + roomId + '/index.m3u8' + (ppvToken ? '?token=' + ppvToken : '');
+  var HLS_URL = 'https://srv1581658.hstgr.cloud/hls/' + roomId + '/index.m3u8' + (ppvToken ? '?token=' + ppvToken : '');
 
-  useEffect(() => {
+  useEffect(function() {
     if (!isLive) return;
     if (!Hls.isSupported() && videoRef.current) {
       videoRef.current.src = HLS_URL;
       setPlayerReady(true);
       return;
     }
-    const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+    var hls = new Hls({ enableWorker: true, lowLatencyMode: true });
     hlsRef.current = hls;
     hls.loadSource(HLS_URL);
     if (videoRef.current) {
       hls.attachMedia(videoRef.current);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
         setPlayerReady(true);
-        if (videoRef.current) videoRef.current.play().catch(() => {});
+        if (videoRef.current) videoRef.current.play().catch(function() {});
       });
-      hls.on(Hls.Events.ERROR, (event, data) => {
+      hls.on(Hls.Events.ERROR, function(event, data) {
         if (data.fatal) {
           console.error('[HLS] Fatal error:', data.type, data.details);
         }
       });
     }
-    return () => { hls.destroy(); };
+    return function() { hls.destroy(); };
   }, [isLive, ppvToken]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (ppvToken || !isLive) return;
-    const interval = setInterval(() => {
-      setPreviewTimer((t) => {
+    var interval = setInterval(function() {
+      setPreviewTimer(function(t) {
         if (t <= 1) {
           clearInterval(interval);
           setPreviewExpired(true);
@@ -123,11 +136,11 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
         return t - 1;
       });
     }, 1000);
-    return () => clearInterval(interval);
+    return function() { clearInterval(interval); };
   }, [ppvToken, isLive]);
 
-  useEffect(() => {
-    const code = '<iframe src="https://srv1581658.hstgr.cloud/embed/' + roomId + '" width="640" height="360" frameborder="0" allowfullscreen></iframe>';
+  useEffect(function() {
+    var code = '<iframe src="https://srv1581658.hstgr.cloud/embed/' + roomId + '" width="640" height="360" frameborder="0" allowfullscreen></iframe>';
     setEmbedCode(code);
   }, [roomId]);
 
@@ -181,7 +194,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
         <div className="embed-section">
           <h3 className="embed-section-title">EMBED CODE</h3>
           <textarea className="embed-code-box" readOnly value={embedCode} rows={3} />
-          <button className="btn-teal" onClick={() => navigator.clipboard.writeText(embedCode).then(() => {}).catch(() => {})}>
+          <button className="btn-teal" onClick={function() { navigator.clipboard.writeText(embedCode).then(function() {}).catch(function() {}); }}>
             COPY EMBED CODE
           </button>
         </div>

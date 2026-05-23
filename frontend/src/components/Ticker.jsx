@@ -1,38 +1,38 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 export default function Ticker({ chat, isLive }) {
-  const [tickerText, setTickerText] = useState('SeeWhy LIVE · Washington Classic · Domino Entertainment · VibeN\'Bones · @dominoentertainment5513 · @aiversepodcast · @memoirsofashygirl');
-  const [pos, setPos] = useState(0);
-  const animRef = useRef(null);
-  const containerRef = useRef(null);
+  var [tickerText, setTickerText] = useState('SeeWhy LIVE · Washington Classic · Domino Entertainment · VibeN\'Bones · @dominoentertainment5513 · @aiversepodcast · @memoirsofashygirl');
+  var [pos, setPos] = useState(0);
+  var animRef = useRef(null);
+  var containerRef = useRef(null);
 
-  useEffect(() => {
-    const recent = chat.slice(-5).map((m) => {
+  useEffect(function() {
+    var recent = chat.slice(-5).map(function(m) {
       if (!m) return '';
       return (m.username || 'anon') + ': ' + (m.message || '');
-    }).filter((s) => s.length > 0);
+    }).filter(function(s) { return s.length > 0; });
 
     if (recent.length > 0) {
       setTickerText(recent.join(' · ') + ' · Washington Classic · Domino Entertainment · VibeN\'Bones');
     }
   }, [chat]);
 
-  useEffect(() => {
-    let x = 0;
-    const speed = 1;
-    const container = containerRef.current;
+  useEffect(function() {
+    var x = 0;
+    var speed = 1;
+    var container = containerRef.current;
     if (!container) return;
 
     function animate() {
       x -= speed;
-      const textWidth = tickerText.length * 8;
+      var textWidth = tickerText.length * 8;
       if (Math.abs(x) > textWidth) x = container.offsetWidth;
       container.style.transform = 'translateX(' + x + 'px)';
       animRef.current = requestAnimationFrame(animate);
     }
 
     animRef.current = requestAnimationFrame(animate);
-    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
   }, [tickerText]);
 
   return (

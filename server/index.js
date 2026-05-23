@@ -7,35 +7,35 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
-const express       = require('express');
-const { createServer } = require('http');
-const { Server }    = require('socket.io');
-const helmet        = require('helmet');
-const cors          = require('cors');
-const { rateLimit } = require('express-rate-limit');
-const xssClean      = require('xss-clean');
-const jwt           = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
-const crypto        = require('crypto');
-const Database      = require('better-sqlite3');
-const winston       = require('winston');
+var express       = require('express');
+var { createServer } = require('http');
+var { Server }    = require('socket.io');
+var helmet        = require('helmet');
+var cors          = require('cors');
+var { rateLimit } = require('express-rate-limit');
+var xssClean      = require('xss-clean');
+var jwt           = require('jsonwebtoken');
+var { v4: uuidv4 } = require('uuid');
+var crypto        = require('crypto');
+var Database      = require('better-sqlite3');
+var winston       = require('winston');
 require('winston-daily-rotate-file');
 
-const mediasoup    = require('./mediasoup');
-const rtmp         = require('./rtmp');
-const vault        = require('./vault');
-const stripeModule = require('./stripe');
-const SwanyBot     = require('./swanybot');
-const translation  = require('./translation');
-const aura         = require('./aura');
-const whisper      = require('./whisper');
+var mediasoup    = require('./mediasoup');
+var rtmp         = require('./rtmp');
+var vault        = require('./vault');
+var stripeModule = require('./stripe');
+var SwanyBot     = require('./swanybot');
+var translation  = require('./translation');
+var aura         = require('./aura');
+var whisper      = require('./whisper');
 
 // ─── Revenue split constants (immutable) ─────────────────────────────────
-const CREATOR  = 0.90;
-const PLATFORM = 0.10; // eslint-disable-line no-unused-vars
+var CREATOR  = 0.90;
+var PLATFORM = 0.10; // eslint-disable-line no-unused-vars
 
 // ─── Logger ───────────────────────────────────────────────────────────────
-const logger = winston.createLogger({
+var logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -55,8 +55,8 @@ const logger = winston.createLogger({
 });
 
 // ─── Database ─────────────────────────────────────────────────────────────
-const DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
-const db = new Database(DB_PATH);
+var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
+var db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
@@ -117,8 +117,8 @@ db.exec(`
 vault.initDb();
 
 // ─── Express app ──────────────────────────────────────────────────────────
-const app    = express();
-const server = createServer(app);
+var app    = express();
+var server = createServer(app);
 app.set('trust proxy', 1);
 
 // Stripe webhook needs raw body - register BEFORE express.json()
@@ -126,7 +126,7 @@ app.post(
   '/api/stripe/webhook',
   express.raw({ type: 'application/json' }),
   function(req, res) {
-    const sig = req.headers['stripe-signature'];
+    var sig = req.headers['stripe-signature'];
     if (!sig) {
       res.status(400).json({ error: 'Missing stripe-signature header' });
       return;
@@ -154,7 +154,7 @@ app.use(express.json());
 app.use(xssClean());
 
 // ─── Socket.io ────────────────────────────────────────────────────────────
-const io = new Server(server, {
+var io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_ORIGIN || '*',
     methods: ['GET', 'POST']
@@ -164,11 +164,11 @@ const io = new Server(server, {
 });
 
 // ─── SwanyBot instance ────────────────────────────────────────────────────
-const swanybot = new SwanyBot(io);
+var swanybot = new SwanyBot(io);
 
 // ─── Room state ───────────────────────────────────────────────────────────
 // roomId → { viewers: Set<socketId>, guests: Map<socketId, {guestId, username, role}>, hostSocketId: string|null }
-const rooms = new Map();
+var rooms = new Map();
 
 function getRoom(roomId) {
   if (!rooms.has(roomId)) {
@@ -197,9 +197,9 @@ app.get('/api/health', function(req, res) {
 // GET /api/metrics
 app.get('/api/metrics', function(req, res) {
   try {
-    const totalViews = db.prepare('SELECT COUNT(*) as cnt FROM chat_history').get().cnt;
-    const giftsSum   = db.prepare('SELECT COALESCE(SUM(value_cents),0) as total FROM gifts').get().total;
-    const revenue    = db.prepare('SELECT COALESCE(SUM(platform_cents),0) as total FROM ppv_unlocks WHERE status = ?').get('succeeded').total;
+    var totalViews = db.prepare('SELECT COUNT(*) as cnt FROM chat_history').get().cnt;
+    var giftsSum   = db.prepare('SELECT COALESCE(SUM(value_cents),0) as total FROM gifts').get().total;
+    var revenue    = db.prepare('SELECT COALESCE(SUM(platform_cents),0) as total FROM ppv_unlocks WHERE status = ?').get('succeeded').total;
     res.json({
       totalChatMessages: totalViews,
       giftsTotalCents:   Math.floor(giftsSum),
@@ -213,7 +213,7 @@ app.get('/api/metrics', function(req, res) {
 
 // POST /api/ppv/create
 app.post('/api/ppv/create', function(req, res) {
-  const body = req.body;
+  var body = req.body;
   if (!body.roomId || !body.viewerId || !body.priceUsd || !body.creatorStripeAccountId) {
     res.status(400).json({ error: 'Missing required fields: roomId, viewerId, priceUsd, creatorStripeAccountId' });
     return;
@@ -233,7 +233,7 @@ app.post('/api/ppv/create', function(req, res) {
 
 // POST /api/ppv/verify
 app.post('/api/ppv/verify', function(req, res) {
-  const body = req.body;
+  var body = req.body;
   if (!body.paymentIntentId || !body.roomId || !body.viewerId) {
     res.status(400).json({ error: 'Missing required fields: paymentIntentId, roomId, viewerId' });
     return;
@@ -249,7 +249,7 @@ app.post('/api/ppv/verify', function(req, res) {
 
 // POST /api/connect/onboard
 app.post('/api/connect/onboard', function(req, res) {
-  const body = req.body;
+  var body = req.body;
   if (!body.email) {
     res.status(400).json({ error: 'Missing required field: email' });
     return;
@@ -265,7 +265,7 @@ app.post('/api/connect/onboard', function(req, res) {
 
 // POST /api/turn/credentials
 app.post('/api/turn/credentials', function(req, res) {
-  const body = req.body;
+  var body = req.body;
   if (!body.userId) {
     res.status(400).json({ error: 'Missing required field: userId' });
     return;
@@ -275,10 +275,10 @@ app.post('/api/turn/credentials', function(req, res) {
     return;
   }
   try {
-    const ttl      = Math.floor(Date.now() / 1000) + 300;
-    const username = ttl + ':' + body.userId;
-    const hmac     = crypto.createHmac('sha256', process.env.TURN_SECRET);
-    const credential = hmac.update(username).digest('base64');
+    var ttl      = Math.floor(Date.now() / 1000) + 300;
+    var username = ttl + ':' + body.userId;
+    var hmac     = crypto.createHmac('sha256', process.env.TURN_SECRET);
+    var credential = hmac.update(username).digest('base64');
 
     res.json({
       urls:       ['turn:2.24.194.112:3478', 'turns:2.24.194.112:5349'],
@@ -293,7 +293,7 @@ app.post('/api/turn/credentials', function(req, res) {
 
 // POST /api/keys/save
 app.post('/api/keys/save', function(req, res) {
-  const body = req.body;
+  var body = req.body;
   if (!body.guestId || !body.destId || !body.plainKey) {
     res.status(400).json({ error: 'Missing required fields: guestId, destId, plainKey' });
     return;
@@ -309,7 +309,7 @@ app.post('/api/keys/save', function(req, res) {
 
 // DELETE /api/keys/delete
 app.delete('/api/keys/delete', function(req, res) {
-  const body = req.body;
+  var body = req.body;
   if (!body.guestId || !body.destId) {
     res.status(400).json({ error: 'Missing required fields: guestId, destId' });
     return;
@@ -326,7 +326,7 @@ app.delete('/api/keys/delete', function(req, res) {
 // GET /api/keys/meta/:guestId
 app.get('/api/keys/meta/:guestId', function(req, res) {
   try {
-    const meta = vault.listGuestKeyMeta(req.params.guestId);
+    var meta = vault.listGuestKeyMeta(req.params.guestId);
     res.json(meta);
   } catch (err) {
     logger.error('[keys/meta] ' + err.message);
@@ -336,19 +336,19 @@ app.get('/api/keys/meta/:guestId', function(req, res) {
 
 // ─── AI Chat proxy ───────────────────────────────────────────────────────
 app.post('/api/ai/chat', function(req, res) {
-  const body    = req.body;
-  const system  = typeof body.system  === 'string' ? body.system.slice(0, 2000) : '';
-  const message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
+  var body    = req.body;
+  var system  = typeof body.system  === 'string' ? body.system.slice(0, 2000) : '';
+  var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
-  const { Anthropic } = require('@anthropic-ai/sdk');
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  var { Anthropic } = require('@anthropic-ai/sdk');
+  var client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 256,
     system: system || 'You are a helpful assistant for SeeWhy LIVE.',
     messages: [{ role: 'user', content: message }]
   }).then(function(r) {
-    const text = r.content && r.content[0] && r.content[0].text ? r.content[0].text : '';
+    var text = r.content && r.content[0] && r.content[0].text ? r.content[0].text : '';
     res.json({ text: text });
   }).catch(function(err) {
     logger.error('[ai/chat] ' + err.message);
@@ -359,7 +359,7 @@ app.post('/api/ai/chat', function(req, res) {
 // ─── Socket.io Auth Middleware ────────────────────────────────────────────
 
 io.use(function(socket, next) {
-  const token = socket.handshake.auth.token;
+  var token = socket.handshake.auth.token;
   if (!token) {
     // Unauthenticated viewers are allowed
     socket.data.role = 'viewer';
@@ -372,7 +372,7 @@ io.use(function(socket, next) {
     return next();
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    var decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.data.role   = decoded.role || 'viewer';
     socket.data.userId = decoded.userId || decoded.sub || ('user-' + uuidv4());
     socket.data.decoded = decoded;
@@ -392,10 +392,10 @@ io.on('connection', function(socket) {
 
   // ── join-room ──────────────────────────────────────────────────────────
   socket.on('join-room', function(data, ack) {
-    const roomId   = data.roomId;
-    const guestId  = data.guestId || socket.data.userId;
-    const username = data.username || 'Guest';
-    const role     = data.role || socket.data.role || 'viewer';
+    var roomId   = data.roomId;
+    var guestId  = data.guestId || socket.data.userId;
+    var username = data.username || 'Guest';
+    var role     = data.role || socket.data.role || 'viewer';
 
     if (!roomId) {
       if (ack) ack({ error: 'roomId required' });
@@ -416,7 +416,7 @@ io.on('connection', function(socket) {
     socket.data.username = username;
     socket.data.role     = role;
 
-    const room = getRoom(roomId);
+    var room = getRoom(roomId);
 
     if (role === 'host' || role === 'guest') {
       room.guests.set(socket.id, { guestId: guestId, username: username, role: role });
@@ -436,7 +436,7 @@ io.on('connection', function(socket) {
       room.viewers.add(socket.id);
     }
 
-    const viewerCount = room.viewers.size + room.guests.size;
+    var viewerCount = room.viewers.size + room.guests.size;
 
     // Get or create router + transports for host/guest
     if (role === 'host' || role === 'guest') {
@@ -448,14 +448,14 @@ io.on('connection', function(socket) {
           ]);
         })
         .then(function(results) {
-          const sendTransport = results[0];
-          const recvTransport = results[1];
+          var sendTransport = results[0];
+          var recvTransport = results[1];
 
-          const existingProducers = mediasoup.getRoomProducers(roomId);
-          const routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
+          var existingProducers = mediasoup.getRoomProducers(roomId);
+          var routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
 
           // Build roster
-          const guestList = [];
+          var guestList = [];
           room.guests.forEach(function(g) {
             guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
           });
@@ -465,7 +465,7 @@ io.on('connection', function(socket) {
 
           swanybot.onViewerJoin(roomId, username, socket.id);
 
-          const ackPayload = {
+          var ackPayload = {
             routerRtpCapabilities: routerCaps,
             sendTransport:         sendTransport.params,
             recvTransport:         recvTransport.params,
@@ -483,7 +483,7 @@ io.on('connection', function(socket) {
         });
     } else {
       // Viewer — ensure router exists so they can subscribe to producers
-      const guestList = [];
+      var guestList = [];
       room.guests.forEach(function(g) {
         guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
       });
@@ -496,9 +496,9 @@ io.on('connection', function(socket) {
       // Create router so viewer can subscribe; emit join-room-ack as connection signal
       mediasoup.getOrCreateRouter(roomId)
         .then(function() {
-          const routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
-          const existingProducers = mediasoup.getRoomProducers(roomId);
-          const viewerAck = { joined: true, routerRtpCapabilities: routerCaps, existingProducers: existingProducers };
+          var routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
+          var existingProducers = mediasoup.getRoomProducers(roomId);
+          var viewerAck = { joined: true, routerRtpCapabilities: routerCaps, existingProducers: existingProducers };
           io.to(socket.id).emit('join-room-ack', viewerAck);
           if (ack) ack(viewerAck);
         })
@@ -513,13 +513,13 @@ io.on('connection', function(socket) {
 
   // ── get-rtp-capabilities ───────────────────────────────────────────────
   socket.on('get-rtp-capabilities', function(data, ack) {
-    const roomId = data.roomId;
+    var roomId = data.roomId;
     if (!roomId) {
       if (ack) ack({ error: 'roomId required' });
       return;
     }
     try {
-      const caps = mediasoup.getRouterRtpCapabilities(roomId);
+      var caps = mediasoup.getRouterRtpCapabilities(roomId);
       if (ack) ack({ routerRtpCapabilities: caps });
       else io.to(socket.id).emit('rtp-capabilities', { routerRtpCapabilities: caps });
     } catch (err) {
@@ -531,7 +531,7 @@ io.on('connection', function(socket) {
   // ── create-transport ──────────────────────────────────────────────────
   // Called by mediasoup-client after loading device RTP capabilities
   socket.on('create-transport', function(data, ack) {
-    const roomId = socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId) {
       if (ack) ack({ error: 'Must join room before creating transport' });
       return;
@@ -548,8 +548,8 @@ io.on('connection', function(socket) {
 
   // ── transport-connect ──────────────────────────────────────────────────
   socket.on('transport-connect', function(data, ack) {
-    const transportId    = data.transportId;
-    const dtlsParameters = data.dtlsParameters;
+    var transportId    = data.transportId;
+    var dtlsParameters = data.dtlsParameters;
 
     if (!transportId || !dtlsParameters) {
       if (ack) ack({ error: 'transportId and dtlsParameters required' });
@@ -568,11 +568,11 @@ io.on('connection', function(socket) {
 
   // ── produce ────────────────────────────────────────────────────────────
   socket.on('produce', function(data, ack) {
-    const transportId    = data.transportId;
-    const rtpParameters  = data.rtpParameters;
-    const kind           = data.kind;
-    const guestId        = socket.data.guestId || data.guestId;
-    const roomId         = socket.data.roomId;
+    var transportId    = data.transportId;
+    var rtpParameters  = data.rtpParameters;
+    var kind           = data.kind;
+    var guestId        = socket.data.guestId || data.guestId;
+    var roomId         = socket.data.roomId;
 
     if (!transportId || !rtpParameters || !kind) {
       if (ack) ack({ error: 'transportId, rtpParameters and kind required' });
@@ -581,7 +581,7 @@ io.on('connection', function(socket) {
 
     mediasoup.createProducer(transportId, rtpParameters, kind, guestId)
       .then(function(result) {
-        const producerId = result.producerId;
+        var producerId = result.producerId;
 
         // Notify everyone in the room about the new producer
         if (roomId) {
@@ -602,10 +602,10 @@ io.on('connection', function(socket) {
 
   // ── consume ────────────────────────────────────────────────────────────
   socket.on('consume', function(data, ack) {
-    const transportId    = data.transportId;
-    const producerId     = data.producerId;
-    const rtpCapabilities = data.rtpCapabilities;
-    const roomId         = socket.data.roomId || data.roomId;
+    var transportId    = data.transportId;
+    var producerId     = data.producerId;
+    var rtpCapabilities = data.rtpCapabilities;
+    var roomId         = socket.data.roomId || data.roomId;
 
     if (!transportId || !producerId || !rtpCapabilities || !roomId) {
       if (ack) ack({ error: 'transportId, producerId, rtpCapabilities and roomId required' });
@@ -624,8 +624,8 @@ io.on('connection', function(socket) {
 
   // ── producer-closed ────────────────────────────────────────────────────
   socket.on('producer-closed', function(data) {
-    const producerId = data.producerId;
-    const roomId     = socket.data.roomId;
+    var producerId = data.producerId;
+    var roomId     = socket.data.roomId;
     if (!producerId) return;
 
     mediasoup.closeProducer(producerId);
@@ -637,8 +637,8 @@ io.on('connection', function(socket) {
 
   // ── producer-pause ─────────────────────────────────────────────────────
   socket.on('producer-pause', function(data) {
-    const producerId = data.producerId;
-    const roomId     = socket.data.roomId;
+    var producerId = data.producerId;
+    var roomId     = socket.data.roomId;
     if (!producerId) return;
     mediasoup.pauseProducer(producerId);
     if (roomId) io.to(roomId).emit('producer-paused', { producerId: producerId });
@@ -646,8 +646,8 @@ io.on('connection', function(socket) {
 
   // ── producer-resume ────────────────────────────────────────────────────
   socket.on('producer-resume', function(data) {
-    const producerId = data.producerId;
-    const roomId     = socket.data.roomId;
+    var producerId = data.producerId;
+    var roomId     = socket.data.roomId;
     if (!producerId) return;
     mediasoup.resumeProducer(producerId);
     if (roomId) io.to(roomId).emit('producer-resumed', { producerId: producerId });
@@ -655,58 +655,58 @@ io.on('connection', function(socket) {
 
   // ── stage-invite ───────────────────────────────────────────────────────
   socket.on('stage-invite', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId;
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId;
     if (!roomId || !guestId) return;
     io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
   });
 
   // ── stage-remove ───────────────────────────────────────────────────────
   socket.on('stage-remove', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId;
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId;
     if (!roomId || !guestId) return;
     io.to(roomId).emit('stage-remove', { guestId: guestId });
   });
 
   // ── mute-guest ─────────────────────────────────────────────────────────
   socket.on('mute-guest', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId;
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId;
     if (!roomId || !guestId) return;
     if (socket.data.role !== 'host') return;
-    const producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    var producerIds = mediasoup.getProducerIdsByGuest(guestId);
     producerIds.forEach(function(pid) { mediasoup.pauseProducer(pid); });
     io.to(roomId).emit('guest-muted', { guestId: guestId });
   });
 
   // ── unmute-guest ───────────────────────────────────────────────────────
   socket.on('unmute-guest', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId;
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId;
     if (!roomId || !guestId) return;
     if (socket.data.role !== 'host') return;
-    const producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    var producerIds = mediasoup.getProducerIdsByGuest(guestId);
     producerIds.forEach(function(pid) { mediasoup.resumeProducer(pid); });
     io.to(roomId).emit('guest-unmuted', { guestId: guestId });
   });
 
   // ── kick-guest ─────────────────────────────────────────────────────────
   socket.on('kick-guest', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId;
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId;
     if (!roomId || !guestId) return;
     if (socket.data.role !== 'host') return;
 
-    const producerIds = mediasoup.getProducerIdsByGuest(guestId);
+    var producerIds = mediasoup.getProducerIdsByGuest(guestId);
     producerIds.forEach(function(pid) { mediasoup.closeProducer(pid); });
 
-    const room = rooms.get(roomId);
+    var room = rooms.get(roomId);
     if (room) {
       room.guests.forEach(function(g, sid) {
         if (g.guestId === guestId) {
           room.guests.delete(sid);
-          const targetSocket = io.sockets.sockets.get(sid);
+          var targetSocket = io.sockets.sockets.get(sid);
           if (targetSocket) {
             targetSocket.leave(roomId);
             targetSocket.emit('you-were-kicked', { roomId: roomId });
@@ -718,7 +718,7 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('guest-kicked', { guestId: guestId });
 
     if (room) {
-      const guestList = [];
+      var guestList = [];
       room.guests.forEach(function(g) {
         guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
       });
@@ -728,15 +728,15 @@ io.on('connection', function(socket) {
 
   // ── promote-guest ──────────────────────────────────────────────────────
   socket.on('promote-guest', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId;
-    const newRole = data.role;
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId;
+    var newRole = data.role;
     if (!roomId || !guestId || !newRole) return;
     if (socket.data.role !== 'host') return;
-    const validRoles = ['cohost', 'guest', 'viewer'];
+    var validRoles = ['cohost', 'guest', 'viewer'];
     if (validRoles.indexOf(newRole) === -1) return;
 
-    const room = rooms.get(roomId);
+    var room = rooms.get(roomId);
     if (!room) return;
 
     room.guests.forEach(function(g, sid) {
@@ -746,7 +746,7 @@ io.on('connection', function(socket) {
       }
     });
 
-    const guestList = [];
+    var guestList = [];
     room.guests.forEach(function(g) {
       guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
     });
@@ -755,10 +755,10 @@ io.on('connection', function(socket) {
 
   // ── chat-message ───────────────────────────────────────────────────────
   socket.on('chat-message', function(data) {
-    const roomId   = data.roomId || socket.data.roomId;
-    const username = data.username || socket.data.username || 'Guest';
-    const message  = data.message || '';
-    const userId   = data.userId  || socket.data.userId;
+    var roomId   = data.roomId || socket.data.roomId;
+    var username = data.username || socket.data.username || 'Guest';
+    var message  = data.message || '';
+    var userId   = data.userId  || socket.data.userId;
 
     if (!roomId || !message.trim()) return;
 
@@ -772,8 +772,8 @@ io.on('connection', function(socket) {
     // Detect and translate
     translation.detectAndTranslate(message)
       .then(function(result) {
-        const msgId = uuidv4();
-        const ts    = Math.floor(Date.now() / 1000);
+        var msgId = uuidv4();
+        var ts    = Math.floor(Date.now() / 1000);
 
         try {
           db.prepare(`
@@ -796,8 +796,8 @@ io.on('connection', function(socket) {
       .catch(function(err) {
         logger.error('[chat-message] translation failed: ' + err.message);
         // Still emit the original message
-        const msgId = uuidv4();
-        const ts    = Math.floor(Date.now() / 1000);
+        var msgId = uuidv4();
+        var ts    = Math.floor(Date.now() / 1000);
         io.to(roomId).emit('chat-message', {
           id:         msgId,
           username:   username,
@@ -811,19 +811,19 @@ io.on('connection', function(socket) {
 
   // ── send-gift ──────────────────────────────────────────────────────────
   socket.on('send-gift', function(data) {
-    const roomId                 = data.roomId || socket.data.roomId;
-    const fromUser               = data.fromUser || socket.data.username || 'Guest';
-    const emoji                  = data.emoji || '';
-    const name                   = data.name || 'Gift';
-    const valueCents             = Math.floor(data.valueCents || 0);
-    const creatorStripeAccountId = data.creatorStripeAccountId || '';
+    var roomId                 = data.roomId || socket.data.roomId;
+    var fromUser               = data.fromUser || socket.data.username || 'Guest';
+    var emoji                  = data.emoji || '';
+    var name                   = data.name || 'Gift';
+    var valueCents             = Math.floor(data.valueCents || 0);
+    var creatorStripeAccountId = data.creatorStripeAccountId || '';
 
     if (!roomId || valueCents <= 0) return;
 
-    const creatorCents  = Math.floor(valueCents * CREATOR);
-    const platformCents = valueCents - creatorCents;
-    const giftId        = uuidv4();
-    const ts            = Math.floor(Date.now() / 1000);
+    var creatorCents  = Math.floor(valueCents * CREATOR);
+    var platformCents = valueCents - creatorCents;
+    var giftId        = uuidv4();
+    var ts            = Math.floor(Date.now() / 1000);
 
     try {
       db.prepare(`
@@ -867,58 +867,58 @@ io.on('connection', function(socket) {
 
   // ── speaking ───────────────────────────────────────────────────────────
   socket.on('speaking', function(data) {
-    const roomId  = data.roomId || socket.data.roomId;
-    const guestId = data.guestId || socket.data.guestId;
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId || socket.data.guestId;
     if (!roomId) return;
     io.to(roomId).emit('speaking', { guestId: guestId, speaking: data.speaking });
   });
 
   // ── hand-raise ─────────────────────────────────────────────────────────
   socket.on('hand-raise', function(data) {
-    const roomId   = data.roomId || socket.data.roomId;
-    const guestId  = data.guestId  || socket.data.guestId;
-    const username = data.username || socket.data.username || guestId;
+    var roomId   = data.roomId || socket.data.roomId;
+    var guestId  = data.guestId  || socket.data.guestId;
+    var username = data.username || socket.data.username || guestId;
     if (!roomId) return;
     io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── overlay-update ────────────────────────────────────────────────────
   socket.on('overlay-update', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.overlay) return;
     io.to(roomId).emit('overlay-update', { overlay: data.overlay });
   });
 
   // ── watch-party ────────────────────────────────────────────────────────
   socket.on('watch-party-url', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.videoId) return;
     io.to(roomId).emit('watch-party-url', { videoId: data.videoId, url: data.url || '' });
   });
 
   socket.on('watch-party-play', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
     io.to(roomId).emit('watch-party-play', { position: data.position || 0, timestamp: data.timestamp || Date.now() });
   });
 
   socket.on('watch-party-pause', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
     io.to(roomId).emit('watch-party-pause', { position: data.position || 0 });
   });
 
   socket.on('watch-party-seek', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId || typeof data.position !== 'number') return;
     io.to(roomId).emit('watch-party-seek', { position: data.position });
   });
 
   // ── bot-manual-message ─────────────────────────────────────────────────
   socket.on('bot-manual-message', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.message) return;
-    const msg = String(data.message).substring(0, 300);
+    var msg = String(data.message).substring(0, 300);
     io.to(roomId).emit('chat-message', {
       userId: 'swanybot',
       username: '🤖 SwanyBot',
@@ -934,20 +934,20 @@ io.on('connection', function(socket) {
   });
 
   socket.on('bot-add-trigger', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.trigger) return;
     io.to(roomId).emit('bot-trigger-added', { trigger: data.trigger });
   });
 
   socket.on('bot-remove-trigger', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.triggerId) return;
     io.to(roomId).emit('bot-trigger-removed', { triggerId: data.triggerId });
   });
 
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
     io.to(roomId).emit('fades-event', {
       event:  data.event,
@@ -958,8 +958,8 @@ io.on('connection', function(socket) {
 
   // ── go-live ────────────────────────────────────────────────────────────
   socket.on('go-live', function(data, ack) {
-    const roomId      = data.roomId || socket.data.roomId;
-    const destinations = data.destinations;
+    var roomId      = data.roomId || socket.data.roomId;
+    var destinations = data.destinations;
 
     if (!roomId) {
       if (ack) ack({ error: 'roomId required' });
@@ -967,13 +967,13 @@ io.on('connection', function(socket) {
     }
 
     // Verify socket is host
-    const room = rooms.get(roomId);
+    var room = rooms.get(roomId);
     if (!room || room.hostSocketId !== socket.id) {
       if (ack) ack({ error: 'Only the host can go live' });
       return;
     }
 
-    const now = Math.floor(Date.now() / 1000);
+    var now = Math.floor(Date.now() / 1000);
     try {
       db.prepare(`
         UPDATE rooms SET created_at = ? WHERE room_id = ?
@@ -1002,14 +1002,14 @@ io.on('connection', function(socket) {
 
   // ── end-broadcast ──────────────────────────────────────────────────────
   socket.on('end-broadcast', function(data, ack) {
-    const roomId = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
 
     if (!roomId) {
       if (ack) ack({ error: 'roomId required' });
       return;
     }
 
-    const room = rooms.get(roomId);
+    var room = rooms.get(roomId);
     if (!room || room.hostSocketId !== socket.id) {
       if (ack) ack({ error: 'Only the host can end the broadcast' });
       return;
@@ -1024,7 +1024,7 @@ io.on('connection', function(socket) {
     mediasoup.cleanupRoom(roomId);
     whisper.cleanup(roomId);
 
-    const now = Math.floor(Date.now() / 1000);
+    var now = Math.floor(Date.now() / 1000);
     try {
       db.prepare('UPDATE rooms SET ended_at = ? WHERE room_id = ?').run(now, roomId);
     } catch (dbErr) {
@@ -1042,13 +1042,13 @@ io.on('connection', function(socket) {
 
   // ── audio-chunk ────────────────────────────────────────────────────────
   socket.on('audio-chunk', function(data) {
-    const roomId = data.roomId || socket.data.roomId;
-    const chunk  = data.chunk;
+    var roomId = data.roomId || socket.data.roomId;
+    var chunk  = data.chunk;
 
     if (!roomId || !chunk) return;
 
     whisper.processChunk(roomId, chunk, function(text) {
-      const ts = Math.floor(Date.now() / 1000);
+      var ts = Math.floor(Date.now() / 1000);
       io.to(roomId).emit('chat-message', {
         id:         uuidv4(),
         username:   '[Transcript]',
@@ -1065,10 +1065,10 @@ io.on('connection', function(socket) {
   socket.on('disconnect', function(reason) {
     logger.info('[socket] Disconnected: ' + socket.id + ' reason=' + reason);
 
-    const roomId = socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId) return;
 
-    const room = rooms.get(roomId);
+    var room = rooms.get(roomId);
     if (!room) return;
 
     room.viewers.delete(socket.id);
@@ -1079,9 +1079,9 @@ io.on('connection', function(socket) {
     }
 
     // Close any producers from this socket (scan by guestId)
-    const guestId = socket.data.guestId;
+    var guestId = socket.data.guestId;
     if (guestId) {
-      const roomProducers = mediasoup.getRoomProducers(roomId);
+      var roomProducers = mediasoup.getRoomProducers(roomId);
       for (let i = 0; i < roomProducers.length; i++) {
         if (roomProducers[i].guestId === guestId) {
           mediasoup.closeProducer(roomProducers[i].producerId);
@@ -1090,8 +1090,8 @@ io.on('connection', function(socket) {
       }
     }
 
-    const viewerCount = room.viewers.size + room.guests.size;
-    const guestList   = [];
+    var viewerCount = room.viewers.size + room.guests.size;
+    var guestList   = [];
     room.guests.forEach(function(g) {
       guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
     });
@@ -1110,7 +1110,7 @@ io.on('connection', function(socket) {
 
 // ─── RTMP event forwarding ─────────────────────────────────────────────────
 rtmp.on('fanout-failed', function(data) {
-  const roomId = data.roomId;
+  var roomId = data.roomId;
   if (rooms.has(roomId)) {
     io.to(roomId).emit('fanout-failed', { roomId: roomId });
   }
@@ -1118,14 +1118,14 @@ rtmp.on('fanout-failed', function(data) {
 });
 
 rtmp.on('fanout-restarted', function(data) {
-  const roomId = data.roomId;
+  var roomId = data.roomId;
   if (rooms.has(roomId)) {
     io.to(roomId).emit('fanout-restarted', { roomId: roomId, attempt: data.attempt });
   }
 });
 
 // ─── Server startup ────────────────────────────────────────────────────────
-const PORT = parseInt(process.env.PORT || '3001', 10);
+var PORT = parseInt(process.env.PORT || '3001', 10);
 
 mediasoup.createWorkers()
   .then(function() {
