@@ -18,6 +18,13 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
   var [view,         setView]         = useState('board');
   var tickRef = useRef(null);
 
+  var [wagerTab,    setWagerTab]    = useState('wager');
+  var [myWager,     setMyWager]     = useState(null);
+  var [wagerGems,   setWagerGems]   = useState(50);
+  var [allWagers,   setAllWagers]   = useState({ team1Gems: 1200, team2Gems: 800 });
+  var [wagerResult, setWagerResult] = useState(null);
+  var [gemBalance,  setGemBalance]  = useState(350);
+
   var isHost = role === 'host' || role === 'cohost';
 
   useEffect(function() {
@@ -47,6 +54,34 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
       setRoundSecs(function(n) { return n + 1; });
     }, 1000);
     return function() { clearInterval(tickRef.current); };
+  }, [fadesActive]);
+
+  useEffect(function() {
+    if (!matchWinner || !myWager) return;
+    var wonTeam = matchWinner === 'ALPHA' ? 'team1' : 'team2';
+    if (myWager.team === wonTeam) {
+      var totalW = allWagers.team1Gems + allWagers.team2Gems;
+      var odds = myWager.team === 'team1' ? totalW / allWagers.team1Gems : totalW / allWagers.team2Gems;
+      var payout = Math.floor(myWager.gems * odds);
+      setGemBalance(function(b) { return b + payout; });
+      setWagerResult('won');
+    } else {
+      setWagerResult('lost');
+    }
+  }, [matchWinner]);
+
+  useEffect(function() {
+    if (!fadesActive) return;
+    var t = setInterval(function() {
+      var addGems = Math.floor(Math.random() * 70 + 10);
+      var toTeam = Math.random() > 0.5 ? 'team1Gems' : 'team2Gems';
+      setAllWagers(function(prev) {
+        var next = Object.assign({}, prev);
+        next[toTeam] = prev[toTeam] + addGems;
+        return next;
+      });
+    }, 8000);
+    return function() { clearInterval(t); };
   }, [fadesActive]);
 
   function startFades() {
@@ -111,7 +146,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
   var totalPts = t1Score + t2Score;
   var t1Pct = totalPts > 0 ? Math.floor((t1Score / totalPts) * 100) : 50;
 
-  var VIEWS = [['board', '🎲 BOARD'], ['roster', '👥 ROSTER'], ['history', '📜 HISTORY']];
+  var VIEWS = [['board', '🎲 BOARD'], ['roster', '👥 ROSTER'], ['history', '📜 HISTORY'], ['wager', '💰 WAGER']];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: '#07050A' }}>
@@ -357,6 +392,152 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                 );
               })
             )}
+          </div>
+        )}
+
+        {/* ── WAGER VIEW ── */}
+        {view === 'wager' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+            {/* Odds header */}
+            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #241C34', borderRadius: 14, padding: '14px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 3, textAlign: 'center', marginBottom: 12 }}>LIVE WAGER ODDS</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {(function() {
+                  var totalW = allWagers.team1Gems + allWagers.team2Gems;
+                  var t1Pct = Math.floor((allWagers.team1Gems / totalW) * 100);
+                  var t2Pct = 100 - t1Pct;
+                  return (
+                    <>
+                      <div style={{ flex: 1, background: 'rgba(0,255,255,.07)', border: '1px solid rgba(0,255,255,.25)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00FFFF', letterSpacing: 3, marginBottom: 6 }}>◈ ALPHA</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#00FFFF', lineHeight: 1, textShadow: '0 0 16px rgba(0,255,255,.5)' }}>💎 {allWagers.team1Gems}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00FFFF', marginTop: 4, opacity: 0.8 }}>{t1Pct}% of pool</div>
+                      </div>
+                      <div style={{ flex: 1, background: 'rgba(255,0,64,.07)', border: '1px solid rgba(255,0,64,.25)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF0040', letterSpacing: 3, marginBottom: 6 }}>◈ OMEGA</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF0040', lineHeight: 1, textShadow: '0 0 16px rgba(255,0,64,.5)' }}>💎 {allWagers.team2Gems}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#FF0040', marginTop: 4, opacity: 0.8 }}>{t2Pct}% of pool</div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+              <div style={{ height: 5, borderRadius: 3, overflow: 'hidden', display: 'flex', marginTop: 12 }}>
+                {(function() {
+                  var totalW = allWagers.team1Gems + allWagers.team2Gems;
+                  var t1Pct = Math.floor((allWagers.team1Gems / totalW) * 100);
+                  return (
+                    <>
+                      <div style={{ width: t1Pct + '%', background: 'linear-gradient(90deg,rgba(0,255,255,.4),#00FFFF)', transition: 'width .6s ease' }} />
+                      <div style={{ flex: 1, background: 'linear-gradient(90deg,#FF0040,rgba(255,0,64,.4))', transition: 'flex .6s ease' }} />
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Win/loss result banner */}
+            {wagerResult === 'won' && (
+              <div style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.5)', borderRadius: 10, padding: '14px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#00C9A7', letterSpacing: 6, textShadow: '0 0 20px rgba(0,201,167,.6)' }}>🏆 YOU WON!</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00C9A7', marginTop: 4 }}>Gems added to your balance</div>
+              </div>
+            )}
+            {wagerResult === 'lost' && (
+              <div style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 10, padding: '14px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#FF1A3C', letterSpacing: 6, textShadow: '0 0 20px rgba(255,26,60,.5)' }}>💀 YOU LOST</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#FF6B81', marginTop: 4 }}>Better luck next time</div>
+              </div>
+            )}
+
+            {/* My wager status */}
+            {myWager && !wagerResult && (
+              <div style={{ background: myWager.team === 'team1' ? 'rgba(0,255,255,.07)' : 'rgba(255,0,64,.07)', border: '1px solid ' + (myWager.team === 'team1' ? 'rgba(0,255,255,.3)' : 'rgba(255,0,64,.3)'), borderRadius: 10, padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 4 }}>YOUR ACTIVE WAGER</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: myWager.team === 'team1' ? '#00FFFF' : '#FF0040', letterSpacing: 3 }}>
+                  💎 {myWager.gems} ON {myWager.team === 'team1' ? 'ALPHA' : 'OMEGA'}
+                </div>
+                {(function() {
+                  var totalW = allWagers.team1Gems + allWagers.team2Gems;
+                  var odds = myWager.team === 'team1' ? totalW / allWagers.team1Gems : totalW / allWagers.team2Gems;
+                  var payout = Math.floor(myWager.gems * odds);
+                  return (
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', marginTop: 6 }}>
+                      Est. payout if win: 💎 {payout} gems ({odds.toFixed(2)}x)
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Gem balance & amount selector */}
+            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #241C34', borderRadius: 12, padding: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>WAGER AMOUNT</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>💎 {gemBalance} balance</div>
+              </div>
+              <div style={{ display: 'flex', gap: 5 }}>
+                {[10, 25, 50, 100, 250].map(function(amt) {
+                  var isSelected = wagerGems === amt;
+                  var canAfford = gemBalance >= amt;
+                  return (
+                    <button key={amt} onClick={function() { if (!myWager) setWagerGems(amt); }}
+                      disabled={!!myWager || !canAfford}
+                      style={{ flex: 1, padding: '8px 0', background: isSelected ? 'rgba(201,168,76,.2)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isSelected ? 'rgba(201,168,76,.6)' : '#241C34'), borderRadius: 7, color: isSelected ? '#C9A84C' : canAfford ? '#7A6F90' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: myWager || !canAfford ? 'not-allowed' : 'pointer', opacity: canAfford ? 1 : 0.4 }}>
+                      {amt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* BACK ALPHA / BACK OMEGA buttons */}
+            {(function() {
+              var canWager = fadesActive && !myWager && gemBalance >= wagerGems;
+              return (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    disabled={!canWager}
+                    onClick={function() {
+                      if (!canWager) return;
+                      setMyWager({ team: 'team1', gems: wagerGems });
+                      setGemBalance(function(b) { return b - wagerGems; });
+                      setAllWagers(function(prev) {
+                        var next = Object.assign({}, prev);
+                        next.team1Gems = prev.team1Gems + wagerGems;
+                        return next;
+                      });
+                    }}
+                    style={{ flex: 1, padding: '13px 8px', background: canWager ? 'rgba(0,255,255,.14)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (canWager ? 'rgba(0,255,255,.45)' : '#241C34'), borderRadius: 10, color: canWager ? '#00FFFF' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: canWager ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: canWager ? '0 0 14px rgba(0,255,255,.5)' : 'none' }}>
+                    💎 BACK ALPHA
+                  </button>
+                  <button
+                    disabled={!canWager}
+                    onClick={function() {
+                      if (!canWager) return;
+                      setMyWager({ team: 'team2', gems: wagerGems });
+                      setGemBalance(function(b) { return b - wagerGems; });
+                      setAllWagers(function(prev) {
+                        var next = Object.assign({}, prev);
+                        next.team2Gems = prev.team2Gems + wagerGems;
+                        return next;
+                      });
+                    }}
+                    style={{ flex: 1, padding: '13px 8px', background: canWager ? 'rgba(255,0,64,.14)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (canWager ? 'rgba(255,0,64,.45)' : '#241C34'), borderRadius: 10, color: canWager ? '#FF0040' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: canWager ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: canWager ? '0 0 14px rgba(255,0,64,.5)' : 'none' }}>
+                    💎 BACK OMEGA
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Status hint */}
+            {!fadesActive && !myWager && (
+              <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450', padding: '6px 0' }}>
+                Wagering opens when a match is live
+              </div>
+            )}
+
           </div>
         )}
 

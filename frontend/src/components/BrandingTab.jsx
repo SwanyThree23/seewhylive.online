@@ -29,8 +29,11 @@ var FONT_FAMILIES = {
   mono:   "'DM Mono',monospace",
 };
 
-export default function BrandingTab({ branding, setBranding }) {
+export default function BrandingTab({ branding, setBranding, isLive }) {
   var [tab, setTab] = useState('theme');
+  var [logoUrl, setLogoUrl] = useState('');
+  var [logoFile, setLogoFile] = useState(null);
+  var [logoUploading, setLogoUploading] = useState(false);
 
   var gold = branding.gold || '#C9A84C';
   var burg = branding.burg || '#800020';
@@ -47,6 +50,24 @@ export default function BrandingTab({ branding, setBranding }) {
 
   function getToggle(key) {
     return branding[key] !== false;
+  }
+
+  function handleLogoUpload(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setBranding(function(prev) { return prev; });
+      return;
+    }
+    setLogoUploading(true);
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      setLogoUrl(ev.target.result);
+      setLogoFile(file.name);
+      setLogoUploading(false);
+      setBranding(function(prev) { return Object.assign({}, prev, { logoUrl: ev.target.result }); });
+    };
+    reader.readAsDataURL(file);
   }
 
   var TABS = [['theme', '🎨 THEME'], ['options', '⚙ OPTIONS'], ['preview', '👁 PREVIEW']];
@@ -134,6 +155,28 @@ export default function BrandingTab({ branding, setBranding }) {
               })}
             </div>
           </div>
+
+          {/* Brand logo upload */}
+          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>BRAND LOGO</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 12, border: '2px dashed ' + (logoUrl ? gold : '#241C34'), background: 'rgba(7,5,10,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                {logoUrl ? (
+                  <img src={logoUrl} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <span style={{ fontSize: 22, opacity: 0.4 }}>🖼</span>
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'inline-block', background: 'rgba(201,168,76,.12)', border: '1px solid ' + gold + '55', borderRadius: 7, padding: '6px 12px', color: gold, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                  {logoUploading ? '⏳ UPLOADING...' : logoFile ? '✓ CHANGE' : '📁 UPLOAD'}
+                  <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                </label>
+                {logoFile && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{logoFile}</div>}
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', marginTop: logoFile ? 2 : 4 }}>PNG · SVG · max 2 MB</div>
+              </div>
+            </div>
+          </div>
         </>
       )}
 
@@ -173,11 +216,23 @@ export default function BrandingTab({ branding, setBranding }) {
       {/* ── PREVIEW ── */}
       {tab === 'preview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Live badge */}
+          {isLive && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#FF1A3C', letterSpacing: 2, background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '3px 8px' }}>● LIVE PREVIEW</span>
+            </div>
+          )}
           {/* Stream preview card */}
           <div style={{ background: '#07050A', border: '2px solid ' + gold + '44', borderRadius: 12, overflow: 'hidden' }}>
             {/* Stream header */}
             <div style={{ background: 'linear-gradient(135deg,' + burg + '22,' + gold + '12)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid ' + gold + '22' }}>
-              <div style={{ fontFamily: ff, fontSize: 16, color: gold, letterSpacing: 3, flex: 1 }}>SeeWhy LIVE</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                {(logoUrl || (branding && branding.logoUrl)) && (
+                  <img src={logoUrl || branding.logoUrl} alt="logo" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'contain' }} />
+                )}
+                <span style={{ fontFamily: ff, fontSize: 16, color: gold, letterSpacing: 3 }}>SeeWhy LIVE</span>
+                {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF1A3C', letterSpacing: 1 }}>● LIVE</span>}
+              </div>
               <div style={{ background: burg, borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, letterSpacing: 2 }}>● LIVE</div>
               {getToggle('showViewers') && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold + 'cc' }}>👁 2,847</div>}
             </div>
