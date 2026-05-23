@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 var ROLE_COLORS = {
   host:    '#C9A84C',
@@ -32,6 +32,16 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   var [newBan,    setNewBan]    = useState('');
   var [handQueue, setHandQueue] = useState([]);
   var [stageList, setStageList] = useState([userId || '']);
+  var [showNotes, setShowNotes] = useState('WELCOME VIEWERS!\n\n---\n[0:00] Intro + housekeeping\n[5:00] Domino match begins\n[45:00] Halftime break + gifts\n[60:00] Final match\n[90:00] Prize + wrap-up\n');
+  var [segments,  setSegments]  = useState([
+    { id: 'sg1', time: '0:00',  title: 'Intro + housekeeping',      done: true  },
+    { id: 'sg2', time: '5:00',  title: 'Match 1 begins',            done: true  },
+    { id: 'sg3', time: '45:00', title: 'Halftime break',            done: false },
+    { id: 'sg4', time: '60:00', title: 'Finals match',              done: false },
+    { id: 'sg5', time: '90:00', title: 'Prize ceremony + wrap-up',  done: false },
+  ]);
+  var [newSegTime,  setNewSegTime]  = useState('');
+  var [newSegTitle, setNewSegTitle] = useState('');
 
   var isHost = role === 'host';
 
@@ -149,11 +159,31 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     if (addToast) addToast('Unbanned: ' + u, 'info');
   }
 
+  function addSegment() {
+    if (!newSegTitle.trim()) return;
+    var seg = { id: 'sg' + Date.now(), time: newSegTime.trim() || '?', title: newSegTitle.trim(), done: false };
+    setSegments(function(p) { return p.concat([seg]); });
+    setNewSegTime('');
+    setNewSegTitle('');
+    if (addToast) addToast('Segment added: ' + seg.title, 'success');
+  }
+
+  function toggleSegDone(id) {
+    setSegments(function(p) {
+      return p.map(function(s) { return s.id === id ? Object.assign({}, s, { done: !s.done }) : s; });
+    });
+  }
+
+  function removeSegment(id) {
+    setSegments(function(p) { return p.filter(function(s) { return s.id !== id; }); });
+  }
+
   var SECTIONS = [
     { id: 'roster', label: '👥 ROSTER' },
     { id: 'stage',  label: '🎭 STAGE'  },
     { id: 'guard',  label: '🛡 GUARD'  },
     { id: 'ban',    label: '🚫 BAN'    },
+    { id: 'notes',  label: '📋 NOTES'  },
   ];
 
   return (
@@ -470,6 +500,66 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── NOTES ──────────────────────────────────────────────────────────── */}
+      {section === 'notes' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+          {/* Run of show segments */}
+          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>RUN OF SHOW</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>
+                {segments.filter(function(s) { return s.done; }).length}/{segments.length} done
+              </div>
+            </div>
+
+            {segments.map(function(seg) {
+              return (
+                <div key={seg.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid #1A1428' }}>
+                  <button onClick={function() { toggleSegDone(seg.id); }}
+                    style={{ width: 18, height: 18, borderRadius: 4, background: seg.done ? 'rgba(0,201,167,.2)' : 'rgba(22,16,32,.8)', border: '2px solid ' + (seg.done ? '#00C9A7' : '#241C34'), flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00C9A7', fontSize: 10 }}>
+                    {seg.done ? '✓' : ''}
+                  </button>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', width: 36, flexShrink: 0 }}>{seg.time}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: seg.done ? '#3D3450' : '#EDE8F5', flex: 1, textDecoration: seg.done ? 'line-through' : 'none' }}>
+                    {seg.title}
+                  </span>
+                  <button onClick={function() { removeSegment(seg.id); }}
+                    style={{ background: 'none', border: 'none', color: '#3D3450', fontSize: 11, cursor: 'pointer', flexShrink: 0, padding: '0 2px' }}>✕</button>
+                </div>
+              );
+            })}
+
+            <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+              <input value={newSegTime} onChange={function(e) { setNewSegTime(e.target.value); }} placeholder="0:00"
+                style={{ width: 52, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9, flexShrink: 0 }} />
+              <input value={newSegTitle} onChange={function(e) { setNewSegTitle(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Enter') addSegment(); }}
+                placeholder="Segment title..."
+                style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11 }} />
+              <button onClick={addSegment} style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '6px 12px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>+</button>
+            </div>
+          </div>
+
+          {/* Freeform show notes */}
+          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2 }}>SHOW NOTES</div>
+              <button onClick={function() { if (addToast) addToast('Notes copied', 'info'); }}
+                style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 8px', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer' }}>
+                📋 COPY
+              </button>
+            </div>
+            <textarea
+              value={showNotes}
+              onChange={function(e) { setShowNotes(e.target.value); }}
+              rows={8}
+              style={{ width: '100%', background: 'rgba(7,5,10,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box' }}
+            />
+          </div>
         </div>
       )}
     </div>
