@@ -212,19 +212,22 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
     socket.emit('speaking', { roomId: roomId, guestId: userId, speaking: speaking });
   }, [speaking]);
 
-  var ringClass = fadesMode ? 'oct-ring-corrupt' : (speaking && !isMuted ? 'oct-ring-speak' : (online ? 'oct-ring-active' : ''));
+  var ringGlow = fadesMode
+    ? '0 0 0 3px #FF1A3C, 0 0 14px rgba(255,26,60,.6)'
+    : (speaking && !isMuted ? '0 0 0 3px ' + color + ', 0 0 12px ' + color + '88' : (online ? '0 0 0 2px rgba(0,201,167,.5)' : 'none'));
+
+  var connDotColor = connQuality === 'green' ? '#00C96A' : (connQuality === 'yellow' ? '#C9A84C' : '#FF1A3C');
 
   return (
     <div
-      className={'oct-cell' + (fadesMode ? ' fades-mode' : '')}
-      style={{ width: size, height: size, cursor: onTap ? 'pointer' : 'default', position: 'relative' }}
+      style={{ width: size, height: size, cursor: onTap ? 'pointer' : 'default', position: 'relative', flexShrink: 0 }}
       onClick={onTap ? function() { onTap(guest); } : undefined}
     >
       {/* Octagonal clip container */}
-      <div className={'oct-inner ' + ringClass} style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0F0C14' }}>
+      <div style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0F0C14', boxShadow: ringGlow }}>
         {loading && (
-          <div className="oct-loading">
-            <div className="oct-spinner" />
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(7,5,10,.8)', zIndex: 2 }}>
+            <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + color, borderTopColor: 'transparent' }} />
           </div>
         )}
 
@@ -244,13 +247,13 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
           </div>
         )}
 
-        {/* Offline crosshatch */}
+        {/* Offline */}
         {!online && !loading && (
-          <div className="oct-offline">
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'repeating-linear-gradient(45deg,#0F0C14,#0F0C14 4px,#1A1428 4px,#1A1428 8px)' }}>
             {camError ? (
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', textAlign: 'center', padding: '0 8px' }}>{camError}</span>
             ) : (
-              <span className="oct-offline-name">{guestName}</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#7A6F90', textAlign: 'center' }}>{guestName}</span>
             )}
           </div>
         )}
@@ -268,19 +271,19 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
         )}
 
         {/* Connection quality dot */}
-        <div className={'conn-dot conn-dot--' + connQuality} />
+        <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
       </div>
 
       {/* Name bar */}
-      <div className="oct-name" style={{ color: speaking && !isMuted ? color : '#B0A0C0' }}>
+      <div style={{ textAlign: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: speaking && !isMuted ? color : '#B0A0C0', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {guestName}
-        {isOwnCell && <span className="oct-you-tag"> (YOU)</span>}
+        {isOwnCell && <span style={{ color: '#7A6F90', fontStyle: 'italic' }}> (YOU)</span>}
       </div>
 
       {/* EQ bars */}
-      <div className="eq-bars">
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1, height: 12, marginTop: 2 }}>
         {eqBars.map(function(h, i) {
-          return <div key={i} className="eq-bar" style={{ height: Math.max(3, h * 0.2) + 'px', backgroundColor: isMuted ? '#241C34' : color }} />;
+          return <div key={i} style={{ width: 3, height: Math.max(3, h * 0.2) + 'px', backgroundColor: isMuted ? '#241C34' : color, borderRadius: 1 }} />;
         })}
       </div>
 
