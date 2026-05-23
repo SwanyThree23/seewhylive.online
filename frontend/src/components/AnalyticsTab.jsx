@@ -5,7 +5,7 @@ var PLATFORM = 0.10;
 
 function fmtC(cents) { return '$' + (Math.floor(cents || 0) / 100).toFixed(2); }
 
-export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
+export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
   var [metrics,   setMetrics]   = useState(null);
   var [loading,   setLoading]   = useState(true);
   var [refreshed, setRefreshed] = useState(null);
@@ -17,6 +17,13 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
     return arr;
   });
   var sparkRef = useRef(null);
+
+  var [liveViewerCount, setLiveViewerCount] = useState(viewerCount || 0);
+  var [peakViewers, setPeakViewers] = useState(viewerCount || 0);
+  var liveViewerRef = useRef(null);
+
+  var [liveGiftCount, setLiveGiftCount] = useState(0);
+  var liveGiftRef = useRef(null);
 
   useEffect(function() {
     sparkRef.current = setInterval(function() {
@@ -30,6 +37,38 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
     }, 5000);
     return function() { clearInterval(sparkRef.current); };
   }, []);
+
+  useEffect(function() {
+    if (liveViewerRef.current) {
+      clearInterval(liveViewerRef.current);
+      liveViewerRef.current = null;
+    }
+    if (liveGiftRef.current) {
+      clearInterval(liveGiftRef.current);
+      liveGiftRef.current = null;
+    }
+    if (!isLive) { return; }
+
+    liveViewerRef.current = setInterval(function() {
+      setLiveViewerCount(function(prev) {
+        var drift = Math.floor(Math.random() * 30) - 10;
+        var next = Math.max(0, prev + drift);
+        setPeakViewers(function(peak) { return next > peak ? next : peak; });
+        return next;
+      });
+    }, 6000);
+
+    liveGiftRef.current = setInterval(function() {
+      setLiveGiftCount(function(prev) {
+        return prev + Math.floor(Math.random() * 3) + 1;
+      });
+    }, 12000);
+
+    return function() {
+      if (liveViewerRef.current) { clearInterval(liveViewerRef.current); liveViewerRef.current = null; }
+      if (liveGiftRef.current) { clearInterval(liveGiftRef.current); liveGiftRef.current = null; }
+    };
+  }, [isLive]);
 
   function load() {
     setLoading(true);
@@ -65,12 +104,14 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
   }
   var maxBucket = Math.max.apply(null, buckets.concat([1]));
 
+  var displayViewers = isLive ? liveViewerCount : (viewerCount || 0);
+
   var kpis = [
-    ['LIVE VIEWERS',  String(viewerCount || 0),                        'Real-time',                               '#C8FF00'],
-    ['GIFTS',         String(giftList.length),                         'This session',                            '#C9A84C'],
-    ['GIFT REVENUE',  fmtC(totalGiftCents),                            'Total sent',                              '#00C9A7'],
-    ['CREATOR EARN',  fmtC(creatorCents),                              '90% of gifts',                            '#FF8C5A'],
-    ['PEAK VIEWERS',  metrics && metrics.peakViewers ? String(metrics.peakViewers) : '—', 'Session peak',         '#5A8FFF'],
+    ['LIVE VIEWERS',  String(displayViewers),                           'Real-time',                               '#C8FF00'],
+    ['GIFTS',         String(giftList.length),                          'This session',                            '#C9A84C'],
+    ['GIFT REVENUE',  fmtC(totalGiftCents),                             'Total sent',                              '#00C9A7'],
+    ['CREATOR EARN',  fmtC(creatorCents),                               '90% of gifts',                            '#FF8C5A'],
+    ['PEAK VIEWERS',  isLive ? String(peakViewers) : (metrics && metrics.peakViewers ? String(metrics.peakViewers) : '—'), 'Session peak', '#5A8FFF'],
     ['CHAT MSGS',     metrics && metrics.totalMessages ? String(metrics.totalMessages) : '—', 'This session',     '#C084FC'],
   ];
 
@@ -82,7 +123,15 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
       {/* Header */}
       <div style={{ background: 'rgba(200,255,0,.05)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C8FF00', letterSpacing: 3 }}>📊 SESSION ANALYTICS</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C8FF00', letterSpacing: 3 }}>📊 SESSION ANALYTICS</div>
+            {isLive && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,30,30,.18)', border: '1px solid rgba(255,30,30,.4)', borderRadius: 999, padding: '2px 8px' }}>
+                <span style={{ fontSize: 8, color: '#FF3030' }}>●</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#FF3030', letterSpacing: 2 }}>LIVE</span>
+              </div>
+            )}
+          </div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>
             Live metrics · {refreshed ? 'Last: ' + refreshed : 'Loading...'}
           </div>
@@ -92,6 +141,18 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
           {loading ? '...' : '↻ REFRESH'}
         </button>
       </div>
+
+      {/* Live stat chips */}
+      {isLive && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{ background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.35)', borderRadius: 999, padding: '4px 12px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#5A8FFF', letterSpacing: 1 }}>
+            PEAK: {peakViewers}
+          </div>
+          <div style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 999, padding: '4px 12px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#C9A84C', letterSpacing: 1 }}>
+            GIFTS RECV: {liveGiftCount}
+          </div>
+        </div>
+      )}
 
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 4, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3 }}>
@@ -129,7 +190,7 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8FF00', boxShadow: '0 0 4px #C8FF00' }} />
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C8FF00', lineHeight: 1 }}>
-                  {viewerSpark.length > 0 ? viewerSpark[viewerSpark.length - 1].toLocaleString() : (viewerCount || 0).toLocaleString()}
+                  {isLive ? liveViewerCount.toLocaleString() : (viewerSpark.length > 0 ? viewerSpark[viewerSpark.length - 1].toLocaleString() : (viewerCount || 0).toLocaleString())}
                 </span>
               </div>
             </div>
