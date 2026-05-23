@@ -10,7 +10,7 @@ var INIT_OVERLAY = {
   lowerThirds: {},
 };
 
-export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, roomId, role, guests, userId, username }) {
+export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, roomId, role, guests, userId, username, isLive }) {
   var [section,    setSection]    = useState('lower');
   var [draftLT,    setDraftLT]    = useState({});
   var [draftBanner, setDraftBanner] = useState(null);
@@ -145,9 +145,15 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>Live overlay controls · host only</div>
         </div>
         <div style={{ display: 'flex', gap: 5 }}>
+          {isLive && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '2px 8px' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 5px #FF1A3C', display: 'inline-block' }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81' }}>LIVE</span>
+            </span>
+          )}
           {[cfg.banner && cfg.banner.visible, cfg.scoreBug && cfg.scoreBug.visible, cfg.countdown && cfg.countdown.visible].filter(Boolean).length > 0 && (
             <span style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81' }}>
-              LIVE OVERLAYS ACTIVE
+              OVERLAYS ON
             </span>
           )}
         </div>
