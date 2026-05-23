@@ -1082,7 +1082,7 @@ io.on('connection', function(socket) {
     var guestId = socket.data.guestId;
     if (guestId) {
       var roomProducers = mediasoup.getRoomProducers(roomId);
-      for (let i = 0; i < roomProducers.length; i++) {
+      for (var i = 0; i < roomProducers.length; i++) {
         if (roomProducers[i].guestId === guestId) {
           mediasoup.closeProducer(roomProducers[i].producerId);
           io.to(roomId).emit('producer-closed', { producerId: roomProducers[i].producerId });
