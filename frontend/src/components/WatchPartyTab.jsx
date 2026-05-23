@@ -10,7 +10,7 @@ function pad2(n) { return n < 10 ? '0' + n : String(n); }
 function fmtS(s) { s = Math.floor(s) || 0; return pad2(Math.floor(s / 60)) + ':' + pad2(s % 60); }
 function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
 
-export default function WatchPartyTab({ guests, socket, roomId, role, addToast }) {
+export default function WatchPartyTab({ guests, socket, roomId, role, addToast, isLive }) {
   var [urlInput, setUrlInput] = useState('');
   var [videoId,  setVideoId]  = useState('');
   var [playing,  setPlaying]  = useState(false);
@@ -21,6 +21,10 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast }
   var [reacts,   setReacts]   = useState([]);
   var [guestCount, setGuestCount] = useState(0);
 
+  var [watchPartyActive, setWatchPartyActive] = useState(false);
+  var [partyViewers, setPartyViewers] = useState(0);
+  var partyViewerRef = useRef(null);
+
   var playerRef  = useRef(null);
   var posRef     = useRef(0);
   var tickRef    = useRef(null);
@@ -28,6 +32,30 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast }
 
   var isHost = role === 'host' || role === 'cohost';
   var liveGuests = (guests || []).filter(function(g) { return g.live !== false; });
+
+  // Party viewer drift simulation
+  useEffect(function() {
+    if (partyViewerRef.current) {
+      clearInterval(partyViewerRef.current);
+      partyViewerRef.current = null;
+    }
+    if (!watchPartyActive || !isLive) { return; }
+
+    setPartyViewers(3);
+    partyViewerRef.current = setInterval(function() {
+      setPartyViewers(function(prev) {
+        var next = prev + rnd(1, 4);
+        return next > 25 ? 25 : next;
+      });
+    }, 5000);
+
+    return function() {
+      if (partyViewerRef.current) {
+        clearInterval(partyViewerRef.current);
+        partyViewerRef.current = null;
+      }
+    };
+  }, [watchPartyActive, isLive]);
 
   // Load YouTube IFrame API once
   useEffect(function() {
@@ -182,6 +210,24 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast }
     };
   }, [socket, isHost]);
 
+  function handleStartWatchParty() {
+    setWatchPartyActive(true);
+    if (addToast) addToast('🎉 Watch party started!', 'success');
+    if (socket) {
+      socket.emit('watch-party-start', { roomId: roomId });
+    }
+  }
+
+  function handleEndWatchParty() {
+    setWatchPartyActive(false);
+    setPartyViewers(0);
+    if (partyViewerRef.current) {
+      clearInterval(partyViewerRef.current);
+      partyViewerRef.current = null;
+    }
+    if (addToast) addToast('Watch party ended', 'info');
+  }
+
   function handleLoadUrl() {
     var vid = extractYtId(urlInput.trim());
     if (!vid) {
@@ -249,6 +295,39 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
+      {/* HOST IS LIVE banner */}
+      {isLive && (
+        <div style={{ background: 'linear-gradient(90deg,rgba(128,0,32,.7),rgba(192,24,56,.5))', borderBottom: '1px solid rgba(192,24,56,.5)', padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF3030', boxShadow: '0 0 6px #FF3030' }} />
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#C9A84C', letterSpacing: 2 }}>HOST IS LIVE</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#EDE8F5', opacity: 0.7, marginLeft: 4 }}>Stream is active · {liveGuests.length} in room</span>
+        </div>
+      )}
+
+      {/* Watch party status bar */}
+      {watchPartyActive && (
+        <div style={{ background: isLive ? 'rgba(0,201,167,.08)' : 'rgba(245,158,11,.08)', border: '1px solid ' + (isLive ? 'rgba(0,201,167,.3)' : 'rgba(245,158,11,.35)'), margin: '6px 8px 0', borderRadius: 8, padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {isLive ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1 }}>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#00C9A7', letterSpacing: 1 }}>{partyViewers}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>viewers</span>
+                <div style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#00C9A7', letterSpacing: 1 }}>
+                  WATCHING TOGETHER
+                </div>
+              </div>
+              <button
+                onClick={handleEndWatchParty}
+                style={{ background: 'rgba(255,30,30,.12)', border: '1px solid rgba(255,30,30,.35)', borderRadius: 6, padding: '4px 10px', color: '#FF5555', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                END PARTY
+              </button>
+            </>
+          ) : (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: '#F59E0B' }}>⚠️ Stream offline — party paused</span>
+          )}
+        </div>
+      )}
+
       {/* URL bar — host only */}
       {isHost && (
         <div style={{ background: '#0F0C14', borderBottom: '1px solid #241C34', padding: '8px 10px', display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
@@ -264,6 +343,17 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast }
             onClick={handleLoadUrl}
             style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 7, padding: '7px 16px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
             LOAD
+          </button>
+        </div>
+      )}
+
+      {/* Start watch party button — host/co-host only, party not active */}
+      {isHost && !watchPartyActive && (
+        <div style={{ padding: '8px 10px', borderBottom: '1px solid #241C34', flexShrink: 0 }}>
+          <button
+            onClick={handleStartWatchParty}
+            style={{ width: '100%', background: 'linear-gradient(135deg,rgba(128,0,32,.7),rgba(192,24,56,.5))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '9px 0', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 2 }}>
+            🎉 START WATCH PARTY
           </button>
         </div>
       )}
