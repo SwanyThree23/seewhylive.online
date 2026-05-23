@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 var CREATORS = [
   { id: 'c1', name: 'CaliBonesOG',  handle: 'calibonesog',  flag: '🇺🇸', category: 'Domino',  followers: 12400, live: true,  viewers: 892,  color: '#C01838' },
@@ -31,12 +31,50 @@ var CREATOR_BIO = {
   c8: { bio: 'Neon Beats — Korean EDM producer. Lo-fi to techno, all live.', streams: 17, totalViews: '44k' },
 };
 
-export default function CreatorDiscoveryTab({ addToast }) {
-  var [filter,    setFilter]    = useState('All');
-  var [sortBy,    setSortBy]    = useState('live');
-  var [following, setFollowing] = useState({ c1: true });
-  var [search,    setSearch]    = useState('');
-  var [profile,   setProfile]   = useState(null);
+export default function CreatorDiscoveryTab({ addToast, isLive }) {
+  var [filter,          setFilter]          = useState('All');
+  var [sortBy,          setSortBy]          = useState('live');
+  var [following,       setFollowing]       = useState({ c1: true });
+  var [search,          setSearch]          = useState('');
+  var [profile,         setProfile]         = useState(null);
+  var [filterLive,      setFilterLive]      = useState(false);
+  var [liveViewerCounts, setLiveViewerCounts] = useState(function() {
+    var init = {};
+    for (var i = 0; i < CREATORS.length; i++) {
+      init[CREATORS[i].id] = CREATORS[i].viewers;
+    }
+    return init;
+  });
+  var [livePulse, setLivePulse] = useState(false);
+  var driftRef = useRef(null);
+  var pulseRef = useRef(null);
+
+  useEffect(function() {
+    if (!isLive) return;
+    driftRef.current = setInterval(function() {
+      setLiveViewerCounts(function(prev) {
+        var next = Object.assign({}, prev);
+        for (var i = 0; i < CREATORS.length; i++) {
+          var c = CREATORS[i];
+          if (c.live) {
+            var delta = Math.floor(Math.random() * 20) - 8;
+            var newVal = (prev[c.id] || 0) + delta;
+            if (newVal < 0) newVal = 0;
+            next[c.id] = newVal;
+          }
+        }
+        return next;
+      });
+    }, 5000);
+    return function() { clearInterval(driftRef.current); };
+  }, [isLive]);
+
+  useEffect(function() {
+    pulseRef.current = setInterval(function() {
+      setLivePulse(function(v) { return !v; });
+    }, 800);
+    return function() { clearInterval(pulseRef.current); };
+  }, []);
 
   function toggleFollow(id, name) {
     setFollowing(function(p) {
@@ -49,7 +87,8 @@ export default function CreatorDiscoveryTab({ addToast }) {
   var visible = CREATORS.filter(function(c) {
     var matchesCat = filter === 'All' || c.category === filter;
     var matchesSearch = !search.trim() || c.name.toLowerCase().indexOf(search.toLowerCase()) !== -1 || c.handle.toLowerCase().indexOf(search.toLowerCase()) !== -1;
-    return matchesCat && matchesSearch;
+    var matchesLive = !filterLive || c.live;
+    return matchesCat && matchesSearch && matchesLive;
   }).sort(function(a, b) {
     if (sortBy === 'live') {
       if (a.live !== b.live) return a.live ? -1 : 1;
@@ -62,8 +101,29 @@ export default function CreatorDiscoveryTab({ addToast }) {
 
   var liveCount = CREATORS.filter(function(c) { return c.live; }).length;
 
+  var liveDotStyle = {
+    display: 'inline-block',
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    background: '#FF1A3C',
+    marginRight: 4,
+    boxShadow: livePulse ? '0 0 8px 3px rgba(255,26,60,.7)' : '0 0 3px 1px rgba(255,26,60,.3)',
+    transition: 'box-shadow 0.4s',
+  };
+
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
+
+      {/* YOU'RE LIVE banner */}
+      {isLive && (
+        <div style={{ background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={liveDotStyle} />
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#FF6B81', letterSpacing: 2 }}>YOU'RE LIVE</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginLeft: 4 }}>Your stream is active · viewer counts updating live</span>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.22)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
@@ -88,8 +148,14 @@ export default function CreatorDiscoveryTab({ addToast }) {
         style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, outline: 'none' }}
       />
 
-      {/* Category filter */}
+      {/* Category filter + LIVE NOW chip */}
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
+        {/* LIVE NOW filter chip */}
+        <button onClick={function() { setFilterLive(function(v) { return !v; }); }}
+          style={{ background: filterLive ? 'rgba(255,26,60,.18)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (filterLive ? 'rgba(255,26,60,.55)' : '#241C34'), borderRadius: 999, padding: '3px 12px', color: filterLive ? '#FF6B81' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+          {filterLive && <span style={liveDotStyle} />}
+          LIVE NOW
+        </button>
         {CATS.map(function(c) {
           var active = filter === c;
           var color  = CAT_COLORS[c] || '#7A6F90';
@@ -149,13 +215,17 @@ export default function CreatorDiscoveryTab({ addToast }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {visible.map(function(c) {
           var isFollowing = Boolean(following[c.id]);
+          var displayViewers = liveViewerCounts[c.id] !== undefined ? liveViewerCounts[c.id] : c.viewers;
+          var avatarBorderColor = c.live
+            ? (livePulse ? c.color + 'ff' : c.color + '66')
+            : c.color + '33';
           return (
             <div key={c.id} onClick={function() { setProfile(profile && profile.id === c.id ? null : c); }} style={{ background: c.live ? 'rgba(22,16,32,.9)' : 'rgba(15,12,20,.7)', border: '1px solid ' + (profile && profile.id === c.id ? c.color + '88' : c.live ? c.color + '33' : '#241C34'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
               {/* Avatar */}
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: c.color + '18', border: '2px solid ' + c.color + (c.live ? 'aa' : '33'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, position: 'relative' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 10, background: c.color + '18', border: '2px solid ' + avatarBorderColor, boxShadow: c.live && livePulse ? '0 0 10px 2px ' + c.color + '55' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, position: 'relative', transition: 'border-color .4s, box-shadow .4s' }}>
                 {c.flag}
                 {c.live && (
-                  <div style={{ position: 'absolute', bottom: -3, right: -3, background: '#FF1A3C', border: '2px solid #07050A', borderRadius: 999, width: 10, height: 10 }} />
+                  <div style={{ position: 'absolute', bottom: -3, right: -3, background: '#FF1A3C', border: '2px solid #07050A', borderRadius: 999, width: 10, height: 10, boxShadow: livePulse ? '0 0 6px 2px rgba(255,26,60,.8)' : 'none', transition: 'box-shadow .4s' }} />
                 )}
               </div>
 
@@ -166,7 +236,10 @@ export default function CreatorDiscoveryTab({ addToast }) {
                     {c.name}
                   </span>
                   {c.live && (
-                    <span style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', flexShrink: 0 }}>LIVE</span>
+                    <span style={{ background: livePulse ? 'rgba(255,26,60,.28)' : 'rgba(255,26,60,.12)', border: '1px solid ' + (livePulse ? 'rgba(255,26,60,.7)' : 'rgba(255,26,60,.35)'), borderRadius: 999, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3, transition: 'background .4s, border-color .4s' }}>
+                      <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: '#FF1A3C', boxShadow: livePulse ? '0 0 5px 2px rgba(255,26,60,.8)' : 'none', transition: 'box-shadow .4s' }} />
+                      LIVE
+                    </span>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -176,9 +249,9 @@ export default function CreatorDiscoveryTab({ addToast }) {
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>
                     {fmtFollowers(c.followers)} followers
                   </span>
-                  {c.live && c.viewers > 0 && (
+                  {c.live && displayViewers > 0 && (
                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C8FF00' }}>
-                      👁 {c.viewers.toLocaleString()}
+                      👁 {displayViewers.toLocaleString()}
                     </span>
                   )}
                 </div>
