@@ -19,14 +19,14 @@ var INIT_FN = [
 ];
 
 var LEADERBOARD = [
-  { name: 'CaliBonesOG', flag: '🇺🇸', w: 8, l: 0, pts: 240, streak: 8, color: '#C9A84C' },
-  { name: 'SwanyThree',  flag: '🇺🇸', w: 7, l: 1, pts: 210, streak: 5, color: '#C01838' },
-  { name: 'VibeNBones',  flag: '🇺🇸', w: 6, l: 2, pts: 180, streak: 3, color: '#00DEC0' },
-  { name: 'BeatKing_X',  flag: '🇬🇧', w: 5, l: 3, pts: 150, streak: 2, color: '#C084FC' },
-  { name: 'NeonBeats',   flag: '🇰🇷', w: 4, l: 4, pts: 120, streak: 0, color: '#5A8FFF' },
-  { name: 'LyricQueen',  flag: '🇺🇸', w: 3, l: 5, pts: 90,  streak: 0, color: '#FF8C5A' },
-  { name: 'DJ_Phantom',  flag: '🇺🇸', w: 2, l: 6, pts: 60,  streak: 0, color: '#7A6F90' },
-  { name: 'VibeStar',    flag: '🇯🇵', w: 1, l: 7, pts: 30,  streak: 0, color: '#EDE8F5' },
+  { name: 'CaliBonesOG', flag: '&#x1F1FA;&#x1F1F8;', w: 8, l: 0, pts: 240, streak: 8, color: '#C9A84C' },
+  { name: 'SwanyThree',  flag: '&#x1F1FA;&#x1F1F8;', w: 7, l: 1, pts: 210, streak: 5, color: '#C01838' },
+  { name: 'VibeNBones',  flag: '&#x1F1FA;&#x1F1F8;', w: 6, l: 2, pts: 180, streak: 3, color: '#00DEC0' },
+  { name: 'BeatKing_X',  flag: '&#x1F1EC;&#x1F1E7;', w: 5, l: 3, pts: 150, streak: 2, color: '#C084FC' },
+  { name: 'NeonBeats',   flag: '&#x1F1F0;&#x1F1F7;', w: 4, l: 4, pts: 120, streak: 0, color: '#5A8FFF' },
+  { name: 'LyricQueen',  flag: '&#x1F1FA;&#x1F1F8;', w: 3, l: 5, pts: 90,  streak: 0, color: '#FF8C5A' },
+  { name: 'DJ_Phantom',  flag: '&#x1F1FA;&#x1F1F8;', w: 2, l: 6, pts: 60,  streak: 0, color: '#7A6F90' },
+  { name: 'VibeStar',    flag: '&#x1F1EF;&#x1F1F5;', w: 1, l: 7, pts: 30,  streak: 0, color: '#EDE8F5' },
 ];
 
 var PLAYER_STATS = [
@@ -40,11 +40,11 @@ var PLAYER_STATS = [
 var STATUS_COLORS = { LIVE: '#FF1A3C', NEXT: '#00C9A7', DONE: '#7A6F90' };
 
 var PRIZE_POOL = [
-  { place: 1,    label: '1ST',         prize: 50000, color: '#C9A84C', icon: '🥇' },
-  { place: 2,    label: '2ND',         prize: 25000, color: '#C0C0C0', icon: '🥈' },
-  { place: 3,    label: '3RD',         prize: 10000, color: '#cd7f32', icon: '🥉' },
+  { place: 1,    label: '1ST',         prize: 50000, color: '#C9A84C', icon: '&#x1F947;' },
+  { place: 2,    label: '2ND',         prize: 25000, color: '#C0C0C0', icon: '&#x1F948;' },
+  { place: 3,    label: '3RD',         prize: 10000, color: '#cd7f32', icon: '&#x1F949;' },
   { place: '4',  label: '4TH',         prize: 5000,  color: '#7A6F90', icon: '4️⃣' },
-  { place: '5-8',label: '5TH-8TH',     prize: 1000,  color: '#3D3450', icon: '🎖' },
+  { place: '5-8',label: '5TH-8TH',     prize: 1000,  color: '#3D3450', icon: '&#x1F396;' },
 ];
 var PRIZE_TOTAL = PRIZE_POOL.reduce(function(s, p) { return s + (p.place === '5-8' ? p.prize * 4 : p.prize); }, 0);
 
@@ -52,16 +52,18 @@ function cloneMatches(arr) {
   return arr.map(function(b) { return Object.assign({}, b); });
 }
 
-export default function WashingtonClassicTab({ addToast }) {
-  var [qf,      setQf]      = useState(cloneMatches(INIT_QF));
-  var [sf,      setSf]      = useState(cloneMatches(INIT_SF));
-  var [finals,  setFinals]  = useState(cloneMatches(INIT_FN));
-  var [view,    setView]    = useState('brackets');
-  var [round,   setRound]   = useState('qf');
-  var [activeId,setActiveId]= useState(null);
-  var [s1,      setS1]      = useState(0);
-  var [s2,      setS2]      = useState(0);
-  var [autoScore, setAutoScore] = useState(false);
+export default function WashingtonClassicTab({ addToast, isLive }) {
+  var [qf,         setQf]         = useState(cloneMatches(INIT_QF));
+  var [sf,         setSf]         = useState(cloneMatches(INIT_SF));
+  var [finals,     setFinals]     = useState(cloneMatches(INIT_FN));
+  var [view,       setView]       = useState('brackets');
+  var [round,      setRound]      = useState('qf');
+  var [activeId,   setActiveId]   = useState(null);
+  var [s1,         setS1]         = useState(0);
+  var [s2,         setS2]         = useState(0);
+  var [autoScore,  setAutoScore]  = useState(false);
+  var [liveScores, setLiveScores] = useState(null);
+  var [possession, setPossession] = useState(0);
   var autoRef = useRef(null);
 
   useEffect(function() {
@@ -80,13 +82,56 @@ export default function WashingtonClassicTab({ addToast }) {
           var newScore = a + '-' + bv;
           var newStatus = (a >= 5 || bv >= 5) ? 'DONE' : 'LIVE';
           var winner = newStatus === 'DONE' ? (a >= 5 ? b.p1 : b.p2) : null;
-          if (winner && addToast) addToast(winner + ' wins the match! 🏆', 'success');
+          if (winner && addToast) addToast(winner + ' wins the match! &#x1F3C6;', 'success');
           return Object.assign({}, b, { score: newScore, status: newStatus, winner: winner });
         });
       });
     }, 1800);
     return function() { if (autoRef.current) clearInterval(autoRef.current); };
   }, [autoScore, addToast]);
+
+  // Live score simulation — updates every 8 seconds when isLive
+  useEffect(function() {
+    if (!isLive) {
+      setLiveScores(null);
+      return;
+    }
+    // Initialize liveScores from current LIVE match in qf
+    setLiveScores(function(prev) {
+      if (prev) return prev;
+      var liveMatch = null;
+      for (var i = 0; i < qf.length; i++) {
+        if (qf[i].status === 'LIVE') { liveMatch = qf[i]; break; }
+      }
+      if (!liveMatch) return { p1score: 0, p2score: 0, matchId: null };
+      var parts = (liveMatch.score === '—' ? '0-0' : liveMatch.score).split('-');
+      return { p1score: parseInt(parts[0]) || 0, p2score: parseInt(parts[1]) || 0, matchId: liveMatch.id };
+    });
+    var id = setInterval(function() {
+      setLiveScores(function(prev) {
+        if (!prev) return prev;
+        var increment = Math.floor(Math.random() * 3) + 1;
+        var team = Math.random() > 0.5 ? 'p1' : 'p2';
+        if (team === 'p1') {
+          return Object.assign({}, prev, { p1score: prev.p1score + increment });
+        }
+        return Object.assign({}, prev, { p2score: prev.p2score + increment });
+      });
+    }, 8000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  // Possession flip — every 12 seconds when isLive
+  useEffect(function() {
+    if (!isLive) {
+      setPossession(0);
+      return;
+    }
+    var id = setInterval(function() {
+      setPossession(function() { return Math.random() > 0.5 ? 1 : 0; });
+    }, 12000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
 
   function getRound(r) { return r === 'qf' ? qf : r === 'sf' ? sf : finals; }
 
@@ -111,7 +156,7 @@ export default function WashingtonClassicTab({ addToast }) {
         return x.id === b.id ? Object.assign({}, x, { score: s1 + '-' + s2, status: 'DONE', winner: winner }) : x;
       });
     });
-    if (addToast) addToast(winner + ' advances! 🏆', 'success');
+    if (addToast) addToast(winner + ' advances! &#x1F3C6;', 'success');
     setActiveId(null);
     setS1(0);
     setS2(0);
@@ -120,32 +165,68 @@ export default function WashingtonClassicTab({ addToast }) {
   var brackets = getRound(round);
   var champion = finals[0] && finals[0].status === 'DONE' ? finals[0].winner : null;
 
+  // Find the LIVE match for live score overlay
+  var liveMatchForOverlay = null;
+  for (var mi = 0; mi < qf.length; mi++) {
+    if (qf[mi].status === 'LIVE') { liveMatchForOverlay = qf[mi]; break; }
+  }
+
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
 
       {/* Header */}
       <div style={{ background: 'rgba(128,0,32,.12)', border: '1px solid rgba(128,0,32,.35)', borderRadius: 10, padding: '10px 14px' }}>
-        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3 }}>🎲 WASHINGTON CLASSIC</div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>Live domino tournament scoring · Des Moines, WA</div>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3 }}>&#x1F3B2; WASHINGTON CLASSIC</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>Live domino tournament scoring \xB7 Des Moines, WA</div>
         {champion && (
           <div style={{ marginTop: 7, padding: '4px 10px', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#C9A84C', textAlign: 'center', letterSpacing: 2 }}>
-            🏆 CHAMPION: {champion}
+            &#x1F3C6; CHAMPION: {champion}
           </div>
         )}
       </div>
 
+      {/* Live score panel — shown when isLive and there is a LIVE match */}
+      {isLive && liveMatchForOverlay && liveScores && (
+        <div style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 10, padding: '12px 14px', boxShadow: '0 0 18px rgba(255,26,60,.15)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 6px #FF1A3C' }} />
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 11, color: '#FF1A3C', letterSpacing: 2 }}>LIVE SCORE</span>
+            </div>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>auto-updating</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', marginBottom: 2 }}>{liveMatchForOverlay.p1}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C8FF00', lineHeight: 1 }}>{liveScores.p1score}</div>
+              {possession === 0 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0', marginTop: 3 }}>&#x25B6; POSSESSION</div>
+              )}
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#7A6F90', padding: '0 10px' }}>VS</div>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', marginBottom: 2 }}>{liveMatchForOverlay.p2}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C8FF00', lineHeight: 1 }}>{liveScores.p2score}</div>
+              {possession === 1 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0', marginTop: 3 }}>&#x25B6; POSSESSION</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Auto-score toggle */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(22,16,32,.6)', border: '1px solid #241C34', borderRadius: 8, padding: '7px 12px' }}>
-        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>⚡ LIVE AUTO-SCORING</span>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>&#x26A1; LIVE AUTO-SCORING</span>
         <button onClick={function() { setAutoScore(function(v) { return !v; }); }}
           style={{ background: autoScore ? 'rgba(255,26,60,.2)' : 'rgba(0,201,167,.1)', border: '1px solid ' + (autoScore ? 'rgba(255,26,60,.5)' : 'rgba(0,201,167,.3)'), borderRadius: 999, padding: '3px 14px', color: autoScore ? '#FF6B81' : '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
-          {autoScore ? '⏹ STOP' : '▶ START'}
+          {autoScore ? '&#x23F9; STOP' : '&#x25B6; START'}
         </button>
       </div>
 
       {/* View toggle */}
       <div style={{ display: 'flex', gap: 4 }}>
-        {[['brackets', '🏆 BRACKETS'], ['board', '📋 STANDINGS'], ['stats', '📊 STATS'], ['prizes', '💰 PRIZES']].map(function(t) {
+        {[['brackets', '&#x1F3C6; BRACKETS'], ['board', '&#x1F4CB; STANDINGS'], ['stats', '&#x1F4CA; STATS'], ['prizes', '&#x1F4B0; PRIZES']].map(function(t) {
           var isActive = view === t[0];
           return (
             <button key={t[0]} onClick={function() { setView(t[0]); }}
@@ -158,9 +239,9 @@ export default function WashingtonClassicTab({ addToast }) {
 
       {/* ── BRACKETS ── */}
       {view === 'brackets' && (
-        <>
+        <div>
           {/* Round selector */}
-          <div style={{ display: 'flex', gap: 3, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3 }}>
+          <div style={{ display: 'flex', gap: 3, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3, marginBottom: 8 }}>
             {ROUND_KEYS.map(function(rk) {
               var isActive = round === rk;
               var matches  = getRound(rk);
@@ -175,7 +256,7 @@ export default function WashingtonClassicTab({ addToast }) {
             })}
           </div>
 
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 3, textAlign: 'center' }}>{ROUND_LABELS[round]}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 3, textAlign: 'center', marginBottom: 8 }}>{ROUND_LABELS[round]}</div>
 
           {/* Match cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -183,17 +264,36 @@ export default function WashingtonClassicTab({ addToast }) {
               var sc = STATUS_COLORS[b.status] || '#7A6F90';
               var isActiveMatch = activeId === b.id;
               var isTbd = b.p1 === 'TBD' || b.p2 === 'TBD';
+              var isLiveMatch = b.status === 'LIVE';
+              var showLiveOverlay = isLive && isLiveMatch && liveScores;
+              var displayP1Score = showLiveOverlay ? (liveScores.p1score || 0) : null;
+              var displayP2Score = showLiveOverlay ? (liveScores.p2score || 0) : null;
               return (
-                <div key={b.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (b.status === 'LIVE' ? 'rgba(255,26,60,.4)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
+                <div key={b.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (isLiveMatch && isLive ? 'rgba(255,26,60,.4)' : b.status === 'LIVE' ? 'rgba(255,26,60,.4)' : '#241C34'), borderRadius: 10, padding: '10px 12px', boxShadow: isLiveMatch && isLive ? '0 0 12px rgba(255,26,60,.1)' : 'none' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isActiveMatch ? 10 : 0 }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: b.winner === b.p1 ? '#C9A84C' : isTbd ? '#3D3450' : '#EDE8F5' }}>{b.p1}</span>
-                        <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: sc, letterSpacing: 2, minWidth: 34, textAlign: 'center' }}>{b.score}</span>
+                        {showLiveOverlay ? (
+                          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C8FF00', letterSpacing: 2, minWidth: 50, textAlign: 'center' }}>
+                            {displayP1Score} - {displayP2Score}
+                          </span>
+                        ) : (
+                          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: sc, letterSpacing: 2, minWidth: 34, textAlign: 'center' }}>{b.score}</span>
+                        )}
                         <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: b.winner === b.p2 ? '#C9A84C' : isTbd ? '#3D3450' : '#EDE8F5' }}>{b.p2}</span>
                       </div>
+                      {showLiveOverlay && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 5px #FF1A3C' }} />
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', letterSpacing: 1 }}>LIVE SCORE</span>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginLeft: 6 }}>
+                            {possession === 0 ? b.p1 : b.p2} &#x25B6; POSSESSION
+                          </span>
+                        </div>
+                      )}
                       {b.winner && (
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', marginTop: 3 }}>🏆 {b.winner} advances</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', marginTop: 3 }}>&#x1F3C6; {b.winner} advances</div>
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: 5, flexShrink: 0, alignItems: 'center' }}>
@@ -235,7 +335,7 @@ export default function WashingtonClassicTab({ addToast }) {
               );
             })}
           </div>
-        </>
+        </div>
       )}
 
       {/* ── STANDINGS ── */}
@@ -256,7 +356,7 @@ export default function WashingtonClassicTab({ addToast }) {
                 <span style={{ fontSize: 14, flexShrink: 0 }}>{p.flag}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: p.color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-                  {p.streak > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C' }}>{p.streak}🔥 streak</div>}
+                  {p.streak > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C' }}>{p.streak}&#x1F525; streak</div>}
                 </div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#00C96A', width: 24, textAlign: 'center', flexShrink: 0 }}>{p.w}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#FF4060', width: 24, textAlign: 'center', flexShrink: 0 }}>{p.l}</div>
@@ -275,7 +375,7 @@ export default function WashingtonClassicTab({ addToast }) {
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C9A84C', lineHeight: 1 }}>
               ${(PRIZE_TOTAL / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 4 }}>Washington Classic 2025 · Des Moines, WA</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 4 }}>Washington Classic 2025 \xB7 Des Moines, WA</div>
           </div>
 
           {PRIZE_POOL.map(function(p) {
@@ -286,7 +386,7 @@ export default function WashingtonClassicTab({ addToast }) {
                   <span style={{ fontSize: 18, flexShrink: 0 }}>{p.icon}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 14, color: p.color }}>{p.label} PLACE</div>
-                    {p.place === '5-8' && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>×4 players</div>}
+                    {p.place === '5-8' && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>\xD74 players</div>}
                   </div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: p.color }}>${(p.prize / 100).toFixed(2)}</div>
                 </div>
