@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 var AVATAR_ITEMS = [
   { id: 'a1', name: 'Domino King',    emoji: '👑', price: 200, owned: true,  equipped: true,  rarity: 'legendary', desc: 'Washington Classic champion' },
@@ -41,12 +41,50 @@ var BADGES = [
   { id: 'b5', icon: '🔥', label: '10-Streak',      unlocked: false },
 ];
 
-export default function AvatarHubTab({ addToast }) {
-  var [items,         setItems]         = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
-  var [gemBal,        setGemBal]        = useState(350);
-  var [filter,        setFilter]        = useState('all');
-  var [frames,        setFrames]        = useState(FRAMES.map(function(f) { return Object.assign({}, f); }));
-  var [equippedFrame, setEquippedFrame] = useState('f1');
+var VIEWER_NAMES = ['King D', 'Cali J', 'Volt V', 'Teal B', 'Gold G', 'Purp R', 'Dia H', 'Dom N'];
+var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#00C9A7','#C084FC','#5A8FFF','#FF6B35','#C8FF00','#FF1493'];
+
+export default function AvatarHubTab({ addToast, isLive }) {
+  var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
+  var [gemBal,           setGemBal]           = useState(350);
+  var [filter,           setFilter]           = useState('all');
+  var [frames,           setFrames]           = useState(FRAMES.map(function(f) { return Object.assign({}, f); }));
+  var [equippedFrame,    setEquippedFrame]     = useState('f1');
+  var [livePulse,        setLivePulse]         = useState(0);
+  var [liveViewerAvatars, setLiveViewerAvatars] = useState([]);
+
+  useEffect(function() {
+    if (!isLive) {
+      setLivePulse(0);
+      return;
+    }
+    var id = setInterval(function() {
+      setLivePulse(Math.floor(50 + 50 * Math.sin(Date.now() / 600)));
+    }, 600);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  useEffect(function() {
+    if (!isLive) {
+      setLiveViewerAvatars([]);
+      return;
+    }
+    var id = setInterval(function() {
+      var nameIdx = Math.floor(Math.random() * VIEWER_NAMES.length);
+      var colorIdx = Math.floor(Math.random() * VIEWER_COLORS.length);
+      var viewer = {
+        id: Date.now() + Math.random(),
+        name: VIEWER_NAMES[nameIdx],
+        color: VIEWER_COLORS[colorIdx],
+        initials: VIEWER_NAMES[nameIdx].split(' ').map(function(w) { return w[0]; }).join(''),
+      };
+      setLiveViewerAvatars(function(prev) {
+        var updated = prev.concat([viewer]);
+        return updated.slice(-5);
+      });
+    }, 4000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
 
   var equipped = items.find(function(a) { return a.equipped; });
   var activeFrame = frames.find(function(f) { return f.id === equippedFrame; });
@@ -92,12 +130,21 @@ export default function AvatarHubTab({ addToast }) {
     return a.rarity === filter;
   });
 
+  var liveShadow = isLive
+    ? '0 0 ' + (8 + Math.floor(livePulse / 10)) + 'px rgba(192,132,252,' + (0.4 + livePulse / 250).toFixed(2) + ')'
+    : 'none';
+
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
       <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
         {equipped && (
-          <div style={{ width: 56, height: 56, borderRadius: 12, background: 'radial-gradient(ellipse,rgba(201,168,76,.25),rgba(128,0,32,.15))', border: activeFrame ? activeFrame.style : '2px solid #C9A84C55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, flexShrink: 0 }}>
-            {equipped.emoji}
+          <div style={{ position: 'relative', width: 56, height: 56, flexShrink: 0 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 12, background: 'radial-gradient(ellipse,rgba(201,168,76,.25),rgba(128,0,32,.15))', border: activeFrame ? activeFrame.style : '2px solid #C9A84C55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, boxShadow: liveShadow }}>
+              {equipped.emoji}
+            </div>
+            {isLive && (
+              <div style={{ position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)', background: '#FF1A3C', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: 1, whiteSpace: 'nowrap' }}>🔴 LIVE</div>
+            )}
           </div>
         )}
         <div style={{ flex: 1 }}>
@@ -121,6 +168,21 @@ export default function AvatarHubTab({ addToast }) {
         </div>
       </div>
 
+      {isLive && liveViewerAvatars.length > 0 && (
+        <div style={{ background: 'rgba(192,132,252,.07)', border: '1px solid rgba(192,132,252,.25)', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC', letterSpacing: 2, flexShrink: 0 }}>WATCHING LIVE</div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {liveViewerAvatars.map(function(v) {
+              return (
+                <div key={v.id} style={{ width: 26, height: 26, borderRadius: '50%', background: v.color + '33', border: '1px solid ' + v.color + '88', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, color: v.color, fontWeight: 700, flexShrink: 0 }} title={v.name}>
+                  {v.initials}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
         {filters.map(function(f) {
           var active = filter === f;
@@ -139,12 +201,16 @@ export default function AvatarHubTab({ addToast }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
         {visible.map(function(a) {
           var rc = RARITY_COLORS[a.rarity] || '#7A6F90';
+          var cardShadow = (a.equipped && isLive) ? liveShadow : 'none';
           return (
             <div
               key={a.id}
-              style={{ background: a.equipped ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (a.equipped ? '#C9A84C55' : a.owned ? rc + '33' : '#241C34'), borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative' }}>
+              style={{ background: a.equipped ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (a.equipped ? '#C9A84C55' : a.owned ? rc + '33' : '#241C34'), borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative', boxShadow: cardShadow }}>
               {a.equipped && (
                 <div style={{ position: 'absolute', top: 7, right: 7, background: '#C9A84C', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#07050A', letterSpacing: 1 }}>ON</div>
+              )}
+              {a.equipped && isLive && (
+                <div style={{ position: 'absolute', top: 7, left: 7, background: '#FF1A3C', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: 1 }}>🔴 LIVE</div>
               )}
               <div style={{ fontSize: 34, filter: a.owned ? 'none' : 'grayscale(80%) opacity(0.5)' }}>{a.emoji}</div>
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: a.owned ? '#EDE8F5' : '#7A6F90', textAlign: 'center' }}>{a.name}</div>
