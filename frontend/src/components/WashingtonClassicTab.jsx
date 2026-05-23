@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 var ROUND_KEYS   = ['qf', 'sf', 'fn'];
 var ROUND_LABELS = { qf: 'QUARTERFINALS', sf: 'SEMIFINALS', fn: 'THE FINALS' };
@@ -39,6 +39,15 @@ var PLAYER_STATS = [
 
 var STATUS_COLORS = { LIVE: '#FF1A3C', NEXT: '#00C9A7', DONE: '#7A6F90' };
 
+var PRIZE_POOL = [
+  { place: 1,    label: '1ST',         prize: 50000, color: '#C9A84C', icon: '🥇' },
+  { place: 2,    label: '2ND',         prize: 25000, color: '#C0C0C0', icon: '🥈' },
+  { place: 3,    label: '3RD',         prize: 10000, color: '#cd7f32', icon: '🥉' },
+  { place: '4',  label: '4TH',         prize: 5000,  color: '#7A6F90', icon: '4️⃣' },
+  { place: '5-8',label: '5TH-8TH',     prize: 1000,  color: '#3D3450', icon: '🎖' },
+];
+var PRIZE_TOTAL = PRIZE_POOL.reduce(function(s, p) { return s + (p.place === '5-8' ? p.prize * 4 : p.prize); }, 0);
+
 function cloneMatches(arr) {
   return arr.map(function(b) { return Object.assign({}, b); });
 }
@@ -52,6 +61,32 @@ export default function WashingtonClassicTab({ addToast }) {
   var [activeId,setActiveId]= useState(null);
   var [s1,      setS1]      = useState(0);
   var [s2,      setS2]      = useState(0);
+  var [autoScore, setAutoScore] = useState(false);
+  var autoRef = useRef(null);
+
+  useEffect(function() {
+    if (!autoScore) {
+      if (autoRef.current) { clearInterval(autoRef.current); autoRef.current = null; }
+      return;
+    }
+    autoRef.current = setInterval(function() {
+      setQf(function(prev) {
+        return prev.map(function(b) {
+          if (b.status !== 'LIVE') return b;
+          var parts = (b.score === '—' ? '0-0' : b.score).split('-');
+          var a = parseInt(parts[0]) || 0;
+          var bv = parseInt(parts[1]) || 0;
+          if (Math.random() > 0.5) { a++; } else { bv++; }
+          var newScore = a + '-' + bv;
+          var newStatus = (a >= 5 || bv >= 5) ? 'DONE' : 'LIVE';
+          var winner = newStatus === 'DONE' ? (a >= 5 ? b.p1 : b.p2) : null;
+          if (winner && addToast) addToast(winner + ' wins the match! 🏆', 'success');
+          return Object.assign({}, b, { score: newScore, status: newStatus, winner: winner });
+        });
+      });
+    }, 1800);
+    return function() { if (autoRef.current) clearInterval(autoRef.current); };
+  }, [autoScore, addToast]);
 
   function getRound(r) { return r === 'qf' ? qf : r === 'sf' ? sf : finals; }
 
@@ -99,9 +134,18 @@ export default function WashingtonClassicTab({ addToast }) {
         )}
       </div>
 
+      {/* Auto-score toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(22,16,32,.6)', border: '1px solid #241C34', borderRadius: 8, padding: '7px 12px' }}>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>⚡ LIVE AUTO-SCORING</span>
+        <button onClick={function() { setAutoScore(function(v) { return !v; }); }}
+          style={{ background: autoScore ? 'rgba(255,26,60,.2)' : 'rgba(0,201,167,.1)', border: '1px solid ' + (autoScore ? 'rgba(255,26,60,.5)' : 'rgba(0,201,167,.3)'), borderRadius: 999, padding: '3px 14px', color: autoScore ? '#FF6B81' : '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
+          {autoScore ? '⏹ STOP' : '▶ START'}
+        </button>
+      </div>
+
       {/* View toggle */}
       <div style={{ display: 'flex', gap: 4 }}>
-        {[['brackets', '🏆 BRACKETS'], ['board', '📋 STANDINGS'], ['stats', '📊 STATS']].map(function(t) {
+        {[['brackets', '🏆 BRACKETS'], ['board', '📋 STANDINGS'], ['stats', '📊 STATS'], ['prizes', '💰 PRIZES']].map(function(t) {
           var isActive = view === t[0];
           return (
             <button key={t[0]} onClick={function() { setView(t[0]); }}
@@ -220,6 +264,43 @@ export default function WashingtonClassicTab({ addToast }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── PRIZES ── */}
+      {view === 'prizes' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '12px 14px', textAlign: 'center' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 3, marginBottom: 4 }}>TOTAL PRIZE POOL</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C9A84C', lineHeight: 1 }}>
+              ${(PRIZE_TOTAL / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 4 }}>Washington Classic 2025 · Des Moines, WA</div>
+          </div>
+
+          {PRIZE_POOL.map(function(p) {
+            var pct = Math.floor((p.prize / PRIZE_TOTAL) * 100);
+            return (
+              <div key={p.label} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (p.place === 1 ? '#C9A84C44' : '#241C34'), borderRadius: 10, padding: '10px 14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>{p.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 14, color: p.color }}>{p.label} PLACE</div>
+                    {p.place === '5-8' && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>×4 players</div>}
+                  </div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: p.color }}>${(p.prize / 100).toFixed(2)}</div>
+                </div>
+                <div style={{ height: 4, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
+                  <div style={{ width: pct + '%', height: '100%', background: 'linear-gradient(90deg,' + p.color + '66,' + p.color + ')', borderRadius: 2 }} />
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', textAlign: 'right', marginTop: 3 }}>{pct}% of pool</div>
+              </div>
+            );
+          })}
+
+          <div style={{ background: 'rgba(128,0,32,.08)', border: '1px solid rgba(128,0,32,.25)', borderRadius: 10, padding: '10px 14px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1.5 }}>Prizes paid via SeeWhy LIVE Stripe Connect. 90% to winner wallet, 10% platform fee per split rules.</div>
+          </div>
         </div>
       )}
 
