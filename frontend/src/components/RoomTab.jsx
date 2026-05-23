@@ -135,6 +135,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var [mediaConfig,    setMediaConfig]    = useState(null);
   var [chatOpen,       setChatOpen]       = useState(true);
   var [chatInput,      setChatInput]      = useState('');
+  var [pinnedMsg,      setPinnedMsg]      = useState(null);
+  var [reactions,      setReactions]      = useState({});
+  var [streamGoal,     setStreamGoal]     = useState({ enabled: false, targetCents: 5000, currentCents: 0, label: 'Stream Goal' });
   var [rtcReady,       setRtcReady]       = useState(false);
   var [showGuests,     setShowGuests]     = useState(false);
   var [showGoLiveModal, setShowGoLiveModal] = useState(false);
@@ -219,6 +222,40 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: chatInput.trim() });
     setChatInput('');
   }
+
+  function pinMessage(msg) {
+    setPinnedMsg(msg);
+    if (addToast) addToast('📌 Message pinned', 'info');
+  }
+
+  function unpinMessage() {
+    setPinnedMsg(null);
+  }
+
+  function addReaction(msgId, emoji) {
+    setReactions(function(prev) {
+      var entry = prev[msgId] || {};
+      var count = entry[emoji] || 0;
+      var next = Object.assign({}, prev);
+      next[msgId] = Object.assign({}, entry);
+      next[msgId][emoji] = count + 1;
+      return next;
+    });
+  }
+
+  // Simulate stream goal progress when live
+  useEffect(function() {
+    if (!isLive || !streamGoal.enabled) return;
+    var t = setInterval(function() {
+      setStreamGoal(function(prev) {
+        if (!prev.enabled) return prev;
+        var add = Math.floor(Math.random() * 150 + 25);
+        var next = Math.min(prev.currentCents + add, prev.targetCents);
+        return Object.assign({}, prev, { currentCents: next });
+      });
+    }, 9000);
+    return function() { clearInterval(t); };
+  }, [isLive, streamGoal.enabled]);
 
   function openGoLive() {
     setShowGoLiveModal(true);
@@ -881,22 +918,92 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         )}
       </div>
 
+      {/* Stream Goal bar */}
+      {streamGoal.enabled && (
+        <div style={{ background: 'rgba(0,201,106,.07)', borderTop: '1px solid rgba(0,201,106,.2)', padding: '7px 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#00C96A', letterSpacing: 1 }}>🎯 {streamGoal.label}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00C96A' }}>
+              ${(Math.floor(streamGoal.currentCents) / 100).toFixed(0)} / ${(Math.floor(streamGoal.targetCents) / 100).toFixed(0)}
+            </span>
+          </div>
+          <div style={{ background: '#1A1428', borderRadius: 999, height: 6, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: 'linear-gradient(90deg,#00C96A,#00DEC0)', borderRadius: 999, width: Math.floor(Math.min(streamGoal.currentCents / streamGoal.targetCents * 100, 100)) + '%', transition: 'width .6s ease' }} />
+          </div>
+          {isLive && role === 'host' && (
+            <button onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: false }); }); }}
+              style={{ background: 'none', border: 'none', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', padding: 0, marginTop: 3 }}>
+              ✕ hide goal
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Collapsible chat */}
       <div style={{ borderTop: '1px solid #241C34', background: 'rgba(10,7,18,.9)', flexShrink: 0 }}>
-        <button onClick={function() { setChatOpen(function(v) { return !v; }); }}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#EDE8F5' }}>
-          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>💬 LIVE CHAT {chat.length > 0 ? '(' + chat.length + ')' : ''}</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9 }}>{chatOpen ? '▼' : '▲'}</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <button onClick={function() { setChatOpen(function(v) { return !v; }); }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#EDE8F5' }}>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>💬 LIVE CHAT {chat.length > 0 ? '(' + chat.length + ')' : ''}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9 }}>{chatOpen ? '▼' : '▲'}</span>
+          </button>
+          {isLive && role === 'host' && !streamGoal.enabled && (
+            <button
+              onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: true, currentCents: 0 }); }); }}
+              title="Set stream goal"
+              style={{ background: 'none', border: 'none', padding: '0 10px', color: '#7A6F90', cursor: 'pointer', fontSize: 13 }}>🎯</button>
+          )}
+        </div>
+
+        {/* Pinned message */}
+        {pinnedMsg && chatOpen && (
+          <div style={{ background: 'rgba(201,168,76,.1)', borderBottom: '1px solid rgba(201,168,76,.25)', padding: '5px 12px', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+            <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>📌</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1, marginBottom: 2 }}>PINNED</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ color: '#C9A84C', fontWeight: 700, marginRight: 4 }}>{pinnedMsg.username}</span>
+                {pinnedMsg.message}
+              </div>
+            </div>
+            {role === 'host' && (
+              <button onClick={unpinMessage} style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 10, flexShrink: 0, padding: 0 }}>✕</button>
+            )}
+          </div>
+        )}
+
         {chatOpen && (
           <div style={{ display: 'flex', flexDirection: 'column', height: 200 }}>
             <div style={{ flex: 1, overflowY: 'auto', padding: '4px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}>
               {chat.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center', padding: 12 }}>No messages yet</div>}
               {chat.map(function(msg) {
+                var msgId = msg.id || (msg.username + msg.message);
+                var msgReactions = reactions[msgId] || {};
+                var emojiList = ['👍','❤️','🔥','😂','🎯'];
                 return (
-                  <div key={msg.id || Math.random()} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}>
-                    <span style={{ color: '#C9A84C', fontWeight: 700, marginRight: 5 }}>{msg.username || 'anon'}</span>
-                    <span style={{ color: '#D0C0E0' }}>{msg.message}</span>
+                  <div key={msgId} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 0, flexWrap: 'wrap' }}>
+                      <span style={{ color: '#C9A84C', fontWeight: 700, marginRight: 5 }}>{msg.username || 'anon'}</span>
+                      <span style={{ color: '#D0C0E0', flex: 1 }}>{msg.message}</span>
+                      {role === 'host' && (
+                        <button onClick={function() { pinMessage(msg); }}
+                          title="Pin message"
+                          style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 9, padding: '0 2px', flexShrink: 0, opacity: 0.6 }}>📌</button>
+                      )}
+                    </div>
+                    {/* Emoji reactions */}
+                    <div style={{ display: 'flex', gap: 3, marginTop: 2, flexWrap: 'wrap' }}>
+                      {emojiList.map(function(emoji) {
+                        var count = msgReactions[emoji] || 0;
+                        return (
+                          <button key={emoji}
+                            onClick={function() { addReaction(msgId, emoji); }}
+                            style={{ background: count > 0 ? 'rgba(201,168,76,.15)' : 'transparent', border: count > 0 ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 10, padding: '1px 5px', cursor: 'pointer', fontSize: 9, display: 'flex', alignItems: 'center', gap: 2, color: '#A09AB8' }}>
+                            {emoji}{count > 0 ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7 }}>{count}</span> : null}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
