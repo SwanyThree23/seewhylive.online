@@ -474,6 +474,7 @@ export default function App() {
             roomId={APP_ID}
             gifts={gifts}
             viewerCount={viewerCount}
+            isLive={isLive}
           />
         )}
         {activeTab === 'keys' && (
@@ -510,6 +511,7 @@ export default function App() {
             roomId={APP_ID}
             role={role}
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'green' && (
@@ -539,11 +541,13 @@ export default function App() {
         {activeTab === 'schedule' && (
           <ScheduleTab
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'classic' && (
           <WashingtonClassicTab
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'money' && (
@@ -567,26 +571,29 @@ export default function App() {
         {activeTab === 'avatar' && (
           <AvatarHubTab
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'music' && (
           <MusicStudioTab
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'discover' && (
           <CreatorDiscoveryTab
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'rankings' && (
           <StateRankingsTab isLive={isLive} addToast={addToast} />
         )}
         {activeTab === 'showcase' && (
-          <ShowcaseTab addToast={addToast} />
+          <ShowcaseTab addToast={addToast} isLive={isLive} />
         )}
         {activeTab === 'upload' && (
-          <UploadTab addToast={addToast} />
+          <UploadTab addToast={addToast} isLive={isLive} />
         )}
         {activeTab === 'overlay' && (
           <OverlayTab
@@ -598,6 +605,7 @@ export default function App() {
             guests={guests}
             userId={userId}
             username={username}
+            isLive={isLive}
           />
         )}
         {activeTab === 'portal' && (
