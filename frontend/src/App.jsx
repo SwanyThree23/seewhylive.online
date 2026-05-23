@@ -462,6 +462,7 @@ export default function App() {
             botLogs={botLogs}
             roomId={APP_ID}
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'data' && (
@@ -520,12 +521,14 @@ export default function App() {
         {activeTab === 'forge' && (
           <InsForgeTab
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'deepdata' && (
           <AnalyticsDeepDiveTab
             viewerCount={viewerCount}
             gifts={gifts}
+            isLive={isLive}
           />
         )}
         {activeTab === 'schedule' && (
@@ -541,6 +544,7 @@ export default function App() {
         {activeTab === 'money' && (
           <MonetizeTab
             addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'aura' && (
@@ -592,10 +596,10 @@ export default function App() {
           />
         )}
         {activeTab === 'portal' && (
-          <PortalTab addToast={addToast} />
+          <PortalTab addToast={addToast} isLive={isLive} />
         )}
         {activeTab === 'collab' && (
-          <CollabTab addToast={addToast} userId={userId} username={username} />
+          <CollabTab addToast={addToast} isLive={isLive} userId={userId} username={username} />
         )}
         {activeTab === 'n8n' && (
           <N8nTab addToast={addToast} isLive={isLive} />

@@ -91,9 +91,31 @@ var PORTAL_CHANNELS = [
   }
 ];
 
-export default function PortalTab({ addToast }) {
+export default function PortalTab({ addToast, isLive }) {
   var [active, setActive] = useState(null);
   var [layout, setLayout] = useState('grid');
+  var [channels, setChannels] = useState(PORTAL_CHANNELS.map(function(ch) { return Object.assign({}, ch); }));
+
+  useEffect(function() {
+    if (!isLive) return;
+    var interval = setInterval(function() {
+      var liveIdxs = [];
+      channels.forEach(function(ch, i) {
+        if (ch.live) liveIdxs.push(i);
+      });
+      if (liveIdxs.length === 0) return;
+      var idx = liveIdxs[Math.floor(Math.random() * liveIdxs.length)];
+      var delta = Math.floor(Math.random() * 40) - 15;
+      setChannels(function(prev) {
+        return prev.map(function(ch, i) {
+          if (i !== idx) return ch;
+          var next = ch.viewers + delta;
+          return Object.assign({}, ch, { viewers: next < 0 ? 0 : next });
+        });
+      });
+    }, 3500);
+    return function() { clearInterval(interval); };
+  }, [isLive, channels]);
 
   function openChannel(ch) {
     setActive(ch);
@@ -113,7 +135,8 @@ export default function PortalTab({ addToast }) {
   }
 
   if (active) {
-    var others = PORTAL_CHANNELS.filter(function(ch) { return ch.id !== active.id; }).slice(0, 3);
+    var others = channels.filter(function(ch) { return ch.id !== active.id; }).slice(0, 3);
+    var activeViewers = (channels.find(function(ch) { return ch.id === active.id; }) || active).viewers;
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', background: BG1 }}>
@@ -140,7 +163,7 @@ export default function PortalTab({ addToast }) {
           {active.live && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(192,24,56,.18)', border: '1px solid rgba(192,24,56,.5)', borderRadius: 999, padding: '4px 12px' }}>
               <div style={{ width: 7, height: 7, borderRadius: '50%', background: BURG_H, boxShadow: '0 0 8px ' + BURG_H }} />
-              <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 11, color: '#FF6680', letterSpacing: 2 }}>LIVE · {fmtN(active.viewers)} viewers</span>
+              <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 11, color: '#FF6680', letterSpacing: 2 }}>LIVE · {fmtN(activeViewers)} viewers</span>
             </div>
           )}
           <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: 'repeating-linear-gradient(0deg,rgba(0,0,0,.04) 0px,rgba(0,0,0,.04) 1px,transparent 1px,transparent 4px)', pointerEvents: 'none' }} />
@@ -213,6 +236,8 @@ export default function PortalTab({ addToast }) {
   }
 
   /* ── Grid / List view ── */
+  var totalLive = channels.filter(function(ch) { return ch.live; }).reduce(function(sum, ch) { return sum + ch.viewers; }, 0);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG1, overflow: 'hidden' }}>
 
@@ -222,7 +247,10 @@ export default function PortalTab({ addToast }) {
           <div style={{ fontFamily: fD, fontSize: 20, color: TEXT, letterSpacing: 3 }}>PARTNER PORTAL</div>
           <div style={{ fontFamily: fM, fontSize: 9, color: MUTED, marginTop: 1 }}>Embed & feature Techmunity partner channels</div>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ background: 'rgba(192,24,56,.15)', border: '1px solid rgba(192,24,56,.4)', borderRadius: 999, padding: '4px 10px', fontFamily: fU, fontWeight: 700, fontSize: 10, color: '#FF6680' }}>
+            {'👁 ' + totalLive + ' live'}
+          </div>
           <button
             onClick={function() { setLayout('grid'); }}
             style={{ background: layout === 'grid' ? 'rgba(232,196,106,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (layout === 'grid' ? 'rgba(232,196,106,.4)' : BORDER), borderRadius: 7, padding: '6px 12px', color: layout === 'grid' ? GOLD_H : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
@@ -240,7 +268,7 @@ export default function PortalTab({ addToast }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px' }}>
         {layout === 'grid' ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {PORTAL_CHANNELS.map(function(ch) {
+            {channels.map(function(ch) {
               return (
                 <div
                   key={ch.id}
@@ -267,7 +295,7 @@ export default function PortalTab({ addToast }) {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {PORTAL_CHANNELS.map(function(ch) {
+            {channels.map(function(ch) {
               return (
                 <div
                   key={ch.id}
