@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 var CUSTOM_DEST_TEMPLATE = { name: '', url: '', key: '' };
 
-const PLATFORMS = [
+var PLATFORMS = [
   { id: 'seewhy',   name: 'SeeWhy LIVE', color: '#C9A84C', icon: '📡', rtmp: 'rtmp://2.24.194.112:1935/live',                          locked: true  },
   { id: 'youtube',  name: 'YouTube',     color: '#FF0000', icon: '▶',  rtmp: 'rtmp://a.rtmp.youtube.com/live2',                        locked: false },
   { id: 'twitch',   name: 'Twitch',      color: '#9146FF', icon: '⬡',  rtmp: 'rtmp://live.twitch.tv/app',                              locked: false },
@@ -13,14 +13,14 @@ const PLATFORMS = [
 ];
 
 export default function RTMPFanoutTab({ isLive, addToast }) {
-  const [enabled, setEnabled] = useState({ seewhy: true });
-  const [keys, setKeys]       = useState({});
-  const [revealed, setRevealed] = useState({});
-  const [testing, setTesting] = useState({});
-  const [latency, setLatency] = useState({});
-  const [bitrates, setBitrates] = useState({});
-  const [fanoutActive, setFanoutActive] = useState(false);
-  const bitrateRef = useRef(null);
+  var [enabled, setEnabled]         = useState({ seewhy: true });
+  var [keys, setKeys]               = useState({});
+  var [revealed, setRevealed]       = useState({});
+  var [testing, setTesting]         = useState({});
+  var [latency, setLatency]         = useState({});
+  var [bitrates, setBitrates]       = useState({});
+  var [fanoutActive, setFanoutActive] = useState(false);
+  var bitrateRef = useRef(null);
 
   var [customDests,   setCustomDests]   = useState([]);
   var [showAddCustom, setShowAddCustom] = useState(false);
