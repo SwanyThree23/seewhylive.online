@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 var NOW = Date.now();
 
 var INIT_SCHEDULE = [
-  { id: 's1', title: 'Friday Night Dominos LIVE',  time: new Date(NOW - 1800000).toISOString(),           status: 'LIVE',  category: 'Domino',     viewers: 2847 },
-  { id: 's2', title: 'Washington Classic Round 2', time: new Date(NOW + 86400000).toISOString(),           status: 'SCHED', category: 'Tournament', viewers: null },
-  { id: 's3', title: 'AIverse Podcast Ep. 48',     time: new Date(NOW + 172800000).toISOString(),          status: 'SCHED', category: 'Podcast',    viewers: null },
-  { id: 's4', title: "Cali × VibeN'Bones Collab",  time: new Date(NOW + 259200000).toISOString(),          status: 'SCHED', category: 'Music',      viewers: null },
-  { id: 's5', title: 'Beat Production Workshop',   time: new Date(NOW + 345600000).toISOString(),          status: 'SCHED', category: 'Education',  viewers: null },
+  { id: 's1', title: 'Friday Night Dominos LIVE',  time: new Date(NOW - 1800000).toISOString(),           status: 'LIVE',  category: 'Domino',     viewers: 2847, recurring: 'weekly'   },
+  { id: 's2', title: 'Washington Classic Round 2', time: new Date(NOW + 86400000).toISOString(),           status: 'SCHED', category: 'Tournament', viewers: null,  recurring: 'none'     },
+  { id: 's3', title: 'AIverse Podcast Ep. 48',     time: new Date(NOW + 172800000).toISOString(),          status: 'SCHED', category: 'Podcast',    viewers: null,  recurring: 'weekly'   },
+  { id: 's4', title: "Cali × VibeN'Bones Collab",  time: new Date(NOW + 259200000).toISOString(),          status: 'SCHED', category: 'Music',      viewers: null,  recurring: 'none'     },
+  { id: 's5', title: 'Beat Production Workshop',   time: new Date(NOW + 345600000).toISOString(),          status: 'SCHED', category: 'Education',  viewers: null,  recurring: 'biweekly' },
 ];
 
 var CATS = ['Domino', 'Tournament', 'Podcast', 'Music', 'Education', 'Sports', 'Tech', 'Gaming'];
@@ -78,12 +78,17 @@ function nextUpcomingTime(schedule) {
   return upcoming[0].time;
 }
 
+var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' };
+var RECUR_COLORS = { none: '#7A6F90', weekly: '#00C9A7', biweekly: '#C084FC' };
+
 export default function ScheduleTab({ addToast }) {
-  var [schedule, setSchedule] = useState(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
-  var [newTitle, setNewTitle] = useState('');
-  var [newTime,  setNewTime]  = useState('');
-  var [newCat,   setNewCat]   = useState('Domino');
-  var [tick,     setTick]     = useState(0);
+  var [schedule,   setSchedule]   = useState(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
+  var [newTitle,   setNewTitle]   = useState('');
+  var [newTime,    setNewTime]    = useState('');
+  var [newCat,     setNewCat]     = useState('Domino');
+  var [newRecur,   setNewRecur]   = useState('none');
+  var [filterCat,  setFilterCat]  = useState('all');
+  var [tick,       setTick]       = useState(0);
 
   useEffect(function() {
     var id = setInterval(function() {
@@ -95,12 +100,23 @@ export default function ScheduleTab({ addToast }) {
   function addEvent() {
     if (!newTitle.trim() || !newTime.trim()) return;
     var iso = new Date(newTime).toISOString();
-    setSchedule(function(p) {
-      return p.concat([{ id: 's' + Date.now(), title: newTitle, time: iso, status: 'SCHED', category: newCat, viewers: null }]);
-    });
+    var newEvents = [{ id: 's' + Date.now(), title: newTitle, time: iso, status: 'SCHED', category: newCat, viewers: null, recurring: newRecur }];
+    if (newRecur === 'weekly') {
+      for (var w = 1; w <= 3; w++) {
+        var wt = new Date(newTime);
+        wt.setDate(wt.getDate() + w * 7);
+        newEvents.push({ id: 's' + Date.now() + w, title: newTitle + ' (Wk ' + (w + 1) + ')', time: wt.toISOString(), status: 'SCHED', category: newCat, viewers: null, recurring: 'weekly' });
+      }
+    } else if (newRecur === 'biweekly') {
+      var bt = new Date(newTime);
+      bt.setDate(bt.getDate() + 14);
+      newEvents.push({ id: 's' + Date.now() + 14, title: newTitle + ' (Wk 3)', time: bt.toISOString(), status: 'SCHED', category: newCat, viewers: null, recurring: 'biweekly' });
+    }
+    setSchedule(function(p) { return p.concat(newEvents); });
     setNewTitle('');
     setNewTime('');
-    if (addToast) addToast('"' + newTitle + '" scheduled', 'success');
+    setNewRecur('none');
+    if (addToast) addToast('"' + newTitle + '" scheduled' + (newRecur !== 'none' ? ' (' + newEvents.length + ' occurrences)' : ''), 'success');
   }
 
   function removeEvent(id) {
@@ -126,6 +142,8 @@ export default function ScheduleTab({ addToast }) {
   var liveCount = schedule.filter(function(s) { return s.status === 'LIVE'; }).length;
   var nextTime = nextUpcomingTime(schedule);
   var countdown = countdownHeader(nextTime);
+  var recurCount = schedule.filter(function(s) { return s.recurring && s.recurring !== 'none'; }).length;
+  var visibleSchedule = filterCat === 'all' ? schedule : schedule.filter(function(s) { return s.category === filterCat; });
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
@@ -147,7 +165,7 @@ export default function ScheduleTab({ addToast }) {
       <div style={{ background: 'rgba(155,77,202,.08)', border: '1px solid rgba(155,77,202,.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 13, color: '#C084FC', letterSpacing: 3 }}>SCHEDULE MANAGER</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{schedule.length} events · {liveCount} live now</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{schedule.length} events · {liveCount} live · {recurCount} recurring</div>
         </div>
         {liveCount > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '3px 10px' }}>
@@ -157,9 +175,23 @@ export default function ScheduleTab({ addToast }) {
         )}
       </div>
 
+      {/* Category filter */}
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+        {['all'].concat(CATS).map(function(c) {
+          var isActive = filterCat === c;
+          var cc = c === 'all' ? '#EDE8F5' : (CAT_COLORS[c] || '#C9A84C');
+          return (
+            <button key={c} onClick={function() { setFilterCat(c); }}
+              style={{ background: isActive ? cc + '22' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isActive ? cc + '55' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: isActive ? cc : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+              {c === 'all' ? 'ALL' : c.toUpperCase()}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Event list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {schedule.map(function(ev) {
+        {visibleSchedule.map(function(ev) {
           var sc = STATUS_COLORS[ev.status] || '#7A6F90';
           var cc = CAT_COLORS[ev.category] || '#C9A84C';
           var isUpcoming = ev.status !== 'LIVE' && ev.status !== 'ENDED' && new Date(ev.time).getTime() > Date.now();
@@ -182,6 +214,11 @@ export default function ScheduleTab({ addToast }) {
                     {badge && (
                       <span style={{ background: 'rgba(200,255,0,.1)', border: '1px solid rgba(200,255,0,.25)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C8FF00' }}>
                         {badge}
+                      </span>
+                    )}
+                    {ev.recurring && ev.recurring !== 'none' && (
+                      <span style={{ background: RECUR_COLORS[ev.recurring] + '18', border: '1px solid ' + RECUR_COLORS[ev.recurring] + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: RECUR_COLORS[ev.recurring] }}>
+                        🔁 {RECUR_LABELS[ev.recurring].toUpperCase()}
                       </span>
                     )}
                     {ev.status === 'LIVE' && ev.viewers && (
@@ -250,6 +287,14 @@ export default function ScheduleTab({ addToast }) {
               {CATS.map(function(c) { return <option key={c} value={c}>{c}</option>; })}
             </select>
           </div>
+          <select
+            value={newRecur}
+            onChange={function(e) { setNewRecur(e.target.value); }}
+            style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, cursor: 'pointer' }}>
+            <option value="none">One-time event</option>
+            <option value="weekly">Weekly recurring (×4)</option>
+            <option value="biweekly">Bi-weekly recurring (×2)</option>
+          </select>
           <button
             onClick={addEvent}
             disabled={!newTitle.trim() || !newTime.trim()}
