@@ -41,7 +41,7 @@ function makeInitGrid() {
   return g;
 }
 
-export default function MusicStudioTab({ addToast }) {
+export default function MusicStudioTab({ addToast, isLive }) {
   var [tab,           setTab]          = useState('pads');
   var [grid,          setGrid]         = useState(makeInitGrid);
   var [playing,       setPlaying]      = useState(false);
@@ -52,6 +52,9 @@ export default function MusicStudioTab({ addToast }) {
   var [savedPatterns, setSavedPatterns] = useState([]);
   var [patternName,   setPatternName]  = useState('My Pattern');
   var [activePreset,  setActivePreset] = useState(null);
+  var [bpmPulse,      setBpmPulse]     = useState(false);
+  var [liveBpm,       setLiveBpm]      = useState(128);
+  var [waveform,      setWaveform]     = useState([]);
   var stepRef = useRef(-1);
   var playRef = useRef(null);
 
@@ -79,6 +82,38 @@ export default function MusicStudioTab({ addToast }) {
     }, interval);
     return function() { clearInterval(playRef.current); };
   }, [playing, bpm, grid]);
+
+  useEffect(function() {
+    if (!isLive) {
+      setBpmPulse(false);
+      return;
+    }
+    var interval = Math.floor(60000 / liveBpm);
+    var id = setInterval(function() {
+      setBpmPulse(function(p) { return !p; });
+    }, interval);
+    return function() { clearInterval(id); };
+  }, [isLive, liveBpm]);
+
+  useEffect(function() {
+    if (!isLive) {
+      setWaveform([]);
+      return;
+    }
+    function genBars() {
+      var bars = [];
+      var i;
+      for (i = 0; i < 16; i++) {
+        bars.push(10 + Math.floor(Math.random() * 91));
+      }
+      return bars;
+    }
+    setWaveform(genBars());
+    var id = setInterval(function() {
+      setWaveform(genBars());
+    }, 150);
+    return function() { clearInterval(id); };
+  }, [isLive]);
 
   function toggleCell(padId, stepIdx) {
     setGrid(function(g) {
@@ -123,11 +158,38 @@ export default function MusicStudioTab({ addToast }) {
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
+
+      {isLive && waveform.length > 0 && (
+        <div style={{ background: 'rgba(7,5,10,.7)', border: '1px solid rgba(192,132,252,.25)', borderRadius: 10, padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC', letterSpacing: 2 }}>LIVE WAVEFORM</div>
+          <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 40 }}>
+            {waveform.map(function(h, i) {
+              var pct = h / 100;
+              var r = Math.floor(192 * (1 - pct) + 0 * pct);
+              var g = Math.floor(132 * (1 - pct) + 222 * pct);
+              var b = Math.floor(252 * (1 - pct) + 192 * pct);
+              var barColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+              return (
+                <div key={i} style={{ flex: 1, height: Math.floor(h * 0.4) + 'px', background: barColor, borderRadius: 2, transition: 'height 120ms', minWidth: 0 }} />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.22)', borderRadius: 10, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#00DEC0', letterSpacing: 3 }}>🎵 MUSIC STUDIO</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{bpm} BPM · 16-step sequencer</div>
+            <div style={{ background: isLive ? (bpmPulse ? 'rgba(255,26,60,.25)' : 'rgba(255,26,60,.08)') : 'transparent', border: isLive ? ('1px solid rgba(255,26,60,' + (bpmPulse ? '.5' : '.2') + ')') : 'none', borderRadius: 4, padding: isLive ? '2px 6px' : '0', display: 'inline-block', transition: 'all 60ms' }}>
+              {isLive ? (
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: bpmPulse ? '#FF6B81' : '#FF1A3C' }}>
+                  {'● LIVE BEAT · ' + liveBpm + ' BPM'}
+                </span>
+              ) : (
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{bpm} BPM · 16-step sequencer</span>
+              )}
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input
@@ -142,6 +204,18 @@ export default function MusicStudioTab({ addToast }) {
             </button>
           </div>
         </div>
+
+        {isLive && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF1A3C', letterSpacing: 1, flexShrink: 0 }}>LIVE BPM</div>
+            <input
+              type="range" min={60} max={200} value={liveBpm}
+              onChange={function(e) { setLiveBpm(Number(e.target.value)); }}
+              style={{ flex: 1, accentColor: '#FF1A3C' }}
+            />
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: bpmPulse ? '#FF6B81' : '#FF1A3C', minWidth: 36, textAlign: 'right', transition: 'color 60ms' }}>{liveBpm}</div>
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {BPM_PRESETS.map(function(preset) {
