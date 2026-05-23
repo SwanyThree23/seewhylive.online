@@ -60,17 +60,97 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
   }
 
   return (
-    <form className="paywall-form" onSubmit={handleSubmit}>
-      <div className="paywall-title">UNLOCK FULL STREAM</div>
-      <div className="paywall-price">${PPV_PRICE_USD.toFixed(2)}</div>
-      <div className="paywall-split">
+    <form
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '14px',
+        padding: '28px 24px',
+        background: 'rgba(22,16,32,.95)',
+        border: '1px solid rgba(255,255,255,.07)',
+        borderRadius: '10px',
+        width: '100%',
+        maxWidth: '380px',
+        margin: '0 auto',
+        boxSizing: 'border-box'
+      }}
+      onSubmit={handleSubmit}
+    >
+      <div
+        style={{
+          fontFamily: "'Bebas Neue',sans-serif",
+          fontSize: '22px',
+          letterSpacing: '2px',
+          color: '#EDE8F5',
+          textAlign: 'center'
+        }}
+      >
+        UNLOCK FULL STREAM
+      </div>
+      <div
+        style={{
+          fontFamily: "'Bebas Neue',sans-serif",
+          fontSize: '36px',
+          color: '#E8C46A',
+          textAlign: 'center',
+          letterSpacing: '1px'
+        }}
+      >
+        ${PPV_PRICE_USD.toFixed(2)}
+      </div>
+      <div
+        style={{
+          fontFamily: "'Barlow Condensed',sans-serif",
+          fontSize: '13px',
+          color: '#7A6F90',
+          textAlign: 'center'
+        }}
+      >
         Creator receives: ${creatorAmt} (90%)
       </div>
-      <div className="paywall-card-wrap">
-        <CardElement className="stripe-card-element" options={{ style: { base: { color: '#E8C46A', fontFamily: 'DM Mono, monospace', fontSize: '16px' } } }} />
+      <div
+        style={{
+          background: 'rgba(255,255,255,.04)',
+          border: '1px solid rgba(255,255,255,.12)',
+          borderRadius: '6px',
+          padding: '12px 14px'
+        }}
+      >
+        <CardElement options={{ style: { base: { color: '#E8C46A', fontFamily: 'DM Mono, monospace', fontSize: '16px' } } }} />
       </div>
-      {error && <div className="paywall-error">{error}</div>}
-      <button className="btn-gold paywall-submit" type="submit" disabled={processing || !stripe}>
+      {error && (
+        <div
+          style={{
+            fontFamily: "'Barlow Condensed',sans-serif",
+            fontSize: '13px',
+            color: '#ff6b6b',
+            background: 'rgba(255,0,0,.08)',
+            border: '1px solid rgba(255,0,0,.2)',
+            borderRadius: '5px',
+            padding: '8px 12px',
+            textAlign: 'center'
+          }}
+        >
+          {error}
+        </div>
+      )}
+      <button
+        type="submit"
+        disabled={processing || !stripe}
+        style={{
+          fontFamily: "'Bebas Neue',sans-serif",
+          fontSize: '17px',
+          letterSpacing: '2px',
+          color: '#0F0C14',
+          background: processing || !stripe ? '#7A6F90' : '#E8C46A',
+          border: 'none',
+          borderRadius: '6px',
+          padding: '12px 0',
+          cursor: processing || !stripe ? 'not-allowed' : 'pointer',
+          width: '100%',
+          transition: 'background .2s'
+        }}
+      >
         {processing ? 'Processing...' : 'UNLOCK NOW'}
       </button>
     </form>
@@ -151,37 +231,125 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
   }
 
   return (
-    <div className="tab-panel embed-tab">
-      <div className="glass-card">
-        <h2 className="panel-title">EMBEDDED PLAYER</h2>
+    <div
+      style={{
+        padding: '20px',
+        minHeight: '100%',
+        background: '#0F0C14',
+        boxSizing: 'border-box'
+      }}
+    >
+      <div
+        style={{
+          background: 'rgba(22,16,32,.8)',
+          border: '1px solid rgba(255,255,255,.07)',
+          borderRadius: '12px',
+          padding: '24px',
+          backdropFilter: 'blur(12px)'
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: "'Bebas Neue',sans-serif",
+            fontSize: '26px',
+            letterSpacing: '3px',
+            color: '#EDE8F5',
+            margin: '0 0 20px 0'
+          }}
+        >
+          EMBEDDED PLAYER
+        </h2>
 
-        <div className="player-wrap">
+        <div
+          style={{
+            width: '100%',
+            marginBottom: '24px',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        >
           {!isLive && (
-            <div className="player-offline">
-              <div className="player-offline-text">Stream Offline</div>
-              <div className="player-offline-sub">Go live to begin streaming</div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '200px',
+                background: 'rgba(0,0,0,.4)',
+                border: '1px solid rgba(255,255,255,.07)',
+                borderRadius: '8px',
+                gap: '8px'
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Bebas Neue',sans-serif",
+                  fontSize: '22px',
+                  letterSpacing: '2px',
+                  color: '#EDE8F5'
+                }}
+              >
+                Stream Offline
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Barlow Condensed',sans-serif",
+                  fontSize: '14px',
+                  color: '#7A6F90'
+                }}
+              >
+                Go live to begin streaming
+              </div>
             </div>
           )}
 
           {isLive && (
-            <div className="player-container" style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
               <video
                 ref={videoRef}
-                className="hls-player"
                 controls={!showPaywall}
                 autoPlay
                 playsInline
-                style={{ width: '100%', maxHeight: 360, background: '#07050A' }}
+                style={{ width: '100%', maxHeight: 360, background: '#07050A', display: 'block' }}
               />
 
               {!ppvToken && !previewExpired && isLive && (
-                <div className="preview-timer-overlay">
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '12px',
+                    fontFamily: "'DM Mono',monospace",
+                    fontSize: '12px',
+                    color: '#E8C46A',
+                    background: 'rgba(0,0,0,.65)',
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    pointerEvents: 'none'
+                  }}
+                >
                   Preview: {previewTimer}s remaining
                 </div>
               )}
 
               {showPaywall && !ppvToken && (
-                <div className="paywall-overlay">
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(15,12,20,.85)',
+                    backdropFilter: 'blur(6px)',
+                    padding: '20px',
+                    boxSizing: 'border-box'
+                  }}
+                >
                   <Elements stripe={stripePromise}>
                     <PaywallForm onUnlock={handleUnlock} roomId={roomId} />
                   </Elements>
@@ -191,17 +359,79 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
           )}
         </div>
 
-        <div className="embed-section">
-          <h3 className="embed-section-title">EMBED CODE</h3>
-          <textarea className="embed-code-box" readOnly value={embedCode} rows={3} />
-          <button className="btn-teal" onClick={function() { navigator.clipboard.writeText(embedCode).then(function() {}).catch(function() {}); }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h3
+            style={{
+              fontFamily: "'Bebas Neue',sans-serif",
+              fontSize: '18px',
+              letterSpacing: '2px',
+              color: '#EDE8F5',
+              margin: '0 0 10px 0'
+            }}
+          >
+            EMBED CODE
+          </h3>
+          <textarea
+            readOnly
+            value={embedCode}
+            rows={3}
+            style={{
+              width: '100%',
+              background: 'rgba(0,0,0,.35)',
+              border: '1px solid rgba(255,255,255,.07)',
+              borderRadius: '6px',
+              color: '#EDE8F5',
+              fontFamily: "'DM Mono',monospace",
+              fontSize: '13px',
+              padding: '10px 12px',
+              resize: 'none',
+              boxSizing: 'border-box',
+              outline: 'none',
+              marginBottom: '10px'
+            }}
+          />
+          <button
+            onClick={function() { navigator.clipboard.writeText(embedCode).then(function() {}).catch(function() {}); }}
+            style={{
+              fontFamily: "'Bebas Neue',sans-serif",
+              fontSize: '15px',
+              letterSpacing: '2px',
+              color: '#0F0C14',
+              background: '#00DEC0',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '10px 22px',
+              cursor: 'pointer'
+            }}
+          >
             COPY EMBED CODE
           </button>
         </div>
 
-        <div className="embed-section">
-          <h3 className="embed-section-title">DIRECT STREAM URL</h3>
-          <div className="url-display">
+        <div style={{ marginBottom: '4px' }}>
+          <h3
+            style={{
+              fontFamily: "'Bebas Neue',sans-serif",
+              fontSize: '18px',
+              letterSpacing: '2px',
+              color: '#EDE8F5',
+              margin: '0 0 10px 0'
+            }}
+          >
+            DIRECT STREAM URL
+          </h3>
+          <div
+            style={{
+              fontFamily: "'DM Mono',monospace",
+              fontSize: '13px',
+              color: '#00DEC0',
+              background: 'rgba(0,0,0,.35)',
+              border: '1px solid rgba(255,255,255,.07)',
+              borderRadius: '6px',
+              padding: '10px 12px',
+              wordBreak: 'break-all'
+            }}
+          >
             {'https://srv1581658.hstgr.cloud/hls/' + roomId + '/index.m3u8'}
           </div>
         </div>
