@@ -1,13 +1,9 @@
 'use strict';
 
-const EventEmitter = require('events');
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-
-// ---------------------------------------------------------------------------
-// SwanyBot – event-driven automation engine for SeeWhy LIVE
-// ---------------------------------------------------------------------------
+var EventEmitter = require('events');
+var fs = require('fs');
+var path = require('path');
+var { v4: uuidv4 } = require('uuid');
 
 class SwanyBot extends EventEmitter {
   constructor(io) {
@@ -15,7 +11,6 @@ class SwanyBot extends EventEmitter {
 
     this.io = io;
 
-    // Feature flags – all on by default
     this.rules = {
       viewer_join: true,
       gift_received: true,
@@ -24,46 +19,23 @@ class SwanyBot extends EventEmitter {
       new_subscription: true
     };
 
-    // Spam detection: socketId → { count: number, windowStart: number }
     this.chatRateMap = new Map();
-
-    // Mute tracking: socketId → muteExpiresAt (epoch ms)
     this.mutedSockets = new Map();
-
-    // Viewer-count state for drop-detection
     this.lastViewerCount = 0;
-
-    // Log destination
     this.logPath = '/var/log/seewhy/swanybot.log';
 
-    // Ensure the log directory exists
     try {
       fs.mkdirSync(path.dirname(this.logPath), { recursive: true });
     } catch (mkdirErr) {
       console.warn('[SwanyBot] Could not create log directory:', mkdirErr.message);
-      // Fall back to tmp so logging still works
       this.logPath = path.join(require('os').tmpdir(), 'swanybot.log');
     }
 
-    // AURA integration
     this.aura = require('./aura');
   }
 
-  // -------------------------------------------------------------------------
-  // Logging
-  // -------------------------------------------------------------------------
-
-  /**
-   * Appends a structured log line to this.logPath and emits 'bot-log' to
-   * an optional room.
-   *
-   * @param {'info'|'warn'|'error'} level
-   * @param {string} event
-   * @param {string} message
-   * @param {string} [roomId]  if provided, emits bot-log to that room
-   */
   log(level, event, message, roomId) {
-    const entry =
+    var entry =
       JSON.stringify({
         ts: new Date().toISOString(),
         level: level,
@@ -87,22 +59,10 @@ class SwanyBot extends EventEmitter {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Event handlers
-  // -------------------------------------------------------------------------
-
-  /**
-   * Handles a viewer joining a room.
-   * Triggers an AURA greeting and emits a bot-log to the room.
-   *
-   * @param {string} roomId
-   * @param {string} username
-   * @param {string} socketId
-   */
   onViewerJoin(roomId, username, socketId) {
     if (!this.rules.viewer_join) return;
 
-    const self = this;
+    var self = this;
 
     this.aura.queueMessage('greeting', { username: username }, function(text) {
       self.io.to(roomId).emit('chat-message', {
@@ -122,19 +82,10 @@ class SwanyBot extends EventEmitter {
     });
   }
 
-  /**
-   * Handles a gift received event.
-   * Triggers an AURA hype message and logs the event.
-   *
-   * @param {string} roomId
-   * @param {string} from        gifter's username
-   * @param {string} giftName
-   * @param {number} giftValue   value in cents
-   */
   onGiftReceived(roomId, from, giftName, giftValue) {
     if (!this.rules.gift_received) return;
 
-    const self = this;
+    var self = this;
 
     this.aura.queueMessage(
       'hype',
@@ -164,26 +115,17 @@ class SwanyBot extends EventEmitter {
     });
   }
 
-  /**
-   * Processes an incoming chat message for spam detection.
-   *
-   * @param {string} roomId
-   * @param {string} socketId
-   * @param {string} message
-   * @returns {boolean}  true if the message is spam and should be suppressed
-   */
   onChatMessage(roomId, socketId, message) {
-    const now = Date.now();
+    var now = Date.now();
 
     if (!this.chatRateMap.has(socketId)) {
       this.chatRateMap.set(socketId, { count: 1, windowStart: now });
       return false;
     }
 
-    const entry = this.chatRateMap.get(socketId);
+    var entry = this.chatRateMap.get(socketId);
 
     if (now - entry.windowStart > 10000) {
-      // New 10-second window
       entry.count = 1;
       entry.windowStart = now;
       return false;
@@ -207,17 +149,10 @@ class SwanyBot extends EventEmitter {
     return false;
   }
 
-  /**
-   * Checks whether a socket is currently muted.
-   * Automatically clears expired mutes.
-   *
-   * @param {string} socketId
-   * @returns {boolean}
-   */
   isSocketMuted(socketId) {
     if (!this.mutedSockets.has(socketId)) return false;
 
-    const expiresAt = this.mutedSockets.get(socketId);
+    var expiresAt = this.mutedSockets.get(socketId);
     if (Date.now() > expiresAt) {
       this.mutedSockets.delete(socketId);
       return false;
@@ -226,20 +161,12 @@ class SwanyBot extends EventEmitter {
     return true;
   }
 
-  /**
-   * Tracks viewer-count changes and emits alerts for significant drops
-   * or milestone crossings.
-   *
-   * @param {string} roomId
-   * @param {number} newCount
-   */
   onViewerCountChange(roomId, newCount) {
     if (!this.rules.viewers_drop_20pct) {
       this.lastViewerCount = newCount;
       return;
     }
 
-    // Drop of 20%+ with a meaningful baseline
     if (newCount < this.lastViewerCount * 0.80 && this.lastViewerCount > 10) {
       this.io.to(roomId).emit('host-alert', {
         type: 'viewers_drop',
@@ -256,7 +183,6 @@ class SwanyBot extends EventEmitter {
       );
     }
 
-    // 1 000-viewer milestone
     if (newCount >= 1000 && this.lastViewerCount < 1000) {
       this.io.to(roomId).emit('bot-log', {
         event: 'milestone_1000',
@@ -268,18 +194,10 @@ class SwanyBot extends EventEmitter {
     this.lastViewerCount = newCount;
   }
 
-  /**
-   * Handles a new subscription event.
-   * Triggers an AURA shoutout message.
-   *
-   * @param {string} roomId
-   * @param {string} username
-   * @param {string} tier
-   */
   onNewSubscription(roomId, username, tier) {
     if (!this.rules.new_subscription) return;
 
-    const self = this;
+    var self = this;
 
     this.aura.queueMessage('shoutout', { username: username, tier: tier }, function(text) {
       self.io.to(roomId).emit('chat-message', {
@@ -299,14 +217,8 @@ class SwanyBot extends EventEmitter {
     );
   }
 
-  /**
-   * Announces a revenue milestone in the room chat.
-   *
-   * @param {string} roomId
-   * @param {number} totalCents  cumulative session revenue in cents
-   */
   onRevenueMilestone(roomId, totalCents) {
-    const dollars = Math.floor(totalCents / 100);
+    var dollars = Math.floor(totalCents / 100);
 
     this.io.to(roomId).emit('chat-message', {
       id: uuidv4(),
@@ -324,12 +236,6 @@ class SwanyBot extends EventEmitter {
     );
   }
 
-  /**
-   * Enables or disables a named automation rule.
-   *
-   * @param {string}  ruleName
-   * @param {boolean} enabled
-   */
   toggleRule(ruleName, enabled) {
     if (Object.prototype.hasOwnProperty.call(this.rules, ruleName)) {
       this.rules[ruleName] = enabled;
@@ -338,9 +244,5 @@ class SwanyBot extends EventEmitter {
     }
   }
 }
-
-// ---------------------------------------------------------------------------
-// Exports
-// ---------------------------------------------------------------------------
 
 module.exports = SwanyBot;

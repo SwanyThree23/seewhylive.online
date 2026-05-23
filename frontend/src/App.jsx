@@ -32,12 +32,13 @@ import N8nTab from './components/N8nTab.jsx';
 import MerchTab from './components/MerchTab.jsx';
 import ReplayTab from './components/ReplayTab.jsx';
 import MCPTab from './components/MCPTab.jsx';
+import GuardianTab from './components/GuardianTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
 
-const APP_ID = '6990f5f24823b53e21fcdc9d';
-const TABS = [
+var APP_ID = '6990f5f24823b53e21fcdc9d';
+var TABS = [
   { id: 'room',   label: '🎙 ROOM' },
   { id: 'fades',  label: '⚡ FADES' },
   { id: 'brand',  label: '🎨 BRAND' },
@@ -70,70 +71,72 @@ const TABS = [
   { id: 'merch',     label: '👕 MERCH' },
   { id: 'replay',    label: '▶ REPLAY' },
   { id: 'mcp',       label: '🔌 MCP' },
+  { id: 'guardian', label: '🛡 GUARDIAN' },
 ];
 
 export default function App() {
-  const [splash, setSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState('room');
-  const [isLive, setIsLive] = useState(false);
-  const [viewerCount, setViewerCount] = useState(0);
-  const [guests, setGuests] = useState([]);
-  const [chat, setChat] = useState([]);
-  const [gifts, setGifts] = useState([]);
-  const [botLogs, setBotLogs] = useState([]);
-  const [toasts, setToasts] = useState([]);
-  const [uptime, setUptime] = useState(0);
-  const [connected, setConnected] = useState(false);
-  const [sessionId] = useState(() => 'sess-' + Date.now());
-  const [userId] = useState(() => {
-    const stored = localStorage.getItem('sw_userId');
+  var [splash, setSplash] = useState(true);
+  var [activeTab, setActiveTab] = useState('room');
+  var [isLive, setIsLive] = useState(false);
+  var [viewerCount, setViewerCount] = useState(0);
+  var [guests, setGuests] = useState([]);
+  var [chat, setChat] = useState([]);
+  var [gifts, setGifts] = useState([]);
+  var [botLogs, setBotLogs] = useState([]);
+  var [toasts, setToasts] = useState([]);
+  var [uptime, setUptime] = useState(0);
+  var [connected, setConnected] = useState(false);
+  var [apiHealth, setApiHealth] = useState('unknown');
+  var [sessionId] = useState(function() { return 'sess-' + Date.now(); });
+  var [userId] = useState(function() {
+    var stored = localStorage.getItem('sw_userId');
     if (stored) return stored;
-    const id = 'u-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+    var id = 'u-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
     localStorage.setItem('sw_userId', id);
     return id;
   });
-  const [username] = useState(() => localStorage.getItem('sw_username') || 'Guest' + Math.floor(Math.random() * 9000 + 1000));
-  const [role] = useState(() => localStorage.getItem('sw_role') || 'viewer');
-  const [branding, setBranding] = useState(() => {
+  var [username] = useState(function() { return localStorage.getItem('sw_username') || 'Guest' + Math.floor(Math.random() * 9000 + 1000); });
+  var [role] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
+  var [branding, setBranding] = useState(function() {
     try {
-      const b = localStorage.getItem('sw_branding');
+      var b = localStorage.getItem('sw_branding');
       if (b) return JSON.parse(b);
     } catch(e) {}
     return { gold: '#C9A84C', burg: '#800020', showScoreBar: true };
   });
-  const [fadesScores, setFadesScores] = useState({ team1: 0, team2: 0 });
-  const [giftFloats, setGiftFloats] = useState([]);
-  const [ppvToken, setPpvToken] = useState(() => sessionStorage.getItem('sw_ppv_token') || null);
-  const [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
+  var [fadesScores, setFadesScores] = useState({ team1: 0, team2: 0 });
+  var [giftFloats, setGiftFloats] = useState([]);
+  var [ppvToken, setPpvToken] = useState(function() { return sessionStorage.getItem('sw_ppv_token') || null; });
+  var [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
 
-  const socketRef = useRef(null);
-  const uptimeRef = useRef(null);
-  const liveStartRef = useRef(null);
+  var socketRef = useRef(null);
+  var uptimeRef = useRef(null);
+  var liveStartRef = useRef(null);
 
-  const addToast = useCallback((msg, type) => {
-    const id = Date.now() + Math.random();
-    setToasts((prev) => [...prev, { id, msg, type: type || 'info' }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+  var addToast = useCallback(function(msg, type) {
+    var id = Date.now() + Math.random();
+    setToasts(function(prev) { return [...prev, { id, msg, type: type || 'info' }]; });
+    setTimeout(function() { setToasts(function(prev) { return prev.filter(function(t) { return t.id !== id; }); }); }, 4000);
   }, []);
 
-  useEffect(() => {
-    const t = setTimeout(() => setSplash(false), 2200);
-    return () => clearTimeout(t);
+  useEffect(function() {
+    var t = setTimeout(function() { setSplash(false); }, 2200);
+    return function() { clearTimeout(t); };
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('sw_token') || '';
-    const socket = getSocket(token);
+  useEffect(function() {
+    var token = localStorage.getItem('sw_token') || '';
+    var socket = getSocket(token);
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    socket.on('connect', function() {
       setConnected(true);
       socket.emit('join-room', { roomId: APP_ID, userId, username, role, token });
     });
 
-    socket.on('disconnect', () => setConnected(false));
+    socket.on('disconnect', function() { setConnected(false); });
 
-    socket.on('roster-update', (data) => {
+    socket.on('roster-update', function(data) {
       if (!data || !data.guests) return;
       setGuests(function(prev) {
         return data.guests.map(function(g) {
@@ -152,46 +155,46 @@ export default function App() {
       });
     });
 
-    socket.on('viewer-count', (data) => {
+    socket.on('viewer-count', function(data) {
       if (data && typeof data.count === 'number') setViewerCount(data.count);
     });
 
-    socket.on('chat-message', (msg) => {
+    socket.on('chat-message', function(msg) {
       if (!msg) return;
-      setChat((prev) => [...prev.slice(-200), msg]);
+      setChat(function(prev) { return [...prev.slice(-200), msg]; });
     });
 
-    socket.on('gift-received', (gift) => {
+    socket.on('gift-received', function(gift) {
       if (!gift) return;
-      setGifts((prev) => [...prev, gift]);
-      const floatId = Date.now() + Math.random();
-      setGiftFloats((prev) => [...prev, { ...gift, floatId }]);
-      setTimeout(() => setGiftFloats((prev) => prev.filter((g) => g.floatId !== floatId)), 4000);
+      setGifts(function(prev) { return [...prev, gift]; });
+      var floatId = Date.now() + Math.random();
+      setGiftFloats(function(prev) { return [...prev, { ...gift, floatId }]; });
+      setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 4000);
       addToast((gift.from_user || 'Someone') + ' sent ' + (gift.name || 'a gift') + '! ' + (gift.emoji || '🎁'), 'gift');
     });
 
-    socket.on('bot-log', (log) => {
+    socket.on('bot-log', function(log) {
       if (!log) return;
-      setBotLogs((prev) => [...prev.slice(-100), { ...log, id: Date.now() + Math.random() }]);
+      setBotLogs(function(prev) { return [...prev.slice(-100), { ...log, id: Date.now() + Math.random() }]; });
     });
 
-    socket.on('go-live-confirmed', () => {
+    socket.on('go-live-confirmed', function() {
       setIsLive(true);
       liveStartRef.current = Date.now();
       addToast('🔴 LIVE! Stream is broadcasting', 'success');
     });
 
-    socket.on('broadcast-ended', () => {
+    socket.on('broadcast-ended', function() {
       setIsLive(false);
       liveStartRef.current = null;
       addToast('Stream ended', 'info');
     });
 
-    socket.on('fades-event', (data) => {
+    socket.on('fades-event', function(data) {
       if (data && data.scores) setFadesScores(data.scores);
     });
 
-    socket.on('new-producer', (data) => {
+    socket.on('new-producer', function(data) {
       if (!data || !data.guestId || !data.producerId) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
@@ -222,7 +225,7 @@ export default function App() {
       });
     });
 
-    socket.on('producer-closed', (data) => {
+    socket.on('producer-closed', function(data) {
       if (!data || !data.producerId) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
@@ -234,7 +237,7 @@ export default function App() {
       });
     });
 
-    socket.on('guest-muted', (data) => {
+    socket.on('guest-muted', function(data) {
       if (!data || !data.guestId) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
@@ -246,20 +249,20 @@ export default function App() {
       addToast('Host muted a guest', 'info');
     });
 
-    socket.on('muted', () => {
+    socket.on('muted', function() {
       addToast('⚠ Your chat has been restricted by SwanyBot', 'error');
     });
 
-    socket.on('fanout-failed', () => {
+    socket.on('fanout-failed', function() {
       addToast('⚠ Stream fanout lost — attempting to reconnect', 'error');
     });
 
-    socket.on('fanout-restarted', (data) => {
+    socket.on('fanout-restarted', function(data) {
       var attempt = data && data.attempt ? ' (attempt ' + data.attempt + ')' : '';
       addToast('✓ Stream fanout reconnected' + attempt, 'success');
     });
 
-    socket.on('guest-unmuted', (data) => {
+    socket.on('guest-unmuted', function(data) {
       if (!data || !data.guestId) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
@@ -270,7 +273,7 @@ export default function App() {
       });
     });
 
-    socket.on('guest-kicked', (data) => {
+    socket.on('guest-kicked', function(data) {
       if (!data || !data.guestId) return;
       setGuests(function(prev) {
         return prev.filter(function(g) {
@@ -281,11 +284,11 @@ export default function App() {
       addToast('A guest was removed from the room', 'info');
     });
 
-    socket.on('you-were-kicked', () => {
+    socket.on('you-were-kicked', function() {
       addToast('⚠ You were removed from this room by the host', 'error');
     });
 
-    socket.on('role-changed', (data) => {
+    socket.on('role-changed', function(data) {
       if (!data || !data.guestId) return;
       setGuests(function(prev) {
         return prev.map(function(g) {
@@ -296,12 +299,12 @@ export default function App() {
       });
     });
 
-    socket.on('overlay-update', (data) => {
+    socket.on('overlay-update', function(data) {
       if (!data || !data.overlay) return;
       setOverlayConfig(data.overlay);
     });
 
-    return () => {
+    return function() {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('roster-update');
@@ -327,25 +330,36 @@ export default function App() {
     };
   }, [userId, username, role, addToast]);
 
-  useEffect(() => {
-    uptimeRef.current = setInterval(() => {
+  useEffect(function() {
+    uptimeRef.current = setInterval(function() {
       if (isLive && liveStartRef.current) {
         setUptime(Math.floor((Date.now() - liveStartRef.current) / 1000));
       }
     }, 1000);
-    return () => clearInterval(uptimeRef.current);
+    return function() { clearInterval(uptimeRef.current); };
   }, [isLive]);
 
-  useEffect(() => {
+  useEffect(function() {
     localStorage.setItem('sw_branding', JSON.stringify(branding));
   }, [branding]);
 
   function formatUptime(s) {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
     return (h > 0 ? String(h).padStart(2,'0') + ':' : '') + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
   }
+
+  useEffect(function() {
+    function checkHealth() {
+      fetch('/api/health').then(function(r) {
+        setApiHealth(r.ok ? 'good' : 'degraded');
+      }).catch(function() { setApiHealth('down'); });
+    }
+    checkHealth();
+    var healthInterval = setInterval(checkHealth, 30000);
+    return function() { clearInterval(healthInterval); };
+  }, []);
 
   if (splash) {
     return (
@@ -384,15 +398,15 @@ export default function App() {
 
       {/* Tab Bar */}
       <nav className="tab-bar">
-        {TABS.map((tab) => (
+        {TABS.map(function(tab) { return (
           <button
             key={tab.id}
             className={'tab-btn' + (activeTab === tab.id ? ' tab-btn--active' : '')}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={function() { setActiveTab(tab.id); }}
           >
             {tab.label}
           </button>
-        ))}
+        ); })}
       </nav>
 
       {/* Tab Content */}
@@ -592,6 +606,9 @@ export default function App() {
         {activeTab === 'mcp' && (
           <MCPTab addToast={addToast} />
         )}
+        {activeTab === 'guardian' && (
+          <GuardianTab addToast={addToast} isLive={isLive} />
+        )}
       </main>
 
       {/* Overlays */}
@@ -604,12 +621,12 @@ export default function App() {
 
 // StreamKeysTab inline (7th tab)
 function StreamKeysTab({ socket, userId, guests, role, addToast }) {
-  const [platform, setPlatform] = useState('youtube');
-  const [streamKey, setStreamKey] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [savedKeys, setSavedKeys] = useState([]);
+  var [platform, setPlatform] = useState('youtube');
+  var [streamKey, setStreamKey] = useState('');
+  var [saving, setSaving] = useState(false);
+  var [savedKeys, setSavedKeys] = useState([]);
 
-  const PLATFORMS = [
+  var PLATFORMS = [
     { id: 'youtube', label: 'YouTube' },
     { id: 'tiktok', label: 'TikTok' },
     { id: 'twitch', label: 'Twitch' },
@@ -641,7 +658,7 @@ function StreamKeysTab({ socket, userId, guests, role, addToast }) {
           setStreamKey('');
           addToast('🔒 Encrypted & Vaulted', 'success');
           setSavedKeys((prev) => {
-            const filtered = prev.filter((k) => k.destId !== platform);
+            var filtered = prev.filter((k) => k.destId !== platform);
             return [...filtered, { destId: platform, createdAt: Date.now() }];
           });
         } else {
