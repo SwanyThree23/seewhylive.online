@@ -392,6 +392,9 @@ export default function App() {
         </div>
         <div className="hud-right">
           <span className="hud-viewers">👁 {viewerCount}</span>
+          <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 6 }}>
+            {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
+          </span>
           <span className="hud-room">{APP_ID.substring(0, 8)}</span>
         </div>
       </header>
