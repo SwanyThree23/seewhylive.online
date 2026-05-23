@@ -25,6 +25,13 @@ var rnd = function(a, b) { return Math.floor(Math.random() * (b - a + 1) + a); }
 var fmtN = function(n) { n = n || 0; if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'k'; return ''+n; };
 var fmtS = function(s) { s = s || 0; var m = Math.floor(s / 60); var sec = s % 60; return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec; };
 
+function fmtDuration(sec) {
+  var h = Math.floor(sec / 3600);
+  var m = Math.floor((sec % 3600) / 60);
+  var s = sec % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
 var REPLAY_CLIPS = [
   {id:'r1', title:'Opener — SwanyThree goes live',    start:0,    end:145,  highlight:false, chapter:true,  thumb:'🎤'},
   {id:'r2', title:'CaliBonesOG joins + hype moment',  start:145,  end:420,  highlight:true,  chapter:false, thumb:'🔥'},
@@ -38,14 +45,19 @@ var REPLAY_CLIPS = [
 
 var TOTAL_DURATION = 1842;
 
-export default function ReplayTab({ addToast }) {
+export default function ReplayTab({ addToast, isLive }) {
   var [clips, setClips]           = useState(REPLAY_CLIPS.map(function(c) { return Object.assign({}, c); }));
   var [playHead, setPlayHead]     = useState(0);
   var [playing, setPlaying]       = useState(false);
   var [selected, setSelected]     = useState(null);
   var [reel, setReel]             = useState([]);
   var [exportMode, setExportMode] = useState('full');
+  var [recording, setRecording]   = useState(false);
+  var [recDuration, setRecDuration] = useState(0);
+  var [liveClips, setLiveClips]   = useState([]);
   var playRef                     = useRef(null);
+  var recRef                      = useRef(null);
+  var clipTimerRef                = useRef(null);
 
   useEffect(function() {
     if (!playing) {
@@ -64,6 +76,48 @@ export default function ReplayTab({ addToast }) {
     }, 80);
     return function() { clearInterval(playRef.current); };
   }, [playing]);
+
+  // Recording and live clip generation
+  useEffect(function() {
+    if (isLive) {
+      setRecording(true);
+      setRecDuration(0);
+
+      // Tick rec duration every second
+      recRef.current = setInterval(function() {
+        setRecDuration(function(prev) { return prev + 1; });
+      }, 1000);
+
+      // Auto-add a live clip every 20 seconds
+      clipTimerRef.current = setInterval(function() {
+        setRecDuration(function(currentDur) {
+          setLiveClips(function(prevClips) {
+            var newClip = {
+              id: 'live_' + Date.now(),
+              title: 'Live Segment #' + (prevClips.length + 1),
+              start: currentDur - 20 < 0 ? 0 : currentDur - 20,
+              end: currentDur,
+              highlight: false,
+              live: true,
+              thumb: '🔴',
+            };
+            return prevClips.concat([newClip]);
+          });
+          return currentDur;
+        });
+      }, 20000);
+
+      return function() {
+        clearInterval(recRef.current);
+        clearInterval(clipTimerRef.current);
+      };
+    } else {
+      // isLive went false — stop recording, keep liveClips
+      setRecording(false);
+      if (recRef.current) clearInterval(recRef.current);
+      if (clipTimerRef.current) clearInterval(clipTimerRef.current);
+    }
+  }, [isLive]);
 
   var currentClip = null;
   for (var i = 0; i < clips.length; i++) {
@@ -121,8 +175,21 @@ export default function ReplayTab({ addToast }) {
     'reel':      'Highlight Reel',
   };
 
+  var allClips = liveClips.concat(clips);
+
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden', background: BG0 }}>
+
+      {/* REC badge */}
+      {recording && (
+        <div style={{ background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 8, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, margin: '8px 8px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 8px #FF1A3C' }} />
+            <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: '#FF1A3C', letterSpacing: 2 }}>RECORDING</span>
+          </div>
+          <span style={{ fontFamily: fM, fontSize: 11, color: '#FF1A3C', letterSpacing: 1 }}>{fmtDuration(recDuration)}</span>
+        </div>
+      )}
 
       {/* VIDEO PREVIEW */}
       <div style={{
@@ -265,10 +332,15 @@ export default function ReplayTab({ addToast }) {
               REEL: {reel.length}
             </span>
           )}
+          {liveClips.length > 0 && (
+            <span style={{ fontFamily: fM, fontSize: 7, color: '#FF1A3C', background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 3, padding: '1px 6px', letterSpacing: 1 }}>
+              LIVE: {liveClips.length}
+            </span>
+          )}
         </div>
 
-        {/* Clip cards */}
-        {clips.map(function(clip) {
+        {/* Clip cards — live clips first, then replay clips */}
+        {allClips.map(function(clip) {
           var isPlaying = currentClip && currentClip.id === clip.id;
           var isSelected = selected === clip.id;
           var inReel = isInReel(clip.id);
@@ -279,8 +351,8 @@ export default function ReplayTab({ addToast }) {
             <div
               key={clip.id}
               style={{
-                background: isPlaying ? 'rgba(128,0,32,.12)' : GLASS,
-                border: '1px solid ' + (isPlaying ? 'rgba(192,24,56,.4)' : BORDER),
+                background: clip.live ? 'rgba(255,26,60,.07)' : (isPlaying ? 'rgba(128,0,32,.12)' : GLASS),
+                border: '1px solid ' + (clip.live ? 'rgba(255,26,60,.3)' : (isPlaying ? 'rgba(192,24,56,.4)' : BORDER)),
                 borderRadius: 10,
                 overflow: 'hidden',
                 cursor: 'pointer',
@@ -289,16 +361,21 @@ export default function ReplayTab({ addToast }) {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px' }}>
                 {/* Thumb */}
-                <div style={{ width: 36, height: 36, borderRadius: 7, background: 'rgba(128,0,32,.2)', border: '1px solid rgba(201,168,76,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 7, background: clip.live ? 'rgba(255,26,60,.15)' : 'rgba(128,0,32,.2)', border: '1px solid ' + (clip.live ? 'rgba(255,26,60,.3)' : 'rgba(201,168,76,.15)'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
                   {clip.thumb}
                 </div>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 12, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {clip.title}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                    {clip.live && (
+                      <span style={{ fontFamily: fM, fontSize: 7, color: '#FF1A3C', background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 3, padding: '1px 5px', letterSpacing: 1, flexShrink: 0 }}>🔴 LIVE</span>
+                    )}
+                    <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 12, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {clip.title}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 5, marginTop: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span style={{ fontFamily: fM, fontSize: 8, color: GOLD }}>{fmtS(clipDuration)}</span>
                     {clip.chapter && (
                       <span style={{ fontFamily: fM, fontSize: 7, color: TEAL, background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 2, padding: '0 4px' }}>CHAPTER</span>
