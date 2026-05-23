@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-const RTMP_URL = 'rtmp://2.24.194.112:1935/live';
-const STREAM_KEY_PLACEHOLDER = 'seewhy-stream-key-here';
+var RTMP_URL = 'rtmp://2.24.194.112:1935/live';
+var STREAM_KEY_PLACEHOLDER = 'seewhy-stream-key-here';
 
-const QUALITY_PRESETS = [
+var QUALITY_PRESETS = [
   { id: '4k',  label: '4K',     res: '3840x2160', fps: 60, bitrate: '20000 kbps', encoder: 'x264 / NVENC' },
   { id: '1080',label: '1080p',  res: '1920x1080', fps: 60, bitrate: '8000 kbps',  encoder: 'x264 / NVENC' },
   { id: '720', label: '720p',   res: '1280x720',  fps: 30, bitrate: '4500 kbps',  encoder: 'x264'         },
   { id: 'mob', label: 'Mobile', res: '854x480',   fps: 30, bitrate: '2000 kbps',  encoder: 'x264'         },
 ];
 
-const SETUP_TABS = [
+var SETUP_TABS = [
   { id: 'obs',        label: 'OBS' },
   { id: 'streamlabs', label: 'Streamlabs' },
   { id: 'vmix',       label: 'vMix' },
@@ -18,7 +18,7 @@ const SETUP_TABS = [
   { id: 'srt',        label: 'SRT' },
 ];
 
-const STEPS = {
+var STEPS = {
   obs: [
     'Open OBS Studio → Settings → Stream',
     'Service: Custom… | Server: ' + RTMP_URL,
@@ -58,10 +58,10 @@ const STEPS = {
 };
 
 export default function PushStreamTab({ isLive, addToast }) {
-  const [activeSetup, setActiveSetup] = useState('obs');
-  const [selectedPreset, setSelectedPreset] = useState('1080');
-  const [keyVisible, setKeyVisible] = useState(false);
-  const [copied, setCopied] = useState('');
+  var [activeSetup, setActiveSetup] = useState('obs');
+  var [selectedPreset, setSelectedPreset] = useState('1080');
+  var [keyVisible, setKeyVisible] = useState(false);
+  var [copied, setCopied] = useState('');
 
   function copyText(text, label) {
     navigator.clipboard.writeText(text).then(function() {
