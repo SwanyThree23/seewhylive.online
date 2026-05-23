@@ -44,10 +44,61 @@ var fmtT = function() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-export default function MCPTab({ addToast }) {
+export default function MCPTab({ addToast, isLive }) {
   var [tools, setTools]       = useState(MCP_TOOLS.map(function(t) { return Object.assign({}, t); }));
   var [pinging, setPinging]   = useState(false);
   var [lastPing, setLastPing] = useState('--:--');
+  var [logView, setLogView]   = useState(false);
+  var [callLog, setCallLog]   = useState([]);
+
+  // Seed call log on mount
+  useEffect(function() {
+    setCallLog([
+      '14:03:12  get_stream_status        → 200 OK (4ms)',
+      '14:03:14  get_viewer_count         → 200 OK (2ms)',
+      '14:05:01  create_transaction       → 201 CREATED (8ms)',
+      '14:06:33  moderate_message         → 200 FLAGGED (420ms)',
+      '14:07:44  get_revenue_split        → 200 OK (5ms)',
+    ]);
+  }, []);
+
+  // Live call count drift
+  useEffect(function() {
+    if (!isLive) return;
+    var id = setInterval(function() {
+      setTools(function(prev) {
+        var idx = Math.floor(Math.random() * prev.length);
+        var delta = Math.floor(Math.random() * 3) + 1;
+        return prev.map(function(t, i) {
+          if (i !== idx) return t;
+          var newLatency = Math.floor(parseInt(t.latency) + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 2));
+          if (newLatency < 1) newLatency = 1;
+          return Object.assign({}, t, {
+            calls: t.calls + delta,
+            latency: newLatency + 'ms'
+          });
+        });
+      });
+    }, 2800);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  // Live call log appender
+  useEffect(function() {
+    if (!isLive) return;
+    var toolNames = MCP_TOOLS.map(function(t) { return t.name; });
+    var id = setInterval(function() {
+      var name = toolNames[Math.floor(Math.random() * toolNames.length)];
+      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var entry = ts + '  ' + name + '  → 200 OK (' + rnd(2, 20) + 'ms)';
+      setCallLog(function(prev) {
+        var next = prev.concat([entry]);
+        if (next.length > 20) next = next.slice(next.length - 20);
+        return next;
+      });
+    }, 5500);
+    return function() { clearInterval(id); };
+  }, [isLive]);
 
   function pingAll() {
     setPinging(true);
@@ -95,34 +146,67 @@ export default function MCPTab({ addToast }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
           <div>
-            <div style={{ fontFamily: fD, fontSize: 18, color: TEAL, letterSpacing: 2, lineHeight: 1 }}>
-              MCP SERVER STATUS
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontFamily: fD, fontSize: 18, color: TEAL, letterSpacing: 2, lineHeight: 1 }}>
+                MCP SERVER STATUS
+              </div>
+              {isLive && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  background: 'rgba(255,59,59,.15)',
+                  border: '1px solid rgba(255,59,59,.4)',
+                  borderRadius: 20,
+                  padding: '2px 7px',
+                }}>
+                  <span style={{ color: '#FF3B3B', fontSize: 7 }}>●</span>
+                  <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 9, color: '#FF3B3B', letterSpacing: 1 }}>LIVE</span>
+                </div>
+              )}
             </div>
             <div style={{ fontFamily: fM, fontSize: 8, color: TEXT_M, marginTop: 3, letterSpacing: 0.5 }}>
               12 tools &nbsp;·&nbsp; Supabase xlrcibziouffgxciecvc &nbsp;·&nbsp; Last ping: {lastPing}
             </div>
           </div>
-          <button
-            onClick={pingAll}
-            disabled={pinging}
-            style={{
-              background: pinging
-                ? 'rgba(0,201,167,.1)'
-                : 'linear-gradient(135deg,' + TEAL + ',' + TEAL_H + ')',
-              border: '1px solid ' + (pinging ? 'rgba(0,201,167,.3)' : TEAL),
-              borderRadius: 7,
-              padding: '6px 12px',
-              color: pinging ? TEAL : BG0,
-              fontFamily: fU,
-              fontWeight: 700,
-              fontSize: 11,
-              cursor: pinging ? 'not-allowed' : 'pointer',
-              flexShrink: 0,
-              opacity: pinging ? 0.7 : 1,
-            }}
-          >
-            {pinging ? '⟳ PINGING...' : '📡 PING ALL'}
-          </button>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button
+              onClick={function() { setLogView(function(v) { return !v; }); }}
+              style={{
+                background: logView ? 'linear-gradient(135deg,' + PURP + ',' + PURP_H + ')' : 'rgba(155,77,202,.12)',
+                border: '1px solid ' + (logView ? PURP : 'rgba(155,77,202,.3)'),
+                borderRadius: 7,
+                padding: '6px 10px',
+                color: logView ? BG0 : PURP,
+                fontFamily: fU,
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              📋 CALL LOG
+            </button>
+            <button
+              onClick={pingAll}
+              disabled={pinging}
+              style={{
+                background: pinging
+                  ? 'rgba(0,201,167,.1)'
+                  : 'linear-gradient(135deg,' + TEAL + ',' + TEAL_H + ')',
+                border: '1px solid ' + (pinging ? 'rgba(0,201,167,.3)' : TEAL),
+                borderRadius: 7,
+                padding: '6px 12px',
+                color: pinging ? TEAL : BG0,
+                fontFamily: fU,
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: pinging ? 'not-allowed' : 'pointer',
+                opacity: pinging ? 0.7 : 1,
+              }}
+            >
+              {pinging ? '⟳ PINGING...' : '📡 PING ALL'}
+            </button>
+          </div>
         </div>
 
         {/* 4-stat grid */}
@@ -148,6 +232,44 @@ export default function MCPTab({ addToast }) {
 
       {/* SCROLLABLE BODY */}
       <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+        {/* CALL LOG panel */}
+        {logView && (
+          <div style={{
+            background: GLASS,
+            border: '1px solid ' + BORDER,
+            borderRadius: 9,
+            padding: '10px 12px',
+            marginBottom: 4,
+          }}>
+            <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 11, color: PURP, letterSpacing: 1, marginBottom: 8 }}>
+              CALL LOG
+            </div>
+            <div style={{
+              maxHeight: 200,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 3,
+            }}>
+              {callLog.map(function(entry, idx) {
+                return (
+                  <div key={idx} style={{
+                    fontFamily: fM,
+                    fontSize: 9,
+                    color: TEXT_M,
+                    padding: '3px 6px',
+                    background: idx % 2 === 0 ? 'rgba(255,255,255,.02)' : 'transparent',
+                    borderRadius: 4,
+                    whiteSpace: 'pre',
+                  }}>
+                    {entry}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Tool cards */}
         {tools.map(function(tool) {

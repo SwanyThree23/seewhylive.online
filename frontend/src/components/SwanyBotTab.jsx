@@ -14,6 +14,19 @@ var DEFAULT_TRIGGERS = [
   { id: 'trig_3', keyword: '!discord', response: '💬 Join the SwanyThree EntTech community!' },
 ];
 
+var SIM_EVENTS = [
+  { event: 'viewer_join',        message: 'SeeWhyFan42 joined the stream' },
+  { event: 'viewer_join',        message: 'DominoKing99 joined the stream' },
+  { event: 'gift_received',      message: 'CaliBonesOG sent a Crown gift worth $10.00' },
+  { event: 'gift_received',      message: 'LyricQueen sent a Fire gift worth $0.50' },
+  { event: 'spam_detected',      message: 'Socket muted for 60s (flood detected)' },
+  { event: 'new_subscription',   message: 'WashingtonFan subscribed at gold tier' },
+  { event: 'trigger',            message: '!hype fired → AURA responded' },
+  { event: 'trigger',            message: '!score fired → standings displayed' },
+  { event: 'viewer_join',        message: 'TechNerd42 joined the stream' },
+  { event: 'milestone_1000',     message: '1000 viewers — consider FADES!' },
+];
+
 function getLogIcon(event) {
   if (event === 'viewer_join')      return '👋';
   if (event === 'gift_received')    return '🎁';
@@ -32,7 +45,7 @@ function formatTime(ts) {
   return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
 }
 
-export default function SwanyBotTab({ socket, botLogs, roomId, addToast }) {
+export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive }) {
   var [rules,        setRules]        = useState(DEFAULT_RULES.map(function(r) { return Object.assign({}, r); }));
   var [triggers,     setTriggers]     = useState(DEFAULT_TRIGGERS.map(function(t) { return Object.assign({}, t); }));
   var [section,      setSection]      = useState('rules');
@@ -41,6 +54,8 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast }) {
   var [showAddTrig,  setShowAddTrig]  = useState(false);
   var [newKw,        setNewKw]        = useState('');
   var [newResp,      setNewResp]      = useState('');
+  var [simLog,       setSimLog]       = useState([]);
+  var [eventsPerMin, setEventsPerMin] = useState(0);
   var logEndRef = useRef(null);
 
   useEffect(function() {
@@ -48,6 +63,29 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast }) {
       logEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [botLogs]);
+
+  useEffect(function() {
+    if (!isLive) return;
+    var id = setInterval(function() {
+      var pick = SIM_EVENTS[Math.floor(Math.random() * SIM_EVENTS.length)];
+      setSimLog(function(prev) {
+        return [Object.assign({}, pick, { id: 'sim_' + Date.now(), ts: Date.now() })].concat(prev.slice(0, 29));
+      });
+    }, 3500);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  useEffect(function() {
+    if (!isLive) return;
+    var id = setInterval(function() {
+      var cutoff = Date.now() - 60000;
+      setSimLog(function(prev) {
+        setEventsPerMin(prev.filter(function(e) { return e.ts > cutoff; }).length);
+        return prev;
+      });
+    }, 10000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
 
   function toggleRule(id) {
     setRules(function(prev) {
@@ -92,6 +130,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast }) {
 
   var activeCount = rules.filter(function(r) { return r.enabled; }).length;
   var SECTIONS = [['rules', '⚙ RULES'], ['triggers', '⚡ TRIGGERS'], ['log', '📜 LOG']];
+  var displayLogs = botLogs.length > 0 ? botLogs : simLog;
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: 430 }}>
@@ -107,6 +146,12 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast }) {
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00C9A7', lineHeight: 1 }}>{activeCount}</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>ACTIVE</div>
         </div>
+        {isLive && (
+          <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C8FF00', lineHeight: 1 }}>{eventsPerMin}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>EVT/MIN</div>
+          </div>
+        )}
       </div>
 
       {/* Section tabs */}
@@ -237,13 +282,29 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast }) {
       {/* ── LOG ── */}
       {section === 'log' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>EVENT LOG</div>
+            {isLive && botLogs.length === 0 && (
+              <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C8FF00', letterSpacing: 1 }}>● SIM</div>
+            )}
+          </div>
           <div style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '8px', height: 300, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {botLogs.length === 0 && (
+            {isLive && botLogs.length === 0 && simLog.length === 0 && (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>
                 Waiting for events...
               </div>
             )}
-            {botLogs.map(function(log) {
+            {!isLive && botLogs.length === 0 && (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>
+                Waiting for events...
+              </div>
+            )}
+            {isLive && botLogs.length === 0 && simLog.length > 0 && (
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C8FF00', letterSpacing: 1, padding: '3px 7px', marginBottom: 2 }}>
+                ● SIM MODE — no live socket events
+              </div>
+            )}
+            {displayLogs.map(function(log) {
               return (
                 <div key={log.id || Math.random()} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', background: 'rgba(22,16,32,.5)', borderRadius: 6, borderLeft: '2px solid rgba(0,201,167,.25)' }}>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', flexShrink: 0, marginTop: 2 }}>{formatTime(log.ts)}</span>

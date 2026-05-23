@@ -37,22 +37,41 @@ var PPV_PRESETS = [
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 function money(n) { return '$' + (Math.floor((n || 0) * 100) / 100).toFixed(2); }
 
-export default function MonetizeTab({ addToast }) {
-  var [tab,         setTab]      = useState('tips');
-  var [tipAmt,      setTipAmt]   = useState('');
-  var [currentPlan, setPlan]     = useState('elite');
-  var [gemBal,      setGemBal]   = useState(350);
-  var [ppvTitle,    setPpvTitle] = useState('');
-  var [ppvPrice,    setPpvPrice] = useState('500');
-  var [ppvDuration, setPpvDur]   = useState('120');
-  var [ppvActive,   setPpvActive]= useState(null);
-  var [ppvCountdown,setPpvCd]    = useState(0);
-  var [projViewers, setProjV]    = useState('500');
+export default function MonetizeTab({ addToast, isLive }) {
+  var [tab,            setTab]           = useState('tips');
+  var [tipAmt,         setTipAmt]        = useState('');
+  var [currentPlan,    setPlan]          = useState('elite');
+  var [gemBal,         setGemBal]        = useState(350);
+  var [ppvTitle,       setPpvTitle]      = useState('');
+  var [ppvPrice,       setPpvPrice]      = useState('500');
+  var [ppvDuration,    setPpvDur]        = useState('120');
+  var [ppvActive,      setPpvActive]     = useState(null);
+  var [ppvCountdown,   setPpvCd]         = useState(0);
+  var [projViewers,    setProjV]         = useState('500');
+  var [sessionRevCents,setSessionRevCents] = useState(0);
+  var [sessionEvents,  setSessionEvents]   = useState([]);
   var cdRef = useRef(null);
 
   useEffect(function() {
     return function() { if (cdRef.current) clearInterval(cdRef.current); };
   }, []);
+
+  useEffect(function() {
+    if (!isLive) { return; }
+    var types = ['tip', 'gem_gift', 'subscription', 'ppv'];
+    var ticker = setInterval(function() {
+      var type = types[Math.floor(Math.random() * types.length)];
+      var amountCents = Math.floor(50 + Math.random() * 2000);
+      var creatorCents = Math.floor(amountCents * CREATOR);
+      var ev = { type: type, amountCents: amountCents, creatorCents: creatorCents, ts: Date.now() };
+      setSessionEvents(function(prev) {
+        var next = prev.concat([ev]);
+        return next.slice(-8);
+      });
+      setSessionRevCents(function(prev) { return prev + amountCents; });
+    }, 5000);
+    return function() { clearInterval(ticker); };
+  }, [isLive]);
 
   function launchPPV() {
     if (!ppvTitle.trim()) { if (addToast) addToast('Enter event title', 'error'); return; }
@@ -104,6 +123,45 @@ export default function MonetizeTab({ addToast }) {
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
+      {isLive && (
+        <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.12),rgba(128,0,32,.12))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 8px #C9A84C' }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>SESSION REVENUE</span>
+            </div>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#E8C46A' }}>${(Math.floor(sessionRevCents) / 100).toFixed(2)}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1, textAlign: 'center', background: 'rgba(201,168,76,.08)', borderRadius: 6, padding: '5px 0' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#E8C46A' }}>${(Math.floor(sessionRevCents * CREATOR) / 100).toFixed(2)}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>YOUR 90%</div>
+            </div>
+            <div style={{ flex: 1, textAlign: 'center', background: 'rgba(128,0,32,.08)', borderRadius: 6, padding: '5px 0' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C01838' }}>${(Math.floor(sessionRevCents * PLATFORM) / 100).toFixed(2)}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>PLATFORM 10%</div>
+            </div>
+            <div style={{ flex: 1, textAlign: 'center', background: 'rgba(22,16,32,.6)', borderRadius: 6, padding: '5px 0' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#EDE8F5' }}>{sessionEvents.length}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>EVENTS</div>
+            </div>
+          </div>
+          {sessionEvents.length > 0 && (
+            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {sessionEvents.slice(-3).reverse().map(function(ev, i) {
+                var typeEmoji = ev.type === 'tip' ? '💰' : ev.type === 'gem_gift' ? '💎' : ev.type === 'subscription' ? '⭐' : '🔑';
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 6px', background: 'rgba(7,5,10,.5)', borderRadius: 4 }}>
+                    <span style={{ fontSize: 10 }}>{typeEmoji}</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: '#A89CC8', flex: 1 }}>{ev.type.replace('_', ' ').toUpperCase()}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' }}>+${(Math.floor(ev.amountCents) / 100).toFixed(2)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 2, background: 'rgba(7,5,10,.8)', borderRadius: 10, padding: 4 }}>
         {[['tips', '💰 TIPS'], ['gems', '💎 GEMS'], ['subs', '⭐ SUBS'], ['plans', '📦 PLANS'], ['stage', '🎭 STAGE']].map(function(t) {
