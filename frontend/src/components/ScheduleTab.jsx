@@ -6,7 +6,7 @@ var INIT_SCHEDULE = [
   { id: 's1', title: 'Friday Night Dominos LIVE',  time: new Date(NOW - 1800000).toISOString(),           status: 'LIVE',  category: 'Domino',     viewers: 2847, recurring: 'weekly'   },
   { id: 's2', title: 'Washington Classic Round 2', time: new Date(NOW + 86400000).toISOString(),           status: 'SCHED', category: 'Tournament', viewers: null,  recurring: 'none'     },
   { id: 's3', title: 'AIverse Podcast Ep. 48',     time: new Date(NOW + 172800000).toISOString(),          status: 'SCHED', category: 'Podcast',    viewers: null,  recurring: 'weekly'   },
-  { id: 's4', title: "Cali × VibeN'Bones Collab",  time: new Date(NOW + 259200000).toISOString(),          status: 'SCHED', category: 'Music',      viewers: null,  recurring: 'none'     },
+  { id: 's4', title: "Cali \xD7 VibeN'Bones Collab",  time: new Date(NOW + 259200000).toISOString(),          status: 'SCHED', category: 'Music',      viewers: null,  recurring: 'none'     },
   { id: 's5', title: 'Beat Production Workshop',   time: new Date(NOW + 345600000).toISOString(),          status: 'SCHED', category: 'Education',  viewers: null,  recurring: 'biweekly' },
 ];
 
@@ -78,24 +78,63 @@ function nextUpcomingTime(schedule) {
   return upcoming[0].time;
 }
 
+function formatLiveDuration(secs) {
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs % 3600) / 60);
+  var s = secs % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
 var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' };
 var RECUR_COLORS = { none: '#7A6F90', weekly: '#00C9A7', biweekly: '#C084FC' };
 
-export default function ScheduleTab({ addToast }) {
-  var [schedule,   setSchedule]   = useState(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
-  var [newTitle,   setNewTitle]   = useState('');
-  var [newTime,    setNewTime]    = useState('');
-  var [newCat,     setNewCat]     = useState('Domino');
-  var [newRecur,   setNewRecur]   = useState('none');
-  var [filterCat,  setFilterCat]  = useState('all');
-  var [tick,       setTick]       = useState(0);
+export default function ScheduleTab({ addToast, isLive }) {
+  var [schedule,     setSchedule]     = useState(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
+  var [newTitle,     setNewTitle]     = useState('');
+  var [newTime,      setNewTime]      = useState('');
+  var [newCat,       setNewCat]       = useState('Domino');
+  var [newRecur,     setNewRecur]     = useState('none');
+  var [filterCat,    setFilterCat]    = useState('all');
+  var [tick,         setTick]         = useState(0);
+  var [countdown,    setCountdown]    = useState(0);
+  var [simNextEvent, setSimNextEvent] = useState(0);
 
+  // 1-second tick for next-event countdown display
   useEffect(function() {
     var id = setInterval(function() {
       setTick(function(t) { return t + 1; });
     }, 1000);
     return function() { clearInterval(id); };
   }, []);
+
+  // Live duration counter — runs only while isLive
+  useEffect(function() {
+    if (!isLive) {
+      setCountdown(0);
+      return;
+    }
+    var id = setInterval(function() {
+      setCountdown(function(c) { return c + 1; });
+    }, 1000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  // Auto-rotate simNextEvent every 45 seconds while isLive
+  useEffect(function() {
+    if (!isLive) {
+      setSimNextEvent(0);
+      return;
+    }
+    var upcomingList = schedule.filter(function(ev) {
+      return ev.status !== 'ENDED' && ev.status !== 'LIVE' && new Date(ev.time).getTime() > Date.now();
+    });
+    upcomingList.sort(function(a, b) { return new Date(a.time).getTime() - new Date(b.time).getTime(); });
+    var maxIdx = upcomingList.length > 0 ? upcomingList.length - 1 : 0;
+    var id = setInterval(function() {
+      setSimNextEvent(function(prev) { return prev >= maxIdx ? maxIdx : prev + 1; });
+    }, 45000);
+    return function() { clearInterval(id); };
+  }, [isLive, schedule]);
 
   function addEvent() {
     if (!newTitle.trim() || !newTime.trim()) return;
@@ -141,18 +180,38 @@ export default function ScheduleTab({ addToast }) {
 
   var liveCount = schedule.filter(function(s) { return s.status === 'LIVE'; }).length;
   var nextTime = nextUpcomingTime(schedule);
-  var countdown = countdownHeader(nextTime);
+  var countdownDisplay = countdownHeader(nextTime);
   var recurCount = schedule.filter(function(s) { return s.recurring && s.recurring !== 'none'; }).length;
   var visibleSchedule = filterCat === 'all' ? schedule : schedule.filter(function(s) { return s.category === filterCat; });
 
+  // Determine the first upcoming event index for the LIVE NOW pill
+  var upcomingSorted = schedule.filter(function(ev) {
+    return ev.status !== 'ENDED' && ev.status !== 'LIVE' && new Date(ev.time).getTime() > Date.now();
+  });
+  upcomingSorted.sort(function(a, b) { return new Date(a.time).getTime() - new Date(b.time).getTime(); });
+  var firstUpcomingId = upcomingSorted.length > 0 ? upcomingSorted[simNextEvent < upcomingSorted.length ? simNextEvent : 0].id : null;
+
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
+
+      {/* LIVE NOW banner */}
+      {isLive && (
+        <div style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 10, padding: '12px', textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 20, color: '#FF1A3C', letterSpacing: 3, marginBottom: 4 }}>
+            &#x1F534; LIVE NOW
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: '#C8FF00', letterSpacing: 4 }}>
+            {formatLiveDuration(countdown)}
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4 }}>STREAM DURATION</div>
+        </div>
+      )}
 
       {/* Countdown banner */}
       <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(155,77,202,.1))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '12px 16px', textAlign: 'center' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 3, marginBottom: 4 }}>NEXT EVENT IN</div>
         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 32, color: nextTime ? '#C8FF00' : '#444050', letterSpacing: 4, lineHeight: 1 }}>
-          {nextTime ? countdown : '--:--:--'}
+          {nextTime ? countdownDisplay : '--:--:--'}
         </div>
         {nextTime && (
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4 }}>
@@ -165,7 +224,7 @@ export default function ScheduleTab({ addToast }) {
       <div style={{ background: 'rgba(155,77,202,.08)', border: '1px solid rgba(155,77,202,.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 13, color: '#C084FC', letterSpacing: 3 }}>SCHEDULE MANAGER</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{schedule.length} events · {liveCount} live · {recurCount} recurring</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{schedule.length} events \xB7 {liveCount} live \xB7 {recurCount} recurring</div>
         </div>
         {liveCount > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '3px 10px' }}>
@@ -196,13 +255,22 @@ export default function ScheduleTab({ addToast }) {
           var cc = CAT_COLORS[ev.category] || '#C9A84C';
           var isUpcoming = ev.status !== 'LIVE' && ev.status !== 'ENDED' && new Date(ev.time).getTime() > Date.now();
           var badge = isUpcoming ? diffBadge(ev.time) : null;
+          var isLiveNowEvent = isLive && isUpcoming && ev.id === firstUpcomingId;
           return (
-            <div key={ev.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (ev.status === 'LIVE' ? 'rgba(255,26,60,.4)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
+            <div key={ev.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (ev.status === 'LIVE' || isLiveNowEvent ? 'rgba(255,26,60,.4)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 4, boxShadow: ev.status === 'LIVE' ? '0 0 6px ' + sc : 'none' }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: ev.status === 'LIVE' ? '#C8FF00' : ev.status === 'ENDED' ? '#555060' : '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {ev.title}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: ev.status === 'LIVE' ? '#C8FF00' : ev.status === 'ENDED' ? '#555060' : '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {ev.title}
+                    </div>
+                    {isLiveNowEvent && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.18)', border: '1px solid rgba(255,26,60,.45)', borderRadius: 999, padding: '2px 8px', flexShrink: 0 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', display: 'inline-block', boxShadow: '0 0 5px #FF1A3C' }} />
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#FF6B81', letterSpacing: 1 }}>LIVE NOW</span>
+                      </span>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span style={{ background: cc + '18', border: '1px solid ' + cc + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: cc }}>
@@ -218,12 +286,12 @@ export default function ScheduleTab({ addToast }) {
                     )}
                     {ev.recurring && ev.recurring !== 'none' && (
                       <span style={{ background: RECUR_COLORS[ev.recurring] + '18', border: '1px solid ' + RECUR_COLORS[ev.recurring] + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: RECUR_COLORS[ev.recurring] }}>
-                        🔁 {RECUR_LABELS[ev.recurring].toUpperCase()}
+                        &#x1F501; {RECUR_LABELS[ev.recurring].toUpperCase()}
                       </span>
                     )}
                     {ev.status === 'LIVE' && ev.viewers && (
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C8FF00' }}>
-                        {'👁'} {ev.viewers.toLocaleString()}
+                        {'&#x1F441;'} {ev.viewers.toLocaleString()}
                       </span>
                     )}
                   </div>
@@ -292,8 +360,8 @@ export default function ScheduleTab({ addToast }) {
             onChange={function(e) { setNewRecur(e.target.value); }}
             style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, cursor: 'pointer' }}>
             <option value="none">One-time event</option>
-            <option value="weekly">Weekly recurring (×4)</option>
-            <option value="biweekly">Bi-weekly recurring (×2)</option>
+            <option value="weekly">Weekly recurring (\xD74)</option>
+            <option value="biweekly">Bi-weekly recurring (\xD72)</option>
           </select>
           <button
             onClick={addEvent}
