@@ -33,6 +33,8 @@ import MerchTab from './components/MerchTab.jsx';
 import ReplayTab from './components/ReplayTab.jsx';
 import MCPTab from './components/MCPTab.jsx';
 import GuardianTab from './components/GuardianTab.jsx';
+import DirectPayTab from './components/DirectPayTab.jsx';
+import SocialShareTab from './components/SocialShareTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -71,7 +73,9 @@ var TABS = [
   { id: 'merch',     label: '👕 MERCH' },
   { id: 'replay',    label: '▶ REPLAY' },
   { id: 'mcp',       label: '🔌 MCP' },
-  { id: 'guardian', label: '🛡 GUARDIAN' },
+  { id: 'guardian',  label: '🛡 GUARDIAN' },
+  { id: 'directpay', label: '💸 DIRECT PAY' },
+  { id: 'share',     label: '📡 SHARE' },
 ];
 
 export default function App() {
@@ -611,10 +615,16 @@ export default function App() {
           <ReplayTab addToast={addToast} isLive={isLive} />
         )}
         {activeTab === 'mcp' && (
-          <MCPTab addToast={addToast} />
+          <MCPTab addToast={addToast} isLive={isLive} />
         )}
         {activeTab === 'guardian' && (
           <GuardianTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'directpay' && (
+          <DirectPayTab addToast={addToast} username={username} />
+        )}
+        {activeTab === 'share' && (
+          <SocialShareTab addToast={addToast} isLive={isLive} roomId={APP_ID} username={username} />
         )}
       </main>
 
