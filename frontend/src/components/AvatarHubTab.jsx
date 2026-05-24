@@ -34,11 +34,11 @@ var FRAME_ACCENT_COLORS = {
 };
 
 var BADGES = [
-  { id: 'b1', icon: '🎲', label: 'Domino Pioneer', unlocked: true  },
-  { id: 'b2', icon: '🏆', label: 'Champion',       unlocked: true  },
-  { id: 'b3', icon: '⚡', label: 'Fades Veteran',  unlocked: false },
-  { id: 'b4', icon: '💎', label: 'Diamond Tier',   unlocked: false },
-  { id: 'b5', icon: '🔥', label: '10-Streak',      unlocked: false },
+  { id: 'b1', icon: '🎲', label: 'Domino Pioneer', unlocked: true,  progress: null, total: null, how: null           },
+  { id: 'b2', icon: '🏆', label: 'Champion',       unlocked: true,  progress: null, total: null, how: null           },
+  { id: 'b3', icon: '⚡', label: 'Fades Veteran',  unlocked: false, progress: 3,    total: 10,   how: 'Fades matches' },
+  { id: 'b4', icon: '💎', label: 'Diamond Tier',   unlocked: false, progress: 1247, total: 5000, how: 'Loyalty pts'   },
+  { id: 'b5', icon: '🔥', label: '10-Streak',      unlocked: false, progress: 7,    total: 10,   how: 'Win streak'    },
 ];
 
 var VIEWER_NAMES = ['King D', 'Cali J', 'Volt V', 'Teal B', 'Gold G', 'Purp R', 'Dia H', 'Dom N'];
@@ -83,6 +83,15 @@ export default function AvatarHubTab({ addToast, isLive }) {
         return updated.slice(-5);
       });
     }, 4000);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  // Gem earning — +1 every 30s while live
+  useEffect(function() {
+    if (!isLive) return;
+    var id = setInterval(function() {
+      setGemBal(function(b) { return Math.floor(b + 1); });
+    }, 30000);
     return function() { clearInterval(id); };
   }, [isLive]);
 
@@ -165,6 +174,9 @@ export default function AvatarHubTab({ addToast, isLive }) {
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C' }}>{gemBal}</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>💎 GEMS</div>
+          {isLive && (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#00C9A7', marginTop: 2, letterSpacing: 0.5 }}>+1/30s ▲</div>
+          )}
         </div>
       </div>
 
@@ -276,11 +288,22 @@ export default function AvatarHubTab({ addToast, isLive }) {
         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 3, marginBottom: 8 }}>ACHIEVEMENT BADGES</div>
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
           {BADGES.map(function(b) {
+            var pct = (b.progress !== null && b.total) ? Math.floor((b.progress / b.total) * 100) : 0;
             return (
-              <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, background: b.unlocked ? 'rgba(201,168,76,.1)' : 'rgba(7,5,10,.6)', border: '1px solid ' + (b.unlocked ? 'rgba(201,168,76,.35)' : '#241C34'), borderRadius: 8, padding: '8px 10px', minWidth: 64 }}>
-                <span style={{ fontSize: 20, filter: b.unlocked ? 'none' : 'grayscale(100%) opacity(0.35)' }}>{b.icon}</span>
+              <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, background: b.unlocked ? 'rgba(201,168,76,.1)' : 'rgba(7,5,10,.6)', border: '1px solid ' + (b.unlocked ? 'rgba(201,168,76,.35)' : '#241C34'), borderRadius: 8, padding: '8px 10px', minWidth: 72 }}>
+                <span style={{ fontSize: 20, filter: b.unlocked ? 'none' : 'grayscale(100%) opacity(0.4)' }}>{b.icon}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: b.unlocked ? '#C9A84C' : '#7A6F90', textAlign: 'center', lineHeight: 1.3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{b.label}</span>
-                {!b.unlocked && (
+                {!b.unlocked && b.progress !== null && (
+                  <div style={{ width: '100%' }}>
+                    <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden', width: '100%' }}>
+                      <div style={{ width: pct + '%', height: '100%', background: 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
+                    </div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 5.5, color: '#5A8FFF', textAlign: 'center', marginTop: 2 }}>
+                      {b.progress}/{b.total} {b.how}
+                    </div>
+                  </div>
+                )}
+                {!b.unlocked && b.progress === null && (
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3A2F4A', textTransform: 'uppercase', letterSpacing: 0.5 }}>LOCKED</span>
                 )}
               </div>
