@@ -965,6 +965,24 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('room-paywall', { enabled: Boolean(data.enabled), amountCents: amountCents, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── subscribe ──────────────────────────────────────────────────────────
+  socket.on('subscribe', function(data) {
+    var roomId     = data.roomId || socket.data.roomId;
+    var fromUser   = data.username || socket.data.username || 'Guest';
+    var tier       = String(data.tier || 'bronze');
+    var priceCents = Math.floor(data.price_cents || 0);
+    var CREATOR    = 0.90;
+    var creatorCents = Math.floor(priceCents * CREATOR);
+    if (!roomId) return;
+    io.to(roomId).emit('new-subscription', {
+      username:      fromUser,
+      tier:          tier,
+      price_cents:   priceCents,
+      creator_cents: creatorCents,
+      ts:            Math.floor(Date.now() / 1000)
+    });
+  });
+
   // ── live polls ─────────────────────────────────────────────────────────
   socket.on('poll-start', function(data) {
     var roomId = data.roomId || socket.data.roomId;
