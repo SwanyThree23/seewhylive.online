@@ -29,7 +29,7 @@ var FONT_FAMILIES = {
   mono:   "'DM Mono',monospace",
 };
 
-export default function BrandingTab({ branding, setBranding, isLive }) {
+export default function BrandingTab({ branding, setBranding, isLive, streamInfo }) {
   var [tab, setTab] = useState('theme');
   var [logoUrl, setLogoUrl] = useState('');
   var [logoFile, setLogoFile] = useState(null);
@@ -230,7 +230,10 @@ export default function BrandingTab({ branding, setBranding, isLive }) {
                 {(logoUrl || (branding && branding.logoUrl)) && (
                   <img src={logoUrl || branding.logoUrl} alt="logo" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'contain' }} />
                 )}
-                <span style={{ fontFamily: ff, fontSize: 16, color: gold, letterSpacing: 3 }}>SeeWhy LIVE</span>
+                <div>
+                  <span style={{ fontFamily: ff, fontSize: 16, color: gold, letterSpacing: 3 }}>{(streamInfo && streamInfo.title) ? streamInfo.title : 'SeeWhy LIVE'}</span>
+                  {isLive && streamInfo && streamInfo.category ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginLeft: 6 }}>{streamInfo.category.toUpperCase()}</span> : null}
+                </div>
                 {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF1A3C', letterSpacing: 1 }}>● LIVE</span>}
               </div>
               <div style={{ background: burg, borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, letterSpacing: 2 }}>● LIVE</div>
