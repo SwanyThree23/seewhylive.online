@@ -76,6 +76,33 @@ var PLATFORMS = [
 
 var QUICK_AMOUNTS = [1, 5, 10, 25, 50, 100];
 
+function validateHandle(platformId, handle) {
+  var h = handle.trim();
+  if (!h) return 'Handle cannot be empty';
+  if (platformId === 'paypal') {
+    var isEmail = h.indexOf('@') !== -1 && h.indexOf('.') !== -1;
+    var isHandle = h.length >= 3 && h.length <= 30 && /^[a-zA-Z0-9._-]+$/.test(h);
+    if (!isEmail && !isHandle) return 'Enter a valid PayPal.me username (3-30 chars) or email';
+  }
+  if (platformId === 'cashapp') {
+    var tag = h.replace(/^\$/, '');
+    if (tag.length < 1 || tag.length > 20 || !/^[a-zA-Z0-9_]+$/.test(tag)) return 'Cash App $cashtag: letters, numbers, underscores only (1-20 chars)';
+  }
+  if (platformId === 'venmo') {
+    var clean = h.replace(/^@/, '');
+    if (clean.length < 1 || clean.length > 30 || !/^[a-zA-Z0-9_-]+$/.test(clean)) return 'Venmo: letters, numbers, hyphens, underscores only';
+  }
+  if (platformId === 'zelle') {
+    var isZelleEmail = h.indexOf('@') !== -1 && h.indexOf('.') !== -1;
+    var isPhone = /^[\d\s().+-]{7,20}$/.test(h);
+    if (!isZelleEmail && !isPhone) return 'Zelle: enter an email address or phone number';
+  }
+  if (platformId === 'chime') {
+    if (h.length < 3) return 'Enter your Chime Pay Me link or @handle';
+  }
+  return null;
+}
+
 export default function DirectPayTab({ addToast, username }) {
   var [handles, setHandles] = useState({
     paypal: '',
@@ -86,11 +113,14 @@ export default function DirectPayTab({ addToast, username }) {
   });
   var [editing, setEditing] = useState(null);
   var [draftHandle, setDraftHandle] = useState('');
+  var [draftError, setDraftError] = useState('');
   var [selectedAmt, setSelectedAmt] = useState(null);
   var [customAmt, setCustomAmt] = useState('');
   var [view, setView] = useState('pay');
 
   function saveHandle(id) {
+    var err = validateHandle(id, draftHandle);
+    if (err) { setDraftError(err); return; }
     setHandles(function(prev) {
       var next = Object.assign({}, prev);
       next[id] = draftHandle.trim();
@@ -98,6 +128,7 @@ export default function DirectPayTab({ addToast, username }) {
     });
     setEditing(null);
     setDraftHandle('');
+    setDraftError('');
     addToast('✓ ' + id + ' handle saved', 'success');
   }
 
@@ -303,12 +334,13 @@ export default function DirectPayTab({ addToast, username }) {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <input
                           value={draftHandle}
-                          onChange={function(e) { setDraftHandle(e.target.value); }}
+                          onChange={function(e) { setDraftHandle(e.target.value); setDraftError(''); }}
                           onKeyDown={function(e) { if (e.key === 'Enter') saveHandle(platform.id); }}
                           placeholder={platform.placeholder}
                           autoFocus
-                          style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid ' + platform.color + '55', borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fU, fontSize: 13, boxSizing: 'border-box' }}
+                          style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid ' + (draftError ? '#FF1A3C' : platform.color + '55'), borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fU, fontSize: 13, boxSizing: 'border-box' }}
                         />
+                        {draftError ? <div style={{ fontFamily: fM, fontSize: 8, color: '#FF6B81', lineHeight: 1.4 }}>&#x26A0; {draftError}</div> : null}
                         <div style={{ display: 'flex', gap: 6 }}>
                           <button
                             onClick={function() { saveHandle(platform.id); }}
@@ -327,7 +359,7 @@ export default function DirectPayTab({ addToast, username }) {
                             </button>
                           )}
                           <button
-                            onClick={function() { setEditing(null); setDraftHandle(''); }}
+                            onClick={function() { setEditing(null); setDraftHandle(''); setDraftError(''); }}
                             style={{ background: 'rgba(255,255,255,.04)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 14px', color: MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                             ✕
                           </button>
