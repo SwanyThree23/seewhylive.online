@@ -18,6 +18,13 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
   });
   var sparkRef = useRef(null);
 
+  var [goalCents, setGoalCents] = useState(function() {
+    try { var g = localStorage.getItem('sw_revenue_goal'); if (g) return parseInt(g, 10); } catch(e) {}
+    return 5000;
+  });
+  var [goalEdit, setGoalEdit]  = useState(false);
+  var [goalDraft, setGoalDraft] = useState('');
+
   var [liveViewerCount, setLiveViewerCount] = useState(viewerCount || 0);
   var [peakViewers, setPeakViewers] = useState(viewerCount || 0);
   var liveViewerRef = useRef(null);
@@ -292,6 +299,48 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
               </div>
             </div>
           )}
+
+          {/* Revenue goal */}
+          {(function() {
+            var goalProg = goalCents > 0 ? Math.min(100, Math.floor((creatorCents / goalCents) * 100)) : 0;
+            var goalMet  = creatorCents >= goalCents && goalCents > 0;
+            return (
+              <div style={{ background: goalMet ? 'rgba(0,201,106,.06)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (goalMet ? 'rgba(0,201,106,.35)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: goalMet ? '#00C96A' : '#7A6F90', letterSpacing: 2 }}>
+                    {goalMet ? '🏆 GOAL REACHED!' : '🎯 REVENUE GOAL'}
+                  </div>
+                  {!goalEdit ? (
+                    <button onClick={function() { setGoalDraft(String(Math.floor(goalCents / 100))); setGoalEdit(true); }}
+                      style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 8px', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                      EDIT
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 5 }}>
+                      <input value={goalDraft} onChange={function(e) { setGoalDraft(e.target.value); }}
+                        style={{ width: 64, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 5, padding: '2px 6px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9 }} />
+                      <button onClick={function() {
+                        var v = Math.floor(parseFloat(goalDraft) * 100) || 500;
+                        setGoalCents(v);
+                        try { localStorage.setItem('sw_revenue_goal', String(v)); } catch(e2) {}
+                        setGoalEdit(false);
+                      }} style={{ background: 'rgba(0,201,106,.15)', border: '1px solid rgba(0,201,106,.35)', borderRadius: 5, padding: '2px 8px', color: '#00C96A', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                        ✓
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#00C9A7', lineHeight: 1 }}>{fmtC(creatorCents)}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>goal: {fmtC(goalCents)}</span>
+                </div>
+                <div style={{ height: 8, borderRadius: 4, background: '#241C34', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: goalProg + '%', background: goalMet ? 'linear-gradient(90deg,#00C96A,#00DEC0)' : 'linear-gradient(90deg,#800020,#00C9A7)', borderRadius: 4, transition: 'width .6s ease' }} />
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 4, textAlign: 'right' }}>{goalProg}%</div>
+              </div>
+            );
+          })()}
 
           {/* Engagement metrics from API */}
           {metrics && (

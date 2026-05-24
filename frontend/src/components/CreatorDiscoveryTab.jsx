@@ -31,7 +31,7 @@ var CREATOR_BIO = {
   c8: { bio: 'Neon Beats — Korean EDM producer. Lo-fi to techno, all live.', streams: 17, totalViews: '44k' },
 };
 
-export default function CreatorDiscoveryTab({ addToast, isLive }) {
+export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, username }) {
   var [filter,          setFilter]          = useState('All');
   var [sortBy,          setSortBy]          = useState('live');
   var [following,       setFollowing]       = useState({ c1: true });
@@ -203,7 +203,19 @@ export default function CreatorDiscoveryTab({ addToast, isLive }) {
               {Boolean(following[profile.id]) ? '✓ FOLLOWING' : '+ FOLLOW'}
             </button>
             <button
-              onClick={function() { if (addToast) addToast('Collab request sent to ' + profile.name, 'success'); }}
+              onClick={function() {
+                if (socket && roomId) {
+                  socket.emit('collab-request', {
+                    roomId:     roomId,
+                    fromUser:   username || 'Creator',
+                    toCreator:  profile.name,
+                    type:       'LIVE COLLAB',
+                    message:    'Collab request from ' + (username || 'Creator') + ' via Creator Discovery',
+                    split:      '50/50'
+                  });
+                }
+                if (addToast) addToast('🤝 Collab request sent to ' + profile.name, 'success');
+              }}
               style={{ flex: 1, padding: '8px', background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 7, color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
               🤝 COLLAB
             </button>
