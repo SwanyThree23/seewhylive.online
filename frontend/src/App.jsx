@@ -338,6 +338,10 @@ export default function App() {
       setStreamInfo({ title: data.title || '', category: data.category || '', desc: data.desc || '' });
     });
 
+    socket.on('watch-party-started', function() {
+      addToast('🎉 Watch Party started! Head to the WATCH tab.', 'success');
+    });
+
     return function() {
       socket.off('connect');
       socket.off('disconnect');
@@ -362,6 +366,7 @@ export default function App() {
       socket.off('role-changed');
       socket.off('overlay-update');
       socket.off('stream-info');
+      socket.off('watch-party-started');
     };
   }, [userId, username, role, addToast]);
 
@@ -624,6 +629,9 @@ export default function App() {
           <CreatorDiscoveryTab
             addToast={addToast}
             isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            username={username}
           />
         )}
         {activeTab === 'rankings' && (
