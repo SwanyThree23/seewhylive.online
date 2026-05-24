@@ -112,6 +112,7 @@ export default function App() {
   var [giftFloats, setGiftFloats] = useState([]);
   var [ppvToken, setPpvToken] = useState(function() { return sessionStorage.getItem('sw_ppv_token') || null; });
   var [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
+  var [streamInfo, setStreamInfo] = useState({ title: '', category: '', desc: '' });
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -332,6 +333,11 @@ export default function App() {
       setOverlayConfig(data.overlay);
     });
 
+    socket.on('stream-info', function(data) {
+      if (!data) return;
+      setStreamInfo({ title: data.title || '', category: data.category || '', desc: data.desc || '' });
+    });
+
     return function() {
       socket.off('connect');
       socket.off('disconnect');
@@ -355,6 +361,7 @@ export default function App() {
       socket.off('you-were-kicked');
       socket.off('role-changed');
       socket.off('overlay-update');
+      socket.off('stream-info');
     };
   }, [userId, username, role, addToast]);
 
@@ -415,8 +422,10 @@ export default function App() {
           {isLive && <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 4, padding: '2px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
           {!connected && <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>OFFLINE</span>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 1 }}>
           {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#00C9A7' }}>{formatUptime(uptime)}</span>}
+          {isLive && streamInfo.title ? <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', letterSpacing: 0.5, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamInfo.title}</span> : null}
+          {isLive && streamInfo.category ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>{streamInfo.category.toUpperCase()}</span> : null}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'flex-end' }}>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>👁 {viewerCount}</span>
@@ -548,6 +557,7 @@ export default function App() {
             userId={userId}
             role={role}
             isLive={isLive}
+            streamInfo={streamInfo}
           />
         )}
         {activeTab === 'forge' && (
