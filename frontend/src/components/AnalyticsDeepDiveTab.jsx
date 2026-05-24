@@ -24,6 +24,19 @@ function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 var TYPE_COLORS = { tip: '#00C9A7', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
 
 export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
+
+  function exportCSV() {
+    var rows = ['id,type,creator,amount_cents,creator_payout_cents,stream'].concat(txns.map(function(tx) {
+      return [tx.id, tx.type, tx.creator, tx.amount, Math.floor(tx.amount * CREATOR), (tx.stream || tx.tier || '')].join(',');
+    }));
+    var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'seewhy-transactions.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
   var [engData, setEngData] = useState(ENG_DATA.slice());
   var [revData, setRevData] = useState(REV_DATA.slice());
   var [txns, setTxns] = useState(BASE_TXN.slice());
@@ -73,9 +86,46 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
   var peakEng      = Math.max.apply(null, engData);
   var peakRev      = Math.max.apply(null, revData);
   var viewers      = viewerCount || 2847;
+  var topTxn       = txns.reduce(function(m, t) { return t.amount > m ? t.amount : m; }, 0);
+
+  var creatorMap = {};
+  txns.forEach(function(tx) {
+    if (!creatorMap[tx.creator]) creatorMap[tx.creator] = { total: 0, count: 0 };
+    creatorMap[tx.creator].total += tx.amount;
+    creatorMap[tx.creator].count += 1;
+  });
+  var topCreators = Object.keys(creatorMap).map(function(name) {
+    return [name, creatorMap[name].total, creatorMap[name].count];
+  }).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430, overflowY: 'auto' }}>
+      {/* Session summary */}
+      <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>SESSION SUMMARY</span>
+          <button
+            onClick={exportCSV}
+            style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 4, padding: '3px 10px', color: '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+            &#x2193; CSV
+          </button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+          {[
+            [txns.length + ' TXN', 'TOTAL'],
+            [fmtC(totalCreator), 'EARNED'],
+            [fmtC(topTxn), 'TOP TXN'],
+          ].map(function(item) {
+            return (
+              <div key={item[1]} style={{ textAlign: 'center', background: 'rgba(22,16,32,.6)', borderRadius: 6, padding: '6px 4px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C' }}>{item[0]}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{item[1]}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* KPI grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         {[
@@ -198,6 +248,27 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>CREATOR 90% — {fmtC(totalCreator)}</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>PLATFORM 10% — {fmtC(totalPlatform)}</span>
         </div>
+      </div>
+
+      {/* Top Creators leaderboard */}
+      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>TOP CREATORS BY REVENUE</div>
+        {topCreators.map(function(item, i) {
+          var pct = totalGross > 0 ? Math.floor((item[1] / totalGross) * 100) : 0;
+          return (
+            <div key={item[0]} style={{ marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: i === 0 ? '#C9A84C' : '#7A6F90', width: 16, flexShrink: 0 }}>#{i + 1}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', flex: 1 }}>{item[0]}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(Math.floor(item[1] * CREATOR))}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{item[2]} TXN</span>
+              </div>
+              <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Ledger */}

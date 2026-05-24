@@ -3,13 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 var DEFAULT_BANNED = ['spam', 'scam', 'hate', 'slur', 'flood', 'bot', 'phishing'];
 
 var RULE_PRESETS = [
-  { id: 'caps',    label: 'ALL CAPS FLOOD',   desc: 'Block msgs >80% uppercase',        enabled: true  },
-  { id: 'repeat',  label: 'REPEAT CHARS',      desc: 'Block msgs with 5+ same chars',    enabled: true  },
-  { id: 'links',   label: 'EXTERNAL LINKS',    desc: 'Strip http/https links from chat', enabled: false },
-  { id: 'emoji',   label: 'EMOJI SPAM',        desc: 'Limit >10 emojis per message',     enabled: true  },
-  { id: 'slow',    label: 'SLOW MODE (10s)',   desc: 'Rate-limit msgs per user',         enabled: false },
-  { id: 'newacct', label: 'NEW ACCOUNTS',      desc: 'Hold msgs from accts <7 days',    enabled: false },
+  { id: 'caps',    label: 'ALL CAPS FLOOD',   desc: 'Block msgs >80% uppercase',        enabled: true,  sev: 'HIGH' },
+  { id: 'repeat',  label: 'REPEAT CHARS',      desc: 'Block msgs with 5+ same chars',    enabled: true,  sev: 'MED'  },
+  { id: 'links',   label: 'EXTERNAL LINKS',    desc: 'Strip http/https links from chat', enabled: false, sev: 'HIGH' },
+  { id: 'emoji',   label: 'EMOJI SPAM',        desc: 'Limit >10 emojis per message',     enabled: true,  sev: 'LOW'  },
+  { id: 'slow',    label: 'SLOW MODE (10s)',   desc: 'Rate-limit msgs per user',         enabled: false, sev: 'MED'  },
+  { id: 'newacct', label: 'NEW ACCOUNTS',      desc: 'Hold msgs from accts <7 days',    enabled: false, sev: 'LOW'  },
 ];
+
+var SEV_COLORS = { HIGH: '#FF1A3C', MED: '#C9A84C', LOW: '#7A6F90' };
 
 var MOCK_FLAGS = [
   { id: 1, user: 'xX_troll99',  msg: 'SPAMSPAMSPAMSPAM BUY CRYPTO NOW!!!',  rule: 'CAPS+REPEAT', ts: '14:02:11', action: 'blocked' },
@@ -48,6 +50,7 @@ export default function GuardianTab({ addToast, isLive }) {
   var [blocked, setBlocked]     = useState(4);
   var [allowed, setAllowed]     = useState(203);
   var logRef = useRef(null);
+  var lockdownFiredRef = useRef(false);
 
   useEffect(function() {
     if (!guardOn || !isLive) return;
@@ -71,6 +74,20 @@ export default function GuardianTab({ addToast, isLive }) {
     }, 3200);
     return function() { clearInterval(interval); };
   }, [guardOn, isLive]);
+
+  useEffect(function() {
+    if (!guardOn || !isLive) { lockdownFiredRef.current = false; return; }
+    if (blockRate < 10) { lockdownFiredRef.current = false; return; }
+    if (blockRate >= 15 && !lockdownFiredRef.current) {
+      lockdownFiredRef.current = true;
+      setRules(function(prev) {
+        return prev.map(function(r) {
+          return r.id === 'slow' ? Object.assign({}, r, { enabled: true }) : r;
+        });
+      });
+      if (addToast) addToast('LOCKDOWN: Slow Mode auto-enabled (block rate ' + blockRate + '%)', 'error');
+    }
+  }, [blockRate, guardOn, isLive]);
 
   function toggleRule(id) {
     setRules(function(prev) {
@@ -126,6 +143,14 @@ export default function GuardianTab({ addToast, isLive }) {
         </button>
       </div>
 
+      {/* Lockdown alert */}
+      {guardOn && isLive && blockRate >= 15 && (
+        <div style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#FF1A3C', letterSpacing: 1 }}>&#x26A0; LOCKDOWN</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>High block rate — Slow Mode auto-enabled</span>
+        </div>
+      )}
+
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         {[
@@ -163,8 +188,11 @@ export default function GuardianTab({ addToast, isLive }) {
           {rules.map(function(r) {
             return (
               <div key={r.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (r.enabled ? '#00C9A722' : '#241C34'), borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: r.enabled ? '#EDE8F5' : '#7A6F90' }}>{r.label}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: r.enabled ? '#EDE8F5' : '#7A6F90' }}>{r.label}</div>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: SEV_COLORS[r.sev], background: SEV_COLORS[r.sev] + '18', border: '1px solid ' + SEV_COLORS[r.sev] + '44', borderRadius: 3, padding: '1px 4px', letterSpacing: 0.5 }}>{r.sev}</span>
+                  </div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{r.desc}</div>
                 </div>
                 <button
