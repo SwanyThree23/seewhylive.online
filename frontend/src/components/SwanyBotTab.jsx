@@ -183,6 +183,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     setPollEnded(false);
     setPollTimer(60);
     setPollRunning(true);
+    if (socket && roomId) {
+      socket.emit('poll-start', { roomId: roomId, question: poll.question, options: poll.options, durationSec: 60 });
+    }
     if (addToast) addToast('📊 Poll started!', 'success');
   }
 
@@ -194,6 +197,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
       setPastPolls(function(prev) {
         return [Object.assign({}, activePoll, { votes: Object.assign({}, pollVotes), ended: true })].concat(prev.slice(0, 4));
       });
+      if (socket && roomId) {
+        socket.emit('poll-end', { roomId: roomId, votes: Object.assign({}, pollVotes) });
+      }
     }
   }
 
