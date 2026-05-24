@@ -91,7 +91,7 @@ var PORTAL_CHANNELS = [
   }
 ];
 
-export default function PortalTab({ addToast, isLive }) {
+export default function PortalTab({ addToast, isLive, socket, roomId }) {
   var [active, setActive] = useState(null);
   var [layout, setLayout] = useState('grid');
   var [channels, setChannels] = useState(PORTAL_CHANNELS.map(function(ch) { return Object.assign({}, ch); }));
@@ -131,6 +131,9 @@ export default function PortalTab({ addToast, isLive }) {
   }
 
   function handleShare() {
+    if (socket && roomId) {
+      socket.emit('portal-share', { roomId: roomId, channelName: active.name });
+    }
     addToast('📤 Shared ' + active.name + ' to chat!', 'info');
   }
 

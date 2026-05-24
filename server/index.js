@@ -1008,6 +1008,57 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('poll-end', { votes: data.votes || {}, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── collab events ─────────────────────────────────────────────────────
+  socket.on('collab-request', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    var fromUser = data.fromUser || socket.data.username || 'Creator';
+    if (!roomId) return;
+    io.to(roomId).emit('collab-request', {
+      from:    fromUser,
+      to:      (data.toCreator || '').slice(0, 80),
+      type:    (data.type || 'LIVE COLLAB').slice(0, 40),
+      message: (data.message || '').slice(0, 300),
+      split:   (data.split || '50/50').slice(0, 10),
+      ts:      Math.floor(Date.now() / 1000)
+    });
+  });
+
+  socket.on('collab-accept', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    var fromUser = data.fromUser || socket.data.username || 'Host';
+    if (!roomId) return;
+    io.to(roomId).emit('collab-accept', {
+      from:      fromUser,
+      collabId:  data.collabId || '',
+      partner:   (data.partner || '').slice(0, 80),
+      ts:        Math.floor(Date.now() / 1000)
+    });
+  });
+
+  socket.on('collab-message', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    var fromUser = data.fromUser || socket.data.username || 'Host';
+    if (!roomId) return;
+    io.to(roomId).emit('collab-message', {
+      collabId: data.collabId || '',
+      from:     fromUser,
+      text:     (data.text || '').slice(0, 500),
+      ts:       Math.floor(Date.now() / 1000)
+    });
+  });
+
+  socket.on('portal-share', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var channelName = (data.channelName || '').slice(0, 80);
+    io.to(roomId).emit('chat-message', {
+      userId: 'system',
+      username: 'SeeWhy LIVE',
+      text: '🌐 Now featuring: ' + channelName + ' — go check them out!',
+      ts: Math.floor(Date.now() / 1000)
+    });
+  });
+
   // ── stream-info ────────────────────────────────────────────────────────
   socket.on('stream-info', function(data) {
     var roomId = data.roomId || socket.data.roomId;

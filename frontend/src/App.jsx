@@ -649,10 +649,10 @@ export default function App() {
           />
         )}
         {activeTab === 'portal' && (
-          <PortalTab addToast={addToast} isLive={isLive} />
+          <PortalTab addToast={addToast} isLive={isLive} socket={socketRef.current} roomId={APP_ID} />
         )}
         {activeTab === 'collab' && (
-          <CollabTab addToast={addToast} isLive={isLive} userId={userId} username={username} />
+          <CollabTab addToast={addToast} isLive={isLive} userId={userId} username={username} socket={socketRef.current} roomId={APP_ID} />
         )}
         {activeTab === 'n8n' && (
           <N8nTab addToast={addToast} isLive={isLive} />
