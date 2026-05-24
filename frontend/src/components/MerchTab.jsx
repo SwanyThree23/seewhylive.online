@@ -38,7 +38,7 @@ var MERCH_ITEMS = [
   {id:'m8', name:'SwanyThree Signed Poster', price:80, stock:3, emoji:'🖼', color:'#FF6B35', limited:true, sold:47, cat:'collectibles'},
 ];
 
-export default function MerchTab({ addToast, isLive }) {
+export default function MerchTab({ addToast, isLive, socket, roomId, username }) {
   var [items, setItems] = useState(MERCH_ITEMS.map(function(m) { return Object.assign({}, m); }));
   var [dropped, setDropped] = useState(null);
   var [cart, setCart] = useState([]);
@@ -111,7 +111,11 @@ export default function MerchTab({ addToast, isLive }) {
   }
 
   function placeOrder() {
+    var totalCents = Math.floor(cartTotal * 100);
     var earned = Math.floor(cartCreator);
+    if (socket && roomId && totalCents > 0) {
+      socket.emit('send-gift', { roomId: roomId, fromUser: username || 'Fan', emoji: '👕', name: 'Merch Order', valueCents: totalCents });
+    }
     setCart([]);
     addToast('✅ Order placed! Creator gets $' + earned.toFixed(2), 'success');
   }
