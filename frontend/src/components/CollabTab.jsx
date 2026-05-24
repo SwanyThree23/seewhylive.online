@@ -53,7 +53,7 @@ var SEED_CHATS = {
   ]
 };
 
-export default function CollabTab({ addToast, isLive, userId, username }) {
+export default function CollabTab({ addToast, isLive, userId, username, socket, roomId }) {
   var [requests,    setRequests]    = useState(COLLAB_REQUESTS.map(function(r) { return Object.assign({}, r); }));
   var [section,     setSection]     = useState('requests');
   var [inviteMsg,   setInviteMsg]   = useState('');
@@ -63,6 +63,23 @@ export default function CollabTab({ addToast, isLive, userId, username }) {
   var [chatInputs,  setChatInputs]  = useState({});
 
   var chatBoxRefs = useRef({});
+
+  /* ── Incoming collab-message from socket ── */
+  useEffect(function() {
+    if (!socket) return;
+    function onCollabMsg(data) {
+      if (!data || !data.collabId) return;
+      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setChatMsgs(function(prev) {
+        var arr = (prev[data.collabId] || []).concat([{ from: data.from, text: data.text, ts: data.ts ? ts : ts }]);
+        var next = Object.assign({}, prev);
+        next[data.collabId] = arr;
+        return next;
+      });
+    }
+    socket.on('collab-message', onCollabMsg);
+    return function() { socket.off('collab-message', onCollabMsg); };
+  }, [socket]);
 
   /* ── Auto-scroll on new messages ── */
   useEffect(function() {
@@ -118,6 +135,9 @@ export default function CollabTab({ addToast, isLive, userId, username }) {
       next[collabId] = '';
       return next;
     });
+    if (socket && roomId) {
+      socket.emit('collab-message', { roomId: roomId, collabId: collabId, fromUser: username || 'Host', text: inputText });
+    }
   }
 
   function acceptRequest(id) {
@@ -133,6 +153,9 @@ export default function CollabTab({ addToast, isLive, userId, username }) {
     });
     if (req) {
       addToast('🤝 Collab accepted with ' + req.from + '!', 'success');
+      if (socket && roomId) {
+        socket.emit('collab-accept', { roomId: roomId, fromUser: username || 'Host', collabId: id, partner: req.from });
+      }
     }
   }
 
@@ -149,6 +172,9 @@ export default function CollabTab({ addToast, isLive, userId, username }) {
 
   function sendInvite(creator) {
     if (!inviteMsg) return;
+    if (socket && roomId) {
+      socket.emit('collab-request', { roomId: roomId, fromUser: username || 'Host', toCreator: creator.n, type: inviteType, message: inviteMsg, split: inviteSplit });
+    }
     addToast('📨 Collab invite sent to ' + creator.n + '!', 'success');
     setInviteMsg('');
   }
