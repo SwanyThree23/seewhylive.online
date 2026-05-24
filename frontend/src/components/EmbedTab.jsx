@@ -174,6 +174,13 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
   var embedCodeState = useState('');
   var embedCode = embedCodeState[0];
   var setEmbedCode = embedCodeState[1];
+  var hlsErrorState = useState(false);
+  var hlsError = hlsErrorState[0];
+  var setHlsError = hlsErrorState[1];
+  var retryingState = useState(false);
+  var retrying = retryingState[0];
+  var setRetrying = retryingState[1];
+  var retryTimerRef = useRef(null);
 
   var HLS_URL = 'https://srv1581658.hstgr.cloud/hls/' + roomId + '/index.m3u8' + (ppvToken ? '?token=' + ppvToken : '');
 
@@ -195,11 +202,17 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
       });
       hls.on(Hls.Events.ERROR, function(event, data) {
         if (data.fatal) {
-          console.error('[HLS] Fatal error:', data.type, data.details);
+          setHlsError(true);
+          setRetrying(true);
+          hls.destroy();
+          retryTimerRef.current = setTimeout(function() {
+            setHlsError(false);
+            setRetrying(false);
+          }, 4000);
         }
       });
     }
-    return function() { hls.destroy(); };
+    return function() { hls.destroy(); if (retryTimerRef.current) clearTimeout(retryTimerRef.current); };
   }, [isLive, ppvToken]);
 
   useEffect(function() {
@@ -333,6 +346,14 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                 </div>
               )}
 
+              {hlsError && (
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,12,20,.9)', gap: 10 }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2, color: '#FF1A3C' }}>STREAM ERROR</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90' }}>{retrying ? 'Reconnecting...' : 'Connection lost'}</div>
+                  {retrying && <div style={{ width: 40, height: 4, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}><div style={{ height: '100%', background: '#C9A84C', borderRadius: 2, animation: 'none', width: '60%' }} /></div>}
+                </div>
+              )}
+
               {showPaywall && !ppvToken && (
                 <div
                   style={{
@@ -390,22 +411,25 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
               marginBottom: '10px'
             }}
           />
-          <button
-            onClick={function() { navigator.clipboard.writeText(embedCode).then(function() {}).catch(function() {}); }}
-            style={{
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: '15px',
-              letterSpacing: '2px',
-              color: '#0F0C14',
-              background: '#00DEC0',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '10px 22px',
-              cursor: 'pointer'
-            }}
-          >
-            COPY EMBED CODE
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={function() { navigator.clipboard.writeText(embedCode).then(function() {}).catch(function() {}); }}
+              style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: '15px', letterSpacing: '2px', color: '#0F0C14', background: '#00DEC0', border: 'none', borderRadius: '6px', padding: '10px 22px', cursor: 'pointer' }}>
+              COPY EMBED CODE
+            </button>
+            <button
+              onClick={function() {
+                var url = 'https://seewhylive.online/watch/' + roomId;
+                if (navigator.share) {
+                  navigator.share({ title: 'SeeWhy LIVE', url: url }).catch(function() {});
+                } else {
+                  navigator.clipboard.writeText(url).then(function() {}).catch(function() {});
+                }
+              }}
+              style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: '15px', letterSpacing: '2px', color: '#C9A84C', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: '6px', padding: '10px 18px', cursor: 'pointer' }}>
+              &#x1F517; SHARE
+            </button>
+          </div>
         </div>
 
         <div style={{ marginBottom: '4px' }}>

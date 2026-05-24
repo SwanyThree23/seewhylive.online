@@ -37,7 +37,7 @@ var PPV_PRESETS = [
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 function money(n) { return '$' + (Math.floor((n || 0) * 100) / 100).toFixed(2); }
 
-export default function MonetizeTab({ addToast, isLive }) {
+export default function MonetizeTab({ addToast, isLive, socket, roomId, username }) {
   var [tab,            setTab]           = useState('tips');
   var [tipAmt,         setTipAmt]        = useState('');
   var [currentPlan,    setPlan]          = useState('elite');
@@ -139,13 +139,21 @@ export default function MonetizeTab({ addToast, isLive }) {
   function sendTip() {
     var amt = parseFloat(tipAmt);
     if (!amt || amt < 0.50) { if (addToast) addToast('Minimum tip is $0.50', 'error'); return; }
-    if (addToast) addToast('Tip sent! Creator: ' + money(amt * CREATOR), 'success');
+    var cents = Math.floor(amt * 100);
+    if (socket && roomId) {
+      socket.emit('send-gift', { roomId: roomId, fromUser: username || 'Anonymous', emoji: '💰', name: 'Tip', valueCents: cents });
+    }
+    if (addToast) addToast('💰 Tip sent! Creator receives: ' + money(amt * CREATOR), 'success');
     setTipAmt('');
   }
 
   function sendGift(g) {
     if (gemBal < g.gems) { if (addToast) addToast('Not enough gems', 'error'); return; }
     setGemBal(function(b) { return b - g.gems; });
+    var cents = Math.floor(g.usd * 100);
+    if (socket && roomId) {
+      socket.emit('send-gift', { roomId: roomId, fromUser: username || 'Anonymous', emoji: g.emoji, name: g.name, valueCents: cents });
+    }
     if (addToast) addToast(g.emoji + ' ' + g.name + ' sent!', 'success');
   }
 
@@ -290,7 +298,12 @@ export default function MonetizeTab({ addToast, isLive }) {
                     </div>
                   </div>
                   <button
-                    onClick={function() { if (addToast) addToast('Subscribed: ' + tier.name, 'success'); }}
+                    onClick={function() {
+                      if (socket && roomId) {
+                        socket.emit('subscribe', { roomId: roomId, username: username || 'Anonymous', tier: tier.id, price_cents: tier.price });
+                      }
+                      if (addToast) addToast('⭐ Subscribed: ' + tier.name, 'success');
+                    }}
                     style={{ background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 7, padding: '6px 12px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>
                     SUBSCRIBE
                   </button>

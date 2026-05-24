@@ -589,6 +589,9 @@ export default function App() {
           <MonetizeTab
             addToast={addToast}
             isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            username={username}
           />
         )}
         {activeTab === 'aura' && (
