@@ -22,8 +22,18 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
   var [peakViewers, setPeakViewers] = useState(viewerCount || 0);
   var liveViewerRef = useRef(null);
 
-  var [liveGiftCount, setLiveGiftCount] = useState(0);
+  var [liveGiftCount,  setLiveGiftCount]  = useState(0);
   var liveGiftRef = useRef(null);
+  var [loyaltyPoints,  setLoyaltyPoints]  = useState(1247);
+  var [watchStreakDays, setWatchStreakDays] = useState(7);
+  var [watchMinutes,   setWatchMinutes]   = useState(0);
+  var [pointsLog,      setPointsLog]      = useState([
+    { reason: 'Watched 30 min',     pts: 30,  ts: Date.now() - 3600000 },
+    { reason: 'Sent a gift',        pts: 50,  ts: Date.now() - 2400000 },
+    { reason: 'Day 7 streak bonus', pts: 100, ts: Date.now() - 1800000 },
+    { reason: 'Chat engagement',    pts: 10,  ts: Date.now() - 900000  },
+    { reason: 'Watched 30 min',     pts: 30,  ts: Date.now() - 600000  },
+  ]);
 
   useEffect(function() {
     sparkRef.current = setInterval(function() {
@@ -70,6 +80,39 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
     };
   }, [isLive]);
 
+  useEffect(function() {
+    if (!isLive) return;
+    var t = setInterval(function() {
+      setWatchMinutes(function(m) {
+        var next = m + 1;
+        if (Math.floor(next % 30) === 0) {
+          setLoyaltyPoints(function(p) { return p + 30; });
+          setPointsLog(function(prev) {
+            return [{ reason: 'Watched 30 min', pts: 30, ts: Date.now() }].concat(prev.slice(0, 9));
+          });
+        } else {
+          setLoyaltyPoints(function(p) { return p + 1; });
+        }
+        return next;
+      });
+    }, 60000);
+    return function() { clearInterval(t); };
+  }, [isLive]);
+
+  function getTierFromPoints(pts) {
+    if (pts >= 5000) return { name: 'Diamond', color: '#00FFFF', icon: '💎', next: null,     nextAt: null };
+    if (pts >= 2000) return { name: 'Gold',    color: '#C9A84C', icon: '👑', next: 'Diamond', nextAt: 5000 };
+    if (pts >= 800)  return { name: 'Silver',  color: '#C0C0C0', icon: '🥈', next: 'Gold',    nextAt: 2000 };
+    return                  { name: 'Bronze',  color: '#cd7f32', icon: '🥉', next: 'Silver',  nextAt: 800  };
+  }
+
+  function fmtAgo(ts) {
+    var d = Math.floor((Date.now() - ts) / 1000);
+    if (d < 60) return d + 's ago';
+    if (d < 3600) return Math.floor(d / 60) + 'm ago';
+    return Math.floor(d / 3600) + 'h ago';
+  }
+
   function load() {
     setLoading(true);
     fetch('/api/metrics?roomId=' + roomId)
@@ -115,7 +158,7 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
     ['CHAT MSGS',     metrics && metrics.totalMessages ? String(metrics.totalMessages) : '—', 'This session',     '#C084FC'],
   ];
 
-  var TABS = [['overview', '📊 OVERVIEW'], ['gifts', '🎁 GIFTS'], ['revenue', '💰 REVENUE']];
+  var TABS = [['overview', '📊 OVERVIEW'], ['gifts', '🎁 GIFTS'], ['revenue', '💰 REVENUE'], ['loyalty', '⭐ LOYALTY']];
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
@@ -334,6 +377,95 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
               IMMUTABLE — All platform transactions enforce this split
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── LOYALTY ── */}
+      {tab === 'loyalty' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {(function() {
+            var tier = getTierFromPoints(loyaltyPoints);
+            var nextPts = tier.nextAt ? (tier.nextAt - loyaltyPoints) : 0;
+            var prog = tier.nextAt ? Math.floor(((loyaltyPoints - (tier.nextAt === 2000 ? 800 : tier.nextAt === 5000 ? 2000 : 0)) / (tier.nextAt - (tier.nextAt === 2000 ? 800 : tier.nextAt === 5000 ? 2000 : 0))) * 100) : 100;
+            return (
+              <>
+                {/* Tier card */}
+                <div style={{ background: 'rgba(22,16,32,.8)', border: '2px solid ' + tier.color + '44', borderRadius: 12, padding: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 12, background: tier.color + '18', border: '2px solid ' + tier.color + '55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>{tier.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: tier.color, lineHeight: 1, letterSpacing: 2 }}>{loyaltyPoints.toLocaleString()} PTS</div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: tier.color, letterSpacing: 1 }}>{tier.name} TIER</div>
+                      {watchStreakDays >= 3 && (
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B35', marginTop: 2 }}>🔥 {watchStreakDays}-day watch streak</div>
+                      )}
+                    </div>
+                  </div>
+                  {tier.next && (
+                    <div style={{ marginTop: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>→ {tier.next}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: tier.color }}>{nextPts} pts needed</span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 3, background: '#241C34', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: Math.min(100, prog) + '%', background: 'linear-gradient(90deg,' + tier.color + '88,' + tier.color + ')', borderRadius: 3, transition: 'width .5s ease' }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* How to earn */}
+                <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>HOW TO EARN</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+                    {[
+                      ['👁', 'Watch Time', '+1 pt/min'],
+                      ['🎁', 'Send Gift',  '+50 pts'],
+                      ['💬', 'Chat',       '+5 pts/msg'],
+                      ['📅', 'Daily Streak','+100 pts'],
+                      ['⭐', 'Subscribe',  '+500 pts'],
+                      ['🏆', 'Top Gifter', '+200 pts'],
+                    ].map(function(row) {
+                      return (
+                        <div key={row[1]} style={{ background: 'rgba(7,5,10,.6)', border: '1px solid #241C34', borderRadius: 7, padding: '7px 9px', display: 'flex', gap: 6, alignItems: 'center' }}>
+                          <span style={{ fontSize: 14, flexShrink: 0 }}>{row[0]}</span>
+                          <div>
+                            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#EDE8F5', fontWeight: 700 }}>{row[1]}</div>
+                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C' }}>{row[2]}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Points history */}
+                <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>POINTS HISTORY</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {pointsLog.slice(0, 5).map(function(entry, i) {
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0', borderBottom: i < pointsLog.slice(0,5).length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none' }}>
+                          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#A89CC8', flex: 1 }}>{entry.reason}</span>
+                          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', lineHeight: 1 }}>+{entry.pts}</span>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', minWidth: 48, textAlign: 'right' }}>{fmtAgo(entry.ts)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Watch session */}
+                {isLive && (
+                  <div style={{ background: 'rgba(0,201,167,.05)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C9A7', boxShadow: '0 0 6px #00C9A7', flexShrink: 0 }} />
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#00C9A7', fontWeight: 700 }}>EARNING NOW</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{watchMinutes} min this session · +1 pt/min</span>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
