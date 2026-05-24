@@ -484,6 +484,7 @@ export default function App() {
             branding={branding}
             setBranding={setBranding}
             isLive={isLive}
+            streamInfo={streamInfo}
           />
         )}
         {activeTab === 'embed' && (
@@ -577,6 +578,7 @@ export default function App() {
           <ScheduleTab
             addToast={addToast}
             isLive={isLive}
+            streamInfo={streamInfo}
           />
         )}
         {activeTab === 'classic' && (
