@@ -121,14 +121,18 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     var t = setInterval(function() {
       if (!activePoll) return;
       var idx = Math.floor(Math.random() * activePoll.options.length);
+      var votes = Math.floor(Math.random() * 8 + 1);
       setPollVotes(function(prev) {
         var next = Object.assign({}, prev);
-        next[idx] = (prev[idx] || 0) + Math.floor(Math.random() * 8 + 1);
+        next[idx] = (prev[idx] || 0) + votes;
         return next;
       });
+      if (socket) {
+        socket.emit('poll-vote', { roomId: roomId, optionIndex: idx, votes: votes });
+      }
     }, 3000);
     return function() { clearInterval(t); };
-  }, [pollRunning, activePoll]);
+  }, [pollRunning, activePoll, socket, roomId]);
 
   function toggleRule(id) {
     setRules(function(prev) {
