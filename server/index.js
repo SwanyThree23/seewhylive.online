@@ -1008,6 +1008,18 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('poll-end', { votes: data.votes || {}, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── stream-info ────────────────────────────────────────────────────────
+  socket.on('stream-info', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('stream-info', {
+      title:    (data.title    || '').slice(0, 120),
+      category: (data.category || '').slice(0, 40),
+      desc:     (data.desc     || '').slice(0, 400),
+      ts:       Math.floor(Date.now() / 1000)
+    });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     var roomId = data.roomId || socket.data.roomId;
