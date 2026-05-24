@@ -52,6 +52,32 @@ function cloneMatches(arr) {
   return arr.map(function(b) { return Object.assign({}, b); });
 }
 
+function BracketCell(props) {
+  var match   = props.match;
+  var isFinal = props.isFinal;
+  if (!match) return null;
+  var sc = STATUS_COLORS[match.status] || '#7A6F90';
+  var bc = match.status === 'LIVE' ? 'rgba(255,26,60,.45)' : isFinal ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.07)';
+  var p1c = match.winner === match.p1 ? '#C9A84C' : match.p1 === 'TBD' ? '#3D3450' : '#EDE8F5';
+  var p2c = match.winner === match.p2 ? '#C9A84C' : match.p2 === 'TBD' ? '#3D3450' : '#EDE8F5';
+  return (
+    <div style={{ background: isFinal ? 'rgba(128,0,32,.2)' : 'rgba(22,16,32,.95)', border: '1px solid ' + bc, borderRadius: 7, padding: '7px 8px', boxShadow: match.status === 'LIVE' ? '0 0 10px rgba(255,26,60,.15)' : 'none', minHeight: 60 }}>
+      {isFinal && (
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#C9A84C', letterSpacing: 2, marginBottom: 3, textAlign: 'center' }}>&#x1F3C6; FINAL</div>
+      )}
+      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: p1c, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.p1}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '3px 0', gap: 4 }}>
+        <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: sc, letterSpacing: 1 }}>{match.score}</span>
+        {match.status === 'LIVE' && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#FF1A3C', display: 'inline-block', boxShadow: '0 0 4px #FF1A3C' }} />}
+      </div>
+      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: p2c, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.p2}</div>
+      {match.winner && (
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#C9A84C', marginTop: 3 }}>&#x1F3C6; {match.winner}</div>
+      )}
+    </div>
+  );
+}
+
 export default function WashingtonClassicTab({ addToast, isLive }) {
   var [qf,         setQf]         = useState(cloneMatches(INIT_QF));
   var [sf,         setSf]         = useState(cloneMatches(INIT_SF));
@@ -61,9 +87,10 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
   var [activeId,   setActiveId]   = useState(null);
   var [s1,         setS1]         = useState(0);
   var [s2,         setS2]         = useState(0);
-  var [autoScore,  setAutoScore]  = useState(false);
-  var [liveScores, setLiveScores] = useState(null);
-  var [possession, setPossession] = useState(0);
+  var [autoScore,    setAutoScore]    = useState(false);
+  var [liveScores,   setLiveScores]   = useState(null);
+  var [possession,   setPossession]   = useState(0);
+  var [bracketMode,  setBracketMode]  = useState('list');
   var autoRef = useRef(null);
 
   useEffect(function() {
@@ -256,11 +283,75 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
             })}
           </div>
 
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 3, textAlign: 'center', marginBottom: 8 }}>{ROUND_LABELS[round]}</div>
+          {/* List / Tree mode toggle */}
+          <div style={{ display: 'flex', gap: 3, marginBottom: 8, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 7, padding: 3 }}>
+            {[['list', '&#x2630; LIST'], ['tree', '&#x1F333; FULL BRACKET']].map(function(m) {
+              var active = bracketMode === m[0];
+              return (
+                <button key={m[0]} onClick={function() { setBracketMode(m[0]); }}
+                  style={{ flex: 1, padding: '5px', background: active ? 'rgba(201,168,76,.12)' : 'transparent', border: 'none', borderRadius: 5, color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                  {m[1]}
+                </button>
+              );
+            })}
+          </div>
 
-          {/* Match cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {brackets.map(function(b) {
+          {/* ── VISUAL BRACKET TREE ── */}
+          {bracketMode === 'tree' && (
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'stretch', minWidth: 360, height: 330 }}>
+
+                {/* QF column — 4 matches spread vertically */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', width: 108, flexShrink: 0, gap: 6 }}>
+                  {qf.map(function(m) { return <BracketCell key={m.id} match={m} />; })}
+                </div>
+
+                {/* QF → SF connector */}
+                <div style={{ display: 'flex', flexDirection: 'column', width: 16, flexShrink: 0 }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1, borderRight: '1px solid rgba(201,168,76,.25)', borderBottom: '1px solid rgba(201,168,76,.25)', borderBottomRightRadius: 3 }} />
+                    <div style={{ flex: 1, borderRight: '1px solid rgba(201,168,76,.25)', borderTop: '1px solid rgba(201,168,76,.25)', borderTopRightRadius: 3 }} />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1, borderRight: '1px solid rgba(201,168,76,.25)', borderBottom: '1px solid rgba(201,168,76,.25)', borderBottomRightRadius: 3 }} />
+                    <div style={{ flex: 1, borderRight: '1px solid rgba(201,168,76,.25)', borderTop: '1px solid rgba(201,168,76,.25)', borderTopRightRadius: 3 }} />
+                  </div>
+                </div>
+
+                {/* SF column — 2 matches centered in each QF-pair half */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', width: 108, flexShrink: 0, gap: 6 }}>
+                  {sf.map(function(m) { return <BracketCell key={m.id} match={m} />; })}
+                </div>
+
+                {/* SF → Finals connector */}
+                <div style={{ display: 'flex', flexDirection: 'column', width: 16, flexShrink: 0 }}>
+                  <div style={{ flex: 1, borderRight: '1px solid rgba(201,168,76,.4)', borderBottom: '1px solid rgba(201,168,76,.4)', borderBottomRightRadius: 3 }} />
+                  <div style={{ flex: 1, borderRight: '1px solid rgba(201,168,76,.4)', borderTop: '1px solid rgba(201,168,76,.4)', borderTopRightRadius: 3 }} />
+                </div>
+
+                {/* Finals — centered vertically */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
+                  <BracketCell match={finals[0]} isFinal={true} />
+                </div>
+              </div>
+
+              {/* Round labels below */}
+              <div style={{ display: 'flex', marginTop: 6, gap: 0 }}>
+                <div style={{ width: 108, textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, flexShrink: 0 }}>QF</div>
+                <div style={{ width: 16, flexShrink: 0 }} />
+                <div style={{ width: 108, textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, flexShrink: 0 }}>SEMI</div>
+                <div style={{ width: 16, flexShrink: 0 }} />
+                <div style={{ flex: 1, textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>FINALS</div>
+              </div>
+            </div>
+          )}
+
+          {/* ── MATCH LIST ── */}
+          {bracketMode === 'list' && (
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 3, textAlign: 'center', marginBottom: 8 }}>{ROUND_LABELS[round]}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {brackets.map(function(b) {
               var sc = STATUS_COLORS[b.status] || '#7A6F90';
               var isActiveMatch = activeId === b.id;
               var isTbd = b.p1 === 'TBD' || b.p2 === 'TBD';
@@ -333,8 +424,10 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
                   )}
                 </div>
               );
-            })}
-          </div>
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
