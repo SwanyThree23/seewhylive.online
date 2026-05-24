@@ -658,7 +658,7 @@ export default function App() {
           <N8nTab addToast={addToast} isLive={isLive} />
         )}
         {activeTab === 'merch' && (
-          <MerchTab addToast={addToast} isLive={isLive} />
+          <MerchTab addToast={addToast} isLive={isLive} socket={socketRef.current} roomId={APP_ID} username={username} />
         )}
         {activeTab === 'replay' && (
           <ReplayTab addToast={addToast} isLive={isLive} />
