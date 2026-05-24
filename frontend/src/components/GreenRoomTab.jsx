@@ -47,6 +47,10 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   var [paywallOn,      setPaywallOn]      = useState(false);
   var [paywallCents,   setPaywallCents]   = useState(500);
   var [paywallInput,   setPaywallInput]   = useState('5.00');
+  var [streamTitle,    setStreamTitle]    = useState('Washington Classic LIVE 🎲');
+  var [streamCategory, setStreamCategory] = useState('Domino');
+  var [streamDesc,     setStreamDesc]     = useState('');
+  var [cohostToken,    setCohostToken]    = useState('');
 
   var isHost = role === 'host';
 
@@ -214,12 +218,28 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     if (addToast) addToast('Paywall price set: $' + (Math.floor(cents) / 100).toFixed(2), 'success');
   }
 
+  var CATS = ['Domino', 'Tournament', 'Podcast', 'Watch Party', 'Music', 'Talk'];
+
+  function saveStreamInfo() {
+    if (socket) socket.emit('stream-info', { roomId: roomId, title: streamTitle.trim(), category: streamCategory, desc: streamDesc.trim() });
+    if (addToast) addToast('Stream info saved', 'success');
+  }
+
+  function genCohostLink() {
+    var token = Math.floor(Math.random() * 999999999).toString(36) + Date.now().toString(36);
+    setCohostToken(token);
+    var link = 'https://seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + token;
+    if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }
+    if (addToast) addToast('Co-host link copied', 'success');
+  }
+
   var SECTIONS = [
     { id: 'roster',   label: '👥 ROSTER'   },
     { id: 'stage',    label: '🎭 STAGE'    },
     { id: 'guard',    label: '🛡 GUARD'    },
     { id: 'ban',      label: '🚫 BAN'      },
     { id: 'notes',    label: '📋 NOTES'    },
+    { id: 'info',     label: '📝 INFO'     },
     { id: 'settings', label: '⚙️ ROOM'     },
   ];
 
@@ -625,6 +645,122 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               style={{ width: '100%', background: 'rgba(7,5,10,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box' }}
             />
           </div>
+        </div>
+      )}
+
+      {/* ── INFO ───────────────────────────────────────────────────────────── */}
+      {section === 'info' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+          {/* Stream metadata card */}
+          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 10 }}>STREAM INFO</div>
+
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginBottom: 4 }}>TITLE</div>
+              <input
+                value={streamTitle}
+                onChange={function(e) { setStreamTitle(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Enter') saveStreamInfo(); }}
+                disabled={!isHost}
+                placeholder="Stream title..."
+                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 7, padding: '8px 11px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box', opacity: isHost ? 1 : 0.5 }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginBottom: 4 }}>CATEGORY</div>
+              <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                {CATS.map(function(cat) {
+                  var active = streamCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={function() { if (isHost) setStreamCategory(cat); }}
+                      disabled={!isHost}
+                      style={{ background: active ? 'rgba(192,24,56,.3)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (active ? '#C01838' : '#241C34'), borderRadius: 6, padding: '5px 11px', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: isHost ? 'pointer' : 'default', opacity: isHost ? 1 : 0.5 }}>
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginBottom: 4 }}>DESCRIPTION</div>
+              <textarea
+                value={streamDesc}
+                onChange={function(e) { setStreamDesc(e.target.value); }}
+                disabled={!isHost}
+                rows={3}
+                placeholder="Describe this stream for your audience..."
+                style={{ width: '100%', background: 'rgba(7,5,10,.7)', border: '1px solid #241C34', borderRadius: 7, padding: '8px 11px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box', opacity: isHost ? 1 : 0.5 }}
+              />
+            </div>
+
+            {isHost && (
+              <button
+                onClick={saveStreamInfo}
+                style={{ width: '100%', background: 'rgba(128,0,32,.25)', border: '1px solid #C01838', borderRadius: 8, padding: '9px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                SAVE STREAM INFO
+              </button>
+            )}
+          </div>
+
+          {/* Co-host invite link — host only */}
+          {isHost && (
+            <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.25)', borderRadius: 10, padding: '12px 14px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7', letterSpacing: 2, marginBottom: 6 }}>CO-HOST INVITE LINK</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', lineHeight: 1.5, marginBottom: 10 }}>
+                One-time link granting co-host privileges. Share privately.
+              </div>
+              {cohostToken ? (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', background: 'rgba(7,5,10,.8)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 6, padding: '7px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {'seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + cohostToken}
+                    </div>
+                    <button
+                      onClick={function() {
+                        var link = 'https://seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + cohostToken;
+                        if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }
+                        if (addToast) addToast('Co-host link copied', 'success');
+                      }}
+                      style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 6, padding: '6px 12px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
+                      📋 COPY
+                    </button>
+                  </div>
+                  <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9A84C' }} />
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>Single-use · expires when regenerated</span>
+                  </div>
+                </div>
+              ) : null}
+              <button
+                onClick={genCohostLink}
+                style={{ width: '100%', background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 8, padding: '9px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                {cohostToken ? '🔄 REGENERATE LINK' : '🔗 GENERATE CO-HOST LINK'}
+              </button>
+            </div>
+          )}
+
+          {/* Live preview card */}
+          <div style={{ background: 'rgba(22,16,32,.5)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>LIVE PREVIEW</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+              {isLive && (
+                <span style={{ background: '#C01838', borderRadius: 4, padding: '2px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#fff', letterSpacing: 1 }}>● LIVE</span>
+              )}
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: '#EDE8F5' }}>{streamTitle || 'Untitled stream'}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <span style={{ background: 'rgba(128,0,32,.2)', border: '1px solid rgba(192,24,56,.3)', borderRadius: 4, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#C9A84C' }}>{streamCategory}</span>
+            </div>
+            {streamDesc ? (
+              <div style={{ marginTop: 8, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', lineHeight: 1.5 }}>{streamDesc}</div>
+            ) : null}
+          </div>
+
         </div>
       )}
 
