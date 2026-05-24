@@ -98,6 +98,22 @@ export default function InsForgeTab({ addToast, isLive }) {
 
   var refreshRef   = useRef(null);
   var rtmpIdx      = useRef(0);
+  var prevStatusRef = useRef({});
+
+  // Service health transition alerts
+  useEffect(function() {
+    var prev = prevStatusRef.current;
+    services.forEach(function(s) {
+      var wasOk = prev[s.id] !== 'error';
+      var isErr = s.status === 'error';
+      if (wasOk && isErr && addToast) {
+        addToast('FORGE: ' + s.name + ' transitioned to ERROR', 'error');
+      }
+    });
+    var next = {};
+    services.forEach(function(s) { next[s.id] = s.status; });
+    prevStatusRef.current = next;
+  }, [services]);
 
   // Live log ticker (always running)
   useEffect(function() {
