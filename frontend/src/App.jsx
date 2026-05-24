@@ -159,8 +159,21 @@ export default function App() {
       });
     });
 
+    var viewerMilestones = [50, 100, 250, 500, 1000, 2500, 5000, 10000];
+    var passedMilestones = {};
     socket.on('viewer-count', function(data) {
-      if (data && typeof data.count === 'number') setViewerCount(data.count);
+      if (!data || typeof data.count !== 'number') return;
+      var prev = viewerCount;
+      setViewerCount(data.count);
+      viewerMilestones.forEach(function(m) {
+        if (data.count >= m && prev < m && !passedMilestones[m]) {
+          passedMilestones[m] = true;
+          addToast('🎉 ' + m.toLocaleString() + ' VIEWERS!', 'success');
+          var floatId = Date.now() + Math.random();
+          setGiftFloats(function(gf) { return gf.concat([{ floatId: floatId, emoji: '👁', name: m.toLocaleString() + ' viewers!', from_user: 'Milestone', value_cents: 0 }]); });
+          setTimeout(function() { setGiftFloats(function(gf) { return gf.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
+        }
+      });
     });
 
     socket.on('chat-message', function(msg) {
@@ -175,6 +188,17 @@ export default function App() {
       setGiftFloats(function(prev) { return [...prev, { ...gift, floatId }]; });
       setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 4000);
       addToast((gift.from_user || 'Someone') + ' sent ' + (gift.name || 'a gift') + '! ' + (gift.emoji || '🎁'), 'gift');
+    });
+
+    socket.on('new-subscription', function(data) {
+      if (!data) return;
+      var name = data.username || data.from_user || 'Someone';
+      var tier = data.tier || 'bronze';
+      var tierLabel = tier === 'gold' ? '👑 GOLD' : tier === 'silver' ? '🥈 SILVER' : '🥉 BRONZE';
+      addToast('⭐ ' + name + ' subscribed at ' + tierLabel + '!', 'success');
+      var floatId = Date.now() + Math.random();
+      setGiftFloats(function(prev) { return prev.concat([{ floatId: floatId, emoji: '⭐', name: tierLabel + ' Sub', from_user: name, value_cents: data.price_cents || 0 }]); });
+      setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
     });
 
     socket.on('bot-log', function(log) {
