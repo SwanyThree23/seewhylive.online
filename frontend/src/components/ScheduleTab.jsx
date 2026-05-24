@@ -88,7 +88,7 @@ function formatLiveDuration(secs) {
 var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' };
 var RECUR_COLORS = { none: '#7A6F90', weekly: '#00C9A7', biweekly: '#C084FC' };
 
-export default function ScheduleTab({ addToast, isLive }) {
+export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   var [schedule,     setSchedule]     = useState(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
   var [newTitle,     setNewTitle]     = useState('');
   var [newTime,      setNewTime]      = useState('');
@@ -200,6 +200,12 @@ export default function ScheduleTab({ addToast, isLive }) {
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 20, color: '#FF1A3C', letterSpacing: 3, marginBottom: 4 }}>
             &#x1F534; LIVE NOW
           </div>
+          {streamInfo && streamInfo.title ? (
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#EDE8F5', marginBottom: 3, letterSpacing: 0.5 }}>{streamInfo.title}</div>
+          ) : null}
+          {streamInfo && streamInfo.category ? (
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 4 }}>{streamInfo.category.toUpperCase()}</div>
+          ) : null}
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: '#C8FF00', letterSpacing: 4 }}>
             {formatLiveDuration(countdown)}
           </div>

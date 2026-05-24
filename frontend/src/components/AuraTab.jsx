@@ -18,15 +18,34 @@ var QUICK_PROMPTS = [
 var INITIAL_MSG = { role: 'aura', text: '🤖 AURA ONLINE — SeeWhy LIVE v33 suite active. Washington Classic energy IMMACULATE! 🎲', time: fmtTime() };
 
 export default function AuraTab({ isLive, viewerCount }) {
-  var [msgs, setMsgs]         = useState([INITIAL_MSG]);
-  var [input, setInput]       = useState('');
-  var [loading, setLoading]   = useState(false);
-  var [autoHype, setAutoHype] = useState(false);
+  var [msgs, setMsgs]               = useState(function() {
+    try {
+      var saved = localStorage.getItem('sw_aura_history');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return [INITIAL_MSG];
+  });
+  var [input, setInput]             = useState('');
+  var [loading, setLoading]         = useState(false);
+  var [autoHype, setAutoHype]       = useState(false);
+  var [promptOpen, setPromptOpen]   = useState(false);
+  var [customPrompt, setCustomPrompt] = useState(SYSTEM_PROMPT);
   var chatRef = useRef(null);
 
   useEffect(function() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [msgs]);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_aura_history', JSON.stringify(msgs.slice(-50))); } catch(e) {}
+  }, [msgs]);
+
+  function copyHistory() {
+    var text = msgs.map(function(m) {
+      return '[' + m.time + '] ' + (m.role === 'aura' ? 'AURA: ' : 'YOU: ') + m.text;
+    }).join('\n');
+    if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function() {});
+  }
 
   var callAura = useCallback(function(prompt, userMsg) {
     setLoading(true);
@@ -37,7 +56,7 @@ export default function AuraTab({ isLive, viewerCount }) {
     fetch('/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ system: SYSTEM_PROMPT, message: context })
+      body: JSON.stringify({ system: customPrompt, message: context })
     })
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -49,7 +68,7 @@ export default function AuraTab({ isLive, viewerCount }) {
         setMsgs(function(p) { return [...p, { role: 'aura', text: '⚡ Signal dropped. Check API key.', time: fmtTime() }]; });
         setLoading(false);
       });
-  }, [isLive, viewerCount]);
+  }, [isLive, viewerCount, customPrompt]);
 
   useEffect(function() {
     if (!autoHype || !isLive) return;
@@ -120,12 +139,41 @@ export default function AuraTab({ isLive, viewerCount }) {
             {msgs.length}
           </div>
         </div>
-        <button
-          onClick={clearChat}
-          style={{ background: 'rgba(255,60,60,.07)', border: '1px solid rgba(255,60,60,.2)', borderRadius: 5, padding: '3px 8px', color: '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
-          🗑 CLEAR
-        </button>
+        <div style={{ display: 'flex', gap: 5 }}>
+          <button
+            onClick={function() { setPromptOpen(function(v) { return !v; }); }}
+            style={{ background: promptOpen ? 'rgba(155,77,202,.2)' : 'rgba(155,77,202,.07)', border: '1px solid rgba(155,77,202,.3)', borderRadius: 5, padding: '3px 8px', color: '#C084FC', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+            &#x270F; PROMPT
+          </button>
+          <button
+            onClick={copyHistory}
+            style={{ background: 'rgba(0,201,167,.07)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 5, padding: '3px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+            &#x1F4CB; COPY
+          </button>
+          <button
+            onClick={clearChat}
+            style={{ background: 'rgba(255,60,60,.07)', border: '1px solid rgba(255,60,60,.2)', borderRadius: 5, padding: '3px 8px', color: '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+            &#x1F5D1; CLEAR
+          </button>
+        </div>
       </div>
+
+      {promptOpen && (
+        <div style={{ background: 'rgba(15,12,20,.9)', border: '1px solid rgba(155,77,202,.3)', borderRadius: 8, padding: '10px' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C084FC', letterSpacing: 1, marginBottom: 6 }}>SYSTEM PROMPT</div>
+          <textarea
+            value={customPrompt}
+            onChange={function(e) { setCustomPrompt(e.target.value); }}
+            rows={4}
+            style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, resize: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
+          />
+          <button
+            onClick={function() { setPromptOpen(false); }}
+            style={{ marginTop: 6, background: 'rgba(155,77,202,.2)', border: '1px solid rgba(155,77,202,.4)', borderRadius: 5, padding: '4px 12px', color: '#C084FC', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
+            SAVE &amp; CLOSE
+          </button>
+        </div>
+      )}
 
       <div ref={chatRef} style={{ background: 'rgba(15,12,20,.8)', border: '1px solid rgba(155,77,202,.2)', borderRadius: 10, padding: '10px', height: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {msgs.map(function(m, i) {
