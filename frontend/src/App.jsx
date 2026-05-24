@@ -450,6 +450,7 @@ export default function App() {
           <BrandingTab
             branding={branding}
             setBranding={setBranding}
+            isLive={isLive}
           />
         )}
         {activeTab === 'embed' && (
