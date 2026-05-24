@@ -21,8 +21,18 @@ export default function SwanAITab({ isLive, viewerCount }) {
   var [msgs, setMsgs]               = useState([{ role: 'dir', text: '🎯 SwanAI Director v33 ONLINE. All systems operational. Ready for production commands.', time: fmtTime() }]);
   var [input, setInput]             = useState('');
   var [loading, setLoading]         = useState(false);
-  var [decisionsLog, setDecisionsLog] = useState([]);
+  var [decisionsLog, setDecisionsLog] = useState(function() {
+    try {
+      var saved = localStorage.getItem('sw_swanai_decisions');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return [];
+  });
   var chatRef = useRef(null);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_swanai_decisions', JSON.stringify(decisionsLog.slice(-20))); } catch(e) {}
+  }, [decisionsLog]);
 
   useEffect(function() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;

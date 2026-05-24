@@ -247,6 +247,36 @@ app.post('/api/ppv/verify', function(req, res) {
     });
 });
 
+// GET /api/leaderboard
+app.get('/api/leaderboard', function(req, res) {
+  try {
+    var roomId = req.query.roomId || '';
+    var rows;
+    if (roomId) {
+      rows = db.prepare(
+        'SELECT from_user, SUM(value_cents) as total, COUNT(*) as cnt FROM gifts WHERE room_id = ? GROUP BY from_user ORDER BY total DESC LIMIT 10'
+      ).all(roomId);
+    } else {
+      rows = db.prepare(
+        'SELECT from_user, SUM(value_cents) as total, COUNT(*) as cnt FROM gifts GROUP BY from_user ORDER BY total DESC LIMIT 10'
+      ).all();
+    }
+    res.json({
+      leaderboard: rows.map(function(r) {
+        return {
+          from_user:     r.from_user,
+          total_cents:   Math.floor(r.total),
+          creator_cents: Math.floor(r.total * CREATOR),
+          gift_count:    r.cnt
+        };
+      })
+    });
+  } catch (err) {
+    logger.error('[leaderboard] ' + err.message);
+    res.status(500).json({ error: 'Leaderboard query failed' });
+  }
+});
+
 // POST /api/connect/onboard
 app.post('/api/connect/onboard', function(req, res) {
   var body = req.body;
@@ -890,6 +920,19 @@ io.on('connection', function(socket) {
   });
 
   // ── watch-party ────────────────────────────────────────────────────────
+  socket.on('watch-party-start', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var hostName = socket.data.username || 'Host';
+    io.to(roomId).emit('watch-party-started', { ts: Math.floor(Date.now() / 1000) });
+    io.to(roomId).emit('chat-message', {
+      userId:   'system',
+      username: 'SeeWhy LIVE',
+      text:     '🎉 ' + hostName + ' started a Watch Party! Sync up and enjoy together.',
+      ts:       Math.floor(Date.now() / 1000)
+    });
+  });
+
   socket.on('watch-party-url', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.videoId) return;
