@@ -945,6 +945,51 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('bot-trigger-removed', { triggerId: data.triggerId });
   });
 
+  // ── room settings (audio-only, private, paywall) ──────────────────────
+  socket.on('room-audio-only', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('room-audio-only', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+  });
+
+  socket.on('room-private', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('room-private', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+  });
+
+  socket.on('room-paywall', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var amountCents = Math.floor(data.amountCents || 0);
+    io.to(roomId).emit('room-paywall', { enabled: Boolean(data.enabled), amountCents: amountCents, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── live polls ─────────────────────────────────────────────────────────
+  socket.on('poll-start', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('poll-start', {
+      question: String(data.question || '').slice(0, 200),
+      options:  (data.options || []).slice(0, 4).map(function(o) { return String(o).slice(0, 80); }),
+      durationSec: Math.floor(data.durationSec || 60),
+      ts: Math.floor(Date.now() / 1000)
+    });
+  });
+
+  socket.on('poll-vote', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var optionIdx = Math.floor(data.optionIdx || 0);
+    io.to(roomId).emit('poll-vote', { optionIdx: optionIdx, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  socket.on('poll-end', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    io.to(roomId).emit('poll-end', { votes: data.votes || {}, ts: Math.floor(Date.now() / 1000) });
+  });
+
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     var roomId = data.roomId || socket.data.roomId;
