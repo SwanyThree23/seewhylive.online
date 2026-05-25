@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 var CREATOR = 0.90;
 var PLATFORM = 0.10;
@@ -59,7 +59,54 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     { rank: 6, name: 'CaliBonesGrind',  giftCents: 1950,  gems: 195,  badge: '🎲', streak: 1  },
     { rank: 7, name: 'DCDominoDaily',   giftCents: 1200,  gems: 120,  badge: '🥉', streak: 3  },
   ]);
+  var [stripeStatus, setStripeStatus] = useState('checking');
+  var [stripeBalance, setStripeBalance] = useState(0);
+  var [payoutLoading, setPayoutLoading] = useState(false);
   var cdRef = useRef(null);
+
+  useEffect(function() {
+    fetch('/api/stripe/status')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.connected) {
+          setStripeStatus('connected');
+          setStripeBalance(data.balanceCents || 0);
+        } else {
+          setStripeStatus('disconnected');
+        }
+      })
+      .catch(function() { setStripeStatus('disconnected'); });
+  }, []);
+
+  function connectStripe() {
+    fetch('/api/stripe/connect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.url) {
+          window.open(data.url, '_blank');
+        } else {
+          if (addToast) addToast('Stripe Connect setup required on server', 'info');
+        }
+      })
+      .catch(function() { if (addToast) addToast('Stripe Connect unavailable', 'error'); });
+  }
+
+  function requestPayout() {
+    if (stripeBalance < 1000) { if (addToast) addToast('Minimum payout is $10.00', 'error'); return; }
+    setPayoutLoading(true);
+    fetch('/api/stripe/payout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountCents: stripeBalance }) })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        setPayoutLoading(false);
+        if (data && data.success) {
+          if (addToast) addToast('Payout of ' + fmtC(stripeBalance) + ' initiated!', 'success');
+          setStripeBalance(0);
+        } else {
+          if (addToast) addToast(data && data.error ? data.error : 'Payout failed', 'error');
+        }
+      })
+      .catch(function() { setPayoutLoading(false); if (addToast) addToast('Payout error', 'error'); });
+  }
 
   useEffect(function() {
     return function() { if (cdRef.current) clearInterval(cdRef.current); };
@@ -203,7 +250,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
       )}
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 2, background: 'rgba(7,5,10,.8)', borderRadius: 10, padding: 4 }}>
-        {[['tips', '💰 TIPS'], ['gems', '💎 GEMS'], ['subs', '⭐ SUBS'], ['plans', '📦 PLANS'], ['stage', '🎭 STAGE'], ['leaders', '🏆 LEADERS']].map(function(t) {
+        {[['tips', '💰 TIPS'], ['gems', '💎 GEMS'], ['subs', '⭐ SUBS'], ['plans', '📦 PLANS'], ['stage', '🎭 STAGE'], ['leaders', '🏆 LEADERS'], ['payouts', '💳 PAYOUTS']].map(function(t) {
           var active = tab === t[0];
           return (
             <button
@@ -542,7 +589,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
               />
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>@ {fmtC(Math.floor(parseFloat(ppvPrice) * 100) || 500)} PPV</span>
             </div>
-            {(function() {
+            {(function() { // eslint-disable-line
               var price = Math.floor(parseFloat(ppvPrice) * 100) || 500;
               var viewers = Math.floor(parseFloat(projViewers)) || 500;
               var convRates = [[0.03, '3% conv (cold)'], [0.08, '8% conv (warm)'], [0.15, '15% conv (loyal)']];
@@ -565,6 +612,90 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
                 </div>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* PAYOUTS tab */}
+      {tab === 'payouts' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Stripe Connect status card */}
+          <div style={{ background: stripeStatus === 'connected' ? 'rgba(0,201,167,.07)' : 'rgba(201,168,76,.07)', border: '1px solid ' + (stripeStatus === 'connected' ? 'rgba(0,201,167,.3)' : 'rgba(201,168,76,.3)'), borderRadius: 10, padding: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: stripeStatus === 'connected' ? '#00C9A7' : '#C9A84C', letterSpacing: 2 }}>STRIPE CONNECT</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>
+                  {stripeStatus === 'checking' ? 'CHECKING STATUS...' : stripeStatus === 'connected' ? 'CONNECTED · PAYOUTS ENABLED' : 'NOT CONNECTED · SETUP REQUIRED'}
+                </div>
+              </div>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: stripeStatus === 'connected' ? '#00C9A7' : stripeStatus === 'checking' ? '#C9A84C' : '#FF4444', boxShadow: '0 0 8px ' + (stripeStatus === 'connected' ? '#00C9A7' : '#FF4444') }} />
+            </div>
+            {stripeStatus === 'connected' && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.15)', borderRadius: 8, padding: '10px 14px' }}>
+                <div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>AVAILABLE BALANCE</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: '#C9A84C', lineHeight: 1.1 }}>{fmtC(stripeBalance)}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#483D60', marginTop: 2 }}>YOUR 90% SHARE · PLATFORM 10% RETAINED</div>
+                </div>
+                <button
+                  onClick={requestPayout}
+                  disabled={payoutLoading || stripeBalance < 1000}
+                  style={{ background: stripeBalance >= 1000 ? 'linear-gradient(135deg,#C9A84C,#E8C46A)' : 'rgba(201,168,76,.2)', border: 'none', borderRadius: 8, padding: '10px 18px', color: stripeBalance >= 1000 ? '#07050A' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: stripeBalance >= 1000 && !payoutLoading ? 'pointer' : 'not-allowed', letterSpacing: 1 }}>
+                  {payoutLoading ? 'PROCESSING...' : 'REQUEST PAYOUT'}
+                </button>
+              </div>
+            )}
+            {stripeStatus !== 'connected' && (
+              <button
+                onClick={connectStripe}
+                style={{ width: '100%', background: 'linear-gradient(135deg,#635BFF,#7B74FF)', border: 'none', borderRadius: 8, padding: '10px 0', color: '#fff', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                CONNECT WITH STRIPE
+              </button>
+            )}
+          </div>
+
+          {/* Viewer subscription tiers */}
+          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '12px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginBottom: 10 }}>VIEWER SUBSCRIPTION TIERS</div>
+            {[
+              { id: 'fan',        name: 'Domino Fan',     priceCents: 299,  color: '#cd7f32', icon: '🥉', perks: ['Chat badge', 'Emote pack', '7-day VOD'] },
+              { id: 'supporter',  name: 'Supporter',      priceCents: 999,  color: '#C0C0C0', icon: '🥈', perks: ['30-day VOD', 'Priority Q&A', 'Emote pack', 'Sub chat'] },
+              { id: 'ridordie',   name: 'Ride or Die',    priceCents: 2999, color: '#C9A84C', icon: '👑', perks: ['All Supporter perks', 'Monthly 1:1', 'Early access', 'Merch drops'] },
+            ].map(function(tier) {
+              var creatorEarn = Math.floor(tier.priceCents * CREATOR);
+              return (
+                <div key={tier.id} style={{ border: '1px solid ' + tier.color + '33', borderRadius: 8, padding: '10px 12px', marginBottom: 6, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>{tier.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: tier.color }}>{tier.name}</span>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C' }}>{fmtC(tier.priceCents)}<span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>/mo</span></span>
+                    </div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#483D60', marginBottom: 4 }}>You earn: {fmtC(creatorEarn)}/mo per subscriber</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {tier.perks.map(function(p) {
+                        return <span key={p} style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A89CC8' }}>{p}</span>;
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Revenue info */}
+          <div style={{ background: 'rgba(128,0,32,.06)', border: '1px solid rgba(128,0,32,.2)', borderRadius: 8, padding: '10px 14px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginBottom: 4 }}>REVENUE SPLIT (IMMUTABLE)</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, textAlign: 'center', background: 'rgba(201,168,76,.08)', borderRadius: 6, padding: '6px 0' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C' }}>90%</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>CREATOR</div>
+              </div>
+              <div style={{ flex: 1, textAlign: 'center', background: 'rgba(128,0,32,.08)', borderRadius: 6, padding: '6px 0' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C01838' }}>10%</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>PLATFORM</div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -111,10 +111,76 @@ db.exec(`
     platform_cents  INTEGER NOT NULL,
     ts              INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS audit_logs (
+    id            TEXT    PRIMARY KEY,
+    user_id       TEXT,
+    action        TEXT    NOT NULL,
+    resource_type TEXT,
+    resource_id   TEXT,
+    metadata      TEXT,
+    ip_address    TEXT,
+    created_at    INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id              TEXT    PRIMARY KEY,
+    username             TEXT    UNIQUE,
+    display_name         TEXT,
+    bio                  TEXT,
+    avatar_emoji         TEXT    DEFAULT '🎭',
+    tier                 TEXT    DEFAULT 'free',
+    stripe_account_id    TEXT,
+    follower_count       INTEGER DEFAULT 0,
+    total_earnings_cents INTEGER DEFAULT 0,
+    created_at           INTEGER NOT NULL,
+    updated_at           INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS creator_tiers (
+    id          TEXT    PRIMARY KEY,
+    creator_id  TEXT    NOT NULL,
+    tier_name   TEXT    NOT NULL CHECK(tier_name IN ('fan','supporter','ride_or_die')),
+    amount_cents INTEGER NOT NULL,
+    description TEXT,
+    perks       TEXT,
+    is_active   INTEGER NOT NULL DEFAULT 1,
+    created_at  INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS gift_types (
+    id          TEXT    PRIMARY KEY,
+    name        TEXT    NOT NULL,
+    icon        TEXT    NOT NULL,
+    amount_cents INTEGER NOT NULL,
+    aura_message TEXT,
+    sort_order  INTEGER DEFAULT 0,
+    is_active   INTEGER NOT NULL DEFAULT 1
+  );
 `);
 
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
+
+// Seed gift types if none exist
+var giftCount = db.prepare('SELECT COUNT(*) as c FROM gift_types').get();
+if (giftCount.c === 0) {
+  var giftInsert = db.prepare('INSERT OR IGNORE INTO gift_types (id, name, icon, amount_cents, aura_message, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)');
+  var seedGifts = [
+    [uuidv4(), 'Rose',    '🌹',  99,   'Someone sent a Rose!',    1],
+    [uuidv4(), 'Domino',  '🀱', 199,   'A Domino just dropped!',  2],
+    [uuidv4(), 'Fire',    '🔥', 299,   'FIRE IN THE CHAT!',       3],
+    [uuidv4(), 'Crown',   '👑', 499,   'Royalty in the building!',4],
+    [uuidv4(), 'Diamond', '💎', 999,   'DIAMOND TIER!',           5],
+    [uuidv4(), 'Trophy',  '🏆', 1999,  'CHAMPION STATUS!',        6]
+  ];
+  var seedTxn = db.transaction(function(gifts) {
+    gifts.forEach(function(g) {
+      giftInsert.run(g[0], g[1], g[2], g[3], g[4], g[5]);
+    });
+  });
+  seedTxn(seedGifts);
+}
 
 // ─── Express app ──────────────────────────────────────────────────────────
 var app    = express();
@@ -437,6 +503,16 @@ app.post('/api/ai/chat', function(req, res) {
     res.status(500).json({ error: 'AI error: ' + err.message });
   });
 });
+
+// ─── New API routes (analytics, search, moderation, aura, payments) ──────
+var apiRoutes = null;
+try {
+  apiRoutes = require('./routes');
+  app.use('/api', apiRoutes);
+  logger.info('[routes] New API routes mounted at /api');
+} catch (routesErr) {
+  logger.warn('[routes] Failed to load routes.js: ' + routesErr.message);
+}
 
 // ─── Socket.io Auth Middleware ────────────────────────────────────────────
 
@@ -1280,6 +1356,31 @@ io.on('connection', function(socket) {
         isTranscript: true
       });
     });
+  });
+
+  // ── aura-trigger ───────────────────────────────────────────────────────
+  socket.on('aura-trigger', function(data) {
+    var sId = data.streamId || socket.data.roomId;
+    if (!sId || !aura) return;
+    var triggerFn = null;
+    if (data.type === 'stream_start') triggerFn = function(cb) { aura.triggerStreamStart(sId, data.streamTitle || 'SeeWhy LIVE', data.viewerCount || 0, cb); };
+    if (data.type === 'tip_received') triggerFn = function(cb) { aura.triggerTip(sId, data.viewerName || 'Viewer', data.amountCents || 500, data.note || '', cb); };
+    if (data.type === 'gift_received') triggerFn = function(cb) { aura.triggerGift(sId, data.viewerName || 'Viewer', data.giftName || 'Gift', data.amountCents || 100, cb); };
+    if (data.type === 'new_viewer') triggerFn = function(cb) { aura.triggerNewViewer(sId, data.viewerName || 'Viewer', data.isReturning || false, cb); };
+    if (data.type === 'stream_end') triggerFn = function(cb) { aura.triggerStreamEnd(sId, data.peakViewers || 0, data.totalEarningsCents || 0, cb); };
+    if (!triggerFn) return;
+    triggerFn(function(err, text) {
+      if (text) {
+        io.to(sId).emit('aura-message', { text: text, mode: aura.getMode(), ts: Math.floor(Date.now() / 1000) });
+      }
+    });
+  });
+
+  // ── mute-user ──────────────────────────────────────────────────────────
+  socket.on('mute-user', function(data) {
+    var sId = data.roomId || socket.data.roomId;
+    if (!sId) return;
+    io.to(sId).emit('user-muted', { userId: data.targetUser, reason: data.reason, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── disconnect ─────────────────────────────────────────────────────────

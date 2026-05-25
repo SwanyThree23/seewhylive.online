@@ -38,6 +38,11 @@ import SocialShareTab from './components/SocialShareTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
+import BrandChyron from './components/BrandChyron.jsx';
+import DiscoverTab from './components/DiscoverTab.jsx';
+import CreatorProfileTab from './components/CreatorProfileTab.jsx';
+import SettingsTab from './components/SettingsTab.jsx';
+import GoldenWallPanel from './components/GoldenWallPanel.jsx';
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -76,6 +81,8 @@ var TABS = [
   { id: 'guardian',  label: '🛡 GUARDIAN' },
   { id: 'directpay', label: '💸 DIRECT PAY' },
   { id: 'share',     label: '📡 SHARE' },
+  { id: 'profile',   label: '👤 PROFILE' },
+  { id: 'settings',  label: '⚙ SETTINGS' },
 ];
 
 export default function App() {
@@ -113,6 +120,8 @@ export default function App() {
   var [ppvToken, setPpvToken] = useState(function() { return sessionStorage.getItem('sw_ppv_token') || null; });
   var [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
   var [streamInfo, setStreamInfo] = useState({ title: '', category: '', desc: '' });
+  var [userTier, setUserTier] = useState(function() { return localStorage.getItem('sw_user_tier') || 'free'; });
+  var [auraMessages, setAuraMessages] = useState([]);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -342,6 +351,17 @@ export default function App() {
       addToast('🎉 Watch Party started! Head to the WATCH tab.', 'success');
     });
 
+    socket.on('aura-message', function(data) {
+      if (!data || !data.text) return;
+      var msg = { text: data.text, mode: data.mode || 'hype', ts: Date.now() };
+      setAuraMessages(function(prev) { return [msg].concat(prev.slice(0, 19)); });
+    });
+
+    socket.on('user-muted', function(data) {
+      if (!data) return;
+      addToast('Guardian muted a user: ' + (data.reason || 'violation'), 'info');
+    });
+
     return function() {
       socket.off('connect');
       socket.off('disconnect');
@@ -367,6 +387,8 @@ export default function App() {
       socket.off('overlay-update');
       socket.off('stream-info');
       socket.off('watch-party-started');
+      socket.off('aura-message');
+      socket.off('user-muted');
     };
   }, [userId, username, role, addToast]);
 
@@ -419,6 +441,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0F0C14', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif" }}>
+      <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
       <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
@@ -606,6 +629,10 @@ export default function App() {
           <AuraTab
             isLive={isLive}
             viewerCount={viewerCount}
+            addToast={addToast}
+            userTier={userTier}
+            socket={socketRef.current}
+            roomId={APP_ID}
           />
         )}
         {activeTab === 'swanai' && (
@@ -628,7 +655,7 @@ export default function App() {
           />
         )}
         {activeTab === 'discover' && (
-          <CreatorDiscoveryTab
+          <DiscoverTab
             addToast={addToast}
             isLive={isLive}
             socket={socketRef.current}
@@ -691,12 +718,37 @@ export default function App() {
         {activeTab === 'share' && (
           <SocialShareTab addToast={addToast} isLive={isLive} roomId={APP_ID} username={username} />
         )}
+        {activeTab === 'profile' && (
+          <CreatorProfileTab
+            addToast={addToast}
+            creatorUsername={username}
+            isLive={isLive}
+            viewerCount={viewerCount}
+            streamTitle={streamInfo.title}
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
+        )}
+        {activeTab === 'settings' && (
+          <SettingsTab
+            addToast={addToast}
+            userId={userId}
+            username={username}
+            userTier={userTier}
+            setUserTier={setUserTier}
+          />
+        )}
       </main>
 
       {/* Overlays */}
       <GiftLayer giftFloats={giftFloats} />
       <Toasts toasts={toasts} />
       <Ticker chat={chat} isLive={isLive} />
+      {isLive && gifts.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 50, right: 12, zIndex: 200, width: 260 }}>
+          <GoldenWallPanel items={gifts.slice(-10)} />
+        </div>
+      )}
     </div>
   );
 }
