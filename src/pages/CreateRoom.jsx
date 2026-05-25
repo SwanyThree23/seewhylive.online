@@ -80,7 +80,7 @@ export default function CreateRoomPage() {
       window.location.href = `/LiveRoom?id=${room.id}`;
     },
     onError: (error) => {
-      toast.error('Failed to create room: ' + error.message);
+      toast.error('Failed to create room. Please try again.');
     },
   });
 

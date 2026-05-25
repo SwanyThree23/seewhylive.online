@@ -23,7 +23,7 @@ export default class ErrorBoundary extends React.Component {
           <AlertTriangle className="w-10 h-10 text-amber-500 mb-3" />
           <p className="font-semibold text-sm mb-1">Something went wrong</p>
           <p className="text-xs text-muted-foreground mb-4 max-w-xs">
-            {this.state.error?.message || 'An unexpected error occurred in this section.'}
+            An unexpected error occurred in this section. Please try again.
           </p>
           <Button size="sm" variant="outline" onClick={() => this.setState({ hasError: false, error: null })}>
             <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Try Again
