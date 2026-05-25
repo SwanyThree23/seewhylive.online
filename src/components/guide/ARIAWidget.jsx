@@ -239,7 +239,16 @@ export default function SwanyBotWidget() {
         if (data.messages.length > 0) setLoading(false);
       }
     });
-    return unsub;
+    // Fallback: clear loading after 15s if no response arrives
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      setMessages(prev =>
+        prev.length === 0
+          ? [{ role: 'assistant', content: "Hey! I'm SwanyBot 👑 — your SeeWhy LIVE guide. Ask me anything about the platform, rooms, battles, or watch parties!" }]
+          : prev
+      );
+    }, 15000);
+    return () => { unsub?.(); clearTimeout(timeout); };
   }, [open, conversation]);
 
   const openAndGreet = useCallback(async () => {
@@ -253,13 +262,18 @@ export default function SwanyBotWidget() {
     if (hasGreeted) return;
     setHasGreeted(true);
     setLoading(true);
-    const conv = await initConversation();
-    setConversation(conv);
-    // Send greeting
-    await base44.agents.addMessage(conv, {
-      role: 'user',
-      content: "Yo! I just got here and I want to know what See - Why - LIVE is all about. Introduce yourself and break it down for me!",
-    });
+    try {
+      const conv = await initConversation();
+      setConversation(conv);
+      // Send greeting
+      await base44.agents.addMessage(conv, {
+        role: 'user',
+        content: "Yo! I just got here and I want to know what See - Why - LIVE is all about. Introduce yourself and break it down for me!",
+      });
+    } catch {
+      setLoading(false);
+      setMessages([{ role: 'assistant', content: "Hey! I'm SwanyBot 👑 — your SeeWhy LIVE guide. Sign in to unlock my full AI features, or just ask me anything!" }]);
+    }
   }, [hasGreeted, initConversation]);
 
   const sendMessage = async (text) => {
@@ -268,12 +282,18 @@ export default function SwanyBotWidget() {
     setInput('');
     setLoading(true);
 
-    const conv = convRef.current || await initConversation();
+    try {
+      const conv = convRef.current || await initConversation();
 
-    // Optimistically show user message
-    setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
+      // Optimistically show user message
+      setMessages(prev => [...prev, { role: 'user', content: trimmed }]);
 
-    await base44.agents.addMessage(conv, { role: 'user', content: trimmed });
+      await base44.agents.addMessage(conv, { role: 'user', content: trimmed });
+    } catch {
+      setLoading(false);
+      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I couldn't connect right now. Sign in for the full SwanyBot experience!" }]);
+      return;
+    }
 
     // Auto-save conversation
     if (messages.length > 0) {
