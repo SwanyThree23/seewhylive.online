@@ -89,7 +89,16 @@ var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' }
 var RECUR_COLORS = { none: '#7A6F90', weekly: '#00C9A7', biweekly: '#C084FC' };
 
 export default function ScheduleTab({ addToast, isLive, streamInfo }) {
-  var [schedule,     setSchedule]     = useState(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
+  var [schedule,     setSchedule]     = useState(function() {
+    try {
+      var saved = localStorage.getItem('sw_schedule');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch(e) {}
+    return INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); });
+  });
   var [newTitle,     setNewTitle]     = useState('');
   var [newTime,      setNewTime]      = useState('');
   var [newCat,       setNewCat]       = useState('Domino');
@@ -98,6 +107,10 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   var [tick,         setTick]         = useState(0);
   var [countdown,    setCountdown]    = useState(0);
   var [simNextEvent, setSimNextEvent] = useState(0);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_schedule', JSON.stringify(schedule)); } catch(e) {}
+  }, [schedule]);
 
   // 1-second tick for next-event countdown display
   useEffect(function() {
@@ -301,6 +314,15 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                       </span>
                     )}
                   </div>
+
+                  {/* Reminder button */}
+                  {ev.status !== 'LIVE' && ev.status !== 'ENDED' && (
+                    <button
+                      onClick={function() { if (addToast) addToast('🔔 Reminder set · ' + ev.title + ' · ' + formatDt(ev.time), 'success'); }}
+                      style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 5, padding: '3px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1, marginTop: 4 }}>
+                      🔔 SET REMINDER
+                    </button>
+                  )}
 
                   {/* Status buttons */}
                   <div style={{ display: 'flex', gap: 5, marginTop: 6, flexWrap: 'wrap' }}>

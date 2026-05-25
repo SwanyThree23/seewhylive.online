@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 var SEASON = 2026;
 var WEEK   = 8;
@@ -45,9 +45,36 @@ function getEmojiForAbbr(abbr, rankingsList) {
 }
 
 export default function StateRankingsTab({ isLive, addToast }) {
-  var [region,   setRegion]   = useState('All');
-  var [expanded, setExpanded] = useState(null);
-  var [view,     setView]     = useState('RANKINGS');
+  var [region,     setRegion]     = useState('All');
+  var [expanded,   setExpanded]   = useState(null);
+  var [view,       setView]       = useState('RANKINGS');
+  var [myState,    setMyState]    = useState(function() {
+    try { return localStorage.getItem('sw_my_state') || null; } catch(e) { return null; }
+  });
+  var [shareCopied, setShareCopied] = useState(false);
+
+  useEffect(function() {
+    try { if (myState) { localStorage.setItem('sw_my_state', myState); } else { localStorage.removeItem('sw_my_state'); } } catch(e) {}
+  }, [myState]);
+
+  function shareRankings() {
+    var lines = ['🏅 STATE RANKINGS — Week ' + WEEK + ' Season ' + SEASON];
+    for (var i = 0; i < rankings.length && i < 8; i++) {
+      var r = rankings[i];
+      var wins = WEEK - r.losses;
+      lines.push('#' + r.rank + ' ' + r.state_emoji + ' ' + r.state_name + ' · ' + r.points + ' pts · ' + wins + '-' + r.losses);
+    }
+    lines.push('via seewhylive.online');
+    var text = lines.join('\n');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function() {
+        setShareCopied(true);
+        setTimeout(function() { setShareCopied(false); }, 2000);
+      }).catch(function() {});
+    }
+    if (addToast) addToast('Rankings copied to clipboard!', 'success');
+  }
+
   var [rankings, setRankings] = useState(RANKINGS.map(function(r) {
     return {
       rank:       r.rank,
@@ -175,9 +202,14 @@ export default function StateRankingsTab({ isLive, addToast }) {
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 3 }}>🏅 STATE RANKINGS</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>Season {SEASON} · Week {WEEK} · National Domino Federation</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{rankings.length}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>STATES RANKED</div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                <button onClick={shareRankings} style={{ background: shareCopied ? 'rgba(0,201,167,.18)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (shareCopied ? 'rgba(0,201,167,.4)' : 'rgba(201,168,76,.3)'), borderRadius: 6, padding: '4px 10px', color: shareCopied ? '#00C9A7' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+                  {shareCopied ? '✓ COPIED' : '📤 SHARE'}
+                </button>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{rankings.length}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>STATES RANKED</div>
+                </div>
               </div>
             </div>
 
@@ -226,12 +258,13 @@ export default function StateRankingsTab({ isLive, addToast }) {
               var wins  = WEEK - r.losses;
               var isTop = r.rank <= 3;
               var isExp = expanded === r.rank;
+              var isMine = myState === r.state_abbr;
 
               return (
                 <div key={r.state_abbr}>
                   <div
                     onClick={function() { setExpanded(isExp ? null : r.rank); }}
-                    style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, alignItems: 'center', background: isTop ? 'rgba(201,168,76,.07)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isTop ? 'rgba(201,168,76,.25)' : '#241C34'), borderRadius: isExp ? '8px 8px 0 0' : 8, padding: '8px', cursor: 'pointer' }}>
+                    style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, alignItems: 'center', background: isMine ? 'rgba(0,201,167,.07)' : isTop ? 'rgba(201,168,76,.07)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isMine ? 'rgba(0,201,167,.35)' : isTop ? 'rgba(201,168,76,.25)' : '#241C34'), borderRadius: isExp ? '8px 8px 0 0' : 8, padding: '8px', cursor: 'pointer' }}>
 
                     {/* Rank */}
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: isTop ? 16 : 13, color: isTop ? '#C9A84C' : '#7A6F90', textAlign: 'center', lineHeight: 1 }}>
@@ -277,23 +310,30 @@ export default function StateRankingsTab({ isLive, addToast }) {
 
                   {/* Expanded detail */}
                   {isExp && (
-                    <div style={{ background: 'rgba(7,5,10,.95)', border: '1px solid rgba(201,168,76,.2)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '10px 14px', display: 'flex', gap: 20 }}>
-                      <div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>PREV RANK</div>
-                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>#{r.rank_prev}</div>
+                    <div style={{ background: 'rgba(7,5,10,.95)', border: '1px solid rgba(201,168,76,.2)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '10px 14px' }}>
+                      <div style={{ display: 'flex', gap: 20, marginBottom: 10 }}>
+                        <div>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>PREV RANK</div>
+                          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>#{r.rank_prev}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WIN RATE</div>
+                          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00C9A7' }}>{Math.floor(wins / WEEK * 100)}%</div>
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>SEASON</div>
+                          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{SEASON}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WEEK</div>
+                          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{WEEK}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WIN RATE</div>
-                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00C9A7' }}>{Math.floor(wins / WEEK * 100)}%</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>SEASON</div>
-                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{SEASON}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 2 }}>WEEK</div>
-                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#EDE8F5' }}>{WEEK}</div>
-                      </div>
+                      <button
+                        onClick={function() { setMyState(isMine ? null : r.state_abbr); }}
+                        style={{ background: isMine ? 'rgba(0,201,167,.15)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isMine ? 'rgba(0,201,167,.4)' : '#241C34'), borderRadius: 6, padding: '4px 12px', color: isMine ? '#00C9A7' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                        {isMine ? '✓ MY STATE' : '📍 SET AS MY STATE'}
+                      </button>
                     </div>
                   )}
                 </div>
