@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Flame, TrendingUp } from 'lucide-react';
 
-export default function PartyHypeMeter({ partyId, memberCount }) {
+export default function PartyHypeMeter({ partyId, memberCount, onHypeChange }) {
   const [hypeLevel, setHypeLevel] = useState(0);
   const [prevReactions, setPrevReactions] = useState(0);
   const rateRef = useRef([]);
@@ -27,7 +27,9 @@ export default function PartyHypeMeter({ partyId, memberCount }) {
 
     // Hype = reactions per 30s normalized, with member count factor
     const normalized = Math.min(100, (recentCount / Math.max(1, memberCount)) * 200);
-    setHypeLevel(Math.round(normalized));
+    const rounded = Math.round(normalized);
+    setHypeLevel(rounded);
+    onHypeChange?.(rounded);
   }, [reactions.length, memberCount]);
 
   const hypeColor = hypeLevel >= 80 ? '#FF1564' : hypeLevel >= 50 ? '#FF8C00' : hypeLevel >= 25 ? '#d4af37' : '#8B5CF6';

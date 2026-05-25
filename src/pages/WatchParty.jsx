@@ -248,6 +248,7 @@ export default function WatchPartyPage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
+      if (!user?.id) throw new Error('auth_required');
       const type = detectType(videoUrl);
       return base44.entities.WatchParty.create({
         host_id: user.id,
@@ -263,6 +264,13 @@ export default function WatchPartyPage() {
     },
     onSuccess: (p) => {
       window.location.href = `${window.location.pathname}?id=${p.id}`;
+    },
+    onError: (e) => {
+      if (e?.message === 'auth_required') {
+        toast.error('Please sign in to create a Watch Party');
+      } else {
+        toast.error('Failed to create Watch Party. Please try again.');
+      }
     },
   });
 
@@ -351,7 +359,8 @@ export default function WatchPartyPage() {
             onClick={() => createMutation.mutate()}
             style={{ background: '#d4af37', color: '#000' }}
           >
-            <Plus className="w-4 h-4 mr-2" /> Create Watch Party
+            <Plus className="w-4 h-4 mr-2" />
+            {!user ? 'Sign In to Create Watch Party' : createMutation.isPending ? 'Creating…' : 'Create Watch Party'}
           </Button>
         </div>
       </div>
