@@ -104,12 +104,12 @@ function validateHandle(platformId, handle) {
 }
 
 export default function DirectPayTab({ addToast, username }) {
-  var [handles, setHandles] = useState({
-    paypal: '',
-    cashapp: '',
-    venmo: '',
-    zelle: '',
-    chime: ''
+  var [handles, setHandles] = useState(function() {
+    try {
+      var saved = localStorage.getItem('sw_directpay_handles');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return { paypal: '', cashapp: '', venmo: '', zelle: '', chime: '' };
   });
   var [editing, setEditing] = useState(null);
   var [draftHandle, setDraftHandle] = useState('');
@@ -117,6 +117,11 @@ export default function DirectPayTab({ addToast, username }) {
   var [selectedAmt, setSelectedAmt] = useState(null);
   var [customAmt, setCustomAmt] = useState('');
   var [view, setView] = useState('pay');
+  var [qrPlatform, setQrPlatform] = useState(null);
+
+  React.useEffect(function() {
+    try { localStorage.setItem('sw_directpay_handles', JSON.stringify(handles)); } catch(e) {}
+  }, [handles]);
 
   function saveHandle(id) {
     var err = validateHandle(id, draftHandle);
@@ -270,6 +275,11 @@ export default function DirectPayTab({ addToast, username }) {
                         📋
                       </button>
                       <button
+                        onClick={function() { setQrPlatform(qrPlatform === platform.id ? null : platform.id); }}
+                        style={{ background: 'rgba(255,255,255,.05)', border: '1px solid ' + BORDER, borderRadius: 7, padding: '7px 10px', color: MUTED, fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                        ▦
+                      </button>
+                      <button
                         onClick={function() { openPayment(platform); }}
                         style={{ background: 'linear-gradient(135deg,' + platform.color + ',' + platform.accent + ')', border: 'none', borderRadius: 8, padding: '7px 16px', color: '#fff', fontFamily: fU, fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
                         PAY{displayAmt}
@@ -277,6 +287,15 @@ export default function DirectPayTab({ addToast, username }) {
                     </div>
                   </div>
                   <div style={{ padding: '0 14px 10px 14px', fontFamily: fM, fontSize: 8, color: MUTED }}>{platform.note}</div>
+                  {qrPlatform === platform.id && (
+                    <div style={{ margin: '0 14px 12px 14px', background: 'rgba(7,5,10,.6)', border: '1px dashed ' + platform.color + '44', borderRadius: 8, padding: '16px', textAlign: 'center' }}>
+                      <div style={{ width: 90, height: 90, margin: '0 auto 8px auto', background: '#fff', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ fontFamily: fM, fontSize: 7, color: '#222', lineHeight: 1.3, textAlign: 'center', padding: 4 }}>QR · {handle.slice(0, 12)}</div>
+                      </div>
+                      <div style={{ fontFamily: fM, fontSize: 7.5, color: MUTED }}>Scan to pay via {platform.name}</div>
+                      <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, marginTop: 2, opacity: 0.7 }}>QR generation available on next update</div>
+                    </div>
+                  )}
                 </div>
               );
             })}
