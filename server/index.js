@@ -247,6 +247,58 @@ app.post('/api/ppv/verify', function(req, res) {
     });
 });
 
+// GET /api/schedule
+app.get('/api/schedule', function(req, res) {
+  try {
+    var rows = db.prepare('SELECT * FROM schedules ORDER BY scheduled_at ASC').all();
+    res.json({ events: rows });
+  } catch (err) {
+    res.json({ events: [] });
+  }
+});
+
+// POST /api/schedule
+app.post('/api/schedule', function(req, res) {
+  var body = req.body;
+  if (!body.title || !body.scheduled_at) {
+    res.status(400).json({ error: 'title and scheduled_at required' });
+    return;
+  }
+  try {
+    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL)');
+    var id  = uuidv4();
+    var now = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at) VALUES (?,?,?,?,?,?)')
+      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), Math.floor(body.scheduled_at), now);
+    res.json({ id: id, saved: true });
+  } catch (err) {
+    logger.error('[schedule/post] ' + err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/schedule/:id
+app.delete('/api/schedule/:id', function(req, res) {
+  try {
+    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL)');
+    db.prepare('DELETE FROM schedules WHERE id = ?').run(req.params.id);
+    res.json({ deleted: true });
+  } catch (err) {
+    logger.error('[schedule/delete] ' + err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/n8n/test
+app.post('/api/n8n/test', function(req, res) {
+  var body = req.body;
+  var workflowId = String(body.workflowId || 'unknown').slice(0, 80);
+  var event      = String(body.event || 'test').slice(0, 40);
+  var ts         = Math.floor(body.ts || Date.now());
+  logger.info('[n8n/test] workflow=' + workflowId + ' event=' + event);
+  res.json({ triggered: true, workflowId: workflowId, event: event, ts: ts });
+});
+
 // GET /api/leaderboard
 app.get('/api/leaderboard', function(req, res) {
   try {

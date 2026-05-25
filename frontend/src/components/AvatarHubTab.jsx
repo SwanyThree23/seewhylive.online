@@ -46,7 +46,19 @@ var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#00C9A7','#C084FC','#5A8FFF','#FF6B35'
 
 export default function AvatarHubTab({ addToast, isLive }) {
   var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
-  var [gemBal,           setGemBal]           = useState(350);
+  var [gemBal,           setGemBal]           = useState(function() {
+    try {
+      var stored = localStorage.getItem('sw_gem_bal');
+      if (stored !== null) return parseInt(stored, 10) || 350;
+    } catch(e) {}
+    return 350;
+  });
+  var [dailyClaimed,     setDailyClaimed]     = useState(function() {
+    try {
+      var d = localStorage.getItem('sw_daily_bonus');
+      return d === new Date().toDateString();
+    } catch(e) { return false; }
+  });
   var [filter,           setFilter]           = useState('all');
   var [frames,           setFrames]           = useState(FRAMES.map(function(f) { return Object.assign({}, f); }));
   var [equippedFrame,    setEquippedFrame]     = useState('f1');
@@ -94,6 +106,21 @@ export default function AvatarHubTab({ addToast, isLive }) {
     }, 30000);
     return function() { clearInterval(id); };
   }, [isLive]);
+
+  useEffect(function() {
+    try {
+      localStorage.setItem('sw_gem_bal', String(gemBal));
+    } catch(e) {}
+  }, [gemBal]);
+
+  function claimDailyBonus() {
+    setGemBal(function(b) { return Math.floor(b + 50); });
+    setDailyClaimed(true);
+    try {
+      localStorage.setItem('sw_daily_bonus', new Date().toDateString());
+    } catch(e) {}
+    if (addToast) addToast('🎁 Daily bonus claimed! +50 💎', 'success');
+  }
 
   var equipped = items.find(function(a) { return a.equipped; });
   var activeFrame = frames.find(function(f) { return f.id === equippedFrame; });
@@ -179,6 +206,20 @@ export default function AvatarHubTab({ addToast, isLive }) {
           )}
         </div>
       </div>
+
+      {!dailyClaimed && (
+        <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#C9A84C' }}>🎁 DAILY BONUS · +50 💎 GEMS</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 2 }}>Claim once per day</div>
+          </div>
+          <button
+            onClick={function() { claimDailyBonus(); }}
+            style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 8, padding: '7px 18px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+            CLAIM
+          </button>
+        </div>
+      )}
 
       {isLive && liveViewerAvatars.length > 0 && (
         <div style={{ background: 'rgba(192,132,252,.07)', border: '1px solid rgba(192,132,252,.25)', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>

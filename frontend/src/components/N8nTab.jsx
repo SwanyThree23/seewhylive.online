@@ -134,6 +134,7 @@ export default function N8nTab({ addToast, isLive }) {
   var [liveMetrics, setLiveMetrics] = useState({cpu1:34, cpu2:28, mem1:62, mem2:45});
   var [activeView, setActiveView] = useState('workflows');
   var [execLog, setExecLog] = useState([]);
+  var [webhookTesting, setWebhookTesting] = useState({});
 
   useEffect(function() {
     var iv = setInterval(function() {
@@ -206,8 +207,28 @@ export default function N8nTab({ addToast, isLive }) {
     }
   }
 
+  function testWebhook(wf) {
+    setWebhookTesting(function(prev) { return Object.assign({}, prev, { [wf.id]: true }); });
+    fetch('/api/n8n/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workflowId: wf.id, event: 'test', ts: Date.now() })
+    }).then(function(res) {
+      setWebhookTesting(function(prev) { return Object.assign({}, prev, { [wf.id]: false }); });
+      if (res.ok) {
+        addToast((wf.icon || '⚡') + ' Webhook test OK: ' + wf.name, 'success');
+      } else {
+        addToast('Webhook test failed (' + res.status + '): ' + wf.name, 'error');
+      }
+    }, function() {
+      setWebhookTesting(function(prev) { return Object.assign({}, prev, { [wf.id]: false }); });
+      addToast('Webhook test error: ' + wf.name, 'error');
+    });
+  }
+
   var totalRuns = workflows.reduce(function(s, w) { return s + w.runs24h; }, 0);
   var runningCount = workflows.filter(function(w) { return w.status === 'running' && w.enabled; }).length;
+  var activeTriggersCount = workflows.filter(function(w) { return w.enabled; }).length;
 
   var VIEWS = [
     { key: 'workflows', label: 'WORKFLOWS' },
@@ -219,10 +240,15 @@ export default function N8nTab({ addToast, isLive }) {
 
       /* TOP SECTION */
       React.createElement('div', {style:{padding:12, borderBottom:'1px solid '+BORDER, flexShrink:0, background:BG1}},
-        React.createElement('div', {style:{marginBottom:8}},
+        React.createElement('div', {style:{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8}},
           React.createElement('span', {style:{fontSize:10, color:TEAL, fontFamily:fM, letterSpacing:1}},
             'VPS INFRASTRUCTURE · n8n.srv1587098.hstgr.cloud'
-          )
+          ),
+          React.createElement('span', {style:{
+            fontSize:9, color:LIME, fontFamily:fM, fontWeight:700,
+            background:LIME+'18', border:'1px solid '+LIME+'55',
+            borderRadius:4, padding:'2px 8px', letterSpacing:1
+          }}, activeTriggersCount + ' ACTIVE TRIGGERS')
         ),
         React.createElement('div', {style:{display:'flex', gap:8}},
 
@@ -412,7 +438,7 @@ export default function N8nTab({ addToast, isLive }) {
                               React.createElement('div', {style:{fontSize:11, color:TEXT, fontFamily:fM}}, wf.lastRun)
                             )
                           ),
-                          React.createElement('div', null,
+                          React.createElement('div', {style:{marginBottom:8}},
                             React.createElement('div', {style:{display:'flex', justifyContent:'space-between', marginBottom:3}},
                               React.createElement('span', {style:{fontSize:9, color:TEXT_M, fontFamily:fM}}, 'SUCCESS RATE'),
                               React.createElement('span', {style:{fontSize:9, color:wf.successRate >= 99 ? LIME : wf.successRate >= 95 ? GOLD : ORANGE, fontFamily:fM, fontWeight:700}}, wf.successRate + '%')
@@ -426,7 +452,24 @@ export default function N8nTab({ addToast, isLive }) {
                                 transition:'width 0.4s ease'
                               }})
                             )
-                          )
+                          ),
+                          React.createElement('button', {
+                            onClick: function() { testWebhook(wf); },
+                            disabled: Boolean(webhookTesting[wf.id]),
+                            style:{
+                              background: webhookTesting[wf.id] ? TEAL+'11' : TEAL+'22',
+                              border: '1px solid ' + (webhookTesting[wf.id] ? TEAL+'44' : TEAL+'66'),
+                              color: webhookTesting[wf.id] ? TEXT_M : TEAL,
+                              borderRadius: 6,
+                              padding: '4px 12px',
+                              fontSize: 10,
+                              fontFamily: fU,
+                              fontWeight: 700,
+                              cursor: webhookTesting[wf.id] ? 'not-allowed' : 'pointer',
+                              letterSpacing: 0.5,
+                              opacity: webhookTesting[wf.id] ? 0.6 : 1
+                            }
+                          }, webhookTesting[wf.id] ? '⟳ TESTING...' : '⚡ WEBHOOK TEST')
                         )
                       : null
                   )

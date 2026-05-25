@@ -45,11 +45,13 @@ var fmtT = function() {
 };
 
 export default function MCPTab({ addToast, isLive }) {
-  var [tools, setTools]       = useState(MCP_TOOLS.map(function(t) { return Object.assign({}, t); }));
-  var [pinging, setPinging]   = useState(false);
-  var [lastPing, setLastPing] = useState('--:--');
-  var [logView, setLogView]   = useState(false);
-  var [callLog, setCallLog]   = useState([]);
+  var [tools, setTools]           = useState(MCP_TOOLS.map(function(t) { return Object.assign({}, t); }));
+  var [pinging, setPinging]       = useState(false);
+  var [lastPing, setLastPing]     = useState('--:--');
+  var [logView, setLogView]       = useState(false);
+  var [callLog, setCallLog]       = useState([]);
+  var [copiedEndpoint, setCopiedEndpoint] = useState(false);
+  var [healthCheckedAt, setHealthCheckedAt] = useState(null);
 
   // Seed call log on mount
   useEffect(function() {
@@ -99,6 +101,29 @@ export default function MCPTab({ addToast, isLive }) {
     }, 5500);
     return function() { clearInterval(id); };
   }, [isLive]);
+
+  // Health polling every 30s
+  useEffect(function() {
+    function doHealthCheck() {
+      fetch('/api/health').then(function(res) {
+        if (res.ok) {
+          setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        }
+      }, function() {
+        setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      });
+    }
+    doHealthCheck();
+    var id = setInterval(doHealthCheck, 30000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  function copyEndpoint() {
+    navigator.clipboard.writeText('https://xlrcibziouffgxciecvc.supabase.co/functions/v1/mcp');
+    setCopiedEndpoint(true);
+    addToast('MCP endpoint copied to clipboard', 'success');
+    setTimeout(function() { setCopiedEndpoint(false); }, 1500);
+  }
 
   function pingAll() {
     setPinging(true);
@@ -168,8 +193,29 @@ export default function MCPTab({ addToast, isLive }) {
             <div style={{ fontFamily: fM, fontSize: 8, color: TEXT_M, marginTop: 3, letterSpacing: 0.5 }}>
               12 tools &nbsp;·&nbsp; Supabase xlrcibziouffgxciecvc &nbsp;·&nbsp; Last ping: {lastPing}
             </div>
+            {healthCheckedAt && (
+              <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, marginTop: 2, letterSpacing: 0.5 }}>
+                Health checked: {healthCheckedAt}
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button
+              onClick={copyEndpoint}
+              style={{
+                background: copiedEndpoint ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)',
+                border: '1px solid rgba(201,168,76,' + (copiedEndpoint ? '.6' : '.3') + ')',
+                borderRadius: 7,
+                padding: '6px 10px',
+                color: GOLD,
+                fontFamily: fU,
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              {copiedEndpoint ? '✓ COPIED' : '🔗 COPY ENDPOINT'}
+            </button>
             <button
               onClick={function() { setLogView(function(v) { return !v; }); }}
               style={{

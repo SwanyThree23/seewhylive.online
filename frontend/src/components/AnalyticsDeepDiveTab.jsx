@@ -24,6 +24,42 @@ function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 var TYPE_COLORS = { tip: '#00C9A7', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
 
 export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
+  var [engData, setEngData] = useState(ENG_DATA.slice());
+  var [revData, setRevData] = useState(REV_DATA.slice());
+  var [txns, setTxns] = useState(BASE_TXN.slice());
+  var [typeFilter, setTypeFilter] = useState('all');
+  var [leaderboard, setLeaderboard] = useState([]);
+
+  useEffect(function() {
+    fetch('/api/leaderboard')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.leaderboard && data.leaderboard.length > 0) {
+          setLeaderboard(data.leaderboard);
+        }
+      })
+      .catch(function() {});
+  }, []);
+
+  useEffect(function() {
+    if (!gifts || gifts.length === 0) return;
+    var liveGiftTxns = gifts.map(function(g) {
+      return {
+        id:      'gift_' + (g.id || g.ts || Math.random()),
+        type:    'tip',
+        amount:  Math.floor(g.value_cents || g.valueCents || 0),
+        creator: g.from_user || g.fromUser || 'Anonymous',
+        stream:  g.name || 'Gift'
+      };
+    });
+    setTxns(function(prev) {
+      var ids = {};
+      prev.forEach(function(t) { ids[t.id] = true; });
+      var newOnes = liveGiftTxns.filter(function(t) { return !ids[t.id]; });
+      if (newOnes.length === 0) return prev;
+      return prev.concat(newOnes).slice(-30);
+    });
+  }, [gifts]);
 
   function exportCSV() {
     var rows = ['id,type,creator,amount_cents,creator_payout_cents,stream'].concat(txns.map(function(tx) {
@@ -37,9 +73,6 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
     a.click();
     URL.revokeObjectURL(url);
   }
-  var [engData, setEngData] = useState(ENG_DATA.slice());
-  var [revData, setRevData] = useState(REV_DATA.slice());
-  var [txns, setTxns] = useState(BASE_TXN.slice());
 
   useEffect(function() {
     if (!isLive) { return; }
@@ -79,6 +112,9 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
     }, 7000);
     return function() { clearInterval(interval); };
   }, [isLive]);
+
+  var TX_TYPES = ['all', 'tip', 'subscription', 'fades_boost', 'direct_pay'];
+  var visibleTxns = typeFilter === 'all' ? txns : txns.filter(function(t) { return t.type === typeFilter; });
 
   var totalGross   = txns.reduce(function(s, t) { return s + t.amount; }, 0);
   var totalCreator = Math.floor(totalGross * CREATOR);
@@ -252,8 +288,27 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
 
       {/* Top Creators leaderboard */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>TOP CREATORS BY REVENUE</div>
-        {topCreators.map(function(item, i) {
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>TOP CREATORS BY REVENUE</div>
+          {leaderboard.length > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7', letterSpacing: 1 }}>● LIVE DB</div>}
+        </div>
+        {(leaderboard.length > 0 ? leaderboard.map(function(row, i) {
+          var topTotal = leaderboard[0].total_cents || 1;
+          var pct = Math.floor((row.total_cents / topTotal) * 100);
+          return (
+            <div key={row.from_user + i} style={{ marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: i === 0 ? '#C9A84C' : '#7A6F90', width: 16, flexShrink: 0 }}>#{i + 1}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', flex: 1 }}>{row.from_user}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(row.creator_cents)}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{row.gift_count} TXN</span>
+              </div>
+              <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
+              </div>
+            </div>
+          );
+        }) : topCreators.map(function(item, i) {
           var pct = totalGross > 0 ? Math.floor((item[1] / totalGross) * 100) : 0;
           return (
             <div key={item[0]} style={{ marginBottom: 8 }}>
@@ -268,13 +323,28 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
               </div>
             </div>
           );
-        })}
+        }))}
       </div>
 
       {/* Ledger */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>TRANSACTION LEDGER</div>
-        {txns.map(function(tx) {
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2 }}>TRANSACTION LEDGER</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{visibleTxns.length} shown</div>
+        </div>
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, paddingBottom: 2 }}>
+          {TX_TYPES.map(function(t) {
+            var active = typeFilter === t;
+            var c = TYPE_COLORS[t] || '#7A6F90';
+            return (
+              <button key={t} onClick={function() { setTypeFilter(t); }}
+                style={{ background: active ? (c + '22') : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? (c + '66') : '#241C34'), borderRadius: 999, padding: '2px 10px', color: active ? c : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
+                {t}
+              </button>
+            );
+          })}
+        </div>
+        {visibleTxns.map(function(tx) {
           var c = TYPE_COLORS[tx.type] || '#7A6F90';
           var creatorAmt = Math.floor(tx.amount * CREATOR);
           return (

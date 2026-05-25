@@ -41,9 +41,15 @@ var VIEWS = [
 
 export default function GuardianTab({ addToast, isLive }) {
   var [view, setView]           = useState('rules');
-  var [rules, setRules]         = useState(RULE_PRESETS);
+  var [rules, setRules]         = useState(function() {
+    try { var s = localStorage.getItem('sw_guardian_rules'); if (s) return JSON.parse(s); } catch(e) {}
+    return RULE_PRESETS;
+  });
   var [flags, setFlags]         = useState(MOCK_FLAGS);
-  var [banned, setBanned]       = useState(DEFAULT_BANNED);
+  var [banned, setBanned]       = useState(function() {
+    try { var s = localStorage.getItem('sw_guardian_banned'); if (s) return JSON.parse(s); } catch(e) {}
+    return DEFAULT_BANNED;
+  });
   var [newWord, setNewWord]     = useState('');
   var [guardLog, setGuardLog]   = useState(GUARDIAN_LOG);
   var [guardOn, setGuardOn]     = useState(true);
@@ -51,6 +57,14 @@ export default function GuardianTab({ addToast, isLive }) {
   var [allowed, setAllowed]     = useState(203);
   var logRef = useRef(null);
   var lockdownFiredRef = useRef(false);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_guardian_rules', JSON.stringify(rules)); } catch(e) {}
+  }, [rules]);
+
+  useEffect(function() {
+    try { localStorage.setItem('sw_guardian_banned', JSON.stringify(banned)); } catch(e) {}
+  }, [banned]);
 
   useEffect(function() {
     if (!guardOn || !isLive) return;
@@ -175,8 +189,11 @@ export default function GuardianTab({ addToast, isLive }) {
             <button
               key={v.id}
               onClick={function() { setView(v.id); }}
-              style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(128,0,32,.3)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+              style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(128,0,32,.3)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', position: 'relative' }}>
               {v.label}
+              {v.id === 'flags' && flags.length > 0 && (
+                <span style={{ position: 'absolute', top: 2, right: 6, background: '#FF1A3C', borderRadius: 999, width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', fontWeight: 700 }}>{flags.length}</span>
+              )}
             </button>
           );
         })}
@@ -265,6 +282,15 @@ export default function GuardianTab({ addToast, isLive }) {
       )}
 
       {/* LOG view */}
+      {view === 'log' && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: -6 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>GUARDIAN LOG · {guardLog.length} ENTRIES</div>
+          <button onClick={function() { setGuardLog([]); }}
+            style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 5, padding: '3px 8px', color: '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+            🗑 CLEAR
+          </button>
+        </div>
+      )}
       {view === 'log' && (
         <div style={{ background: 'rgba(7,5,10,.9)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto' }} ref={logRef}>
           {guardLog.map(function(entry, i) {
