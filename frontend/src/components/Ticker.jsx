@@ -1,67 +1,97 @@
 'use strict';
 import React, { useEffect, useRef, useState } from 'react';
 
-export default function Ticker({ chat, isLive }) {
-  var [tickerText, setTickerText] = useState('SeeWhy LIVE · Washington Classic · Domino Entertainment · VibeN\'Bones · @dominoentertainment5513 · @aiversepodcast · @memoirsofashygirl');
-  var [liveDot, setLiveDot] = useState(true);
-  var animRef = useRef(null);
+var BASE_TEXT = 'SeeWhy LIVE  ·  Washington Classic  ·  Domino Entertainment  ·  VibeN\'Bones  ·  90% CREATOR PAYOUT  ·  POWERED BY AURA AI  ·  SUBSCRIBE FOR EXCLUSIVE ACCESS  ·  @dominoentertainment5513  ·  @aiversepodcast  ·  @memoirsofashygirl  ·';
+
+export default function Ticker(props) {
+  var chat   = props.chat;
+  var isLive = props.isLive;
+
+  var [tickerText, setTickerText] = useState(BASE_TEXT);
+  var [liveDot, setLiveDot]       = useState(true);
+  var [isMobile, setIsMobile]     = useState(function() { return window.innerWidth <= 900; });
   var containerRef = useRef(null);
-  var xRef = useRef(0);
+  var animRef      = useRef(null);
+  var xRef         = useRef(0);
 
   useEffect(function() {
+    function onResize() { setIsMobile(window.innerWidth <= 900); }
+    window.addEventListener('resize', onResize);
+    return function() { window.removeEventListener('resize', onResize); };
+  }, []);
+
+  useEffect(function() {
+    if (!chat || !chat.length) return;
     var recent = chat.slice(-5).map(function(m) {
       if (!m) return '';
-      var text = m.translated || m.text || m.message || '';
+      var text = (m.translated || m.text || m.message || '').slice(0, 60);
       return (m.username || 'anon') + ': ' + text;
     }).filter(function(s) { return s.length > 0; });
-
     if (recent.length > 0) {
-      setTickerText(recent.join(' · ') + ' · Washington Classic · Domino Entertainment · VibeN\'Bones');
+      setTickerText(recent.join('  ·  ') + '  ·  Washington Classic  ·  Domino Entertainment  ·  VibeN\'Bones  ·');
     }
   }, [chat]);
 
   useEffect(function() {
     if (!isLive) return;
-    var id = setInterval(function() {
-      setLiveDot(function(d) { return !d; });
-    }, 600);
+    var id = setInterval(function() { setLiveDot(function(d) { return !d; }); }, 600);
     return function() { clearInterval(id); };
   }, [isLive]);
 
   useEffect(function() {
-    var tickerSpeed = isLive ? 1.5 : 1;
+    var speed = isLive ? 1.6 : 1.0;
     var container = containerRef.current;
     if (!container) return;
-
     function animate() {
-      xRef.current -= tickerSpeed;
-      var textWidth = tickerText.length * 8;
-      if (Math.abs(xRef.current) > textWidth) xRef.current = 0;
+      xRef.current -= speed;
+      var width = tickerText.length * 7.5;
+      if (Math.abs(xRef.current) > width) xRef.current = window.innerWidth;
       container.style.transform = 'translateX(' + xRef.current + 'px)';
       animRef.current = requestAnimationFrame(animate);
     }
-
     animRef.current = requestAnimationFrame(animate);
     return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
   }, [tickerText, isLive]);
 
+  var bottomOffset = isMobile ? 60 : 0;
+
   return (
     <div style={{
       position: 'fixed',
-      bottom: 0,
+      bottom: bottomOffset,
       left: 0,
       right: 0,
-      height: '28px',
-      background: '#0F0C14',
-      borderTop: '1px solid #C9A84C33',
-      zIndex: 700,
+      height: 28,
+      background: 'rgba(7,5,10,.96)',
+      borderTop: '1px solid rgba(201,168,76,.2)',
+      zIndex: 300,
       overflow: 'hidden',
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
+      backdropFilter: 'blur(8px)',
     }}>
       {isLive && (
-        <span style={{ flexShrink: 0, background: '#800020', color: '#fff', padding: '2px 6px', fontSize: '10px', fontFamily: "'Bebas Neue',sans-serif", marginLeft: '8px', letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', display: 'inline-block', boxShadow: liveDot ? '0 0 6px 2px #FF1A3C' : 'none' }} />
+        <span style={{
+          flexShrink: 0,
+          background: '#800020',
+          color: '#EDE8F5',
+          padding: '2px 8px',
+          fontSize: 10,
+          fontFamily: "'Bebas Neue',sans-serif",
+          letterSpacing: 1.5,
+          marginLeft: 8,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          borderRadius: 2,
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: '#FF1A3C',
+            display: 'inline-block',
+            boxShadow: liveDot ? '0 0 6px 2px #FF1A3C' : 'none',
+            transition: 'box-shadow .3s ease',
+          }} />
           LIVE
         </span>
       )}
@@ -74,9 +104,10 @@ export default function Ticker({ chat, isLive }) {
             top: '50%',
             transform: 'translateY(-50%)',
             fontFamily: "'Barlow Condensed',sans-serif",
-            fontSize: '12px',
-            color: '#B0A0C0',
-            letterSpacing: '0.05em'
+            fontSize: 11,
+            color: '#7A6F90',
+            letterSpacing: '0.08em',
+            willChange: 'transform',
           }}
         >
           {tickerText}
