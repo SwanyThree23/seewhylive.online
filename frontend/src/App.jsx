@@ -483,7 +483,7 @@ export default function App() {
       </nav>
 
       {/* Tab Content */}
-      <main style={{ padding: '16px', flex: 1 }}>
+      <main style={{ padding: '16px', flex: 1, paddingBottom: 100 }}>
         {activeTab === 'room' && (
           <RoomTab
             socket={socketRef.current}
