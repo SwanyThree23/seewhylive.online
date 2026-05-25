@@ -257,6 +257,24 @@ function getPlatformMetrics() {
   };
 }
 
+function getTopCreators(limit) {
+  var n = Math.min(limit || 20, 100);
+  var rows = db.prepare(
+    'SELECT creator_id, SUM(creator_cents) AS total_cents, COUNT(*) AS txn_count' +
+    ' FROM creator_earnings' +
+    ' GROUP BY creator_id' +
+    ' ORDER BY total_cents DESC' +
+    ' LIMIT ?'
+  ).all(n);
+  return (rows || []).map(function(r) {
+    return {
+      creatorId: r.creator_id,
+      totalCents: Math.floor(r.total_cents || 0),
+      txnCount: r.txn_count || 0
+    };
+  });
+}
+
 module.exports = {
   recordStreamEvent: recordStreamEvent,
   recordEarning: recordEarning,
@@ -264,5 +282,6 @@ module.exports = {
   endViewerSession: endViewerSession,
   getCreatorAnalytics: getCreatorAnalytics,
   getStreamAnalytics: getStreamAnalytics,
-  getPlatformMetrics: getPlatformMetrics
+  getPlatformMetrics: getPlatformMetrics,
+  getTopCreators: getTopCreators
 };

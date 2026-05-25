@@ -539,12 +539,9 @@ router.get('/metrics', function(req, res) {
 router.get('/leaderboard', function(req, res) {
   try {
     var limit = parseInt(req.query.limit || '20', 10);
-    if (analytics) {
-      var metrics = analytics.getPlatformMetrics();
-      return res.json({
-        leaderboard: metrics.topCreators || [],
-        updatedAt: Date.now()
-      });
+    if (analytics && analytics.getTopCreators) {
+      var top = analytics.getTopCreators(limit);
+      return res.json({ leaderboard: top, updatedAt: Date.now() });
     }
     return res.json({ leaderboard: [], updatedAt: Date.now() });
   } catch (err) {
