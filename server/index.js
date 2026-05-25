@@ -492,7 +492,7 @@ app.post('/api/ai/chat', function(req, res) {
   var client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   client.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 256,
+    max_tokens: 512,
     system: system || 'You are a helpful assistant for SeeWhy LIVE.',
     messages: [{ role: 'user', content: message }]
   }).then(function(r) {
