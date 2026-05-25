@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Bell, CheckCircle2, AlertCircle, Zap, Users, Target, Trophy } from 'lucide-react';
+import { isSafeUrl } from '@/lib/security';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -80,7 +81,7 @@ export default function NotificationHub() {
     if (!notif.is_read) {
       markReadMutation.mutate(notif.id);
     }
-    if (notif.link) {
+    if (notif.link && isSafeUrl(notif.link)) {
       window.location.href = notif.link;
     }
   };

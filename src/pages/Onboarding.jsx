@@ -94,7 +94,7 @@ function Step1({ onboarding, user, onDone }) {
     <div style={{ padding: '20px' }}>
       <h2 style={{ fontFamily: 'Barlow Condensed', fontSize: 22, color: C.gold, marginBottom: 16 }}>Set Up Your Creator Profile</h2>
       <label style={lbl}>Display Name</label>
-      <input style={inp} value={form.display_name} onChange={e => setForm(f => ({...f, display_name: e.target.value}))} placeholder="Your creator name" />
+      <input style={inp} value={form.display_name} onChange={e => setForm(f => ({...f, display_name: e.target.value}))} placeholder="Your creator name" maxLength={80} />
       <label style={lbl}>Bio <span style={{color:C.gray}}>{form.bio.length}/140</span></label>
       <textarea style={{...inp, height: 70, resize:'none'}} maxLength={140} value={form.bio} onChange={e => setForm(f => ({...f, bio: e.target.value}))} placeholder="Tell viewers about yourself…" />
       <label style={lbl}>Avatar Emoji</label>
