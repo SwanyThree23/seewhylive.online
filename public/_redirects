@@ -1,7 +1,1 @@
-# Proxy Base44 API calls to the app-specific Base44 host
-# The SDK uses serverUrl:'' which produces relative /api/* requests.
-# On Base44 hosting those go to the app subdomain; replicate that here.
-/api/* https://see-why-live-by-swanythree-ent-tech-21fcdc9d.base44.app/api/:splat 200
-
-# SPA fallback
 /* /index.html 200
