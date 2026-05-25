@@ -49,7 +49,13 @@ export default function MusicStudioTab({ addToast, isLive }) {
   var [bpm,           setBpm]          = useState(120);
   var [activeKey,     setActiveKey]    = useState(null);
   var [padFlash,      setPadFlash]     = useState({});
-  var [savedPatterns, setSavedPatterns] = useState([]);
+  var [savedPatterns, setSavedPatterns] = useState(function() {
+    try {
+      var stored = localStorage.getItem('sw_music_patterns');
+      if (stored) return JSON.parse(stored);
+    } catch(e) {}
+    return [];
+  });
   var [patternName,   setPatternName]  = useState('My Pattern');
   var [activePreset,  setActivePreset] = useState(null);
   var [bpmPulse,      setBpmPulse]     = useState(false);
@@ -57,6 +63,7 @@ export default function MusicStudioTab({ addToast, isLive }) {
   var [waveform,      setWaveform]     = useState([]);
   var stepRef = useRef(-1);
   var playRef = useRef(null);
+  var tapRef  = useRef([]);
 
   useEffect(function() {
     if (!playing) {
@@ -114,6 +121,38 @@ export default function MusicStudioTab({ addToast, isLive }) {
     }, 150);
     return function() { clearInterval(id); };
   }, [isLive]);
+
+  useEffect(function() {
+    try {
+      localStorage.setItem('sw_music_patterns', JSON.stringify(savedPatterns));
+    } catch(e) {}
+  }, [savedPatterns]);
+
+  function tapTempo() {
+    var now = Date.now();
+    var taps = tapRef.current;
+    if (taps.length > 0 && now - taps[taps.length - 1] > 3000) {
+      taps = [];
+    }
+    taps = taps.concat([now]);
+    if (taps.length > 8) taps = taps.slice(taps.length - 8);
+    tapRef.current = taps;
+    if (taps.length >= 2) {
+      var intervals = [];
+      var i;
+      for (i = 1; i < taps.length; i++) {
+        intervals.push(taps[i] - taps[i - 1]);
+      }
+      var sum = 0;
+      for (i = 0; i < intervals.length; i++) { sum += intervals[i]; }
+      var avgInterval = sum / intervals.length;
+      var calculatedBpm = Math.floor(60000 / avgInterval);
+      if (calculatedBpm < 60) calculatedBpm = 60;
+      if (calculatedBpm > 220) calculatedBpm = 220;
+      setBpm(calculatedBpm);
+      setActivePreset('Custom');
+    }
+  }
 
   function toggleCell(padId, stepIdx) {
     setGrid(function(g) {
@@ -197,6 +236,11 @@ export default function MusicStudioTab({ addToast, isLive }) {
               onChange={function(e) { setBpm(Number(e.target.value)); setActivePreset(null); }}
               style={{ width: 70, accentColor: '#00C9A7' }}
             />
+            <button
+              onClick={function() { tapTempo(); }}
+              style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, padding: '7px 14px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              TAP TEMPO
+            </button>
             <button
               onClick={function() { setPlaying(function(p) { return !p; }); }}
               style={{ background: playing ? 'rgba(255,26,60,.2)' : 'linear-gradient(135deg,#800020,#C01838)', border: playing ? '1px solid rgba(255,26,60,.5)' : 'none', borderRadius: 8, padding: '7px 16px', color: playing ? '#FF6B81' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>

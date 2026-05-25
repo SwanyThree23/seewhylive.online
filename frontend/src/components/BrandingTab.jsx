@@ -34,6 +34,19 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
   var [logoUrl, setLogoUrl] = useState('');
   var [logoFile, setLogoFile] = useState(null);
   var [logoUploading, setLogoUploading] = useState(false);
+  var [cssCopied, setCssCopied] = useState(false);
+
+  function copyCssVars() {
+    var g = branding.gold || '#C9A84C';
+    var b = branding.burg || '#800020';
+    var css = ':root {\n  --sw-gold: ' + g + ';\n  --sw-burg: ' + b + ';\n  --sw-bg: #0F0C14;\n  --sw-text: #EDE8F5;\n  --sw-teal: #00C9A7;\n  --sw-muted: #7A6F90;\n}';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(css).then(function() {
+        setCssCopied(true);
+        setTimeout(function() { setCssCopied(false); }, 2000);
+      }).catch(function() {});
+    }
+  }
 
   var gold = branding.gold || '#C9A84C';
   var burg = branding.burg || '#800020';
@@ -275,7 +288,13 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
 
           {/* Color swatch strip */}
           <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>ACTIVE PALETTE</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>ACTIVE PALETTE</div>
+              <button onClick={copyCssVars}
+                style={{ background: cssCopied ? 'rgba(0,201,106,.15)' : 'rgba(90,143,255,.1)', border: '1px solid ' + (cssCopied ? 'rgba(0,201,106,.4)' : 'rgba(90,143,255,.3)'), borderRadius: 6, padding: '3px 10px', color: cssCopied ? '#00C96A' : '#5A8FFF', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
+                {cssCopied ? '✓ COPIED' : '&#x7B;&#x7D; CSS VARS'}
+              </button>
+            </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {[gold, burg, gold + '55', burg + '33'].map(function(c, i) {
                 var labels = ['Primary', 'Accent', 'Tint', 'Shade'];
