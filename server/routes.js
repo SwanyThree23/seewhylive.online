@@ -448,6 +448,22 @@ router.get('/users/:username', function(req, res) {
   }
 });
 
+router.get('/users/me', function(req, res) {
+  try {
+    var profile = _userProfiles['default'] || {};
+    return res.json({
+      username: profile.username || 'SwanyThree',
+      displayName: profile.displayName || 'SwanyThree',
+      bio: profile.bio || 'SeeWhy LIVE creator · Washington Classic host',
+      avatarEmoji: profile.avatarEmoji || '👑',
+      tier: 'pro',
+      isLive: false
+    });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
 router.put('/users/me', function(req, res) {
   try {
     var displayName = req.body.displayName || '';
