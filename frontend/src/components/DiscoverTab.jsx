@@ -3,14 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import SignalBars from './SignalBars';
 
 var MOCK_STREAMS = [
-  { id: 's1', title: 'Washington Classic Round 2', hostName: 'SwanyThree', viewerCount: 2847, genre: 'Tournament', isLive: true, durationMins: 94, tier: 'free' },
-  { id: 's2', title: 'Friday Night Dominos', hostName: 'CaliBonesOG', viewerCount: 1203, genre: 'Domino', isLive: true, durationMins: 47, tier: 'fan' },
-  { id: 's3', title: 'Beat Production 101', hostName: 'BeatKing_X', viewerCount: 891, genre: 'Music', isLive: true, durationMins: 120, tier: 'free' },
-  { id: 's4', title: 'AIverse Podcast Ep. 48', hostName: 'VibeNBones', viewerCount: 412, genre: 'Podcast', isLive: false, durationMins: 0, tier: 'free' },
-  { id: 's5', title: 'Lifestyle Talk', hostName: 'LyricQueen', viewerCount: 288, genre: 'Lifestyle', isLive: true, durationMins: 33, tier: 'supporter' },
-  { id: 's6', title: 'Tech Deep Dive', hostName: 'NeonBeats', viewerCount: 155, genre: 'Tech', isLive: false, durationMins: 0, tier: 'free' },
-  { id: 's7', title: 'Community Conversation', hostName: 'DJ_Phantom', viewerCount: 3102, genre: 'Talk', isLive: true, durationMins: 210, tier: 'free' },
-  { id: 's8', title: 'Vocal Session LIVE', hostName: 'VibeStar', viewerCount: 94, genre: 'Music', isLive: true, durationMins: 12, tier: 'free' },
+  { id: 's1', title: 'Washington Classic Round 2', hostName: 'SwanyThree', viewerCount: 2847, genre: 'Tournament', isLive: true, durationMins: 94, tier: 'free', category: 'SPORTS' },
+  { id: 's2', title: 'Friday Night Dominos', hostName: 'CaliBonesOG', viewerCount: 1203, genre: 'Domino', isLive: true, durationMins: 47, tier: 'fan', category: 'SPORTS' },
+  { id: 's3', title: 'Beat Production 101', hostName: 'BeatKing_X', viewerCount: 891, genre: 'Music', isLive: true, durationMins: 120, tier: 'free', category: 'MUSIC' },
+  { id: 's4', title: 'AIverse Podcast Ep. 48', hostName: 'VibeNBones', viewerCount: 412, genre: 'Podcast', isLive: false, durationMins: 0, tier: 'free', category: 'TECH' },
+  { id: 's5', title: 'Lifestyle Talk', hostName: 'LyricQueen', viewerCount: 288, genre: 'Lifestyle', isLive: true, durationMins: 33, tier: 'supporter', category: 'LIFESTYLE' },
+  { id: 's6', title: 'Tech Deep Dive', hostName: 'NeonBeats', viewerCount: 155, genre: 'Tech', isLive: false, durationMins: 0, tier: 'free', category: 'TECH' },
+  { id: 's7', title: 'Community Conversation', hostName: 'DJ_Phantom', viewerCount: 3102, genre: 'Talk', isLive: true, durationMins: 210, tier: 'free', category: 'LIFESTYLE' },
+  { id: 's8', title: 'Vocal Session LIVE', hostName: 'VibeStar', viewerCount: 94, genre: 'Music', isLive: true, durationMins: 12, tier: 'free', category: 'MUSIC' },
 ];
 
 var MOCK_CREATORS = [
@@ -29,6 +29,22 @@ var GENRE_COLORS = {
   Tech: '#00C9A7',
   Talk: '#FF8C00',
 };
+
+var CATEGORIES = ['ALL', 'MUSIC', 'GAMING', 'TECH', 'EDUCATION', 'BUSINESS', 'SPORTS', 'LIFESTYLE'];
+
+var TRENDING_CHANNELS = [
+  { id: 'tc1', name: 'AI Verse Podcast',      handle: '@aiverse',   emoji: '🎙', color: '#C084FC', live: false },
+  { id: 'tc2', name: 'Memoirs of a Shy Girl', handle: '@shygirl',   emoji: '📖', color: '#FF6B9D', live: false },
+  { id: 'tc3', name: 'Domino Entertainment',  handle: '@dominoent', emoji: '🎲', color: '#C9A84C', live: true  },
+];
+
+var QUICK_ACTIONS = [
+  { id: 'golive',  label: 'Go Live',      icon: '📡', color: '#FF1564' },
+  { id: 'watch',   label: 'Watch Party',  icon: '📺', color: '#00C9A7' },
+  { id: 'battles', label: 'PK Battles',   icon: '⚡', color: '#C9A84C' },
+  { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C084FC' },
+  { id: 'create',  label: 'Create Room',  icon: '➕', color: '#7A6F90' },
+];
 
 function formatFollowers(n) {
   if (n >= 1000) {
@@ -63,6 +79,14 @@ export default function DiscoverTab(props) {
   var totalLiveState = useState(0);
   var totalLive = totalLiveState[0];
   var setTotalLive = totalLiveState[1];
+
+  var activeCategoryState = useState('ALL');
+  var activeCategory = activeCategoryState[0];
+  var setActiveCategory = activeCategoryState[1];
+
+  var contentTabState = useState('live');
+  var contentTab = contentTabState[0];
+  var setContentTab = contentTabState[1];
 
   var debounceRef = useRef(null);
 
@@ -438,6 +462,436 @@ export default function DiscoverTab(props) {
     );
   }
 
+  function renderQuickActions() {
+    return React.createElement(
+      'div',
+      {
+        style: {
+          overflowX: 'auto',
+          display: 'flex',
+          gap: 8,
+          padding: '0 0 8px 0',
+          marginBottom: 10,
+          WebkitOverflowScrolling: 'touch',
+        }
+      },
+      QUICK_ACTIONS.map(function(item) {
+        return React.createElement(
+          'button',
+          {
+            key: item.id,
+            onClick: function() { if (addToast) addToast(item.label + ' - coming soon!', 'info'); },
+            style: {
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              background: 'rgba(22,16,32,.8)',
+              border: '1px solid ' + item.color + '44',
+              borderRadius: 20,
+              padding: '6px 12px',
+              fontFamily: "'Barlow Condensed',sans-serif",
+              fontWeight: 700,
+              fontSize: 10,
+              color: item.color,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              letterSpacing: 0.5,
+            }
+          },
+          item.icon + ' ' + item.label
+        );
+      })
+    );
+  }
+
+  function renderContentTabs() {
+    var tabs = [
+      { id: 'live',      label: 'LIVE NOW' },
+      { id: 'upcoming',  label: 'UPCOMING' },
+      { id: 'community', label: 'COMMUNITY' },
+    ];
+    return React.createElement(
+      'div',
+      {
+        style: {
+          display: 'flex',
+          gap: 6,
+          marginBottom: 10,
+        }
+      },
+      tabs.map(function(tab) {
+        var active = contentTab === tab.id;
+        return React.createElement(
+          'button',
+          {
+            key: tab.id,
+            onClick: function() { setContentTab(tab.id); },
+            style: {
+              flex: 1,
+              background: active ? 'rgba(201,168,76,.2)' : 'transparent',
+              border: '1px solid ' + (active ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.06)'),
+              borderRadius: 6,
+              padding: '6px 0',
+              fontFamily: "'Barlow Condensed',sans-serif",
+              fontWeight: 700,
+              fontSize: 11,
+              color: active ? '#C9A84C' : '#7A6F90',
+              cursor: 'pointer',
+              letterSpacing: 1,
+            }
+          },
+          tab.label
+        );
+      })
+    );
+  }
+
+  function renderCategoryPills() {
+    return React.createElement(
+      'div',
+      {
+        style: {
+          overflowX: 'auto',
+          display: 'flex',
+          gap: 6,
+          padding: '4px 0',
+          marginBottom: 10,
+          WebkitOverflowScrolling: 'touch',
+        }
+      },
+      CATEGORIES.map(function(cat) {
+        var active = activeCategory === cat;
+        return React.createElement(
+          'button',
+          {
+            key: cat,
+            onClick: function() { setActiveCategory(cat); },
+            style: {
+              background: active ? '#C9A84C' : 'rgba(255,255,255,.04)',
+              border: active ? 'none' : '1px solid rgba(255,255,255,.08)',
+              borderRadius: 20,
+              padding: '4px 12px',
+              fontFamily: "'Barlow Condensed',sans-serif",
+              fontWeight: 700,
+              fontSize: 10,
+              color: active ? '#07050A' : '#7A6F90',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              letterSpacing: 0.5,
+            }
+          },
+          cat
+        );
+      })
+    );
+  }
+
+  function renderFeaturedYouTube() {
+    return React.createElement(
+      'div',
+      {
+        style: {
+          background: 'rgba(22,16,32,.8)',
+          border: '1px solid rgba(255,255,255,.07)',
+          borderRadius: 10,
+          padding: '12px 14px',
+          marginBottom: 12,
+          marginTop: 4,
+        }
+      },
+      React.createElement(
+        'div',
+        { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+        React.createElement(
+          'div',
+          {
+            style: {
+              fontFamily: "'Bebas Neue',sans-serif",
+              fontSize: 16,
+              color: '#EDE8F5',
+              letterSpacing: 2,
+            }
+          },
+          'Featured on YouTube'
+        ),
+        React.createElement(
+          'span',
+          {
+            style: {
+              background: 'rgba(255,0,0,.15)',
+              border: '1px solid rgba(255,0,0,.35)',
+              borderRadius: 4,
+              padding: '2px 8px',
+              fontFamily: "'DM Mono',monospace",
+              fontSize: 9,
+              color: '#FF4444',
+              letterSpacing: 1,
+              cursor: 'pointer',
+            }
+          },
+          '▶ YT'
+        )
+      ),
+      React.createElement(
+        'div',
+        {
+          style: {
+            fontFamily: "'DM Mono',monospace",
+            fontSize: 8,
+            color: '#7A6F90',
+            letterSpacing: 2,
+            marginBottom: 8,
+          }
+        },
+        'TRENDING CHANNELS'
+      ),
+      React.createElement(
+        'div',
+        {
+          style: {
+            overflowX: 'auto',
+            display: 'flex',
+            gap: 8,
+            WebkitOverflowScrolling: 'touch',
+          }
+        },
+        TRENDING_CHANNELS.map(function(channel) {
+          return React.createElement(
+            'div',
+            {
+              key: channel.id,
+              style: {
+                background: 'rgba(22,16,32,.8)',
+                border: '1px solid rgba(255,255,255,.07)',
+                borderRadius: 10,
+                padding: '8px 10px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+                flexShrink: 0,
+                minWidth: 90,
+                cursor: 'pointer',
+              }
+            },
+            React.createElement(
+              'div',
+              { style: { position: 'relative' } },
+              React.createElement(
+                'div',
+                {
+                  style: {
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(22,16,32,.9)',
+                    border: '2px solid ' + channel.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 16,
+                  }
+                },
+                channel.emoji
+              ),
+              channel.live
+                ? React.createElement(
+                    'span',
+                    {
+                      style: {
+                        position: 'absolute',
+                        top: -2,
+                        right: -2,
+                        background: '#FF1564',
+                        borderRadius: 3,
+                        padding: '0px 3px',
+                        fontFamily: "'DM Mono',monospace",
+                        fontSize: 7,
+                        color: '#fff',
+                        letterSpacing: 0.5,
+                        lineHeight: '12px',
+                      }
+                    },
+                    'LIVE'
+                  )
+                : null
+            ),
+            React.createElement(
+              'div',
+              {
+                style: {
+                  fontFamily: "'Barlow Condensed',sans-serif",
+                  fontWeight: 700,
+                  fontSize: 11,
+                  color: '#EDE8F5',
+                  textAlign: 'center',
+                  lineHeight: 1.2,
+                }
+              },
+              channel.name
+            ),
+            React.createElement(
+              'div',
+              {
+                style: {
+                  fontFamily: "'DM Mono',monospace",
+                  fontSize: 7,
+                  color: '#7A6F90',
+                }
+              },
+              channel.handle
+            )
+          );
+        })
+      )
+    );
+  }
+
+  function renderMobileBanner() {
+    return React.createElement(
+      'div',
+      {
+        style: {
+          background: 'linear-gradient(135deg,rgba(128,0,32,.15),rgba(201,168,76,.08))',
+          border: '1px solid rgba(201,168,76,.2)',
+          borderRadius: 12,
+          padding: '14px',
+          marginTop: 4,
+        }
+      },
+      React.createElement(
+        'div',
+        { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
+        React.createElement(
+          'div',
+          {
+            style: {
+              fontFamily: "'Bebas Neue',sans-serif",
+              fontSize: 16,
+              color: '#C9A84C',
+              letterSpacing: 2,
+            }
+          },
+          '📱 SEEWHY LIVE MOBILE'
+        ),
+        React.createElement(
+          'span',
+          {
+            style: {
+              background: 'rgba(0,201,167,.15)',
+              border: '1px solid rgba(0,201,167,.3)',
+              borderRadius: 4,
+              padding: '2px 7px',
+              fontFamily: "'DM Mono',monospace",
+              fontSize: 8,
+              color: '#00C9A7',
+              letterSpacing: 1,
+            }
+          },
+          'COMING SOON'
+        )
+      ),
+      React.createElement(
+        'div',
+        {
+          style: {
+            fontFamily: "'Barlow Condensed',sans-serif",
+            fontSize: 11,
+            color: '#7A6F90',
+            marginBottom: 3,
+          }
+        },
+        'Go live from your phone'
+      ),
+      React.createElement(
+        'div',
+        {
+          style: {
+            fontFamily: "'Barlow Condensed',sans-serif",
+            fontSize: 11,
+            color: '#7A6F90',
+            marginBottom: 3,
+          }
+        },
+        'Built on Zegocloud Ultra-Low Latency'
+      ),
+      React.createElement(
+        'div',
+        {
+          style: {
+            fontFamily: "'DM Mono',monospace",
+            fontSize: 9,
+            color: '#7A6F90',
+            marginBottom: 10,
+          }
+        },
+        'React Native'
+      ),
+      React.createElement(
+        'div',
+        { style: { display: 'flex', gap: 8 } },
+        React.createElement(
+          'span',
+          {
+            style: {
+              background: 'rgba(122,111,144,.1)',
+              border: '1px solid rgba(122,111,144,.25)',
+              borderRadius: 6,
+              padding: '4px 12px',
+              fontFamily: "'Barlow Condensed',sans-serif",
+              fontWeight: 700,
+              fontSize: 10,
+              color: '#7A6F90',
+              letterSpacing: 0.5,
+            }
+          },
+          '🍎 iOS COMING SOON'
+        ),
+        React.createElement(
+          'span',
+          {
+            style: {
+              background: 'rgba(122,111,144,.1)',
+              border: '1px solid rgba(122,111,144,.25)',
+              borderRadius: 6,
+              padding: '4px 12px',
+              fontFamily: "'Barlow Condensed',sans-serif",
+              fontWeight: 700,
+              fontSize: 10,
+              color: '#7A6F90',
+              letterSpacing: 0.5,
+            }
+          },
+          '🤖 ANDROID COMING'
+        )
+      )
+    );
+  }
+
+  function renderComingSoon(label) {
+    return React.createElement(
+      'div',
+      {
+        style: {
+          textAlign: 'center',
+          padding: '24px',
+          color: '#7A6F90',
+          fontFamily: "'DM Mono',monospace",
+          fontSize: 10,
+        }
+      },
+      label
+    );
+  }
+
+  var filteredStreams = activeCategory === 'ALL'
+    ? streams
+    : streams.filter(function(s) { return s.category === activeCategory; });
+
+  var filteredCreators = creators;
+
   return React.createElement(
     'div',
     {
@@ -447,6 +901,7 @@ export default function DiscoverTab(props) {
         padding: '12px 10px 50px',
       }
     },
+    renderQuickActions(),
     React.createElement(
       'div',
       {
@@ -525,6 +980,8 @@ export default function DiscoverTab(props) {
       renderToggleBtn('STREAMS', 'streams'),
       renderToggleBtn('CREATORS', 'creators')
     ),
+    renderContentTabs(),
+    renderCategoryPills(),
     loading
       ? React.createElement(
           'div',
@@ -539,8 +996,14 @@ export default function DiscoverTab(props) {
           },
           'Searching...'
         )
-      : view === 'streams'
-        ? React.createElement('div', null, streams.map(renderStreamCard))
-        : React.createElement('div', null, creators.map(renderCreatorCard))
+      : contentTab === 'upcoming'
+        ? renderComingSoon('UPCOMING STREAMS \xB7 COMING SOON')
+        : contentTab === 'community'
+          ? renderComingSoon('COMMUNITY \xB7 COMING SOON')
+          : view === 'streams'
+            ? React.createElement('div', null, filteredStreams.map(renderStreamCard))
+            : React.createElement('div', null, filteredCreators.map(renderCreatorCard)),
+    renderFeaturedYouTube(),
+    renderMobileBanner()
   );
 }
