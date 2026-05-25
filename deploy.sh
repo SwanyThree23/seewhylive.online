@@ -27,7 +27,7 @@ echo "  ✓ Code updated"
 # ── 2. Build frontend ────────────────────────────────────────────────────────
 echo "▶ Building frontend..."
 cd "$REPO_DIR/frontend"
-npm install --omit=dev
+npm install          # full install — devDeps needed for vite build
 npm run build
 echo "  ✓ Frontend built → frontend/dist/"
 
