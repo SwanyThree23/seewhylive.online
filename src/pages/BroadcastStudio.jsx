@@ -279,6 +279,14 @@ export default function BroadcastStudio() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [theaterMode, setTheaterMode] = useState(false);
   const [syncData, setSyncData] = useState(null);
+  const [hostSettings, setHostSettings] = useState({
+    chatEnabled: true,
+    reactionsEnabled: true,
+    guestMicEnabled: true,
+    guestVideoEnabled: true,
+    battlesEnabled: true,
+    maxViewers: 20,
+  });
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -581,7 +589,7 @@ export default function BroadcastStudio() {
                 members={members}
                 currentUser={user}
                 hostId={party.host_id}
-                maxSlots={20}
+                maxSlots={hostSettings.maxViewers}
                 isHost={canManage}
                 onInvite={copyLink}
                 remoteStreams={remoteStreams}
@@ -639,20 +647,26 @@ export default function BroadcastStudio() {
           {/* Viewer rail */}
           <ViewerRail members={members} hostId={party.host_id} />
 
-          {/* Emoji reactions */}
-          <div className="shrink-0">
-            <PartyReactionsOverlay
-              partyId={partyId}
-              currentUser={user}
-              currentTime={syncData?.current_time || party?.current_time || 0}
-            />
-          </div>
-          <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+          {/* Emoji reactions — hidden when host disables reactions */}
+          {hostSettings.reactionsEnabled && (
+            <>
+              <div className="shrink-0">
+                <PartyReactionsOverlay
+                  partyId={partyId}
+                  currentUser={user}
+                  currentTime={syncData?.current_time || party?.current_time || 0}
+                />
+              </div>
+              <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+            </>
+          )}
 
-          {/* PK Battle strip — always visible on center stage */}
-          <div className="flex-1 overflow-auto p-2 min-h-0">
-            <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
-          </div>
+          {/* PK Battle strip — hidden when host disables battles */}
+          {hostSettings.battlesEnabled && (
+            <div className="flex-1 overflow-auto p-2 min-h-0">
+              <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+            </div>
+          )}
         </div>
 
         {/* ── RIGHT: Tabbed tools panel ─────────────────────────────────── */}
@@ -678,23 +692,33 @@ export default function BroadcastStudio() {
 
             {/* 💬 MULTILINGUAL CHAT */}
             {activeTab === 'chat' && (
-              <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} />
+              hostSettings.chatEnabled
+                ? <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} />
+                : <div className="flex items-center justify-center h-32">
+                    <p className="text-[10px] text-white/25">Chat disabled by host</p>
+                  </div>
             )}
 
             {/* ⚔️ PK BATTLE */}
             {activeTab === 'battle' && (
-              <div className="p-2 space-y-2">
-                <div className="flex items-center gap-2 px-1 pt-1">
-                  <Swords className="w-3.5 h-3.5" style={{ color: GOLD }} />
-                  <span className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>PK Battle Tiers</span>
+              hostSettings.battlesEnabled ? (
+                <div className="p-2 space-y-2">
+                  <div className="flex items-center gap-2 px-1 pt-1">
+                    <Swords className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                    <span className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>PK Battle Tiers</span>
+                  </div>
+                  <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+                  <div className="rounded-xl p-3 mt-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      Award tiers to panelists in real time. Points accumulate during the broadcast and reset each session.
+                    </p>
+                  </div>
                 </div>
-                <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
-                <div className="rounded-xl p-3 mt-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    Award tiers to panelists in real time. Points accumulate during the broadcast and reset each session.
-                  </p>
+              ) : (
+                <div className="flex items-center justify-center h-32">
+                  <p className="text-[10px] text-white/25">Battles disabled by host</p>
                 </div>
-              </div>
+              )
             )}
 
             {/* 📊 POLLS */}
@@ -762,7 +786,7 @@ export default function BroadcastStudio() {
             {/* 🛡 HOST / CO-HOST MANAGEMENT */}
             {activeTab === 'manage' && canManage && (
               <div className="p-2 space-y-3">
-                <HostControls isHost={canManage} party={party} onUpdate={() => qc.invalidateQueries(['broadcast-party', partyId])} />
+                <HostControls isHost={canManage} party={party} onUpdate={setHostSettings} />
 
                 {/* Video source changer */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -771,8 +795,9 @@ export default function BroadcastStudio() {
                     isHost={isHost}
                     isCoHost={isCoHost}
                     onSelect={src => {
+                      const safeManageUrl = isSafeUrl(src.url) ? src.url : '';
                       base44.entities.WatchParty.update(party.id, {
-                        video_url: src.url,
+                        video_url: safeManageUrl,
                         video_type: src.type === 'youtube' ? 'youtube' : 'direct',
                         current_time: 0,
                         playback_state: 'paused',
