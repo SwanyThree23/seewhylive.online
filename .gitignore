@@ -28,3 +28,7 @@ dist-ssr
 *.sw?
 
 .env
+
+# Deployment tooling
+.netlify
+.vercel
