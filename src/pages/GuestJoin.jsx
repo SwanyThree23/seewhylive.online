@@ -87,7 +87,7 @@ export default function GuestJoin() {
       setStatus('waiting');
       toast.success('Joined greenroom! Waiting for the director...');
     },
-    onError: (e) => toast.error(e.message || 'Failed to join'),
+    onError: () => toast.error('Failed to join. Please try again.'),
   });
 
   const toggleReadyMutation = useMutation({

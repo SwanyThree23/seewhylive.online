@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { isSafeUrl } from '@/lib/security';
 import { Badge } from '@/components/ui/badge';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -316,7 +317,7 @@ export default function PKBattlePage() {
         <div className="flex-1 relative flex flex-col bg-gradient-to-br from-blue-950 to-black border-r-2 border-[#d4af37]/30">
           {/* Stream embed or placeholder */}
           <div className="flex-1 relative overflow-hidden">
-            {bLeftStream ? (
+            {isSafeUrl(bLeftStream) ? (
               <iframe src={bLeftStream} className="w-full h-full" allowFullScreen allow="autoplay" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
@@ -359,7 +360,7 @@ export default function PKBattlePage() {
         {/* RIGHT */}
         <div className="flex-1 relative flex flex-col bg-gradient-to-bl from-red-950 to-black">
           <div className="flex-1 relative overflow-hidden">
-            {bRightStream ? (
+            {isSafeUrl(bRightStream) ? (
               <iframe src={bRightStream} className="w-full h-full" allowFullScreen allow="autoplay" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">

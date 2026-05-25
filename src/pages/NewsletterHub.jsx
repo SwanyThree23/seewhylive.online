@@ -20,8 +20,17 @@ const TEMPLATES = {
   },
 };
 
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 function PreviewModal({ newsletter, onClose }) {
-  const rendered = newsletter.content
+  const rendered = escapeHtml(newsletter.content)
     .replace(/## (.*)/g, '<h2 style="color:#D4AF37;font-family:Barlow Condensed;font-size:20px;margin:14px 0 6px">$1</h2>')
     .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#F5F0E8">$1</strong>')
     .replace(/\*(.*?)\*/g, '<em style="color:#aaa">$1</em>')

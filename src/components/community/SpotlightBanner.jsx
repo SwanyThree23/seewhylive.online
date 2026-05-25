@@ -41,9 +41,9 @@ function AddSpotlightModal({ communityId, onClose }) {
           {members.map(m=><option key={m.user_id} value={m.user_id}>{m.user_name||m.user_id}</option>)}
         </select>
         <label style={lbl}>Title</label>
-        <input style={inp} value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="e.g. Member of the Month" />
+        <input style={inp} value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="e.g. Member of the Month" maxLength={120} />
         <label style={lbl}>Description</label>
-        <textarea style={{...inp,height:70,resize:'none'}} value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Describe this achievement…" />
+        <textarea style={{...inp,height:70,resize:'none'}} value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Describe this achievement…" maxLength={500} />
         <label style={lbl}>Featured Until</label>
         <input type="date" style={inp} value={form.end_date} onChange={e=>setForm(f=>({...f,end_date:e.target.value}))} />
         <button onClick={()=>mut.mutate()} disabled={!form.title||!form.user_id}
