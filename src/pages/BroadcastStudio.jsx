@@ -149,22 +149,35 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
 }
 
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
-function LiveCameraTile({ localStream, videoEnabled }) {
-  const ref = useRef(null);
-  useEffect(() => { if (ref.current && localStream) ref.current.srcObject = localStream; }, [localStream]);
+function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
+  const camRef = useRef(null);
+  const screenRef = useRef(null);
+  useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
+  useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
-      {localStream && videoEnabled
-        ? <video ref={ref} autoPlay muted playsInline className="w-full h-full object-cover" />
-        : <div className="flex flex-col items-center gap-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            <VideoOff className="w-12 h-12" />
-            <span className="text-xs">Camera off</span>
-          </div>}
+      {screenStream ? (
+        <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain" />
+      ) : localStream && videoEnabled ? (
+        <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+      ) : (
+        <div className="flex flex-col items-center gap-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <VideoOff className="w-12 h-12" />
+          <span className="text-xs">Camera off</span>
+        </div>
+      )}
       <div className="absolute top-3 left-3 flex items-center gap-1 text-[9px] px-2 py-1 rounded"
         style={{ background: 'rgba(255,21,100,0.2)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
-        LIVE
+        {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
+      {/* PIP camera when screen sharing */}
+      {screenStream && localStream && videoEnabled && (
+        <div className="absolute bottom-2 right-2 w-28 h-20 rounded-lg overflow-hidden"
+          style={{ border: '2px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+          <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+        </div>
+      )}
     </div>
   );
 }
@@ -297,7 +310,52 @@ export default function BroadcastStudio() {
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
+
+  // Screen share
+  const [screenStream, setScreenStream] = useState(null);
+  const [screenEnabled, setScreenEnabled] = useState(false);
+  const localStreamRef2 = useRef(localStream);
+  useEffect(() => { localStreamRef2.current = localStream; }, [localStream]);
+
+  const toggleScreenShare = useCallback(async () => {
+    if (screenEnabled && screenStream) {
+      screenStream.getTracks().forEach(t => t.stop());
+      setScreenStream(null);
+      setScreenEnabled(false);
+      const camTrack = localStreamRef2.current?.getVideoTracks()[0];
+      if (camTrack) {
+        peersRef.current.forEach(({ pc }) => {
+          const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+          if (sender) sender.replaceTrack(camTrack).catch(() => {});
+        });
+      }
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      const screenTrack = stream.getVideoTracks()[0];
+      screenTrack.onended = () => {
+        setScreenStream(null);
+        setScreenEnabled(false);
+        const camTrack = localStreamRef2.current?.getVideoTracks()[0];
+        if (camTrack) {
+          peersRef.current.forEach(({ pc }) => {
+            const s = pc.getSenders().find(s2 => s2.track?.kind === 'video');
+            if (s) s.replaceTrack(camTrack).catch(() => {});
+          });
+        }
+      };
+      setScreenStream(stream);
+      setScreenEnabled(true);
+      peersRef.current.forEach(({ pc }) => {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) sender.replaceTrack(screenTrack).catch(() => {});
+      });
+    } catch {
+      // User cancelled or browser denied — no-op
+    }
+  }, [screenEnabled, screenStream, peersRef]);
   const announceRef = useRef(announceJoin);
   const leaveRef = useRef(leaveRoom);
   useEffect(() => { announceRef.current = announceJoin; }, [announceJoin]);
@@ -475,8 +533,9 @@ export default function BroadcastStudio() {
               isHost={isHost}
               isCoHost={isCoHost}
               onSelect={src => {
+                const safeSelectUrl = isSafeUrl(src.url) ? src.url : '';
                 base44.entities.WatchParty.update(party.id, {
-                  video_url: src.url,
+                  video_url: safeSelectUrl,
                   video_type: src.type === 'youtube' ? 'youtube' : 'direct',
                   current_time: 0,
                   playback_state: 'paused',
@@ -554,7 +613,7 @@ export default function BroadcastStudio() {
                 />
               )
             ) : (
-              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} />
+              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} />
             )}
 
             {/* Hybrid PIP: local camera overlay when video is playing */}
@@ -768,9 +827,14 @@ export default function BroadcastStudio() {
           {videoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
         </motion.button>
 
-        <motion.button whileTap={{ scale: 0.92 }}
-          className="flex items-center justify-center w-10 h-10 rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+        <motion.button whileTap={{ scale: 0.92 }} onClick={toggleScreenShare}
+          title={screenEnabled ? 'Stop screen share' : 'Share screen'}
+          className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
+          style={{
+            background: screenEnabled ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.05)',
+            border: screenEnabled ? '1px solid rgba(139,92,246,0.4)' : '1px solid rgba(255,255,255,0.1)',
+            color: screenEnabled ? '#8B5CF6' : 'rgba(255,255,255,0.4)',
+          }}>
           <Monitor className="w-4 h-4" />
         </motion.button>
 

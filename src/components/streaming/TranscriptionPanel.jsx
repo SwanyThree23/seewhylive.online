@@ -39,7 +39,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
       setTranscription(res.data.transcription);
       toast.success('Transcription complete');
     } catch (err) {
-      toast.error('Transcription failed: ' + err.message);
+      toast.error('Transcription failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
       setTranslatedText(res.data.translated_text);
       toast.success('Translation complete');
     } catch (err) {
-      toast.error('Translation failed: ' + err.message);
+      toast.error('Translation failed. Please try again.');
     } finally {
       setLoading(false);
     }

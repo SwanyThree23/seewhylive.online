@@ -227,8 +227,8 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       setShowCreateForm(false);
       toast.success('Poll created!');
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: () => {
+      toast.error('Failed to create poll. Please try again.');
     }
   });
 
