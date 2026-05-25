@@ -1,51 +1,55 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { getSocket } from './socket.js';
 import rtcManager from './webrtc.js';
+
+/* Always-loaded: default tab + persistent overlays */
 import RoomTab from './components/RoomTab.jsx';
-import FadesTab from './components/FadesTab.jsx';
-import BrandingTab from './components/BrandingTab.jsx';
-import EmbedTab from './components/EmbedTab.jsx';
-import SwanyBotTab from './components/SwanyBotTab.jsx';
-import AnalyticsTab from './components/AnalyticsTab.jsx';
-import RTMPFanoutTab from './components/RTMPFanoutTab.jsx';
-import PushStreamTab from './components/PushStreamTab.jsx';
-import ClipEngineTab from './components/ClipEngineTab.jsx';
-import WatchPartyTab from './components/WatchPartyTab.jsx';
-import GreenRoomTab from './components/GreenRoomTab.jsx';
-import InsForgeTab from './components/InsForgeTab.jsx';
-import AnalyticsDeepDiveTab from './components/AnalyticsDeepDiveTab.jsx';
-import ScheduleTab from './components/ScheduleTab.jsx';
-import WashingtonClassicTab from './components/WashingtonClassicTab.jsx';
-import MonetizeTab from './components/MonetizeTab.jsx';
-import AuraTab from './components/AuraTab.jsx';
-import SwanAITab from './components/SwanAITab.jsx';
-import AvatarHubTab from './components/AvatarHubTab.jsx';
-import MusicStudioTab from './components/MusicStudioTab.jsx';
-import CreatorDiscoveryTab from './components/CreatorDiscoveryTab.jsx';
-import StateRankingsTab from './components/StateRankingsTab.jsx';
-import ShowcaseTab from './components/ShowcaseTab.jsx';
-import UploadTab from './components/UploadTab.jsx';
-import OverlayTab from './components/OverlayTab.jsx';
-import PortalTab from './components/PortalTab.jsx';
-import CollabTab from './components/CollabTab.jsx';
-import N8nTab from './components/N8nTab.jsx';
-import MerchTab from './components/MerchTab.jsx';
-import ReplayTab from './components/ReplayTab.jsx';
-import MCPTab from './components/MCPTab.jsx';
-import GuardianTab from './components/GuardianTab.jsx';
-import DirectPayTab from './components/DirectPayTab.jsx';
-import SocialShareTab from './components/SocialShareTab.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
 import BrandChyron from './components/BrandChyron.jsx';
-import DiscoverTab from './components/DiscoverTab.jsx';
-import CreatorProfileTab from './components/CreatorProfileTab.jsx';
-import SettingsTab from './components/SettingsTab.jsx';
 import GoldenWallPanel from './components/GoldenWallPanel.jsx';
-import PKBattleTab from './components/PKBattleTab.jsx';
-import VODLibraryTab from './components/VODLibraryTab.jsx';
 import MobileNavBar from './components/MobileNavBar.jsx';
+
+/* Lazy-loaded tabs — each splits into its own chunk */
+var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
+var BrandingTab         = React.lazy(function() { return import('./components/BrandingTab.jsx'); });
+var EmbedTab            = React.lazy(function() { return import('./components/EmbedTab.jsx'); });
+var SwanyBotTab         = React.lazy(function() { return import('./components/SwanyBotTab.jsx'); });
+var AnalyticsTab        = React.lazy(function() { return import('./components/AnalyticsTab.jsx'); });
+var RTMPFanoutTab       = React.lazy(function() { return import('./components/RTMPFanoutTab.jsx'); });
+var PushStreamTab       = React.lazy(function() { return import('./components/PushStreamTab.jsx'); });
+var ClipEngineTab       = React.lazy(function() { return import('./components/ClipEngineTab.jsx'); });
+var WatchPartyTab       = React.lazy(function() { return import('./components/WatchPartyTab.jsx'); });
+var GreenRoomTab        = React.lazy(function() { return import('./components/GreenRoomTab.jsx'); });
+var InsForgeTab         = React.lazy(function() { return import('./components/InsForgeTab.jsx'); });
+var AnalyticsDeepDiveTab= React.lazy(function() { return import('./components/AnalyticsDeepDiveTab.jsx'); });
+var ScheduleTab         = React.lazy(function() { return import('./components/ScheduleTab.jsx'); });
+var WashingtonClassicTab= React.lazy(function() { return import('./components/WashingtonClassicTab.jsx'); });
+var MonetizeTab         = React.lazy(function() { return import('./components/MonetizeTab.jsx'); });
+var AuraTab             = React.lazy(function() { return import('./components/AuraTab.jsx'); });
+var SwanAITab           = React.lazy(function() { return import('./components/SwanAITab.jsx'); });
+var AvatarHubTab        = React.lazy(function() { return import('./components/AvatarHubTab.jsx'); });
+var MusicStudioTab      = React.lazy(function() { return import('./components/MusicStudioTab.jsx'); });
+var CreatorDiscoveryTab = React.lazy(function() { return import('./components/CreatorDiscoveryTab.jsx'); });
+var StateRankingsTab    = React.lazy(function() { return import('./components/StateRankingsTab.jsx'); });
+var ShowcaseTab         = React.lazy(function() { return import('./components/ShowcaseTab.jsx'); });
+var UploadTab           = React.lazy(function() { return import('./components/UploadTab.jsx'); });
+var OverlayTab          = React.lazy(function() { return import('./components/OverlayTab.jsx'); });
+var PortalTab           = React.lazy(function() { return import('./components/PortalTab.jsx'); });
+var CollabTab           = React.lazy(function() { return import('./components/CollabTab.jsx'); });
+var N8nTab              = React.lazy(function() { return import('./components/N8nTab.jsx'); });
+var MerchTab            = React.lazy(function() { return import('./components/MerchTab.jsx'); });
+var ReplayTab           = React.lazy(function() { return import('./components/ReplayTab.jsx'); });
+var MCPTab              = React.lazy(function() { return import('./components/MCPTab.jsx'); });
+var GuardianTab         = React.lazy(function() { return import('./components/GuardianTab.jsx'); });
+var DirectPayTab        = React.lazy(function() { return import('./components/DirectPayTab.jsx'); });
+var SocialShareTab      = React.lazy(function() { return import('./components/SocialShareTab.jsx'); });
+var DiscoverTab         = React.lazy(function() { return import('./components/DiscoverTab.jsx'); });
+var CreatorProfileTab   = React.lazy(function() { return import('./components/CreatorProfileTab.jsx'); });
+var SettingsTab         = React.lazy(function() { return import('./components/SettingsTab.jsx'); });
+var PKBattleTab         = React.lazy(function() { return import('./components/PKBattleTab.jsx'); });
+var VODLibraryTab       = React.lazy(function() { return import('./components/VODLibraryTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -484,6 +488,7 @@ export default function App() {
 
       {/* Tab Content */}
       <main style={{ padding: '16px', flex: 1, paddingBottom: 100 }}>
+      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90', letterSpacing: 2 }}>LOADING...</div>}>
         {activeTab === 'room' && (
           <RoomTab
             socket={socketRef.current}
@@ -760,6 +765,7 @@ export default function App() {
             isLive={isLive}
           />
         )}
+      </Suspense>
       </main>
 
       {/* Overlays */}
