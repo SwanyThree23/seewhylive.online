@@ -14,10 +14,10 @@ var RULE_PRESETS = [
 var SEV_COLORS = { HIGH: '#FF1A3C', MED: '#C9A84C', LOW: '#7A6F90' };
 
 var MOCK_FLAGS = [
-  { id: 1, user: 'xX_troll99',  msg: 'SPAMSPAMSPAMSPAM BUY CRYPTO NOW!!!',  rule: 'CAPS+REPEAT', ts: '14:02:11', action: 'blocked' },
-  { id: 2, user: 'viewer_4412', msg: 'Check this out: http://malware.xyz',   rule: 'LINKS',       ts: '14:08:33', action: 'stripped' },
-  { id: 3, user: 'bot_wave_01', msg: '🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥',      rule: 'EMOJI SPAM',  ts: '14:15:49', action: 'blocked' },
-  { id: 4, user: 'new_user_9',  msg: 'First time watcher hello everyone!',   rule: 'NEW ACCT',    ts: '14:21:02', action: 'held'    },
+  { id: 1, user: 'xX_troll99',  msg: 'SPAMSPAMSPAMSPAM BUY CRYPTO NOW!!!',  rule: 'CAPS+REPEAT', ts: '14:02:11', action: 'blocked', userId: 'uid_1' },
+  { id: 2, user: 'viewer_4412', msg: 'Check this out: http://malware.xyz',   rule: 'LINKS',       ts: '14:08:33', action: 'stripped', userId: 'uid_2' },
+  { id: 3, user: 'bot_wave_01', msg: '🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥',      rule: 'EMOJI SPAM',  ts: '14:15:49', action: 'blocked', userId: 'uid_3' },
+  { id: 4, user: 'new_user_9',  msg: 'First time watcher hello everyone!',   rule: 'NEW ACCT',    ts: '14:21:02', action: 'held', userId: 'uid_4'    },
 ];
 
 var GUARDIAN_LOG = [
@@ -36,6 +36,7 @@ var VIEWS = [
   { id: 'rules',   label: 'RULES'   },
   { id: 'flags',   label: 'FLAGGED' },
   { id: 'words',   label: 'WORDS'   },
+  { id: 'banned',  label: 'BANNED'  },
   { id: 'log',     label: 'LOG'     },
 ];
 
@@ -50,13 +51,20 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     try { var s = localStorage.getItem('sw_guardian_banned'); if (s) return JSON.parse(s); } catch(e) {}
     return DEFAULT_BANNED;
   });
+  var [wordMeta, setWordMeta]   = useState({});
   var [newWord, setNewWord]     = useState('');
   var [guardLog, setGuardLog]   = useState(GUARDIAN_LOG);
   var [guardOn, setGuardOn]     = useState(true);
   var [blocked, setBlocked]     = useState(4);
   var [allowed, setAllowed]     = useState(203);
+  var [bannedUsers, setBannedUsers] = useState([]);
+  var [shadowBanned, setShadowBanned] = useState({});
+  var [subscriberOnly, setSubscriberOnly] = useState(false);
   var logRef = useRef(null);
   var lockdownFiredRef = useRef(false);
+
+  var total = blocked + allowed;
+  var blockRate = total > 0 ? Math.floor((blocked / total) * 100) : 0;
 
   useEffect(function() {
     try { localStorage.setItem('sw_guardian_rules', JSON.stringify(rules)); } catch(e) {}
@@ -65,6 +73,28 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   useEffect(function() {
     try { localStorage.setItem('sw_guardian_banned', JSON.stringify(banned)); } catch(e) {}
   }, [banned]);
+
+  useEffect(function() {
+    if (!roomId) return;
+    fetch('/api/moderation/word-filters?creatorId=' + roomId)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && Array.isArray(data.filters)) {
+          var apiWords = data.filters.map(function(f) { return f.word; });
+          var meta = {};
+          data.filters.forEach(function(f) { meta[f.word] = f.id; });
+          setWordMeta(meta);
+          setBanned(function(prev) {
+            var merged = prev.slice();
+            apiWords.forEach(function(w) {
+              if (merged.indexOf(w) === -1) merged.push(w);
+            });
+            return merged;
+          });
+        }
+      })
+      .catch(function() {});
+  }, [roomId]);
 
   useEffect(function() {
     if (!guardOn || !isLive) return;
@@ -143,9 +173,44 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     addToast('Flag dismissed', 'success');
   }
 
+  function banUserFromFlag(f) {
+    fetch('/api/moderation/ban', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        creatorId: roomId,
+        bannedUserId: f.userId || f.user,
+        bannedUsername: f.user,
+        reason: f.reason || f.rule || 'Banned by creator'
+      })
+    }).catch(function() {});
+    setBannedUsers(function(prev) {
+      return prev.concat([{ username: f.user, userId: f.userId || f.user, reason: f.reason || f.rule || 'Banned by creator', ts: f.ts }]);
+    });
+    setFlags(function(prev) { return prev.filter(function(x) { return x.id !== f.id; }); });
+    if (addToast) addToast('User ' + f.user + ' banned', 'error');
+    if (socket && roomId) {
+      socket.emit('ban-user', { roomId: roomId, userId: f.userId || f.user });
+    }
+  }
+
   function banUser(user) {
     addToast(user + ' banned', 'error');
     setFlags(function(prev) { return prev.filter(function(f) { return f.user !== user; }); });
+  }
+
+  function shadowBanUser(userId, username) {
+    fetch('/api/moderation/shadow-ban', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: userId, reason: 'Shadow banned by creator' })
+    }).catch(function() {});
+    setShadowBanned(function(prev) {
+      var next = Object.assign({}, prev);
+      next[userId] = true;
+      return next;
+    });
+    if (addToast) addToast(username + ' shadow banned', 'success');
   }
 
   function addWord() {
@@ -154,18 +219,84 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     setBanned(function(prev) { return prev.concat([w]); });
     setNewWord('');
     addToast('"' + w + '" added to ban list', 'success');
+    if (roomId) {
+      fetch('/api/moderation/word-filters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: w, creatorId: roomId })
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data && data.id) {
+            setWordMeta(function(prev) {
+              var next = Object.assign({}, prev);
+              next[w] = data.id;
+              return next;
+            });
+          }
+        })
+        .catch(function() {});
+    }
   }
 
   function removeWord(w) {
+    var wordId = wordMeta[w];
     setBanned(function(prev) { return prev.filter(function(x) { return x !== w; }); });
     addToast('"' + w + '" removed', 'success');
+    if (wordId) {
+      fetch('/api/moderation/word-filters/' + wordId, { method: 'DELETE' }).catch(function() {});
+    }
   }
 
-  var total = blocked + allowed;
-  var blockRate = total > 0 ? Math.floor((blocked / total) * 100) : 0;
+  function toggleSubscriberOnly() {
+    var next = !subscriberOnly;
+    setSubscriberOnly(next);
+    fetch('/api/moderation/subscriber-only', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomId: roomId, enabled: next })
+    }).catch(function() {});
+    if (socket && roomId) {
+      socket.emit('subscriber-only-changed', { roomId: roomId, enabled: next });
+    }
+    if (addToast) addToast('Subscriber-only mode ' + (next ? 'enabled' : 'disabled'), 'success');
+  }
 
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
+
+      {/* MODERATION STATS PANEL */}
+      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '10px 14px' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>MODERATION STATS</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+          {[
+            ['MESSAGES SCANNED', String(allowed + blocked), '#EDE8F5'],
+            ['BLOCKED',          String(blocked),           '#FF1A3C'],
+            ['BLOCK RATE',       blockRate + '%',           '#C9A84C'],
+            ['WORD FILTERS',     String(banned.length),     '#00C9A7'],
+          ].map(function(row) {
+            return (
+              <div key={row[0]} style={{ background: 'rgba(15,12,20,.6)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 6, padding: '6px 10px' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', marginBottom: 2 }}>{row[0]}</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: row[2] }}>{row[1]}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* SUBSCRIBER-ONLY MODE */}
+      <div style={{ background: subscriberOnly ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (subscriberOnly ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: subscriberOnly ? '#C9A84C' : '#EDE8F5' }}>SUBSCRIBER-ONLY CHAT</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginTop: 2 }}>Only active subscribers can chat</div>
+        </div>
+        <button
+          onClick={toggleSubscriberOnly}
+          style={{ background: subscriberOnly ? 'rgba(201,168,76,.25)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (subscriberOnly ? '#C9A84C' : '#241C34'), borderRadius: 20, padding: '5px 14px', color: subscriberOnly ? '#C9A84C' : '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+          {subscriberOnly ? 'ON' : 'OFF'}
+        </button>
+      </div>
 
       {/* Header */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -257,17 +388,17 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
           )}
           {flags.map(function(f) {
             return (
-              <div key={f.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (ACTION_COLORS[f.action] || '#241C34') + '33', borderRadius: 8, padding: '8px 12px' }}>
+              <div key={f.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + ((ACTION_COLORS[f.action] || '#241C34') + '33'), borderRadius: 8, padding: '8px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5' }}>{f.user}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: ACTION_COLORS[f.action] || '#7A6F90', background: (ACTION_COLORS[f.action] || '#7A6F90') + '22', borderRadius: 4, padding: '2px 6px' }}>{f.action.toUpperCase()}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: ACTION_COLORS[f.action] || '#7A6F90', background: ((ACTION_COLORS[f.action] || '#7A6F90') + '22'), borderRadius: 4, padding: '2px 6px' }}>{f.action ? f.action.toUpperCase() : 'FLAGGED'}</div>
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#A09AB8', marginBottom: 4, wordBreak: 'break-word' }}>{f.msg}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#A09AB8', marginBottom: 4, wordBreak: 'break-word' }}>{f.msg || f.text}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{f.rule} · {f.ts}</div>
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{(f.rule || f.reason || '') + ' · ' + f.ts}</div>
+                  <div style={{ display: 'flex', gap: 5 }}>
                     <button onClick={function() { dismissFlag(f.id); }} style={{ background: 'rgba(0,201,167,.1)', border: '1px solid #00C9A744', borderRadius: 4, padding: '3px 8px', color: '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>DISMISS</button>
-                    <button onClick={function() { banUser(f.user); }} style={{ background: 'rgba(255,26,60,.1)', border: '1px solid #FF1A3C44', borderRadius: 4, padding: '3px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>BAN</button>
+                    <button onClick={function() { banUserFromFlag(f); }} style={{ background: 'rgba(255,26,60,.1)', border: '1px solid #FF1A3C44', borderRadius: 4, padding: '3px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>BAN USER</button>
                   </div>
                 </div>
               </div>
@@ -298,22 +429,54 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
               return (
                 <div key={w} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.1)', border: '1px solid #FF1A3C33', borderRadius: 20, padding: '3px 8px' }}>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#FF6B81' }}>{w}</span>
-                  <button onClick={function() { removeWord(w); }} style={{ background: 'none', border: 'none', color: '#FF1A3C', fontSize: 10, cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
+                  <button onClick={function() { removeWord(w); }} style={{ background: 'none', border: 'none', color: '#FF1A3C', fontSize: 10, cursor: 'pointer', padding: 0, lineHeight: 1 }}>x</button>
                 </div>
               );
             })}
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{banned.length} words in ban list · case-insensitive match</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{banned.length + ' words in ban list · case-insensitive match'}</div>
+        </div>
+      )}
+
+      {/* BANNED USERS view */}
+      {view === 'banned' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {bannedUsers.length === 0 && (
+            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '16px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>No banned users</div>
+          )}
+          {bannedUsers.map(function(u, i) {
+            var isShadow = shadowBanned[u.userId];
+            return (
+              <div key={i} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5' }}>{u.username}</span>
+                    {isShadow && <span style={{ fontSize: 12 }}>&#x1F47B;</span>}
+                    {isShadow && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C084FC', background: 'rgba(192,132,252,.15)', border: '1px solid rgba(192,132,252,.3)', borderRadius: 3, padding: '1px 4px' }}>SHADOW</span>}
+                    {!isShadow && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#FF1A3C', background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 3, padding: '1px 4px' }}>BANNED</span>}
+                  </div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{u.reason + ' · ' + (u.ts || '')}</div>
+                </div>
+                {!isShadow && (
+                  <button
+                    onClick={function() { shadowBanUser(u.userId, u.username); }}
+                    style={{ background: 'rgba(192,132,252,.1)', border: '1px solid rgba(192,132,252,.3)', borderRadius: 5, padding: '4px 9px', color: '#C084FC', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0 }}>
+                    SHADOW BAN
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
       {/* LOG view */}
       {view === 'log' && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: -6 }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>GUARDIAN LOG · {guardLog.length} ENTRIES</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>{'GUARDIAN LOG · ' + guardLog.length + ' ENTRIES'}</div>
           <button onClick={function() { setGuardLog([]); }}
             style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 5, padding: '3px 8px', color: '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
-            🗑 CLEAR
+            &#x1F5D1; CLEAR
           </button>
         </div>
       )}

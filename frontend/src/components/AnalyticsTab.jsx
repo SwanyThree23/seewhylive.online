@@ -42,6 +42,40 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
     { reason: 'Watched 30 min',     pts: 30,  ts: Date.now() - 600000  },
   ]);
 
+  var [topSupporters, setTopSupporters] = useState([
+    { userId: 'u1', username: 'DominoKing_84',   totalCents: 15000, count: 8  },
+    { userId: 'u2', username: 'viewer_4821',      totalCents: 8500,  count: 3  },
+    { userId: 'u3', username: 'fan_0391',         totalCents: 5000,  count: 12 },
+    { userId: 'u4', username: 'chat_2247',        totalCents: 2500,  count: 1  },
+    { userId: 'u5', username: 'supporter_102',    totalCents: 1000,  count: 4  },
+  ]);
+
+  var [earningsHistory, setEarningsHistory] = useState(function() {
+    var days = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+    var result = [];
+    var i;
+    for (i = 0; i < 7; i++) {
+      result.push({ day: days[i], cents: Math.floor(Math.random() * 4000) + 200 });
+    }
+    return result;
+  });
+
+  var [byType, setByType] = useState({ tip: 0, subscription: 0, paywall: 0, gift: 0 });
+
+  useEffect(function() {
+    fetch('/api/creator/analytics?period=month')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.topSupporters && data.topSupporters.length > 0) {
+          setTopSupporters(data.topSupporters);
+        }
+        if (data && data.byType) {
+          setByType(data.byType);
+        }
+      })
+      .catch(function() {});
+  }, []);
+
   useEffect(function() {
     sparkRef.current = setInterval(function() {
       setViewerSpark(function(prev) {
@@ -167,6 +201,13 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
 
   var TABS = [['overview', '📊 OVERVIEW'], ['gifts', '🎁 GIFTS'], ['revenue', '💰 REVENUE'], ['loyalty', '⭐ LOYALTY']];
 
+  var TYPE_CHIPS = [
+    { key: 'tip',          label: 'TIPS',    color: '#00C9A7' },
+    { key: 'subscription', label: 'SUBS',    color: '#C9A84C' },
+    { key: 'paywall',      label: 'PAYWALL', color: '#8B5CF6' },
+    { key: 'gift',         label: 'GIFTS',   color: '#FF1564' },
+  ];
+
   return (
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
 
@@ -228,6 +269,18 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1.5, marginBottom: 4 }}>{k[0]}</div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: k[3], lineHeight: 1 }}>{k[1]}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', marginTop: 3 }}>{k[2]}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Payment type breakdown chips */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {TYPE_CHIPS.map(function(chip) {
+              return (
+                <div key={chip.key} style={{ background: chip.color + '12', border: '1px solid ' + chip.color + '33', borderRadius: 999, padding: '4px 10px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: chip.color }}>{chip.label}</span>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#EDE8F5' }}>{'$' + (Math.floor(byType[chip.key] || 0) / 100).toFixed(2)}</span>
                 </div>
               );
             })}
@@ -341,6 +394,56 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
               </div>
             );
           })()}
+
+          {/* Earnings trend bar chart */}
+          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>📈 EARNINGS TREND (7 DAYS)</div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 60, marginTop: 8, marginBottom: 4 }}>
+              {(function() {
+                var maxCents = 0;
+                earningsHistory.forEach(function(d) { if (d.cents > maxCents) maxCents = d.cents; });
+                return earningsHistory.map(function(d, idx) {
+                  var barH = Math.floor((d.cents / (maxCents || 1)) * 56) + 4;
+                  return (
+                    <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+                        <div style={{ flex: 1, background: 'rgba(201,168,76,.55)', borderRadius: '3px 3px 0 0', height: barH + 'px' }} />
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {earningsHistory.map(function(d, idx) {
+                return (
+                  <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', textAlign: 'center' }}>{d.day}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', textAlign: 'center' }}>{'$' + (Math.floor(d.cents) / 100).toFixed(0)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Top supporters */}
+          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#C9A84C', letterSpacing: 3, marginBottom: 8 }}>🏆 TOP SUPPORTERS</div>
+            {topSupporters.slice(0, 5).map(function(s, idx) {
+              var rankBadge = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1);
+              var topCents = topSupporters[0] ? topSupporters[0].totalCents : 1;
+              var barW = Math.max(4, Math.floor((s.totalCents / topCents) * 60));
+              return (
+                <div key={s.userId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, width: 22, textAlign: 'center' }}>{rankBadge}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', flex: 1 }}>{s.username}</div>
+                  <div style={{ width: barW + 'px', height: 4, background: '#C9A84C', borderRadius: 2, marginRight: 8 }} />
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', lineHeight: 1 }}>{'$' + (Math.floor(s.totalCents) / 100).toFixed(2)}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{s.count + ' tips'}</div>
+                </div>
+              );
+            })}
+          </div>
 
           {/* Engagement metrics from API */}
           {metrics && (
