@@ -505,4 +505,125 @@ router.post('/users/me/notifications', function(req, res) {
   }
 });
 
+// ─── METRICS / LEADERBOARD routes ────────────────────────────────────────────
+
+router.get('/metrics', function(req, res) {
+  try {
+    var roomId = req.query.roomId || 'default';
+    if (analytics) {
+      var result = analytics.getCreatorAnalytics(roomId, 'month');
+      return res.json({
+        roomId: roomId,
+        viewerCount: 0,
+        totalEarningsCents: result.totalEarningsCents || 0,
+        creatorCents: result.creatorCents || 0,
+        platformCents: result.platformCents || 0,
+        topSupporters: result.topSupporters || [],
+        recentEarnings: result.recentEarnings || []
+      });
+    }
+    return res.json({
+      roomId: roomId,
+      viewerCount: 0,
+      totalEarningsCents: 0,
+      creatorCents: 0,
+      platformCents: 0,
+      topSupporters: [],
+      recentEarnings: []
+    });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
+router.get('/leaderboard', function(req, res) {
+  try {
+    var limit = parseInt(req.query.limit || '20', 10);
+    if (analytics) {
+      var metrics = analytics.getPlatformMetrics();
+      return res.json({
+        leaderboard: metrics.topCreators || [],
+        updatedAt: Date.now()
+      });
+    }
+    return res.json({ leaderboard: [], updatedAt: Date.now() });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
+// ─── PPV routes ───────────────────────────────────────────────────────────────
+
+var _ppvTokens = {};
+
+router.post('/ppv/create', function(req, res) {
+  try {
+    var streamId = req.body.streamId || 'default';
+    var priceCents = Math.floor(req.body.priceCents || 499);
+    var token = require('crypto').randomBytes(16).toString('hex');
+    var expiresAt = Date.now() + (24 * 60 * 60 * 1000);
+    _ppvTokens[token] = { streamId: streamId, priceCents: priceCents, expiresAt: expiresAt };
+    return res.json({ token: token, priceCents: priceCents, expiresAt: expiresAt });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
+router.post('/ppv/verify', function(req, res) {
+  try {
+    var token = req.body.token || '';
+    var streamId = req.body.streamId || '';
+    var entry = _ppvTokens[token];
+    if (!entry) {
+      return res.json({ valid: false, error: 'Invalid or expired PPV token' });
+    }
+    if (Date.now() > entry.expiresAt) {
+      delete _ppvTokens[token];
+      return res.json({ valid: false, error: 'PPV token expired' });
+    }
+    if (entry.streamId !== streamId && streamId) {
+      return res.json({ valid: false, error: 'Token not valid for this stream' });
+    }
+    return res.json({ valid: true, streamId: entry.streamId, priceCents: entry.priceCents });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
+// ─── N8N / AUTOMATION routes ──────────────────────────────────────────────────
+
+router.post('/n8n/test', function(req, res) {
+  try {
+    var webhookUrl = req.body.webhookUrl || '';
+    var payload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
+    if (!webhookUrl) {
+      return res.json({ success: false, error: 'webhookUrl is required' });
+    }
+    var https = require('https');
+    var http = require('http');
+    var url = require('url');
+    var parsed = url.parse(webhookUrl);
+    var isHttps = parsed.protocol === 'https:';
+    var bodyStr = JSON.stringify(payload);
+    var options = {
+      hostname: parsed.hostname,
+      port: parsed.port || (isHttps ? 443 : 80),
+      path: parsed.path,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bodyStr) }
+    };
+    var reqLib = isHttps ? https : http;
+    var outReq = reqLib.request(options, function(outRes) {
+      return res.json({ success: true, statusCode: outRes.statusCode, webhookUrl: webhookUrl });
+    });
+    outReq.on('error', function(e) {
+      return res.json({ success: false, error: e.message });
+    });
+    outReq.write(bodyStr);
+    outReq.end();
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

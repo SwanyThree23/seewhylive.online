@@ -210,13 +210,27 @@ app.post(
 
 app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
+
+/* Global rate limit — generous for a live streaming app */
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: function(req) { return req.path === '/api/health'; }
 }));
-app.use(express.json());
+
+/* AI endpoint — tighter limit to protect Anthropic API key costs */
+var aiRateLimit = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many AI requests — please wait before trying again.' }
+});
+app.use('/api/ai', aiRateLimit);
+
+app.use(express.json({ limit: '2mb' }));
 app.use(xssClean());
 
 // ─── Socket.io ────────────────────────────────────────────────────────────
