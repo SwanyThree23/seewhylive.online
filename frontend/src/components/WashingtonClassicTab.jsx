@@ -189,6 +189,28 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
     setS2(0);
   }
 
+  var [bracketCopied, setBracketCopied] = useState(false);
+
+  function shareBracket() {
+    var lines = ['🏆 WASHINGTON CLASSIC — Bracket Update'];
+    var allMatches = qf.concat(sf).concat(finals);
+    for (var i = 0; i < allMatches.length; i++) {
+      var m = allMatches[i];
+      var statusStr = m.status === 'LIVE' ? '🔴 LIVE' : m.status === 'DONE' ? '✓ DONE' : '⏳ NEXT';
+      lines.push(statusStr + ' · ' + m.p1 + ' vs ' + m.p2 + ' · ' + m.score + (m.winner ? ' · Winner: ' + m.winner : ''));
+    }
+    if (champion) lines.push('🏆 CHAMPION: ' + champion);
+    lines.push('Watch live at seewhylive.online');
+    var text = lines.join('\n');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function() {
+        setBracketCopied(true);
+        setTimeout(function() { setBracketCopied(false); }, 2000);
+      }).catch(function() {});
+    }
+    if (addToast) addToast('Bracket copied to clipboard!', 'success');
+  }
+
   var brackets = getRound(round);
   var champion = finals[0] && finals[0].status === 'DONE' ? finals[0].winner : null;
 
@@ -203,8 +225,15 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
 
       {/* Header */}
       <div style={{ background: 'rgba(128,0,32,.12)', border: '1px solid rgba(128,0,32,.35)', borderRadius: 10, padding: '10px 14px' }}>
-        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3 }}>&#x1F3B2; WASHINGTON CLASSIC</div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>Live domino tournament scoring \xB7 Des Moines, WA</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3 }}>&#x1F3B2; WASHINGTON CLASSIC</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>Live domino tournament scoring \xB7 Des Moines, WA</div>
+          </div>
+          <button onClick={shareBracket} style={{ background: bracketCopied ? 'rgba(0,201,167,.15)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (bracketCopied ? 'rgba(0,201,167,.4)' : 'rgba(201,168,76,.3)'), borderRadius: 6, padding: '5px 10px', color: bracketCopied ? '#00C9A7' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+            {bracketCopied ? '✓ COPIED' : '📤 SHARE'}
+          </button>
+        </div>
         {champion && (
           <div style={{ marginTop: 7, padding: '4px 10px', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#C9A84C', textAlign: 'center', letterSpacing: 2 }}>
             &#x1F3C6; CHAMPION: {champion}
