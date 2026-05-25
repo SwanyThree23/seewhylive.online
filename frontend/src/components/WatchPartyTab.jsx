@@ -25,6 +25,11 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast, 
   var [partyViewers, setPartyViewers] = useState(0);
   var partyViewerRef = useRef(null);
 
+  var [partyName, setPartyName] = useState('');
+  var [sourceType, setSourceType] = useState('youtube');
+  var [ytDetected, setYtDetected] = useState(false);
+  var [showCreatePanel, setShowCreatePanel] = useState(true);
+
   var playerRef  = useRef(null);
   var posRef     = useRef(0);
   var tickRef    = useRef(null);
@@ -32,6 +37,13 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast, 
 
   var isHost = role === 'host' || role === 'cohost';
   var liveGuests = (guests || []).filter(function(g) { return g.live !== false; });
+
+  // YouTube URL auto-detection
+  useEffect(function() {
+    var id = extractYtId(urlInput);
+    setYtDetected(id.length > 0);
+    if (id) setVideoId(id);
+  }, [urlInput]);
 
   // Party viewer drift simulation
   useEffect(function() {
@@ -292,8 +304,168 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast, 
 
   var prog = duration > 0 ? Math.min(100, Math.floor((position / duration) * 100)) : 0;
 
+  function handleCreateParty() {
+    setShowCreatePanel(false);
+    setWatchPartyActive(true);
+    if (addToast) addToast('Watch Party started! Sharing with room.', 'success');
+    if (socket) {
+      socket.emit('watch-party-start', { roomId: roomId });
+    }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+
+      {/* CREATE PARTY PANEL */}
+      {showCreatePanel && !watchPartyActive && (
+        <div style={{
+          background: 'rgba(22,16,32,.8)',
+          border: '1px solid rgba(255,255,255,.07)',
+          borderRadius: 12,
+          padding: '16px',
+          margin: '8px',
+          flexShrink: 0
+        }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 18 }}>📺</span>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#EDE8F5', letterSpacing: 2 }}>WATCH PARTY</span>
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#7A6F90', marginBottom: 12, letterSpacing: 1 }}>
+            Watch together in sync with chat
+          </div>
+
+          {/* Party name input */}
+          <input
+            value={partyName}
+            onChange={function(e) { setPartyName(e.target.value); }}
+            placeholder="Party room name..."
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              background: 'rgba(7,5,10,.9)',
+              border: '1px solid rgba(255,255,255,.1)',
+              borderRadius: 7,
+              padding: '8px 10px',
+              color: '#EDE8F5',
+              fontFamily: "'DM Mono',monospace",
+              fontSize: 10,
+              outline: 'none',
+              marginBottom: 12
+            }}
+          />
+
+          {/* VIDEO SOURCE toggle */}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>
+            Video Source
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            <button
+              onClick={function() { setSourceType('youtube'); }}
+              style={{
+                flex: 1,
+                background: sourceType === 'youtube' ? 'rgba(201,168,76,.2)' : 'transparent',
+                border: '1px solid ' + (sourceType === 'youtube' ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.1)'),
+                borderRadius: 7,
+                padding: '7px 0',
+                color: sourceType === 'youtube' ? '#C9A84C' : '#7A6F90',
+                fontFamily: "'Barlow Condensed',sans-serif",
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: 'pointer',
+                letterSpacing: 1
+              }}>
+              🔴 YouTube URL
+            </button>
+            <button
+              onClick={function() { setSourceType('direct'); }}
+              style={{
+                flex: 1,
+                background: sourceType === 'direct' ? 'rgba(201,168,76,.2)' : 'transparent',
+                border: '1px solid ' + (sourceType === 'direct' ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.1)'),
+                borderRadius: 7,
+                padding: '7px 0',
+                color: sourceType === 'direct' ? '#C9A84C' : '#7A6F90',
+                fontFamily: "'Barlow Condensed',sans-serif",
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: 'pointer',
+                letterSpacing: 1
+              }}>
+              🎥 Direct URL
+            </button>
+          </div>
+
+          {/* URL input */}
+          <input
+            value={urlInput}
+            onChange={function(e) { setUrlInput(e.target.value); }}
+            placeholder={sourceType === 'youtube' ? 'Paste YouTube URL (youtube.com/watch?v=...)' : 'Paste direct video URL...'}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              background: 'rgba(7,5,10,.9)',
+              border: '1px solid rgba(255,255,255,.1)',
+              borderRadius: 7,
+              padding: '8px 10px',
+              color: '#EDE8F5',
+              fontFamily: "'DM Mono',monospace",
+              fontSize: 10,
+              outline: 'none',
+              marginBottom: 6
+            }}
+          />
+
+          {/* YouTube detected indicator */}
+          {ytDetected && sourceType === 'youtube' && (
+            <div style={{
+              fontFamily: "'DM Mono',monospace",
+              fontSize: 9,
+              color: '#FF1564',
+              marginBottom: 8,
+              letterSpacing: 1
+            }}>
+              ▶ YouTube video detected ✓
+            </div>
+          )}
+
+          {/* Thumbnail preview */}
+          {ytDetected && sourceType === 'youtube' && videoId && (
+            <div style={{ marginBottom: 12 }}>
+              <img
+                src={'https://img.youtube.com/vi/' + videoId + '/mqdefault.jpg'}
+                alt="YouTube thumbnail"
+                style={{
+                  width: '100%',
+                  borderRadius: 8,
+                  aspectRatio: '16/9',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
+              />
+            </div>
+          )}
+
+          {/* Create button */}
+          <button
+            onClick={handleCreateParty}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg,#C9A84C,#E8C46A)',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 0',
+              color: '#07050A',
+              fontFamily: "'Barlow Condensed',sans-serif",
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: 'pointer',
+              letterSpacing: 2
+            }}>
+            + Create Watch Party
+          </button>
+        </div>
+      )}
 
       {/* HOST IS LIVE banner */}
       {isLive && (
