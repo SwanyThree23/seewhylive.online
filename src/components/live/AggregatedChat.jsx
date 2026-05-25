@@ -1,49 +1,51 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clampStr, LIMITS } from '@/lib/security';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Globe, Languages, Shield, ShieldAlert, ShieldCheck, Send, Twitch, Youtube, MessageSquare } from 'lucide-react';
+import { Languages, ShieldAlert, ShieldCheck, Send, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PLATFORM_ICONS = {
-  twitch: { label: 'Twitch', color: '#9146ff', icon: '🟣' },
-  youtube: { label: 'YouTube', color: '#ff0000', icon: '🔴' },
-  platform: { label: 'SeeWhy', color: '#d4af37', icon: '⭐' },
+  twitch:   { label: 'Twitch',  color: '#9146ff', icon: '🟣' },
+  youtube:  { label: 'YouTube', color: '#ff0000', icon: '🔴' },
+  platform: { label: 'SeeWhy', color: '#d4af37',  icon: '⭐' },
 };
 
-const MOD_ICONS = {
-  safe: { icon: ShieldCheck, color: 'text-green-400', label: 'Safe' },
-  spam: { icon: ShieldAlert, color: 'text-yellow-400', label: 'Spam' },
-  harassment: { icon: ShieldAlert, color: 'text-red-400', label: 'Harassment' },
-  hate_speech: { icon: ShieldAlert, color: 'text-red-500', label: 'Hate' },
-  inappropriate: { icon: ShieldAlert, color: 'text-orange-400', label: 'NSFW' },
-};
+// Heuristic toxic detection — before hitting the AI, catches obvious cases cheap
+const TOXIC_RE = /\b(kill|die|idiot|stupid|hate|slur|n\*gger|f\*ggot|retard|cancer|kys|go die|moron|trash|garbage)\b/i;
 
-function ModerationBadge({ status }) {
+function platCfg(p) { return PLATFORM_ICONS[p] || PLATFORM_ICONS.platform; }
+
+// ── Moderation status badge ──────────────────────────────────────────────────
+function ModBadge({ status, onAppeal, msgId, roomId }) {
   if (!status || status === 'safe') return null;
-  const cfg = MOD_ICONS[status] || MOD_ICONS.inappropriate;
-  const Icon = cfg.icon;
+  const isFlagged = status === 'flagged';
   return (
-    <span className={`${cfg.color} ml-1`} title={cfg.label}>
-      <Icon className="w-3 h-3 inline" />
+    <span
+      className={`ml-1 cursor-pointer ${isFlagged ? 'text-yellow-400' : 'text-red-400'}`}
+      title={`${isFlagged ? 'Flagged for review' : status} — click to appeal`}
+      onClick={() => onAppeal?.(msgId, roomId)}
+    >
+      {isFlagged ? <ShieldAlert className="w-3 h-3 inline" /> : <ShieldAlert className="w-3 h-3 inline" />}
     </span>
   );
 }
 
-export default function AggregatedChat({ roomId, currentUser, isHost }) {
+export default function AggregatedChat({ roomId, currentUser, isHost, onMessagesChange }) {
+  const qc = useQueryClient();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [translateEnabled, setTranslateEnabled] = useState(false);
   const [targetLang, setTargetLang] = useState('en');
-  const [modMap, setModMap] = useState({});
+  const [modMap, setModMap] = useState({});       // msgId → status string
   const [translationMap, setTranslationMap] = useState({});
   const [isTranslating, setIsTranslating] = useState(false);
+  const [appealingId, setAppealingId] = useState(null);
   const bottomRef = useRef(null);
+  const translateTimerRef = useRef(null);
 
-  // Fetch real messages from the DB
+  // ── DB messages ─────────────────────────────────────────────────────────────
   const { data: dbMessages = [] } = useQuery({
     queryKey: ['room-messages', roomId],
     queryFn: () => base44.entities.Message.filter({ room_id: roomId }, '-created_date', 50).then(r => r.reverse()),
@@ -51,84 +53,132 @@ export default function AggregatedChat({ roomId, currentUser, isHost }) {
     refetchInterval: 5000,
   });
 
-  // Fetch moderation records for messages
-  const { data: moderations = [] } = useQuery({
-    queryKey: ['chat-moderations'],
-    queryFn: () => base44.entities.ContentModeration.filter({ content_type: 'message' }, '-created_date', 100),
-    refetchInterval: 10000,
-  });
-
+  // ── Merge DB + simulated platform messages ───────────────────────────────────
   useEffect(() => {
-    const map = {};
-    moderations.forEach(m => { map[m.content_id] = m.violation_type; });
-    setModMap(map);
-  }, [moderations]);
-
-  useEffect(() => {
-    // Merge real messages + simulated platform messages
     const simulated = [
-      { id: 'sim-1', user_name: 'TwitchUser99', content: 'Great stream! 🔥', platform: 'twitch', created_date: new Date(Date.now() - 60000).toISOString() },
-      { id: 'sim-2', user_name: 'YTFan', content: '¡Hola desde YouTube!', platform: 'youtube', created_date: new Date(Date.now() - 40000).toISOString() },
+      { id: 'sim-1', user_name: 'TwitchUser99', content: 'Great stream! 🔥',      platform: 'twitch',  created_date: new Date(Date.now() - 60000).toISOString() },
+      { id: 'sim-2', user_name: 'YTFan',        content: '¡Hola desde YouTube!', platform: 'youtube', created_date: new Date(Date.now() - 40000).toISOString() },
     ];
     const combined = [...simulated, ...dbMessages.map(m => ({ ...m, platform: 'platform' }))]
       .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
     setMessages(combined);
+    onMessagesChange?.(combined); // expose to parent for highlight detector
   }, [dbMessages]);
 
+  // ── Real-time new messages ───────────────────────────────────────────────────
   useEffect(() => {
-    // Subscribe to real-time messages
     if (!roomId) return;
     const unsub = base44.entities.Message.subscribe((event) => {
       if (event.data?.room_id !== roomId) return;
       if (event.type === 'create') {
-        setMessages(prev => [...prev, { ...event.data, platform: 'platform' }]);
+        const msg = { ...event.data, platform: 'platform' };
+        setMessages(prev => {
+          const next = [...prev, msg];
+          onMessagesChange?.(next);
+          return next;
+        });
+        // Auto-screen new incoming messages for toxicity
+        autoModerateSingle(msg);
       }
     });
     return unsub;
   }, [roomId]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || !currentUser) return;
-    const content = clampStr(input.trim(), LIMITS.CHAT_MESSAGE);
-    setInput('');
-    await base44.entities.Message.create({
-      room_id: roomId,
-      user_id: currentUser.id,
-      user_name: currentUser.full_name || currentUser.email,
-      content,
-      type: 'text',
-    });
-  };
-
-  const translateAll = useCallback(async () => {
-    const untranslated = messages.filter(m => !translationMap[m.id]).slice(0, LIMITS.TRANSLATE_BATCH);
-    if (untranslated.length === 0) return;
-    setIsTranslating(true);
+  // ── AUTO-MODERATION: screen new messages ────────────────────────────────────
+  const autoModerateSingle = useCallback(async (msg) => {
+    if (!msg?.content || msg.id?.startsWith('sim-')) return;
+    // Fast heuristic first — no LLM call for obvious cases
+    if (TOXIC_RE.test(msg.content)) {
+      setModMap(prev => ({ ...prev, [msg.id]: 'flagged' }));
+      // Persist moderation record
+      base44.entities.ContentModeration.create({
+        content_id: msg.id,
+        content_type: 'message',
+        content_text: msg.content,
+        violation_type: 'flagged',
+        reported_by: 'auto',
+        status: 'pending',
+        room_id: roomId,
+      }).catch(() => {});
+      return;
+    }
+    // Deeper AI check via LLM for borderline content
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Translate these chat messages to ${targetLang === 'en' ? 'English' : targetLang === 'es' ? 'Spanish' : targetLang === 'fr' ? 'French' : targetLang === 'de' ? 'German' : targetLang === 'pt' ? 'Portuguese' : targetLang}.
-Return a JSON object with "translations" array, each item: { "id": string, "translated": string }.
-Only translate if the message is not already in the target language. If already in the target language, return original text.
-
-Messages:
-${untranslated.map(m => `ID: ${m.id} | "${m.content}"`).join('\n')}`,
+        prompt: `Moderate this chat message strictly and briefly. Is it toxic, harassing, hate speech, or spam?
+Message: "${msg.content}"
+Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inappropriate", "severity": 0-1 }`,
         response_json_schema: {
           type: 'object',
           properties: {
-            translations: {
-              type: 'array',
-              items: { type: 'object', properties: { id: { type: 'string' }, translated: { type: 'string' } } }
-            }
-          }
-        }
+            status: { type: 'string' },
+            severity: { type: 'number' },
+          },
+        },
       });
-      const map = { ...translationMap };
-      (result?.translations || []).forEach(t => { map[t.id] = t.translated; });
-      setTranslationMap(map);
+      if (result?.status && result.status !== 'safe' && result.severity > 0.6) {
+        setModMap(prev => ({ ...prev, [msg.id]: result.status }));
+        base44.entities.ContentModeration.create({
+          content_id: msg.id,
+          content_type: 'message',
+          content_text: msg.content,
+          violation_type: result.status,
+          reported_by: 'ai_auto',
+          status: 'pending',
+          room_id: roomId,
+        }).catch(() => {});
+      }
+    } catch {
+      // Silently skip — moderation failing should not break chat
+    }
+  }, [roomId]);
+
+  // ── AI APPEAL ────────────────────────────────────────────────────────────────
+  const handleAppeal = useCallback(async (msgId, room_id) => {
+    if (appealingId === msgId) return;
+    setAppealingId(msgId);
+    try {
+      const result = await base44.functions.invoke('aiModerationAppeal', {
+        message_id: msgId,
+        flag_id: modMap[msgId] || 'unknown',
+        appeal_reason: 'User-requested re-evaluation',
+        room_id: room_id || roomId,
+      });
+      if (result?.data?.appeal_approved) {
+        setModMap(prev => ({ ...prev, [msgId]: 'safe' }));
+        toast.success('Appeal approved — message cleared ✅');
+      } else {
+        toast('Appeal denied — flag remains', { icon: '🛡' });
+      }
+    } catch {
+      toast.error('Appeal failed');
+    } finally {
+      setAppealingId(null);
+    }
+  }, [appealingId, modMap, roomId]);
+
+  // ── TRANSLATE ALL using translateText backend function ───────────────────────
+  const translateAll = useCallback(async () => {
+    const untranslated = messages.filter(m => !translationMap[m.id]).slice(0, LIMITS.TRANSLATE_BATCH);
+    if (!untranslated.length) return;
+    setIsTranslating(true);
+    try {
+      // Call each message through the translateText backend function (batched via Promise.allSettled)
+      const results = await Promise.allSettled(
+        untranslated.map(msg =>
+          base44.functions.invoke('translateText', {
+            text: msg.content,
+            target_language: targetLang,
+          }).then(r => ({ id: msg.id, translated: r.data?.translated_text || msg.content }))
+        )
+      );
+      const newMap = { ...translationMap };
+      results.forEach(r => {
+        if (r.status === 'fulfilled') newMap[r.value.id] = r.value.translated;
+      });
+      setTranslationMap(newMap);
     } catch {
       toast.error('Translation failed');
     } finally {
@@ -136,8 +186,7 @@ ${untranslated.map(m => `ID: ${m.id} | "${m.content}"`).join('\n')}`,
     }
   }, [messages, translationMap, targetLang]);
 
-  // Debounce auto-translation so rapid message bursts don't fire multiple LLM calls
-  const translateTimerRef = useRef(null);
+  // Debounced auto-translate when toggle is on
   useEffect(() => {
     if (!translateEnabled || messages.length === 0) return;
     clearTimeout(translateTimerRef.current);
@@ -145,8 +194,23 @@ ${untranslated.map(m => `ID: ${m.id} | "${m.content}"`).join('\n')}`,
     return () => clearTimeout(translateTimerRef.current);
   }, [translateEnabled, messages.length, targetLang]);
 
-  const platCfg = (p) => PLATFORM_ICONS[p] || PLATFORM_ICONS.platform;
+  // ── SEND ─────────────────────────────────────────────────────────────────────
+  const sendMessage = async () => {
+    if (!input.trim() || !currentUser) return;
+    const content = clampStr(input.trim(), LIMITS.CHAT_MESSAGE);
+    setInput('');
+    const msg = await base44.entities.Message.create({
+      room_id: roomId,
+      user_id: currentUser.id,
+      user_name: currentUser.full_name || currentUser.email,
+      content,
+      type: 'text',
+    });
+    // Screen our own outgoing message too
+    if (msg) autoModerateSingle({ ...msg, id: msg.id });
+  };
 
+  // ── RENDER ────────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full">
       {/* Header toolbar */}
@@ -165,50 +229,61 @@ ${untranslated.map(m => `ID: ${m.id} | "${m.content}"`).join('\n')}`,
             onChange={e => setTargetLang(e.target.value)}
             className="text-[10px] bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-white/60"
           >
-            <option value="en">EN</option>
-            <option value="es">ES</option>
-            <option value="fr">FR</option>
-            <option value="de">DE</option>
-            <option value="pt">PT</option>
-            <option value="ja">JA</option>
+            {[['en','EN'],['es','ES'],['fr','FR'],['de','DE'],['pt','PT'],['ja','JA']].map(([v,l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
           </select>
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => setTranslateEnabled(t => !t)}
+            onClick={() => { setTranslateEnabled(t => !t); if (!translateEnabled) translateAll(); }}
             className={`h-6 text-[10px] gap-1 px-2 ${translateEnabled ? 'text-[#00d4ff]' : 'text-white/40'}`}
             disabled={isTranslating}
           >
             <Languages className="w-3 h-3" />
-            {isTranslating ? '...' : translateEnabled ? 'On' : 'Translate'}
+            {isTranslating ? '...' : translateEnabled ? 'On' : 'Translate All'}
           </Button>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 min-h-0">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 min-h-0">
         {messages.map(msg => {
           const p = platCfg(msg.platform);
           const modStatus = modMap[msg.id];
-          const displayText = (translateEnabled && translationMap[msg.id]) ? translationMap[msg.id] : msg.content;
           const isViolation = modStatus && modStatus !== 'safe';
+          const displayText = (translateEnabled && translationMap[msg.id]) ? translationMap[msg.id] : msg.content;
+          const isAppealing = appealingId === msg.id;
 
           return (
             <div
               key={msg.id}
               className={`group flex gap-2 text-xs rounded-lg px-2 py-1.5 transition-all ${
-                isViolation ? 'bg-red-900/20 border border-red-800/30' : 'hover:bg-white/3'
+                isViolation ? 'bg-red-900/20 border border-red-800/30 opacity-70' : 'hover:bg-white/3'
               }`}
             >
               <span title={p.label} className="shrink-0 mt-0.5">{p.icon}</span>
               <div className="flex-1 min-w-0">
-                <span className="font-semibold text-white/80 mr-1.5">{msg.user_name}</span>
-                {isHost && <ModerationBadge status={modStatus} />}
-                <p className="text-white/60 break-words leading-relaxed inline">
-                  {displayText}
-                </p>
+                <span className="font-semibold text-white/80 mr-1">{msg.user_name}</span>
+                {isViolation && (
+                  <span className="text-yellow-400 mr-1">
+                    {isAppealing
+                      ? <span className="text-[9px] text-white/30">reviewing…</span>
+                      : <ShieldAlert
+                          className="w-3 h-3 inline cursor-pointer hover:text-yellow-300"
+                          title={`Flagged: ${modStatus} — click to appeal`}
+                          onClick={() => handleAppeal(msg.id, roomId)}
+                        />
+                    }
+                  </span>
+                )}
+                <span className="text-white/60 break-words leading-relaxed">
+                  {isViolation ? (
+                    <span className="italic text-white/30">[flagged: {modStatus}]</span>
+                  ) : displayText}
+                </span>
                 {translateEnabled && translationMap[msg.id] && translationMap[msg.id] !== msg.content && (
-                  <p className="text-[#00d4ff]/50 text-[10px] mt-0.5 italic">original: {msg.content}</p>
+                  <p className="text-[#00d4ff]/40 text-[10px] mt-0.5 italic">original: {msg.content}</p>
                 )}
               </div>
             </div>
