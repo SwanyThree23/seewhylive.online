@@ -17,7 +17,7 @@ var COMMANDS = [
   { label: 'BRIEF',    prompt: 'Give me a complete 5-minute production brief: what to do, what to say, and what to watch for.' },
 ];
 
-export default function SwanAITab({ isLive, viewerCount }) {
+export default function SwanAITab({ isLive, viewerCount, addToast }) {
   var [msgs, setMsgs]               = useState([{ role: 'dir', text: '🎯 SwanAI Director v33 ONLINE. All systems operational. Ready for production commands.', time: fmtTime() }]);
   var [input, setInput]             = useState('');
   var [loading, setLoading]         = useState(false);
@@ -55,6 +55,7 @@ export default function SwanAITab({ isLive, viewerCount }) {
         setMsgs(function(p) { return [...p, { role: 'dir', text: reply, time: fmtTime() }]; });
         var shortText = (data.text || '').slice(0, 80);
         setDecisionsLog(function(prev) { return [{ text: shortText, time: fmtTime() }].concat(prev.slice(0, 4)); });
+        if (addToast) addToast('🎯 Director: ' + shortText.slice(0, 60) + (shortText.length > 60 ? '…' : ''), 'info');
         setLoading(false);
       })
       .catch(function() {
