@@ -43,6 +43,9 @@ import DiscoverTab from './components/DiscoverTab.jsx';
 import CreatorProfileTab from './components/CreatorProfileTab.jsx';
 import SettingsTab from './components/SettingsTab.jsx';
 import GoldenWallPanel from './components/GoldenWallPanel.jsx';
+import PKBattleTab from './components/PKBattleTab.jsx';
+import VODLibraryTab from './components/VODLibraryTab.jsx';
+import MobileNavBar from './components/MobileNavBar.jsx';
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -81,6 +84,8 @@ var TABS = [
   { id: 'guardian',  label: '🛡 GUARDIAN' },
   { id: 'directpay', label: '💸 DIRECT PAY' },
   { id: 'share',     label: '📡 SHARE' },
+  { id: 'battles',   label: '⚡ BATTLES' },
+  { id: 'vod',       label: '🎬 VOD' },
   { id: 'profile',   label: '👤 PROFILE' },
   { id: 'settings',  label: '⚙ SETTINGS' },
 ];
@@ -738,6 +743,23 @@ export default function App() {
             setUserTier={setUserTier}
           />
         )}
+        {activeTab === 'battles' && (
+          <PKBattleTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            isLive={isLive}
+            addToast={addToast}
+            viewerCount={viewerCount}
+            username={username}
+          />
+        )}
+        {activeTab === 'vod' && (
+          <VODLibraryTab
+            addToast={addToast}
+            isLive={isLive}
+          />
+        )}
       </main>
 
       {/* Overlays */}
@@ -749,6 +771,7 @@ export default function App() {
           <GoldenWallPanel items={gifts.slice(-10)} />
         </div>
       )}
+      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} />
     </div>
   );
 }
