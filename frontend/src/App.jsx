@@ -577,6 +577,7 @@ export default function App() {
             viewerCount={viewerCount}
             gifts={gifts}
             isLive={isLive}
+            addToast={addToast}
           />
         )}
         {activeTab === 'schedule' && (
@@ -611,6 +612,7 @@ export default function App() {
           <SwanAITab
             isLive={isLive}
             viewerCount={viewerCount}
+            addToast={addToast}
           />
         )}
         {activeTab === 'avatar' && (
@@ -675,7 +677,13 @@ export default function App() {
           <MCPTab addToast={addToast} isLive={isLive} />
         )}
         {activeTab === 'guardian' && (
-          <GuardianTab addToast={addToast} isLive={isLive} />
+          <GuardianTab
+            addToast={addToast}
+            isLive={isLive}
+            chat={chat}
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
         )}
         {activeTab === 'directpay' && (
           <DirectPayTab addToast={addToast} username={username} />

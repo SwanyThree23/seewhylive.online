@@ -39,7 +39,7 @@ var VIEWS = [
   { id: 'log',     label: 'LOG'     },
 ];
 
-export default function GuardianTab({ addToast, isLive }) {
+export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) {
   var [view, setView]           = useState('rules');
   var [rules, setRules]         = useState(function() {
     try { var s = localStorage.getItem('sw_guardian_rules'); if (s) return JSON.parse(s); } catch(e) {}
@@ -102,6 +102,32 @@ export default function GuardianTab({ addToast, isLive }) {
       if (addToast) addToast('LOCKDOWN: Slow Mode auto-enabled (block rate ' + blockRate + '%)', 'error');
     }
   }, [blockRate, guardOn, isLive]);
+
+  var lastChatLen = useRef(0);
+  useEffect(function() {
+    if (!guardOn || !chat || chat.length === 0) return;
+    var newMsgs = chat.slice(lastChatLen.current);
+    lastChatLen.current = chat.length;
+    if (newMsgs.length === 0) return;
+    newMsgs.forEach(function(msg) {
+      var text = (msg.text || msg.message || '').toLowerCase();
+      var user = msg.username || msg.userId || 'unknown';
+      var matchedBan = banned.find(function(b) { return text.indexOf(b.toLowerCase()) !== -1; });
+      if (matchedBan && !msg.isSystem) {
+        var now = new Date();
+        var ts = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+        setGuardLog(function(prev) { return [ts + '  BLOCKED  ' + user + ' — banned word: ' + matchedBan].concat(prev.slice(0, 29)); });
+        setBlocked(function(n) { return n + 1; });
+        setFlags(function(prev) { return [{ id: 'live_' + Date.now(), user: user, text: msg.text || '', reason: 'Banned word: ' + matchedBan, ts: ts }].concat(prev); });
+        if (socket && roomId) {
+          socket.emit('mute-user', { roomId: roomId, targetUser: user, reason: 'Banned word: ' + matchedBan });
+        }
+        if (addToast) addToast('Guardian blocked: ' + user + ' (' + matchedBan + ')', 'error');
+      } else if (!msg.isSystem) {
+        setAllowed(function(n) { return n + 1; });
+      }
+    });
+  }, [chat, guardOn, banned, socket, roomId, addToast]);
 
   function toggleRule(id) {
     setRules(function(prev) {

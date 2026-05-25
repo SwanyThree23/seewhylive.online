@@ -23,7 +23,7 @@ function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
 var TYPE_COLORS = { tip: '#00C9A7', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
 
-export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive }) {
+export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addToast }) {
   var [engData, setEngData] = useState(ENG_DATA.slice());
   var [revData, setRevData] = useState(REV_DATA.slice());
   var [txns, setTxns] = useState(BASE_TXN.slice());
