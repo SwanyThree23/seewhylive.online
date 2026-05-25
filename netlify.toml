@@ -1,0 +1,18 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_BASE44_APP_ID = "6990f5f24823b53e21fcdc9d"
+  VITE_BASE44_APP_BASE_URL = "https://see-why-live-by-swanythree-ent-tech-21fcdc9d.base44.app"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://see-why-live-by-swanythree-ent-tech-21fcdc9d.base44.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
