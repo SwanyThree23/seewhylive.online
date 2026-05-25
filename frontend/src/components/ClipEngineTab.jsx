@@ -32,18 +32,21 @@ function fmtAgo(ts) {
 }
 
 export default function ClipEngineTab({ isLive, addToast }) {
-  var [tab, setTab]           = useState('clips');
-  var [clips, setClips]       = useState(SEED_CLIPS.map(function(c) { return Object.assign({}, c); }));
-  var [recording, setRecording] = useState(false);
-  var [recSecs, setRecSecs]   = useState(0);
-  var [selected, setSelected] = useState(null);
-  var [trimIn, setTrimIn]     = useState(0);
-  var [trimOut, setTrimOut]   = useState(60);
-  var [exporting, setExporting] = useState(false);
-  var [exported, setExported] = useState(null);
+  var [tab, setTab]               = useState('clips');
+  var [clips, setClips]           = useState(SEED_CLIPS.map(function(c) { return Object.assign({}, c); }));
+  var [recording, setRecording]   = useState(false);
+  var [recSecs, setRecSecs]       = useState(0);
+  var [selected, setSelected]     = useState(null);
+  var [trimIn, setTrimIn]         = useState(0);
+  var [trimOut, setTrimOut]       = useState(60);
+  var [exporting, setExporting]   = useState(false);
+  var [exported, setExported]     = useState(null);
+  var [exportThumb, setExportThumb] = useState(null);
   var [selectedFormat, setFormat] = useState('mp4-1080');
-  var [sharing, setSharing]   = useState({});
+  var [sharing, setSharing]       = useState({});
+  var [liveClipping, setLiveClipping] = useState(false);
   var recRef = useRef(null);
+  var liveClipRef = useRef(null);
 
   useEffect(function() {
     if (!recording) {
@@ -70,9 +73,26 @@ export default function ClipEngineTab({ isLive, addToast }) {
     var sizeMB = (sizeKB / 1024).toFixed(1);
     var id = 'c' + Date.now();
     var clip = { id: id, title: 'Live Clip — ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), duration: dur, size: sizeMB + ' MB', ts: Date.now(), thumbnail: '🎬' };
-    setClips(function(p) { return [clip, ...p]; });
+    setClips(function(p) { return [clip].concat(p); });
     setRecSecs(0);
     addToast('Clip saved: ' + fmtDur(dur), 'success');
+  }
+
+  function startLiveClip() {
+    if (!isLive || recording) return;
+    setLiveClipping(true);
+    setRecording(true);
+    setRecSecs(0);
+    addToast('⚡ LIVE CLIP — capturing 30s...', 'info');
+    liveClipRef.current = setTimeout(function() {
+      setRecording(false);
+      setLiveClipping(false);
+      var id = 'c' + Date.now();
+      var clip = { id: id, title: 'Live Clip ' + new Date().toLocaleTimeString() + ' — 30s', duration: 30, size: '~7.8 MB', ts: Date.now(), thumbnail: '🎬' };
+      setClips(function(p) { return [clip].concat(p); });
+      setRecSecs(0);
+      addToast('Live Clip saved (30s, ~7.8 MB)', 'success');
+    }, 30000);
   }
 
   function openEdit(clip) {
@@ -80,6 +100,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
     setTrimIn(0);
     setTrimOut(clip.duration);
     setExported(null);
+    setExportThumb(null);
     setTab('edit');
   }
 
@@ -91,9 +112,11 @@ export default function ClipEngineTab({ isLive, addToast }) {
 
   function exportClip() {
     setExporting(true);
+    var thumbVal = editClip ? editClip.thumbnail : null;
     setTimeout(function() {
       setExporting(false);
       setExported(selectedFormat);
+      setExportThumb(thumbVal);
       var fmt = EXPORT_FORMATS.find(function(f) { return f.id === selectedFormat; });
       addToast('Exported: ' + (fmt ? fmt.label : selectedFormat), 'success');
       setTab('share');
@@ -135,12 +158,20 @@ export default function ClipEngineTab({ isLive, addToast }) {
 
       {/* CLIPS TAB */}
       {tab === 'clips' && (
-        <>
+        <div>
+          {/* Header with clips count badge */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#7A6F90', letterSpacing: 1 }}>SAVED CLIPS</div>
+            <div style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 5, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', letterSpacing: 1 }}>
+              {clips.length} CLIPS
+            </div>
+          </div>
+
           {/* Record controls */}
-          <div style={{ background: 'rgba(128,0,32,.12)', border: '1px solid ' + (recording ? '#FF1A3C66' : '#241C34'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ background: 'rgba(128,0,32,.12)', border: '1px solid ' + (recording ? '#FF1A3C66' : '#241C34'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: recording ? '#FF1A3C' : '#7A6F90' }}>
-                {recording ? '🔴 RECORDING' : 'RECORD CLIP'}
+                {recording ? (liveClipping ? '⚡ LIVE CLIP' : '🔴 RECORDING') : 'RECORD CLIP'}
               </div>
               {recording && (
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#EDE8F5', marginTop: 2 }}>
@@ -148,19 +179,28 @@ export default function ClipEngineTab({ isLive, addToast }) {
                 </div>
               )}
             </div>
-            {!recording ? (
-              <button
-                onClick={startRec}
-                style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 8, padding: '8px 18px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-                ● REC
-              </button>
-            ) : (
-              <button
-                onClick={stopRec}
-                style={{ background: 'rgba(230,57,70,.2)', border: '1px solid rgba(230,57,70,.5)', borderRadius: 8, padding: '8px 18px', color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
-                ■ STOP
-              </button>
-            )}
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              {isLive && !recording && (
+                <button
+                  onClick={startLiveClip}
+                  style={{ background: 'linear-gradient(135deg,#C9A84C,#E8C46A)', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#07050A', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 0.5 }}>
+                  ⚡ LIVE CLIP
+                </button>
+              )}
+              {!recording ? (
+                <button
+                  onClick={startRec}
+                  style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 8, padding: '8px 18px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                  ● REC
+                </button>
+              ) : (
+                <button
+                  onClick={stopRec}
+                  style={{ background: 'rgba(230,57,70,.2)', border: '1px solid rgba(230,57,70,.5)', borderRadius: 8, padding: '8px 18px', color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                  ■ STOP
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Clip list */}
@@ -200,20 +240,20 @@ export default function ClipEngineTab({ isLive, addToast }) {
               );
             })}
           </div>
-        </>
+        </div>
       )}
 
       {/* EDIT TAB */}
       {tab === 'edit' && (
-        <>
+        <div>
           {!editClip ? (
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', textAlign: 'center', padding: 16 }}>
               Select a clip from the Clips tab to edit.
             </div>
           ) : (
-            <>
+            <div>
               {/* Preview area */}
-              <div style={{ background: '#07050A', border: '1px solid #241C34', borderRadius: 10, padding: 16, textAlign: 'center', minHeight: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <div style={{ background: '#07050A', border: '1px solid #241C34', borderRadius: 10, padding: 16, textAlign: 'center', minHeight: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
                 <div style={{ fontSize: 40 }}>{editClip.thumbnail}</div>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5' }}>{editClip.title}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' }}>
@@ -222,7 +262,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
               </div>
 
               {/* Trim sliders */}
-              <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+              <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginBottom: 10 }}>TRIM HANDLES</div>
 
                 {/* Timeline bar */}
@@ -301,22 +341,22 @@ export default function ClipEngineTab({ isLive, addToast }) {
                   {exporting ? '⚙️ EXPORTING...' : '📦 EXPORT CLIP'}
                 </button>
               </div>
-            </>
+            </div>
           )}
-        </>
+        </div>
       )}
 
       {/* SHARE TAB */}
       {tab === 'share' && (
-        <>
+        <div>
           {!exported ? (
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', textAlign: 'center', padding: 16 }}>
               Export a clip first — go to Edit tab, trim, and hit Export.
             </div>
           ) : (
-            <>
-              <div style={{ background: 'rgba(0,201,167,.08)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ fontSize: 18 }}>✅</div>
+            <div>
+              <div style={{ background: 'rgba(0,201,167,.08)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <div style={{ fontSize: 18 }}>{exportThumb ? exportThumb : '✅'}</div>
                 <div>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#00C9A7' }}>Clip ready to share</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>
@@ -346,9 +386,9 @@ export default function ClipEngineTab({ isLive, addToast }) {
                   );
                 })}
               </div>
-            </>
+            </div>
           )}
-        </>
+        </div>
       )}
 
     </div>

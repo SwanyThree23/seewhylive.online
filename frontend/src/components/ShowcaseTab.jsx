@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 var CREATOR = 0.90;
+var PLATFORM = 0.10;
 var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
 var STATES = [
@@ -103,6 +104,10 @@ export default function ShowcaseTab(p) {
   var captureRef = useRef(null);
   var flashRef   = useRef(null);
 
+  // live viewer counts per state (simulated when isLive)
+  var [viewerCounts, setViewerCounts] = useState({});
+  var viewerRef = useRef(null);
+
   function getState(id) {
     for (var i = 0; i < STATES.length; i++) {
       if (STATES[i].id === id) return STATES[i];
@@ -127,6 +132,38 @@ export default function ShowcaseTab(p) {
       clearInterval(captureRef.current);
       clearTimeout(flashRef.current);
     };
+  }, [isLive]);
+
+  // Live viewer count simulation — only when isLive
+  useEffect(function() {
+    if (!isLive) {
+      setViewerCounts({});
+      return;
+    }
+    // Initialize with random viewer counts for streaming states
+    var init = {};
+    for (var i = 0; i < STATES.length; i++) {
+      // Only WA (rank 1) is currently "streaming" by default; others have smaller counts
+      if (STATES[i].rank === 1) {
+        init[STATES[i].id] = Math.floor(Math.random() * 2000) + 1800;
+      } else if (STATES[i].rank <= 3) {
+        init[STATES[i].id] = Math.floor(Math.random() * 800) + 200;
+      }
+    }
+    setViewerCounts(init);
+    viewerRef.current = setInterval(function() {
+      setViewerCounts(function(prev) {
+        var next = {};
+        var keys = Object.keys(prev);
+        for (var k = 0; k < keys.length; k++) {
+          var key = keys[k];
+          var delta = Math.floor(Math.random() * 30) - 10;
+          next[key] = Math.max(10, prev[key] + delta);
+        }
+        return next;
+      });
+    }, 4000);
+    return function() { clearInterval(viewerRef.current); };
   }, [isLive]);
 
   // Match simulation
@@ -182,6 +219,7 @@ export default function ShowcaseTab(p) {
       clearInterval(battleRef.current);
       clearInterval(captureRef.current);
       clearTimeout(flashRef.current);
+      clearInterval(viewerRef.current);
     };
   }, []);
 
@@ -206,6 +244,19 @@ export default function ShowcaseTab(p) {
       return Object.assign({}, v, { [matchId]: cur });
     });
     if (addToast) addToast('Vote locked in! 🗳️', 'success');
+  }
+
+  function copyProfileLink(st) {
+    var url = 'https://seewhylive.online/creator/' + st.id;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() {
+        if (addToast) addToast('Profile link copied: ' + url, 'success');
+      }).catch(function() {
+        if (addToast) addToast('Link: ' + url, 'info');
+      });
+    } else {
+      if (addToast) addToast('Link: ' + url, 'info');
+    }
   }
 
   var sorted = STATES.slice().sort(function(a, b) {
@@ -329,29 +380,54 @@ export default function ShowcaseTab(p) {
                 );
               })}
             </div>
-            {sorted.map(function(st) {
+
+            {sorted.map(function(st, idx) {
               var total  = (st.w + st.l) || 1;
               var winPct = Math.floor((st.w / total) * 100);
+              var isFeatured = st.rank === 1;
+              var liveViewers = viewerCounts[st.id] || 0;
+              var isStreaming = isLive && liveViewers > 0;
               return (
-                <div key={st.id} onClick={function() { setDetail(st); }}
-                  style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (st.rank <= 3 ? st.cp + '44' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '10px 12px', marginBottom: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: st.rank <= 3 ? 20 : 15, color: st.rank === 1 ? '#E8C46A' : st.rank === 2 ? '#C0C0C0' : st.rank === 3 ? '#cd7f32' : '#9A90AA', width: 22, textAlign: 'center', flexShrink: 0, lineHeight: 1 }}>#{st.rank}</div>
-                  <StateBadge state={st} sz={46} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#EDE8F4', letterSpacing: 1, lineHeight: 1 }}>{st.name}</div>
-                      {st.streak >= 3 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#E8FF47' }}>{st.streak}🔥</span>}
+                <div key={st.id} style={{ position: 'relative' }}>
+                  {/* FEATURED badge on top-ranked state */}
+                  {isFeatured && (
+                    <div style={{ position: 'absolute', top: -8, left: 12, zIndex: 10, background: 'linear-gradient(90deg,#C9A84C,#E8C46A)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#07050A', fontWeight: 700, letterSpacing: 2 }}>
+                      ★ FEATURED
                     </div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#9A90AA', marginBottom: 4 }}>{st.captain} · {st.region}</div>
-                    <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ width: winPct + '%', height: '100%', background: 'linear-gradient(90deg,' + st.cp + ',' + st.cs + ')' }} />
+                  )}
+                  <div onClick={function() { setDetail(st); }}
+                    style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (isFeatured ? '#C9A84C55' : st.rank <= 3 ? st.cp + '44' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '10px 12px', marginBottom: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, marginTop: isFeatured ? 6 : 0 }}>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: st.rank <= 3 ? 20 : 15, color: st.rank === 1 ? '#E8C46A' : st.rank === 2 ? '#C0C0C0' : st.rank === 3 ? '#cd7f32' : '#9A90AA', width: 22, textAlign: 'center', flexShrink: 0, lineHeight: 1 }}>#{st.rank}</div>
+                    <StateBadge state={st} sz={46} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#EDE8F4', letterSpacing: 1, lineHeight: 1 }}>{st.name}</div>
+                        {st.streak >= 3 && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#E8FF47' }}>{st.streak}🔥</span>}
+                        {isStreaming && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: 'rgba(255,26,60,.18)', border: '1px solid rgba(255,26,60,.45)', borderRadius: 999, padding: '1px 5px', flexShrink: 0 }}>
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#FF1A3C', display: 'inline-block' }} />
+                            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#FF6B81' }}>LIVE {liveViewers.toLocaleString()}</span>
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#9A90AA', marginBottom: 4 }}>{st.captain} · {st.region}</div>
+                      <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ width: winPct + '%', height: '100%', background: 'linear-gradient(90deg,' + st.cp + ',' + st.cs + ')' }} />
+                      </div>
                     </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#EDE8F4', lineHeight: 1 }}>{st.pts}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7' }}>{st.w}W-{st.l}L</div>
+                      </div>
+                      <button
+                        onClick={function(e) { e.stopPropagation(); copyProfileLink(st); }}
+                        style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 5, padding: '2px 6px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 6.5, cursor: 'pointer', letterSpacing: 1 }}>
+                        🔗 SHARE
+                      </button>
+                    </div>
+                    <div style={{ color: '#4A4060', fontSize: 12 }}>›</div>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#EDE8F4', lineHeight: 1 }}>{st.pts}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7' }}>{st.w}W-{st.l}L</div>
-                  </div>
-                  <div style={{ color: '#4A4060', fontSize: 12 }}>›</div>
                 </div>
               );
             })}
@@ -417,6 +493,11 @@ export default function ShowcaseTab(p) {
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', letterSpacing: 2, marginBottom: 4 }}>HOME VENUE</div>
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F4' }}>{detail.city}</div>
             </div>
+            {/* Share button in detail view */}
+            <button onClick={function() { copyProfileLink(detail); }}
+              style={{ width: '100%', padding: '10px', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3, cursor: 'pointer', marginBottom: 8 }}>
+              🔗 COPY PROFILE LINK
+            </button>
             <button onClick={function() { startBattle(detail.id); }}
               style={{ width: '100%', padding: '12px', background: 'rgba(0,255,255,.08)', border: '1px solid rgba(0,255,255,.3)', borderRadius: 10, color: '#00FFFF', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3, cursor: 'pointer' }}>
               ⚡ LAUNCH STATE FADES BATTLE

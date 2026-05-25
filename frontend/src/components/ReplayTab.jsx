@@ -55,6 +55,8 @@ export default function ReplayTab({ addToast, isLive }) {
   var [recording, setRecording]   = useState(false);
   var [recDuration, setRecDuration] = useState(0);
   var [liveClips, setLiveClips]   = useState([]);
+  var [copiedId, setCopiedId]     = useState(null);
+  var [searchQuery, setSearchQuery] = useState('');
   var playRef                     = useRef(null);
   var recRef                      = useRef(null);
   var clipTimerRef                = useRef(null);
@@ -161,6 +163,14 @@ export default function ReplayTab({ addToast, isLive }) {
     if (clips[ci].chapter) chapterCount++;
   }
 
+  function shareReplay(clip) {
+    var url = 'https://seewhylive.online/replay/' + clip.id;
+    navigator.clipboard.writeText(url);
+    setCopiedId(clip.id);
+    addToast('Link copied: /replay/' + clip.id, 'success');
+    setTimeout(function() { setCopiedId(null); }, 1500);
+  }
+
   function isInReel(id) {
     for (var ri = 0; ri < reel.length; ri++) {
       if (reel[ri].id === id) return true;
@@ -176,6 +186,9 @@ export default function ReplayTab({ addToast, isLive }) {
   };
 
   var allClips = liveClips.concat(clips);
+  var filteredClips = searchQuery.trim()
+    ? allClips.filter(function(c) { return c.title.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1; })
+    : allClips;
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden', background: BG0 }}>
@@ -322,6 +335,17 @@ export default function ReplayTab({ addToast, isLive }) {
       {/* SCROLLABLE CLIP LIST */}
       <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
 
+        {/* Search filter */}
+        <div style={{ marginBottom: 4 }}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={function(e) { setSearchQuery(e.target.value); }}
+            placeholder="Filter by title..."
+            style={{ width: '100%', background: FAINT, border: '1px solid ' + BORDER, borderRadius: 7, padding: '6px 10px', color: TEXT, fontFamily: fM, fontSize: 10, outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
+
         {/* Count header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: fM, fontSize: 8, color: TEXT_M, letterSpacing: 1 }}>
@@ -340,7 +364,7 @@ export default function ReplayTab({ addToast, isLive }) {
         </div>
 
         {/* Clip cards — live clips first, then replay clips */}
-        {allClips.map(function(clip) {
+        {filteredClips.map(function(clip) {
           var isPlaying = currentClip && currentClip.id === clip.id;
           var isSelected = selected === clip.id;
           var inReel = isInReel(clip.id);
@@ -427,6 +451,10 @@ export default function ReplayTab({ addToast, isLive }) {
                     onClick={function() { addToast('Clip exported: ' + clip.title.slice(0, 20), 'info'); }}
                     style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 6, padding: '5px 10px', color: TEAL, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
                   >📤 EXPORT CLIP</button>
+                  <button
+                    onClick={function() { shareReplay(clip); }}
+                    style={{ background: copiedId === clip.id ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,' + (copiedId === clip.id ? '.6' : '.3') + ')', borderRadius: 6, padding: '5px 10px', color: GOLD, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
+                  >{copiedId === clip.id ? '✓ COPIED' : '🔗 SHARE REPLAY'}</button>
                 </div>
               )}
             </div>

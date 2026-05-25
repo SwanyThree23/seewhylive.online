@@ -20,6 +20,10 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
   var [latency, setLatency]         = useState({});
   var [bitrates, setBitrates]       = useState({});
   var [fanoutActive, setFanoutActive] = useState(false);
+  var [pingMs, setPingMs]           = useState(null);
+  var [lastPinged, setLastPinged]   = useState(null);
+  var [pingingServer, setPingingServer] = useState(false);
+  var [copiedRtmp, setCopiedRtmp]   = useState(false);
   var bitrateRef = useRef(null);
 
   var [customDests,   setCustomDests]   = useState([]);
@@ -84,6 +88,31 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
     addToast('⏹ Fanout stopped', 'info');
   }
 
+  function pingServer() {
+    setPingingServer(true);
+    var t0 = Date.now();
+    fetch('/api/health').then(function() {
+      var ms = Date.now() - t0;
+      setPingMs(ms);
+      setLastPinged(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setPingingServer(false);
+      addToast('Server ping: ' + ms + 'ms', 'success');
+    }, function() {
+      var ms = Date.now() - t0;
+      setPingMs(ms);
+      setLastPinged(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setPingingServer(false);
+      addToast('Ping failed — server unreachable', 'error');
+    });
+  }
+
+  function copyRtmpUrl() {
+    navigator.clipboard.writeText('rtmp://2.24.194.112:1935/live');
+    setCopiedRtmp(true);
+    addToast('RTMP URL copied to clipboard', 'success');
+    setTimeout(function() { setCopiedRtmp(false); }, 1500);
+  }
+
   var enabledCount = Object.values(enabled).filter(Boolean).length;
   var liveCount    = fanoutActive ? enabledCount : 0;
 
@@ -119,6 +148,31 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
           disabled={!fanoutActive}
           style={{ flex: 1, padding: '10px', background: 'rgba(230,57,70,.12)', border: '1px solid rgba(230,57,70,.4)', borderRadius: 8, color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: !fanoutActive ? 'not-allowed' : 'pointer', opacity: !fanoutActive ? 0.5 : 1 }}>
           ⏹ STOP ALL
+        </button>
+      </div>
+
+      {/* Server status row: PING SERVER + COPY RTMP URL */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button
+          onClick={pingServer}
+          disabled={pingingServer}
+          style={{ background: pingingServer ? 'rgba(0,201,167,.1)' : 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,' + (pingingServer ? '.25' : '.45') + ')', borderRadius: 8, padding: '7px 12px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: pingingServer ? 'not-allowed' : 'pointer', opacity: pingingServer ? 0.7 : 1, flexShrink: 0 }}>
+          {pingingServer ? '⟳ PINGING...' : '📡 PING SERVER'}
+        </button>
+        {pingMs !== null && (
+          <div style={{ background: pingMs < 150 ? 'rgba(0,201,167,.12)' : 'rgba(255,107,0,.12)', border: '1px solid ' + (pingMs < 150 ? 'rgba(0,201,167,.4)' : 'rgba(255,107,0,.4)'), borderRadius: 6, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: pingMs < 150 ? '#00C9A7' : '#FF6B35', flexShrink: 0 }}>
+            {'● ' + pingMs + 'ms'}
+          </div>
+        )}
+        {lastPinged && (
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', flexShrink: 0 }}>
+            {lastPinged}
+          </div>
+        )}
+        <button
+          onClick={copyRtmpUrl}
+          style={{ marginLeft: 'auto', background: copiedRtmp ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,' + (copiedRtmp ? '.6' : '.3') + ')', borderRadius: 8, padding: '7px 12px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>
+          {copiedRtmp ? '✓ COPIED' : '📋 COPY RTMP URL'}
         </button>
       </div>
 
