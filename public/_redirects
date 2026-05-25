@@ -1,1 +1,5 @@
+# Proxy Base44 API calls (serverUrl: '' makes relative /api/* requests)
+/api/* https://base44.app/api/:splat 200
+
+# SPA fallback
 /* /index.html 200
