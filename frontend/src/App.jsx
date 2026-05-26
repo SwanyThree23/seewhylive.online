@@ -10,6 +10,7 @@ import Ticker from './components/Ticker.jsx';
 import BrandChyron from './components/BrandChyron.jsx';
 import GoldenWallPanel from './components/GoldenWallPanel.jsx';
 import MobileNavBar from './components/MobileNavBar.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -131,6 +132,8 @@ export default function App() {
   var [streamInfo, setStreamInfo] = useState({ title: '', category: '', desc: '' });
   var [userTier, setUserTier] = useState(function() { return localStorage.getItem('sw_user_tier') || 'free'; });
   var [auraMessages, setAuraMessages] = useState([]);
+  var [installPrompt, setInstallPrompt] = useState(null);
+  var [showInstallBanner, setShowInstallBanner] = useState(false);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -145,6 +148,16 @@ export default function App() {
   useEffect(function() {
     var t = setTimeout(function() { setSplash(false); }, 2200);
     return function() { clearTimeout(t); };
+  }, []);
+
+  useEffect(function() {
+    function handleInstallPrompt(e) {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    }
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    return function() { window.removeEventListener('beforeinstallprompt', handleInstallPrompt); };
   }, []);
 
   useEffect(function() {
@@ -469,7 +482,23 @@ export default function App() {
           <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 6 }}>
             {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
           </span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>{APP_ID.substring(0, 8)}</span>
+          {showInstallBanner && installPrompt && (
+            <button
+              onClick={function() {
+                installPrompt.prompt();
+                installPrompt.userChoice.then(function(result) {
+                  if (result.outcome === 'accepted') {
+                    addToast('SeeWhy LIVE installed!', 'success');
+                  }
+                  setInstallPrompt(null);
+                  setShowInstallBanner(false);
+                });
+              }}
+              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 6, padding: '4px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, whiteSpace: 'nowrap' }}
+            >
+              ⬇ INSTALL
+            </button>
+          )}
         </div>
       </header>
 
@@ -488,6 +517,7 @@ export default function App() {
 
       {/* Tab Content */}
       <main style={{ padding: '16px', flex: 1, paddingBottom: 100 }}>
+      <ErrorBoundary>
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90', letterSpacing: 2 }}>LOADING...</div>}>
         {activeTab === 'room' && (
           <RoomTab
@@ -766,6 +796,7 @@ export default function App() {
           />
         )}
       </Suspense>
+      </ErrorBoundary>
       </main>
 
       {/* Overlays */}
