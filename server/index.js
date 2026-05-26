@@ -265,12 +265,23 @@ function getRoom(roomId) {
 
 // GET /api/health
 app.get('/api/health', function(req, res) {
+  var mem = process.memoryUsage();
+  var dbOk = true;
+  try { db.prepare('SELECT 1').get(); } catch(e) { dbOk = false; }
   res.json({
-    status:            'ok',
-    uptime:            process.uptime(),
-    rooms:             rooms.size,
-    connections:       io.engine.clientsCount,
-    mediasoupWorkers:  mediasoup.getWorkerCount()
+    status:           'ok',
+    version:          'v33.0',
+    timestamp:        Date.now(),
+    uptimeSeconds:    Math.floor(process.uptime()),
+    rooms:            rooms.size,
+    connections:      io.engine.clientsCount,
+    mediasoupWorkers: mediasoup.getWorkerCount(),
+    db:               dbOk ? 'ok' : 'error',
+    memoryMB: {
+      rss:      Math.floor(mem.rss / 1048576),
+      heap:     Math.floor(mem.heapUsed / 1048576),
+      heapTotal:Math.floor(mem.heapTotal / 1048576)
+    }
   });
 });
 

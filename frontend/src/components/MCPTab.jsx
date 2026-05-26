@@ -52,6 +52,7 @@ export default function MCPTab({ addToast, isLive }) {
   var [callLog, setCallLog]       = useState([]);
   var [copiedEndpoint, setCopiedEndpoint] = useState(false);
   var [healthCheckedAt, setHealthCheckedAt] = useState(null);
+  var [serverHealth, setServerHealth] = useState(null);
 
   // Seed call log on mount
   useEffect(function() {
@@ -106,10 +107,11 @@ export default function MCPTab({ addToast, isLive }) {
   useEffect(function() {
     function doHealthCheck() {
       fetch('/api/health').then(function(res) {
-        if (res.ok) {
-          setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-        }
-      }, function() {
+        return res.json();
+      }).then(function(data) {
+        setServerHealth(data);
+        setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      }).catch(function() {
         setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
       });
     }
@@ -466,6 +468,47 @@ export default function MCPTab({ addToast, isLive }) {
 
           </div>
         </div>
+
+        {/* SERVER VITALS card — populated by /api/health */}
+        {serverHealth && (
+          <div style={{
+            background: 'rgba(0,201,167,.04)',
+            border: '1px solid rgba(0,201,167,.2)',
+            borderRadius: 10,
+            padding: '12px 13px',
+            marginTop: 4,
+          }}>
+            <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEAL, letterSpacing: 1, marginBottom: 10 }}>
+              SERVER VITALS — {serverHealth.version || 'v33'}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+              {[
+                ['UPTIME', (function() { var s = Math.floor(serverHealth.uptimeSeconds || 0); var h = Math.floor(s / 3600); var m = Math.floor((s % 3600) / 60); return h + 'h ' + m + 'm'; })(), TEAL],
+                ['ROOMS', String(serverHealth.rooms || 0), LIME],
+                ['SOCKETS', String(serverHealth.connections || 0), GOLD],
+                ['DB', serverHealth.db === 'ok' ? 'OK' : 'ERR', serverHealth.db === 'ok' ? LIME : '#FF3B3B'],
+              ].map(function(stat) {
+                return (
+                  <div key={stat[0]} style={{ background: 'rgba(255,255,255,.03)', borderRadius: 7, padding: '6px 8px', textAlign: 'center' }}>
+                    <div style={{ fontFamily: fD, fontSize: 16, color: stat[2], letterSpacing: 1 }}>{stat[1]}</div>
+                    <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1 }}>{stat[0]}</div>
+                  </div>
+                );
+              })}
+            </div>
+            {serverHealth.memoryMB && (
+              <div>
+                <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1, marginBottom: 4 }}>HEAP USAGE</div>
+                <div style={{ height: 6, background: '#241C34', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ width: Math.floor((serverHealth.memoryMB.heap / serverHealth.memoryMB.heapTotal) * 100) + '%', height: '100%', background: 'linear-gradient(90deg,' + TEAL + ',' + TEAL_H + ')', borderRadius: 3 }} />
+                </div>
+                <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, marginTop: 3 }}>
+                  {serverHealth.memoryMB.heap}MB / {serverHealth.memoryMB.heapTotal}MB · RSS {serverHealth.memoryMB.rss}MB
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>
