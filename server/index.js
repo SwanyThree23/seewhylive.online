@@ -29,6 +29,7 @@ var SwanyBot     = require('./swanybot');
 var translation  = require('./translation');
 var aura         = require('./aura');
 var whisper      = require('./whisper');
+var analytics    = require('./analytics');
 
 // ─── Revenue split constants (immutable) ─────────────────────────────────
 var CREATOR  = 0.90;
@@ -617,6 +618,11 @@ io.on('connection', function(socket) {
       }
     } else {
       room.viewers.add(socket.id);
+      try {
+        analytics.recordViewerSession(roomId, socket.data.userId || socket.id, Date.now());
+      } catch (aErr) {
+        logger.warn('[join-room] analytics viewer session failed: ' + aErr.message);
+      }
     }
 
     var viewerCount = room.viewers.size + room.guests.size;
@@ -1028,6 +1034,14 @@ io.on('connection', function(socket) {
       ts:            ts
     });
 
+    try {
+      var giftRoom = rooms.get(roomId);
+      var hostId = giftRoom ? (giftRoom.hostUserId || giftRoom.hostSocketId) : roomId;
+      analytics.recordEarning(hostId, roomId, 'gift', valueCents, name + ' from ' + fromUser);
+    } catch (aErr) {
+      logger.warn('[send-gift] analytics record failed: ' + aErr.message);
+    }
+
     swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
 
     // Optionally create a gift PaymentIntent if a Stripe account is provided
@@ -1319,6 +1333,12 @@ io.on('connection', function(socket) {
       ts:     now
     });
 
+    try {
+      analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'start', room.viewers ? room.viewers.size : 0, 0);
+    } catch (aErr) {
+      logger.warn('[go-live] analytics record failed: ' + aErr.message);
+    }
+
     if (ack) ack({ started: true });
   });
 
@@ -1354,6 +1374,12 @@ io.on('connection', function(socket) {
     }
 
     io.to(roomId).emit('broadcast-ended', { roomId: roomId, ts: now });
+
+    try {
+      analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);
+    } catch (aErr) {
+      logger.warn('[end-broadcast] analytics record failed: ' + aErr.message);
+    }
 
     // Clean up room state
     rooms.delete(roomId);
@@ -1418,8 +1444,17 @@ io.on('connection', function(socket) {
     var room = rooms.get(roomId);
     if (!room) return;
 
+    var wasViewer = room.viewers.has(socket.id);
     room.viewers.delete(socket.id);
     room.guests.delete(socket.id);
+
+    if (wasViewer) {
+      try {
+        analytics.endViewerSession(roomId, socket.data.userId || socket.id, Date.now());
+      } catch (aErr) {
+        logger.warn('[disconnect] analytics end session failed: ' + aErr.message);
+      }
+    }
 
     if (room.hostSocketId === socket.id) {
       room.hostSocketId = null;
