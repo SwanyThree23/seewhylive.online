@@ -4,7 +4,7 @@
 
 [build.environment]
   VITE_BASE44_APP_ID = "6990f5f24823b53e21fcdc9d"
-  VITE_BASE44_APP_BASE_URL = "https://see-why-live-by-swanythree-ent-tech-21fcdc9d.base44.app"
+  VITE_BASE44_APP_BASE_URL = "https://seewhylive.online"
 
 [[redirects]]
   from = "/*"
