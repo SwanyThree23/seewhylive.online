@@ -69,7 +69,7 @@ export default function ShareButtons({ url, title, className = '' }) {
     if (platform.action) {
       platform.action(shareUrl, shareTitle);
     } else if (platform.getUrl) {
-      window.open(platform.getUrl(shareUrl, shareTitle), '_blank');
+      window.open(platform.getUrl(shareUrl, shareTitle), '_blank', 'noopener,noreferrer');
     }
     setOpen(false);
   };
