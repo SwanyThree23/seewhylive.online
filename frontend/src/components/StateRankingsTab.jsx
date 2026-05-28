@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var SEASON = 2026;
 var WEEK   = 8;
@@ -213,19 +214,62 @@ export default function StateRankingsTab({ isLive, addToast }) {
               </div>
             </div>
 
-            {/* Top-3 podium */}
-            <div style={{ display: 'flex', gap: 6 }}>
-              {rankings.slice(0, 3).map(function(r) {
-                return (
-                  <div key={r.rank} style={{ flex: 1, background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '6px 8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 20 }}>{r.state_emoji}</div>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', marginTop: 2 }}>{r.state_abbr}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C' }}>{r.points} pts</div>
-                    <div style={{ fontSize: 12, marginTop: 2 }}>{MEDALS[r.rank]}</div>
+            {/* Top-3 portrait podium */}
+            {rankings.length > 0 && (
+              <div>
+                {/* #1 Hero Card */}
+                <div style={{
+                  background: 'linear-gradient(160deg,rgba(201,168,76,.18),rgba(7,5,10,.97))',
+                  border: '2px solid rgba(201,168,76,.55)',
+                  borderRadius: 12,
+                  padding: '16px 14px',
+                  textAlign: 'center',
+                  marginBottom: 8,
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{ position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', width: 180, height: 180, background: 'radial-gradient(circle,rgba(201,168,76,.2),transparent 65%)', pointerEvents: 'none' }} />
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 3, marginBottom: 10 }}>🥇 NATIONAL LEADER</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+                    <AvatarPortrait username={rankings[0].state_name} size={72} rank={1} />
                   </div>
-                );
-              })}
-            </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 22 }}>{rankings[0].state_emoji}</span>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#EDE8F5', letterSpacing: 2 }}>{rankings[0].state_name}</div>
+                  </div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C9A84C', lineHeight: 1, textShadow: '0 0 20px rgba(201,168,76,.5)' }}>{rankings[0].points}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 2 }}>POINTS · {WEEK - rankings[0].losses}W-{rankings[0].losses}L · {rankings[0].streak > 0 ? (rankings[0].streak + '-STREAK') : 'NO STREAK'}</div>
+                </div>
+                {/* #2 and #3 side by side */}
+                {rankings.length >= 3 && (
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 0 }}>
+                    {rankings.slice(1, 3).map(function(r) {
+                      return (
+                        <div key={r.rank} style={{
+                          flex: 1,
+                          background: 'rgba(22,16,32,.8)',
+                          border: '1px solid rgba(201,168,76,.2)',
+                          borderRadius: 10,
+                          padding: '12px 8px',
+                          textAlign: 'center',
+                        }}>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>{MEDALS[r.rank]} #{r.rank}</div>
+                          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                            <AvatarPortrait username={r.state_name} size={52} rank={r.rank} />
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 2 }}>
+                            <span style={{ fontSize: 14 }}>{r.state_emoji}</span>
+                            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#EDE8F5', letterSpacing: 1 }}>{r.state_abbr}</span>
+                          </div>
+                          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#C9A84C', lineHeight: 1 }}>{r.points}</div>
+                          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', marginTop: 2 }}>{WEEK - r.losses}W-{r.losses}L</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Region filter */}
