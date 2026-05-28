@@ -55,8 +55,8 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   var [newWord, setNewWord]     = useState('');
   var [guardLog, setGuardLog]   = useState(GUARDIAN_LOG);
   var [guardOn, setGuardOn]     = useState(true);
-  var [blocked, setBlocked]     = useState(4);
-  var [allowed, setAllowed]     = useState(203);
+  var [blocked, setBlocked]     = useState(0);
+  var [allowed, setAllowed]     = useState(0);
   var [bannedUsers, setBannedUsers] = useState([]);
   var [shadowBanned, setShadowBanned] = useState({});
   var [subscriberOnly, setSubscriberOnly] = useState(false);
@@ -227,10 +227,10 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (data && data.id) {
+          if (data && data.filter && data.filter.id) {
             setWordMeta(function(prev) {
               var next = Object.assign({}, prev);
-              next[w] = data.id;
+              next[w] = data.filter.id;
               return next;
             });
           }
