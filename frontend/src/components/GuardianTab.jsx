@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var DEFAULT_BANNED = ['spam', 'scam', 'hate', 'slur', 'flood', 'bot', 'phishing'];
 
@@ -390,7 +391,10 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
             return (
               <div key={f.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + ((ACTION_COLORS[f.action] || '#241C34') + '33'), borderRadius: 8, padding: '8px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5' }}>{f.user}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <AvatarPortrait username={f.user} size={30} />
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5' }}>{f.user}</div>
+                  </div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: ACTION_COLORS[f.action] || '#7A6F90', background: ((ACTION_COLORS[f.action] || '#7A6F90') + '22'), borderRadius: 4, padding: '2px 6px' }}>{f.action ? f.action.toUpperCase() : 'FLAGGED'}</div>
                 </div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#A09AB8', marginBottom: 4, wordBreak: 'break-word' }}>{f.msg || f.text}</div>
@@ -448,7 +452,9 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
             var isShadow = shadowBanned[u.userId];
             return (
               <div key={i} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                  <AvatarPortrait username={u.username} size={34} />
+                  <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5' }}>{u.username}</span>
                     {isShadow && <span style={{ fontSize: 12 }}>&#x1F47B;</span>}
@@ -456,6 +462,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
                     {!isShadow && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#FF1A3C', background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 3, padding: '1px 4px' }}>BANNED</span>}
                   </div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{u.reason + ' · ' + (u.ts || '')}</div>
+                  </div>
                 </div>
                 {!isShadow && (
                   <button
