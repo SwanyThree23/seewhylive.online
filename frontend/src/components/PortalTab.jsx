@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var GOLD_H  = '#E8C46A';
 var BURG    = '#800020';
@@ -161,7 +162,7 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
 
         {/* Simulated embed area */}
         <div style={{ height: 200, background: 'radial-gradient(ellipse at center, ' + active.color + '22 0%, #07050A 70%)', border: '1px solid ' + active.color + '44', margin: '14px 14px 0 14px', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', flexShrink: 0 }}>
-          <div style={{ fontSize: 52 }}>{active.avatar}</div>
+          <AvatarPortrait username={active.name} size={64} isLive={active.live} />
           <div style={{ fontFamily: fD, fontSize: 15, color: TEXT, letterSpacing: 2, textAlign: 'center', padding: '0 20px' }}>{active.latestEp}</div>
           {active.live && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(192,24,56,.18)', border: '1px solid rgba(192,24,56,.5)', borderRadius: 999, padding: '4px 12px' }}>
@@ -177,8 +178,11 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
           <div style={{ fontFamily: fM, fontSize: 11, color: MUTED, marginBottom: 6 }}>{active.desc}</div>
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 8 }}>
             <div>
-              <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 2 }}>HOST</div>
-              <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 12, color: TEXT }}>{active.host}</div>
+              <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 4 }}>HOST</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <AvatarPortrait username={active.host} size={24} />
+                <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 12, color: TEXT }}>{active.host}</div>
+              </div>
             </div>
             <div>
               <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 2 }}>SCHEDULE</div>
@@ -215,7 +219,7 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
                   key={ch.id}
                   onClick={function() { openChannel(ch); }}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, background: FAINT, border: '1px solid ' + BORDER, borderRadius: 9, padding: '10px 14px', cursor: 'pointer' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 8, background: ch.color + '22', border: '1px solid ' + ch.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{ch.avatar}</div>
+                  <AvatarPortrait username={ch.name} size={36} isLive={ch.live} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEXT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ch.name}</div>
                     <div style={{ fontFamily: fM, fontSize: 8, color: MUTED }}>{ch.tag}</div>
@@ -278,7 +282,9 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
                   onClick={function() { openChannel(ch); }}
                   style={{ background: FAINT, border: '1px solid ' + BORDER, borderRadius: 12, padding: '14px 12px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg,' + ch.color + ',' + ch.color + '44)' }} />
-                  <div style={{ fontSize: 30, textAlign: 'center', marginBottom: 8 }}>{ch.avatar}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                    <AvatarPortrait username={ch.name} size={48} isLive={ch.live} />
+                  </div>
                   <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEXT, textAlign: 'center', lineHeight: 1.2, marginBottom: 4 }}>{ch.name}</div>
                   <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, textAlign: 'center', marginBottom: 8 }}>{ch.tag}</div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
@@ -305,7 +311,7 @@ export default function PortalTab({ addToast, isLive, socket, roomId }) {
                   onClick={function() { openChannel(ch); }}
                   style={{ display: 'flex', alignItems: 'center', gap: 14, background: FAINT, border: '1px solid ' + BORDER, borderRadius: 11, padding: '12px 16px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: ch.color }} />
-                  <div style={{ width: 44, height: 44, borderRadius: 10, background: ch.color + '22', border: '1px solid ' + ch.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>{ch.avatar}</div>
+                  <AvatarPortrait username={ch.name} size={44} isLive={ch.live} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 14, color: TEXT }}>{ch.name}</div>
                     <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginTop: 1 }}>{ch.tag}</div>
