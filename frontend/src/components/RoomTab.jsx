@@ -988,9 +988,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 var emojiList = ['👍','❤️','🔥','😂','🎯'];
                 return (
                   <div key={msgId} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 0, flexWrap: 'wrap' }}>
-                      <span style={{ color: '#C9A84C', fontWeight: 700, marginRight: 5 }}>{msg.username || 'anon'}</span>
-                      <span style={{ color: '#D0C0E0', flex: 1 }}>{msg.message}</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap' }}>
+                      <div style={{ flexShrink: 0, marginTop: 1 }}>
+                        <AvatarPortrait username={msg.username || 'anon'} size={20} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ color: '#C9A84C', fontWeight: 700, marginRight: 5 }}>{msg.username || 'anon'}</span>
+                        <span style={{ color: '#D0C0E0' }}>{msg.message}</span>
+                      </div>
                       {role === 'host' && (
                         <button onClick={function() { pinMessage(msg); }}
                           title="Pin message"
