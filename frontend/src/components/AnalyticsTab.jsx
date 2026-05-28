@@ -66,11 +66,37 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
     fetch('/api/creator/analytics?period=month')
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (data && data.topSupporters && data.topSupporters.length > 0) {
+        if (!data) return;
+        if (data.topSupporters && data.topSupporters.length > 0) {
           setTopSupporters(data.topSupporters);
         }
-        if (data && data.byType) {
+        if (data.byType) {
           setByType(data.byType);
+        }
+        if (data.recentEarnings && data.recentEarnings.length > 0) {
+          var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+          var today = new Date();
+          var bucketsMap = {};
+          var di;
+          for (di = 6; di >= 0; di--) {
+            var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - di);
+            var key = d.toISOString().slice(0, 10);
+            bucketsMap[key] = { day: days[d.getDay()], cents: 0 };
+          }
+          data.recentEarnings.forEach(function(e) {
+            var raw = e.created_at || '';
+            var key2 = typeof raw === 'string' ? raw.slice(0, 10) : new Date(raw).toISOString().slice(0, 10);
+            if (bucketsMap[key2]) {
+              bucketsMap[key2].cents += Math.floor(e.amount_cents || 0);
+            }
+          });
+          var hist = [];
+          for (var k in bucketsMap) {
+            if (Object.prototype.hasOwnProperty.call(bucketsMap, k)) {
+              hist.push(bucketsMap[k]);
+            }
+          }
+          if (hist.length > 0) setEarningsHistory(hist);
         }
       })
       .catch(function() {});
@@ -337,7 +363,7 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
             <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>REVENUE SPLIT</div>
               <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', marginBottom: 7 }}>
-                <div style={{ width: '90%', background: 'linear-gradient(90deg,#800020,#C9A84C)' }} />
+                <div style={{ width: Math.floor(CREATOR * 100) + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)' }} />
                 <div style={{ flex: 1, background: '#241C34' }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -518,7 +544,7 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
           <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 10 }}>REVENUE SPLIT VISUALIZATION</div>
             <div style={{ display: 'flex', height: 32, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
-              <div style={{ width: '90%', background: 'linear-gradient(90deg,rgba(128,0,32,.8),rgba(201,168,76,.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: Math.floor(CREATOR * 100) + '%', background: 'linear-gradient(90deg,rgba(128,0,32,.8),rgba(201,168,76,.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#07050A', letterSpacing: 2 }}>CREATOR 90%</span>
               </div>
               <div style={{ flex: 1, background: '#241C34', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
