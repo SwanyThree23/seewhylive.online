@@ -51,6 +51,7 @@ var CreatorProfileTab   = React.lazy(function() { return import('./components/Cr
 var SettingsTab         = React.lazy(function() { return import('./components/SettingsTab.jsx'); });
 var PKBattleTab         = React.lazy(function() { return import('./components/PKBattleTab.jsx'); });
 var VODLibraryTab       = React.lazy(function() { return import('./components/VODLibraryTab.jsx'); });
+var CreatorTipsTab      = React.lazy(function() { return import('./components/CreatorTipsTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -93,6 +94,7 @@ var TABS = [
   { id: 'vod',       label: '🎬 VOD' },
   { id: 'profile',   label: '👤 PROFILE' },
   { id: 'settings',  label: '⚙ SETTINGS' },
+  { id: 'tips',      label: '💡 TIPS' },
 ];
 
 export default function App() {
@@ -818,6 +820,12 @@ export default function App() {
           <VODLibraryTab
             addToast={addToast}
             isLive={isLive}
+          />
+        )}
+        {activeTab === 'tips' && (
+          <CreatorTipsTab
+            addToast={addToast}
+            username={username}
           />
         )}
       </Suspense>
