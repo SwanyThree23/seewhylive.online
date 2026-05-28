@@ -45,10 +45,16 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
           next[p.id] = 3000 + Math.floor(Math.random() * 4000);
         }
       });
+      customDests.forEach(function(dest, idx) {
+        var cid = 'custom_' + idx;
+        if (customEnabled[cid]) {
+          next[cid] = 3000 + Math.floor(Math.random() * 4000);
+        }
+      });
       setBitrates(next);
     }, 1200);
     return function() { clearInterval(bitrateRef.current); };
-  }, [fanoutActive, enabled]);
+  }, [fanoutActive, enabled, customDests, customEnabled]);
 
   function toggle(id) {
     if (id === 'seewhy') return;
@@ -74,12 +80,17 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
     var missingKeys = PLATFORMS.filter(function(p) {
       return enabled[p.id] && !p.locked && !keys[p.id];
     });
-    if (missingKeys.length > 0) {
-      addToast('Missing key for: ' + missingKeys.map(function(p) { return p.name; }).join(', '), 'error');
+    var missingCustom = customDests.filter(function(dest, idx) {
+      return customEnabled['custom_' + idx] && !dest.key;
+    });
+    if (missingKeys.length > 0 || missingCustom.length > 0) {
+      var names = missingKeys.map(function(p) { return p.name; }).concat(missingCustom.map(function(d) { return d.name; }));
+      addToast('Missing key for: ' + names.join(', '), 'error');
       return;
     }
+    var total = Object.values(enabled).filter(Boolean).length + Object.values(customEnabled).filter(Boolean).length;
     setFanoutActive(true);
-    addToast('🔴 RTMP Fanout started — ' + Object.keys(enabled).filter(function(k) { return enabled[k]; }).length + ' destinations', 'success');
+    addToast('🔴 RTMP Fanout started — ' + total + ' destinations', 'success');
   }
 
   function stopAll() {
@@ -113,7 +124,8 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
     setTimeout(function() { setCopiedRtmp(false); }, 1500);
   }
 
-  var enabledCount = Object.values(enabled).filter(Boolean).length;
+  var enabledCount = Object.values(enabled).filter(Boolean).length + Object.values(customEnabled).filter(Boolean).length;
+  var totalDests   = PLATFORMS.length + customDests.length;
   var liveCount    = fanoutActive ? enabledCount : 0;
 
   return (
@@ -124,7 +136,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
         {[
           [enabledCount, 'ENABLED', '#C9A84C'],
           [liveCount,    'LIVE',    '#FF1A3C'],
-          [PLATFORMS.length, 'TOTAL', '#7A6F90'],
+          [totalDests, 'TOTAL', '#7A6F90'],
         ].map(function(s) {
           return (
             <div key={s[1]} style={{ flex: 1, background: s[2] + '12', border: '1px solid ' + s[2] + '33', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
