@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CREATOR = 0.90;
 var PLATFORM = 0.10;
@@ -478,7 +479,7 @@ export default function ShowcaseTab(p) {
                 var isCo  = player === detail.co;
                 return (
                   <div key={player} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < detail.roster.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none' }}>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#4A4060', width: 14 }}>{i + 1}</div>
+                    <AvatarPortrait username={player} size={32} rank={isCap ? 1 : isCo ? 2 : undefined} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isCap ? '#E8C46A' : '#EDE8F4' }}>{player}</div>
                       {isCap && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C' }}>CAPTAIN</div>}
@@ -605,7 +606,12 @@ export default function ShowcaseTab(p) {
                 <div key={r.id} style={card}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <span style={mono7}>{r.date}</span>
-                    {r.mvp && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>MVP: {r.mvp}</span>}
+                    {r.mvp && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                        <AvatarPortrait username={r.mvp} size={22} rank={1} />
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>MVP: {r.mvp}</span>
+                      </span>
+                    )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
