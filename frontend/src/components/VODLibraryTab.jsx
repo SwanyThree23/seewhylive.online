@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CHANNELS = [
   { id: 'UCxxx1', name: 'AI Verse Podcast',     handle: '@aiverse',   thumb: '🎙', color: '#C084FC', status: 'online' },
@@ -181,9 +182,9 @@ export default function VODLibraryTab({ addToast, isLive }) {
                   key={ch.id}
                   style={Object.assign({}, cardStyle, { cursor: 'default', padding: '16px 12px', textAlign: 'center' })}
                 >
-                  {/* Emoji thumb */}
-                  <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 8 }}>
-                    {ch.thumb}
+                  {/* Channel avatar */}
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+                    <AvatarPortrait username={ch.name} size={56} isLive={ch.status === 'live'} />
                   </div>
 
                   {/* Channel name */}
@@ -358,13 +359,15 @@ export default function VODLibraryTab({ addToast, isLive }) {
                     }}>
                       {video.title}
                     </div>
-                    <div style={{
-                      fontFamily: "'DM Mono',monospace",
-                      fontSize: 8,
-                      color: '#7A6F90',
-                      marginBottom: 3
-                    }}>
-                      {video.channel}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
+                      <AvatarPortrait username={video.channel} size={18} />
+                      <div style={{
+                        fontFamily: "'DM Mono',monospace",
+                        fontSize: 8,
+                        color: '#7A6F90'
+                      }}>
+                        {video.channel}
+                      </div>
                     </div>
                     <div style={{
                       fontFamily: "'DM Mono',monospace",
