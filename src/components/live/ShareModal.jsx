@@ -83,7 +83,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
       navigator.clipboard.writeText(shareUrl);
       toast.success(`Link copied — paste it in ${platform.name}!`);
     } else {
-      window.open(shareLink, '_blank', 'width=600,height=400');
+      window.open(shareLink, '_blank', 'width=600,height=400,noopener,noreferrer');
     }
   };
 

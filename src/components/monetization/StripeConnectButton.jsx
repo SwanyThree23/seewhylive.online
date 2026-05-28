@@ -112,7 +112,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" className="flex-1 gap-2" onClick={() => window.open('https://dashboard.stripe.com', '_blank')}>
+              <Button size="sm" className="flex-1 gap-2" onClick={() => window.open('https://dashboard.stripe.com', '_blank', 'noopener,noreferrer')}>
                 <ExternalLink className="w-4 h-4" /> Stripe Dashboard
               </Button>
               <Button size="sm" variant="outline" onClick={() => disconnectMutation.mutate()}>

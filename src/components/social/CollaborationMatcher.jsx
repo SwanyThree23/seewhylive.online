@@ -98,7 +98,7 @@ export default function CollaborationMatcher() {
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(`https://youtube.com${creator.url}`, '_blank');
+                  window.open(`https://youtube.com${creator.url}`, '_blank', 'noopener,noreferrer');
                 }}
                 className="w-full h-7 text-[10px]"
                 style={{ background: creator.color, color: 'white' }}
