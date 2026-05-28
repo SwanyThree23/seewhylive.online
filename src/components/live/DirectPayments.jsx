@@ -45,7 +45,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
       navigator.clipboard.writeText(val);
       return;
     }
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const activeLinks = PAYMENT_PLATFORMS.filter(p => links[p.id] || saved[p.id]);
