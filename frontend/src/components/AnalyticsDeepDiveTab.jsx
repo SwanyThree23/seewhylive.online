@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CREATOR = 0.90;
 var PLATFORM = 0.10;
@@ -298,7 +299,9 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           return (
             <div key={row.from_user + i} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: i === 0 ? '#C9A84C' : '#7A6F90', width: 16, flexShrink: 0 }}>#{i + 1}</span>
+                <div style={{ flexShrink: 0 }}>
+                  <AvatarPortrait username={row.from_user} size={28} rank={i < 3 ? i + 1 : undefined} />
+                </div>
                 <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', flex: 1 }}>{row.from_user}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(row.creator_cents)}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{row.gift_count} TXN</span>
@@ -313,7 +316,9 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           return (
             <div key={item[0]} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: i === 0 ? '#C9A84C' : '#7A6F90', width: 16, flexShrink: 0 }}>#{i + 1}</span>
+                <div style={{ flexShrink: 0 }}>
+                  <AvatarPortrait username={item[0]} size={28} rank={i < 3 ? i + 1 : undefined} />
+                </div>
                 <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', flex: 1 }}>{item[0]}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(Math.floor(item[1] * CREATOR))}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{item[2]} TXN</span>

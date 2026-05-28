@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CREATOR  = 0.90;
 var PLATFORM = 0.10;
@@ -461,7 +462,9 @@ export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
               var barW = Math.max(4, Math.floor((s.totalCents / topCents) * 60));
               return (
                 <div key={s.userId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, width: 22, textAlign: 'center' }}>{rankBadge}</div>
+                  <div style={{ flexShrink: 0 }}>
+                    <AvatarPortrait username={s.username} size={32} rank={idx < 3 ? idx + 1 : undefined} />
+                  </div>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', flex: 1 }}>{s.username}</div>
                   <div style={{ width: barW + 'px', height: 4, background: '#C9A84C', borderRadius: 2, marginRight: 8 }} />
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', lineHeight: 1 }}>{'$' + (Math.floor(s.totalCents) / 100).toFixed(2)}</div>
