@@ -66,13 +66,23 @@ fi
 pm2 save
 echo "  ✓ PM2 restarted"
 
-# ── 8. Reload nginx ──────────────────────────────────────────────────────────
+# ── 8. Deploy nginx config + reload ─────────────────────────────────────────
+echo "▶ Deploying nginx config..."
+NGINX_CONF="$REPO_DIR/nginx/nginx.conf"
+if [ -f "$NGINX_CONF" ]; then
+  cp "$NGINX_CONF" /etc/nginx/nginx.conf
+  echo "  ✓ nginx.conf copied → /etc/nginx/nginx.conf"
+else
+  echo "  ⚠ $NGINX_CONF not found — skipping copy"
+fi
+
 echo "▶ Reloading nginx..."
 if nginx -t 2>/dev/null; then
   systemctl reload nginx 2>/dev/null || service nginx reload 2>/dev/null || true
   echo "  ✓ Nginx reloaded"
 else
   echo "  ⚠ Nginx config test failed — skipping reload"
+  nginx -t
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────────
