@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+var CREATOR  = 0.90;
+var PLATFORM = 0.10;
+
 var ROLE_COLORS = {
   host:    '#C9A84C',
   cohost:  '#00C9A7',
@@ -51,6 +54,12 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
   var [streamCategory, setStreamCategory] = useState('Domino');
   var [streamDesc,     setStreamDesc]     = useState('');
   var [cohostToken,    setCohostToken]    = useState('');
+  var [modRules,       setModRules]       = useState({
+    spamBurst:   true,
+    toxicity:    true,
+    linkBlocking: true,
+    allCaps:     false,
+  });
 
   var isHost = role === 'host';
 
@@ -145,6 +154,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
   function inviteToStage(gid) {
     if (!socket) return;
+    if (stageList.length >= 6) { if (addToast) addToast('Stage full — max 6 participants', 'error'); return; }
     socket.emit('stage-invite', { roomId: roomId, guestId: gid });
     setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== gid; }); });
   }
@@ -160,12 +170,24 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     for (var i = 0; i < banned.length; i++) { if (banned[i] === u) return; }
     setBanned(function(p) { return p.concat([u]); });
     setNewBan('');
+    if (socket) socket.emit('ban-user', { roomId: roomId, username: u });
     if (addToast) addToast('Banned: ' + u, 'info');
   }
 
   function removeBan(u) {
     setBanned(function(p) { return p.filter(function(x) { return x !== u; }); });
+    if (socket) socket.emit('unban-user', { roomId: roomId, username: u });
     if (addToast) addToast('Unbanned: ' + u, 'info');
+  }
+
+  function toggleModRule(key) {
+    setModRules(function(prev) {
+      var next = Object.assign({}, prev);
+      next[key] = !prev[key];
+      if (socket) socket.emit('mod-rules', { roomId: roomId, rules: next });
+      if (addToast) addToast('Mod rule ' + key + (next[key] ? ' ON' : ' OFF'), 'info');
+      return next;
+    });
   }
 
   function addSegment() {
@@ -535,16 +557,21 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 10 }}>AUTO-MODERATION RULES</div>
             {[
-              ['Spam burst (5 msg / 3s)', true,  '#00C9A7'],
-              ['Toxicity filter',         true,  '#00C9A7'],
-              ['Link blocking',           true,  '#00C9A7'],
-              ['All-caps throttle',       false, '#7A6F90'],
+              { key: 'spamBurst',    label: 'Spam burst (5 msg / 3s)' },
+              { key: 'toxicity',     label: 'Toxicity filter'          },
+              { key: 'linkBlocking', label: 'Link blocking'            },
+              { key: 'allCaps',      label: 'All-caps throttle'        },
             ].map(function(row) {
+              var on = Boolean(modRules[row.key]);
               return (
-                <div key={row[0]} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid #241C34' }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: row[1] ? row[2] : '#7A6F90', flexShrink: 0 }} />
-                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: '#EDE8F5', flex: 1 }}>{row[0]}</span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: row[1] ? row[2] : '#7A6F90' }}>{row[1] ? 'ON' : 'OFF'}</span>
+                <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid #241C34' }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: on ? '#00C9A7' : '#7A6F90', flexShrink: 0 }} />
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: '#EDE8F5', flex: 1 }}>{row.label}</span>
+                  <button
+                    onClick={function() { toggleModRule(row.key); }}
+                    style={{ background: on ? 'rgba(0,201,167,.15)' : 'rgba(22,16,32,.5)', border: '1px solid ' + (on ? 'rgba(0,201,167,.4)' : '#241C34'), borderRadius: 5, padding: '3px 10px', color: on ? '#00C9A7' : '#7A6F90', fontFamily: "'DM Mono',monospace", fontWeight: 700, fontSize: 8, cursor: 'pointer', minWidth: 36 }}>
+                    {on ? 'ON' : 'OFF'}
+                  </button>
                 </div>
               );
             })}
@@ -633,7 +660,10 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2 }}>SHOW NOTES</div>
-              <button onClick={function() { if (addToast) addToast('Notes copied', 'info'); }}
+              <button onClick={function() {
+                if (navigator.clipboard) { navigator.clipboard.writeText(showNotes).catch(function() {}); }
+                if (addToast) addToast('Notes copied', 'info');
+              }}
                 style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 8px', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer' }}>
                 📋 COPY
               </button>
@@ -897,8 +927,8 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               </div>
               {paywallOn && (
                 <div style={{ marginTop: 8, display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>
-                  <span>You receive: <span style={{ color: '#00C96A' }}>${(Math.floor(paywallCents * 0.90) / 100).toFixed(2)}</span></span>
-                  <span>Platform: <span style={{ color: '#7A6F90' }}>${(Math.floor(paywallCents * 0.10) / 100).toFixed(2)}</span></span>
+                  <span>You receive: <span style={{ color: '#00C96A' }}>${(Math.floor(paywallCents * CREATOR) / 100).toFixed(2)}</span></span>
+                  <span>Platform: <span style={{ color: '#7A6F90' }}>${(Math.floor(paywallCents * PLATFORM) / 100).toFixed(2)}</span></span>
                 </div>
               )}
             </div>

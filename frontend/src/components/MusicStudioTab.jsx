@@ -64,6 +64,9 @@ export default function MusicStudioTab({ addToast, isLive }) {
   var stepRef = useRef(-1);
   var playRef = useRef(null);
   var tapRef  = useRef([]);
+  var gridRef = useRef(grid);
+
+  useEffect(function() { gridRef.current = grid; }, [grid]);
 
   useEffect(function() {
     if (!playing) {
@@ -77,8 +80,9 @@ export default function MusicStudioTab({ addToast, isLive }) {
       stepRef.current = (stepRef.current + 1) % GRID_STEPS;
       setStep(stepRef.current);
       var flash = {};
+      var g = gridRef.current;
       PADS.forEach(function(p) {
-        if (grid[p.id] && grid[p.id][stepRef.current]) {
+        if (g[p.id] && g[p.id][stepRef.current]) {
           flash[p.id] = true;
         }
       });
@@ -88,7 +92,7 @@ export default function MusicStudioTab({ addToast, isLive }) {
       }
     }, interval);
     return function() { clearInterval(playRef.current); };
-  }, [playing, bpm, grid]);
+  }, [playing, bpm]);
 
   useEffect(function() {
     if (!isLive) {
@@ -382,12 +386,21 @@ export default function MusicStudioTab({ addToast, isLive }) {
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {savedPatterns.map(function(sp) {
                   return (
-                    <button
-                      key={sp.id}
-                      onClick={function() { loadPattern(sp); }}
-                      style={{ padding: '4px 10px', background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 999, color: '#5A8FFF', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 0.5 }}>
-                      {sp.name} · {sp.bpm}bpm
-                    </button>
+                    <div key={sp.id} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <button
+                        onClick={function() { loadPattern(sp); }}
+                        style={{ padding: '4px 10px', background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.3)', borderRadius: '999px 0 0 999px', color: '#5A8FFF', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 0.5 }}>
+                        {sp.name} · {sp.bpm}bpm
+                      </button>
+                      <button
+                        onClick={function() {
+                          setSavedPatterns(function(prev) { return prev.filter(function(p) { return p.id !== sp.id; }); });
+                          if (addToast) addToast('Pattern deleted', 'info');
+                        }}
+                        style={{ padding: '4px 7px', background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.25)', borderRadius: '0 999px 999px 0', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', lineHeight: 1 }}>
+                        ✕
+                      </button>
+                    </div>
                   );
                 })}
               </div>
