@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CREATORS = [
   { id: 'c1', name: 'CaliBonesOG',  handle: 'calibonesog',  flag: '🇺🇸', category: 'Domino',  followers: 12400, live: true,  viewers: 892,  color: '#C01838' },
@@ -234,11 +235,8 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
           return (
             <div key={c.id} onClick={function() { setProfile(profile && profile.id === c.id ? null : c); }} style={{ background: c.live ? 'rgba(22,16,32,.9)' : 'rgba(15,12,20,.7)', border: '1px solid ' + (profile && profile.id === c.id ? c.color + '88' : c.live ? c.color + '33' : '#241C34'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
               {/* Avatar */}
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: c.color + '18', border: '2px solid ' + avatarBorderColor, boxShadow: c.live && livePulse ? '0 0 10px 2px ' + c.color + '55' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0, position: 'relative', transition: 'border-color .4s, box-shadow .4s' }}>
-                {c.flag}
-                {c.live && (
-                  <div style={{ position: 'absolute', bottom: -3, right: -3, background: '#FF1A3C', border: '2px solid #07050A', borderRadius: 999, width: 10, height: 10, boxShadow: livePulse ? '0 0 6px 2px rgba(255,26,60,.8)' : 'none', transition: 'box-shadow .4s' }} />
-                )}
+              <div style={{ flexShrink: 0, filter: c.live && livePulse ? 'drop-shadow(0 0 6px ' + c.color + '99)' : 'none', transition: 'filter .4s' }}>
+                <AvatarPortrait username={c.name} size={44} isLive={c.live} />
               </div>
 
               {/* Info */}
