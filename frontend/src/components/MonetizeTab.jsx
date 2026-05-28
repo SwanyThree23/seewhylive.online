@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CREATOR = 0.90;
 var PLATFORM = 0.10;
@@ -566,10 +567,11 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
                     boxShadow: shadow
                   }}
                 >
-                  {/* Rank */}
-                  <div style={{ width: 28, textAlign: 'center', flexShrink: 0 }}>
-                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: entry.rank <= 3 ? 22 : 16, color: rankColor, lineHeight: 1 }}>
-                      {entry.rank}
+                  {/* Rank + portrait */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                    <AvatarPortrait username={entry.name} size={entry.rank <= 3 ? 40 : 32} rank={entry.rank <= 3 ? entry.rank : undefined} />
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: rankColor, lineHeight: 1 }}>
+                      #{entry.rank}
                     </span>
                   </div>
                   {/* Name + streak */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var ROUND_KEYS   = ['qf', 'sf', 'fn'];
 var ROUND_LABELS = { qf: 'QUARTERFINALS', sf: 'SEMIFINALS', fn: 'THE FINALS' };
@@ -252,19 +253,21 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>auto-updating</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', marginBottom: 2 }}>{liveMatchForOverlay.p1}</div>
+            <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <AvatarPortrait username={liveMatchForOverlay.p1} size={44} isLive={true} />
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5' }}>{liveMatchForOverlay.p1}</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C8FF00', lineHeight: 1 }}>{liveScores.p1score}</div>
               {possession === 0 && (
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0', marginTop: 3 }}>&#x25B6; POSSESSION</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0' }}>&#x25B6; POSSESSION</div>
               )}
             </div>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#7A6F90', padding: '0 10px' }}>VS</div>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', marginBottom: 2 }}>{liveMatchForOverlay.p2}</div>
+            <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <AvatarPortrait username={liveMatchForOverlay.p2} size={44} isLive={true} />
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5' }}>{liveMatchForOverlay.p2}</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C8FF00', lineHeight: 1 }}>{liveScores.p2score}</div>
               {possession === 1 && (
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0', marginTop: 3 }}>&#x25B6; POSSESSION</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0' }}>&#x25B6; POSSESSION</div>
               )}
             </div>
           </div>
@@ -473,9 +476,11 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
           </div>
           {LEADERBOARD.map(function(p, i) {
             return (
-              <div key={p.name} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (i === 0 ? '#C9A84C44' : '#241C34'), borderRadius: 10, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: i === 0 ? '#C9A84C' : i === 1 ? '#C0C0C0' : i === 2 ? '#cd7f32' : '#7A6F90', width: 24, textAlign: 'center', flexShrink: 0 }}>{i + 1}</div>
-                <span style={{ fontSize: 14, flexShrink: 0 }}>{p.flag}</span>
+              <div key={p.name} style={{ background: i === 0 ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (i === 0 ? '#C9A84C44' : '#241C34'), borderRadius: 10, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: i === 0 ? '0 0 12px rgba(201,168,76,.15)' : 'none' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: i === 0 ? '#C9A84C' : i === 1 ? '#C0C0C0' : i === 2 ? '#cd7f32' : '#7A6F90', width: 18, textAlign: 'center', flexShrink: 0 }}>{i + 1}</div>
+                <div style={{ flexShrink: 0 }}>
+                  <AvatarPortrait username={p.name} size={36} rank={i < 3 ? i + 1 : undefined} />
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: p.color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                   {p.streak > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C' }}>{p.streak}&#x1F525; streak</div>}
@@ -535,7 +540,10 @@ export default function WashingtonClassicTab({ addToast, isLive }) {
             return (
               <div key={p.name} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (i === 0 ? p.color + '55' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: i === 0 ? '#C9A84C' : '#7A6F90', width: 20, flexShrink: 0 }}>{i + 1}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: i === 0 ? '#C9A84C' : '#7A6F90', width: 18, flexShrink: 0 }}>{i + 1}</div>
+                  <div style={{ flexShrink: 0 }}>
+                    <AvatarPortrait username={p.name} size={36} rank={i < 3 ? i + 1 : undefined} />
+                  </div>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: p.color, flex: 1 }}>{p.name}</div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: p.color, lineHeight: 1 }}>
                     {p.pts}<span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginLeft: 3 }}>PTS</span>
