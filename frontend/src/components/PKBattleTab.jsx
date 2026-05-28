@@ -13,6 +13,15 @@ function fmtTime() {
 
 var DURATION_LABELS = { 60: '1 MIN', 180: '3 MIN', 300: '5 MIN', 600: '10 MIN' };
 
+var RIVALS_DATA = [
+  { name: 'STORM_RIDER',  wins: 3,  losses: 1, status: 'LIVE',    elo: 2840 },
+  { name: 'MYSTIC_GIRL',  wins: 0,  losses: 0, status: 'NEW',     elo: 1200 },
+  { name: 'DARK_KNIGHT',  wins: 7,  losses: 2, status: 'ONLINE',  elo: 3210 },
+  { name: 'PHANTOM_X',    wins: 12, losses: 3, status: 'OFFLINE', elo: 4100 },
+  { name: 'NEON_WOLF',    wins: 5,  losses: 4, status: 'ONLINE',  elo: 2200 },
+  { name: 'SOLAR_STRIKE', wins: 9,  losses: 1, status: 'LIVE',    elo: 3900 },
+];
+
 export default function PKBattleTab({ socket, roomId, role, isLive, addToast, viewerCount, username }) {
   var [battleState, setBattleState]           = useState('idle');
   var [challenger, setChallenger]             = useState('');
@@ -302,13 +311,97 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
             </button>
           </div>
         ) : (
-          <div style={Object.assign({}, cardStyle, { textAlign: 'center', padding: '40px 20px' })}>
+          <div style={Object.assign({}, cardStyle, { textAlign: 'center', padding: '32px 20px' })}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>⚡</div>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#7A6F90', letterSpacing: 1 }}>
               WAITING FOR HOST TO START A BATTLE
             </div>
           </div>
         )}
+
+        {/* ── BATTLE RIVALS ── */}
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3, marginBottom: 10 }}>
+          ⚔ BATTLE RIVALS
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+          {RIVALS_DATA.map(function(r) {
+            var statusColor = r.status === 'LIVE' ? '#FF1564' : (r.status === 'ONLINE' ? '#00C9A7' : (r.status === 'NEW' ? '#C9A84C' : '#3D3450'));
+            return (
+              <div key={r.name} style={{
+                background: 'rgba(22,16,32,.8)',
+                border: r.status === 'LIVE' ? '1px solid rgba(255,21,100,.35)' : '1px solid rgba(255,255,255,.06)',
+                borderRadius: 12,
+                padding: '14px 10px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                {r.status === 'LIVE' && (
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,#FF1564,transparent)' }} />
+                )}
+                <div style={{ position: 'relative' }}>
+                  <AvatarPortrait username={r.name} size={52} />
+                  {r.status === 'LIVE' && (
+                    <div style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', background: '#FF1564', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 5.5, color: '#fff', letterSpacing: 1, whiteSpace: 'nowrap' }}>LIVE</div>
+                  )}
+                </div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#EDE8F5', letterSpacing: 1, textAlign: 'center' }}>{r.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: statusColor }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: statusColor, letterSpacing: 0.5 }}>{r.status}</span>
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>
+                  {r.wins}W-{r.losses}L · {r.elo} ELO
+                </div>
+                <button
+                  onClick={function() { if (addToast) addToast('Challenge sent to ' + r.name + '!', 'success'); }}
+                  style={{
+                    width: '100%',
+                    padding: '7px 0',
+                    background: r.status === 'LIVE' ? 'rgba(255,21,100,.2)' : 'rgba(201,168,76,.1)',
+                    border: '1px solid ' + (r.status === 'LIVE' ? 'rgba(255,21,100,.45)' : 'rgba(201,168,76,.3)'),
+                    borderRadius: 6,
+                    color: r.status === 'LIVE' ? '#FF1564' : '#C9A84C',
+                    fontFamily: "'Bebas Neue',sans-serif",
+                    fontSize: 10,
+                    letterSpacing: 1,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {r.status === 'OFFLINE' ? 'REQUEST' : 'CHALLENGE'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── MATCHMAKING ── */}
+        <div style={Object.assign({}, cardStyle, { textAlign: 'center' })}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#EDE8F5', letterSpacing: 2, marginBottom: 4 }}>
+            ⚡ QUICK MATCHMAKING
+          </div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#7A6F90', marginBottom: 14 }}>
+            Find a battle partner · matched by ELO rating
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            {[{ label: 'INSTANT', icon: '⚡' }, { label: 'RANKED', icon: '🏆' }, { label: 'CLANS', icon: '👥' }].map(function(m) {
+              return (
+                <button key={m.label} onClick={function() { if (addToast) addToast('Searching for ' + m.label + ' match...', 'info'); }}
+                  style={{ flex: 1, padding: '12px 4px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 18 }}>{m.icon}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>YOUR ELO</span>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C' }}>2,840</span>
+          </div>
+        </div>
       </div>
     );
   }

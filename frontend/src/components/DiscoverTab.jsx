@@ -1,6 +1,7 @@
 'use strict';
 import React, { useState, useEffect, useRef } from 'react';
 import SignalBars from './SignalBars';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var MOCK_STREAMS = [
   { id: 's1', title: 'Washington Classic Round 2', hostName: 'SwanyThree', viewerCount: 2847, genre: 'Tournament', isLive: true, durationMins: 94, tier: 'free', category: 'SPORTS' },
@@ -303,7 +304,6 @@ export default function DiscoverTab(props) {
   }
 
   function renderCreatorCard(creator) {
-    var firstLetter = creator.displayName.charAt(0);
     var bioCut = creator.bio.length > 60 ? creator.bio.slice(0, 60) + '...' : creator.bio;
     return React.createElement(
       'div',
@@ -320,26 +320,7 @@ export default function DiscoverTab(props) {
           gap: 10,
         }
       },
-      React.createElement(
-        'div',
-        {
-          style: {
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: 'rgba(201,168,76,.2)',
-            border: '2px solid #C9A84C',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: "'Bebas Neue',sans-serif",
-            fontSize: 20,
-            color: '#C9A84C',
-            flexShrink: 0,
-          }
-        },
-        firstLetter
-      ),
+      React.createElement(AvatarPortrait, { username: creator.username, size: 52, isLive: creator.isLive }),
       React.createElement(
         'div',
         { style: { flex: 1, minWidth: 0 } },
