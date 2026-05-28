@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 import OctCell from './OctCell.jsx';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
 import rtcManager from '../webrtc.js';
@@ -462,7 +463,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               var onStage = stageGuests.indexOf(gid) >= 0;
               return (
                 <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'rgba(22,16,32,.7)', border: '1px solid ' + (onStage ? 'rgba(0,201,167,.3)' : '#241C34'), borderRadius: 8 }}>
-                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#161020', border: '1px solid #241C34', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>👤</div>
+                  <div style={{ flexShrink: 0 }}>
+                    <AvatarPortrait username={g.username || gid} size={30} />
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || gid}</div>
                     <RolePill role={g.role || 'viewer'} />
@@ -777,7 +780,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           {handQueue.map(function(item) {
             return (
               <div key={item.guestId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0' }}>
-                <span style={{ fontSize: 14 }}>✋</span>
+                <div style={{ flexShrink: 0, position: 'relative' }}>
+                  <AvatarPortrait username={item.username} size={32} />
+                  <span style={{ position: 'absolute', top: -2, right: -2, fontSize: 10 }}>✋</span>
+                </div>
                 <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.username}</span>
                 <button onClick={function() { inviteToStage(item); }}
                   style={{ background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 5, padding: '3px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
