@@ -1434,6 +1434,52 @@ io.on('connection', function(socket) {
     io.to(sId).emit('user-muted', { userId: data.targetUser, reason: data.reason, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── ban-user ───────────────────────────────────────────────────────────
+  socket.on('ban-user', function(data) {
+    var sId = data.roomId || socket.data.roomId;
+    if (!sId) return;
+    var bannedId = data.userId || data.targetUser;
+    io.to(sId).emit('user-banned', { userId: bannedId, ts: Math.floor(Date.now() / 1000) });
+    // Disconnect the banned socket if it is connected to this room
+    var room = rooms.get(sId);
+    if (room) {
+      room.guests.forEach(function(g) {
+        if ((g.guestId === bannedId || g.userId === bannedId) && g.socketId) {
+          var bannedSocket = io.sockets.sockets.get(g.socketId);
+          if (bannedSocket) { bannedSocket.disconnect(true); }
+        }
+      });
+    }
+  });
+
+  // ── unban-user ─────────────────────────────────────────────────────────
+  socket.on('unban-user', function(data) {
+    var sId = data.roomId || socket.data.roomId;
+    if (!sId) return;
+    io.to(sId).emit('user-unbanned', { username: data.username, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── mod-rules ──────────────────────────────────────────────────────────
+  socket.on('mod-rules', function(data) {
+    var sId = data.roomId || socket.data.roomId;
+    if (!sId) return;
+    io.to(sId).emit('mod-rules-updated', { rules: data.rules, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── bot-rule-toggle ────────────────────────────────────────────────────
+  socket.on('bot-rule-toggle', function(data) {
+    var sId = data.roomId || socket.data.roomId;
+    if (!sId) return;
+    io.to(sId).emit('bot-rule-changed', { rule: data.rule, enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── subscriber-only-changed ────────────────────────────────────────────
+  socket.on('subscriber-only-changed', function(data) {
+    var sId = data.roomId || socket.data.roomId;
+    if (!sId) return;
+    io.to(sId).emit('subscriber-only-changed', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+  });
+
   // ── disconnect ─────────────────────────────────────────────────────────
   socket.on('disconnect', function(reason) {
     logger.info('[socket] Disconnected: ' + socket.id + ' reason=' + reason);
