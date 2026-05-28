@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var PLATFORM_TIERS = [
   { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#7A6F90', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
@@ -226,13 +227,19 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   function renderProfileTab() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <div
-            onClick={cycleEmoji}
-            style={{ width: 70, height: 70, borderRadius: '50%', background: 'rgba(201,168,76,.15)', border: '2px solid rgba(201,168,76,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, cursor: 'pointer' }}>
-            {avatarEmoji}
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 18 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <AvatarPortrait username={username || 'creator'} size={64} />
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>YOUR AVATAR</div>
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>Click to change</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div
+              onClick={cycleEmoji}
+              style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(201,168,76,.15)', border: '2px solid rgba(201,168,76,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, cursor: 'pointer' }}>
+              {avatarEmoji}
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>Click to change</div>
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
