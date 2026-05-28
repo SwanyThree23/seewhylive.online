@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# SeeWhy LIVE v33 — VPS Deploy Script
-# Run on VPS: bash deploy.sh
-# Requires: git, node 18+, npm, pm2 (npm i -g pm2)
+# SeeWhy LIVE v33 — Full Production Deploy + Activation Script
+# Run on VPS as root: bash deploy.sh
+# Requires: git, node 18+, npm, pm2 (npm i -g pm2), nginx with rtmp module
 
 set -e
 
@@ -10,6 +10,7 @@ BRANCH="claude/seewhy-live-v33-build-v0L5Z"
 PROD_SERVER="/opt/seewhy/server"
 PROD_FRONTEND="/opt/seewhy/frontend"
 PM2_APP="seewhy-server"
+VPS_IP="2.24.194.112"
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
@@ -21,13 +22,13 @@ echo ""
 echo "▶ Pulling $BRANCH..."
 git -C "$REPO_DIR" fetch origin "$BRANCH"
 git -C "$REPO_DIR" checkout "$BRANCH"
-git -C "$REPO_DIR" pull origin "$BRANCH"
+git -C "$REPO_DIR" reset --hard "origin/$BRANCH"
 echo "  ✓ Code updated"
 
 # ── 2. Build frontend ────────────────────────────────────────────────────────
 echo "▶ Building frontend..."
 cd "$REPO_DIR/frontend"
-npm install          # full install — devDeps needed for vite build
+npm install
 npm run build
 echo "  ✓ Frontend built → frontend/dist/"
 
@@ -51,46 +52,102 @@ npm install --omit=dev
 echo "  ✓ Dependencies installed"
 
 # ── 6. Ensure production directories exist ───────────────────────────────────
+echo "▶ Creating runtime directories..."
 mkdir -p /opt/seewhy/data
 mkdir -p /var/log/seewhy
 mkdir -p /var/www/html/hls
+chmod 755 /var/www/html/hls
+echo "  ✓ Directories ready"
 
-# ── 7. Restart PM2 ───────────────────────────────────────────────────────────
+# ── 7. Firewall — open required ports ────────────────────────────────────────
+echo "▶ Configuring firewall..."
+if command -v ufw &>/dev/null; then
+  ufw allow 80/tcp    2>/dev/null || true
+  ufw allow 443/tcp   2>/dev/null || true
+  ufw allow 1935/tcp  2>/dev/null || true   # RTMP ingest
+  ufw allow 3478/tcp  2>/dev/null || true   # TURN/STUN
+  ufw allow 3478/udp  2>/dev/null || true
+  ufw allow 5349/tcp  2>/dev/null || true   # TURN TLS
+  ufw allow 49152:65535/udp 2>/dev/null || true  # mediasoup RTP
+  echo "  ✓ UFW rules applied"
+else
+  echo "  ⚠ ufw not found — skipping firewall step"
+fi
+
+# ── 8. PM2 startup — survive reboots ────────────────────────────────────────
+echo "▶ Configuring PM2 startup..."
+pm2 startup systemd -u root --hp /root 2>/dev/null | tail -1 | bash 2>/dev/null || true
+echo "  ✓ PM2 startup configured"
+
+# ── 9. Restart PM2 ───────────────────────────────────────────────────────────
 echo "▶ Restarting $PM2_APP..."
 if pm2 describe "$PM2_APP" > /dev/null 2>&1; then
-  pm2 restart "$PM2_APP"
+  pm2 restart "$PM2_APP" --update-env
 else
   echo "  App not in PM2 — starting fresh..."
   pm2 start "$REPO_DIR/ecosystem.config.js"
 fi
-pm2 save
-echo "  ✓ PM2 restarted"
+pm2 save --force
+echo "  ✓ PM2 running & saved"
 
-# ── 8. Deploy nginx config + reload ─────────────────────────────────────────
+# ── 10. Deploy nginx config + reload ────────────────────────────────────────
 echo "▶ Deploying nginx config..."
 NGINX_CONF="$REPO_DIR/nginx/nginx.conf"
 if [ -f "$NGINX_CONF" ]; then
   cp "$NGINX_CONF" /etc/nginx/nginx.conf
-  echo "  ✓ nginx.conf copied → /etc/nginx/nginx.conf"
-else
-  echo "  ⚠ $NGINX_CONF not found — skipping copy"
+  echo "  ✓ nginx.conf deployed"
 fi
+
+echo "▶ Enabling nginx on boot..."
+systemctl enable nginx 2>/dev/null || true
 
 echo "▶ Reloading nginx..."
 if nginx -t 2>/dev/null; then
   systemctl reload nginx 2>/dev/null || service nginx reload 2>/dev/null || true
   echo "  ✓ Nginx reloaded"
 else
-  echo "  ⚠ Nginx config test failed — skipping reload"
+  echo "  ⚠ Nginx config test failed — check /etc/nginx/nginx.conf"
   nginx -t
+fi
+
+# ── 11. Post-deploy health check ─────────────────────────────────────────────
+echo ""
+echo "▶ Running health checks..."
+sleep 3
+
+PM2_STATUS=$(pm2 list --no-color 2>/dev/null | grep "$PM2_APP" | grep -o 'online\|stopped\|errored' || echo 'unknown')
+echo "  PM2  : $PM2_STATUS"
+
+NGINX_STATUS=$(systemctl is-active nginx 2>/dev/null || echo 'unknown')
+echo "  nginx: $NGINX_STATUS"
+
+API_CODE=$(curl -sk -o /dev/null -w "%{http_code}" "https://localhost/api/health" 2>/dev/null || echo '???')
+echo "  API  : HTTP $API_CODE"
+
+PORT_3001=$(ss -tlnp 2>/dev/null | grep ':3001' | head -1 | grep -c '.' || echo '0')
+if [ "$PORT_3001" -gt 0 ]; then
+  echo "  :3001: listening ✓"
+else
+  echo "  :3001: NOT listening ⚠"
+fi
+
+PORT_1935=$(ss -tlnp 2>/dev/null | grep ':1935' | head -1 | grep -c '.' || echo '0')
+if [ "$PORT_1935" -gt 0 ]; then
+  echo "  :1935: listening ✓ (RTMP)"
+else
+  echo "  :1935: NOT listening ⚠ (RTMP — nginx may need rtmp module)"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────────
 echo ""
-echo "✅ Deploy complete!"
+echo "╔══════════════════════════════════════════╗"
+echo "║  ✅  SeeWhy LIVE v33 — LIVE              ║"
+echo "╚══════════════════════════════════════════╝"
 echo ""
-echo "  Frontend : https://seewhylive.online"
-echo "  API      : https://seewhylive.online/api/health"
-echo "  RTMP     : rtmp://2.24.194.112:1935/live"
-echo "  PM2 logs : pm2 logs $PM2_APP"
+echo "  Frontend  : https://$VPS_IP"
+echo "  API health: https://$VPS_IP/api/health"
+echo "  RTMP in   : rtmp://$VPS_IP:1935/live/<stream-key>"
+echo "  HLS out   : https://$VPS_IP/hls/<stream-key>.m3u8"
+echo "  PM2 logs  : pm2 logs $PM2_APP"
+echo "  PM2 mon   : pm2 monit"
 echo ""
