@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
 function fmtCountdown(s) {
@@ -312,58 +313,92 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     );
   }
 
-  // ── ENDED STATE ─────────────────────────────────────────────────────────────
+  // ── ENDED STATE — ELITE LEAGUE HERO CARD ───────────────────────────────────
   if (battleState === 'ended') {
+    var isWinnerChallenger = winner === challenger;
+    var winnerScore  = isWinnerChallenger ? challengerScore : defenderScore;
+    var loserName    = isWinnerChallenger ? defender : challenger;
+    var loserScore   = isWinnerChallenger ? defenderScore : challengerScore;
+
     return (
       <div style={containerStyle}>
-        <div style={Object.assign({}, cardStyle, { textAlign: 'center', padding: '32px 20px' })}>
-          <div style={{ fontSize: 56, marginBottom: 8 }}>🏆</div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 40, color: '#C9A84C', letterSpacing: 2, marginBottom: 4 }}>
+
+        {/* ELITE LEAGUE badge */}
+        <div style={{ textAlign: 'center', marginBottom: 12 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 999, padding: '4px 16px' }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#C9A84C', letterSpacing: 3 }}>⚡ ELITE LEAGUE ⚡</span>
+          </div>
+        </div>
+
+        {/* Hero card — winner */}
+        <div style={{
+          background: 'linear-gradient(160deg,rgba(201,168,76,.18),rgba(7,5,10,.95))',
+          border: '2px solid rgba(201,168,76,.6)',
+          borderRadius: 16,
+          padding: '24px 20px',
+          marginBottom: 12,
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Background glow */}
+          <div style={{ position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', width: 200, height: 200, background: 'radial-gradient(circle,rgba(201,168,76,.25),transparent 70%)', pointerEvents: 'none' }} />
+
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', letterSpacing: 3, marginBottom: 16 }}>
+            BATTLE CHAMPION
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+            <AvatarPortrait username={winner} size={88} rank={1} />
+          </div>
+
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#EDE8F5', letterSpacing: 2, lineHeight: 1, marginBottom: 4 }}>
             {winner}
           </div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#7A6F90', marginBottom: 24 }}>
-            WINS THE PK BATTLE!
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 52, color: '#C9A84C', lineHeight: 1, textShadow: '0 0 24px rgba(201,168,76,.5)' }}>
+            {winnerScore}
           </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginBottom: 24 }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#7A6F90', letterSpacing: 1 }}>
-                {challenger}
-              </div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#FF1564' }}>
-                {challengerScore}
-              </div>
-            </div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF1564', alignSelf: 'center' }}>VS</div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#7A6F90', letterSpacing: 1 }}>
-                {defender}
-              </div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#00C9A7' }}>
-                {defenderScore}
-              </div>
-            </div>
-          </div>
-
-          {isHost && (
-            <button
-              onClick={resetBattle}
-              style={{
-                padding: '12px 32px',
-                background: 'rgba(201,168,76,.2)',
-                border: '1px solid rgba(201,168,76,.5)',
-                borderRadius: 10,
-                color: '#C9A84C',
-                fontFamily: "'Bebas Neue',sans-serif",
-                fontSize: 16,
-                letterSpacing: 2,
-                cursor: 'pointer'
-              }}
-            >
-              START NEW BATTLE
-            </button>
-          )}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4, letterSpacing: 1 }}>FINAL SCORE</div>
         </div>
+
+        {/* Loser recap card */}
+        <div style={{
+          background: 'rgba(22,16,32,.7)',
+          border: '1px solid rgba(255,255,255,.08)',
+          borderRadius: 10,
+          padding: '14px 16px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+        }}>
+          <AvatarPortrait username={loserName} size={48} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#7A6F90', letterSpacing: 1 }}>{loserName}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>RUNNER-UP</div>
+          </div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 30, color: '#7A6F90' }}>{loserScore}</div>
+        </div>
+
+        {isHost && (
+          <button
+            onClick={resetBattle}
+            style={{
+              width: '100%',
+              padding: '13px',
+              background: 'linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.1))',
+              border: '1px solid rgba(201,168,76,.5)',
+              borderRadius: 10,
+              color: '#C9A84C',
+              fontFamily: "'Bebas Neue',sans-serif",
+              fontSize: 16,
+              letterSpacing: 2,
+              cursor: 'pointer',
+            }}
+          >
+            ⚡ START NEW BATTLE
+          </button>
+        )}
       </div>
     );
   }
@@ -384,91 +419,78 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
       </div>
 
-      {/* Score Split */}
-      <div style={cardStyle}>
-        {/* Names + Scores */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          {/* Challenger side */}
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#EDE8F5', letterSpacing: 1, marginBottom: 4 }}>
-              {challenger}
-            </div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C9A84C' }}>
-              {challengerScore}
-            </div>
-          </div>
-
-          {/* VS */}
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF1564', letterSpacing: 2, flexShrink: 0 }}>
-            VS
-          </div>
-
-          {/* Defender side */}
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#EDE8F5', letterSpacing: 1, marginBottom: 4 }}>
-              {defender}
-            </div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#00C9A7' }}>
-              {defenderScore}
-            </div>
-          </div>
+      {/* Card Art Score Split */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'stretch' }}>
+        {/* Challenger card */}
+        <div style={{
+          flex: 1,
+          background: 'linear-gradient(160deg,rgba(255,21,100,.2),rgba(7,5,10,.95))',
+          border: myVote === 'challenger' ? '2px solid rgba(255,21,100,.8)' : '1px solid rgba(255,21,100,.35)',
+          borderRadius: 12,
+          padding: '14px 10px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+          cursor: myVote === null ? 'pointer' : 'default',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+        onClick={myVote === null ? function() { castVote('challenger'); } : undefined}
+        >
+          <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', width: 100, height: 100, background: 'radial-gradient(circle,rgba(255,21,100,.3),transparent 70%)', pointerEvents: 'none' }} />
+          <AvatarPortrait username={challenger} size={60} />
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#EDE8F5', letterSpacing: 1, textAlign: 'center' }}>{challenger}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#FF1564', lineHeight: 1, textShadow: '0 0 16px rgba(255,21,100,.6)' }}>{challengerScore}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{cPct}% VOTES</div>
+          {myVote === 'challenger' && (
+            <div style={{ background: 'rgba(255,21,100,.25)', border: '1px solid rgba(255,21,100,.5)', borderRadius: 999, padding: '2px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: '#FF1564', letterSpacing: 1 }}>✓ VOTED</div>
+          )}
         </div>
 
-        {/* Score Bar */}
-        <div style={{ display: 'flex', height: 10, borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,.06)', marginBottom: 20 }}>
-          <div style={{
-            width: cPct + '%',
-            background: 'linear-gradient(90deg,#FF1564,#FF4D7D)',
-            transition: 'width .4s ease'
-          }} />
-          <div style={{
-            width: dPct + '%',
-            background: 'linear-gradient(90deg,#00C9A7,#00E5C0)',
-            transition: 'width .4s ease'
-          }} />
+        {/* VS divider */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, flexShrink: 0, minWidth: 36 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#FF1564', letterSpacing: 2, textShadow: '0 0 12px #FF1564' }}>VS</div>
+          <div style={{ height: 2, width: 2, borderRadius: '50%', background: '#241C34' }} />
         </div>
 
-        {/* Vote Buttons */}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            onClick={function() { castVote('challenger'); }}
-            disabled={myVote !== null}
-            style={{
-              flex: 1,
-              padding: '12px',
-              background: myVote === 'challenger' ? 'rgba(255,21,100,.4)' : 'rgba(255,21,100,.2)',
-              border: '1px solid rgba(255,21,100,.5)',
-              borderRadius: 10,
-              color: myVote === 'challenger' ? '#FF1564' : '#EDE8F5',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 14,
-              letterSpacing: 1,
-              cursor: myVote !== null ? 'not-allowed' : 'pointer',
-              opacity: (myVote !== null && myVote !== 'challenger') ? 0.5 : 1
-            }}
-          >
-            {myVote === 'challenger' ? '✓ VOTED' : 'VOTE ' + challenger}
-          </button>
-          <button
-            onClick={function() { castVote('defender'); }}
-            disabled={myVote !== null}
-            style={{
-              flex: 1,
-              padding: '12px',
-              background: myVote === 'defender' ? 'rgba(0,201,167,.4)' : 'rgba(0,201,167,.2)',
-              border: '1px solid rgba(0,201,167,.5)',
-              borderRadius: 10,
-              color: myVote === 'defender' ? '#00C9A7' : '#EDE8F5',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 14,
-              letterSpacing: 1,
-              cursor: myVote !== null ? 'not-allowed' : 'pointer',
-              opacity: (myVote !== null && myVote !== 'defender') ? 0.5 : 1
-            }}
-          >
-            {myVote === 'defender' ? '✓ VOTED' : 'VOTE ' + defender}
-          </button>
+        {/* Defender card */}
+        <div style={{
+          flex: 1,
+          background: 'linear-gradient(160deg,rgba(0,201,167,.2),rgba(7,5,10,.95))',
+          border: myVote === 'defender' ? '2px solid rgba(0,201,167,.8)' : '1px solid rgba(0,201,167,.35)',
+          borderRadius: 12,
+          padding: '14px 10px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+          cursor: myVote === null ? 'pointer' : 'default',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+        onClick={myVote === null ? function() { castVote('defender'); } : undefined}
+        >
+          <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', width: 100, height: 100, background: 'radial-gradient(circle,rgba(0,201,167,.3),transparent 70%)', pointerEvents: 'none' }} />
+          <AvatarPortrait username={defender} size={60} />
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#EDE8F5', letterSpacing: 1, textAlign: 'center' }}>{defender}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#00C9A7', lineHeight: 1, textShadow: '0 0 16px rgba(0,201,167,.6)' }}>{defenderScore}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{dPct}% VOTES</div>
+          {myVote === 'defender' && (
+            <div style={{ background: 'rgba(0,201,167,.25)', border: '1px solid rgba(0,201,167,.5)', borderRadius: 999, padding: '2px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: '#00C9A7', letterSpacing: 1 }}>✓ VOTED</div>
+          )}
         </div>
+      </div>
+
+      {/* Score bar */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', height: 8, borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,.06)' }}>
+          <div style={{ width: cPct + '%', background: 'linear-gradient(90deg,#FF1564,#FF4D7D)', transition: 'width .4s ease' }} />
+          <div style={{ width: dPct + '%', background: 'linear-gradient(90deg,#00C9A7,#00E5C0)', transition: 'width .4s ease' }} />
+        </div>
+        {myVote === null && (
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center', marginTop: 6, letterSpacing: 1 }}>TAP A CARD TO VOTE</div>
+        )}
       </div>
 
       {/* Battle Log */}
