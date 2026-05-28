@@ -240,15 +240,23 @@ var io = new Server(server, {
     origin: process.env.FRONTEND_ORIGIN || '*',
     methods: ['GET', 'POST']
   },
-  pingTimeout:  60000,
-  pingInterval: 25000
+  pingTimeout:        45000,
+  pingInterval:       20000,
+  maxHttpBufferSize:  1e6,
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 120000,
+    skipMiddlewares: true
+  }
 });
 
 // ─── SwanyBot instance ────────────────────────────────────────────────────
 var swanybot = new SwanyBot(io);
 
 // ─── Room state ───────────────────────────────────────────────────────────
-// roomId → { viewers: Set<socketId>, guests: Map<socketId, {guestId, username, role}>, hostSocketId: string|null }
+// roomId → { viewers: Set<socketId>, guests: Map<socketId, {guestId, username, role}>,
+//            hostSocketId: string|null, hostUserId: string|null,
+//            watchParty: { videoId, url, playing, position, ts } | null,
+//            presence: Map<socketId, lastSeenTs> }
 var rooms = new Map();
 
 function getRoom(roomId) {
@@ -256,11 +264,36 @@ function getRoom(roomId) {
     rooms.set(roomId, {
       viewers:      new Set(),
       guests:       new Map(),
-      hostSocketId: null
+      hostSocketId: null,
+      hostUserId:   null,
+      watchParty:   null,
+      presence:     new Map()
     });
   }
   return rooms.get(roomId);
 }
+
+// ─── Presence cleanup — evict sockets unseen for >90s ─────────────────────
+setInterval(function() {
+  var now = Date.now();
+  rooms.forEach(function(room, roomId) {
+    room.presence.forEach(function(lastSeen, sid) {
+      if (now - lastSeen > 90000) {
+        room.presence.delete(sid);
+        // Only clean up if the socket is not actually connected
+        if (!io.sockets.sockets.has(sid)) {
+          room.viewers.delete(sid);
+          room.guests.delete(sid);
+        }
+      }
+    });
+    // Emit refreshed viewer count after cleanup
+    var count = room.viewers.size + room.guests.size;
+    if (count >= 0) {
+      io.to(roomId).emit('viewer-count', { count: count });
+    }
+  });
+}, 60000);
 
 // ─── REST API Routes ──────────────────────────────────────────────────────
 
@@ -601,11 +634,13 @@ io.on('connection', function(socket) {
     socket.data.role     = role;
 
     var room = getRoom(roomId);
+    room.presence.set(socket.id, Date.now());
 
     if (role === 'host' || role === 'guest') {
       room.guests.set(socket.id, { guestId: guestId, username: username, role: role });
       if (role === 'host') {
         room.hostSocketId = socket.id;
+        room.hostUserId   = guestId;
         // Insert/update room record
         try {
           db.prepare(`
@@ -688,16 +723,29 @@ io.on('connection', function(socket) {
           var routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
           var existingProducers = mediasoup.getRoomProducers(roomId);
           var viewerAck = { joined: true, routerRtpCapabilities: routerCaps, existingProducers: existingProducers };
+          // Send active watch party state so late-joiners auto-sync
+          if (room.watchParty) {
+            viewerAck.watchParty = room.watchParty;
+          }
           io.to(socket.id).emit('join-room-ack', viewerAck);
           if (ack) ack(viewerAck);
         })
         .catch(function(err) {
           logger.warn('[join-room] viewer router setup error: ' + err.message);
-          // Viewers can still join without RTC — just no stream subscription
-          io.to(socket.id).emit('join-room-ack', { joined: true });
-          if (ack) ack({ joined: true });
+          var fallbackAck = { joined: true };
+          if (room.watchParty) fallbackAck.watchParty = room.watchParty;
+          io.to(socket.id).emit('join-room-ack', fallbackAck);
+          if (ack) ack(fallbackAck);
         });
     }
+  });
+
+  // ── ping-presence ──────────────────────────────────────────────────────
+  socket.on('ping-presence', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (room) room.presence.set(socket.id, Date.now());
   });
 
   // ── get-rtp-capabilities ───────────────────────────────────────────────
@@ -1088,8 +1136,11 @@ io.on('connection', function(socket) {
 
   // ── watch-party ────────────────────────────────────────────────────────
   socket.on('watch-party-start', function(data) {
-    var roomId   = data.roomId || socket.data.roomId;
+    var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    if (socket.data.role !== 'host') return;
+    var room = getRoom(roomId);
+    room.watchParty = { videoId: null, url: null, playing: false, position: 0, ts: Date.now() };
     var hostName = socket.data.username || 'Host';
     io.to(roomId).emit('watch-party-started', { ts: Math.floor(Date.now() / 1000) });
     io.to(roomId).emit('chat-message', {
@@ -1103,25 +1154,68 @@ io.on('connection', function(socket) {
   socket.on('watch-party-url', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.videoId) return;
+    if (socket.data.role !== 'host') return;
+    var room = getRoom(roomId);
+    if (!room.watchParty) room.watchParty = { playing: false, position: 0, ts: Date.now() };
+    room.watchParty.videoId = data.videoId;
+    room.watchParty.url = data.url || '';
     io.to(roomId).emit('watch-party-url', { videoId: data.videoId, url: data.url || '' });
   });
 
   socket.on('watch-party-play', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    io.to(roomId).emit('watch-party-play', { position: data.position || 0, timestamp: data.timestamp || Date.now() });
+    if (socket.data.role !== 'host') return;
+    var room = getRoom(roomId);
+    var now = Date.now();
+    var position = data.position || 0;
+    if (!room.watchParty) room.watchParty = {};
+    room.watchParty.playing  = true;
+    room.watchParty.position = position;
+    room.watchParty.ts       = now;
+    io.to(roomId).emit('watch-party-play', { position: position, timestamp: now });
   });
 
   socket.on('watch-party-pause', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    io.to(roomId).emit('watch-party-pause', { position: data.position || 0 });
+    if (socket.data.role !== 'host') return;
+    var room = getRoom(roomId);
+    var position = data.position || 0;
+    if (!room.watchParty) room.watchParty = {};
+    room.watchParty.playing  = false;
+    room.watchParty.position = position;
+    room.watchParty.ts       = Date.now();
+    io.to(roomId).emit('watch-party-pause', { position: position });
   });
 
   socket.on('watch-party-seek', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || typeof data.position !== 'number') return;
+    if (socket.data.role !== 'host') return;
+    var room = getRoom(roomId);
+    if (!room.watchParty) room.watchParty = {};
+    room.watchParty.position = data.position;
+    room.watchParty.ts       = Date.now();
     io.to(roomId).emit('watch-party-seek', { position: data.position });
+  });
+
+  // Request current watch party state (for late-joining guests/viewers)
+  socket.on('watch-party-sync-request', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (room && room.watchParty) {
+      var wp = room.watchParty;
+      var elapsed = wp.playing ? (Date.now() - wp.ts) / 1000 : 0;
+      io.to(socket.id).emit('watch-party-sync', {
+        videoId:  wp.videoId,
+        url:      wp.url,
+        playing:  wp.playing,
+        position: wp.position + elapsed,
+        ts:       Date.now()
+      });
+    }
   });
 
   // ── bot-manual-message ─────────────────────────────────────────────────
@@ -1502,8 +1596,20 @@ io.on('connection', function(socket) {
       }
     }
 
+    room.presence.delete(socket.id);
+
     if (room.hostSocketId === socket.id) {
       room.hostSocketId = null;
+      // Pause the watch party if host disconnects
+      if (room.watchParty && room.watchParty.playing) {
+        var elapsed = (Date.now() - room.watchParty.ts) / 1000;
+        room.watchParty.position += elapsed;
+        room.watchParty.playing = false;
+        room.watchParty.ts = Date.now();
+        io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
+      }
+      // Notify room that host disconnected
+      io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
     }
 
     // Close any producers from this socket (scan by guestId)
@@ -1533,6 +1639,7 @@ io.on('connection', function(socket) {
     if (room.viewers.size === 0 && room.guests.size === 0) {
       rooms.delete(roomId);
     }
+
   });
 });
 
