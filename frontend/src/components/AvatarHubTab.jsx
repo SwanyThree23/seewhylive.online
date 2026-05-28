@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var AVATAR_ITEMS = [
   { id: 'a1', name: 'Domino King',    emoji: '👑', price: 200, owned: true,  equipped: true,  rarity: 'legendary', desc: 'Washington Classic champion' },
@@ -224,11 +225,11 @@ export default function AvatarHubTab({ addToast, isLive }) {
       {isLive && liveViewerAvatars.length > 0 && (
         <div style={{ background: 'rgba(192,132,252,.07)', border: '1px solid rgba(192,132,252,.25)', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC', letterSpacing: 2, flexShrink: 0 }}>WATCHING LIVE</div>
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {liveViewerAvatars.map(function(v) {
               return (
-                <div key={v.id} style={{ width: 26, height: 26, borderRadius: '50%', background: v.color + '33', border: '1px solid ' + v.color + '88', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, color: v.color, fontWeight: 700, flexShrink: 0 }} title={v.name}>
-                  {v.initials}
+                <div key={v.id} style={{ flexShrink: 0 }} title={v.name}>
+                  <AvatarPortrait username={v.name} size={28} />
                 </div>
               );
             })}

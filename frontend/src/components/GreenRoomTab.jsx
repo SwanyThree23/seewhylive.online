@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var CREATOR  = 0.90;
 var PLATFORM = 0.10;
@@ -460,7 +461,10 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             ) : handQueue.map(function(hq) {
               return (
                 <div key={hq.guestId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid #241C34' }}>
-                  <span style={{ fontSize: 14, flexShrink: 0 }}>✋</span>
+                  <div style={{ flexShrink: 0, position: 'relative' }}>
+                    <AvatarPortrait username={hq.username} size={36} />
+                    <span style={{ position: 'absolute', top: -2, right: -2, fontSize: 10 }}>✋</span>
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {hq.username}
@@ -500,6 +504,9 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                   var id = g.userId || g.guestId;
                   return (
                     <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ flexShrink: 0 }}>
+                        <AvatarPortrait username={g.username || id} size={32} />
+                      </div>
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', flex: 1 }}>{g.username || id}</span>
                       <button
                         onClick={function() { inviteToStage(id); }}
