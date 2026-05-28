@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
+
+var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
 function extractYtId(url) {
   if (!url) return '';
@@ -478,22 +481,55 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast, 
 
       {/* Watch party status bar */}
       {watchPartyActive && (
-        <div style={{ background: isLive ? 'rgba(0,201,167,.08)' : 'rgba(245,158,11,.08)', border: '1px solid ' + (isLive ? 'rgba(0,201,167,.3)' : 'rgba(245,158,11,.35)'), margin: '6px 8px 0', borderRadius: 8, padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div style={{ background: isLive ? 'rgba(0,201,167,.08)' : 'rgba(245,158,11,.08)', border: '1px solid ' + (isLive ? 'rgba(0,201,167,.3)' : 'rgba(245,158,11,.35)'), margin: '6px 8px 0', borderRadius: 8, padding: '7px 10px', flexShrink: 0 }}>
           {isLive ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1 }}>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#00C9A7', letterSpacing: 1 }}>{partyViewers}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>viewers</span>
-                <div style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#00C9A7', letterSpacing: 1 }}>
-                  WATCHING TOGETHER
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1 }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#00C9A7', letterSpacing: 1 }}>{partyViewers}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>viewers</span>
+                  <div style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#00C9A7', letterSpacing: 1 }}>
+                    WATCHING TOGETHER
+                  </div>
                 </div>
+                <button
+                  onClick={handleEndWatchParty}
+                  style={{ background: 'rgba(255,30,30,.12)', border: '1px solid rgba(255,30,30,.35)', borderRadius: 6, padding: '4px 10px', color: '#FF5555', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  END PARTY
+                </button>
               </div>
-              <button
-                onClick={handleEndWatchParty}
-                style={{ background: 'rgba(255,30,30,.12)', border: '1px solid rgba(255,30,30,.35)', borderRadius: 6, padding: '4px 10px', color: '#FF5555', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
-                END PARTY
-              </button>
-            </>
+              {/* Synergy bar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, flexShrink: 0 }}>SYNERGY</span>
+                <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,.06)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{
+                    width: Math.min(100, liveGuests.length * 5) + '%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg,#00C9A7,#C9A84C)',
+                    borderRadius: 3,
+                    transition: 'width .5s ease',
+                  }} />
+                </div>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: '#C9A84C', letterSpacing: 1, flexShrink: 0 }}>{Math.min(100, liveGuests.length * 5)}%</span>
+              </div>
+              {/* Participant avatar strip */}
+              {liveGuests.length > 0 && (
+                <div style={{ display: 'flex', gap: 5, overflowX: 'auto', marginTop: 8, paddingBottom: 2 }}>
+                  {liveGuests.slice(0, 20).map(function(g) {
+                    return (
+                      <div key={g.userId || g.guestId} style={{ flexShrink: 0 }}>
+                        <AvatarPortrait username={g.username || 'Guest'} size={32} />
+                      </div>
+                    );
+                  })}
+                  {liveGuests.length < 20 && (
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '0 4px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>
+                      +{20 - liveGuests.length} open
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           ) : (
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: '#F59E0B' }}>⚠️ Stream offline — party paused</span>
           )}
@@ -560,18 +596,29 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast, 
                 All guests will sync automatically when host loads content
               </div>
             )}
-            {liveGuests.length > 0 && (
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 320, marginTop: 8 }}>
-                {liveGuests.slice(0, 6).map(function(g) {
-                  return (
-                    <div key={g.userId || g.guestId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 8, background: 'rgba(128,0,32,.3)', border: '1px solid rgba(201,168,76,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🎬</div>
-                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', maxWidth: 44, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || 'Guest'}</div>
+            {/* 20-slot participant grid */}
+            <div style={{ marginTop: 12, width: '100%', maxWidth: 340 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 4px' }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>PARTY SLOTS</span>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#C9A84C', letterSpacing: 1 }}>{liveGuests.length}/20</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
+                {Array(20).fill(null).map(function(_, i) {
+                  var g = liveGuests[i];
+                  return g ? (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                      <AvatarPortrait username={g.username || 'Guest'} size={44} />
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', maxWidth: 46, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>{g.username || 'Guest'}</div>
+                    </div>
+                  ) : (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                      <div style={{ width: 44, height: 44, clipPath: OCT_CLIP, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)' }} />
+                      <div style={{ height: 8 }} />
                     </div>
                   );
                 })}
               </div>
-            )}
+            </div>
           </div>
         )}
 

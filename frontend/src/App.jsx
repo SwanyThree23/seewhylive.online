@@ -477,9 +477,20 @@ export default function App() {
           {isLive && streamInfo.title ? <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', letterSpacing: 0.5, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamInfo.title}</span> : null}
           {isLive && streamInfo.category ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>{streamInfo.category.toUpperCase()}</span> : null}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'flex-end' }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>👁 {viewerCount}</span>
-          <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, justifyContent: 'flex-end' }}>
+          {isLive && viewerCount > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '3px 8px' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 5px #FF1A3C' }} />
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#FF6B81', letterSpacing: 1 }}>
+                {viewerCount >= 1000 ? (Math.floor(viewerCount / 100) / 10).toFixed(1) + 'K' : viewerCount}
+              </span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>LIVE</span>
+            </div>
+          )}
+          {!isLive && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>👁 {viewerCount}</span>
+          )}
+          <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
             {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
           </span>
           {showInstallBanner && installPrompt && (
