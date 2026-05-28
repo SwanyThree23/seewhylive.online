@@ -1,5 +1,6 @@
 'use strict';
 import React, { useState } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var GOLD_H  = '#E8C46A';
 var BURG    = '#800020';
@@ -16,6 +17,17 @@ var fU      = "'Barlow Condensed',sans-serif";
 var fM      = "'DM Mono',monospace";
 
 var STREAM_BASE_URL = 'https://seewhylive.online/watch/';
+
+var COMMUNITY_MEMBERS = [
+  { id: 'cm1', name: 'CaliBonesOG',   status: 'LIVE',    mutual: true  },
+  { id: 'cm2', name: 'SwanyFan99',    status: 'ONLINE',  mutual: true  },
+  { id: 'cm3', name: 'VibeNBones',    status: 'LIVE',    mutual: false },
+  { id: 'cm4', name: 'DJ_Cipher',     status: 'ONLINE',  mutual: true  },
+  { id: 'cm5', name: 'LyricQueen',    status: 'OFFLINE', mutual: false },
+  { id: 'cm6', name: 'BeatKing_X',    status: 'ONLINE',  mutual: true  },
+  { id: 'cm7', name: 'NeonBeats',     status: 'OFFLINE', mutual: false },
+  { id: 'cm8', name: 'TechNerd42',    status: 'LIVE',    mutual: true  },
+];
 
 var SHARE_PLATFORMS = [
   {
@@ -110,6 +122,8 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
   var [customMsg, setCustomMsg] = useState('');
   var [copied, setCopied] = useState('');
   var [view, setView] = useState('share');
+  var [mainView, setMainView] = useState('share');
+  var [invitedIds, setInvitedIds] = useState({});
 
   var shareMsg = customMsg || defaultMsg;
 
@@ -173,8 +187,58 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         <div style={{ fontFamily: fM, fontSize: 9, color: MUTED }}>
           Share your stream to external platforms · bring viewers in
         </div>
+        {/* Main view toggle */}
+        <div style={{ display: 'flex', gap: 4, marginTop: 10, background: 'rgba(7,5,10,.8)', border: '1px solid ' + BORDER, borderRadius: 8, padding: 3 }}>
+          {[['share', '📡 SHARE'], ['community', '👥 COMMUNITY']].map(function(t) {
+            var active = mainView === t[0];
+            return (
+              <button key={t[0]} onClick={function() { setMainView(t[0]); }}
+                style={{ flex: 1, background: active ? 'rgba(192,132,252,.14)' : 'transparent', border: 'none', borderRadius: 6, padding: '6px 0', color: active ? '#C084FC' : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                {t[1]}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
+      {/* ── COMMUNITY VIEW ── */}
+      {mainView === 'community' && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 2 }}>INVITE TO YOUR STREAM</div>
+          {COMMUNITY_MEMBERS.map(function(m) {
+            var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#00C96A' : '#3D3450';
+            var wasInvited = Boolean(invitedIds[m.id]);
+            return (
+              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: wasInvited ? 'rgba(0,201,106,.06)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (wasInvited ? 'rgba(0,201,106,.25)' : BORDER), borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ flexShrink: 0 }}>
+                  <AvatarPortrait username={m.name} size={44} isLive={m.status === 'LIVE'} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, boxShadow: m.status !== 'OFFLINE' ? '0 0 5px ' + statusColor : 'none', flexShrink: 0 }} />
+                    <span style={{ fontFamily: fM, fontSize: 7.5, color: statusColor, letterSpacing: 1 }}>{m.status}</span>
+                    {m.mutual && <span style={{ fontFamily: fM, fontSize: 7, color: '#C084FC', marginLeft: 4 }}>· MUTUAL</span>}
+                  </div>
+                </div>
+                <button
+                  onClick={function() { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); if (addToast) addToast('📨 Invite sent to ' + m.name, 'success'); }}
+                  style={{ background: wasInvited ? 'rgba(0,201,106,.15)' : 'rgba(192,132,252,.12)', border: '1px solid ' + (wasInvited ? 'rgba(0,201,106,.4)' : 'rgba(192,132,252,.35)'), borderRadius: 7, padding: '6px 12px', color: wasInvited ? '#00C96A' : '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: wasInvited ? 'default' : 'pointer', flexShrink: 0, minWidth: 66, textAlign: 'center', letterSpacing: 1 }}>
+                  {wasInvited ? '✓ SENT' : 'INVITE'}
+                </button>
+              </div>
+            );
+          })}
+
+          <button
+            onClick={function() { COMMUNITY_MEMBERS.forEach(function(m) { if (m.status !== 'OFFLINE') { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); } }); if (addToast) addToast('📨 Invites sent to all online members!', 'success'); }}
+            style={{ marginTop: 4, background: 'linear-gradient(135deg,rgba(192,132,252,.2),rgba(155,77,202,.12))', border: '1px solid rgba(192,132,252,.4)', borderRadius: 10, padding: '12px 0', color: '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 2, textAlign: 'center' }}>
+            📨 INVITE ALL ONLINE
+          </button>
+        </div>
+      )}
+
+      {mainView !== 'community' && (
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {/* Stream link card */}
@@ -273,6 +337,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         </div>
 
       </div>
+      )}
     </div>
   );
 }
