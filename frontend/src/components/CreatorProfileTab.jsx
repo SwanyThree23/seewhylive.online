@@ -1,6 +1,7 @@
 'use strict';
 import React, { useState, useEffect } from 'react';
 import SignalBars from './SignalBars';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var MOCK_PROFILE = {
   username: 'SwanyThree',
@@ -433,8 +434,6 @@ export default function CreatorProfileTab(props) {
     );
   }
 
-  var firstLetter = profile.displayName.charAt(0);
-
   return React.createElement(
     'div',
     {
@@ -458,26 +457,7 @@ export default function CreatorProfileTab(props) {
       React.createElement(
         'div',
         { style: { display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 10 } },
-        React.createElement(
-          'div',
-          {
-            style: {
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              background: 'rgba(201,168,76,.15)',
-              border: '2px solid #C9A84C',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 38,
-              color: '#C9A84C',
-              flexShrink: 0,
-            }
-          },
-          firstLetter
-        ),
+        React.createElement(AvatarPortrait, { username: profile.username || profile.displayName, size: 80, isLive: isLive }),
         React.createElement(
           'div',
           { style: { flex: 1, minWidth: 0 } },
