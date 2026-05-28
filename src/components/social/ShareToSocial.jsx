@@ -14,7 +14,7 @@ export default function ShareToSocial({ content }) {
       name: 'YouTube',
       icon: Youtube,
       action: () => {
-        window.open(`https://youtube.com/results?search_query=${encodeURIComponent(shareText)}`, '_blank');
+        window.open(`https://youtube.com/results?search_query=${encodeURIComponent(shareText)}`, '_blank', 'noopener,noreferrer');
       },
       color: '#FF0000',
     },
@@ -22,7 +22,7 @@ export default function ShareToSocial({ content }) {
       name: 'Twitter',
       icon: Share2,
       action: () => {
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
       },
       color: '#1DA1F2',
     },
