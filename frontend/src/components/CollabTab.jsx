@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var GOLD_H  = '#E8C46A';
 var BURG    = '#800020';
@@ -257,8 +258,8 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                   <div style={{ padding: '14px 16px' }}>
                     {/* From row */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 8, background: req.color + '22', border: '1px solid ' + req.color + '55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
-                        {req.flag}
+                      <div style={{ flexShrink: 0 }}>
+                        <AvatarPortrait username={req.from} size={38} isLive={req.status === 'accepted'} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 14, color: TEXT }}>{req.from}</div>
@@ -365,8 +366,8 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                     style={{ display: 'flex', alignItems: 'center', gap: 12, background: FAINT, border: '1px solid ' + BORDER, borderRadius: 11, padding: '12px 14px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: creator.c }} />
 
-                    <div style={{ width: 40, height: 40, borderRadius: 9, background: creator.c + '22', border: '1px solid ' + creator.c + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
-                      {creator.f}
+                    <div style={{ flexShrink: 0 }}>
+                      <AvatarPortrait username={creator.n} size={44} isLive={creator.live} />
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -418,8 +419,8 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                   <div style={{ padding: '14px 16px' }}>
                     {/* Header row */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 8, background: req.color + '22', border: '1px solid ' + req.color + '55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
-                        {req.flag}
+                      <div style={{ flexShrink: 0 }}>
+                        <AvatarPortrait username={req.from} size={40} isLive={true} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 14, color: TEXT }}>{req.from}</div>
