@@ -3,6 +3,16 @@ import { io } from 'socket.io-client';
 var SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://srv1581658.hstgr.cloud:3001';
 
 var socket = null;
+var _rejoinPayload = null;    // stored join-room payload for auto-rejoin on reconnect
+var _onReconnect = null;      // optional callback to notify App on reconnect
+
+export function setRejoinPayload(payload) {
+  _rejoinPayload = payload;
+}
+
+export function onReconnectCallback(fn) {
+  _onReconnect = fn;
+}
 
 export function getSocket(token) {
   if (socket && socket.connected) return socket;
@@ -17,6 +27,22 @@ export function getSocket(token) {
   socket.on('connect_error', function(err) {
     console.error('[Socket] Connection error:', err.message);
   });
+  socket.on('reconnect', function() {
+    // Re-join room automatically after reconnection
+    if (_rejoinPayload) {
+      socket.emit('join-room', _rejoinPayload);
+    }
+    if (_onReconnect) _onReconnect();
+  });
+  // Presence heartbeat — keeps server aware the client is alive
+  var heartbeatInterval = setInterval(function() {
+    if (socket && socket.connected) {
+      socket.emit('ping-presence');
+    }
+  }, 30000);
+  socket.on('disconnect', function() {
+    clearInterval(heartbeatInterval);
+  });
   return socket;
 }
 
@@ -25,6 +51,8 @@ export function destroySocket() {
     socket.disconnect();
     socket = null;
   }
+  _rejoinPayload = null;
+  _onReconnect = null;
 }
 
-export default { getSocket, destroySocket };
+export default { getSocket, destroySocket, setRejoinPayload, onReconnectCallback };

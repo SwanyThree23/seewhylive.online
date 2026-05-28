@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
-import { getSocket } from './socket.js';
+import { getSocket, setRejoinPayload, onReconnectCallback } from './socket.js';
 import rtcManager from './webrtc.js';
 
 /* Always-loaded: default tab + persistent overlays */
@@ -165,12 +165,22 @@ export default function App() {
     var socket = getSocket(token);
     socketRef.current = socket;
 
-    socket.on('connect', function() {
+    var joinPayload = { roomId: APP_ID, userId: userId, username: username, role: role, token: token };
+    setRejoinPayload(joinPayload);
+    onReconnectCallback(function() {
       setConnected(true);
-      socket.emit('join-room', { roomId: APP_ID, userId, username, role, token });
+      addToast('Reconnected to SeeWhy LIVE', 'success');
     });
 
-    socket.on('disconnect', function() { setConnected(false); });
+    socket.on('connect', function() {
+      setConnected(true);
+      socket.emit('join-room', joinPayload);
+    });
+
+    socket.on('disconnect', function() {
+      setConnected(false);
+      addToast('Connection lost — reconnecting...', 'error');
+    });
 
     socket.on('roster-update', function(data) {
       if (!data || !data.guests) return;
@@ -371,6 +381,10 @@ export default function App() {
 
     socket.on('watch-party-started', function() {
       addToast('🎉 Watch Party started! Head to the WATCH tab.', 'success');
+    });
+
+    socket.on('host-disconnected', function() {
+      addToast('Host lost connection — watch party paused', 'error');
     });
 
     socket.on('aura-message', function(data) {

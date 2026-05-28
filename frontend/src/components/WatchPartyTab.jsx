@@ -212,16 +212,46 @@ export default function WatchPartyTab({ guests, socket, roomId, role, addToast, 
       }
     }
 
+    function onWatchSync(data) {
+      if (!data) return;
+      if (data.videoId) { setVideoId(data.videoId); setWatchPartyActive(true); }
+      if (typeof data.position === 'number') {
+        setPosition(Math.floor(data.position));
+        posRef.current = data.position;
+        if (playerRef.current) {
+          try { playerRef.current.seekTo(data.position, true); } catch(e) {}
+        }
+      }
+      if (data.playing) {
+        setPlaying(true);
+        if (playerRef.current) {
+          try { playerRef.current.playVideo(); } catch(e) {}
+        }
+      } else {
+        setPlaying(false);
+        if (playerRef.current) {
+          try { playerRef.current.pauseVideo(); } catch(e) {}
+        }
+      }
+    }
+
     socket.on('watch-party-url',   onWatchUrl);
     socket.on('watch-party-play',  onWatchPlay);
     socket.on('watch-party-pause', onWatchPause);
     socket.on('watch-party-seek',  onWatchSeek);
+    socket.on('watch-party-sync',  onWatchSync);
+
+    // Request current state on tab mount (for late-joiners)
+    if (!isHost && socket && roomId) {
+      socket.emit('watch-party-sync-request', { roomId: roomId });
+    }
 
     return function() {
       socket.off('watch-party-url',   onWatchUrl);
       socket.off('watch-party-play',  onWatchPlay);
       socket.off('watch-party-pause', onWatchPause);
       socket.off('watch-party-seek',  onWatchSeek);
+      socket.off('watch-party-sync',  onWatchSync);
     };
   }, [socket, isHost]);
 
