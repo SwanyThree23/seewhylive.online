@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
 
 const BATTLE_DURATION = 180;
 const GIFTS = [
@@ -270,6 +271,33 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
+  // Screen-capture streams for compositor (null until user selects)
+  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
+  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
+
+  // Stop capture streams on unmount to release screen capture permission
+  React.useEffect(() => () => {
+    leftCaptureStream?.getTracks().forEach(t => t.stop());
+    rightCaptureStream?.getTracks().forEach(t => t.stop());
+  }, [leftCaptureStream, rightCaptureStream]);
+
+  const battleCompositorSlots = [
+    { stream: leftCaptureStream, label: bLeftName },
+    { stream: rightCaptureStream, label: bRightName },
+  ];
+  const battleOverlay = {
+    title: battle?.title || `${bLeftName} vs ${bRightName}`,
+    battleData: { leftScore: leftVotes, rightScore: rightVotes, timeLeft, leftName: bLeftName, rightName: bRightName },
+  };
+
+  const handleBattleScreenCapture = async () => {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+    // Assign to left if empty, else right
+    if (!leftCaptureStream) setLeftCaptureStream(stream);
+    else setRightCaptureStream(stream);
+    return stream;
+  };
+
   return (
     <div className="min-h-screen bg-[#050010] text-white flex flex-col overflow-hidden relative">
       {/* Winner overlay */}
@@ -308,6 +336,13 @@ export default function PKBattlePage() {
           url={window.location.href}
           title={`Watch this PK Battle: ${battle?.title || 'Live Battle'}`}
           className="[&_button]:text-white/40 [&_button:hover]:text-white"
+        />
+        <CompositorOverlay
+          layout="battle"
+          slots={battleCompositorSlots}
+          overlayConfig={battleOverlay}
+          onScreenCapture={handleBattleScreenCapture}
+          isHost={!!(user?.id && battle?.creator_id === user?.id)}
         />
       </div>
 
