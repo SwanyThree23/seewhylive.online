@@ -441,6 +441,7 @@ export default function WatchPartyPage() {
             layout="watchparty"
             slots={wpCompositorSlots}
             overlayConfig={wpOverlayConfig}
+            userId={user?.id}
             onScreenCapture={handleScreenCapture}
             isHost={isHost}
           />
