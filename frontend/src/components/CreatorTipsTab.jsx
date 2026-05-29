@@ -1,5 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
+
+var AI_SYSTEM = 'You are SWANY GUIDE, the expert onboarding assistant for SeeWhy LIVE v33 — a professional live streaming platform built for the Washington Classic Domino Tournament and Domino Entertainment community. You know every feature deeply.\n\nPLATFORM FEATURES:\n• ROOM: Go live, manage guests, live chat, WebRTC multi-guest. RTMP ingest: rtmp://2.24.194.112:1935/live\n• FADES: Online Corruption domino betting game with live score tracking\n• BRAND: Custom colors, logos, stream overlays branding\n• EMBED: PPV paywall, embed codes, token-gated streams\n• SWANYBOT: AI chat moderation, auto-greet, spam filter, gift hype\n• DATA: Real-time analytics, viewer count, gift revenue, engagement score\n• KEYS: AES-256-GCM encrypted RTMP stream key vault\n• FANOUT: Multi-platform RTMP relay (YouTube, TikTok, Twitch, Facebook)\n• PUSH: Browser-based stream push without OBS\n• CLIPS: Auto-captures highlight clips every 15s during live streams\n• WATCH: Watch parties, synchronized viewing, host/viewer sync\n• GREEN: Pre-stream guest staging and briefing room\n• FORGE: System health monitor for all server services\n• DEEP: Advanced analytics — gifter leaderboard, engagement metrics\n• SCHED: Stream scheduling with recurrence, public calendar\n• DC: Washington Classic Domino Tournament brackets and scoring\n• MONEY: Subscriptions (bronze $4.99/silver $9.99/gold $19.99), gifts, PPV. 90% creator / 10% platform split. ALL cents stored as integers.\n• AURA: AI co-host powered by Claude — hypes gifts, pitches PPV, crowd engagement\n• SWANAI: AI production director — real-time strategic advice on what to do NOW\n• AVATAR: Avatar Hub, deterministic octagonal AvatarPortrait per username\n• STUDIO: Music beat studio with live sync\n• DISCOVER: Creator discovery and search\n• RANKS: State rankings leaderboard for domino creators\n• SHOWCASE: Tournament showcase, rosters, results, MVP\n• UPLOAD: File upload (MP4/MOV/MP3/PNG, 50MB max)\n• OVERLAY: Live overlays — banners, countdown, score bug, lower thirds\n• PORTAL: Partner channel hub\n• COLLAB: Real-time creator collaboration board\n• N8N: Workflow automation — trigger on gifts/subs/viewers, post to Discord/Sheets\n• MERCH: In-stream merch drops with flash sales\n• REPLAY: VOD replay management\n• MCP: Model Context Protocol tool integrations\n• GUARDIAN: AI moderation — ban, mute, shadow ban, flagged word detection\n• DIRECT PAY: CashApp/Venmo/PayPal direct payment links\n• SHARE: Social sharing tools\n• BATTLES: PK Battle system — creator vs creator with live point scoring\n• VOD: VOD library with channel management\n• PROFILE: Public creator profile\n• SETTINGS: Profile, avatar, display name, bio, notifications\n• TIPS: This guide (💡 TIPS tab)\n\nREVENUE: 90% creator / 10% platform on ALL transactions. Never change this split.\nRTMP: rtmp://2.24.194.112:1935/live — HLS out: https://2.24.194.112/hls/<key>.m3u8\nPWA: Installable from header bar. Works offline.\n\nTone: Friendly, direct, Washington Classic / domino culture aware. 3-5 sentences max unless user asks for detail. Always tell them WHICH TAB to go to.';
+
+var AI_CHIPS = [
+  { label: '🚀 Go live fast', prompt: 'What are the exact steps to go live for the very first time on SeeWhy LIVE?' },
+  { label: '💰 Make money', prompt: 'What are the best ways to make money streaming on SeeWhy LIVE? Explain subscriptions, gifts, and PPV.' },
+  { label: '🤖 Set up AURA', prompt: 'How do I set up and use AURA, the AI co-host?' },
+  { label: '⚡ PK Battles', prompt: 'How do PK Battles work and how do I start one?' },
+  { label: '🛡 Guardian AI', prompt: 'How do I set up Guardian AI for chat moderation?' },
+  { label: '📡 Fanout setup', prompt: 'How do I stream to YouTube and TikTok at the same time using FANOUT?' },
+  { label: '🎲 Washington Classic', prompt: 'Tell me about the Washington Classic Domino Tournament features on the platform.' },
+  { label: '📊 Grow my audience', prompt: 'What features should I use to grow my audience and build a loyal community?' },
+];
 
 var CATS = ['ALL', 'START', 'GO LIVE', 'MONEY', 'ENGAGE', 'COMMUNITY', 'ANALYTICS', 'AI', 'TECH'];
 
@@ -513,6 +526,10 @@ var CREATOR_CHECKLIST = [
   { id: 'c10', text: 'App installed as PWA on phone', tab: 'Header' },
 ];
 
+function fmtTime() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 export default function CreatorTipsTab({ addToast, username }) {
   var [activeCat,   setActiveCat]   = useState('ALL');
   var [search,      setSearch]      = useState('');
@@ -521,7 +538,39 @@ export default function CreatorTipsTab({ addToast, username }) {
     try { var s = localStorage.getItem('sw_checklist'); if (s) return JSON.parse(s); } catch(e) {}
     return {};
   });
-  var [activeView,  setActiveView]  = useState('tips');  // 'tips' | 'checklist'
+  var [activeView,  setActiveView]  = useState('tips');  // 'tips' | 'checklist' | 'guide'
+  var [aiMsgs,      setAiMsgs]      = useState([{
+    role: 'guide',
+    text: 'Hey ' + (username || 'Creator') + '! I\'m Swany Guide — I know every feature of SeeWhy LIVE v33. Ask me anything: how to go live, set up revenue, use AURA, run PK Battles, or grow your audience. What do you want to know?',
+    time: fmtTime()
+  }]);
+  var [aiInput,     setAiInput]     = useState('');
+  var [aiLoading,   setAiLoading]   = useState(false);
+  var chatEndRef = useRef(null);
+
+  var callGuide = useCallback(function(prompt) {
+    if (!prompt || !prompt.trim()) return;
+    var userMsg = prompt.trim();
+    setAiInput('');
+    setAiMsgs(function(prev) { return prev.concat([{ role: 'user', text: userMsg, time: fmtTime() }]); });
+    setAiLoading(true);
+    fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: AI_SYSTEM, message: userMsg })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var reply = (data && data.text) ? data.text : 'Sorry, I couldn\'t get a response. Try again.';
+        setAiMsgs(function(prev) { return prev.concat([{ role: 'guide', text: reply, time: fmtTime() }]); });
+        setAiLoading(false);
+        if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      })
+      .catch(function() {
+        setAiMsgs(function(prev) { return prev.concat([{ role: 'guide', text: 'Connection error — check your internet and try again.', time: fmtTime() }]); });
+        setAiLoading(false);
+      });
+  }, []);
 
   function toggleExpand(id) {
     setExpanded(function(prev) {
@@ -568,6 +617,7 @@ export default function CreatorTipsTab({ addToast, username }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <button onClick={function() { setActiveView('tips'); }} style={{ padding: '5px 12px', background: activeView === 'tips' ? 'rgba(201,168,76,.2)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (activeView === 'tips' ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'tips' ? '#E8C46A' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>TIPS</button>
             <button onClick={function() { setActiveView('checklist'); }} style={{ padding: '5px 12px', background: activeView === 'checklist' ? 'rgba(0,201,167,.15)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (activeView === 'checklist' ? 'rgba(0,201,167,.4)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'checklist' ? '#00C9A7' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>CHECKLIST</button>
+            <button onClick={function() { setActiveView('guide'); }} style={{ padding: '5px 12px', background: activeView === 'guide' ? 'rgba(192,132,252,.2)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (activeView === 'guide' ? 'rgba(192,132,252,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'guide' ? '#C084FC' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>AI GUIDE</button>
           </div>
         </div>
 
@@ -700,6 +750,89 @@ export default function CreatorTipsTab({ addToast, username }) {
             No tips match "{search}"
           </div>
         )}
+
+        {/* ── AI GUIDE VIEW ── */}
+        {activeView === 'guide' && (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '70vh', minHeight: 400 }}>
+
+            {/* AI Guide identity bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(192,132,252,.07)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 10, flexShrink: 0 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(192,132,252,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🎙</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C084FC', letterSpacing: 2, lineHeight: 1 }}>SWANY GUIDE · AI ASSISTANT</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginTop: 1 }}>Powered by Claude · Knows every SeeWhy LIVE v33 feature</div>
+              </div>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C9A7', boxShadow: '0 0 6px #00C9A7' }} />
+            </div>
+
+            {/* Quick prompt chips */}
+            <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 8, flexShrink: 0, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+              {AI_CHIPS.map(function(chip) {
+                return (
+                  <button key={chip.label}
+                    onClick={function() { if (!aiLoading) callGuide(chip.prompt); }}
+                    style={{ flexShrink: 0, padding: '5px 11px', background: 'rgba(192,132,252,.08)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 20, color: '#C084FC', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: aiLoading ? 'not-allowed' : 'pointer', letterSpacing: 0.5, opacity: aiLoading ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                    {chip.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Chat messages */}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 0 8px 0' }}>
+              {aiMsgs.map(function(msg, idx) {
+                var isGuide = msg.role === 'guide';
+                return (
+                  <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexDirection: isGuide ? 'row' : 'row-reverse' }}>
+                    {isGuide && (
+                      <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(192,132,252,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎙</div>
+                    )}
+                    {!isGuide && (
+                      <AvatarPortrait username={username || 'creator'} size={28} />
+                    )}
+                    <div style={{ maxWidth: '78%' }}>
+                      <div style={{ background: isGuide ? 'rgba(22,16,32,.9)' : 'rgba(128,0,32,.25)', border: '1px solid ' + (isGuide ? 'rgba(192,132,252,.15)' : 'rgba(128,0,32,.4)'), borderRadius: isGuide ? '4px 10px 10px 10px' : '10px 4px 10px 10px', padding: '9px 12px' }}>
+                        {isGuide && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C084FC', letterSpacing: 1, marginBottom: 4 }}>✦ SWANY GUIDE</div>}
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#EDE8F5', lineHeight: 1.5 }}>{msg.text}</div>
+                      </div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#4A4060', marginTop: 3, textAlign: isGuide ? 'left' : 'right' }}>{msg.time}</div>
+                    </div>
+                  </div>
+                );
+              })}
+              {aiLoading && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(192,132,252,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎙</div>
+                  <div style={{ background: 'rgba(22,16,32,.9)', border: '1px solid rgba(192,132,252,.15)', borderRadius: '4px 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', animation: 'pulse 1s infinite' }} />
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', opacity: 0.6 }} />
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', opacity: 0.3 }} />
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input bar */}
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,.05)' }}>
+              <input
+                value={aiInput}
+                onChange={function(e) { setAiInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Enter' && !aiLoading) callGuide(aiInput); }}
+                placeholder="Ask about any feature, workflow, or how to get started..."
+                disabled={aiLoading}
+                style={{ flex: 1, background: 'rgba(22,16,32,.8)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 10, padding: '10px 14px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', opacity: aiLoading ? 0.6 : 1 }}
+              />
+              <button
+                onClick={function() { if (!aiLoading) callGuide(aiInput); }}
+                disabled={aiLoading || !aiInput.trim()}
+                style={{ width: 42, height: 42, borderRadius: 10, background: aiInput.trim() && !aiLoading ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (aiInput.trim() && !aiLoading ? 'rgba(128,0,32,.6)' : 'rgba(255,255,255,.07)'), color: '#C9A84C', fontSize: 18, cursor: aiInput.trim() && !aiLoading ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                ›
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
