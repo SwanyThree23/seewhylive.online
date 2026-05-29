@@ -1,909 +1,554 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocalMedia } from '../hooks/useLocalMedia';
-import LocalVideoTile from '../components/live/LocalVideoTile';
-import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import StreamHealthMonitor from '../components/live/StreamHealthMonitor';
-import SceneSwitcher from '../components/live/SceneSwitcher';
-import AudioMixer from '../components/live/AudioMixer';
-import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
-import GuestGrid from '../components/live/GuestGrid';
-import UnifiedChat from '../components/live/UnifiedChat';
-import AggregatedChat from '../components/live/AggregatedChat';
-import ViewerCount from '../components/live/ViewerCount';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import StreamEventBus from '../components/live/StreamEventBus';
-import ChatModeration from '../components/live/ChatModeration';
-import PreStreamCountdown from '../components/live/PreStreamCountdown';
-import ClipCreator from '../components/live/ClipCreator';
-import PointsNotification from '../components/live/PointsNotification';
-import StreamMetadata from '../components/live/StreamMetadata';
-import StreamGoals from '../components/live/StreamGoals';
-import RaidPanel from '../components/live/RaidPanel';
-import MobileStreamControls from '../components/live/MobileStreamControls';
-import StreamChatbot from '../components/live/StreamChatbot';
-import PKBattle from '../components/live/PKBattle';
-import WebhookHooks from '../components/live/WebhookHooks';
-import LivePoll from '../components/live/LivePoll';
-import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
-import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
-import ScreenSharePanel from '../components/live/ScreenSharePanel';
-import GuestControls from '../components/live/GuestControls';
-import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import GreenroomQueue from '../components/streaming/GreenroomQueue';
-import BattleMode from '../components/streaming/BattleMode';
-import AuraPanel from '../components/live/AuraPanel';
-import GoldenWall from '../components/live/GoldenWall';
-import SuperChatBar from '../components/live/SuperChatBar';
-import SignalBars from '../components/live/SignalBars';
-import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
-import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
-import ChatOverlay from '../components/live/ChatOverlay';
-import EvmuxWebSource from '../components/live/EvmuxWebSource';
-import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
-import GuestConnector from '../components/live/GuestConnector';
-import LiveTranscription from '../components/live/LiveTranscription';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
-import TippingOverlay from '../components/live/TippingOverlay';
-import SubscriptionGate from '../components/live/SubscriptionGate';
-import PayPerViewGate from '../components/live/PayPerViewGate';
-import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
-import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
-import AIModeration from '../components/live/AIModeration';
-import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
-import VideoShortRecorder from '../components/vod/VideoShortRecorder';
-import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
-import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
-import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
-import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
-import VideoPlayerControls from '../components/video/VideoPlayerControls';
-import BattleScoreboard from '../components/live/BattleScoreboard';
-import AIStreamSummary from '../components/live/AIStreamSummary';
-import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
-import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
-import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
-import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
-import AICopilotSidebar from '../components/live/AICopilotSidebar';
-import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
-import RewardShop from '../components/loyalty/RewardShop';
-import RewardShopEditor from '../components/loyalty/RewardShopEditor';
-import RedemptionQueue from '../components/loyalty/RedemptionQueue';
-import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
-import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
-import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
-import LivePollOverlay from '../components/live/LivePollOverlay';
-import PollLaunchBar from '../components/live/PollLaunchBar';
-
 import {
-  Radio, PhoneOff, Settings, ChevronLeft, ChevronRight,
-  Video, VideoOff, Monitor, Mic, MicOff, StopCircle, Circle,
-  MessageSquare, Users, BarChart2, ShoppingBag, HelpCircle, Share2,
-  Clock, Crown, AlignLeft, DollarSign, Lock, Sparkles, Gift, Zap
+  Mic, MicOff, MessageCircle, Heart, Hand, Crown,
+  ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
+  Users, LayoutGrid, Send, X,
 } from 'lucide-react';
-import ShareModal from '../components/live/ShareModal';
-import DirectPayments from '../components/live/DirectPayments';
-import PaywallGate from '../components/live/PaywallGate';
-import PrivatePanel from '../components/live/PrivatePanel';
-import AudioPanel from '../components/live/AudioPanel';
-import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
-const LAYOUT_MODES = [
-  { id: 'grid', label: 'Grid' },
-  { id: 'spotlight', label: 'Spotlight' },
-  { id: 'cinema', label: 'Cinema' },
-  { id: 'side', label: 'Side-by-Side' },
+// ── Brand tokens ──────────────────────────────────────────────────────────────
+const GOLD    = '#D4AF37';
+const CRIMSON = '#800020';
+const PINK    = '#FF1564';
+const BG      = '#080B18';
+const BG2     = '#0d0618';
+const BG3     = '#110822';
+const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+
+function avatarColor(name) {
+  return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
+}
+
+// ── Demo data (replaced by real WebRTC when roomId is available) ──────────────
+const DEMO_STAGE = [
+  { id: 1, name: 'Joyce 🦋',   role: 'host',    speaking: true,  muted: false },
+  { id: 2, name: 'SwanyThree', role: 'co-host', speaking: false, muted: false },
+  { id: 3, name: 'Tom',        role: 'speaker', speaking: false, muted: true  },
+  { id: 4, name: 'Yahawadah',  role: 'speaker', speaking: false, muted: false },
+  { id: 5, name: 'Marvin',     role: 'speaker', speaking: false, muted: true  },
+  { id: 6, name: 'Durand',     role: 'speaker', speaking: false, muted: true  },
+];
+const DEMO_AUDIENCE = [
+  'SwanyThree','Phelo The Great','Obi Knowledg.','Marvin 10','Sim 11',
+  'Phelo The Gre.','Durand 13','Joyce 14','SwanyThree 15','Obi Knowledg.',
+  'Marvin 17','Sim 18','Phelo The Gre.','Durand 20',
+].map((name, i) => ({ id: 100 + i, name }));
+const DEMO_CHAT = [
+  { id: 1, user: 'Joyce 🦋',   text: 'Welcome to the session everyone! 🎉', host: true  },
+  { id: 2, user: 'SwanyThree', text: 'Thanks for joining — we go live in 2 min', host: false },
+  { id: 3, user: 'Marvin',     text: 'Ready! 🔥',                            host: false },
+  { id: 4, user: 'Sim 11',     text: 'Looking good on stage 👏',             host: false },
 ];
 
-export default function LiveRoom() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('id');
-  const qc = useQueryClient();
+// ── Octagonal stage tile (speaker) ───────────────────────────────────────────
+function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
+  const videoRef = useRef(null);
+  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
 
-  const [leftOpen, setLeftOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(true);
-  const [activeScene, setActiveScene] = useState('camera');
-  const [micMuted, setMicMuted] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingId, setRecordingId] = useState(null);
-  const recordingStartRef = useRef(null);
-  const [layoutMode, setLayoutMode] = useState('grid');
-  const [activeTab, setActiveTab] = useState('chat');
-  const [viewerCount, setViewerCount] = useState(0);
-  const [peakViewers, setPeakViewers] = useState(0);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [bannerConfig, setBannerConfig] = useState({ enabled: false, text: '', style: 'gradient', color: '#d4af37' });
-  const [participants, setParticipants] = useState([]);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [paymentsOpen, setPaymentsOpen] = useState(false);
-  const [paywallUnlocked, setPaywallUnlocked] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState('stage');
-  const [screenShareStream, setScreenShareStream] = useState(null);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [videoOffUsers, setVideoOffUsers] = useState({});
-  const [showEvmux, setShowEvmux] = useState(false);
-  const [showPPV, setShowPPV] = useState(false);
-  const [panelVideo, setPanelVideo] = useState(null);
-  const [panelPlaylist, setPanelPlaylist] = useState([]);
-  const panelVideoRef = useRef(null);
-  const timerRef = useRef(null);
+  const isHost   = p.role === 'host';
+  const isCohost = p.role === 'co-host';
+  const border   = p.speaking ? GOLD
+    : isHost                  ? 'rgba(212,175,55,0.45)'
+    :                           'rgba(255,255,255,0.12)';
 
-  // Real browser media (mic + camera)
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, } = useLocalMedia({ audio: true, video: true });
+  return (
+    <div className="flex flex-col items-center gap-1.5 cursor-pointer" onClick={onClick}>
+      <div className="relative" style={{ width: size, height: size }}>
 
-  // Keep micMuted in sync with actual track state
-  const handleMicToggle = () => { toggleAudio(); setMicMuted(v => !v); };
+        {/* Speaking pulse ring */}
+        {p.speaking && (
+          <motion.div className="absolute inset-0"
+            style={{ clipPath: OCT, background: GOLD, opacity: 0.18 }}
+            animate={{ opacity: [0.18, 0.44, 0.18], scale: [1, 1.06, 1] }}
+            transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        )}
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+        {/* Gold / white octagonal border */}
+        <div className="absolute inset-0"
+          style={{ clipPath: OCT, background: border, filter: p.speaking ? 'blur(1.5px)' : 'none', transition: 'background 0.4s' }} />
 
-  const { data: room, isLoading } = useQuery({
-    queryKey: ['room', roomId],
-    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
-    enabled: !!roomId,
-  });
+        {/* Dark content shell */}
+        <div className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
+          style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, ${BG2})` }}>
 
-  const { data: fetchedParticipants = [] } = useQuery({
-    queryKey: ['participants', roomId],
-    queryFn: () => base44.entities.Participant.filter({ room_id: roomId }),
-    enabled: !!roomId,
-    refetchInterval: 10000,
-  });
+          {stream ? (
+            <video ref={videoRef} autoPlay playsInline muted={isLocal}
+              className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
+          ) : (
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-black border-2 shrink-0"
+              style={{ background: avatarColor(p.name) + '55', borderColor: avatarColor(p.name), color: '#fff' }}>
+              {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
+            </div>
+          )}
 
-  const { data: activeBattle } = useQuery({
-    queryKey: ['activePKBattle', roomId],
-    queryFn: async () => {
-      const battles = await base44.entities.PKBattle.filter({ room_id: roomId, status: 'active' });
-      return battles?.[0] || null;
-    },
-    enabled: !!roomId,
-    refetchInterval: 2000,
-  });
+          {/* Speaking waveform bars */}
+          {p.speaking && !p.muted && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center items-end gap-[2px]">
+              {[3,6,4,7,3,5,4].map((h, i) => (
+                <motion.div key={i} className="w-[2px] rounded-full"
+                  style={{ background: GOLD, height: h }}
+                  animate={{ height: [h, h * 2.8, h] }}
+                  transition={{ duration: 0.38, repeat: Infinity, delay: i * 0.07 }} />
+              ))}
+            </div>
+          )}
+        </div>
 
-  useEffect(() => { setParticipants(fetchedParticipants); }, [fetchedParticipants]);
+        {/* Muted badge */}
+        {p.muted && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full flex items-center justify-center"
+            style={{ background: '#EF4444', border: `2px solid ${BG}` }}>
+            <MicOff className="w-2 h-2 text-white" />
+          </div>
+        )}
 
-  useEffect(() => {
-    if (!roomId) return;
-    const unsub = base44.entities.Participant.subscribe((event) => {
-      if (event.data?.room_id !== roomId) return;
-      if (event.type === 'create') setParticipants(prev => [...prev, event.data]);
-      else if (event.type === 'update') setParticipants(prev => prev.map(p => p.id === event.id ? event.data : p));
-      else if (event.type === 'delete') setParticipants(prev => prev.filter(p => p.id !== event.id));
-    });
-    return unsub;
-  }, [roomId]);
-
-  useEffect(() => {
-    if (room?.status === 'live') {
-      timerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [room?.status]);
-
-  useEffect(() => {
-    if (viewerCount > peakViewers) setPeakViewers(viewerCount);
-  }, [viewerCount]);
-
-  const goLiveMutation = useMutation({
-    mutationFn: () => base44.entities.Room.update(roomId, {
-      status: room?.status === 'live' ? 'ended' : 'live',
-      started_at: room?.status !== 'live' ? new Date().toISOString() : undefined,
-      ended_at: room?.status === 'live' ? new Date().toISOString() : undefined,
-    }),
-    onSuccess: () => qc.invalidateQueries(['room', roomId]),
-  });
-
-  const startRecordingMutation = useMutation({
-    mutationFn: async () => {
-      const rec = await base44.entities.Recording.create({
-        room_id: roomId,
-        host_id: room?.host_id,
-        title: room?.title || 'Live Stream',
-        started_at: new Date().toISOString(),
-        status: 'recording',
-        stream_url: `${window.location.origin}${createPageUrl('LiveRoom')}?id=${roomId}`,
-        viewer_count: viewerCount,
-      });
-      return rec;
-    },
-    onSuccess: (rec) => {
-      setRecordingId(rec.id);
-      recordingStartRef.current = Date.now();
-      setIsRecording(true);
-      toast.success('Recording started');
-    },
-  });
-
-  const stopRecordingMutation = useMutation({
-    mutationFn: async () => {
-      if (!recordingId) return;
-      const duration = Math.floor((Date.now() - (recordingStartRef.current || Date.now())) / 1000);
-      await base44.entities.Recording.update(recordingId, {
-        ended_at: new Date().toISOString(),
-        status: 'ready',
-        duration_seconds: duration,
-        viewer_count: peakViewers,
-      });
-    },
-    onSuccess: () => {
-      setIsRecording(false);
-      setRecordingId(null);
-      toast.success('Recording saved to Past Streams');
-    },
-  });
-
-  const leaveMutation = useMutation({
-    mutationFn: async () => {
-      const mine = participants.find(p => p.user_id === user?.id);
-      if (mine) await base44.entities.Participant.delete(mine.id);
-    },
-    onSuccess: () => { window.location.href = createPageUrl('Home'); },
-  });
-
-  const isHost = room?.host_id === user?.id;
-  const isLive = room?.status === 'live';
-
-  const { data: activePollData } = useQuery({
-    queryKey: ['livepoll', roomId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }, '-created_date', 1).then(r => r[0] || null),
-    enabled: !!roomId,
-    refetchInterval: 8000,
-  });
-
-  const formatElapsed = (s) => {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    return h > 0
-      ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
-      : `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-  };
-
-  const copyInvite = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${createPageUrl('LiveRoom')}?id=${roomId}`);
-    toast.success('Invite link copied!');
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0d0618] flex items-center justify-center">
-        <div className="w-14 h-14 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
+        {/* Crown */}
+        {(isHost || isCohost) && (
+          <div className="absolute -top-1 left-0 right-0 flex justify-center">
+            <Crown className="w-3 h-3 drop-shadow" style={{ color: GOLD }} />
+          </div>
+        )}
       </div>
-    );
-  }
 
-  if (!room) {
-    return (
-      <div className="min-h-screen bg-[#0d0618] flex items-center justify-center text-white">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-[#d4af37] mb-4">Room not found</h2>
-          <Link to={createPageUrl('Home')}><Button>Go Home</Button></Link>
+      {/* Name + role label */}
+      <div className="text-center" style={{ maxWidth: size + 8 }}>
+        <p className="text-[11px] font-bold text-white leading-none truncate">{p.name}</p>
+        {(isHost || isCohost) && (
+          <p className="text-[9px] mt-0.5 font-semibold" style={{ color: GOLD + 'BB' }}>
+            {isHost ? 'Host' : 'Co-host'}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Small octagonal audience tile ─────────────────────────────────────────────
+function AudienceTile({ p }) {
+  const color = avatarColor(p.name);
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative" style={{ width: 48, height: 48 }}>
+        <div className="absolute inset-0"
+          style={{ clipPath: OCT, background: 'rgba(255,255,255,0.07)' }} />
+        <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
+          style={{ clipPath: OCT, background: `linear-gradient(135deg, #1A0F0A, ${BG2})` }}>
+          <span className="text-xs font-black" style={{ color }}>
+            {p.name.charAt(0).toUpperCase()}
+          </span>
         </div>
       </div>
-    );
+      <p className="text-[8px] text-white/35 truncate leading-none" style={{ maxWidth: 48 }}>
+        {p.name.split(' ')[0]}
+      </p>
+    </div>
+  );
+}
+
+// ── Slide-up chat panel ────────────────────────────────────────────────────────
+function ChatPanel({ messages, onClose, onSend }) {
+  const [text, setText] = useState('');
+  const bottomRef = useRef(null);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  function submit() {
+    if (!text.trim()) return;
+    onSend(text.trim());
+    setText('');
   }
 
   return (
-    <div className="h-screen bg-[#0B0B18] text-white flex flex-col overflow-hidden" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-      {/* Modals */}
-      <ShareModal isOpen={shareOpen} onClose={() => setShareOpen(false)}
-        url={`${window.location.origin}/LiveRoom?id=${roomId}`} title={room?.title} />
-      <DirectPayments isOpen={paymentsOpen} onClose={() => setPaymentsOpen(false)} creatorName={user?.full_name} />
+    <motion.div
+      initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+      transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+      className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl overflow-hidden"
+      style={{ height: '62vh', background: BG3, borderTop: `1px solid rgba(212,175,55,0.18)` }}
+    >
+      {/* Drag handle */}
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-white/15" />
 
-      <StreamEventBus roomId={roomId} isHost={isHost} onViewerUpdate={setViewerCount} />
-      <HostAlertCenter />
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-5 pb-3 shrink-0"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <span className="text-sm font-black uppercase tracking-wide text-white"
+          style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room Chat</span>
+        <span className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase"
+          style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}44` }}>LIVE</span>
+        <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
+      </div>
 
-      {/* ─── TOP BAR ─── */}
-      <div className="h-12 shrink-0 flex items-center gap-2 px-3 z-30"
-        style={{ background: 'rgba(7,7,15,0.98)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
-        <Link to={createPageUrl('Home')}>
-          <button className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-90 transition-all"
-            style={{ background: 'rgba(255,255,255,0.05)' }}>
-            <ChevronLeft className="w-4 h-4 text-white/60" />
-          </button>
-        </Link>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+        {messages.map(m => (
+          <div key={m.id} className="flex gap-2.5">
+            <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black"
+              style={{ background: avatarColor(m.user) + '44', color: avatarColor(m.user) }}>
+              {m.user.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-[10px] font-bold"
+                  style={{ color: m.host ? GOLD : 'rgba(255,255,255,0.55)' }}>{m.user}</span>
+                {m.host && (
+                  <span className="text-[7px] px-1 py-0.5 rounded font-bold uppercase"
+                    style={{ background: `${GOLD}22`, color: GOLD }}>HOST</span>
+                )}
+              </div>
+              <p className="text-[12px] text-white/80 leading-snug">{m.text}</p>
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
 
-        {isLive && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black shrink-0"
-            style={{ background: 'rgba(180,50,30,0.8)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
-          </span>
-        )}
+      {/* Input */}
+      <div className="shrink-0 flex gap-2 px-3 py-2.5"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.05)', background: BG2 }}>
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && submit()}
+          placeholder="Say something…"
+          className="flex-1 h-9 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+        />
+        <button onClick={submit}
+          className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ background: `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: `1px solid ${GOLD}44` }}>
+          <Send className="w-3.5 h-3.5" style={{ color: GOLD }} />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
 
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{room.title}</p>
-          {isLive && (
-            <p className="text-[9px] font-mono" style={{ color: 'rgba(212,175,55,0.6)' }}>{formatElapsed(elapsedSeconds)}</p>
+// ── Main page ──────────────────────────────────────────────────────────────────
+export default function LiveRoom() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId    = urlParams.get('id');
+
+  // Real camera + peer mesh (falls back gracefully when no roomId)
+  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+
+  // Fetch real room members if roomId provided
+  const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: members = [] } = useQuery({
+    queryKey: ['room-members', roomId],
+    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
+  const { data: party } = useQuery({
+    queryKey: ['room', roomId],
+    queryFn: () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
+    enabled: !!roomId,
+  });
+
+  // Build stage from real members or demo data
+  const stage = roomId && members.length > 0
+    ? members.slice(0, 6).map((m, i) => ({
+        id:       m.id,
+        name:     m.user_name || 'Guest',
+        role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
+        speaking: false,
+        muted:    m.is_audio_enabled === false,
+      }))
+    : DEMO_STAGE;
+
+  const audience = roomId && members.length > 6
+    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
+    : DEMO_AUDIENCE;
+
+  const roomTitle  = party?.title || 'Testing Desktop — Android Station';
+  const hostName   = party ? (members.find(m => m.user_id === party.host_id)?.user_name || 'Host') : 'SwanyThree';
+  const liveCount  = members.length || 20;
+
+  // Local UI state
+  const [stageData, setStageData]   = useState(stage);
+  const [spotlit, setSpotlit]       = useState(null);
+  const [chatOpen, setChatOpen]     = useState(false);
+  const [chatMsgs, setChatMsgs]     = useState(DEMO_CHAT);
+  const [unread, setUnread]         = useState(0);
+  const [liked, setLiked]           = useState(false);
+  const [likeCount, setLikeCount]   = useState(3);
+  const [handRaised, setHandRaised] = useState(false);
+
+  // Sync stage when real data arrives
+  useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
+
+  // Simulate rotating speaker in demo mode
+  useEffect(() => {
+    if (roomId) return;
+    let idx = 0;
+    const t = setInterval(() => {
+      idx = (idx + 1) % DEMO_STAGE.length;
+      setStageData(prev => prev.map((s, i) => ({ ...s, speaking: i === idx && !s.muted })));
+    }, 4500);
+    return () => clearInterval(t);
+  }, [roomId]);
+
+  const activeSpeaker = stageData.find(s => s.speaking);
+  const stageCols     = stageData.length <= 4 ? 2 : 3;
+  const tileSize      = stageCols === 2 ? 130 : 96;
+
+  function resolveStream(memberId, userId) {
+    if (userId === user?.id) return { stream: localStream, isLocal: true };
+    const peerId = Array.from((peerUserIds || new Map()).entries()).find(([, uid]) => uid === userId)?.[0];
+    return { stream: peerId ? remoteStreams?.get(peerId) : null, isLocal: false };
+  }
+
+  function openChat()  { setChatOpen(true); setUnread(0); }
+  function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
+  function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
+
+  return (
+    <div className="fixed inset-0 flex flex-col overflow-hidden"
+      style={{ background: BG, fontFamily: 'Barlow Condensed, sans-serif' }}>
+
+      {/* ── Top bar ─────────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 px-3 py-2.5 shrink-0"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <button className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(255,255,255,0.07)' }}
+          onClick={() => history.back()}>
+          <ChevronLeft className="w-4 h-4 text-white" />
+        </button>
+        <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <MessageCircle className="w-3 h-3 text-white/40" />
+        </div>
+        <h1 className="flex-1 text-sm font-bold text-white truncate">{roomTitle}</h1>
+        <button className="w-7 h-7 flex items-center justify-center">
+          <MoreHorizontal className="w-4 h-4 text-white/40" />
+        </button>
+        <button className="w-7 h-7 flex items-center justify-center">
+          <Share2 className="w-4 h-4 text-white/40" />
+        </button>
+        <button className="w-7 h-7 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <Minus className="w-3.5 h-3.5 text-white/40" />
+        </button>
+      </div>
+
+      {/* ── Scrollable content ──────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 88 }}>
+
+        {/* Room meta row */}
+        <div className="px-4 pt-3 pb-1 flex items-center gap-3 flex-wrap">
+          {/* Host */}
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
+              style={{ background: avatarColor(hostName) + '55', color: avatarColor(hostName), border: `1.5px solid ${avatarColor(hostName)}` }}>
+              {hostName.charAt(0)}
+            </div>
+            <span className="text-xs font-semibold text-white/60">{hostName}</span>
+          </div>
+          {/* Counts */}
+          <div className="flex items-center gap-2 text-[10px] text-white/35">
+            <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{liveCount}</span>
+            <span>•</span>
+            <span>{liveCount} here now</span>
+          </div>
+          {/* Active speaker */}
+          {activeSpeaker && (
+            <div className="ml-auto flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black"
+                style={{ background: avatarColor(activeSpeaker.name) + '55', color: avatarColor(activeSpeaker.name) }}>
+                {activeSpeaker.name.charAt(0)}
+              </div>
+              <span className="text-[10px] text-white/40">{activeSpeaker.name.split(' ')[0]} is speaking</span>
+            </div>
           )}
         </div>
 
-        <ViewerCount count={viewerCount} peakViewers={peakViewers} />
-        <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={viewerCount} />
+        {/* LIVE + SeeWhy badge row */}
+        <div className="px-4 pb-3 flex items-center gap-2">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+            style={{ background: `${PINK}1A`, border: `1px solid ${PINK}44` }}>
+            <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
+              animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 0.9, repeat: Infinity }} />
+            <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
+          </div>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Radio className="w-2.5 h-2.5" style={{ color: GOLD }} />
+            <span className="text-[9px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
+          </div>
+        </div>
 
-        {/* Highlight Capture */}
-        {isHost && (
-          <StreamHighlightCapture
-            roomId={roomId}
-            sessionId={room?.current_session_id}
-            creatorId={room?.host_id}
-            elapsedSeconds={elapsedSeconds}
-            isHost={isHost}
-          />
-        )}
+        {/* ── Stage header ─────────────────────────────────────────────────── */}
+        <div className="px-4 mb-3 flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[17px] font-black text-white">Stage</span>
+            <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              {stageData.length}/20
+            </span>
+          </div>
+          <button
+            onClick={() => setSpotlit(null)}
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <LayoutGrid className="w-3.5 h-3.5 text-white/40" />
+          </button>
+        </div>
 
-        {/* Poll Manager */}
-        <PollLaunchBar roomId={roomId} hostId={user?.id} isHost={isHost} activePoll={activePollData} />
+        {/* ── Stage grid ────────────────────────────────────────────────────── */}
+        <div className="px-3 mb-5">
+          {spotlit ? (
+            /* Spotlight mode */
+            <div className="space-y-4">
+              <div className="flex justify-center py-3">
+                <StageTile p={spotlit} size={170} onClick={() => setSpotlit(null)} />
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-1 px-1">
+                {stageData.filter(s => s.id !== spotlit.id).map(p => (
+                  <div key={p.id} className="shrink-0">
+                    <StageTile p={p} size={72} onClick={() => setSpotlit(p)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}>
+              <AnimatePresence>
+                {stageData.map(p => {
+                  const { stream, isLocal } = resolveStream(p.id, p.userId);
+                  return (
+                    <motion.div key={p.id} layout
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex justify-center">
+                      <StageTile p={p} size={tileSize} stream={stream} isLocal={isLocal}
+                        onClick={() => setSpotlit(p)} />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
 
-        {/* Share */}
-        <button onClick={() => setShareOpen(true)}
-          className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-90 transition-all"
-          style={{ background: 'rgba(255,255,255,0.05)' }}>
-          <Share2 className="w-4 h-4 text-white/50" />
+        {/* ── Audience section ──────────────────────────────────────────────── */}
+        <div className="px-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-[13px] font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Others in the Room
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+            <div className="flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              <Users className="w-3 h-3" />
+              <span className="text-[10px]">{audience.length}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-5 gap-x-2 gap-y-3">
+            {audience.map(p => (
+              <div key={p.id} className="flex justify-center">
+                <AudienceTile p={p} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── App shortcut carousel ─────────────────────────────────────────── */}
+        <div className="px-3 pb-3">
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {[
+              { label: 'Auction',      icon: '🏆', bg: 'rgba(212,175,55,0.08)'  },
+              { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
+              { label: 'AI Trip',      icon: '🤖', bg: 'rgba(139,92,246,0.08)'  },
+              { label: 'Tips',         icon: '💸', bg: 'rgba(255,21,100,0.08)'  },
+              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
+              { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
+            ].map(s => (
+              <div key={s.label} className="flex flex-col items-center gap-1 shrink-0">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
+                  style={{ background: s.bg, border: '1px solid rgba(255,255,255,0.07)' }}>
+                  {s.icon}
+                </div>
+                <span className="text-[8px] text-white/30">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Fixed bottom toolbar ──────────────────────────────────────────────── */}
+      <div className="fixed bottom-0 inset-x-0 flex items-center justify-between px-4 py-3 shrink-0"
+        style={{ background: `linear-gradient(to top, ${BG} 70%, ${BG}00)`, backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+
+        {/* Leave */}
+        <button className="text-[13px] font-black uppercase tracking-wide" style={{ color: PINK }}>
+          Leave room
         </button>
 
-        {isHost && (
-          <>
-            <button
-              onClick={() => isRecording ? stopRecordingMutation.mutate() : startRecordingMutation.mutate()}
-              disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
-              className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-90 transition-all"
-              style={{ background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)' }}>
-              {isRecording ? <StopCircle className="w-4 h-4 text-red-400" /> : <Circle className="w-4 h-4 text-white/40" />}
-            </button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-3">
 
-            <button onClick={() => goLiveMutation.mutate()} disabled={goLiveMutation.isPending}
-              className="h-9 px-3 rounded-xl text-xs font-black uppercase transition-all active:scale-95"
-              style={{
-                background: isLive ? 'rgba(180,50,30,0.8)' : '#d4af37',
-                color: isLive ? '#fff' : '#000',
-                fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em'
-              }}>
-              <Radio className="inline w-3.5 h-3.5 mr-1" />
-              {isLive ? 'End' : 'Live'}
-            </button>
+          {/* Chat */}
+          <button onClick={openChat} className="relative flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ background: chatOpen ? `${GOLD}15` : 'rgba(255,255,255,0.07)', border: chatOpen ? `1px solid ${GOLD}44` : '1px solid rgba(255,255,255,0.1)' }}>
+              <MessageCircle className="w-4 h-4 text-white" />
+            </div>
+            {unread > 0 && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold"
+                style={{ background: PINK, color: '#fff' }}>{unread}</div>
+            )}
+            <span className="text-[8px] text-white/35">Chat</span>
+          </button>
+
+          {/* Heart */}
+          <button onClick={handleLike} className="flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: liked ? `${PINK}1A` : 'rgba(255,255,255,0.07)', border: liked ? `1px solid ${PINK}55` : '1px solid rgba(255,255,255,0.1)' }}>
+              <Heart className="w-4 h-4 transition-all"
+                style={{ color: liked ? PINK : 'rgba(255,255,255,0.6)', fill: liked ? PINK : 'none' }} />
+            </div>
+            <span className="text-[8px]" style={{ color: liked ? PINK : 'rgba(255,255,255,0.35)' }}>{likeCount}</span>
+          </button>
+
+          {/* Hand raise */}
+          <button onClick={() => setHandRaised(h => !h)} className="flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
+              <Hand className="w-4 h-4 transition-all" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
+            </div>
+            <span className="text-[8px] text-white/35"> </span>
+          </button>
+
+          {/* Mic */}
+          <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+              {!audioEnabled
+                ? <MicOff className="w-4 h-4 text-red-400" />
+                : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
+            </div>
+            <span className="text-[8px] text-white/35"> </span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Chat panel overlay ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {chatOpen && (
+          <>
+            <motion.div className="fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.55)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setChatOpen(false)} />
+            <ChatPanel messages={chatMsgs} onClose={() => setChatOpen(false)} onSend={sendChat} />
           </>
         )}
-
-        <button onClick={() => leaveMutation.mutate()}
-          className="w-9 h-9 flex items-center justify-center rounded-xl active:scale-90 transition-all"
-          style={{ background: 'rgba(128,0,32,0.3)', border: '1px solid rgba(180,50,30,0.3)' }}>
-          <PhoneOff className="w-4 h-4 text-red-400" />
-        </button>
-      </div>
-
-      {/* ─── MOBILE PANEL SELECTOR ─── */}
-      <div className="md:hidden shrink-0 flex items-center gap-1 px-3 py-1.5"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        {[
-          { id: 'stage', icon: Video, label: 'Stage' },
-          { id: 'chat', icon: MessageSquare, label: 'Chat' },
-          { id: 'controls', icon: Settings, label: 'Tools' },
-        ].map(p => {
-          const Icon = p.icon;
-          const active = mobilePanel === p.id;
-          return (
-            <button key={p.id} onClick={() => setMobilePanel(p.id)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold uppercase transition-all"
-              style={{
-                fontFamily: 'Barlow Condensed, sans-serif',
-                background: active ? 'rgba(212,175,55,0.12)' : 'transparent',
-                color: active ? '#d4af37' : 'rgba(255,255,255,0.35)',
-                border: active ? '1px solid rgba(212,175,55,0.2)' : '1px solid transparent',
-              }}>
-              <Icon className="w-3.5 h-3.5" />{p.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ─── DESKTOP: 3-COLUMN / MOBILE: single panel ─── */}
-      <div className="flex-1 flex overflow-hidden">
-
-        {/* ─── LEFT SIDEBAR (desktop only) ─── */}
-        <AnimatePresence initial={false}>
-          {leftOpen && (
-            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 240, opacity: 1 }} exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="hidden md:flex shrink-0 h-full flex-col overflow-y-auto overflow-x-hidden"
-              style={{ borderRight: '1px solid rgba(212,175,55,0.1)', background: 'rgba(13,6,24,0.7)' }}>
-              <div className="p-3 space-y-3">
-                <StreamHealthMonitor isLive={isLive} />
-                <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
-                <AudioPanel micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} participants={participants} />
-                <AudioMixer micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} />
-                <ScreenSharePanel 
-                  isSharing={isScreenSharing}
-                  onStartShare={(stream) => {
-                    setScreenShareStream(stream);
-                    setIsScreenSharing(true);
-                  }}
-                  onStopShare={() => {
-                    screenShareStream?.getTracks().forEach(t => t.stop());
-                    setScreenShareStream(null);
-                    setIsScreenSharing(false);
-                  }}
-                />
-                <MultiStreamConfig roomId={roomId} isHost={isHost} />
-                <GuestControls
-                  participants={participants}
-                  onMuteGuest={(guestId) => {}}
-                  onRemoveGuest={(guestId) => {
-                    const guest = participants.find(p => p.id === guestId);
-                    if (guest) base44.entities.Participant.delete(guest.id);
-                  }}
-                />
-                <LowerThirdsBanner onBannerChange={setBannerConfig} />
-                {isHost && activeBattle && <PKBattleSoundboard battleId={activeBattle.id} isBattleActive={!!activeBattle} />}
-                {isHost && <ChatModeration />}
-                {isHost && <GuestConnector roomId={roomId} roomName={room?.title} />}
-                <RealtimeLeaderboard roomId={roomId} creatorId={room?.creator_id} />
-                {isHost && <PerformanceDashboard roomId={roomId} sessionId={room?.current_session_id} />}
-                {isHost && <ClipGeneratorAI sessionId={room?.current_session_id} roomId={roomId} creatorId={room?.creator_id} />}
-                {isHost && <AIModeration roomId={roomId} isHost={isHost} />}
-                <SubscriptionGate creatorId={room?.creator_id} roomId={roomId} />
-                <VdoNinjaGuestLink roomId={roomId} />
-                {isHost && (
-                  <button
-                    onClick={() => setShowEvmux(!showEvmux)}
-                    className="w-full px-3 py-2 rounded-lg text-xs font-bold text-white/60 hover:text-white transition-all"
-                    style={{ background: showEvmux ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showEvmux ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.08)'}` }}
-                  >
-                    {showEvmux ? 'Hide' : 'Show'} Evmux Web Source
-                  </button>
-                )}
-                <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsedSeconds} hostName={user?.full_name} room={room} />
-                <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name} viewerCount={viewerCount} />
-                <WebhookHooks roomId={roomId} isHost={isHost} />
-                <LivePoll roomId={roomId} isHost={isHost} />
-                <PrivatePanel isHost={isHost} currentUser={user} />
-                {!isHost && !paywallUnlocked && (
-                  <PaywallGate isHost={false} streamTitle={room?.title} onUnlock={() => setPaywallUnlocked(true)} isUnlocked={paywallUnlocked} />
-                )}
-                {isHost && <PaywallGate isHost={true} streamTitle={room?.title} />}
-                <div className="space-y-2 pt-1">
-                  <p className="text-[10px] text-white/30 uppercase tracking-wider px-1">Layout</p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {LAYOUT_MODES.map(l => (
-                      <button key={l.id} onClick={() => setLayoutMode(l.id)}
-                        className={`text-[10px] py-1.5 rounded border transition-all ${layoutMode === l.id ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 text-white/40'}`}>
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Toggle left sidebar (desktop) */}
-        <button onClick={() => setLeftOpen(!leftOpen)}
-          className="hidden md:flex absolute z-20 w-4 h-10 items-center justify-center rounded-r transition-all"
-          style={{ left: leftOpen ? 240 : 0, top: '50%', transform: 'translateY(-50%)', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-          {leftOpen ? <ChevronLeft className="w-3 h-3 text-[#d4af37]" /> : <ChevronRight className="w-3 h-3 text-[#d4af37]" />}
-        </button>
-
-        {/* Mobile: Tools panel */}
-        {mobilePanel === 'controls' && (
-          <div className="md:hidden flex-1 overflow-y-auto" style={{ background: 'rgba(13,6,24,0.95)' }}>
-            <div className="p-3 space-y-3">
-              <StreamHealthMonitor isLive={isLive} />
-              <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
-              <AudioPanel micMuted={micMuted} onMicToggle={() => setMicMuted(!micMuted)} participants={participants} />
-              <LivePoll roomId={roomId} isHost={isHost} />
-              {isHost && <ChatModeration />}
-              <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name} viewerCount={viewerCount} />
-              <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
-            </div>
-          </div>
-        )}
-
-        {/* Mobile: Chat panel */}
-        {mobilePanel === 'chat' && (
-          <div className="md:hidden flex-1 flex flex-col overflow-hidden">
-            <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
-            <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id} recipientName={room?.title} />
-          </div>
-        )}
-
-        {/* ─── CENTER STAGE (desktop always / mobile when panel=stage) ─── */}
-         <div className={`flex-1 flex-col min-w-0 relative ${mobilePanel === 'stage' ? 'flex' : 'hidden md:flex'}`}>
-           {/* ZEGOCLOUD Live Room — full WebRTC integration */}
-           <div className="flex-1 flex flex-col">
-             <ZEGOLiveRoom 
-               roomId={roomId} 
-               userId={user?.id} 
-               userName={user?.full_name}
-               isHost={isHost} 
-               onStreamHealth={() => {}}
-             />
-
-             {/* Guest approval panel (host only) */}
-             {isHost && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
-
-             {/* Guest join request UI (viewers only) */}
-             {!isHost && <ZEGOGuestJoin roomId={roomId} userId={user?.id} userName={user?.full_name} onJoined={() => {}} />}
-           </div>
-
-
-            {/* Live Poll Overlay — real-time voting on the broadcast canvas */}
-            <LivePollOverlay
-              roomId={roomId}
-              currentUser={user}
-              isHost={isHost}
-              position="bottom-left"
-            />
-
-            {/* Lower thirds overlay */}
-            <AnimatePresence>
-              {bannerConfig.enabled && (
-                <motion.div
-                  initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
-                  className="absolute bottom-4 left-4 right-4 h-10 rounded overflow-hidden z-10"
-                >
-                  <div
-                    className="w-full h-full flex items-center px-4"
-                    style={{
-                      background: bannerConfig.style === 'gradient'
-                        ? 'linear-gradient(90deg, rgba(128,0,32,0.9) 0%, rgba(212,175,55,0.9) 100%)'
-                        : bannerConfig.style === 'solid'
-                        ? 'rgba(13,6,24,0.95)'
-                        : 'transparent'
-                    }}
-                  >
-                    <p className="text-sm font-bold truncate" style={{ color: bannerConfig.color, textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
-                      {bannerConfig.text}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Hover controls overlay */}
-            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity bg-black/60 rounded-full px-4 py-2 z-20 pointer-events-none group-hover:pointer-events-auto">
-              <button
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all pointer-events-auto ${
-                  !audioEnabled ? 'bg-red-700/80 border-red-600 text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-                }`}
-                onClick={handleMicToggle}
-              >
-                {!audioEnabled ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
-              <button
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all pointer-events-auto ${
-                  !videoEnabled ? 'bg-red-700/80 border-red-600 text-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-                }`}
-                onClick={toggleVideo}
-              >
-                {!videoEnabled ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
-              </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center border-2 bg-white/10 border-white/20 text-white hover:bg-white/20 pointer-events-auto">
-                <Monitor className="w-4 h-4" />
-              </button>
-            </div>
-
-          {/* Pre-stream countdown (scheduled, not live) */}
-          {room?.status === 'scheduled' && room?.scheduled_start && !isLive && (
-            <PreStreamCountdown room={room} currentUser={user} onGoLive={() => isHost && goLiveMutation.mutate()} />
-          )}
-
-          {/* Viewer points notification */}
-          {!isHost && <PointsNotification userId={user?.id} />}
-          {/* Passive points earning (chat, watch time) */}
-          <PointsEarnWidget
-            userId={user?.id}
-            creatorId={room?.host_id}
-            roomId={roomId}
-            isHost={isHost}
-          />
-
-          {/* Live chat overlay — floating for easy access */}
-          {mobilePanel === 'stage' && <ChatOverlay roomId={roomId} isVisible={true} />}
-
-          {/* Evmux web source overlay */}
-          {showEvmux && (
-            <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />
-          )}
-
-          {/* Live Transcription */}
-          <LiveTranscription isLive={room?.status === 'live'} roomId={roomId} />
-
-          {/* Engagement Badges */}
-          <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={room?.creator_id} />
-
-          {/* Tipping Overlay */}
-          <TippingOverlay roomId={roomId} creatorId={room?.creator_id} isVisible={true} />
-
-          {/* PPV Gate */}
-          {showPPV && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => setShowPPV(false)} />}
-
-          {/* Bottom bar: layout controls */}
-          <div className="h-9 shrink-0 flex items-center justify-center gap-2 border-t border-white/5 bg-[rgba(13,6,24,0.8)] px-4">
-            {LAYOUT_MODES.map(l => (
-              <button
-                key={l.id}
-                onClick={() => setLayoutMode(l.id)}
-                className={`text-[10px] px-2 py-0.5 rounded border transition-all ${
-                  layoutMode === l.id
-                    ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10'
-                    : 'border-white/10 text-white/30 hover:border-white/20'
-                }`}
-              >
-                {l.label}
-              </button>
-            ))}
-            <div className="w-px h-4 bg-white/10 mx-1" />
-            <p className="text-[10px] text-white/30 font-mono">{participants.length} on stage</p>
-          </div>
-        </div>{/* end center stage */}
-
-        {/* Toggle right sidebar (desktop only) */}
-        <button
-          onClick={() => setRightOpen(!rightOpen)}
-          className="hidden md:flex relative z-20 w-4 h-10 items-center justify-center transition-all self-center"
-          style={{ background: 'rgba(212,175,55,0.1)', borderLeft: '1px solid rgba(212,175,55,0.2)' }}
-        >
-          {rightOpen ? <ChevronRight className="w-3 h-3 text-[#d4af37]" /> : <ChevronLeft className="w-3 h-3 text-[#d4af37]" />}
-        </button>
-
-        {/* ─── RIGHT SIDEBAR (desktop only) ─── */}
-        <AnimatePresence initial={false}>
-          {rightOpen && (
-            <motion.div
-              initial={{ width: 0, opacity: 0 }} animate={{ width: 320, opacity: 1 }} exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="hidden md:flex shrink-0 h-full flex-col overflow-hidden"
-              style={{ borderLeft: '1px solid rgba(212,175,55,0.1)', background: 'rgba(13,6,24,0.95)' }}
-            >
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-                <TabsList className="shrink-0 grid grid-cols-7 bg-[rgba(13,6,24,0.9)] border-b border-[rgba(212,175,55,0.1)] rounded-none h-10 p-0">
-                  {[
-                    { value: 'chat', icon: MessageSquare, label: 'Chat' },
-                    { value: 'guests', icon: Users, label: 'Guests' },
-                    { value: 'analytics', icon: BarChart2, label: 'Stats' },
-                    { value: 'monetize', icon: DollarSign, label: 'Pay' },
-                    { value: 'loyalty', icon: Gift, label: 'Shop' },
-                    { value: 'aura', icon: Sparkles, label: 'AI' },
-                    { value: 'shorts', icon: Video, label: 'Shorts' },
-                  ].map(tab => (
-                    <TabsTrigger
-                      key={tab.value}
-                      value={tab.value}
-                      className="flex flex-col items-center gap-0.5 h-full rounded-none text-[9px] text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/5 data-[state=active]:border-b-2 data-[state=active]:border-[#d4af37] transition-all"
-                    >
-                      <tab.icon className="w-3.5 h-3.5" />
-                      {tab.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                <TabsContent value="chat" className="flex-1 overflow-hidden m-0 p-0 flex flex-col">
-                  <div className="flex-1 overflow-y-auto space-y-3 p-3">
-                    <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />
-                    <div className="border-t border-white/5 pt-3">
-                      <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
-                    </div>
-                  </div>
-                  <SuperChatBar
-                    roomId={roomId}
-                    currentUser={user}
-                    recipientId={room?.host_id}
-                    recipientName={room?.title}
-                  />
-                </TabsContent>
-
-                <TabsContent value="guests" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                  {/* Panel Video — host/co-host can load video for 20-person panel */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Panel Video</p>
-                      <VideoSourcePicker
-                        compact
-                        isHost={isHost}
-                        isCoHost={false}
-                        playlist={panelPlaylist}
-                        onPlaylistChange={setPanelPlaylist}
-                        onSelect={(src) => setPanelVideo(src)}
-                      />
-                    </div>
-                    {panelVideo && (
-                      <div className="rounded-xl overflow-hidden relative bg-black group" data-video-container style={{ aspectRatio: '16/9' }}>
-                        {panelVideo.type === 'youtube' && getYouTubeId(panelVideo.url) ? (
-                          <iframe
-                            src={`https://www.youtube.com/embed/${getYouTubeId(panelVideo.url)}?autoplay=1&controls=1`}
-                            className="w-full h-full"
-                            allow="autoplay; fullscreen"
-                            frameBorder="0"
-                            title="Panel Video"
-                          />
-                        ) : (
-                          <video
-                            ref={panelVideoRef}
-                            src={panelVideo.url}
-                            controls={isHost}
-                            autoPlay
-                            className="w-full h-full object-contain"
-                          />
-                        )}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
-                          <VideoPlayerControls
-                            playerRef={panelVideoRef}
-                            playerType={panelVideo.type === 'youtube' ? 'youtube' : 'direct'}
-                            isHost={isHost}
-                            isCoHost={false}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Greenroom Queue — real-time director view */}
-                  <GreenroomQueue roomId={roomId} isHost={isHost} />
-
-                  {/* On-stage participants list */}
-                  <div className="border-t border-white/5 pt-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[10px] font-semibold text-[#d4af37] uppercase tracking-wider">On Stage</p>
-                      <Badge className="text-[9px] bg-[#800020]/60 text-[#d4af37] border-[#d4af37]/30">{participants.length}</Badge>
-                    </div>
-                    {participants.map(p => (
-                      <div key={p.id} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5 mb-1">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                          {p.user_name?.charAt(0)?.toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-white truncate flex items-center gap-1">
-                            {p.user_id === room?.host_id && <Crown className="w-3 h-3 text-[#d4af37]" />}
-                            {p.user_name}
-                          </p>
-                          <p className="text-[9px] text-white/40 capitalize">{p.role}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Battle Mode widget */}
-                  <div className="border-t border-white/5 pt-3">
-                    <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name} participants={participants} />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="analytics" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                  <p className="text-xs font-semibold text-[#d4af37]">Stream Stats</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { label: 'Viewers', value: viewerCount, color: '#00d4ff' },
-                      { label: 'Peak', value: peakViewers, color: '#d4af37' },
-                      { label: 'Messages', value: 0, color: '#a78bfa' },
-                      { label: 'Reactions', value: 0, color: '#22c55e' },
-                    ].map(stat => (
-                      <div key={stat.label} className="bg-white/5 border border-white/5 rounded-lg p-3">
-                        <p className="text-[10px] text-white/40 uppercase">{stat.label}</p>
-                        <p className="text-xl font-bold font-mono mt-1" style={{ color: stat.color }}>{stat.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <Link to={createPageUrl('StreamAnalytics') + `?id=${roomId}`}>
-                    <Button size="sm" variant="outline" className="w-full mt-2 text-xs border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10">
-                      Full Analytics →
-                    </Button>
-                  </Link>
-                </TabsContent>
-
-                <TabsContent value="goals" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                   <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
-                   <GoldenWall roomId={roomId} isExpanded={true} />
-                 </TabsContent>
-
-                 <TabsContent value="monetize" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                   {/* Real-time Battle Scoreboard */}
-                   <BattleScoreboard roomId={roomId} />
-                   {/* Virtual Currency Tips */}
-                   <VirtualCurrencyTips roomId={roomId} creatorId={room?.creator_id} currentUser={user} isHost={isHost} />
-                   <MonetizationDashboard roomId={roomId} />
-                   {!isHost && <PaymentMethodSelector creatorId={room?.creator_id} roomId={roomId} onPaymentComplete={() => toast.success('Payment processed!')} />}
-                   {isHost && <VideoShortRecorder roomId={roomId} creatorId={user?.id} />}
-                 </TabsContent>
-
-                 <TabsContent value="loyalty" className="flex-1 overflow-y-auto m-0 p-3 space-y-4">
-                   {/* Host view: manage rewards + redemption queue */}
-                   {isHost ? (
-                     <>
-                       <RedemptionQueue creatorId={room?.host_id} roomId={roomId} />
-                       <RewardShopEditor creatorId={room?.host_id} />
-                     </>
-                   ) : (
-                     <>
-                       <ViewerLoyaltyCard userId={user?.id} creatorId={room?.host_id} />
-                       <RewardShop creatorId={room?.host_id} roomId={roomId} currentUser={user} />
-                     </>
-                   )}
-                 </TabsContent>
-
-                 <TabsContent value="aura" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                   {/* AI Copilot — host only */}
-                   {isHost && (
-                     <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={viewerCount} />
-                   )}
-                   {/* AI Stream Summary */}
-                   <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title} viewerCount={viewerCount} elapsedSeconds={elapsedSeconds} />
-                   <AuraPanel
-                     roomId={roomId}
-                     isHost={isHost}
-                     streamTitle={room?.title}
-                     viewerCount={viewerCount}
-                     isLive={isLive}
-                   />
-                   {isHost && (
-                     <>
-                       <AIPersonaCustomizer roomId={roomId} sessionId={room?.current_session_id} onCustomized={() => toast.success('AI persona updated!')} />
-                       <AuraEmotionDisplay roomId={roomId} sessionId={room?.current_session_id} auraPersona={room?.aura_persona || 'hype'} />
-                       <SwanAIRecommendations roomId={roomId} currentLayout={layoutMode} viewerCount={viewerCount} />
-                     </>
-                   )}
-                 </TabsContent>
-
-                 <TabsContent value="shorts" className="flex-1 overflow-y-auto m-0 p-3 space-y-3">
-                   {isHost && <VideoShortRecorder roomId={roomId} creatorId={user?.id} />}
-                   {!isHost && <p className="text-xs text-white/50">Creator shorts feature</p>}
-                 </TabsContent>
-              </Tabs>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-      </div>{/* end 3-column flex row */}
-
-      {/* Mobile media controls bar */}
-      <div className="md:hidden shrink-0 flex items-center justify-around px-4 py-2"
-        style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
-        <button onClick={handleMicToggle}
-          className="flex flex-col items-center gap-0.5 w-12 h-12 rounded-2xl justify-center transition-all active:scale-90"
-          style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', color: !audioEnabled ? '#f87171' : 'rgba(255,255,255,0.5)' }}>
-          {!audioEnabled ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          <span className="text-[8px] font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>MIC</span>
-        </button>
-
-        <button onClick={toggleVideo}
-          className="flex flex-col items-center gap-0.5 w-12 h-12 rounded-2xl justify-center transition-all active:scale-90"
-          style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)', color: !videoEnabled ? '#f87171' : 'rgba(255,255,255,0.5)' }}>
-          {!videoEnabled ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
-          <span className="text-[8px] font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>CAM</span>
-        </button>
-
-        <button onClick={() => setPaymentsOpen(true)}
-          className="flex flex-col items-center gap-0.5 w-12 h-12 rounded-2xl justify-center transition-all active:scale-90"
-          style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(212,175,55,0.6)' }}>
-          <DollarSign className="w-5 h-5" />
-          <span className="text-[8px] font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>TIP</span>
-        </button>
-
-        <button onClick={() => setShareOpen(true)}
-          className="flex flex-col items-center gap-0.5 w-12 h-12 rounded-2xl justify-center transition-all active:scale-90"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
-          <Share2 className="w-5 h-5" />
-          <span className="text-[8px] font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>SHARE</span>
-        </button>
-
-        <button onClick={() => leaveMutation.mutate()}
-          className="flex flex-col items-center gap-0.5 w-12 h-12 rounded-2xl justify-center transition-all active:scale-90"
-          style={{ background: 'rgba(128,0,32,0.25)', color: '#f87171', border: '1px solid rgba(180,50,30,0.3)' }}>
-          <PhoneOff className="w-5 h-5" />
-          <span className="text-[8px] font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LEAVE</span>
-        </button>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
