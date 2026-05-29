@@ -1,0 +1,89 @@
+{
+  "name": "Referral",
+  "type": "object",
+  "properties": {
+    "referrer_id": {
+      "type": "string",
+      "description": "User who made the referral"
+    },
+    "referred_user_id": {
+      "type": "string",
+      "description": "User who was referred"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community context"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "rewarded"
+      ],
+      "default": "pending",
+      "description": "Referral status"
+    },
+    "reward_type": {
+      "type": "string",
+      "enum": [
+        "points",
+        "badge",
+        "subscription",
+        "virtual_good"
+      ],
+      "description": "Type of reward"
+    },
+    "reward_value": {
+      "type": "number",
+      "description": "Reward amount or ID"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Unique referral code"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When referral was completed"
+    }
+  },
+  "required": [
+    "referrer_id",
+    "referral_code"
+  ],
+  "rls": {
+    "create": {
+      "data.referrer_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.referrer_id": "{{user.id}}"
+        },
+        {
+          "data.referred_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

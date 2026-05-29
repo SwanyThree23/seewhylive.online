@@ -1,0 +1,95 @@
+{
+  "name": "AICopilotInsight",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string"
+    },
+    "host_id": {
+      "type": "string"
+    },
+    "insight_type": {
+      "type": "string",
+      "enum": [
+        "conversation_starter",
+        "thank_you",
+        "chat_spike",
+        "sentiment_shift",
+        "trending_topic",
+        "performance_tip"
+      ],
+      "default": "conversation_starter"
+    },
+    "content": {
+      "type": "string",
+      "description": "The suggested text or alert message"
+    },
+    "sentiment_score": {
+      "type": "number",
+      "description": "0-100 positivity score"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "low"
+    },
+    "is_dismissed": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id",
+    "insight_type",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

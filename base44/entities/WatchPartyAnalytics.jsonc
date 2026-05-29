@@ -1,0 +1,136 @@
+{
+  "name": "WatchPartyAnalytics",
+  "properties": {
+    "avg_watch_duration_seconds": {
+      "default": 0,
+      "description": "Average time each member spent in the party",
+      "type": "number"
+    },
+    "chat_messages_sent": {
+      "default": 0,
+      "type": "number"
+    },
+    "ended_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "host_id": {
+      "description": "Host user ID",
+      "type": "string"
+    },
+    "most_reacted_timestamp": {
+      "description": "Video timestamp with highest reaction spike (seconds)",
+      "type": "number"
+    },
+    "new_followers_from_party": {
+      "default": 0,
+      "description": "Followers gained during this party",
+      "type": "number"
+    },
+    "party_id": {
+      "description": "Associated WatchParty ID",
+      "type": "string"
+    },
+    "peak_concurrent_viewers": {
+      "default": 0,
+      "type": "number"
+    },
+    "reaction_breakdown": {
+      "description": "Count per reaction_category: {standard, hype, love, lol, wow, rage, domino, superchat}",
+      "type": "object"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "snapshot_interval_seconds": {
+      "default": 60,
+      "description": "How often analytics snapshots are recorded",
+      "type": "number"
+    },
+    "started_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "tips_collected_cents": {
+      "default": 0,
+      "description": "Total tips from super-reactions during this party",
+      "type": "number"
+    },
+    "total_members_joined": {
+      "default": 0,
+      "description": "Unique users who joined the party",
+      "type": "number"
+    },
+    "total_queue_items_played": {
+      "default": 0,
+      "description": "Videos actually played from the queue",
+      "type": "number"
+    },
+    "total_reactions": {
+      "default": 0,
+      "type": "number"
+    },
+    "total_videos_queued": {
+      "default": 0,
+      "description": "Total videos added to the queue",
+      "type": "number"
+    },
+    "videos_skipped": {
+      "default": 0,
+      "type": "number"
+    },
+    "viewer_timeline": {
+      "description": "Array of {timestamp, viewer_count} snapshots",
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "party_id",
+    "host_id"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

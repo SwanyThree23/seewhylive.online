@@ -1,0 +1,83 @@
+{
+  "name": "AuctionBid",
+  "type": "object",
+  "properties": {
+    "auction_id": {
+      "type": "string"
+    },
+    "bidder_id": {
+      "type": "string"
+    },
+    "bidder_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "is_winning": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_buyout": {
+      "type": "boolean",
+      "default": false
+    },
+    "message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "auction_id",
+    "bidder_id",
+    "bidder_name",
+    "amount"
+  ],
+  "rls": {
+    "create": {
+      "data.bidder_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.bidder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.auction_id": {
+            "$in": [
+              "{{user.auctions_as_creator}}"
+            ]
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.bidder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.bidder_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "name": "ModerationAction",
+  "type": "object",
+  "properties": {
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "mute",
+        "kick",
+        "ban",
+        "warning",
+        "unmute",
+        "unban"
+      ],
+      "description": "Action taken"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "User being moderated"
+    },
+    "moderator_id": {
+      "type": "string",
+      "description": "Moderator who took action"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Associated room"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Associated community"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for action"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Duration in minutes (for temporary actions)"
+    },
+    "is_permanent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Permanent action"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Expiration time for temporary actions"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Action currently in effect"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "action_type",
+    "target_user_id",
+    "moderator_id",
+    "reason"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

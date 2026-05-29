@@ -1,0 +1,119 @@
+{
+  "name": "Stage",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Parent room ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Stage name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Stage description"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "main",
+        "panel",
+        "breakout"
+      ],
+      "default": "main",
+      "description": "Stage type"
+    },
+    "layout": {
+      "type": "string",
+      "enum": [
+        "grid",
+        "spotlight",
+        "sidebar"
+      ],
+      "default": "grid",
+      "description": "Visual layout"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Stage active status"
+    },
+    "max_speakers": {
+      "type": "number",
+      "default": 12,
+      "description": "Max speakers on stage"
+    },
+    "allow_audience_requests": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow audience to request speaking"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order"
+    }
+  },
+  "required": [
+    "room_id",
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "data.room_id": {
+        "$in": [
+          "{{user.rooms_as_host}}"
+        ]
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

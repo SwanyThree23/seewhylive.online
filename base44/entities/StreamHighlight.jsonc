@@ -1,0 +1,110 @@
+{
+  "name": "StreamHighlight",
+  "type": "object",
+  "properties": {
+    "recording_id": {
+      "type": "string",
+      "description": "Source recording ID"
+    },
+    "title": {
+      "type": "string",
+      "description": "Highlight title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Highlight description"
+    },
+    "start_time": {
+      "type": "number",
+      "description": "Start timestamp in seconds"
+    },
+    "end_time": {
+      "type": "number",
+      "description": "End timestamp in seconds"
+    },
+    "clip_url": {
+      "type": "string",
+      "description": "Highlight clip URL"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Highlight thumbnail"
+    },
+    "ai_generated": {
+      "type": "boolean",
+      "default": false,
+      "description": "AI or manual"
+    },
+    "ai_confidence": {
+      "type": "number",
+      "description": "AI confidence score"
+    },
+    "highlight_type": {
+      "type": "string",
+      "enum": [
+        "peak_moment",
+        "funny",
+        "educational",
+        "interactive",
+        "custom"
+      ],
+      "default": "peak_moment",
+      "description": "Type of highlight"
+    },
+    "views": {
+      "type": "number",
+      "default": 0,
+      "description": "View count"
+    },
+    "shares": {
+      "type": "number",
+      "default": 0,
+      "description": "Share count"
+    }
+  },
+  "required": [
+    "recording_id",
+    "title",
+    "start_time",
+    "end_time"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

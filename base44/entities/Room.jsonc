@@ -1,0 +1,148 @@
+{
+  "name": "Room",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Room title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Room description"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Room cover image"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "audio",
+        "video",
+        "hybrid"
+      ],
+      "default": "video",
+      "description": "Room type"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "live",
+        "ended"
+      ],
+      "default": "scheduled",
+      "description": "Current status"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Public or private room"
+    },
+    "max_participants": {
+      "type": "number",
+      "default": 50,
+      "description": "Maximum participants on stage"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Associated community"
+    },
+    "host_id": {
+      "type": "string",
+      "description": "Room host user ID"
+    },
+    "scheduled_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled start time"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Actual start time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End time"
+    },
+    "viewer_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Current viewers"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Room tags"
+    },
+    "recording_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable recording"
+    },
+    "recording_url": {
+      "type": "string",
+      "description": "Recording URL if available"
+    }
+  },
+  "required": [
+    "title",
+    "type",
+    "host_id"
+  ],
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.is_public": true
+        },
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_member}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Subscriber user ID"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Creator being subscribed to"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community subscribed to"
+    },
+    "tier_id": {
+      "type": "string",
+      "description": "SubscriptionTier entity ID"
+    },
+    "tier_name": {
+      "type": "string",
+      "description": "Tier name snapshot"
+    },
+    "price": {
+      "type": "number",
+      "description": "Monthly price at time of subscription"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "expired",
+        "paused"
+      ],
+      "default": "active"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "auto_renew": {
+      "type": "boolean",
+      "default": true
+    },
+    "benefits_snapshot": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Benefits at time of subscription"
+    }
+  },
+  "required": [
+    "user_id",
+    "creator_id",
+    "tier_id",
+    "tier_name",
+    "price"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

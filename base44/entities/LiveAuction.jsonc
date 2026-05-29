@@ -1,0 +1,121 @@
+{
+  "name": "LiveAuction",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "auction_type": {
+      "type": "string",
+      "enum": [
+        "item",
+        "one_on_one",
+        "shoutout",
+        "custom_art",
+        "coaching",
+        "experience"
+      ],
+      "default": "item"
+    },
+    "starting_bid": {
+      "type": "number",
+      "default": 1
+    },
+    "current_bid": {
+      "type": "number",
+      "default": 0
+    },
+    "bid_increment": {
+      "type": "number",
+      "default": 1,
+      "description": "Minimum bid increment"
+    },
+    "buyout_price": {
+      "type": "number",
+      "description": "Optional instant win price"
+    },
+    "current_winner_id": {
+      "type": "string"
+    },
+    "current_winner_name": {
+      "type": "string"
+    },
+    "bid_count": {
+      "type": "number",
+      "default": 0
+    },
+    "ends_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "active",
+        "ending_soon",
+        "ended",
+        "cancelled"
+      ],
+      "default": "upcoming"
+    },
+    "winner_id": {
+      "type": "string"
+    },
+    "winner_name": {
+      "type": "string"
+    },
+    "final_amount": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "creator_id",
+    "title",
+    "auction_type",
+    "starting_bid",
+    "ends_at"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

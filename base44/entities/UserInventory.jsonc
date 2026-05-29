@@ -1,0 +1,42 @@
+{
+  "name": "UserInventory",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner user ID"
+    },
+    "virtual_good_id": {
+      "type": "string",
+      "description": "Virtual good ID"
+    },
+    "is_equipped": {
+      "type": "boolean",
+      "default": false,
+      "description": "Currently equipped/displayed"
+    },
+    "acquired_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Acquisition date"
+    }
+  },
+  "required": [
+    "user_id",
+    "virtual_good_id"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}

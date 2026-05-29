@@ -1,0 +1,132 @@
+{
+  "name": "PartyReaction",
+  "properties": {
+    "animation_style": {
+      "default": "float_up",
+      "description": "How the emoji animates on screen",
+      "enum": [
+        "float_up",
+        "burst",
+        "rain",
+        "shake",
+        "spin",
+        "pulse"
+      ],
+      "type": "string"
+    },
+    "color_override": {
+      "description": "Optional hex color override for reaction bubble",
+      "type": "string"
+    },
+    "combo_count": {
+      "default": 1,
+      "description": "Combo multiplier if same emoji fired rapidly",
+      "type": "number"
+    },
+    "context_timestamp": {
+      "description": "Video playback timestamp this reaction occurred at (seconds)",
+      "type": "number"
+    },
+    "emoji": {
+      "description": "Emoji character(s) used",
+      "type": "string"
+    },
+    "is_combo": {
+      "default": false,
+      "description": "Part of a rapid combo burst",
+      "type": "boolean"
+    },
+    "is_premium": {
+      "default": false,
+      "description": "Premium super-reaction (paid)",
+      "type": "boolean"
+    },
+    "message": {
+      "description": "Optional short message attached to reaction",
+      "type": "string"
+    },
+    "party_id": {
+      "description": "Associated WatchParty ID",
+      "type": "string"
+    },
+    "reaction_category": {
+      "default": "standard",
+      "enum": [
+        "standard",
+        "hype",
+        "love",
+        "lol",
+        "wow",
+        "rage",
+        "domino",
+        "superchat"
+      ],
+      "type": "string"
+    },
+    "room_id": {
+      "description": "Associated Room ID",
+      "type": "string"
+    },
+    "screen_x": {
+      "description": "Normalized X position for floating emoji (0.0 to 1.0)",
+      "type": "number"
+    },
+    "screen_y": {
+      "description": "Normalized Y position spawn point (0.0 to 1.0)",
+      "type": "number"
+    },
+    "tip_amount": {
+      "default": 0,
+      "description": "Tip in cents for paid super-reactions",
+      "type": "number"
+    },
+    "user_avatar": {
+      "description": "User avatar URL",
+      "type": "string"
+    },
+    "user_id": {
+      "description": "User who reacted",
+      "type": "string"
+    },
+    "user_name": {
+      "description": "Display name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party_id",
+    "user_id",
+    "emoji"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
