@@ -1,5 +1,51 @@
 import React, { useState, useEffect } from 'react';
 
+var BG     = 'rgba(7,5,10,.97)';
+var GOLD   = '#C9A84C';
+var BURG   = '#800020';
+var TEAL   = '#00DEC0';
+var RED    = '#FF1A3C';
+var TEXT   = '#EDE8F5';
+var MUTED  = '#7A6F90';
+var DIM    = '#241C34';
+var CARD   = '#1A1526';
+
+var ANIM = '@keyframes navPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}} @keyframes drawerIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}';
+
+// Primary nav: 5 items — hidden when room is active (room has its own bottom bar)
+var PRIMARY = [
+  { id: 'room',      icon: '🎙', label: 'LIVE'      },
+  { id: 'discover',  icon: '🔭', label: 'DISCOVER'  },
+  { id: 'money',     icon: '💰', label: 'EARN'      },
+  { id: 'profile',   icon: '👤', label: 'PROFILE'   },
+  { id: '__more__',  icon: '⊞',  label: 'MORE'      },
+];
+
+// All tool tabs that go in the "More" drawer
+var MORE_TABS = [
+  { id: 'fades',     icon: '⚡', label: 'FADES'      },
+  { id: 'brand',     icon: '🎨', label: 'BRAND'      },
+  { id: 'data',      icon: '📊', label: 'ANALYTICS'  },
+  { id: 'fanout',    icon: '📡', label: 'FANOUT'     },
+  { id: 'clips',     icon: '🎞', label: 'CLIPS'      },
+  { id: 'watch',     icon: '📺', label: 'WATCH'      },
+  { id: 'overlay',   icon: '🎬', label: 'OVERLAY'    },
+  { id: 'bot',       icon: '🤖', label: 'SWANYBOT'   },
+  { id: 'aura',      icon: '✨', label: 'AURA'       },
+  { id: 'swanai',    icon: '🎯', label: 'SWAN AI'    },
+  { id: 'battles',   icon: '⚔️', label: 'BATTLES'    },
+  { id: 'classic',   icon: '🎲', label: 'DC'         },
+  { id: 'collab',    icon: '🤝', label: 'COLLAB'     },
+  { id: 'green',     icon: '🟢', label: 'GREEN RM'   },
+  { id: 'schedule',  icon: '📅', label: 'SCHEDULE'   },
+  { id: 'rankings',  icon: '🏅', label: 'RANKINGS'   },
+  { id: 'showcase',  icon: '🏆', label: 'SHOWCASE'   },
+  { id: 'guardian',  icon: '🛡', label: 'GUARDIAN'   },
+  { id: 'vod',       icon: '🎬', label: 'VOD'        },
+  { id: 'tips',      icon: '💡', label: 'TIPS'       },
+  { id: 'settings',  icon: '⚙', label: 'SETTINGS'   },
+];
+
 export default function MobileNavBar(props) {
   var activeTab    = props.activeTab;
   var setActiveTab = props.setActiveTab;
@@ -7,138 +53,121 @@ export default function MobileNavBar(props) {
   var auraUnread   = props.auraUnread || 0;
   var onAuraClick  = props.onAuraClick;
 
-  var NAV_ITEMS = [
-    { id: 'room',     label: 'HOME',      icon: '🏠', isCenter: false },
-    { id: 'discover', label: 'DISCOVER',  icon: '🔭', isCenter: false },
-    { id: 'room',     label: isLive ? 'LIVE' : 'STUDIO', icon: '📡', isCenter: true },
-    { id: isLive ? 'aura' : 'battles', label: isLive ? 'AURA' : 'BATTLES', icon: isLive ? '🤖' : '⚡', isCenter: false, badge: isLive && auraUnread > 0 ? auraUnread : 0 },
-    { id: 'data',     label: 'DASHBOARD', icon: '📊', isCenter: false },
-  ];
+  var [showMore, setShowMore] = useState(false);
 
-  var [isMobile, setIsMobile] = useState(function() { return window.innerWidth <= 900; });
+  // Hide entirely when in room (LiveRoomPage has its own bottom bar)
+  if (activeTab === 'room') return null;
 
-  useEffect(function() {
-    function onResize() { setIsMobile(window.innerWidth <= 900); }
-    window.addEventListener('resize', onResize);
-    return function() { window.removeEventListener('resize', onResize); };
-  }, []);
-
-  if (!isMobile) return null;
-
-  var pulseStyle = '@keyframes navPulse { 0%,100%{transform:scale(1);opacity:.9} 50%{transform:scale(1.15);opacity:1} }';
+  function goTo(id) {
+    if (id === '__more__') { setShowMore(function(v) { return !v; }); return; }
+    setActiveTab(id);
+    if (id === 'aura' && onAuraClick) onAuraClick();
+    setShowMore(false);
+  }
 
   return (
     <div>
-      <style>{pulseStyle}</style>
+      <style>{ANIM}</style>
+
+      {/* ── More drawer ── */}
+      {showMore && (
+        <div style={{
+          position: 'fixed', bottom: 60, left: 0, right: 0, zIndex: 490,
+          background: 'rgba(7,5,10,.98)', borderTop: '1px solid rgba(255,255,255,.08)',
+          padding: '16px 16px 8px',
+          animation: 'drawerIn .22s ease',
+          maxHeight: '60vh', overflowY: 'auto',
+        }}>
+          {/* Drawer handle */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT, letterSpacing: .5 }}>Studio Tools</span>
+            <button onClick={function() { setShowMore(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+          </div>
+          {/* Tool grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+            {MORE_TABS.map(function(t) {
+              var isActive = activeTab === t.id;
+              return (
+                <div key={t.id} onClick={function() { goTo(t.id); }} style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                  padding: '10px 4px', borderRadius: 12, cursor: 'pointer',
+                  background: isActive ? 'rgba(128,0,32,.25)' : CARD,
+                  border: '1px solid ' + (isActive ? 'rgba(128,0,32,.5)' : 'rgba(255,255,255,.05)'),
+                  transition: 'background .15s',
+                }}>
+                  <span style={{ fontSize: 20 }}>{t.icon}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: isActive ? GOLD : MUTED, letterSpacing: .5, textAlign: 'center' }}>
+                    {t.label}
+                    {t.id === 'aura' && auraUnread > 0 && (
+                      <span style={{ color: RED }}> {auraUnread}</span>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Bottom nav bar ── */}
       <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 500,
-        background: 'rgba(7,5,10,.97)',
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500,
+        background: BG,
         borderTop: '1px solid rgba(255,255,255,.08)',
-        display: 'flex',
-        height: 60,
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        boxSizing: 'content-box'
+        display: 'flex', height: 58,
+        paddingBottom: 'env(safe-area-inset-bottom,0px)',
+        boxSizing: 'content-box',
       }}>
-        {NAV_ITEMS.map(function(item, idx) {
-          var isActive = activeTab === item.id;
-          var isCenter = item.isCenter;
+        {PRIMARY.map(function(item, idx) {
+          var isCenter  = idx === 0;   // LIVE button is center-elevated
+          var isActive  = activeTab === item.id;
+          var isMoreBtn = item.id === '__more__';
+          var isMoreActive = showMore;
 
           if (isCenter) {
             return (
-              <div
-                key={idx}
-                onClick={function() { setActiveTab(item.id); }}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 2,
-                  cursor: 'pointer',
-                  padding: '8px 0'
-                }}>
+              <div key={item.id} onClick={function() { goTo(item.id); }}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, cursor: 'pointer', position: 'relative' }}>
                 <div style={{ position: 'relative' }}>
                   {isLive && (
-                    <div style={{
-                      position: 'absolute',
-                      inset: -4,
-                      borderRadius: '50%',
-                      border: '2px solid rgba(255,30,30,.7)',
-                      animation: 'navPulse 1.5s ease infinite',
-                      pointerEvents: 'none'
-                    }} />
+                    <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '2px solid rgba(255,30,30,.6)', animation: 'navPulse 1.5s ease infinite', pointerEvents: 'none' }} />
                   )}
                   <div style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg,#800020,#C01838)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginTop: -18,
-                    boxShadow: '0 -4px 20px rgba(128,0,32,.6)',
-                    fontSize: 24
+                    width: 46, height: 46, borderRadius: '50%',
+                    background: isActive ? 'linear-gradient(135deg,#800020,#C01838)' : 'linear-gradient(135deg,#2A1A28,#3D1028)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginTop: -16,
+                    boxShadow: isActive ? '0 -4px 20px rgba(128,0,32,.7)' : '0 -2px 10px rgba(0,0,0,.4)',
+                    fontSize: 22, border: '2px solid ' + (isActive ? BURG : DIM),
+                    transition: 'background .2s',
                   }}>
                     {item.icon}
                   </div>
                 </div>
-                <div style={{
-                  fontFamily: "'DM Mono',monospace",
-                  fontSize: 7,
-                  letterSpacing: 1,
-                  color: isActive ? '#C9A84C' : '#7A6F90',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2
-                }}>
-                  {item.label}
-                  {isLive && (
-                    <span style={{ color: '#FF1564', fontSize: 8 }}>●</span>
-                  )}
-                </div>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1, color: isActive ? GOLD : MUTED, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  {isLive ? 'LIVE' : item.label}
+                  {isLive && <span style={{ color: RED, fontSize: 8 }}>●</span>}
+                </span>
               </div>
             );
           }
 
           return (
-            <div
-              key={idx}
-              onClick={function() {
-                setActiveTab(item.id);
-                if (item.id === 'aura' && onAuraClick) onAuraClick();
-              }}
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 2,
-                cursor: 'pointer',
-                padding: '8px 0'
-              }}>
-              <div style={{ position: 'relative', fontSize: 18, filter: isActive ? 'drop-shadow(0 0 6px #C9A84C)' : 'none', transition: 'filter .2s' }}>
+            <div key={item.id + idx} onClick={function() { goTo(item.id); }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, cursor: 'pointer', padding: '8px 0', position: 'relative' }}>
+              {/* Active indicator line */}
+              {(isActive || (isMoreBtn && isMoreActive)) && (
+                <div style={{ position: 'absolute', top: 0, left: '30%', right: '30%', height: 2, background: GOLD, borderRadius: 999 }} />
+              )}
+              <span style={{ fontSize: 18, filter: (isActive || (isMoreBtn && isMoreActive)) ? ('drop-shadow(0 0 5px ' + GOLD + ')') : 'none', transition: 'filter .2s' }}>
                 {item.icon}
-                {item.badge > 0 && (
-                  <span style={{ position: 'absolute', top: -4, right: -6, background: '#FF1A3C', color: '#fff', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, fontWeight: 700, lineHeight: 1, border: '1px solid rgba(7,5,10,.8)' }}>
-                    {item.badge > 9 ? '9+' : item.badge}
-                  </span>
-                )}
-              </div>
-              <div style={{
-                fontFamily: "'DM Mono',monospace",
-                fontSize: 7,
-                letterSpacing: 1,
-                color: isActive ? '#C9A84C' : '#7A6F90'
-              }}>
+              </span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1, color: (isActive || (isMoreBtn && isMoreActive)) ? GOLD : MUTED }}>
                 {item.label}
-              </div>
+                {item.id === 'aura' && auraUnread > 0 && !showMore && (
+                  <span style={{ color: RED }}>  {auraUnread > 9 ? '9+' : auraUnread}</span>
+                )}
+              </span>
             </div>
           );
         })}
