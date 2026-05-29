@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var ROUNDS = ['ROUND 1', 'ROUND 2', 'ROUND 3', 'SUDDEN DEATH'];
 
@@ -303,7 +304,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                     {team1.slice(0, 5).map(function(g) {
                       return (
                         <div key={g.guestId || g.userId} style={{ background: 'rgba(0,255,255,.05)', border: '1px solid rgba(0,255,255,.15)', borderRadius: 7, padding: '6px 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div style={{ width: 22, height: 22, borderRadius: 5, background: 'rgba(0,255,255,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, flexShrink: 0 }}>🎲</div>
+                          <AvatarPortrait username={g.username || 'Player'} size={22} />
                           <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#00FFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || 'Player'}</span>
                         </div>
                       );
@@ -316,7 +317,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                     {team2.slice(0, 5).map(function(g) {
                       return (
                         <div key={g.guestId || g.userId} style={{ background: 'rgba(255,0,64,.05)', border: '1px solid rgba(255,0,64,.15)', borderRadius: 7, padding: '6px 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div style={{ width: 22, height: 22, borderRadius: 5, background: 'rgba(255,0,64,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, flexShrink: 0 }}>🎲</div>
+                          <AvatarPortrait username={g.username || 'Player'} size={22} />
                           <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#FF0040', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || 'Player'}</span>
                         </div>
                       );
