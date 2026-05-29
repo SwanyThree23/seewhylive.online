@@ -341,6 +341,7 @@ export default function PKBattlePage() {
           layout="battle"
           slots={battleCompositorSlots}
           overlayConfig={battleOverlay}
+          userId={user?.id}
           onScreenCapture={handleBattleScreenCapture}
           isHost={!!(user?.id && battle?.creator_id === user?.id)}
         />
