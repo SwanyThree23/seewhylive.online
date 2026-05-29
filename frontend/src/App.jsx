@@ -121,7 +121,7 @@ export default function App() {
     localStorage.setItem('sw_userId', id);
     return id;
   });
-  var [username] = useState(function() { return localStorage.getItem('sw_username') || 'Guest' + Math.floor(Math.random() * 9000 + 1000); });
+  var [username] = useState(function() { var _u = localStorage.getItem('sw_username'); return (_u && _u !== 'undefined' && _u !== 'null') ? _u : 'Guest' + Math.floor(Math.random() * 9000 + 1000); });
   var [role] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
   var [branding, setBranding] = useState(function() {
     try {
