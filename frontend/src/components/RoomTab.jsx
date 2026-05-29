@@ -210,6 +210,15 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [chat]);
 
+  // Warm up camera+mic permissions as soon as RoomTab mounts so the browser
+  // grants access before OctCell's getUserMedia fires (avoids a second prompt)
+  useEffect(function() {
+    if (role === 'viewer') return;
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(function(s) { s.getTracks().forEach(function(t) { t.stop(); }); })
+      .catch(function() {});
+  }, []);
+
   useEffect(function() {
     if (!socket) return;
     socket.on('join-room-ack', async function(data) {
