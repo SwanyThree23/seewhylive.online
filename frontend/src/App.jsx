@@ -138,12 +138,15 @@ export default function App() {
   var [auraMessages, setAuraMessages] = useState([]);
   var [auraUnread, setAuraUnread] = useState(0);
   var [sessionEarningsCents, setSessionEarningsCents] = useState(0);
+  var [streamRecap, setStreamRecap] = useState(null);
   var [installPrompt, setInstallPrompt] = useState(null);
   var [showInstallBanner, setShowInstallBanner] = useState(false);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
   var liveStartRef = useRef(null);
+  var peakViewerRef = useRef(0);
+  var sessionEarningsRef = useRef(0);
 
   var addToast = useCallback(function(msg, type) {
     var id = Date.now() + Math.random();
@@ -213,6 +216,7 @@ export default function App() {
       if (!data || typeof data.count !== 'number') return;
       var prev = viewerCount;
       setViewerCount(data.count);
+      if (data.count > peakViewerRef.current) peakViewerRef.current = data.count;
       viewerMilestones.forEach(function(m) {
         if (data.count >= m && prev < m && !passedMilestones[m]) {
           passedMilestones[m] = true;
@@ -236,7 +240,8 @@ export default function App() {
       setGiftFloats(function(prev) { return [...prev, { ...gift, floatId }]; });
       setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 4000);
       addToast((gift.from_user || 'Someone') + ' sent ' + (gift.name || 'a gift') + '! ' + (gift.emoji || '🎁'), 'gift');
-      setSessionEarningsCents(function(prev) { return prev + Math.floor(gift.value_cents || gift.valueCents || 0); });
+      var giftCents = Math.floor(gift.value_cents || gift.valueCents || 0);
+      setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + giftCents; return prev + giftCents; });
     });
 
     socket.on('new-subscription', function(data) {
@@ -248,7 +253,8 @@ export default function App() {
       var floatId = Date.now() + Math.random();
       setGiftFloats(function(prev) { return prev.concat([{ floatId: floatId, emoji: '⭐', name: tierLabel + ' Sub', from_user: name, value_cents: data.price_cents || 0 }]); });
       setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
-      setSessionEarningsCents(function(prev) { return prev + Math.floor(data.price_cents || 0); });
+      var subCents = Math.floor(data.price_cents || 0);
+      setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + subCents; return prev + subCents; });
     });
 
     socket.on('bot-log', function(log) {
@@ -259,13 +265,25 @@ export default function App() {
     socket.on('go-live-confirmed', function() {
       setIsLive(true);
       liveStartRef.current = Date.now();
+      peakViewerRef.current = 0;
+      sessionEarningsRef.current = 0;
       addToast('🔴 LIVE! Stream is broadcasting', 'success');
     });
 
     socket.on('broadcast-ended', function() {
       setIsLive(false);
+      var durationSecs = liveStartRef.current ? Math.floor((Date.now() - liveStartRef.current) / 1000) : 0;
       liveStartRef.current = null;
       addToast('Stream ended', 'info');
+      var recap = {
+        durationSecs:   durationSecs,
+        peakViewers:    peakViewerRef.current,
+        earningsCents:  sessionEarningsRef.current,
+        giftCount:      0
+      };
+      setStreamRecap(recap);
+      peakViewerRef.current = 0;
+      sessionEarningsRef.current = 0;
       setSessionEarningsCents(0);
     });
 
@@ -861,6 +879,44 @@ export default function App() {
       </Suspense>
       </ErrorBoundary>
       </main>
+
+      {/* Stream Recap Modal */}
+      {streamRecap && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(7,5,10,.88)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: 'linear-gradient(160deg,#120E1C,#0F0C14)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 16, padding: '28px 24px', maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 0 60px rgba(201,168,76,.15), 0 4px 30px rgba(0,0,0,.7)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: '#C9A84C', letterSpacing: 4, marginBottom: 4 }}>STREAM RECAP</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 20 }}>SeeWhy LIVE · Washington Classic</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+              <div style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF6B81', letterSpacing: 1 }}>{streamRecap.peakViewers >= 1000 ? (Math.floor(streamRecap.peakViewers / 100) / 10).toFixed(1) + 'K' : streamRecap.peakViewers}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
+              </div>
+              <div style={{ background: 'rgba(0,201,167,.08)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#00C9A7', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
+              </div>
+              <div style={{ background: 'rgba(90,143,255,.08)', border: '1px solid rgba(90,143,255,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#7AAEFF', letterSpacing: 1 }}>
+                  {streamRecap.durationSecs >= 3600
+                    ? Math.floor(streamRecap.durationSecs / 3600) + 'h ' + Math.floor((streamRecap.durationSecs % 3600) / 60) + 'm'
+                    : Math.floor(streamRecap.durationSecs / 60) + 'm ' + (streamRecap.durationSecs % 60) + 's'}
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginTop: 2 }}>DURATION</div>
+              </div>
+            </div>
+            <button
+              onClick={function() { setStreamRecap(null); }}
+              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 10, padding: '12px 32px', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 3, cursor: 'pointer', width: '100%' }}
+            >
+              CLOSE RECAP
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Overlays */}
       <GiftLayer giftFloats={giftFloats} />
