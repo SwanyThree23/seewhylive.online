@@ -297,6 +297,10 @@ class SwanyBot extends EventEmitter {
     );
   }
 
+  onWelcomeVisitor(socketId) {
+    this.io.to(socketId).emit('welcome-audio', { ts: Date.now() });
+  }
+
   toggleRule(ruleName, enabled) {
     if (Object.prototype.hasOwnProperty.call(this.rules, ruleName)) {
       this.rules[ruleName] = enabled;

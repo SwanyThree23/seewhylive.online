@@ -811,6 +811,7 @@ io.on('connection', function(socket) {
           io.to(roomId).emit('viewer-count', { count: viewerCount });
 
           swanybot.onViewerJoin(roomId, username, socket.id);
+          swanybot.onWelcomeVisitor(socket.id);
 
           var ackPayload = {
             routerRtpCapabilities: routerCaps,
@@ -839,6 +840,7 @@ io.on('connection', function(socket) {
       io.to(roomId).emit('viewer-count', { count: viewerCount });
 
       swanybot.onViewerJoin(roomId, username, socket.id);
+      swanybot.onWelcomeVisitor(socket.id);
 
       // Create router so viewer can subscribe; emit join-room-ack as connection signal
       mediasoup.getOrCreateRouter(roomId)

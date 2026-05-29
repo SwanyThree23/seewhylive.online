@@ -11,6 +11,7 @@ import BrandChyron from './components/BrandChyron.jsx';
 import GoldenWallPanel from './components/GoldenWallPanel.jsx';
 import MobileNavBar from './components/MobileNavBar.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import WelcomeAudio from './components/WelcomeAudio.jsx';
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -963,6 +964,7 @@ export default function App() {
         </div>
       )}
       <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />
+      <WelcomeAudio socket={socketRef.current} />
     </div>
   );
 }
