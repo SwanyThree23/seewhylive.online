@@ -661,6 +661,31 @@ app.get('/api/streams/live', function(req, res) {
   });
 });
 
+// ─── Live Rooms — active rooms with viewer counts for DiscoverTab ─────────
+app.get('/api/rooms/live', function(req, res) {
+  var result = [];
+  rooms.forEach(function(room, roomId) {
+    var viewerCount = room.viewers ? room.viewers.size : 0;
+    if (viewerCount < 1) return;
+    var hostName = '';
+    if (room.hostSocketId && io.sockets.sockets.get(room.hostSocketId)) {
+      hostName = io.sockets.sockets.get(room.hostSocketId).data.username || '';
+    }
+    result.push({
+      roomId:    roomId,
+      viewers:   viewerCount,
+      hasHost:   !!room.hostSocketId,
+      hostName:  hostName,
+      isLive:    !!room.isLive,
+      title:     room.streamTitle || '',
+      category:  room.streamCategory || '',
+      startedAt: room.liveStartedAt || null
+    });
+  });
+  result.sort(function(a, b) { return b.viewers - a.viewers; });
+  res.json({ ts: Date.now(), rooms: result });
+});
+
 // ─── New API routes (analytics, search, moderation, aura, payments) ──────
 var apiRoutes = null;
 try {
@@ -1476,6 +1501,11 @@ io.on('connection', function(socket) {
   socket.on('stream-info', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (room) {
+      if (data.title)    room.streamTitle    = String(data.title).slice(0, 120);
+      if (data.category) room.streamCategory = String(data.category).slice(0, 40);
+    }
     io.to(roomId).emit('stream-info', {
       title:    (data.title    || '').slice(0, 120),
       category: (data.category || '').slice(0, 40),
@@ -1531,6 +1561,10 @@ io.on('connection', function(socket) {
       }
     }
 
+    room.isLive        = true;
+    room.liveStartedAt = now;
+    room.streamTitle   = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : '';
+
     io.to(roomId).emit('go-live-confirmed', {
       roomId: roomId,
       ts:     now
@@ -1539,7 +1573,7 @@ io.on('connection', function(socket) {
     // Auto-trigger AURA stream start hype
     peakViewers.set(roomId, room.viewers ? room.viewers.size : 0);
     milestonesSeen.set(roomId, new Set());
-    var streamTitle = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : 'SeeWhy LIVE';
+    var streamTitle = room.streamTitle || 'SeeWhy LIVE';
     var vcNow = room.viewers ? room.viewers.size : 0;
     autoAura(roomId, function(cb) { aura.triggerStreamStart(roomId, streamTitle, vcNow, cb); });
 
@@ -1582,6 +1616,8 @@ io.on('connection', function(socket) {
     } catch (dbErr) {
       logger.error('[end-broadcast] DB update failed: ' + dbErr.message);
     }
+
+    if (room) { room.isLive = false; }
 
     io.to(roomId).emit('broadcast-ended', { roomId: roomId, ts: now });
 

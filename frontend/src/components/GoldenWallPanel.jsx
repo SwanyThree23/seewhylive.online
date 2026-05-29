@@ -1,5 +1,6 @@
 'use strict';
 import React, { useState, useEffect } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var _goldWallStyleInjected = false;
 
@@ -104,9 +105,7 @@ export default function GoldenWallPanel(props) {
                 animation: 'goldWallIn 0.4s ease-out',
               }
             },
-            item.emoji
-              ? React.createElement('span', { style: { fontSize: 16 } }, item.emoji)
-              : null,
+            React.createElement(AvatarPortrait, { username: item.username || 'anon', size: 28, flexShrink: 0 }),
             React.createElement(
               'div',
               { style: { flex: 1, minWidth: 0 } },

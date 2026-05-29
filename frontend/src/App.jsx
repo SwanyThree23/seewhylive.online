@@ -136,6 +136,8 @@ export default function App() {
   var [streamInfo, setStreamInfo] = useState({ title: '', category: '', desc: '' });
   var [userTier, setUserTier] = useState(function() { return localStorage.getItem('sw_user_tier') || 'free'; });
   var [auraMessages, setAuraMessages] = useState([]);
+  var [auraUnread, setAuraUnread] = useState(0);
+  var [sessionEarningsCents, setSessionEarningsCents] = useState(0);
   var [installPrompt, setInstallPrompt] = useState(null);
   var [showInstallBanner, setShowInstallBanner] = useState(false);
 
@@ -234,6 +236,7 @@ export default function App() {
       setGiftFloats(function(prev) { return [...prev, { ...gift, floatId }]; });
       setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 4000);
       addToast((gift.from_user || 'Someone') + ' sent ' + (gift.name || 'a gift') + '! ' + (gift.emoji || '🎁'), 'gift');
+      setSessionEarningsCents(function(prev) { return prev + Math.floor(gift.value_cents || gift.valueCents || 0); });
     });
 
     socket.on('new-subscription', function(data) {
@@ -245,6 +248,7 @@ export default function App() {
       var floatId = Date.now() + Math.random();
       setGiftFloats(function(prev) { return prev.concat([{ floatId: floatId, emoji: '⭐', name: tierLabel + ' Sub', from_user: name, value_cents: data.price_cents || 0 }]); });
       setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
+      setSessionEarningsCents(function(prev) { return prev + Math.floor(data.price_cents || 0); });
     });
 
     socket.on('bot-log', function(log) {
@@ -262,6 +266,7 @@ export default function App() {
       setIsLive(false);
       liveStartRef.current = null;
       addToast('Stream ended', 'info');
+      setSessionEarningsCents(0);
     });
 
     socket.on('fades-event', function(data) {
@@ -395,6 +400,7 @@ export default function App() {
       if (!data || !data.text) return;
       var msg = { text: data.text, mode: data.mode || 'hype', ts: Date.now() };
       setAuraMessages(function(prev) { return [msg].concat(prev.slice(0, 19)); });
+      setAuraUnread(function(n) { return n + 1; });
     });
 
     socket.on('user-muted', function(data) {
@@ -508,6 +514,14 @@ export default function App() {
           {!isLive && (
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>👁 {viewerCount}</span>
           )}
+          {isLive && sessionEarningsCents > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 999, padding: '3px 7px' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#00C9A7', letterSpacing: 1 }}>
+                ${(Math.floor(sessionEarningsCents) / 100).toFixed(2)}
+              </span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>SESSION</span>
+            </div>
+          )}
           <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
             {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
           </span>
@@ -536,10 +550,15 @@ export default function App() {
         {TABS.map(function(tab) { return (
           <button
             key={tab.id}
-            style={{ background: activeTab === tab.id ? '#800020' : 'rgba(22,16,32,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#EDE8F5' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
-            onClick={function() { setActiveTab(tab.id); }}
+            style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(22,16,32,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#EDE8F5' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            onClick={function() { setActiveTab(tab.id); if (tab.id === 'aura') setAuraUnread(0); }}
           >
             {tab.label}
+            {tab.id === 'aura' && auraUnread > 0 && (
+              <span style={{ position: 'absolute', top: -4, right: -4, background: '#FF1A3C', color: '#fff', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, fontWeight: 700, lineHeight: 1, border: '1px solid rgba(15,12,20,.8)' }}>
+                {auraUnread > 9 ? '9+' : auraUnread}
+              </span>
+            )}
           </button>
         ); })}
       </nav>
