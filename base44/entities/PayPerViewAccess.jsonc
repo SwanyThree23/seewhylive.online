@@ -30,7 +30,9 @@
     "amount_paid"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
     "read": {
       "data.user_id": "{{user.id}}"
     },
