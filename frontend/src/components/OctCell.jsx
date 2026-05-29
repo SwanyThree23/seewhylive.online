@@ -71,8 +71,9 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
         streamRef.current = stream;
 
         if (videoRef.current) {
-          videoRef.current.srcObject = stream;
           videoRef.current.muted = true;
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(function() {});
         }
 
         setLoading(false);
@@ -163,7 +164,10 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
         if (cancelled) return;
         streamRef.current = combined;
-        if (videoRef.current) videoRef.current.srcObject = combined;
+        if (videoRef.current) {
+          videoRef.current.srcObject = combined;
+          videoRef.current.play().catch(function() {});
+        }
         setOnline(true);
         setLoading(false);
         initAnalyser(combined);
@@ -220,7 +224,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
   }, []);
 
   useEffect(function() {
-    if (!socket || !roomId) return;
+    if (!isOwnCell || !socket || !roomId) return;
     socket.emit('speaking', { roomId: roomId, guestId: userId, speaking: speaking });
   }, [speaking]);
 

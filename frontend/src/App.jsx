@@ -159,6 +159,7 @@ export default function App() {
   var peakViewerRef = useRef(0);
   var sessionEarningsRef = useRef(0);
   var prevEarningsRef = useRef(0);
+  var prevGuestIdsRef = useRef(null);
 
   var addToast = useCallback(function(msg, type) {
     var id = Date.now() + Math.random();
@@ -219,8 +220,28 @@ export default function App() {
 
     socket.on('roster-update', function(data) {
       if (!data || !data.guests) return;
+      var newGuests = data.guests;
+      var prevMap = prevGuestIdsRef.current;
+      if (prevMap !== null) {
+        newGuests.forEach(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid && gid !== userId && !prevMap[gid]) {
+            addToast((g.username || gid) + ' joined the room', 'info');
+          }
+        });
+        var newGuestIds = {};
+        newGuests.forEach(function(g) { var gid = g.guestId || g.userId; if (gid) newGuestIds[gid] = true; });
+        Object.keys(prevMap).forEach(function(gid) {
+          if (!newGuestIds[gid] && gid !== userId) {
+            addToast((prevMap[gid] || gid) + ' left', 'info');
+          }
+        });
+      }
+      var nextMap = {};
+      newGuests.forEach(function(g) { var gid = g.guestId || g.userId; if (gid) nextMap[gid] = g.username || gid; });
+      prevGuestIdsRef.current = nextMap;
       setGuests(function(prev) {
-        return data.guests.map(function(g) {
+        return newGuests.map(function(g) {
           var gid = g.guestId ? g.guestId : g.userId;
           var existing = null;
           for (var i = 0; i < prev.length; i++) {
@@ -232,6 +253,17 @@ export default function App() {
           if (existing.producerId)      merged.producerId      = existing.producerId;
           if (existing.audioProducerId) merged.audioProducerId = existing.audioProducerId;
           return merged;
+        });
+      });
+    });
+
+    socket.on('username-updated', function(data) {
+      if (!data || !data.userId || !data.username) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.userId) return g;
+          return Object.assign({}, g, { username: data.username });
         });
       });
     });
@@ -494,6 +526,7 @@ export default function App() {
       socket.off('watch-party-started');
       socket.off('aura-message');
       socket.off('user-muted');
+      socket.off('username-updated');
     };
   }, [userId, username, role, addToast]);
 
