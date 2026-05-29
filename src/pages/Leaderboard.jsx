@@ -1,42 +1,56 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
-const RANK_COLORS = ['from-yellow-400 to-amber-500', 'from-slate-300 to-slate-400', 'from-amber-600 to-orange-700'];
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const RANK_BG = [
+  'linear-gradient(135deg, #D4AF37, #a07d20)',
+  'linear-gradient(135deg, #9ca3af, #6b7280)',
+  'linear-gradient(135deg, #cd7f32, #92400e)',
+];
 const RANK_ICONS = ['🥇', '🥈', '🥉'];
 
 function RankRow({ rank, user, stat, statLabel, isCurrentUser }) {
   const top3 = rank <= 3;
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-xl transition-all ${isCurrentUser ? 'bg-primary/5 border border-primary/20' : 'hover:bg-slate-50'}`}>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-        top3 ? `bg-gradient-to-br ${RANK_COLORS[rank - 1]} text-white` : 'bg-slate-100 text-slate-600'
-      }`}>
+    <div className="flex items-center gap-3 p-3 rounded-xl transition-all"
+      style={{
+        background: isCurrentUser ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)',
+        border: `1px solid ${isCurrentUser ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)'}`,
+      }}>
+      <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0"
+        style={{ background: top3 ? RANK_BG[rank - 1] : 'rgba(255,255,255,0.08)', color: top3 ? '#000' : 'rgba(255,255,255,0.4)', ...T }}>
         {top3 ? RANK_ICONS[rank - 1] : rank}
       </div>
-      <Avatar className="w-9 h-9 shrink-0">
-        <AvatarImage src={user.avatar_url} />
-        <AvatarFallback className="text-sm bg-gradient-to-br from-purple-400 to-pink-400 text-white">
-          {user.full_name?.charAt(0) || '?'}
-        </AvatarFallback>
-      </Avatar>
+      <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+        style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+        {user.avatar_url
+          ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+          : <span className="text-sm font-black text-black">{user.full_name?.charAt(0) || '?'}</span>}
+      </div>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm truncate flex items-center gap-1">
+        <p className="font-black text-sm text-white truncate flex items-center gap-1" style={T}>
           {user.full_name || 'Anonymous'}
-          {isCurrentUser && <Badge className="text-[9px] py-0 px-1 ml-1">You</Badge>}
+          {isCurrentUser && (
+            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md"
+              style={{ background: 'rgba(212,175,55,0.15)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>
+              You
+            </span>
+          )}
         </p>
-        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{user.email}</p>
       </div>
       <div className="text-right shrink-0">
-        <p className="font-bold text-sm">{typeof stat === 'number' && stat >= 1000 ? `${(stat / 1000).toFixed(1)}k` : stat}</p>
-        <p className="text-[10px] text-muted-foreground">{statLabel}</p>
+        <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
+          {typeof stat === 'number' && stat >= 1000 ? `${(stat / 1000).toFixed(1)}k` : stat}
+        </p>
+        <p className="text-[9px] uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{statLabel}</p>
       </div>
     </div>
   );
@@ -95,113 +109,102 @@ export default function LeaderboardPage() {
     return { user: user || { full_name: profile.display_name, email: '', id: profile.user_id }, subscribers: profile.subscriber_count || 0 };
   }).filter(e => e.user);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
+  const [activeTab, setActiveTab] = useState('earnings');
 
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-            <Trophy className="w-8 h-8 text-white" />
+  return (
+    <div className="min-h-screen pb-8" style={{ background: '#080B18' }}>
+      {/* Sticky header */}
+      <div className="sticky top-0 z-20 px-4 py-3" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+            <Trophy className="w-5 h-5 text-black" />
           </div>
-          <h1 className="text-3xl font-bold">Leaderboard</h1>
-          <p className="text-muted-foreground">Top creators and streamers on SeeWhy LIVE</p>
+          <div>
+            <h1 className="font-black text-lg text-white leading-none" style={T}>Leaderboard</h1>
+            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Top creators & streamers on SeeWhy LIVE</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 pt-5 space-y-4">
+        {/* Tab pills */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+          {[
+            { id: 'earnings', label: 'Top Earners', icon: DollarSign },
+            { id: 'viewers',  label: 'Most Viewed', icon: Users },
+            { id: 'subscribers', label: 'Subscribers', icon: Star },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full shrink-0 font-black uppercase text-[10px] transition-all"
+              style={{
+                background: activeTab === tab.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${activeTab === tab.id ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                color: activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.4)',
+                ...T,
+              }}>
+              <tab.icon className="w-3 h-3" />
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <Tabs defaultValue="earnings">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="earnings" className="gap-1.5">
-              <DollarSign className="w-4 h-4" /> Top Earners
-            </TabsTrigger>
-            <TabsTrigger value="viewers" className="gap-1.5">
-              <Users className="w-4 h-4" /> Most Viewed
-            </TabsTrigger>
-            <TabsTrigger value="subscribers" className="gap-1.5">
-              <Star className="w-4 h-4" /> Subscribers
-            </TabsTrigger>
-          </TabsList>
+        {/* Earnings */}
+        {activeTab === 'earnings' && (
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <DollarSign className="w-4 h-4" style={{ color: GOLD }} />
+              <p className="font-black text-[11px] uppercase" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>Top Earning Creators</p>
+            </div>
+            <div className="p-2 space-y-1">
+              {topEarners.length === 0
+                ? <p className="text-sm text-center py-10" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No earnings data yet</p>
+                : topEarners.map((entry, i) => (
+                    <RankRow key={entry.user.id} rank={i + 1} user={entry.user}
+                      stat={`$${entry.revenue.toFixed(0)}`} statLabel="earned"
+                      isCurrentUser={entry.user.id === currentUser?.id} />
+                  ))}
+            </div>
+          </div>
+        )}
 
-          <TabsContent value="earnings" className="mt-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-green-600" />
-                  Top Earning Creators
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {topEarners.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-10">No earnings data yet</p>
-                ) : (
-                  topEarners.map((entry, i) => (
-                    <RankRow
-                      key={entry.user.id}
-                      rank={i + 1}
-                      user={entry.user}
-                      stat={`$${entry.revenue.toFixed(0)}`}
-                      statLabel="earned"
-                      isCurrentUser={entry.user.id === currentUser?.id}
-                    />
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Viewers */}
+        {activeTab === 'viewers' && (
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <Radio className="w-4 h-4" style={{ color: '#FF1564' }} />
+              <p className="font-black text-[11px] uppercase" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>Most Viewed Streams</p>
+            </div>
+            <div className="p-2 space-y-1">
+              {topByViewers.length === 0
+                ? <p className="text-sm text-center py-10" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No stream data yet</p>
+                : topByViewers.map((entry, i) => (
+                    <RankRow key={`${entry.user.id}-${i}`} rank={i + 1} user={entry.user}
+                      stat={entry.viewers} statLabel="viewers"
+                      isCurrentUser={entry.user.id === currentUser?.id} />
+                  ))}
+            </div>
+          </div>
+        )}
 
-          <TabsContent value="viewers" className="mt-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-red-600" />
-                  Most Viewed Streams
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {topByViewers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-10">No stream data yet</p>
-                ) : (
-                  topByViewers.map((entry, i) => (
-                    <RankRow
-                      key={`${entry.user.id}-${i}`}
-                      rank={i + 1}
-                      user={entry.user}
-                      stat={entry.viewers}
-                      statLabel="viewers"
-                      isCurrentUser={entry.user.id === currentUser?.id}
-                    />
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="subscribers" className="mt-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Star className="w-4 h-4 text-amber-500" />
-                  Most Subscribed Creators
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {topBySubscribers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-10">No subscriber data yet</p>
-                ) : (
-                  topBySubscribers.map((entry, i) => (
-                    <RankRow
-                      key={entry.user.id}
-                      rank={i + 1}
-                      user={entry.user}
-                      stat={entry.subscribers}
-                      statLabel="subscribers"
-                      isCurrentUser={entry.user.id === currentUser?.id}
-                    />
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Subscribers */}
+        {activeTab === 'subscribers' && (
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <Star className="w-4 h-4" style={{ color: '#D4AF37' }} />
+              <p className="font-black text-[11px] uppercase" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>Most Subscribed Creators</p>
+            </div>
+            <div className="p-2 space-y-1">
+              {topBySubscribers.length === 0
+                ? <p className="text-sm text-center py-10" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No subscriber data yet</p>
+                : topBySubscribers.map((entry, i) => (
+                    <RankRow key={entry.user.id} rank={i + 1} user={entry.user}
+                      stat={entry.subscribers} statLabel="subscribers"
+                      isCurrentUser={entry.user.id === currentUser?.id} />
+                  ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
