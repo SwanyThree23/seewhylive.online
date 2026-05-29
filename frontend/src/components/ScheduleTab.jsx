@@ -88,17 +88,23 @@ function formatLiveDuration(secs) {
 var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' };
 var RECUR_COLORS = { none: '#7A6F90', weekly: '#00C9A7', biweekly: '#C084FC' };
 
+function rowToEvent(row) {
+  return {
+    id:        row.id,
+    title:     row.title,
+    time:      new Date(row.scheduled_at * 1000).toISOString(),
+    status:    'SCHED',
+    category:  row.category || 'Domino',
+    viewers:   null,
+    recurring: row.recurring || 'none',
+    fromApi:   true,
+  };
+}
+
 export default function ScheduleTab({ addToast, isLive, streamInfo }) {
-  var [schedule,     setSchedule]     = useState(function() {
-    try {
-      var saved = localStorage.getItem('sw_schedule');
-      if (saved) {
-        var parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch(e) {}
-    return INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); });
-  });
+  var [schedule,     setSchedule]     = useState([]);
+  var [apiLoaded,    setApiLoaded]    = useState(false);
+  var [saving,       setSaving]       = useState(false);
   var [newTitle,     setNewTitle]     = useState('');
   var [newTime,      setNewTime]      = useState('');
   var [newCat,       setNewCat]       = useState('Domino');
@@ -108,9 +114,24 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   var [countdown,    setCountdown]    = useState(0);
   var [simNextEvent, setSimNextEvent] = useState(0);
 
+  // Load from API on mount; fall back to INIT_SCHEDULE seed if empty
   useEffect(function() {
-    try { localStorage.setItem('sw_schedule', JSON.stringify(schedule)); } catch(e) {}
-  }, [schedule]);
+    fetch('/api/schedule')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var rows = data && Array.isArray(data.events) ? data.events : [];
+        if (rows.length > 0) {
+          setSchedule(rows.map(rowToEvent));
+        } else {
+          setSchedule(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
+        }
+        setApiLoaded(true);
+      })
+      .catch(function() {
+        setSchedule(INIT_SCHEDULE.map(function(s) { return Object.assign({}, s); }));
+        setApiLoaded(true);
+      });
+  }, []);
 
   // 1-second tick for next-event countdown display
   useEffect(function() {
@@ -150,28 +171,63 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   }, [isLive, schedule]);
 
   function addEvent() {
-    if (!newTitle.trim() || !newTime.trim()) return;
-    var iso = new Date(newTime).toISOString();
-    var newEvents = [{ id: 's' + Date.now(), title: newTitle, time: iso, status: 'SCHED', category: newCat, viewers: null, recurring: newRecur }];
+    if (!newTitle.trim() || !newTime.trim() || saving) return;
+    var baseDate = new Date(newTime);
+    var occurrences = [{ date: baseDate, suffix: '' }];
     if (newRecur === 'weekly') {
       for (var w = 1; w <= 3; w++) {
         var wt = new Date(newTime);
         wt.setDate(wt.getDate() + w * 7);
-        newEvents.push({ id: 's' + Date.now() + w, title: newTitle + ' (Wk ' + (w + 1) + ')', time: wt.toISOString(), status: 'SCHED', category: newCat, viewers: null, recurring: 'weekly' });
+        occurrences.push({ date: wt, suffix: ' (Wk ' + (w + 1) + ')' });
       }
     } else if (newRecur === 'biweekly') {
       var bt = new Date(newTime);
       bt.setDate(bt.getDate() + 14);
-      newEvents.push({ id: 's' + Date.now() + 14, title: newTitle + ' (Wk 3)', time: bt.toISOString(), status: 'SCHED', category: newCat, viewers: null, recurring: 'biweekly' });
+      occurrences.push({ date: bt, suffix: ' (Wk 3)' });
     }
-    setSchedule(function(p) { return p.concat(newEvents); });
-    setNewTitle('');
-    setNewTime('');
-    setNewRecur('none');
-    if (addToast) addToast('"' + newTitle + '" scheduled' + (newRecur !== 'none' ? ' (' + newEvents.length + ' occurrences)' : ''), 'success');
+    setSaving(true);
+    var promises = occurrences.map(function(occ) {
+      return fetch('/api/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title:        newTitle + occ.suffix,
+          category:     newCat,
+          scheduled_at: Math.floor(occ.date.getTime() / 1000),
+          recurring:    newRecur,
+        })
+      }).then(function(r) { return r.json(); });
+    });
+    Promise.all(promises).then(function(results) {
+      var newEvents = results.map(function(data, i) {
+        return {
+          id:        data.id || ('s' + Date.now() + i),
+          title:     newTitle + occurrences[i].suffix,
+          time:      occurrences[i].date.toISOString(),
+          status:    'SCHED',
+          category:  newCat,
+          viewers:   null,
+          recurring: newRecur,
+          fromApi:   true,
+        };
+      });
+      setSchedule(function(p) { return p.concat(newEvents); });
+      setNewTitle('');
+      setNewTime('');
+      setNewRecur('none');
+      setSaving(false);
+      if (addToast) addToast('"' + newTitle + '" scheduled' + (newRecur !== 'none' ? ' (' + newEvents.length + ' dates)' : ''), 'success');
+    }).catch(function(e) {
+      setSaving(false);
+      if (addToast) addToast('Save failed: ' + e.message, 'error');
+    });
   }
 
   function removeEvent(id) {
+    var ev = schedule.find(function(s) { return s.id === id; });
+    if (ev && ev.fromApi) {
+      fetch('/api/schedule/' + id, { method: 'DELETE' }).catch(function() {});
+    }
     setSchedule(function(p) { return p.filter(function(s) { return s.id !== id; }); });
   }
 
