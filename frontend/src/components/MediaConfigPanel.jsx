@@ -145,6 +145,9 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
 
   function handleApply() {
     var preset = QUALITY_PRESETS.find(function(p) { return p.id === quality; }) || QUALITY_PRESETS[2];
+    // Stop the preview stream before closing — OctCell will acquire its own stream
+    // using the config settings (passing the stream here causes it to be killed on unmount)
+    stopPreview();
     var config = {
       camId:       camId,
       micId:       micId,
@@ -154,7 +157,6 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
       echoCan:     echoCan,
       autoGain:    autoGain,
       facingFront: facingFront,
-      stream:      previewStream,
     };
     if (onApply) onApply(config);
     if (addToast) addToast('Media config applied ✓', 'success');
