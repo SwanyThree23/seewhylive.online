@@ -29,6 +29,7 @@ import ClipsLibraryPage from './pages/ClipsLibrary';
 import NewsletterHubPage from './pages/NewsletterHub';
 import CreatorPublicProfile from './pages/CreatorPublicProfile';
 import BroadcastStudio from './pages/BroadcastStudio';
+import LiveRoom from './pages/LiveRoom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -107,6 +108,7 @@ const AuthenticatedApp = () => {
       <Route path="/newsletter" element={<LayoutWrapper currentPageName="NewsletterHub"><NewsletterHubPage /></LayoutWrapper>} />
       <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
       <Route path="/BroadcastStudio" element={<BroadcastStudio />} />
+      <Route path="/LiveRoom" element={<LiveRoom />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
