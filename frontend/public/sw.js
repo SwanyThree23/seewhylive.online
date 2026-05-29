@@ -1,7 +1,7 @@
 'use strict';
 
-var CACHE_NAME = 'seewhy-v33-shell-v2';
-var ASSET_CACHE = 'seewhy-v33-assets-v2';
+var CACHE_NAME = 'seewhy-v33-shell-v3';
+var ASSET_CACHE = 'seewhy-v33-assets-v3';
 
 var SHELL_URLS = [
   '/',

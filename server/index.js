@@ -1208,6 +1208,31 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('roster-update', { guests: guestList });
   });
 
+  // ── update-username ────────────────────────────────────────────────────
+  socket.on('update-username', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    var newName  = String(data.username || '').trim().slice(0, 32);
+    if (!roomId || !newName) return;
+
+    socket.data.username = newName;
+
+    var room = rooms.get(roomId);
+    if (room && room.guests.has(socket.id)) {
+      var g = room.guests.get(socket.id);
+      room.guests.set(socket.id, Object.assign({}, g, { username: newName }));
+    }
+
+    io.to(roomId).emit('username-updated', { userId: socket.data.userId || socket.data.guestId, username: newName });
+
+    if (room) {
+      var guestList = [];
+      room.guests.forEach(function(g) {
+        guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
+      });
+      io.to(roomId).emit('roster-update', { guests: guestList });
+    }
+  });
+
   // ── chat-message ───────────────────────────────────────────────────────
   socket.on('chat-message', function(data) {
     var roomId   = data.roomId || socket.data.roomId;
