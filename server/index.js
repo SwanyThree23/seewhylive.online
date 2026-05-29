@@ -1628,6 +1628,7 @@ io.on('connection', function(socket) {
     autoAura(roomId, function(cb) { aura.triggerStreamEnd(roomId, peak, 0, cb); });
     peakViewers.delete(roomId);
     milestonesSeen.delete(roomId);
+    swanybot.resetRoomGifts(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);

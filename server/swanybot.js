@@ -24,6 +24,13 @@ class SwanyBot extends EventEmitter {
     this.lastViewerCount = 0;
     this.logPath = '/var/log/seewhy/swanybot.log';
 
+    // Engagement surge: roomId → [{count, ts}] (last 5 minutes of samples)
+    this.viewerHistory = new Map();
+    // Gift race tracking: roomId → Map<username, centsTotal>
+    this.giftTotals = new Map();
+    // Cooldown for race alerts: roomId → lastAlertTs
+    this.lastRaceAlert = new Map();
+
     try {
       fs.mkdirSync(path.dirname(this.logPath), { recursive: true });
     } catch (mkdirErr) {
@@ -113,6 +120,61 @@ class SwanyBot extends EventEmitter {
       message: from + ' sent ' + giftName,
       ts: Date.now()
     });
+
+    // Track running gift totals for race detection
+    if (!this.giftTotals.has(roomId)) {
+      this.giftTotals.set(roomId, new Map());
+    }
+    var roomTotals = this.giftTotals.get(roomId);
+    roomTotals.set(from, (roomTotals.get(from) || 0) + Math.floor(giftValue));
+    this._checkGiftRace(roomId);
+  }
+
+  _checkGiftRace(roomId) {
+    var roomTotals = this.giftTotals.get(roomId);
+    if (!roomTotals || roomTotals.size < 2) return;
+
+    // Cooldown: fire at most once per 60 seconds per room
+    var now = Date.now();
+    if (now - (this.lastRaceAlert.get(roomId) || 0) < 60000) return;
+
+    var sorted = [];
+    roomTotals.forEach(function(cents, username) {
+      sorted.push({ username: username, cents: cents });
+    });
+    sorted.sort(function(a, b) { return b.cents - a.cents; });
+
+    if (sorted.length < 2) return;
+
+    var leader = sorted[0];
+    var chaser = sorted[1];
+    if (leader.cents <= 0 || chaser.cents < 100) return;
+
+    var gap    = leader.cents - chaser.cents;
+    var gapPct = (gap / leader.cents) * 100;
+
+    if (gapPct <= 15) {
+      this.lastRaceAlert.set(roomId, now);
+      var gapDollars = (Math.floor(gap) / 100).toFixed(2);
+      this.io.to(roomId).emit('chat-message', {
+        id:       uuidv4(),
+        username: 'SWANYBOT',
+        message:  '🏁 GIFT RACE! ' + leader.username + ' leads ' + chaser.username + ' by just $' + gapDollars + ' — who takes the crown? 👑',
+        ts:       now,
+        isBot:    true
+      });
+      this.io.to(roomId).emit('bot-log', {
+        event:   'trigger',
+        message: 'Gift race: ' + leader.username + ' vs ' + chaser.username + ' (gap $' + gapDollars + ')',
+        ts:      now
+      });
+    }
+  }
+
+  resetRoomGifts(roomId) {
+    this.giftTotals.delete(roomId);
+    this.lastRaceAlert.delete(roomId);
+    this.viewerHistory.delete(roomId);
   }
 
   onChatMessage(roomId, socketId, message, context) {
@@ -223,6 +285,29 @@ class SwanyBot extends EventEmitter {
   }
 
   onViewerCountChange(roomId, newCount) {
+    // Track viewer history for surge detection (keep last 5 minutes)
+    var now = Date.now();
+    if (!this.viewerHistory.has(roomId)) this.viewerHistory.set(roomId, []);
+    var history = this.viewerHistory.get(roomId);
+    history.push({ count: newCount, ts: now });
+    var cutoff = now - 5 * 60 * 1000;
+    while (history.length > 0 && history[0].ts < cutoff) history.shift();
+
+    // Engagement surge: 25%+ jump in 60 seconds, minimum 5 viewers
+    if (newCount >= 5) {
+      var sixtyAgo = now - 60000;
+      var baseline = null;
+      for (var i = 0; i < history.length; i++) {
+        if (history[i].ts <= sixtyAgo) { baseline = history[i]; break; }
+      }
+      if (baseline && baseline.count > 0) {
+        var growthPct = Math.floor(((newCount - baseline.count) / baseline.count) * 100);
+        if (growthPct >= 25) {
+          this._onEngagementSurge(roomId, growthPct, newCount);
+        }
+      }
+    }
+
     if (!this.rules.viewers_drop_20pct) {
       this.lastViewerCount = newCount;
       return;
@@ -253,6 +338,32 @@ class SwanyBot extends EventEmitter {
     }
 
     this.lastViewerCount = newCount;
+  }
+
+  _onEngagementSurge(roomId, pct, currentViewers) {
+    var self = this;
+    this.io.to(roomId).emit('host-alert', {
+      type:    'engagement_surge',
+      message: 'SURGE! Viewers up ' + pct + '% in 60s (' + currentViewers + ' watching) — momentum building!',
+      pct:     pct,
+      viewers: currentViewers,
+      ts:      Date.now()
+    });
+    this.aura.queueMessage('hype', { username: 'the growing crowd' }, function(text) {
+      self.io.to(roomId).emit('chat-message', {
+        id:       uuidv4(),
+        username: 'AURA',
+        message:  text,
+        ts:       Date.now(),
+        isBot:    true
+      });
+    });
+    this.io.to(roomId).emit('bot-log', {
+      event:   'engagement_surge',
+      message: 'Viewer surge +' + pct + '% to ' + currentViewers,
+      ts:      Date.now()
+    });
+    this.log('info', 'engagement_surge', 'Surge +' + pct + '% to ' + currentViewers + ' in ' + roomId, null);
   }
 
   onNewSubscription(roomId, username, tier) {

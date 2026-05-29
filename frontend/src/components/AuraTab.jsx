@@ -76,7 +76,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     fetch('/api/aura/usage?streamId=' + roomId)
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (data && typeof data.count === 'number') setUsageCount(data.count);
+        if (data && typeof data.callsThisHour === 'number') setUsageCount(data.callsThisHour);
       })
       .catch(function() {});
   }
@@ -261,7 +261,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
 
         {/* USAGE COUNTER */}
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: usageCount >= 18 ? '#FF1564' : '#7A6F90', marginBottom: 6 }}>
-          {'AURA CALLS THIS SESSION: ' + usageCount + ' / 20'}
+          {'AURA CALLS THIS HOUR: ' + usageCount + ' / 60'}
         </div>
       </div>
 
