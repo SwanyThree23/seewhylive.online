@@ -77,12 +77,16 @@
     "create": {
       "$or": [
         {
-          "user_condition": {
-            "role": "admin"
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
           }
         },
         {
-          "data.created_by": "{{user.id}}"
+          "user_condition": {
+            "role": "admin"
+          }
         }
       ]
     },
@@ -108,7 +112,14 @@
     "update": {
       "$or": [
         {
-          "data.created_by": "{{user.id}}"
+          "data.created_by": "{{user.email}}"
+        },
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
         },
         {
           "user_condition": {
@@ -120,7 +131,14 @@
     "delete": {
       "$or": [
         {
-          "data.created_by": "{{user.id}}"
+          "data.created_by": "{{user.email}}"
+        },
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
         },
         {
           "user_condition": {

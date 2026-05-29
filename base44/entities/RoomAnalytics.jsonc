@@ -62,10 +62,8 @@
   ],
   "rls": {
     "create": {
-      "data.room_id": {
-        "$in": [
-          "{{user.rooms_as_host}}"
-        ]
+      "user_condition": {
+        "role": "admin"
       }
     },
     "read": {
@@ -85,20 +83,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.room_id": {
-            "$in": [
-              "{{user.rooms_as_host}}"
-            ]
-          }
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "user_condition": {

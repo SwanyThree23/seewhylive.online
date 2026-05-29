@@ -84,6 +84,13 @@
           "data.user_id": "{{user.id}}"
         },
         {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
@@ -94,6 +101,13 @@
       "$or": [
         {
           "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
         },
         {
           "user_condition": {
