@@ -1,0 +1,93 @@
+{
+  "name": "CreatorOnboarding",
+  "properties": {
+    "completed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "current_step": {
+      "default": 1,
+      "description": "Current wizard step (1-7)",
+      "type": "number"
+    },
+    "is_complete": {
+      "default": false,
+      "type": "boolean"
+    },
+    "rtmp_configured": {
+      "default": false,
+      "type": "boolean"
+    },
+    "step_1_profile": {
+      "default": false,
+      "description": "Profile set up (name, bio, avatar, category)",
+      "type": "boolean"
+    },
+    "step_2_branding": {
+      "default": false,
+      "description": "Design tokens chosen (overlay theme, colors)",
+      "type": "boolean"
+    },
+    "step_3_stream_key": {
+      "default": false,
+      "description": "At least one RTMP destination configured",
+      "type": "boolean"
+    },
+    "step_4_subscription": {
+      "default": false,
+      "description": "At least one subscription tier created",
+      "type": "boolean"
+    },
+    "step_5_community": {
+      "default": false,
+      "description": "Community created",
+      "type": "boolean"
+    },
+    "step_6_test_stream": {
+      "default": false,
+      "description": "Completed first test stream (status=ended)",
+      "type": "boolean"
+    },
+    "step_7_stripe": {
+      "default": false,
+      "description": "Stripe Connect onboarding completed",
+      "type": "boolean"
+    },
+    "stripe_connected": {
+      "default": false,
+      "type": "boolean"
+    },
+    "subscription_created": {
+      "default": false,
+      "type": "boolean"
+    },
+    "test_stream_room_id": {
+      "description": "Room ID of their first test stream",
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "zego_configured": {
+      "default": false,
+      "description": "ZEGOCLOUD App ID entered",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {},
+    "read": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "name": "DirectMessage",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Room context"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "Sender user ID"
+    },
+    "sender_name": {
+      "type": "string",
+      "description": "Sender display name"
+    },
+    "recipient_id": {
+      "type": "string",
+      "description": "Recipient user ID"
+    },
+    "recipient_name": {
+      "type": "string",
+      "description": "Recipient display name"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content",
+      "maxLength": 500
+    },
+    "is_whisper": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whisper to panelist"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "read_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted_by_sender": {
+      "type": "boolean",
+      "default": false
+    },
+    "deleted_by_recipient": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "sender_id",
+    "sender_name",
+    "recipient_id",
+    "recipient_name",
+    "content"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.sender_id": "{{user.id}}"
+        },
+        {
+          "data.recipient_id": "{{user.id}}"
+        }
+      ]
+    },
+    "update": {
+      "data.sender_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.sender_id": "{{user.id}}"
+    }
+  }
+}
