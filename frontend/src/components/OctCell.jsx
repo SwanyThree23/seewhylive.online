@@ -15,6 +15,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
   var [eqBars,       setEqBars]       = useState([0,0,0,0,0,0,0,0]);
   var [camError,     setCamError]     = useState('');
   var [streamReady,  setStreamReady]  = useState(false);
+  var [retryCount,   setRetryCount]   = useState(0);
 
   var size      = sz || 200;
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -97,7 +98,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
     initCamera();
     return function() { cancelled = true; };
-  }, [isOwnCell, mediaConfig]);
+  }, [isOwnCell, mediaConfig, retryCount]);
 
   // Own cell: publish stream once both stream and rtcManager are ready
   useEffect(function() {
@@ -258,13 +259,24 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
           </div>
         )}
 
-        {/* Offline */}
+        {/* Offline — avatar + name */}
         {!online && !loading && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'repeating-linear-gradient(45deg,#0F0C14,#0F0C14 4px,#1A1428 4px,#1A1428 8px)' }}>
-            {camError ? (
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', textAlign: 'center', padding: '0 8px' }}>{camError}</span>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0A0710', gap: 6 }}>
+            <div style={{ width: Math.round(size * 0.38), height: Math.round(size * 0.38), borderRadius: '50%', background: 'linear-gradient(135deg,' + color + '33,' + color + '11)', border: '2px solid ' + color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: Math.round(size * 0.18), color: color + 'BB', lineHeight: 1 }}>
+                {guestName ? guestName.charAt(0).toUpperCase() : '?'}
+              </span>
+            </div>
+            {camError && isOwnCell ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#FF6B81', textAlign: 'center', padding: '0 6px', lineHeight: 1.3 }}>{camError}</span>
+                <button onClick={function(e) { e.stopPropagation(); setCamError(''); setOnline(false); setStreamReady(false); setRetryCount(function(n) { return n + 1; }); }}
+                  style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.4)', borderRadius: 4, padding: '2px 6px', color: '#00C9A7', cursor: 'pointer' }}>
+                  RETRY
+                </button>
+              </div>
             ) : (
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#7A6F90', textAlign: 'center' }}>{guestName}</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: Math.max(8, Math.round(size * 0.07)), color: '#7A6F90', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
             )}
           </div>
         )}
