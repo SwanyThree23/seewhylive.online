@@ -166,6 +166,19 @@ db.exec(`
     label      TEXT,
     marked_by  TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS super_chats (
+    id              TEXT    PRIMARY KEY,
+    room_id         TEXT    NOT NULL,
+    user_id         TEXT    NOT NULL,
+    username        TEXT    NOT NULL,
+    message         TEXT    NOT NULL,
+    amount_cents    INTEGER NOT NULL,
+    creator_cents   INTEGER NOT NULL,
+    platform_cents  INTEGER NOT NULL,
+    tier_color      TEXT    NOT NULL DEFAULT '#5A8FFF',
+    ts              INTEGER NOT NULL
+  );
 `);
 
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
@@ -305,8 +318,9 @@ var rooms = new Map();
 var peakViewers    = new Map();  // roomId → peak viewer count this session
 var milestonesSeen = new Map();  // roomId → Set of milestone numbers already fired
 var sessionRevenue = new Map();  // roomId → cumulative gift cents this session
-var polls          = new Map();  // roomId → { id, question, options:[{text,votes:Set}], createdAt, autoEndT, active }
-var chatReactions  = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
+var polls               = new Map();  // roomId → { id, question, options:[{text,votes:Set}], createdAt, autoEndT, active }
+var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
+var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -1603,6 +1617,67 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chat-react-update', { msgId: data.msgId, reactions: serialized });
   });
 
+  // ── super-chat ─────────────────────────────────────────────────────────
+  socket.on('super-chat', function(data) {
+    var roomId      = data.roomId || socket.data.roomId;
+    var username    = data.username || socket.data.username || 'Guest';
+    var userId      = data.userId  || socket.data.userId;
+    var message     = String(data.message || '').slice(0, 200).trim();
+    var amountCents = Math.floor(data.amountCents || 0);
+    var VALID_SC    = [100, 200, 500, 1000, 2000, 5000];
+    if (!roomId || !message || VALID_SC.indexOf(amountCents) === -1) return;
+
+    var creatorCents  = Math.floor(amountCents * CREATOR);
+    var platformCents = amountCents - creatorCents;
+    var scId          = uuidv4();
+    var ts            = Math.floor(Date.now() / 1000);
+    var TIER_COLORS   = { 100: '#5A8FFF', 200: '#00C96A', 500: '#C9A84C', 1000: '#FF8C42', 2000: '#FF1A3C', 5000: '#9B59B6' };
+    var tierColor     = TIER_COLORS[amountCents] || '#5A8FFF';
+
+    try {
+      db.prepare(
+        'INSERT INTO super_chats (id, room_id, user_id, username, message, amount_cents, creator_cents, platform_cents, tier_color, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(scId, roomId, userId, username, message, amountCents, creatorCents, platformCents, tierColor, ts);
+    } catch(e) {
+      logger.error('[super-chat] DB insert: ' + e.message);
+    }
+
+    io.to(roomId).emit('super-chat', {
+      id:           scId,
+      username:     username,
+      message:      message,
+      amountCents:  amountCents,
+      creatorCents: creatorCents,
+      tierColor:    tierColor,
+      ts:           ts
+    });
+
+    autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
+
+    var prevScRev = sessionRevenue.get(roomId) || 0;
+    var newScRev  = prevScRev + amountCents;
+    sessionRevenue.set(roomId, newScRev);
+    for (var scmi = 0; scmi < REVENUE_MILESTONES_CENTS.length; scmi++) {
+      var scMil = REVENUE_MILESTONES_CENTS[scmi];
+      if (newScRev >= scMil && prevScRev < scMil) {
+        swanybot.onRevenueMilestone(roomId, scMil);
+        break;
+      }
+    }
+  });
+
+  // ── viewer-react ───────────────────────────────────────────────────────
+  socket.on('viewer-react', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.emoji) return;
+    var emoji  = String(data.emoji).slice(0, 4);
+    var now    = Date.now();
+    var lastTs = viewerReactThrottle.get(socket.id) || 0;
+    if (now - lastTs < 2000) return;
+    viewerReactThrottle.set(socket.id, now);
+    io.to(roomId).emit('react-burst', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
+  });
+
   // ── collab events ─────────────────────────────────────────────────────
   socket.on('collab-request', function(data) {
     var roomId   = data.roomId || socket.data.roomId;
@@ -1975,6 +2050,8 @@ io.on('connection', function(socket) {
         }
       }
     }
+
+    viewerReactThrottle.delete(socket.id);
 
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {

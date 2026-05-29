@@ -127,6 +127,16 @@ var LANG_NAMES = {
 };
 var PICKER_LANGS = ['EN','ES','PT','FR','DE','JA','ZH','KO','AR','RU','HI','IT'];
 
+var SC_TIERS = [
+  { amount: 100,  label: '$1',  color: '#5A8FFF', bg: 'rgba(90,143,255,.22)'  },
+  { amount: 200,  label: '$2',  color: '#00C96A', bg: 'rgba(0,201,106,.22)'   },
+  { amount: 500,  label: '$5',  color: '#C9A84C', bg: 'rgba(201,168,76,.22)'  },
+  { amount: 1000, label: '$10', color: '#FF8C42', bg: 'rgba(255,140,66,.22)'  },
+  { amount: 2000, label: '$20', color: '#FF1A3C', bg: 'rgba(255,26,60,.22)'   },
+  { amount: 5000, label: '$50', color: '#9B59B6', bg: 'rgba(155,89,182,.22)'  },
+];
+var REACT_EMOJIS = ['🔥', '❤️', '💯', '😂', '🎯', '💎'];
+
 var GO_LIVE_PLATFORMS = [
   { id: 'seewhy',   name: 'SeeWhy LIVE', color: '#C9A84C', icon: '📡', locked: true  },
   { id: 'youtube',  name: 'YouTube',     color: '#FF0000', icon: '▶',  locked: false },
@@ -167,7 +177,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var [showLangPicker, setShowLangPicker] = useState(false);
   var [showTx,         setShowTx]         = useState({});
   var [txTexts,        setTxTexts]        = useState({});
-  var [txLoading,      setTxLoading]      = useState({});
+  var [txLoading,       setTxLoading]       = useState({});
+  var [superChats,      setSuperChats]      = useState([]);
+  var [showScModal,     setShowScModal]     = useState(false);
+  var [scMsg,           setScMsg]           = useState('');
+  var [scAmount,        setScAmount]        = useState(100);
+  var [floatReacts,     setFloatReacts]     = useState([]);
+  var [giftLeaderboard, setGiftLeaderboard] = useState([]);
+  var [showLeaderboard, setShowLeaderboard] = useState(false);
   var [showGoLiveModal, setShowGoLiveModal] = useState(false);
   var [glDests,        setGlDests]        = useState({ seewhy: true });
   var [glKeys,         setGlKeys]         = useState({});
@@ -273,6 +290,36 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         return next;
       });
     });
+    socket.on('super-chat', function(sc) {
+      if (!sc) return;
+      setSuperChats(function(prev) { return prev.concat([sc]).slice(-20); });
+    });
+    socket.on('react-burst', function(data) {
+      if (!data || !data.emoji) return;
+      var rid = Date.now() + Math.random();
+      var leftPct = 60 + Math.floor(Math.random() * 30);
+      setFloatReacts(function(prev) { return prev.concat([{ id: rid, emoji: data.emoji, left: leftPct }]); });
+      setTimeout(function() {
+        setFloatReacts(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); });
+      }, 3600);
+    });
+    socket.on('gift-received', function(gift) {
+      if (!gift || !gift.fromUser) return;
+      setGiftLeaderboard(function(prev) {
+        var next = prev.slice();
+        var found = false;
+        for (var li = 0; li < next.length; li++) {
+          if (next[li].username === gift.fromUser) {
+            next[li] = Object.assign({}, next[li], { total: next[li].total + gift.valueCents, count: next[li].count + 1 });
+            found = true;
+            break;
+          }
+        }
+        if (!found) next.push({ username: gift.fromUser, total: gift.valueCents, count: 1 });
+        next.sort(function(a, b) { return b.total - a.total; });
+        return next.slice(0, 10);
+      });
+    });
     return function() {
       socket.off('join-room-ack');
       socket.off('hand-raise');
@@ -281,6 +328,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('poll-update');
       socket.off('clip-marked');
       socket.off('chat-react-update');
+      socket.off('super-chat');
+      socket.off('react-burst');
+      socket.off('gift-received');
     };
   }, [socket, role]);
 
@@ -310,6 +360,16 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
   function addReaction(msgId, emoji) {
     if (socket) socket.emit('chat-react', { roomId: roomId, msgId: msgId, emoji: emoji });
+  }
+
+  function sendSuperChat() {
+    if (!scMsg.trim()) { addToast('Enter a message', 'error'); return; }
+    if (!socket) return;
+    socket.emit('super-chat', { roomId: roomId, userId: userId, username: username, message: scMsg.trim(), amountCents: scAmount });
+    setShowScModal(false);
+    setScMsg('');
+    setScAmount(100);
+    addToast('💎 SuperChat sent!', 'success');
   }
 
   function translateMessage(msgId, text, targetLang) {
@@ -976,6 +1036,34 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             <OverlayScoreBug  scoreBug={overlayConfig.scoreBug} />
           </div>
         )}
+
+        {/* Viewer reaction buttons — right edge of stage */}
+        {!showGuests && (
+          <div style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', zIndex: 42, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {REACT_EMOJIS.map(function(em) {
+              return (
+                <button key={em}
+                  onClick={function() { if (socket) socket.emit('viewer-react', { roomId: roomId, emoji: em }); }}
+                  style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(10,7,18,.82)', border: '1px solid rgba(255,255,255,.14)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                  {em}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Floating react burst layer */}
+        {floatReacts.length > 0 && (
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 44, overflow: 'hidden' }}>
+            {floatReacts.map(function(r) {
+              return (
+                <div key={r.id} style={{ position: 'absolute', bottom: 10, left: r.left + '%', fontSize: 26, animation: 'giftRise 3.5s ease-out forwards', lineHeight: 1, userSelect: 'none' }}>
+                  {r.emoji}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Hand raise queue (host only) */}
@@ -1243,6 +1331,46 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         </div>
       )}
 
+      {/* SuperChat modal */}
+      {showScModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 115, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.72)', backdropFilter: 'blur(4px)', padding: 12 }}>
+          <div style={{ background: '#0F0C14', border: '1px solid rgba(155,89,182,.45)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#9B59B6', letterSpacing: 3, marginBottom: 10 }}>💎 SUPERCHAT</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 12 }}>
+              {SC_TIERS.map(function(tier) {
+                var isSel = scAmount === tier.amount;
+                return (
+                  <button key={tier.amount}
+                    onClick={function() { setScAmount(tier.amount); }}
+                    style={{ background: isSel ? tier.bg : 'rgba(22,16,32,.7)', border: '2px solid ' + (isSel ? tier.color : '#241C34'), borderRadius: 8, padding: '8px 4px', cursor: 'pointer', textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: tier.color, lineHeight: 1 }}>{tier.label}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: isSel ? tier.color : '#7A6F90', letterSpacing: 1 }}>SUPER</div>
+                  </button>
+                );
+              })}
+            </div>
+            <textarea
+              value={scMsg}
+              onChange={function(e) { setScMsg(e.target.value); }}
+              placeholder="Your highlighted message..."
+              maxLength={200}
+              rows={3}
+              style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box', resize: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() { setShowScModal(false); setScMsg(''); setScAmount(100); }}
+                style={{ flex: 1, padding: '9px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button onClick={sendSuperChat}
+                style={{ flex: 2, padding: '9px', background: 'linear-gradient(135deg,rgba(155,89,182,.3),rgba(155,89,182,.5))', border: '1px solid rgba(155,89,182,.6)', borderRadius: 8, color: '#D4A8FF', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                {'💎 SEND $' + Math.floor(scAmount / 100) + ' SUPERCHAT'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stream Goal bar */}
       {streamGoal.enabled && (
         <div style={{ background: 'rgba(0,201,106,.07)', borderTop: '1px solid rgba(0,201,106,.2)', padding: '7px 12px', flexShrink: 0 }}>
@@ -1298,6 +1426,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               title="Set stream goal"
               style={{ background: 'none', border: 'none', padding: '0 8px', color: '#7A6F90', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🎯</button>
           )}
+          {giftLeaderboard.length > 0 && (
+            <button onClick={function() { setShowLeaderboard(function(v) { return !v; }); }}
+              title="Gift leaderboard"
+              style={{ background: showLeaderboard ? 'rgba(201,168,76,.15)' : 'none', border: showLeaderboard ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 5, padding: '3px 7px', color: showLeaderboard ? '#C9A84C' : '#7A6F90', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🏆</button>
+          )}
           {/* Language picker popover */}
           {showLangPicker && (
             <div style={{ position: 'absolute', bottom: '100%', right: 8, zIndex: 60, background: '#0F0C14', border: '1px solid rgba(90,143,255,.35)', borderRadius: 10, padding: 8, width: 216 }}>
@@ -1322,6 +1455,26 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           )}
         </div>
 
+        {/* Gift leaderboard panel */}
+        {showLeaderboard && giftLeaderboard.length > 0 && (
+          <div style={{ background: 'rgba(10,7,18,.97)', borderBottom: '1px solid rgba(201,168,76,.2)', padding: '8px 12px', flexShrink: 0 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 2, marginBottom: 6 }}>🏆 SESSION GIFTERS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {giftLeaderboard.slice(0, 5).map(function(entry, idx) {
+                var medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                return (
+                  <div key={entry.username} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, flexShrink: 0, width: 18, textAlign: 'center' }}>{medals[idx] || (idx + 1 + '.')}</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.username}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', flexShrink: 0 }}>{'$' + (Math.floor(entry.total) / 100).toFixed(0)}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', flexShrink: 0 }}>{'×' + entry.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Pinned message */}
         {pinnedMsg && chatOpen && (
           <div style={{ background: 'rgba(201,168,76,.1)', borderBottom: '1px solid rgba(201,168,76,.25)', padding: '5px 12px', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
@@ -1341,6 +1494,21 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {chatOpen && (
           <div style={{ display: 'flex', flexDirection: 'column', height: 220 }}>
+            {superChats.length > 0 && (
+              <div style={{ display: 'flex', gap: 5, padding: '4px 8px', overflowX: 'auto', flexShrink: 0, borderBottom: '1px solid rgba(36,28,52,.6)' }}>
+                {superChats.slice(-6).map(function(sc) {
+                  return (
+                    <div key={sc.id} style={{ flexShrink: 0, background: sc.tierColor + '22', border: '1px solid ' + sc.tierColor + '55', borderRadius: 8, padding: '4px 8px', minWidth: 110, maxWidth: 160 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 1 }}>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: sc.tierColor, fontWeight: 700, flexShrink: 0 }}>{'💎 $' + Math.floor(sc.amountCents / 100)}</span>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.username}</span>
+                      </div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#D0C0E0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.message}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
               {chat.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center', padding: 12 }}>No messages yet</div>}
               {chat.map(function(msg) {
@@ -1435,6 +1603,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 placeholder={'Say something… ' + (chatLang !== 'EN' ? (LANG_FLAGS[chatLang] || '') : '')}
                 maxLength={200}
                 style={{ flex: 1, background: '#0F0C14', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#D0C0E0', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
+              <button onClick={function() { setShowScModal(true); }}
+                title="SuperChat"
+                style={{ background: 'rgba(155,89,182,.15)', border: '1px solid rgba(155,89,182,.35)', borderRadius: 6, padding: '6px 10px', color: '#9B59B6', cursor: 'pointer', flexShrink: 0, fontSize: 14 }}>
+                💎
+              </button>
               <button onClick={sendChat}
                 style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 6, padding: '6px 14px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>
                 SEND
