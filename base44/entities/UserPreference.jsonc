@@ -41,7 +41,9 @@
     "user_id"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
     "read": {
       "data.user_id": "{{user.id}}"
     },
