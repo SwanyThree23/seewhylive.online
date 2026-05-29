@@ -94,7 +94,9 @@
   "type": "object",
   "rls": {
     "create": {
-      "data.host_id": "{{user.id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
@@ -109,16 +111,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.host_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "$or": [
