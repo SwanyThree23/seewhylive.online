@@ -4,13 +4,15 @@ import OctCell from './OctCell.jsx';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
 import rtcManager from '../webrtc.js';
 
-var MAX_STAGE = 9;
+var MAX_STAGE = 20;
 var LAYOUTS = [
-  { id: 'panel',  label: '⊞ PANEL'  },
-  { id: 'solo',   label: '◻ SOLO'   },
-  { id: 'talk',   label: '⊡ TALK'   },
-  { id: 'screen', label: '🖥 SCRN'   },
-  { id: 'expand', label: '⛶ EXPAND' },
+  { id: 'panel',      label: '⊞ PANEL'   },
+  { id: 'solo',       label: '◻ SOLO'    },
+  { id: 'talk',       label: '⊡ TALK'    },
+  { id: 'screen',     label: '🖥 SCRN'    },
+  { id: 'expand',     label: '⛶ EXPAND'  },
+  { id: 'watchparty', label: '📺 WATCH'   },
+  { id: 'battle',     label: '⚡ BATTLE'  },
 ];
 
 function RolePill({ role }) {
@@ -141,6 +143,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var [streamGoal,     setStreamGoal]     = useState({ enabled: false, targetCents: 5000, currentCents: 0, label: 'Stream Goal' });
   var [rtcReady,       setRtcReady]       = useState(false);
   var [showGuests,     setShowGuests]     = useState(false);
+  var [activeBattle,   setActiveBattle]   = useState(null);
+  var [battleScores,   setBattleScores]   = useState({ a: 0, b: 0 });
+  var [watchPartyUrl,  setWatchPartyUrl]  = useState('');
   var [showGoLiveModal, setShowGoLiveModal] = useState(false);
   var [glDests,        setGlDests]        = useState({ seewhy: true });
   var [glKeys,         setGlKeys]         = useState({});
@@ -200,6 +205,33 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     socket.on('stage-remove', function(data) {
       if (!data || !data.guestId) return;
       setStageGuests(function(s) { return s.filter(function(x) { return x !== data.guestId; }); });
+    });
+    socket.on('pk-battle-start', function(data) {
+      if (!data) return;
+      setActiveBattle({ challenger: data.challenger || 'CHALLENGER', defender: data.defender || 'DEFENDER', durationSec: data.durationSec || 180, startTs: Date.now() });
+      setBattleScores({ a: 0, b: 0 });
+      setStageLayout('battle');
+    });
+    socket.on('pk-update', function(data) {
+      if (!data) return;
+      setBattleScores({ a: data.scoreA || 0, b: data.scoreB || 0 });
+    });
+    socket.on('pk-battle-end', function() {
+      setActiveBattle(null);
+      setBattleScores({ a: 0, b: 0 });
+    });
+    socket.on('watch-party-url', function(data) {
+      if (!data || !data.url) return;
+      setWatchPartyUrl(data.url);
+      setStageLayout('watchparty');
+    });
+    socket.on('watch-party-start', function(data) {
+      if (data && data.url) { setWatchPartyUrl(data.url); setStageLayout('watchparty'); }
+    });
+    socket.on('join-room-ack', function(ackData) {
+      if (ackData && ackData.watchParty && ackData.watchParty.url) {
+        setWatchPartyUrl(ackData.watchParty.url);
+      }
     });
     return function() {
       socket.off('join-room-ack');
@@ -364,9 +396,15 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   });
   var featuredGuest = allGuestMap[featuredId] || stagePeers[0] || { guestId: userId, username: username, role: role };
 
-  // Panel grid columns based on peer count
-  var peerCount = Math.min(6, stagePeers.length);
-  var panelGridCols = peerCount <= 1 ? '1fr' : peerCount <= 2 ? '1fr 1fr' : peerCount <= 4 ? '1fr 1fr' : '1fr 1fr 1fr';
+  // Panel grid columns — responsive up to 20 participants
+  var peerCount = stagePeers.length;
+  var panelGridCols = peerCount <= 1  ? '1fr'
+    : peerCount <= 2  ? '1fr 1fr'
+    : peerCount <= 4  ? 'repeat(2,1fr)'
+    : peerCount <= 9  ? 'repeat(3,1fr)'
+    : peerCount <= 12 ? 'repeat(4,1fr)'
+    : 'repeat(5,1fr)';
+  var tileSize = peerCount <= 9 ? 120 : peerCount <= 16 ? 80 : 60;
 
   // mc-btn base style helper
   function mcBtnStyle(variant) {
@@ -549,7 +587,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                   style={{ position: 'relative', border: '2px solid ' + (isFeatured ? '#00DEC0' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', aspectRatio: '16/9', background: '#0a0710' }}>
                   <OctCell
                     guest={g}
-                    sz={120}
+                    sz={tileSize}
                     isHost={role === 'host'}
                     fadesMode={false}
                     branding={branding}
@@ -761,6 +799,117 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             </div>
           </div>
         )}
+        {/* WATCH PARTY layout — YouTube sync as main view + participant grid strip */}
+        {!showGuests && stageLayout === 'watchparty' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#070510', overflow: 'hidden' }}>
+            {/* YouTube embed */}
+            <div style={{ flex: 1, position: 'relative', background: '#000' }}>
+              {watchPartyUrl ? (
+                <iframe
+                  src={(function() {
+                    var m = watchPartyUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?\/]+)/);
+                    return m ? 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&rel=0' : watchPartyUrl;
+                  })()}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <div style={{ fontSize: 40 }}>📺</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#7A6F90', letterSpacing: 3 }}>NO WATCH PARTY ACTIVE</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450' }}>Start one in the 📺 WATCH tab</div>
+                </div>
+              )}
+              <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(7,5,10,.8)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 5, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF', letterSpacing: 1 }}>
+                📺 WATCH PARTY · {stagePeers.length} WATCHING
+              </div>
+            </div>
+            {/* Participant webcam strip */}
+            {stagePeers.length > 0 && (
+              <div style={{ height: 90, display: 'flex', gap: 2, padding: '2px 4px', background: '#0a0710', overflowX: 'auto', flexShrink: 0 }}>
+                {stagePeers.map(function(g) {
+                  var gid  = g.guestId || g.userId || 'x';
+                  var isOwn = gid === userId;
+                  return (
+                    <div key={gid} style={{ position: 'relative', flexShrink: 0, width: 120, height: 86, borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.08)', background: '#0a0710' }}>
+                      <OctCell guest={g} sz={80} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
+                      <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)', overflow: 'hidden', maxWidth: 108, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || gid}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BATTLE layout — dual panel split with live scores */}
+        {!showGuests && stageLayout === 'battle' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#070510', overflow: 'hidden' }}>
+            {/* Battle score header */}
+            <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.4),rgba(90,143,255,.2))', borderBottom: '1px solid rgba(255,255,255,.08)', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>⚡ LIVE BATTLE</span>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#FF6B81', letterSpacing: 1, lineHeight: 1 }}>{activeBattle ? activeBattle.challenger : 'CHALLENGER'}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#FF1A3C', lineHeight: 1 }}>{battleScores.a.toLocaleString()}</div>
+                </div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 2 }}>VS</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#7AAEFF', letterSpacing: 1, lineHeight: 1 }}>{activeBattle ? activeBattle.defender : 'DEFENDER'}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#5A8FFF', lineHeight: 1 }}>{battleScores.b.toLocaleString()}</div>
+                </div>
+              </div>
+              {role === 'host' && (
+                <button onClick={function() { setStageLayout('panel'); }} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 5, padding: '3px 8px', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>PANEL ▶</button>
+              )}
+            </div>
+            {/* Battle score bar */}
+            {(battleScores.a + battleScores.b) > 0 && (
+              <div style={{ height: 5, background: '#1A1428', flexShrink: 0 }}>
+                <div style={{ height: '100%', width: Math.round((battleScores.a / (battleScores.a + battleScores.b)) * 100) + '%', background: 'linear-gradient(90deg,#C01838,#FF6B81)', transition: 'width .4s ease' }} />
+              </div>
+            )}
+            {/* Dual-panel video grid: left side = team A, right side = team B */}
+            <div style={{ flex: 1, display: 'flex', gap: 2, padding: 2 }}>
+              {/* Team A */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ background: 'rgba(192,24,56,.1)', border: '1px solid rgba(192,24,56,.3)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', textAlign: 'center', letterSpacing: 1, flexShrink: 0 }}>⚡ {activeBattle ? activeBattle.challenger : 'TEAM A'}</div>
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: stagePeers.length > 4 ? 'repeat(2,1fr)' : '1fr', gap: 2 }}>
+                  {stagePeers.slice(0, Math.ceil(stagePeers.length / 2)).map(function(g) {
+                    var gid  = g.guestId || g.userId || 'x';
+                    var isOwn = gid === userId;
+                    return (
+                      <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(192,24,56,.25)', aspectRatio: '16/9', background: '#0a0710' }}>
+                        <OctCell guest={g} sz={tileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
+                        <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Divider */}
+              <div style={{ width: 2, background: 'linear-gradient(#C01838,#5A8FFF)', borderRadius: 999, flexShrink: 0 }} />
+              {/* Team B */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ background: 'rgba(90,143,255,.1)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7AAEFF', textAlign: 'center', letterSpacing: 1, flexShrink: 0 }}>⚡ {activeBattle ? activeBattle.defender : 'TEAM B'}</div>
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: stagePeers.length > 4 ? 'repeat(2,1fr)' : '1fr', gap: 2 }}>
+                  {stagePeers.slice(Math.ceil(stagePeers.length / 2)).map(function(g) {
+                    var gid  = g.guestId || g.userId || 'x';
+                    var isOwn = gid === userId;
+                    return (
+                      <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(90,143,255,.25)', aspectRatio: '16/9', background: '#0a0710' }}>
+                        <OctCell guest={g} sz={tileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
+                        <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stage overlays */}
         {overlayConfig && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 28, pointerEvents: 'none' }}>
