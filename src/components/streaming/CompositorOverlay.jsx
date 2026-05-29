@@ -1,6 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Radio, Square, Download, AlertCircle, Loader2, Monitor } from 'lucide-react';
+import { Radio, Square, Download, AlertCircle, Loader2, Monitor, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { useCanvasCompositor } from '@/hooks/useCanvasCompositor';
 
 const GOLD = '#D4AF37';
@@ -21,7 +23,7 @@ const STATUS = {
  *   layout: 'panel' | 'battle' | 'watchparty'
  *   slots: Array<{ stream: MediaStream|null, label: string }>
  *   overlayConfig: { title, subtitle, showLive, battleData, chatLines }
- *   whipUrl: string  (WHIP endpoint, e.g. from RTMPDestination.whip_url)
+ *   userId: string  (current user ID — used to load/save WHIP destinations)
  *   onScreenCapture: () => Promise<MediaStream>  (for watchparty)
  *   isHost: boolean
  */
@@ -29,14 +31,49 @@ export default function CompositorOverlay({
   layout = 'panel',
   slots = [],
   overlayConfig = {},
-  whipUrl = '',
+  userId,
   onScreenCapture,
   isHost = false,
 }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState('idle');
-  const [customWhip, setCustomWhip] = useState(whipUrl);
+  const [customWhip, setCustomWhip] = useState('');
   const [useRecord, setUseRecord] = useState(false);
+  const qc = useQueryClient();
+
+  // Load saved WHIP destinations from RTMPDestination entity
+  const { data: savedWhipDests = [] } = useQuery({
+    queryKey: ['whip-destinations', userId],
+    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: userId, platform: 'whip' }),
+    enabled: !!userId && open,
+  });
+
+  // Pre-fill WHIP URL from first saved destination when panel opens
+  useEffect(() => {
+    if (open && savedWhipDests.length > 0 && !customWhip) {
+      setCustomWhip(savedWhipDests[0].server_url || '');
+    }
+  }, [open, savedWhipDests]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const saveWhipMut = useMutation({
+    mutationFn: async (url) => {
+      if (savedWhipDests.length > 0) {
+        await base44.entities.RTMPDestination.update(savedWhipDests[0].id, { server_url: url });
+      } else {
+        await base44.entities.RTMPDestination.create({
+          creator_id: userId,
+          platform: 'whip',
+          label: 'WHIP / Live',
+          server_url: url,
+          stream_key_encrypted: '',
+          is_enabled: true,
+        });
+      }
+      qc.invalidateQueries({ queryKey: ['whip-destinations', userId] });
+    },
+    onSuccess: () => toast.success('WHIP URL saved!'),
+    onError: () => toast.error('Could not save WHIP URL'),
+  });
 
   const pcRef = useRef(null);
   const recorderRef = useRef(null);
@@ -246,13 +283,26 @@ export default function CompositorOverlay({
               <p className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 WHIP Endpoint URL (Cloudflare Stream, Mux, etc.)
               </p>
-              <input
-                value={customWhip}
-                onChange={e => setCustomWhip(e.target.value)}
-                placeholder="https://live.cloudflare.com/…"
-                className="w-full h-8 px-2 rounded-lg text-[10px] text-white placeholder:text-white/25"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }}
-              />
+              <div className="flex gap-2">
+                <input
+                  value={customWhip}
+                  onChange={e => setCustomWhip(e.target.value)}
+                  placeholder="https://live.cloudflare.com/…"
+                  className="flex-1 h-8 px-2 rounded-lg text-[10px] text-white placeholder:text-white/25"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }}
+                />
+                {userId && (
+                  <button
+                    onClick={() => saveWhipMut.mutate(customWhip)}
+                    disabled={!customWhip.trim() || saveWhipMut.isPending}
+                    className="px-2 h-8 rounded-lg shrink-0"
+                    style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD }}
+                    title="Save WHIP URL"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
               <p className="text-[8px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 Get a WHIP URL from Cloudflare Stream, Mux, or your own media server.
               </p>

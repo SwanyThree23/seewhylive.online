@@ -612,6 +612,7 @@ export default function BroadcastStudio() {
               layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
               slots={compositorSlots}
               overlayConfig={compositorOverlay}
+              userId={user?.id}
               onScreenCapture={studioMode === 'watch' ? async () => {
                 const s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
                 return s;
