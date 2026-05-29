@@ -306,6 +306,7 @@ var peakViewers    = new Map();  // roomId → peak viewer count this session
 var milestonesSeen = new Map();  // roomId → Set of milestone numbers already fired
 var sessionRevenue = new Map();  // roomId → cumulative gift cents this session
 var polls          = new Map();  // roomId → { id, question, options:[{text,votes:Set}], createdAt, autoEndT, active }
+var chatReactions  = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -634,6 +635,28 @@ app.post('/api/ai/chat', function(req, res) {
     logger.error('[ai/chat] ' + err.message);
     res.status(500).json({ error: 'AI error: ' + err.message });
   });
+});
+
+// ─── On-demand translation endpoint ──────────────────────────────────────
+var VALID_TRANSLATE_LANGS = ['EN','ES','PT','FR','DE','JA','ZH','KO','AR','RU','HI','IT','NL','PL','TR','VI'];
+
+app.post('/api/translate', function(req, res) {
+  var body       = req.body;
+  var text       = typeof body.text === 'string' ? body.text.slice(0, 500) : '';
+  var targetLang = typeof body.targetLang === 'string' ? body.targetLang.slice(0, 5).toUpperCase() : 'EN';
+
+  if (!text) { res.status(400).json({ error: 'text required' }); return; }
+  if (VALID_TRANSLATE_LANGS.indexOf(targetLang) === -1) {
+    res.status(400).json({ error: 'unsupported targetLang' });
+    return;
+  }
+
+  translation.translateTo(text, targetLang)
+    .then(function(result) { res.json(result); })
+    .catch(function(err) {
+      logger.error('[/api/translate] ' + err.message);
+      res.status(500).json({ error: err.message });
+    });
 });
 
 // ─── Live Streams — active ingest + fanout status ────────────────────────
@@ -1553,6 +1576,33 @@ io.on('connection', function(socket) {
     logger.info('[clip-marker] ' + label + ' by ' + markedBy + ' in ' + roomId);
   });
 
+  // ── chat-react ─────────────────────────────────────────────────────────
+  socket.on('chat-react', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.msgId || !data.emoji) return;
+    var emoji = String(data.emoji).slice(0, 4);
+
+    if (!chatReactions.has(roomId)) chatReactions.set(roomId, new Map());
+    var roomRxns = chatReactions.get(roomId);
+    if (!roomRxns.has(data.msgId)) roomRxns.set(data.msgId, new Map());
+    var msgRxns = roomRxns.get(data.msgId);
+    if (!msgRxns.has(emoji)) msgRxns.set(emoji, new Set());
+    var emojiSet = msgRxns.get(emoji);
+
+    if (emojiSet.has(socket.id)) {
+      emojiSet.delete(socket.id);
+    } else {
+      emojiSet.add(socket.id);
+    }
+
+    var serialized = {};
+    msgRxns.forEach(function(set, em) {
+      if (set.size > 0) serialized[em] = set.size;
+    });
+
+    io.to(roomId).emit('chat-react-update', { msgId: data.msgId, reactions: serialized });
+  });
+
   // ── collab events ─────────────────────────────────────────────────────
   socket.on('collab-request', function(data) {
     var roomId   = data.roomId || socket.data.roomId;
@@ -1739,6 +1789,7 @@ io.on('connection', function(socket) {
     swanybot.resetRoomGifts(roomId);
     swanybot.onStreamEnd(roomId);
     polls.delete(roomId);
+    chatReactions.delete(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);

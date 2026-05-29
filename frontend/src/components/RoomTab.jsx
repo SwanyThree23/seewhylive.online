@@ -115,6 +115,18 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
   );
 }
 
+var LANG_FLAGS = {
+  'EN':'🇺🇸','ES':'🇪🇸','PT':'🇧🇷','FR':'🇫🇷','DE':'🇩🇪','JA':'🇯🇵',
+  'ZH':'🇨🇳','KO':'🇰🇷','AR':'🇸🇦','RU':'🇷🇺','HI':'🇮🇳','IT':'🇮🇹',
+  'NL':'🇳🇱','PL':'🇵🇱','TR':'🇹🇷','VI':'🇻🇳','UNK':'🌐'
+};
+var LANG_NAMES = {
+  'EN':'English','ES':'Español','PT':'Português','FR':'Français','DE':'Deutsch',
+  'JA':'日本語','ZH':'中文','KO':'한국어','AR':'العربية','RU':'Русский',
+  'HI':'हिन्दी','IT':'Italiano','NL':'Nederlands','PL':'Polski','TR':'Türkçe','VI':'Tiếng Việt'
+};
+var PICKER_LANGS = ['EN','ES','PT','FR','DE','JA','ZH','KO','AR','RU','HI','IT'];
+
 var GO_LIVE_PLATFORMS = [
   { id: 'seewhy',   name: 'SeeWhy LIVE', color: '#C9A84C', icon: '📡', locked: true  },
   { id: 'youtube',  name: 'YouTube',     color: '#FF0000', icon: '▶',  locked: false },
@@ -151,6 +163,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var [showPollModal,  setShowPollModal]  = useState(false);
   var [pollQuestion,   setPollQuestion]   = useState('');
   var [pollOpts,       setPollOpts]       = useState(['', '']);
+  var [chatLang,       setChatLang]       = useState(function() { try { return localStorage.getItem('sw_chat_lang') || 'EN'; } catch(e) { return 'EN'; } });
+  var [showLangPicker, setShowLangPicker] = useState(false);
+  var [showTx,         setShowTx]         = useState({});
+  var [txTexts,        setTxTexts]        = useState({});
+  var [txLoading,      setTxLoading]      = useState({});
   var [showGoLiveModal, setShowGoLiveModal] = useState(false);
   var [glDests,        setGlDests]        = useState({ seewhy: true });
   var [glKeys,         setGlKeys]         = useState({});
@@ -248,6 +265,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     socket.on('clip-marked', function(data) {
       if (data && data.label) addToast('📎 Clip: ' + data.label, 'success');
     });
+    socket.on('chat-react-update', function(data) {
+      if (!data || !data.msgId) return;
+      setReactions(function(prev) {
+        var next = Object.assign({}, prev);
+        next[data.msgId] = data.reactions || {};
+        return next;
+      });
+    });
     return function() {
       socket.off('join-room-ack');
       socket.off('hand-raise');
@@ -255,6 +280,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       socket.off('stage-remove');
       socket.off('poll-update');
       socket.off('clip-marked');
+      socket.off('chat-react-update');
     };
   }, [socket, role]);
 
@@ -283,14 +309,29 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   }
 
   function addReaction(msgId, emoji) {
-    setReactions(function(prev) {
-      var entry = prev[msgId] || {};
-      var count = entry[emoji] || 0;
-      var next = Object.assign({}, prev);
-      next[msgId] = Object.assign({}, entry);
-      next[msgId][emoji] = count + 1;
-      return next;
-    });
+    if (socket) socket.emit('chat-react', { roomId: roomId, msgId: msgId, emoji: emoji });
+  }
+
+  function translateMessage(msgId, text, targetLang) {
+    var txKey = msgId + ':' + targetLang;
+    if (txTexts[txKey] || txLoading[txKey]) return;
+    setTxLoading(function(p) { return Object.assign({}, p, {[txKey]: true}); });
+    var src = text;
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: src, targetLang: targetLang })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        setTxTexts(function(p) { return Object.assign({}, p, {[txKey]: d.translated || src}); });
+        setShowTx(function(p) { return Object.assign({}, p, {[txKey]: true}); });
+        setTxLoading(function(p) { var n = Object.assign({}, p); delete n[txKey]; return n; });
+      })
+      .catch(function() {
+        setTxLoading(function(p) { var n = Object.assign({}, p); delete n[txKey]; return n; });
+        addToast('Translation unavailable', 'error');
+      });
   }
 
   // Simulate stream goal progress when live
@@ -1225,17 +1266,59 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
       {/* Collapsible chat */}
       <div style={{ borderTop: '1px solid #241C34', background: 'rgba(10,7,18,.9)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+
+        {/* Chat header */}
+        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
           <button onClick={function() { setChatOpen(function(v) { return !v; }); }}
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#EDE8F5' }}>
+            style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#EDE8F5' }}>
             <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>💬 LIVE CHAT {chat.length > 0 ? '(' + chat.length + ')' : ''}</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9 }}>{chatOpen ? '▼' : '▲'}</span>
+            {/* Active language flags */}
+            {(function() {
+              var seen = [];
+              for (var mi = chat.length - 1; mi >= 0 && seen.length < 5; mi--) {
+                var l = (chat[mi].lang || '').toUpperCase();
+                if (l && l !== 'UNK' && seen.indexOf(l) === -1) seen.push(l);
+              }
+              return seen.length > 1 ? (
+                <span style={{ display: 'flex', gap: 2, opacity: 0.7 }}>
+                  {seen.map(function(lc) { return <span key={lc} style={{ fontSize: 10 }} title={LANG_NAMES[lc] || lc}>{LANG_FLAGS[lc] || '🌐'}</span>; })}
+                </span>
+              ) : null;
+            })()}
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, marginLeft: 'auto' }}>{chatOpen ? '▼' : '▲'}</span>
+          </button>
+          {/* Language picker button */}
+          <button onClick={function() { setShowLangPicker(function(v) { return !v; }); }}
+            title={'Chat language: ' + (LANG_NAMES[chatLang] || chatLang)}
+            style={{ background: showLangPicker ? 'rgba(90,143,255,.15)' : 'none', border: showLangPicker ? '1px solid rgba(90,143,255,.35)' : '1px solid transparent', borderRadius: 5, padding: '4px 8px', color: '#EDE8F5', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}>
+            {LANG_FLAGS[chatLang] || '🌐'}
           </button>
           {isLive && role === 'host' && !streamGoal.enabled && (
-            <button
-              onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: true, currentCents: 0 }); }); }}
+            <button onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: true, currentCents: 0 }); }); }}
               title="Set stream goal"
-              style={{ background: 'none', border: 'none', padding: '0 10px', color: '#7A6F90', cursor: 'pointer', fontSize: 13 }}>🎯</button>
+              style={{ background: 'none', border: 'none', padding: '0 8px', color: '#7A6F90', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🎯</button>
+          )}
+          {/* Language picker popover */}
+          {showLangPicker && (
+            <div style={{ position: 'absolute', bottom: '100%', right: 8, zIndex: 60, background: '#0F0C14', border: '1px solid rgba(90,143,255,.35)', borderRadius: 10, padding: 8, width: 216 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginBottom: 6, textAlign: 'center' }}>SHOW CHAT IN</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 4 }}>
+                {PICKER_LANGS.map(function(lc) {
+                  return (
+                    <button key={lc} onClick={function() { setChatLang(lc); try { localStorage.setItem('sw_chat_lang', lc); } catch(e) {} setShowLangPicker(false); }}
+                      title={LANG_NAMES[lc] || lc}
+                      style={{ background: chatLang === lc ? 'rgba(90,143,255,.2)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (chatLang === lc ? 'rgba(90,143,255,.5)' : '#241C34'), borderRadius: 6, padding: '5px 2px', cursor: 'pointer', textAlign: 'center', fontSize: 16, lineHeight: 1 }}>
+                      {LANG_FLAGS[lc] || lc}
+                    </button>
+                  );
+                })}
+              </div>
+              {chatLang !== 'EN' && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF', marginTop: 6, textAlign: 'center', letterSpacing: 0.5 }}>
+                  {LANG_FLAGS[chatLang]} Translating on demand · powered by DeepL
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -1257,33 +1340,81 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         )}
 
         {chatOpen && (
-          <div style={{ display: 'flex', flexDirection: 'column', height: 200 }}>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '4px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: 220 }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
               {chat.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center', padding: 12 }}>No messages yet</div>}
               {chat.map(function(msg) {
-                var msgId = msg.id || (msg.username + msg.message);
-                var msgReactions = reactions[msgId] || {};
+                var msgId     = msg.id || (msg.username + msg.ts + msg.message);
+                var msgRxns   = reactions[msgId] || {};
                 var emojiList = ['👍','❤️','🔥','😂','🎯'];
+                var msgLang   = (msg.lang || '').toUpperCase();
+                var isNonEn   = msgLang && msgLang !== 'EN' && msgLang !== 'UNK';
+                var hasTxEn   = isNonEn && msg.translated && msg.translated !== msg.message;
+                var userTxKey = msgId + ':' + chatLang;
+                var needsUserTx = chatLang !== 'EN' && msgLang !== chatLang && !msg.isBot;
                 return (
-                  <div key={msgId} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap' }}>
+                  <div key={msgId} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}>
+                    {/* Username + message row */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 5 }}>
                       <div style={{ flexShrink: 0, marginTop: 1 }}>
                         <AvatarPortrait username={msg.username || 'anon'} size={20} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ color: '#C9A84C', fontWeight: 700, marginRight: 5 }}>{msg.username || 'anon'}</span>
-                        <span style={{ color: '#D0C0E0' }}>{msg.message}</span>
+                        <span style={{ color: msg.isBot ? '#00DEC0' : '#C9A84C', fontWeight: 700, marginRight: 4 }}>{msg.username || 'anon'}</span>
+                        {isNonEn && <span style={{ marginRight: 4, fontSize: 11 }} title={LANG_NAMES[msgLang] || msgLang}>{LANG_FLAGS[msgLang] || '🌐'}</span>}
+                        <span style={{ color: msg.isBot ? '#A8F0E8' : '#D0C0E0' }}>{msg.message}</span>
                       </div>
-                      {role === 'host' && (
-                        <button onClick={function() { pinMessage(msg); }}
-                          title="Pin message"
-                          style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 9, padding: '0 2px', flexShrink: 0, opacity: 0.6 }}>📌</button>
+                      {role === 'host' && !msg.isBot && (
+                        <button onClick={function() { pinMessage(msg); }} title="Pin"
+                          style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 9, padding: '0 2px', flexShrink: 0, opacity: 0.5 }}>📌</button>
                       )}
                     </div>
-                    {/* Emoji reactions */}
-                    <div style={{ display: 'flex', gap: 3, marginTop: 2, flexWrap: 'wrap' }}>
+
+                    {/* Translation rows */}
+                    {!msg.isBot && (
+                      <div style={{ paddingLeft: 25, display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
+                        {/* Show EN translation for non-EN messages */}
+                        {hasTxEn && (
+                          showTx[msgId + ':EN'] ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span style={{ fontSize: 10 }}>🇺🇸</span>
+                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{msg.translated}</span>
+                              <button onClick={function() { setShowTx(function(p) { var n = Object.assign({}, p); delete n[msgId + ':EN']; return n; }); }}
+                                style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
+                            </div>
+                          ) : (
+                            <button onClick={function() { setShowTx(function(p) { return Object.assign({}, p, {[msgId + ':EN']: true}); }); }}
+                              style={{ background: 'none', border: 'none', color: 'rgba(90,143,255,.7)', cursor: 'pointer', fontSize: 9, padding: 0, textAlign: 'left', letterSpacing: 0.5, textDecoration: 'underline', width: 'fit-content' }}>
+                              🌐 view in EN
+                            </button>
+                          )
+                        )}
+                        {/* On-demand translate to user's preferred lang */}
+                        {needsUserTx && chatLang !== 'EN' && (
+                          txTexts[userTxKey] ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span style={{ fontSize: 10 }}>{LANG_FLAGS[chatLang] || '🌐'}</span>
+                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{txTexts[userTxKey]}</span>
+                              <button onClick={function() { setTxTexts(function(p) { var n = Object.assign({}, p); delete n[userTxKey]; return n; }); }}
+                                style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
+                            </div>
+                          ) : (
+                            <button onClick={function() {
+                              var src = (hasTxEn && chatLang === 'EN') ? msg.translated : msg.message;
+                              translateMessage(msgId, src, chatLang);
+                            }}
+                              style={{ background: 'none', border: 'none', color: 'rgba(90,143,255,.7)', cursor: 'pointer', fontSize: 9, padding: 0, textAlign: 'left', letterSpacing: 0.5, textDecoration: 'underline', width: 'fit-content' }}>
+                              {txLoading[userTxKey] ? '...' : (LANG_FLAGS[chatLang] || '🌐') + ' translate'}
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    {/* Broadcast reactions */}
+                    <div style={{ display: 'flex', gap: 3, marginTop: 2, paddingLeft: 25, flexWrap: 'wrap' }}>
                       {emojiList.map(function(emoji) {
-                        var count = msgReactions[emoji] || 0;
+                        var count = msgRxns[emoji] || 0;
                         return (
                           <button key={emoji}
                             onClick={function() { addReaction(msgId, emoji); }}
@@ -1301,7 +1432,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             <div style={{ display: 'flex', gap: 6, padding: '6px 10px', borderTop: '1px solid rgba(36,28,52,.6)', flexShrink: 0 }}>
               <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }}
                 onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }}
-                placeholder="Say something..."
+                placeholder={'Say something… ' + (chatLang !== 'EN' ? (LANG_FLAGS[chatLang] || '') : '')}
                 maxLength={200}
                 style={{ flex: 1, background: '#0F0C14', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#D0C0E0', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
               <button onClick={sendChat}
