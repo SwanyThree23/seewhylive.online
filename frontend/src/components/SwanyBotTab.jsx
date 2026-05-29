@@ -40,6 +40,8 @@ function getLogIcon(event) {
   if (event === 'milestone_revenue') return '💰';
   if (event === 'retention_coach')   return '💡';
   if (event === 'command')           return '🤖';
+  if (event === 'poll_created')      return '📊';
+  if (event === 'clip_marker')       return '📎';
   return '🤖';
 }
 
