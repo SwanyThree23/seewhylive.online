@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-var NAV_ITEMS = [
-  { id: 'room',     label: 'HOME',      icon: '🏠', isCenter: false },
-  { id: 'discover', label: 'DISCOVER',  icon: '🔭', isCenter: false },
-  { id: 'room',     label: 'STUDIO',    icon: '📡', isCenter: true  },
-  { id: 'battles',  label: 'BATTLES',   icon: '⚡', isCenter: false },
-  { id: 'data',     label: 'DASHBOARD', icon: '📊', isCenter: false },
-];
-
 export default function MobileNavBar(props) {
-  var activeTab   = props.activeTab;
+  var activeTab    = props.activeTab;
   var setActiveTab = props.setActiveTab;
-  var isLive      = props.isLive;
+  var isLive       = props.isLive;
+  var auraUnread   = props.auraUnread || 0;
+  var onAuraClick  = props.onAuraClick;
+
+  var NAV_ITEMS = [
+    { id: 'room',     label: 'HOME',      icon: '🏠', isCenter: false },
+    { id: 'discover', label: 'DISCOVER',  icon: '🔭', isCenter: false },
+    { id: 'room',     label: isLive ? 'LIVE' : 'STUDIO', icon: '📡', isCenter: true },
+    { id: isLive ? 'aura' : 'battles', label: isLive ? 'AURA' : 'BATTLES', icon: isLive ? '🤖' : '⚡', isCenter: false, badge: isLive && auraUnread > 0 ? auraUnread : 0 },
+    { id: 'data',     label: 'DASHBOARD', icon: '📊', isCenter: false },
+  ];
 
   var [isMobile, setIsMobile] = useState(function() { return window.innerWidth <= 900; });
 
@@ -107,7 +109,10 @@ export default function MobileNavBar(props) {
           return (
             <div
               key={idx}
-              onClick={function() { setActiveTab(item.id); }}
+              onClick={function() {
+                setActiveTab(item.id);
+                if (item.id === 'aura' && onAuraClick) onAuraClick();
+              }}
               style={{
                 flex: 1,
                 display: 'flex',
@@ -118,12 +123,13 @@ export default function MobileNavBar(props) {
                 cursor: 'pointer',
                 padding: '8px 0'
               }}>
-              <div style={{
-                fontSize: 18,
-                filter: isActive ? 'drop-shadow(0 0 6px #C9A84C)' : 'none',
-                transition: 'filter .2s'
-              }}>
+              <div style={{ position: 'relative', fontSize: 18, filter: isActive ? 'drop-shadow(0 0 6px #C9A84C)' : 'none', transition: 'filter .2s' }}>
                 {item.icon}
+                {item.badge > 0 && (
+                  <span style={{ position: 'absolute', top: -4, right: -6, background: '#FF1A3C', color: '#fff', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, fontWeight: 700, lineHeight: 1, border: '1px solid rgba(7,5,10,.8)' }}>
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                )}
               </div>
               <div style={{
                 fontFamily: "'DM Mono',monospace",
