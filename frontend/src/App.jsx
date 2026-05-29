@@ -153,6 +153,7 @@ export default function App() {
   var [showInstallBanner, setShowInstallBanner] = useState(false);
   var [editingTitle, setEditingTitle] = useState(false);
   var [titleDraft, setTitleDraft] = useState('');
+  var [showMoreDrawer, setShowMoreDrawer] = useState(false);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -768,9 +769,10 @@ export default function App() {
         </div>
       </header>
 
-      {/* Tab Bar */}
-      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(7,5,10,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4 }}>
-        {TABS.map(function(tab) { return (
+      {/* Secondary tab bar — hidden on room tab, shown when More drawer is open */}
+      {activeTab !== 'room' && (
+      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(7,5,10,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none' }}>
+        {TABS.filter(function(t) { return t.id !== 'room' && t.id !== 'discover' && t.id !== 'profile' && t.id !== 'settings'; }).map(function(tab) { return (
           <button
             key={tab.id}
             style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(22,16,32,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#EDE8F5' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
@@ -785,6 +787,7 @@ export default function App() {
           </button>
         ); })}
       </nav>
+      )}
 
       {/* Stream Goal Progress Bar */}
       {streamGoal && isLive && (
@@ -807,7 +810,7 @@ export default function App() {
       )}
 
       {/* Tab Content */}
-      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 100, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
+      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
       <ErrorBoundary>
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90', letterSpacing: 2 }}>LOADING...</div>}>
         {activeTab === 'room' && (
@@ -825,6 +828,8 @@ export default function App() {
             addToast={addToast}
             overlayConfig={overlayConfig}
             viewerCount={viewerCount}
+            streamInfo={streamInfo}
+            onLeave={function() { setActiveTab('discover'); addToast('Left the room', 'info'); }}
           />
         )}
         {activeTab === 'fades' && (

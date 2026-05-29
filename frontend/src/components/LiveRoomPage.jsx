@@ -183,6 +183,7 @@ export default function LiveRoomPage({
   socket, guests, chat, isLive, setIsLive,
   userId, username, role, roomId, branding,
   addToast, overlayConfig, viewerCount, mediaConfig,
+  streamInfo, onLeave,
 }) {
   var [rtcReady,      setRtcReady]      = useState(false);
   var [isMuted,       setIsMuted]       = useState(false);
@@ -386,11 +387,13 @@ export default function LiveRoomPage({
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 22, color: TEXT, lineHeight: 1.1, letterSpacing: .3 }}>
-              Washington Classic
+              {(streamInfo && streamInfo.title) ? streamInfo.title : 'Live Room'}
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, letterSpacing: 1.5, marginTop: 3, textTransform: 'uppercase', opacity: .85 }}>
-              Domino Entertainment × VibeN&apos;Bones
-            </div>
+            {streamInfo && streamInfo.subtitle && (
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, letterSpacing: 1.5, marginTop: 3, textTransform: 'uppercase', opacity: .85 }}>
+                {streamInfo.subtitle}
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, marginTop: 2 }}>
             {isLive ? (
@@ -802,7 +805,7 @@ export default function LiveRoomPage({
         zIndex: 40, flexShrink: 0,
       }}>
         {/* Leave */}
-        <button style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: RED, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', letterSpacing: .3 }}>
+        <button onClick={function() { if (onLeave) onLeave(); }} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: RED, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', letterSpacing: .3 }}>
           Leave room
         </button>
         {/* Right-side icon buttons */}
