@@ -77,7 +77,7 @@ function isTierEligible(tier) {
 // Hourly rate limiting (max 20 Anthropic API calls per stream per hour)
 // ---------------------------------------------------------------------------
 var _hourlyCallCounts = {};
-var HOURLY_CAP = 20;
+var HOURLY_CAP = 60;
 
 function currentHour() {
   return Math.floor(Date.now() / 3600000);
