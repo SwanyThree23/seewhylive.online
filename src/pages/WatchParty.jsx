@@ -409,55 +409,86 @@ export default function WatchPartyPage() {
 
   return (
     <div className={`flex flex-col overflow-hidden transition-all duration-300 ${theaterMode ? 'h-screen fixed inset-0 z-50' : 'h-[calc(100vh-120px)]'}`} style={{ background: '#0B0B18' }}>
-      {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2 shrink-0" style={{ background: '#1A0F0A', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
-        <h2 className="font-semibold text-white flex-1 truncate text-sm">{party.title}</h2>
-        <div className="flex items-center gap-1 text-[11px]" style={{ color: '#d4af37' }}>
-          <Users className="w-3 h-3" /> {members.length}/20
+      {/* ── FANBASE-STYLE TOP BAR ──────────────────────────────────────────── */}
+      <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+
+        {/* Row 1: title + badges | right actions */}
+        <div className="flex items-center gap-2 px-3 h-12">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <h2 className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</h2>
+            <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+              style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
+            </span>
+            <span className="shrink-0 text-[9px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
+              style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Watch Party
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            <ShareButtons
+              url={window.location.href}
+              title={`Join my Watch Party: ${party?.title}`}
+              className="text-white [&_button]:text-white/60"
+            />
+            <VideoSourcePicker
+              compact
+              isHost={isHost}
+              isCoHost={false}
+              playlist={playlist}
+              onPlaylistChange={setPlaylist}
+              onSelect={changeVideo}
+            />
+            <button onClick={() => setTheaterMode(v => !v)}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? '#d4af37' : 'rgba(255,255,255,0.4)' }}
+              title="Theater Mode">
+              {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
+            {isHost && (
+              <CompositorOverlay
+                layout="watchparty"
+                slots={wpCompositorSlots}
+                overlayConfig={wpOverlayConfig}
+                userId={user?.id}
+                onScreenCapture={handleScreenCapture}
+                isHost={isHost}
+              />
+            )}
+            {isHost && (
+              <Button size="sm" onClick={() => endPartyMutation.mutate()}
+                className="h-7 text-[10px] px-2" style={{ background: 'rgba(180,50,30,0.3)', color: '#ff8866', border: '1px solid rgba(200,80,30,0.3)' }}>
+                <LogOut className="w-3 h-3 mr-1" /> End
+              </Button>
+            )}
+          </div>
         </div>
-        {!isHost && (
-          <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(107,124,74,0.2)', color: '#6B7C4A', border: '1px solid rgba(107,124,74,0.3)' }}>Synced</span>
-        )}
-        {isHost && (
-          <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)' }}>Host</span>
-        )}
-        <ShareButtons
-          url={window.location.href}
-          title={`Join my Watch Party: ${party?.title}`}
-          className="text-white [&_button]:text-white/60"
-        />
-        {/* Video source picker for host/co-host */}
-        <VideoSourcePicker
-          compact
-          isHost={isHost}
-          isCoHost={false}
-          playlist={playlist}
-          onPlaylistChange={setPlaylist}
-          onSelect={changeVideo}
-        />
-        {/* Theater Mode toggle */}
-        <button onClick={() => setTheaterMode(v => !v)}
-          className="w-7 h-7 flex items-center justify-center rounded-lg transition-all"
-          style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? '#d4af37' : 'rgba(255,255,255,0.4)' }}
-          title="Theater Mode">
-          {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-        </button>
-        {isHost && (
-          <CompositorOverlay
-            layout="watchparty"
-            slots={wpCompositorSlots}
-            overlayConfig={wpOverlayConfig}
-            userId={user?.id}
-            onScreenCapture={handleScreenCapture}
-            isHost={isHost}
-          />
-        )}
-        {isHost && (
-          <Button size="sm" onClick={() => endPartyMutation.mutate()}
-            className="h-7 text-[10px] px-2" style={{ background: 'rgba(180,50,30,0.3)', color: '#ff8866', border: '1px solid rgba(200,80,30,0.3)' }}>
-            <LogOut className="w-3 h-3 mr-1" /> End
-          </Button>
-        )}
+
+        {/* Row 2: host avatar + name | member count | synced/host badge */}
+        <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black text-white"
+            style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+            {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
+          </div>
+          <span className="text-[10px] text-white/50 truncate max-w-[80px]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {user?.full_name || 'Host'}
+          </span>
+          <span className="text-white/15 mx-0.5">·</span>
+          <Users className="w-3 h-3 shrink-0" style={{ color: '#d4af37' }} />
+          <span className="text-[10px] font-bold shrink-0" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{members.length}/20</span>
+          {isHost ? (
+            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(212,175,55,0.1)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Host
+            </span>
+          ) : (
+            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(107,124,74,0.15)', color: '#6B7C4A', border: '1px solid rgba(107,124,74,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Synced
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── VIDEO PLAYER — always visible at top on mobile ── */}

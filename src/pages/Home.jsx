@@ -22,6 +22,112 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 var CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'Education', 'Business', 'Sports', 'Lifestyle'];
 
+var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+
+function OctTile({ label, color, size }) {
+  var sz = size || 44;
+  return (
+    <div style={{ width: sz, height: sz, clipPath: OCT, background: 'rgba(212,175,55,0.2)', flexShrink: 0 }}>
+      <div style={{ width: '100%', height: '100%', clipPath: OCT,
+        background: color || 'linear-gradient(135deg, #800020, #3d0010)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: sz * 0.3, fontWeight: 900, color: 'rgba(255,255,255,0.9)',
+        fontFamily: 'Barlow Condensed, sans-serif' }}>
+        {(label || '?').charAt(0).toUpperCase()}
+      </div>
+    </div>
+  );
+}
+
+function FanbaseRoomCard({ room }) {
+  var participantCount = room.participant_count || room.viewer_count || 0;
+  var displayNames = (room.participant_names || []).slice(0, 3);
+  var extra = participantCount > 3 ? participantCount - 3 : 0;
+  var categoryColor = { Music: '#FF1564', Gaming: '#8B5CF6', Tech: '#00d4ff', Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755', Lifestyle: '#FF6B8A' };
+  var tagColor = room.tags && room.tags[0] ? (categoryColor[room.tags[0]] || '#D4AF37') : '#D4AF37';
+
+  return (
+    <Link to={`/LiveRoom?id=${room.id}`}>
+      <motion.div whileTap={{ scale: 0.98 }}
+        className="rounded-2xl overflow-hidden cursor-pointer"
+        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+
+        {/* Category badge + Join button */}
+        <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
+          {room.tags && room.tags[0] ? (
+            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full"
+              style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+              {room.tags[0]}
+            </span>
+          ) : (
+            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Live
+            </span>
+          )}
+          <span className="text-[9px] font-black uppercase px-2.5 py-1 rounded-full"
+            style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+            Join
+          </span>
+        </div>
+
+        {/* Thumbnail / placeholder */}
+        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+          {room.thumbnail_url ? (
+            <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} />
+            </div>
+          )}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+          {/* LIVE indicator on thumbnail */}
+          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black"
+            style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            LIVE
+          </div>
+          {participantCount > 0 && (
+            <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[9px] font-bold"
+              style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <Users className="w-3 h-3" />{participantCount}
+            </div>
+          )}
+        </div>
+
+        {/* Room title + host */}
+        <div className="px-3 pt-2">
+          <p className="font-black text-white leading-tight text-sm line-clamp-2"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.02em' }}>
+            {room.title}
+          </p>
+          {room.host_name && (
+            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {room.host_name}
+            </p>
+          )}
+        </div>
+
+        {/* Participant oct-tile row */}
+        <div className="flex items-center gap-1.5 px-3 pt-2 pb-3">
+          {displayNames.map(function(name, i) {
+            return <OctTile key={i} label={name} size={36} />;
+          })}
+          {displayNames.length === 0 && participantCount > 0 && (
+            <OctTile label="?" size={36} />
+          )}
+          {extra > 0 && (
+            <span className="text-[9px] font-black ml-1" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>+{extra} more</span>
+          )}
+          {participantCount === 0 && displayNames.length === 0 && (
+            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Be first to join</span>
+          )}
+        </div>
+      </motion.div>
+    </Link>
+  );
+}
+
 var QUICK_ACTIONS = [
   { label: 'Go Live',      icon: Radio,   href: '/Greenroom?destination_type=room', color: '#CC7755', bg: 'rgba(204,119,85,0.15)',   border: 'rgba(204,119,85,0.3)' },
   { label: 'Watch Party',  icon: Eye,     href: 'WatchParty',     color: '#6B7C4A', bg: 'rgba(107,124,74,0.15)',   border: 'rgba(107,124,74,0.3)' },
@@ -358,7 +464,7 @@ export default function Home() {
                         <motion.div key={room.id}
                           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.05 }}>
-                          <RoomCard room={room} />
+                          <FanbaseRoomCard room={room} />
                         </motion.div>
                       );
                     })}
