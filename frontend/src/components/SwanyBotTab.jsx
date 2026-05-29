@@ -28,14 +28,18 @@ var SIM_EVENTS = [
 ];
 
 function getLogIcon(event) {
-  if (event === 'viewer_join')      return '👋';
-  if (event === 'gift_received')    return '🎁';
-  if (event === 'spam_detected')    return '🛡';
-  if (event === 'milestone_1000')   return '🔥';
-  if (event === 'viewers_drop')     return '⚠️';
-  if (event === 'new_subscription') return '🎉';
-  if (event === 'manual')           return '💬';
-  if (event === 'trigger')          return '⚡';
+  if (event === 'viewer_join')       return '👋';
+  if (event === 'gift_received')     return '🎁';
+  if (event === 'spam_detected')     return '🛡';
+  if (event === 'milestone_1000')    return '🔥';
+  if (event === 'viewers_drop')      return '⚠️';
+  if (event === 'new_subscription')  return '🎉';
+  if (event === 'manual')            return '💬';
+  if (event === 'trigger')           return '⚡';
+  if (event === 'engagement_surge')  return '🚀';
+  if (event === 'milestone_revenue') return '💰';
+  if (event === 'retention_coach')   return '💡';
+  if (event === 'command')           return '🤖';
   return '🤖';
 }
 

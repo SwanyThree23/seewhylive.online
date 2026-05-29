@@ -154,6 +154,7 @@ export default function App() {
   var liveStartRef = useRef(null);
   var peakViewerRef = useRef(0);
   var sessionEarningsRef = useRef(0);
+  var prevEarningsRef = useRef(0);
 
   var addToast = useCallback(function(msg, type) {
     var id = Date.now() + Math.random();
@@ -165,6 +166,20 @@ export default function App() {
     var t = setTimeout(function() { setSplash(false); }, 2200);
     return function() { clearTimeout(t); };
   }, []);
+
+  // Earnings milestone celebration toasts
+  useEffect(function() {
+    var prev = prevEarningsRef.current;
+    var curr = sessionEarningsCents;
+    var MILESTONES = [1000, 2500, 5000, 10000, 25000, 50000];
+    for (var i = 0; i < MILESTONES.length; i++) {
+      if (curr >= MILESTONES[i] && prev < MILESTONES[i]) {
+        addToast('🏆 $' + Math.floor(MILESTONES[i] / 100) + ' milestone — stream is POPPING!', 'success');
+        break;
+      }
+    }
+    prevEarningsRef.current = curr;
+  }, [sessionEarningsCents, addToast]);
 
   useEffect(function() {
     function handleInstallPrompt(e) {
@@ -409,6 +424,10 @@ export default function App() {
         addToast('🚀 SURGE! Viewers up ' + data.pct + '% in 60s — ' + data.viewers + ' watching!', 'success');
       } else if (data.type === 'viewers_drop') {
         addToast('⚠ Viewer drop: ' + data.current + ' (was ' + data.previous + ')', 'info');
+      } else if (data.type === 'revenue_milestone') {
+        addToast('💰 ' + data.message, 'success');
+      } else if (data.type === 'retention_coach') {
+        addToast(data.message, 'info');
       } else if (data.message) {
         addToast(data.message, 'info');
       }

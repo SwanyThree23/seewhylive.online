@@ -262,6 +262,9 @@ var rooms = new Map();
 // Per-room tracking for AURA auto-triggers
 var peakViewers    = new Map();  // roomId → peak viewer count this session
 var milestonesSeen = new Map();  // roomId → Set of milestone numbers already fired
+var sessionRevenue = new Map();  // roomId → cumulative gift cents this session
+
+var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
 // Helper: auto-trigger AURA and broadcast to room
 function autoAura(roomId, triggerFn) {
@@ -1217,6 +1220,18 @@ io.on('connection', function(socket) {
 
     swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
 
+    // Session revenue milestone tracking
+    var prevRevenue = sessionRevenue.get(roomId) || 0;
+    var newRevenue  = prevRevenue + valueCents;
+    sessionRevenue.set(roomId, newRevenue);
+    for (var rmi = 0; rmi < REVENUE_MILESTONES_CENTS.length; rmi++) {
+      var rev = REVENUE_MILESTONES_CENTS[rmi];
+      if (newRevenue >= rev && prevRevenue < rev) {
+        swanybot.onRevenueMilestone(roomId, rev);
+        break;
+      }
+    }
+
     // Auto-trigger AURA gift hype (threshold: $1+)
     if (valueCents >= 100) {
       autoAura(roomId, function(cb) { aura.triggerGift(roomId, fromUser, name, valueCents, cb); });
@@ -1575,6 +1590,8 @@ io.on('connection', function(socket) {
     // Auto-trigger AURA stream start hype
     peakViewers.set(roomId, room.viewers ? room.viewers.size : 0);
     milestonesSeen.set(roomId, new Set());
+    sessionRevenue.set(roomId, 0);
+    swanybot.onStreamStart(roomId);
     var streamTitle = room.streamTitle || 'SeeWhy LIVE';
     var vcNow = room.viewers ? room.viewers.size : 0;
     autoAura(roomId, function(cb) { aura.triggerStreamStart(roomId, streamTitle, vcNow, cb); });
@@ -1628,7 +1645,9 @@ io.on('connection', function(socket) {
     autoAura(roomId, function(cb) { aura.triggerStreamEnd(roomId, peak, 0, cb); });
     peakViewers.delete(roomId);
     milestonesSeen.delete(roomId);
+    sessionRevenue.delete(roomId);
     swanybot.resetRoomGifts(roomId);
+    swanybot.onStreamEnd(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);

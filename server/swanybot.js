@@ -30,6 +30,8 @@ class SwanyBot extends EventEmitter {
     this.giftTotals = new Map();
     // Cooldown for race alerts: roomId → lastAlertTs
     this.lastRaceAlert = new Map();
+    // Retention coach: roomId → timeout handle
+    this.retentionTimeouts = new Map();
 
     try {
       fs.mkdirSync(path.dirname(this.logPath), { recursive: true });
@@ -391,21 +393,64 @@ class SwanyBot extends EventEmitter {
 
   onRevenueMilestone(roomId, totalCents) {
     var dollars = Math.floor(totalCents / 100);
+    var now     = Date.now();
 
     this.io.to(roomId).emit('chat-message', {
-      id: uuidv4(),
-      username: 'AURA',
-      message: '🔥 SeeWhy LIVE just hit $' + dollars + ' in revenue this session!',
-      ts: Date.now(),
-      isBot: true
+      id:       uuidv4(),
+      username: 'SWANYBOT',
+      message:  '💰 MILESTONE! This stream just hit $' + dollars + ' in revenue — creators keep 90%! 🏆',
+      ts:       now,
+      isBot:    true
     });
 
-    this.log(
-      'info',
-      'revenue_milestone',
-      'Session revenue hit $' + dollars,
-      null
-    );
+    this.io.to(roomId).emit('host-alert', {
+      type:    'revenue_milestone',
+      message: '💰 $' + dollars + ' session milestone hit!',
+      cents:   totalCents,
+      ts:      now
+    });
+
+    this.io.to(roomId).emit('bot-log', {
+      event:   'milestone_revenue',
+      message: 'Session revenue hit $' + dollars,
+      ts:      now
+    });
+
+    this.log('info', 'revenue_milestone', 'Session revenue hit $' + dollars, null);
+  }
+
+  onStreamStart(roomId) {
+    var self = this;
+    // Clear any existing retention timeout for this room
+    var existing = this.retentionTimeouts.get(roomId);
+    if (existing) clearTimeout(existing);
+
+    // After 15 minutes, check if viewer count is still low and nudge the host
+    var t = setTimeout(function() {
+      self.retentionTimeouts.delete(roomId);
+      var history     = self.viewerHistory.get(roomId);
+      var latestCount = (history && history.length > 0) ? history[history.length - 1].count : 0;
+      if (latestCount < 5) {
+        self.io.to(roomId).emit('host-alert', {
+          type:    'retention_coach',
+          message: '💡 15 min in with a small crowd — try: share to socials, run a poll (!poll in chat), call out viewers by name, or tease a giveaway!',
+          ts:      Date.now()
+        });
+        self.io.to(roomId).emit('bot-log', {
+          event:   'retention_coach',
+          message: 'Retention tip sent (< 5 viewers at 15min)',
+          ts:      Date.now()
+        });
+      }
+    }, 15 * 60 * 1000);
+
+    this.retentionTimeouts.set(roomId, t);
+    this.log('info', 'stream_start', 'Retention coach armed for ' + roomId, null);
+  }
+
+  onStreamEnd(roomId) {
+    var t = this.retentionTimeouts.get(roomId);
+    if (t) { clearTimeout(t); this.retentionTimeouts.delete(roomId); }
   }
 
   onWelcomeVisitor(socketId) {
