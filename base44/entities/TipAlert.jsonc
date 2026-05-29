@@ -74,24 +74,14 @@
   "type": "object",
   "rls": {
     "create": {
-      "$or": [
-        {
-          "data.creator_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
         {
           "data.creator_id": "{{user.id}}"
-        },
-        {
-          "data.sender_id": "{{user.id}}"
         },
         {
           "user_condition": {
