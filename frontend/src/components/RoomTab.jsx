@@ -524,6 +524,28 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     : 'repeat(5,1fr)';
   var tileSize = peerCount <= 9 ? 120 : peerCount <= 16 ? 80 : 60;
 
+  // allParticipants: own cell + all connected guests (panel/watch-party/battle use this)
+  var allParticipants = (function() {
+    var ownEntry = allGuestMap[userId] || { guestId: userId, username: username, role: role };
+    var seen = {};
+    seen[userId] = true;
+    var others = guests.map(function(g) {
+      var gid = g.guestId ? g.guestId : (g.userId ? g.userId : null);
+      if (!gid || seen[gid]) return null;
+      seen[gid] = true;
+      return allGuestMap[gid] || g;
+    }).filter(Boolean);
+    return [ownEntry].concat(others).slice(0, MAX_STAGE);
+  })();
+  var allPeerCount = allParticipants.length;
+  var allGridCols = allPeerCount <= 1  ? '1fr'
+    : allPeerCount <= 2  ? '1fr 1fr'
+    : allPeerCount <= 4  ? 'repeat(2,1fr)'
+    : allPeerCount <= 9  ? 'repeat(3,1fr)'
+    : allPeerCount <= 12 ? 'repeat(4,1fr)'
+    : 'repeat(5,1fr)';
+  var allTileSize = allPeerCount <= 9 ? 120 : allPeerCount <= 16 ? 80 : 60;
+
   // mc-btn base style helper
   function mcBtnStyle(variant) {
     var base = {
@@ -607,7 +629,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '4px 8px', background: showGuests ? 'rgba(90,143,255,.15)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (showGuests ? 'rgba(90,143,255,.4)' : '#241C34'), borderRadius: 4, color: showGuests ? '#5A8FFF' : '#7A6F90', cursor: 'pointer', flexShrink: 0 }}>
             👥 {guests.length}
           </button>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginLeft: 'auto', flexShrink: 0 }}>{stagePeers.length}/{MAX_STAGE} ON STAGE</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginLeft: 'auto', flexShrink: 0 }}>{allParticipants.length}/{MAX_STAGE} CONNECTED</span>
         </div>
 
         {/* GUESTS LIST MODE */}
@@ -694,8 +716,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* PANEL layout */}
         {!showGuests && stageLayout === 'panel' && (
-          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: panelGridCols, gap: 2, padding: 2, overflow: 'hidden', background: '#0a0710', alignContent: 'start' }}>
-            {stagePeers.map(function(g) {
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: allGridCols, gap: 2, padding: 2, overflow: 'hidden', background: '#0a0710', alignContent: 'start' }}>
+            {allParticipants.map(function(g) {
               var gid  = g.guestId ? g.guestId : (g.userId ? g.userId : 'x');
               var isOwn = gid === userId;
               var isFeatured = gid === featuredId;
@@ -705,7 +727,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                   style={{ position: 'relative', border: '2px solid ' + (isFeatured ? '#00DEC0' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', aspectRatio: '16/9', background: '#0a0710' }}>
                   <OctCell
                     guest={g}
-                    sz={tileSize}
+                    sz={allTileSize}
                     isHost={role === 'host'}
                     fadesMode={false}
                     branding={branding}
@@ -724,10 +746,6 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     ? <OverlayCustomLT lowerThirds={overlayConfig.lowerThirds} guestId={gid} />
                     : <LowerThird name={g.username || gid} role={g.role || 'viewer'} isMuted={isOwn && isMuted} isCamOff={isOwn && isCamOff} isLive={isLive} />
                   }
-                  {!isOwn && role === 'host' && (
-                    <button onClick={function(e) { e.stopPropagation(); removeFromStage(gid); }}
-                      style={{ position: 'absolute', top: 5, left: 5, zIndex: 30, background: 'rgba(255,26,60,.7)', border: 'none', borderRadius: 4, width: 20, height: 20, color: '#fff', fontSize: 10, cursor: 'pointer' }}>✕</button>
-                  )}
                   {/* Expand button — Bigo style */}
                   <button
                     onClick={function(e) { e.stopPropagation(); setExpandedId(gid); setStageLayout('expand'); }}
@@ -940,13 +958,13 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 </div>
               )}
               <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(7,5,10,.8)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 5, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF', letterSpacing: 1 }}>
-                📺 WATCH PARTY · {stagePeers.length} WATCHING
+                📺 WATCH PARTY · {allParticipants.length} WATCHING
               </div>
             </div>
             {/* Participant webcam strip */}
-            {stagePeers.length > 0 && (
+            {allParticipants.length > 0 && (
               <div style={{ height: 90, display: 'flex', gap: 2, padding: '2px 4px', background: '#0a0710', overflowX: 'auto', flexShrink: 0 }}>
-                {stagePeers.map(function(g) {
+                {allParticipants.map(function(g) {
                   var gid  = g.guestId || g.userId || 'x';
                   var isOwn = gid === userId;
                   return (
@@ -993,13 +1011,13 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               {/* Team A */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <div style={{ background: 'rgba(192,24,56,.1)', border: '1px solid rgba(192,24,56,.3)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', textAlign: 'center', letterSpacing: 1, flexShrink: 0 }}>⚡ {activeBattle ? activeBattle.challenger : 'TEAM A'}</div>
-                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: stagePeers.length > 4 ? 'repeat(2,1fr)' : '1fr', gap: 2 }}>
-                  {stagePeers.slice(0, Math.ceil(stagePeers.length / 2)).map(function(g) {
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: allParticipants.length > 4 ? 'repeat(2,1fr)' : '1fr', gap: 2 }}>
+                  {allParticipants.slice(0, Math.ceil(allParticipants.length / 2)).map(function(g) {
                     var gid  = g.guestId || g.userId || 'x';
                     var isOwn = gid === userId;
                     return (
                       <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(192,24,56,.25)', aspectRatio: '16/9', background: '#0a0710' }}>
-                        <OctCell guest={g} sz={tileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
+                        <OctCell guest={g} sz={allTileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
                         <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
                       </div>
                     );
@@ -1011,13 +1029,13 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               {/* Team B */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <div style={{ background: 'rgba(90,143,255,.1)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7AAEFF', textAlign: 'center', letterSpacing: 1, flexShrink: 0 }}>⚡ {activeBattle ? activeBattle.defender : 'TEAM B'}</div>
-                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: stagePeers.length > 4 ? 'repeat(2,1fr)' : '1fr', gap: 2 }}>
-                  {stagePeers.slice(Math.ceil(stagePeers.length / 2)).map(function(g) {
+                <div style={{ flex: 1, display: 'grid', gridTemplateColumns: allParticipants.length > 4 ? 'repeat(2,1fr)' : '1fr', gap: 2 }}>
+                  {allParticipants.slice(Math.ceil(allParticipants.length / 2)).map(function(g) {
                     var gid  = g.guestId || g.userId || 'x';
                     var isOwn = gid === userId;
                     return (
                       <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(90,143,255,.25)', aspectRatio: '16/9', background: '#0a0710' }}>
-                        <OctCell guest={g} sz={tileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
+                        <OctCell guest={g} sz={allTileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
                         <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
                       </div>
                     );
