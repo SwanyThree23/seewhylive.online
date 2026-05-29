@@ -79,7 +79,7 @@
           "data.is_public": true
         },
         {
-          "data.community_id": {
+          "_id": {
             "$in": [
               "{{user.communities_as_member}}"
             ]

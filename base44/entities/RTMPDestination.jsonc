@@ -65,7 +65,9 @@
     "label"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
     "read": {
       "data.creator_id": "{{user.id}}"
     },

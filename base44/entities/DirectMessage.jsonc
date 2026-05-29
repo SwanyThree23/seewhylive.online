@@ -57,7 +57,9 @@
     "content"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "data.sender_id": "{{user.id}}"
+    },
     "read": {
       "$or": [
         {
