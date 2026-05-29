@@ -927,7 +927,7 @@ export default function App() {
           <GoldenWallPanel items={gifts.slice(-10)} />
         </div>
       )}
-      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} />
+      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />
     </div>
   );
 }

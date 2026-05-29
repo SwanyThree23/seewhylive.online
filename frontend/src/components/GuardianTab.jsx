@@ -141,20 +141,58 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     lastChatLen.current = chat.length;
     if (newMsgs.length === 0) return;
     newMsgs.forEach(function(msg) {
-      var text = (msg.text || msg.message || '').toLowerCase();
-      var user = msg.username || msg.userId || 'unknown';
+      if (msg.isSystem) return;
+      var rawText = msg.text || msg.message || '';
+      var text    = rawText.toLowerCase();
+      var user    = msg.username || msg.userId || 'unknown';
+
+      var violation = null;
+
       var matchedBan = banned.find(function(b) { return text.indexOf(b.toLowerCase()) !== -1; });
-      if (matchedBan && !msg.isSystem) {
-        var now = new Date();
-        var ts = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
-        setGuardLog(function(prev) { return [ts + '  BLOCKED  ' + user + ' — banned word: ' + matchedBan].concat(prev.slice(0, 29)); });
-        setBlocked(function(n) { return n + 1; });
-        setFlags(function(prev) { return [{ id: 'live_' + Date.now(), user: user, text: msg.text || '', reason: 'Banned word: ' + matchedBan, ts: ts }].concat(prev); });
-        if (socket && roomId) {
-          socket.emit('mute-user', { roomId: roomId, targetUser: user, reason: 'Banned word: ' + matchedBan });
+      if (matchedBan) {
+        violation = { reason: 'Banned word: ' + matchedBan, action: 'BLOCKED', ruleId: 'banned' };
+      }
+
+      if (!violation) {
+        var capsRule = rules.find(function(r) { return r.id === 'caps' && r.enabled; });
+        if (capsRule && rawText.length >= 8) {
+          var upperCount = (rawText.match(/[A-Z]/g) || []).length;
+          var letterCount = (rawText.match(/[A-Za-z]/g) || []).length;
+          if (letterCount > 0 && (upperCount / letterCount) > 0.8) {
+            violation = { reason: 'ALL CAPS FLOOD', action: 'BLOCKED', ruleId: 'caps' };
+          }
         }
-        if (addToast) addToast('Guardian blocked: ' + user + ' (' + matchedBan + ')', 'error');
-      } else if (!msg.isSystem) {
+      }
+
+      if (!violation) {
+        var emojiRule = rules.find(function(r) { return r.id === 'emoji' && r.enabled; });
+        if (emojiRule) {
+          var emojiMatches = rawText.match(/\p{Emoji}/gu) || [];
+          if (emojiMatches.length > 10) {
+            violation = { reason: 'EMOJI SPAM (' + emojiMatches.length + ')', action: 'BLOCKED', ruleId: 'emoji' };
+          }
+        }
+      }
+
+      if (!violation) {
+        var repeatRule = rules.find(function(r) { return r.id === 'repeat' && r.enabled; });
+        if (repeatRule && /(.)\1{4,}/.test(rawText)) {
+          violation = { reason: 'REPEAT CHARS', action: 'BLOCKED', ruleId: 'repeat' };
+        }
+      }
+
+      var now = new Date();
+      var ts = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+
+      if (violation) {
+        setGuardLog(function(prev) { return [ts + '  ' + violation.action + '  ' + user + ' — ' + violation.reason].concat(prev.slice(0, 29)); });
+        setBlocked(function(n) { return n + 1; });
+        setFlags(function(prev) { return [{ id: 'live_' + Date.now(), user: user, msg: rawText.slice(0, 80), rule: violation.reason, ts: ts, action: violation.action.toLowerCase() }].concat(prev.slice(0, 19)); });
+        if (socket && roomId && violation.ruleId !== 'emoji') {
+          socket.emit('mute-user', { roomId: roomId, targetUser: user, reason: violation.reason });
+        }
+        if (addToast) addToast('Guardian: ' + violation.action + ' — ' + user + ' (' + violation.reason + ')', 'error');
+      } else {
         setAllowed(function(n) { return n + 1; });
       }
     });
