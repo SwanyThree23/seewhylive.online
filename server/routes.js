@@ -43,7 +43,7 @@ router.get('/aura/usage', function(req, res) {
       var usage = aura.getUsage(streamId);
       return res.json({
         callsThisHour: usage.callsThisHour || 0,
-        limit: 20,
+        limit: 60,
         streamId: streamId
       });
     }
