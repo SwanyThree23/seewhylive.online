@@ -124,6 +124,8 @@ export default function App() {
   var [username, setUsername] = useState(function() { var _u = localStorage.getItem('sw_username'); return (_u && _u !== 'undefined' && _u !== 'null') ? _u : ''; });
   var [showNameModal, setShowNameModal] = useState(function() { var _u = localStorage.getItem('sw_username'); return !_u || _u === 'undefined' || _u === 'null'; });
   var [nameInput,     setNameInput]     = useState('');
+  var [editingName,   setEditingName]   = useState(false);
+  var [nameEditVal,   setNameEditVal]   = useState('');
   var [role] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
   var [branding, setBranding] = useState(function() {
     try {
@@ -524,6 +526,25 @@ export default function App() {
     setShowNameModal(false);
   }
 
+  function saveNameEdit() {
+    var name = nameEditVal.trim().slice(0, 32);
+    if (!name) { setEditingName(false); return; }
+    localStorage.setItem('sw_username', name);
+    setUsername(name);
+    setEditingName(false);
+    if (socketRef.current) socketRef.current.emit('update-username', { roomId: APP_ID, userId: userId, username: name });
+    addToast('Name updated', 'success');
+  }
+
+  function shareRoom() {
+    var url = window.location.origin;
+    if (navigator.share) {
+      navigator.share({ title: 'SeeWhy LIVE', text: 'Join me on SeeWhy LIVE!', url: url }).catch(function() {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() { addToast('Link copied!', 'success'); }).catch(function() {});
+    }
+  }
+
   function formatUptime(s) {
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
@@ -665,6 +686,31 @@ export default function App() {
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>SESSION</span>
             </div>
           )}
+          {/* Username chip — tap to edit */}
+          {editingName ? (
+            <input
+              autoFocus
+              value={nameEditVal}
+              maxLength={32}
+              onChange={function(e) { setNameEditVal(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') saveNameEdit(); if (e.key === 'Escape') setEditingName(false); }}
+              onBlur={saveNameEdit}
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 6, padding: '2px 7px', outline: 'none', width: 90 }}
+            />
+          ) : (
+            <button
+              onClick={function() { setNameEditVal(username); setEditingName(true); }}
+              title="Edit display name"
+              style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '3px 8px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</span>
+              <span style={{ fontSize: 8, color: '#7A6F90', flexShrink: 0 }}>✏</span>
+            </button>
+          )}
+          {/* Share / Invite button */}
+          <button onClick={shareRoom} title="Share room link"
+            style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 6, padding: '4px 8px', color: '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+            🔗
+          </button>
           <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
             {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
           </span>

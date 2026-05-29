@@ -44,7 +44,7 @@
     <script>
       // Force-clear stale SW caches on version bump — runs before React loads
       (function() {
-        var DEPLOY_VER = 'v33-4';
+        var DEPLOY_VER = 'v33-5';
         var stored = localStorage.getItem('sw_deploy_ver');
         if (stored !== DEPLOY_VER) {
           localStorage.setItem('sw_deploy_ver', DEPLOY_VER);
