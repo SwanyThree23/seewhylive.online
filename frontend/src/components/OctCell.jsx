@@ -8,12 +8,13 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
   var animRef     = useRef(null);
   var audioCtxRef = useRef(null);
   var streamRef   = useRef(null);
-  var [speaking,    setSpeaking]    = useState(false);
-  var [online,      setOnline]      = useState(false);
-  var [loading,     setLoading]     = useState(false);
-  var [connQuality, setConnQuality] = useState('green');
-  var [eqBars,      setEqBars]      = useState([0,0,0,0,0,0,0,0]);
-  var [camError,    setCamError]    = useState('');
+  var [speaking,     setSpeaking]     = useState(false);
+  var [online,       setOnline]       = useState(false);
+  var [loading,      setLoading]      = useState(false);
+  var [connQuality,  setConnQuality]  = useState('green');
+  var [eqBars,       setEqBars]       = useState([0,0,0,0,0,0,0,0]);
+  var [camError,     setCamError]     = useState('');
+  var [streamReady,  setStreamReady]  = useState(false);
 
   var size      = sz || 200;
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -21,12 +22,19 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
   var isOwnCell = guestId === userId;
   var color     = fadesMode && guest && guest.teamColor ? guest.teamColor : (branding && branding.gold ? branding.gold : '#C9A84C');
 
-  // Own cell: getUserMedia and publish
+  // Own cell: acquire camera immediately (no rtcManager dependency)
   useEffect(function() {
-    if (!isOwnCell || !rtcManager) return;
+    if (!isOwnCell) return;
     var cancelled = false;
     setLoading(true);
     setCamError('');
+    setStreamReady(false);
+
+    // Stop any existing stream when mediaConfig changes
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(function(t) { t.stop(); });
+      streamRef.current = null;
+    }
 
     async function initCamera() {
       try {
@@ -48,7 +56,6 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
         };
         if (mediaConfig && mediaConfig.micId) audioConstraints.deviceId = { exact: mediaConfig.micId };
 
-        // If mediaConfig has a pre-acquired stream from the config panel, reuse it
         var stream;
         if (mediaConfig && mediaConfig.stream && mediaConfig.stream.active) {
           stream = mediaConfig.stream;
@@ -70,12 +77,8 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
         setLoading(false);
         setOnline(true);
         initAnalyser(stream);
+        setStreamReady(true);
 
-        if (rtcManager && rtcManager.sendTransport) {
-          await rtcManager.publishStream(stream);
-        }
-
-        // Apply mute/cam state immediately if set before stream started
         if (isMuted) {
           stream.getAudioTracks().forEach(function(t) { t.enabled = false; });
         }
@@ -94,7 +97,15 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
     initCamera();
     return function() { cancelled = true; };
-  }, [isOwnCell, rtcManager, mediaConfig]);
+  }, [isOwnCell, mediaConfig]);
+
+  // Own cell: publish stream once both stream and rtcManager are ready
+  useEffect(function() {
+    if (!isOwnCell || !streamReady || !rtcManager || !rtcManager.sendTransport) return;
+    rtcManager.publishStream(streamRef.current).catch(function(e) {
+      console.error('[OctCell] publishStream error:', e);
+    });
+  }, [isOwnCell, streamReady, rtcManager]);
 
   // Apply mute state to local audio tracks
   useEffect(function() {
