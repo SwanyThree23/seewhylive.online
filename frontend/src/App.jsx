@@ -702,6 +702,7 @@ export default function App() {
             userTier={userTier}
             socket={socketRef.current}
             roomId={APP_ID}
+            incomingMessages={auraMessages}
           />
         )}
         {activeTab === 'swanai' && (

@@ -24,7 +24,7 @@ var AURA_MODES = [
   { id: 'kind',  label: 'KIND',  emoji: '💛', desc: 'Warm. Inclusive. Community-first.', color: '#C9A84C' },
 ];
 
-export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId, userTier }) {
+export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId, userTier, incomingMessages }) {
   var resolvedTier = userTier || 'pro';
 
   var [msgs, setMsgs] = useState(function() {
@@ -58,6 +58,18 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
   useEffect(function() {
     try { localStorage.setItem('sw_aura_mode', auraMode); } catch(e) {}
   }, [auraMode]);
+
+  // Merge server-pushed auto-AURA messages (from go-live, gifts, subs, milestones)
+  useEffect(function() {
+    if (!incomingMessages || incomingMessages.length === 0) return;
+    var latest = incomingMessages[0]; // App.jsx prepends newest first
+    if (!latest || !latest.text) return;
+    setMsgs(function(prev) {
+      // Avoid duplicate if already in chat
+      if (prev.length > 0 && prev[prev.length - 1].text === latest.text) return prev;
+      return prev.concat([{ role: 'aura', text: latest.text, time: fmtTime(), auto: true }]);
+    });
+  }, [incomingMessages]);
 
   function fetchUsage() {
     if (!roomId) return;
@@ -381,8 +393,9 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', letterSpacing: 1, marginBottom: 2 }}>⚡ AURA TRIGGER</div>
                 )}
                 {m.role === 'aura' && (
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC', letterSpacing: 1, marginBottom: 2 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC', letterSpacing: 1, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
                     {'🤖 AURA · ' + activeModeObj.emoji + ' ' + activeModeObj.label}
+                    {m.auto && <span style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 3, padding: '0px 4px', color: '#00C9A7', fontSize: 6, letterSpacing: 0.5 }}>AUTO</span>}
                   </div>
                 )}
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', lineHeight: 1.4 }}>{m.text}</div>
