@@ -563,6 +563,87 @@ app.post('/api/ai/chat', function(req, res) {
   });
 });
 
+// ─── Live Streams — active ingest + fanout status ────────────────────────
+app.get('/api/streams/live', function(req, res) {
+  var fsModule = require('fs');
+  var pathModule = require('path');
+  var HLS_DIR = '/var/www/html/hls';
+  var now = Date.now();
+  var STALE_MS = 15000; // segment older than 15s = not actively streaming
+
+  // Streams IN: scan HLS dir for active m3u8/ts files
+  var streamsIn = [];
+  try {
+    var entries = fsModule.readdirSync(HLS_DIR);
+    entries.forEach(function(name) {
+      var dirPath = pathModule.join(HLS_DIR, name);
+      try {
+        var stat = fsModule.statSync(dirPath);
+        if (stat.isDirectory()) {
+          // sub-dir per roomId (from rtmp.js FFmpeg output)
+          var m3u8 = pathModule.join(dirPath, 'index.m3u8');
+          try {
+            var m3u8Stat = fsModule.statSync(m3u8);
+            var ageMs = now - m3u8Stat.mtimeMs;
+            var room = rooms.get(name);
+            streamsIn.push({
+              roomId:      name,
+              active:      ageMs < STALE_MS,
+              ageMs:       Math.floor(ageMs),
+              hlsUrl:      '/hls/' + name + '/index.m3u8',
+              viewers:     room ? (room.viewers ? room.viewers.size : 0) : 0,
+              startedAt:   Math.floor(m3u8Stat.birthtimeMs)
+            });
+          } catch(e) { /* no m3u8 yet */ }
+        } else if (name.endsWith('.m3u8')) {
+          // flat layout: /hls/<key>.m3u8
+          var ageMs = now - stat.mtimeMs;
+          var key = name.replace('.m3u8', '');
+          var room = rooms.get(key);
+          streamsIn.push({
+            roomId:    key,
+            active:    ageMs < STALE_MS,
+            ageMs:     Math.floor(ageMs),
+            hlsUrl:    '/hls/' + name,
+            viewers:   room ? (room.viewers ? room.viewers.size : 0) : 0,
+            startedAt: Math.floor(stat.birthtimeMs)
+          });
+        }
+      } catch(e) { /* skip */ }
+    });
+  } catch(e) {
+    // HLS dir doesn't exist yet — no active streams
+  }
+
+  // Streams OUT: fanout processes
+  var streamsOut = [];
+  try {
+    streamsOut = rtmp.getAllFanouts();
+  } catch(e) {
+    logger.warn('[streams/live] getAllFanouts error: ' + e.message);
+  }
+
+  // Room summaries
+  var roomSummaries = [];
+  rooms.forEach(function(room, roomId) {
+    if (room.viewers && room.viewers.size > 0) {
+      roomSummaries.push({
+        roomId:   roomId,
+        viewers:  room.viewers.size,
+        hasHost:  !!room.hostSocketId,
+        guests:   room.guests ? room.guests.size : 0
+      });
+    }
+  });
+
+  res.json({
+    ts:          now,
+    streamsIn:   streamsIn,
+    streamsOut:  streamsOut,
+    rooms:       roomSummaries
+  });
+});
+
 // ─── New API routes (analytics, search, moderation, aura, payments) ──────
 var apiRoutes = null;
 try {
