@@ -19,6 +19,53 @@ import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+const CAT_COLOR = { Music: '#FF1564', Gaming: '#8B5CF6', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+
+function FanbaseRoomCard({ room }) {
+  var tag = room.tags && room.tags[0];
+  var tagColor = tag ? (CAT_COLOR[tag] || '#D4AF37') : '#D4AF37';
+  var viewers = room.viewer_count || room.participant_count || 0;
+  return (
+    <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
+      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
+        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full"
+          style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          {tag || 'Live'}
+        </span>
+        <span className="text-[9px] font-black uppercase px-2.5 py-1 rounded-full"
+          style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          Join
+        </span>
+      </div>
+      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+        {room.thumbnail_url
+          ? <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
+          : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+        <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black"
+          style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
+        </div>
+        {viewers > 0 && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[9px] font-bold"
+            style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <Users className="w-3 h-3" />{viewers.toLocaleString()}
+          </div>
+        )}
+      </div>
+      <div className="px-3 pt-2 pb-3">
+        <p className="font-black text-white leading-tight text-sm line-clamp-2"
+          style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{room.title}</p>
+        {room.host_name && (
+          <p className="text-[10px] mt-0.5" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{room.host_name}</p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function DiscoverPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -201,7 +248,7 @@ export default function DiscoverPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                     >
-                      <RoomCard room={room} />
+                      <FanbaseRoomCard room={room} />
                     </motion.div>
                   ))}
                 </div>
@@ -313,26 +360,34 @@ function ScheduledRow({ room }) {
 
 function CreatorCard({ creator }) {
   const isLive = creator.is_live;
+  const initials = creator.display_name?.charAt(0)?.toUpperCase() || '?';
   return (
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
-      <motion.div
-        whileHover={{ y: -4 }}
-        className="relative p-4 rounded-xl border border-[#16162A] hover:border-[#8B5CF6]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer text-center"
-      >
+      <motion.div whileTap={{ scale: 0.97 }}
+        className="relative p-4 rounded-2xl cursor-pointer text-center"
+        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(139,92,246,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
-          <Badge className="absolute top-2 right-2 bg-[#FF1564] text-white text-[8px] border-0">LIVE</Badge>
+          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black"
+            style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
+          </div>
         )}
-        <div className="w-14 h-14 rounded-full mx-auto mb-3 bg-gradient-to-br from-[#FF1564] to-[#8B5CF6] flex items-center justify-center text-xl font-black text-white overflow-hidden">
-          {creator.avatar_url
-            ? <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-            : creator.display_name?.charAt(0)?.toUpperCase()
-          }
+        {/* Octagonal avatar */}
+        <div className="mx-auto mb-3" style={{ width: 64, height: 64, clipPath: OCT, background: 'rgba(139,92,246,0.25)' }}>
+          <div style={{ width: '100%', height: '100%', clipPath: OCT,
+            background: creator.avatar_url ? 'transparent' : 'linear-gradient(135deg, #800020, #8B5CF6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, fontWeight: 900, color: 'white', overflow: 'hidden' }}>
+            {creator.avatar_url
+              ? <img src={creator.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : initials}
+          </div>
         </div>
-        <p className="text-sm font-bold text-white truncate">{creator.display_name}</p>
-        <p className="text-[10px] text-white/40 mt-0.5 capitalize">{creator.category}</p>
+        <p className="text-sm font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>{creator.display_name}</p>
+        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(139,92,246,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
-          <Users className="w-3 h-3 text-[#8B5CF6]" />
-          <span className="text-[9px] text-[#8B5CF6] font-mono">{(creator.follower_count || 0).toLocaleString()}</span>
+          <Users className="w-3 h-3" style={{ color: '#8B5CF6' }} />
+          <span className="text-[9px] font-bold" style={{ color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
         </div>
       </motion.div>
     </Link>
