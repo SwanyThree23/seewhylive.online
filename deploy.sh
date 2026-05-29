@@ -131,10 +131,17 @@ if [ -f "$CERT_PATH" ]; then
   echo "  ✓ nginx.conf updated to use Let's Encrypt cert"
 fi
 
-echo "▶ Reloading nginx..."
+echo "▶ Starting/reloading nginx..."
 if nginx -t 2>/dev/null; then
-  systemctl reload nginx 2>/dev/null || service nginx reload 2>/dev/null || true
-  echo "  ✓ Nginx reloaded"
+  # restart covers both: not-running → start, running → restart
+  systemctl restart nginx 2>/dev/null || service nginx restart 2>/dev/null || nginx 2>/dev/null || true
+  sleep 1
+  if systemctl is-active --quiet nginx 2>/dev/null || pgrep -x nginx >/dev/null 2>&1; then
+    echo "  ✓ Nginx running"
+  else
+    echo "  ⚠ Nginx still not running — trying nginx directly..."
+    nginx -c /etc/nginx/nginx.conf 2>/dev/null || true
+  fi
 else
   echo "  ⚠ Nginx config test failed — check /etc/nginx/nginx.conf"
   nginx -t

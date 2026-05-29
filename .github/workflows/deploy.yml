@@ -68,5 +68,5 @@ jobs:
             pm2 restart seewhy-server --update-env 2>/dev/null || pm2 start /home/user/seewhylive.online/ecosystem.config.js
             pm2 save --force
             # Reload nginx
-            nginx -t && (systemctl reload nginx || service nginx reload)
+            nginx -t && (systemctl restart nginx || service nginx restart || nginx)
             echo "✅ Deploy complete — https://seewhylive.online"
