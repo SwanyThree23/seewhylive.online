@@ -221,8 +221,15 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     setPollOptions(function(prev) { return prev.map(function(o, i) { return i === idx ? val : o; }); });
   }
 
+  var BUILT_IN_COMMANDS = [
+    { cmd: '!hype',     desc: 'Triggers AURA to fire a live hype message into chat',         icon: '🔥' },
+    { cmd: '!info',     desc: 'SWANYBOT posts stream title, category and on-air duration',   icon: '📡' },
+    { cmd: '!score',    desc: 'SWANYBOT announces current live viewer count',                icon: '👁' },
+    { cmd: '!commands', desc: 'Lists all available chat commands in chat',                   icon: '🤖' },
+  ];
+
   var activeCount = rules.filter(function(r) { return r.enabled; }).length;
-  var SECTIONS = [['rules', '⚙ RULES'], ['triggers', '⚡ TRIGGERS'], ['polls', '📊 POLLS'], ['log', '📜 LOG']];
+  var SECTIONS = [['rules', '⚙ RULES'], ['triggers', '⚡ TRIGGERS'], ['polls', '📊 POLLS'], ['cmds', '💬 CMDS'], ['log', '📜 LOG']];
   var displayLogs = botLogs.length > 0 ? botLogs : simLog;
 
   return (
@@ -516,6 +523,34 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── COMMANDS ── */}
+      {section === 'cmds' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>
+            BUILT-IN CHAT COMMANDS — type these in chat
+          </div>
+
+          {BUILT_IN_COMMANDS.map(function(c) {
+            return (
+              <div key={c.cmd} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 7, background: 'rgba(200,255,0,.06)', border: '1px solid rgba(200,255,0,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{c.icon}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C8FF00', display: 'inline-block', marginBottom: 4 }}>{c.cmd}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', lineHeight: 1.35 }}>{c.desc}</div>
+                </div>
+              </div>
+            );
+          })}
+
+          <div style={{ background: 'rgba(128,0,32,.06)', border: '1px solid rgba(128,0,32,.2)', borderRadius: 10, padding: '10px 12px', marginTop: 4 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 5 }}>CUSTOM TRIGGERS</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', lineHeight: 1.5 }}>
+              Add your own keyword → response pairs in the <span style={{ color: '#C8FF00' }}>⚡ TRIGGERS</span> tab. Custom triggers are managed in SwanyBot and fire alongside these built-ins.
+            </div>
+          </div>
         </div>
       )}
 
