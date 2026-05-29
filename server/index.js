@@ -390,11 +390,12 @@ app.post('/api/schedule', function(req, res) {
     return;
   }
   try {
-    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL)');
+    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT)');
+    try { db.exec('ALTER TABLE schedules ADD COLUMN recurring TEXT'); } catch(e) { /* column already exists */ }
     var id  = uuidv4();
     var now = Math.floor(Date.now() / 1000);
-    db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at) VALUES (?,?,?,?,?,?)')
-      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), Math.floor(body.scheduled_at), now);
+    db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at,recurring) VALUES (?,?,?,?,?,?,?)')
+      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), Math.floor(body.scheduled_at), now, String(body.recurring||'none').slice(0,20));
     res.json({ id: id, saved: true });
   } catch (err) {
     logger.error('[schedule/post] ' + err.message);
