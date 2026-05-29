@@ -92,10 +92,38 @@ export default function DiscoverTab(props) {
   var debounceRef = useRef(null);
 
   useEffect(function() {
-    fetch('/api/streams/count')
-      .then(function(r) { return r.json(); })
-      .then(function(d) { setTotalLive(d.count || 0); })
-      .catch(function() {});
+    function fetchLiveRooms() {
+      fetch('/api/rooms/live')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (!d || !Array.isArray(d.rooms)) return;
+          setTotalLive(d.rooms.length);
+          if (d.rooms.length > 0) {
+            var realStreams = d.rooms.map(function(room) {
+              return {
+                id:           room.roomId,
+                title:        room.title || 'SeeWhy LIVE Stream',
+                hostName:     room.hostName || room.roomId.slice(0, 8),
+                viewerCount:  room.viewers,
+                genre:        room.category || 'Domino',
+                isLive:       room.isLive,
+                durationMins: room.startedAt ? Math.floor((Date.now() / 1000 - room.startedAt) / 60) : 0,
+                tier:         'free',
+                category:     room.category || 'SPORTS',
+                fromApi:      true
+              };
+            });
+            setStreams(function(prev) {
+              var mockFallback = prev.filter(function(s) { return !s.fromApi; });
+              return realStreams.concat(mockFallback);
+            });
+          }
+        })
+        .catch(function() {});
+    }
+    fetchLiveRooms();
+    var iv = setInterval(fetchLiveRooms, 15000);
+    return function() { clearInterval(iv); };
   }, []);
 
   function handleQueryChange(e) {

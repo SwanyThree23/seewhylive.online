@@ -145,26 +145,30 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
   }, [isLive]);
 
   useEffect(function() {
-    if (!isLive) return;
-    var t = setInterval(function() {
-      setLeaderboard(function(prev) {
-        var idx = Math.floor(Math.random() * 3);
-        var add = Math.floor(Math.random() * 500 + 50);
-        var next = prev.map(function(e, i) {
-          if (i !== idx) return e;
-          return Object.assign({}, e, {
-            giftCents: e.giftCents + add,
-            gems: e.gems + Math.floor(add / 10),
-            streak: e.streak + 1
-          });
-        });
-        // re-sort by giftCents descending and reassign ranks
-        next.sort(function(a, b) { return b.giftCents - a.giftCents; });
-        return next.map(function(e, i) { return Object.assign({}, e, { rank: i + 1 }); });
-      });
-    }, 12000);
+    function fetchLeaderboard() {
+      fetch('/api/leaderboard' + (roomId ? '?roomId=' + encodeURIComponent(roomId) : ''))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data || !Array.isArray(data.leaderboard) || data.leaderboard.length === 0) return;
+          var BADGES = ['💎', '👑', '🔥', '⭐', '🎯', '🎲', '🥉'];
+          setLeaderboard(data.leaderboard.map(function(r, i) {
+            return {
+              rank:      i + 1,
+              name:      r.from_user || 'Anonymous',
+              giftCents: Math.floor(r.total_cents),
+              gems:      Math.floor(r.total_cents / 10),
+              badge:     BADGES[i] || '🎁',
+              streak:    r.gift_count || 0,
+              fromApi:   true
+            };
+          }));
+        })
+        .catch(function() {});
+    }
+    fetchLeaderboard();
+    var t = setInterval(fetchLeaderboard, 30000);
     return function() { clearInterval(t); };
-  }, [isLive]);
+  }, [roomId]);
 
   function launchPPV() {
     if (!ppvTitle.trim()) { if (addToast) addToast('Enter event title', 'error'); return; }
