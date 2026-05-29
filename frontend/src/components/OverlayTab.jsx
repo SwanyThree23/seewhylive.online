@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AvatarPortrait from './AvatarPortrait.jsx';
 
 var BANNER_POSITIONS = ['top', 'bottom'];
 var BANNER_COLORS    = ['#C9A84C', '#FF1A3C', '#00C9A7', '#5A8FFF', '#C8FF00', '#9B4DCA', '#ffffff'];
@@ -180,7 +181,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
             return (
               <div key={g.guestId} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (lt.visible ? 'rgba(201,168,76,.35)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: lt.visible ? '#C9A84C' : '#7A6F90', boxShadow: lt.visible ? '0 0 6px #C9A84C88' : 'none', flexShrink: 0 }} />
+                  <AvatarPortrait username={g.username} size={28} isHost={g.role === 'host'} />
                   <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', flex: 1 }}>{g.username}</span>
                   <button
                     onClick={function() { toggleLT(g.guestId); }}
