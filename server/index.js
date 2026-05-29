@@ -259,6 +259,22 @@ var swanybot = new SwanyBot(io);
 //            presence: Map<socketId, lastSeenTs> }
 var rooms = new Map();
 
+// Per-room tracking for AURA auto-triggers
+var peakViewers    = new Map();  // roomId → peak viewer count this session
+var milestonesSeen = new Map();  // roomId → Set of milestone numbers already fired
+
+// Helper: auto-trigger AURA and broadcast to room
+function autoAura(roomId, triggerFn) {
+  try {
+    triggerFn(function(err, text) {
+      if (err || !text) return;
+      io.to(roomId).emit('aura-message', { text: text, mode: aura.getMode(), ts: Math.floor(Date.now() / 1000), auto: true });
+    });
+  } catch(e) {
+    logger.warn('[autoAura] ' + e.message);
+  }
+}
+
 function getRoom(roomId) {
   if (!rooms.has(roomId)) {
     rooms.set(roomId, {
@@ -1174,6 +1190,11 @@ io.on('connection', function(socket) {
 
     swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
 
+    // Auto-trigger AURA gift hype (threshold: $1+)
+    if (valueCents >= 100) {
+      autoAura(roomId, function(cb) { aura.triggerGift(roomId, fromUser, name, valueCents, cb); });
+    }
+
     // Optionally create a gift PaymentIntent if a Stripe account is provided
     if (creatorStripeAccountId) {
       stripeModule.createGiftCharge(
@@ -1367,6 +1388,12 @@ io.on('connection', function(socket) {
       creator_cents: creatorCents,
       ts:            Math.floor(Date.now() / 1000)
     });
+
+    // Auto-trigger AURA subscription celebration
+    var tierLabel = tier === 'gold' ? 'GOLD' : tier === 'silver' ? 'SILVER' : 'BRONZE';
+    autoAura(roomId, function(cb) {
+      aura.triggerTip(roomId, fromUser, priceCents, tierLabel + ' subscriber — welcome to the family!', cb);
+    });
   });
 
   // ── live polls ─────────────────────────────────────────────────────────
@@ -1509,6 +1536,13 @@ io.on('connection', function(socket) {
       ts:     now
     });
 
+    // Auto-trigger AURA stream start hype
+    peakViewers.set(roomId, room.viewers ? room.viewers.size : 0);
+    milestonesSeen.set(roomId, new Set());
+    var streamTitle = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : 'SeeWhy LIVE';
+    var vcNow = room.viewers ? room.viewers.size : 0;
+    autoAura(roomId, function(cb) { aura.triggerStreamStart(roomId, streamTitle, vcNow, cb); });
+
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'start', room.viewers ? room.viewers.size : 0, 0);
     } catch (aErr) {
@@ -1550,6 +1584,12 @@ io.on('connection', function(socket) {
     }
 
     io.to(roomId).emit('broadcast-ended', { roomId: roomId, ts: now });
+
+    // Auto-trigger AURA stream end wrap-up
+    var peak = peakViewers.get(roomId) || 0;
+    autoAura(roomId, function(cb) { aura.triggerStreamEnd(roomId, peak, 0, cb); });
+    peakViewers.delete(roomId);
+    milestonesSeen.delete(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);
@@ -1716,6 +1756,25 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('viewer-count', { count: viewerCount });
 
     swanybot.onViewerCountChange(roomId, viewerCount);
+
+    // Track peak and fire AURA at viewer milestones
+    var curPeak = peakViewers.get(roomId) || 0;
+    if (viewerCount > curPeak) peakViewers.set(roomId, viewerCount);
+    var seen = milestonesSeen.get(roomId);
+    if (seen) {
+      var MILESTONES = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
+      for (var mi = 0; mi < MILESTONES.length; mi++) {
+        var m = MILESTONES[mi];
+        if (viewerCount >= m && !seen.has(m)) {
+          seen.add(m);
+          (function(milestone) {
+            autoAura(roomId, function(cb) {
+              aura.triggerNewViewer(roomId, milestone.toLocaleString() + ' VIEWERS', false, cb);
+            });
+          })(m);
+        }
+      }
+    }
 
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {
