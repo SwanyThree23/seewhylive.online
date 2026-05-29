@@ -24,6 +24,7 @@ import PartyReactionsOverlay from '../components/watchparty/PartyReactionsOverla
 import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
 
 function detectType(url) { return detectVideoType(url); }
 
@@ -201,6 +202,33 @@ export default function WatchPartyPage() {
   });
 
   const isHost = party?.host_id === user?.id;
+
+  // Broadcast compositor
+  const [screenCaptureStream, setScreenCaptureStream] = useState(null);
+  const [chatLines, setChatLines] = useState([]);
+
+  const handleScreenCapture = async () => {
+    if (screenCaptureStream) {
+      screenCaptureStream.getTracks().forEach(t => t.stop());
+    }
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+    setScreenCaptureStream(stream);
+    stream.getVideoTracks()[0].onended = () => setScreenCaptureStream(null);
+    return stream;
+  };
+
+  // Stop screen capture on unmount to release screen-share permission
+  useEffect(() => () => {
+    screenCaptureStream?.getTracks().forEach(t => t.stop());
+  }, [screenCaptureStream]);
+
+  const wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
+  const wpOverlayConfig = {
+    title: party?.title || 'Watch Party',
+    subtitle: `${members?.length || 0} watching`,
+    showLive: true,
+    chatLines,
+  };
 
   // Real-time member roster — keep 20-person panel in sync instantly
   useEffect(() => {
@@ -408,6 +436,15 @@ export default function WatchPartyPage() {
           title="Theater Mode">
           {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
         </button>
+        {isHost && (
+          <CompositorOverlay
+            layout="watchparty"
+            slots={wpCompositorSlots}
+            overlayConfig={wpOverlayConfig}
+            onScreenCapture={handleScreenCapture}
+            isHost={isHost}
+          />
+        )}
         {isHost && (
           <Button size="sm" onClick={() => endPartyMutation.mutate()}
             className="h-7 text-[10px] px-2" style={{ background: 'rgba(180,50,30,0.3)', color: '#ff8866', border: '1px solid rgba(200,80,30,0.3)' }}>

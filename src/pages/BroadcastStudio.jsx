@@ -25,6 +25,7 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -478,6 +479,28 @@ export default function BroadcastStudio() {
     toast.success('Invite link copied!');
   };
 
+  // Build compositor slots from localStream + remoteStreams
+  const compositorSlots = React.useMemo(() => {
+    const slots = [];
+    if (localStream) {
+      slots.push({ stream: localStream, label: user?.full_name || user?.email || 'You (Host)' });
+    }
+    if (remoteStreams) {
+      remoteStreams.forEach((stream, peerId) => {
+        const userId = peerUserIds?.get(peerId);
+        const member = members.find(m => m.user_id === userId);
+        slots.push({ stream, label: member?.user_name || 'Guest' });
+      });
+    }
+    return slots;
+  }, [localStream, remoteStreams, peerUserIds, members, user]);
+
+  const compositorOverlay = {
+    title: party?.title || 'SeeWhy LIVE',
+    subtitle: `${members.length} panelists`,
+    showLive: true,
+  };
+
   // ── Create screen ────────────────────────────────────────────────────────
   if (!partyId) {
     return <CreateScreen onSubmit={(args) => createMut.mutate(args)} isPending={createMut.isPending} />;
@@ -583,6 +606,19 @@ export default function BroadcastStudio() {
             style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? GOLD : 'rgba(255,255,255,0.4)' }}>
             {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
+
+          {isHost && (
+            <CompositorOverlay
+              layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
+              slots={compositorSlots}
+              overlayConfig={compositorOverlay}
+              onScreenCapture={studioMode === 'watch' ? async () => {
+                const s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+                return s;
+              } : undefined}
+              isHost={isHost}
+            />
+          )}
 
           {isHost && (
             <button onClick={() => endMut.mutate()}
