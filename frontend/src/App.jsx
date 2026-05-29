@@ -139,6 +139,10 @@ export default function App() {
   var [auraUnread, setAuraUnread] = useState(0);
   var [sessionEarningsCents, setSessionEarningsCents] = useState(0);
   var [streamRecap, setStreamRecap] = useState(null);
+  var [streamGoal, setStreamGoal] = useState(function() {
+    try { var g = localStorage.getItem('sw_stream_goal'); if (g) return JSON.parse(g); } catch(e) {}
+    return null;
+  });
   var [installPrompt, setInstallPrompt] = useState(null);
   var [showInstallBanner, setShowInstallBanner] = useState(false);
 
@@ -469,6 +473,14 @@ export default function App() {
     localStorage.setItem('sw_branding', JSON.stringify(branding));
   }, [branding]);
 
+  useEffect(function() {
+    if (streamGoal) {
+      try { localStorage.setItem('sw_stream_goal', JSON.stringify(streamGoal)); } catch(e) {}
+    } else {
+      try { localStorage.removeItem('sw_stream_goal'); } catch(e) {}
+    }
+  }, [streamGoal]);
+
   function formatUptime(s) {
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
@@ -580,6 +592,26 @@ export default function App() {
           </button>
         ); })}
       </nav>
+
+      {/* Stream Goal Progress Bar */}
+      {streamGoal && isLive && (
+        (function() {
+          var pct = Math.min(100, Math.floor((sessionEarningsCents / Math.max(1, streamGoal.goalCents)) * 100));
+          var barColor = pct >= 100 ? '#C9A84C' : pct >= 75 ? '#00C9A7' : '#5A8FFF';
+          return (
+            <div style={{ background: 'rgba(7,5,10,.95)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 1, flexShrink: 0 }}>GOAL</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamGoal.label || 'Stream Goal'}</span>
+              <div style={{ flex: 1, background: 'rgba(255,255,255,.06)', borderRadius: 999, height: 6, overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 999, background: barColor, width: pct + '%', transition: 'width .5s ease, background .3s' }} />
+              </div>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: barColor, letterSpacing: 1, flexShrink: 0 }}>{pct}%</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', flexShrink: 0 }}>${(Math.floor(sessionEarningsCents) / 100).toFixed(0)}/${(Math.floor(streamGoal.goalCents) / 100).toFixed(0)}</span>
+              <button onClick={function() { setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: '#483D60', cursor: 'pointer', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1 }}>✕</button>
+            </div>
+          );
+        })()
+      )}
 
       {/* Tab Content */}
       <main style={{ padding: '16px', flex: 1, paddingBottom: 100 }}>
@@ -729,6 +761,9 @@ export default function App() {
             socket={socketRef.current}
             roomId={APP_ID}
             username={username}
+            streamGoal={streamGoal}
+            setStreamGoal={setStreamGoal}
+            sessionEarningsCents={sessionEarningsCents}
           />
         )}
         {activeTab === 'aura' && (

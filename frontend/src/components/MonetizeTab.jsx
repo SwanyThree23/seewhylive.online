@@ -44,7 +44,7 @@ var VIEWER_TIERS = [
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 function money(n) { return '$' + (Math.floor((n || 0) * 100) / 100).toFixed(2); }
 
-export default function MonetizeTab({ addToast, isLive, socket, roomId, username }) {
+export default function MonetizeTab({ addToast, isLive, socket, roomId, username, streamGoal, setStreamGoal, sessionEarningsCents }) {
   var [tab,            setTab]           = useState('tips');
   var [tipAmt,         setTipAmt]        = useState('');
   var [currentPlan,    setPlan]          = useState('elite');
@@ -309,7 +309,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
 
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 2, background: 'rgba(7,5,10,.8)', borderRadius: 10, padding: 4 }}>
-        {[['tips', '💰 TIPS'], ['gems', '💎 GEMS'], ['subs', '⭐ SUBS'], ['plans', '📦 PLANS'], ['stage', '🎭 STAGE'], ['leaders', '🏆 LEADERS']].map(function(t) {
+        {[['tips', '💰 TIPS'], ['gems', '💎 GEMS'], ['subs', '⭐ SUBS'], ['plans', '📦 PLANS'], ['stage', '🎭 STAGE'], ['leaders', '🏆 LEADERS'], ['goal', '🎯 GOAL']].map(function(t) {
           var active = tab === t[0];
           return (
             <button
@@ -721,6 +721,94 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
           </div>
         </div>
       )}
+      {/* GOAL tab */}
+      {tab === 'goal' && (function() {
+        var goalCentsVal = streamGoal ? Math.floor(streamGoal.goalCents) : 0;
+        var earnedCents  = Math.floor(sessionEarningsCents || 0);
+        var pct = goalCentsVal > 0 ? Math.min(100, Math.floor((earnedCents / goalCentsVal) * 100)) : 0;
+        var barColor = pct >= 100 ? '#C9A84C' : pct >= 75 ? '#00C9A7' : '#5A8FFF';
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2 }}>STREAM DONATION GOAL</div>
+
+            {streamGoal && (
+              <div style={{ background: 'rgba(22,16,32,.9)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 12, padding: '14px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: '#EDE8F5' }}>{streamGoal.label}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: barColor, letterSpacing: 1 }}>${(earnedCents / 100).toFixed(2)}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>of ${(goalCentsVal / 100).toFixed(2)}</span>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,.06)', borderRadius: 999, height: 10, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 999, background: barColor, width: pct + '%', transition: 'width .5s ease' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: barColor, letterSpacing: 2 }}>{pct}%</span>
+                  <button
+                    onClick={function() { if (setStreamGoal) setStreamGoal(null); }}
+                    style={{ background: 'rgba(255,60,60,.1)', border: '1px solid rgba(255,60,60,.25)', borderRadius: 6, padding: '4px 10px', color: '#FF6B6B', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+                    CLEAR GOAL
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 2 }}>{streamGoal ? 'UPDATE GOAL' : 'SET NEW GOAL'}</div>
+              {(function() {
+                var goalInput = React.useState('');
+                var goalLabel = goalInput[0];
+                var setGoalLabel = goalInput[1];
+                var goalAmtInput = React.useState('100');
+                var goalAmt = goalAmtInput[0];
+                var setGoalAmt = goalAmtInput[1];
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <input
+                      value={goalLabel}
+                      onChange={function(e) { setGoalLabel(e.target.value); }}
+                      placeholder="Goal label (e.g. Finals Night equipment)"
+                      style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+                    />
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>GOAL $</span>
+                      <input
+                        type="number"
+                        value={goalAmt}
+                        onChange={function(e) { setGoalAmt(e.target.value); }}
+                        min="1"
+                        style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                      {['50', '100', '250', '500', '1000'].map(function(a) {
+                        return (
+                          <button key={a} onClick={function() { setGoalAmt(a); }}
+                            style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 5, padding: '3px 9px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                            ${a}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      onClick={function() {
+                        var lbl = goalLabel.trim() || 'Stream Goal';
+                        var cents = Math.floor(parseFloat(goalAmt) * 100) || 10000;
+                        if (setStreamGoal) setStreamGoal({ label: lbl, goalCents: cents });
+                        if (addToast) addToast('Goal set: ' + lbl + ' ($' + (cents / 100).toFixed(2) + ')', 'success');
+                        setGoalLabel('');
+                        setGoalAmt('100');
+                      }}
+                      style={{ background: 'linear-gradient(135deg,#C9A84C,#E8C46A)', border: 'none', borderRadius: 8, padding: '10px 16px', color: '#07050A', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer', fontWeight: 700 }}>
+                      SET GOAL
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        );
+      })()}
+
     </div>
   );
 }
