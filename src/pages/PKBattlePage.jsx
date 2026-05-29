@@ -11,8 +11,47 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
 const BATTLE_DURATION = 180;
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+
+function OctCamTile({ stream, label, isLocal }) {
+  const ref = useRef(null);
+  useEffect(() => { if (ref.current && stream) ref.current.srcObject = stream; }, [stream]);
+  return (
+    <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
+      <div className="absolute inset-0" style={{ clipPath: OCT, background: isLocal ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)' }} />
+      <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: '#0d0618' }}>
+        {stream ? (
+          <video ref={ref} autoPlay playsInline muted={isLocal}
+            className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-white/30 text-[10px]">
+            {label?.charAt(0)?.toUpperCase()}
+          </div>
+        )}
+        {isLocal && (
+          <div className="absolute bottom-0 left-0 right-0 text-center text-[6px] text-[#d4af37] font-bold bg-black/60">YOU</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AudienceCameraStrip({ localStream, remoteStreams, currentUserId }) {
+  return (
+    <div className="flex items-center gap-2 px-4 py-1.5 shrink-0 overflow-x-auto"
+      style={{ background: 'rgba(0,0,0,0.6)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
+      <span className="text-[8px] uppercase tracking-widest shrink-0" style={{ color: 'rgba(212,175,55,0.5)' }}>Audience</span>
+      {localStream && <OctCamTile stream={localStream} label="You" isLocal />}
+      {remoteStreams && Array.from(remoteStreams.entries()).map(([peerId, stream]) => (
+        <OctCamTile key={peerId} stream={stream} label="Viewer" isLocal={false} />
+      ))}
+    </div>
+  );
+}
 const GIFTS = [
   { emoji: '🌹', label: 'Rose', pts: 1 },
   { emoji: '🍰', label: 'Cake', pts: 5 },
@@ -271,6 +310,10 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
+  // Camera feeds for audience/host self-view in the battle arena
+  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
+
   // Screen-capture streams for compositor (null until user selects)
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
@@ -427,6 +470,15 @@ export default function PKBattlePage() {
           </div>
         </div>
       </div>
+
+      {/* Audience camera strip — octagonal self + peer views */}
+      {(localCamStream || battleRemoteStreams?.size > 0) && (
+        <AudienceCameraStrip
+          localStream={localCamStream}
+          remoteStreams={battleRemoteStreams}
+          currentUserId={user?.id}
+        />
+      )}
 
       {/* Bottom score bar */}
       <div className="bg-black/80 border-t border-white/10 px-6 py-3 shrink-0">

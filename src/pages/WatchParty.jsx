@@ -25,6 +25,8 @@ import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDash
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
 function detectType(url) { return detectVideoType(url); }
 
@@ -202,6 +204,10 @@ export default function WatchPartyPage() {
   });
 
   const isHost = party?.host_id === user?.id;
+
+  // Camera feeds — local + peer WebRTC mesh for this party room
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
 
   // Broadcast compositor
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
@@ -525,6 +531,9 @@ export default function WatchPartyPage() {
             maxSlots={20}
             isHost={isHost}
             onInvite={copyInvite}
+            localStream={localStream}
+            remoteStreams={remoteStreams}
+            peerUserIds={peerUserIds}
           />
         </div>
 
@@ -609,6 +618,9 @@ export default function WatchPartyPage() {
                 maxSlots={20}
                 isHost={isHost}
                 onInvite={copyInvite}
+                localStream={localStream}
+                remoteStreams={remoteStreams}
+                peerUserIds={peerUserIds}
               />
             )}
             {activePanel === 'battle' && (
