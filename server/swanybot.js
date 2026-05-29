@@ -115,8 +115,14 @@ class SwanyBot extends EventEmitter {
     });
   }
 
-  onChatMessage(roomId, socketId, message) {
+  onChatMessage(roomId, socketId, message, context) {
     var now = Date.now();
+
+    // Handle ! commands before rate-limit; commands don't count as spam
+    if (message && message.charAt(0) === '!') {
+      this._handleCommand(roomId, socketId, message, context || {});
+      return false;
+    }
 
     if (!this.chatRateMap.has(socketId)) {
       this.chatRateMap.set(socketId, { count: 1, windowStart: now });
@@ -147,6 +153,61 @@ class SwanyBot extends EventEmitter {
     }
 
     return false;
+  }
+
+  _handleCommand(roomId, socketId, message, context) {
+    var self  = this;
+    var parts = message.slice(1).trim().split(/\s+/);
+    var cmd   = parts[0].toLowerCase();
+    var room  = context.room || null;
+
+    function botSay(text) {
+      self.io.to(roomId).emit('chat-message', {
+        id:       uuidv4(),
+        username: 'SWANYBOT',
+        message:  text,
+        ts:       Date.now(),
+        isBot:    true
+      });
+    }
+
+    if (cmd === 'hype') {
+      self.aura.queueMessage('hype', { username: context.username || 'the crowd' }, function(text) {
+        self.io.to(roomId).emit('chat-message', {
+          id:       uuidv4(),
+          username: 'AURA',
+          message:  text,
+          ts:       Date.now(),
+          isBot:    true
+        });
+      });
+      self.log('info', 'command', '!hype triggered by ' + (context.username || socketId), null);
+      return;
+    }
+
+    if (cmd === 'info') {
+      var title    = (room && room.streamTitle)    ? room.streamTitle    : 'SeeWhy LIVE';
+      var category = (room && room.streamCategory) ? room.streamCategory : 'Live';
+      var durMins  = 0;
+      if (room && room.liveStartedAt) {
+        durMins = Math.floor((Date.now() / 1000 - room.liveStartedAt) / 60);
+      }
+      botSay('📡 ' + title + ' · ' + category + ' · ' + durMins + 'm on air');
+      return;
+    }
+
+    if (cmd === 'score' || cmd === 'viewers') {
+      var viewers = (room && room.viewers) ? room.viewers.size : 0;
+      botSay('👁 ' + viewers + ' watching right now — stay locked in!');
+      return;
+    }
+
+    if (cmd === 'commands' || cmd === 'help') {
+      botSay('🤖 Commands: !hype · !info · !score · !commands');
+      return;
+    }
+
+    // Unknown command — silently ignore to avoid polluting chat
   }
 
   isSocketMuted(socketId) {

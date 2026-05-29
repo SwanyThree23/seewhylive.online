@@ -1127,7 +1127,7 @@ io.on('connection', function(socket) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
       return;
     }
-    swanybot.onChatMessage(roomId, socket.id, message);
+    swanybot.onChatMessage(roomId, socket.id, message, { username: username, room: rooms.get(roomId) });
 
     // Detect and translate
     translation.detectAndTranslate(message)
