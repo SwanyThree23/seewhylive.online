@@ -1,0 +1,147 @@
+{
+  "name": "ZEGOStream",
+  "properties": {
+    "app_id": {
+      "description": "ZEGOCLOUD AppID (numeric)",
+      "type": "number"
+    },
+    "app_sign": {
+      "description": "ZEGOCLOUD App Sign (masked in UI)",
+      "type": "string"
+    },
+    "audience_count": {
+      "default": 0,
+      "type": "number"
+    },
+    "avg_bitrate_kbps": {
+      "default": 0,
+      "type": "number"
+    },
+    "ended_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "host_id": {
+      "type": "string"
+    },
+    "host_token": {
+      "description": "Host publish token (short-lived, generated server-side)",
+      "type": "string"
+    },
+    "kit_type": {
+      "default": "live_streaming",
+      "description": "ZEGOCLOUD UIKit type in use",
+      "enum": [
+        "live_streaming",
+        "video_call",
+        "voice_call",
+        "video_conference"
+      ],
+      "type": "string"
+    },
+    "latency_mode": {
+      "default": "low",
+      "description": "ZEGOCLOUD latency mode",
+      "enum": [
+        "low",
+        "ultra_low",
+        "standard"
+      ],
+      "type": "string"
+    },
+    "max_viewers": {
+      "default": 0,
+      "type": "number"
+    },
+    "platform": {
+      "default": "react_native",
+      "enum": [
+        "react_native",
+        "web",
+        "flutter",
+        "android",
+        "ios"
+      ],
+      "type": "string"
+    },
+    "room_id": {
+      "description": "SeeWhy LIVE Room ID",
+      "type": "string"
+    },
+    "sdk_version": {
+      "description": "ZEGOCLOUD SDK version used",
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "status": {
+      "default": "idle",
+      "enum": [
+        "idle",
+        "connecting",
+        "live",
+        "ended",
+        "error"
+      ],
+      "type": "string"
+    },
+    "stream_id": {
+      "description": "ZEGOCLOUD stream ID (host userId + '_stream')",
+      "type": "string"
+    },
+    "zego_room_id": {
+      "description": "ZEGOCLOUD room ID \u2014 must be unique per stream session",
+      "type": "string"
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id",
+    "zego_room_id",
+    "app_id"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

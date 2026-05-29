@@ -1,0 +1,200 @@
+{
+  "name": "GreenroomSession",
+  "properties": {
+    "user_id": {
+      "description": "User in the greenroom",
+      "type": "string"
+    },
+    "user_name": {
+      "description": "User display name",
+      "type": "string"
+    },
+    "room_id": {
+      "description": "Target Room ID",
+      "type": "string"
+    },
+    "destination_type": {
+      "default": "room",
+      "description": "Where the user is heading after greenroom",
+      "enum": [
+        "room",
+        "watch_party",
+        "new_room"
+      ],
+      "type": "string"
+    },
+    "camera_enabled": {
+      "default": true,
+      "description": "Camera on at ready time",
+      "type": "boolean"
+    },
+    "mic_enabled": {
+      "default": true,
+      "description": "Mic on at ready time",
+      "type": "boolean"
+    },
+    "selected_camera_id": {
+      "description": "Chosen camera device ID",
+      "type": "string"
+    },
+    "selected_mic_id": {
+      "description": "Chosen microphone device ID",
+      "type": "string"
+    },
+    "selected_speaker_id": {
+      "description": "Chosen speaker device ID",
+      "type": "string"
+    },
+    "camera_permission": {
+      "default": "prompt",
+      "description": "Camera permission state",
+      "enum": [
+        "granted",
+        "denied",
+        "prompt"
+      ],
+      "type": "string"
+    },
+    "mic_permission": {
+      "default": "prompt",
+      "description": "Microphone permission state",
+      "enum": [
+        "granted",
+        "denied",
+        "prompt"
+      ],
+      "type": "string"
+    },
+    "mic_level": {
+      "default": 0,
+      "description": "Last measured mic input level 0-100",
+      "type": "number"
+    },
+    "network_quality": {
+      "default": "good",
+      "description": "Pre-join network quality check",
+      "enum": [
+        "excellent",
+        "good",
+        "fair",
+        "poor"
+      ],
+      "type": "string"
+    },
+    "video_quality": {
+      "default": "720p",
+      "description": "Selected video quality preference",
+      "enum": [
+        "360p",
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "type": "string"
+    },
+    "noise_cancellation": {
+      "default": true,
+      "description": "Noise cancellation enabled",
+      "type": "boolean"
+    },
+    "background_blur": {
+      "default": false,
+      "description": "Background blur enabled",
+      "type": "boolean"
+    },
+    "role_requested": {
+      "default": "audience",
+      "description": "Role the user wants in the room",
+      "enum": [
+        "host",
+        "co-host",
+        "speaker",
+        "audience",
+        "guest"
+      ],
+      "type": "string"
+    },
+    "join_message": {
+      "description": "Optional message to the host",
+      "type": "string"
+    },
+    "status": {
+      "default": "checking",
+      "description": "Greenroom session lifecycle",
+      "enum": [
+        "checking",
+        "ready",
+        "waiting",
+        "admitted",
+        "denied",
+        "cancelled"
+      ],
+      "type": "string"
+    },
+    "zego_room_id": {
+      "description": "ZEGOCLOUD room ID once joined",
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "user_name",
+    "room_id"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

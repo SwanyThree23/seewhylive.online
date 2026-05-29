@@ -1,0 +1,119 @@
+{
+  "name": "StreamRecording",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room"
+    },
+    "title": {
+      "type": "string",
+      "description": "Recording title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Recording description"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "recording_url": {
+      "type": "string",
+      "description": "Video file URL"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Thumbnail image"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Recording duration"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Recording date"
+    },
+    "views": {
+      "type": "number",
+      "default": 0,
+      "description": "View count"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Recording tags"
+    },
+    "category": {
+      "type": "string",
+      "description": "Recording category"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Public or private"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "AI-generated summary"
+    },
+    "ai_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AI-extracted keywords"
+    }
+  },
+  "required": [
+    "room_id",
+    "title",
+    "creator_id",
+    "recording_url",
+    "recorded_at"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

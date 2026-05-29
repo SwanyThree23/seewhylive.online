@@ -1,0 +1,119 @@
+{
+  "name": "SoundAlert",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Alert name"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "donation_amount",
+        "donation_exact",
+        "new_subscriber",
+        "first_donation",
+        "milestone",
+        "custom"
+      ],
+      "default": "donation_amount"
+    },
+    "trigger_value": {
+      "type": "number",
+      "description": "Amount threshold or exact amount"
+    },
+    "sound_url": {
+      "type": "string",
+      "description": "Custom sound file URL"
+    },
+    "sound_preset": {
+      "type": "string",
+      "enum": [
+        "cash_register",
+        "fanfare",
+        "chime",
+        "explosion",
+        "coin",
+        "alert",
+        "level_up",
+        "custom"
+      ],
+      "default": "cash_register"
+    },
+    "message_template": {
+      "type": "string",
+      "description": "Alert message with {name} and {amount} placeholders"
+    },
+    "volume": {
+      "type": "number",
+      "default": 80,
+      "description": "0-100"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 5
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "cooldown_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "color": {
+      "type": "string",
+      "default": "#d4af37"
+    }
+  },
+  "required": [
+    "creator_id",
+    "name",
+    "trigger_type"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

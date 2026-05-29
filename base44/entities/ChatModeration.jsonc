@@ -1,0 +1,118 @@
+{
+  "name": "ChatModeration",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Room ID"
+    },
+    "moderator_id": {
+      "type": "string",
+      "description": "Moderator user ID"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "mute",
+        "block",
+        "kick",
+        "timeout",
+        "warning",
+        "delete_message"
+      ],
+      "description": "Moderation action"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "User being moderated"
+    },
+    "message_id": {
+      "type": "string",
+      "description": "Message ID if applicable"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for action"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Duration for mute/timeout"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When action expires"
+    },
+    "auto_detected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Auto-detected by filters"
+    },
+    "keywords_matched": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords that triggered action"
+    }
+  },
+  "required": [
+    "room_id",
+    "moderator_id",
+    "action_type",
+    "target_user_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "data.target_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.moderator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "name": "Participant",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Room ID"
+    },
+    "stage_id": {
+      "type": "string",
+      "description": "Stage ID if on stage"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User display name"
+    },
+    "user_avatar": {
+      "type": "string",
+      "description": "User avatar URL"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "host",
+        "co-host",
+        "speaker",
+        "audience",
+        "guest"
+      ],
+      "default": "audience",
+      "description": "Participant role"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "online",
+        "speaking",
+        "muted",
+        "away",
+        "offline"
+      ],
+      "default": "online",
+      "description": "Current status"
+    },
+    "is_streaming": {
+      "type": "boolean",
+      "default": false,
+      "description": "Currently streaming"
+    },
+    "stream_type": {
+      "type": "string",
+      "enum": [
+        "audio",
+        "video",
+        "screen"
+      ],
+      "description": "Type of stream"
+    },
+    "is_audio_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Audio enabled"
+    },
+    "is_video_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Video enabled"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Join timestamp"
+    },
+    "left_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Leave timestamp"
+    },
+    "hand_raised": {
+      "type": "boolean",
+      "default": false,
+      "description": "Raised hand to speak"
+    },
+    "hand_raised_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Hand raise timestamp"
+    }
+  },
+  "required": [
+    "room_id",
+    "user_id",
+    "user_name"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

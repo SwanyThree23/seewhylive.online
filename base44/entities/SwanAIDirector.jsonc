@@ -1,0 +1,144 @@
+{
+  "name": "SwanAIDirector",
+  "properties": {
+    "auto_spotlight": {
+      "default": true,
+      "description": "Auto-switch spotlight to most active speaker",
+      "type": "boolean"
+    },
+    "camera_cuts": {
+      "default": 0,
+      "description": "Number of scene transitions made this session",
+      "type": "number"
+    },
+    "current_layout": {
+      "default": "grid",
+      "enum": [
+        "grid",
+        "spotlight",
+        "split",
+        "pip",
+        "theater"
+      ],
+      "type": "string"
+    },
+    "current_spotlight_user_id": {
+      "description": "User currently in spotlight",
+      "type": "string"
+    },
+    "decisions_log": {
+      "description": "Array of {timestamp, action, reason} director decisions",
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "engagement_score": {
+      "default": 0,
+      "description": "Real-time engagement score 0-100",
+      "type": "number"
+    },
+    "host_id": {
+      "type": "string"
+    },
+    "layout_history": {
+      "description": "Sequence of layout changes with timestamps",
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "model": {
+      "default": "claude-sonnet-4-20250514",
+      "type": "string"
+    },
+    "next_suggested_action": {
+      "description": "SwanAI next recommended action for host",
+      "type": "string"
+    },
+    "peak_engagement_timestamp": {
+      "description": "When engagement score peaked",
+      "format": "date-time",
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "silence_interventions": {
+      "default": 0,
+      "description": "Times SwanAI broke a silence lull",
+      "type": "number"
+    },
+    "status": {
+      "default": "standby",
+      "enum": [
+        "standby",
+        "active",
+        "paused"
+      ],
+      "type": "string"
+    },
+    "tokens_used": {
+      "default": 0,
+      "type": "number"
+    },
+    "trigger_mode": {
+      "default": "automatic",
+      "enum": [
+        "automatic",
+        "suggestions_only",
+        "manual"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

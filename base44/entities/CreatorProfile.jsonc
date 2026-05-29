@@ -1,0 +1,99 @@
+{
+  "name": "CreatorProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Linked user ID (unique)"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Up to 500 characters"
+    },
+    "banner_url": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "gaming",
+        "music",
+        "education",
+        "talk",
+        "fitness",
+        "cooking",
+        "art",
+        "tech",
+        "other"
+      ],
+      "default": "other"
+    },
+    "social_links": {
+      "type": "object",
+      "description": "Social link map: {twitter, instagram, tiktok, youtube, discord, website}"
+    },
+    "subscriber_count": {
+      "type": "number",
+      "default": 0
+    },
+    "follower_count": {
+      "type": "number",
+      "default": 0
+    },
+    "total_hours_streamed": {
+      "type": "number",
+      "default": 0
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "stream_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Array of {day, time, title}"
+    }
+  },
+  "required": [
+    "user_id",
+    "display_name"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "name": "GreenroomWaitlist",
+  "properties": {
+    "admitted_by": {
+      "description": "Host user ID who took action",
+      "type": "string"
+    },
+    "avatar_url": {
+      "description": "User avatar URL",
+      "type": "string"
+    },
+    "deny_reason": {
+      "description": "Optional reason if denied",
+      "type": "string"
+    },
+    "greenroom_session_id": {
+      "description": "Associated GreenroomSession ID",
+      "type": "string"
+    },
+    "is_returning": {
+      "default": false,
+      "description": "User was previously in the room (reconnecting)",
+      "type": "boolean"
+    },
+    "join_message": {
+      "description": "Message from user to host",
+      "type": "string"
+    },
+    "notified_at": {
+      "description": "When host was notified of this request",
+      "format": "date-time",
+      "type": "string"
+    },
+    "position": {
+      "default": 1,
+      "description": "Position in the waitlist queue",
+      "type": "number"
+    },
+    "resolved_at": {
+      "description": "When admission decision was made",
+      "format": "date-time",
+      "type": "string"
+    },
+    "role_requested": {
+      "default": "audience",
+      "enum": [
+        "co-host",
+        "speaker",
+        "audience",
+        "guest"
+      ],
+      "type": "string"
+    },
+    "room_id": {
+      "description": "Target Room ID",
+      "type": "string"
+    },
+    "status": {
+      "default": "waiting",
+      "enum": [
+        "waiting",
+        "admitted",
+        "denied",
+        "cancelled"
+      ],
+      "type": "string"
+    },
+    "user_id": {
+      "description": "Waiting user ID",
+      "type": "string"
+    },
+    "user_name": {
+      "description": "Waiting user display name",
+      "type": "string"
+    },
+    "wait_time_seconds": {
+      "default": 0,
+      "description": "How long user has been waiting",
+      "type": "number"
+    }
+  },
+  "required": [
+    "room_id",
+    "user_id",
+    "user_name",
+    "greenroom_session_id"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
