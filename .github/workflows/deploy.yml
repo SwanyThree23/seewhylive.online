@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -20,26 +20,40 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build frontend
         run: npm run build
         env:
           NODE_ENV: production
 
-      - name: Deploy dist to VPS
+      # ── Deploy frontend dist ────────────────────────────────────────────
+      - name: Upload dist to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: 2.24.194.112
           username: root
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
-          source: "dist/*"
-          target: "/opt/seewhy/frontend/dist/"
-          strip_components: 1
+          source: "dist/"
+          target: "/opt/seewhy/frontend/"
+          strip_components: 0
 
-      - name: Reload nginx & restart PM2
+      # ── Deploy server files ─────────────────────────────────────────────
+      - name: Upload server to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: 2.24.194.112
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          source: "server/"
+          target: "/opt/seewhy/"
+          strip_components: 0
+
+      # ── Install deps, reload nginx, restart PM2 ─────────────────────────
+      - name: Restart services on VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 2.24.194.112
@@ -47,10 +61,19 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           script: |
-            # Ensure dist dir exists and is owned properly
-            mkdir -p /opt/seewhy/frontend/dist
+            set -e
+
+            # Server: install production deps and restart
+            cd /opt/seewhy/server
+            npm install --production --silent
+            pm2 restart seewhy-server 2>/dev/null || pm2 start /opt/seewhy/server/index.js --name seewhy-server
+            pm2 save
+
+            # Frontend: fix ownership and reload nginx
             chown -R www-data:www-data /opt/seewhy/frontend/dist 2>/dev/null || true
-            # Test nginx config and reload
             nginx -t && nginx -s reload
-            echo "=== Deploy complete at $(date) ==="
-            echo "=== Serving: $(ls /opt/seewhy/frontend/dist/ | wc -l) files ==="
+
+            echo ""
+            echo "=== Deploy complete: $(date) ==="
+            echo "Frontend: $(ls /opt/seewhy/frontend/dist/ | wc -l) files"
+            pm2 list
