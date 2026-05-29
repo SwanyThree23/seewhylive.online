@@ -34,7 +34,7 @@ const TABS = [
 function Card({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-xl ${className}`}
-      style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
+      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
       {children}
     </div>
   );
@@ -1021,9 +1021,9 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Header */}
-      <div className="px-4 md:px-8 py-4" style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+      <div className="sticky top-0 z-30 px-4 md:px-8 py-4" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: `1px solid rgba(212,175,55,0.12)`, backdropFilter: 'blur(12px)' }}>
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
