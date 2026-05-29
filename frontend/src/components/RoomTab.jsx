@@ -146,6 +146,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
   var [activeBattle,   setActiveBattle]   = useState(null);
   var [battleScores,   setBattleScores]   = useState({ a: 0, b: 0 });
   var [watchPartyUrl,  setWatchPartyUrl]  = useState('');
+  var [activePoll,     setActivePoll]     = useState(null);
+  var [myVote,         setMyVote]         = useState(-1);
+  var [showPollModal,  setShowPollModal]  = useState(false);
+  var [pollQuestion,   setPollQuestion]   = useState('');
+  var [pollOpts,       setPollOpts]       = useState(['', '']);
   var [showGoLiveModal, setShowGoLiveModal] = useState(false);
   var [glDests,        setGlDests]        = useState({ seewhy: true });
   var [glKeys,         setGlKeys]         = useState({});
@@ -233,11 +238,23 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         setWatchPartyUrl(ackData.watchParty.url);
       }
     });
+    socket.on('poll-update', function(poll) {
+      if (!poll) return;
+      setActivePoll(poll);
+      if (!poll.active) {
+        setTimeout(function() { setActivePoll(null); setMyVote(-1); }, 4000);
+      }
+    });
+    socket.on('clip-marked', function(data) {
+      if (data && data.label) addToast('📎 Clip: ' + data.label, 'success');
+    });
     return function() {
       socket.off('join-room-ack');
       socket.off('hand-raise');
       socket.off('stage-invite');
       socket.off('stage-remove');
+      socket.off('poll-update');
+      socket.off('clip-marked');
     };
   }, [socket, role]);
 
@@ -1052,6 +1069,20 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           <span style={{ fontSize: 14 }}>⚙️</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>CONFIG</span>
         </button>
+        {role === 'host' && (
+          <button onClick={function() { setShowPollModal(true); }} style={mcBtnStyle(activePoll && activePoll.active ? 'active' : '')}>
+            <span style={{ fontSize: 14 }}>📊</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>POLL</span>
+          </button>
+        )}
+        {isLive && (
+          <button onClick={function() {
+            if (socket) socket.emit('clip-marker', { roomId: roomId, label: 'Clip @ ' + fmtUptime(uptime) });
+          }} style={mcBtnStyle('')}>
+            <span style={{ fontSize: 14 }}>📎</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>CLIP</span>
+          </button>
+        )}
         <div style={{ width: 1, background: '#241C34', alignSelf: 'stretch', flexShrink: 0, margin: '2px 4px' }} />
         {role === 'host' && !isLive && (
           <button onClick={openGoLive} style={Object.assign({}, mcBtnStyle('live'), { minWidth: 56 })}>
@@ -1072,6 +1103,104 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           </button>
         )}
       </div>
+
+      {/* Live Poll card */}
+      {activePoll && (
+        <div style={{ background: 'rgba(10,7,18,.97)', borderTop: '1px solid rgba(201,168,76,.3)', padding: '10px 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#C9A84C', letterSpacing: 2 }}>📊 {activePoll.question}</span>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{activePoll.totalVotes} votes</span>
+              {!activePoll.active && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', letterSpacing: 1 }}>ENDED</span>}
+              {role === 'host' && activePoll.active && (
+                <button onClick={function() { if (socket) socket.emit('poll-end', { roomId: roomId }); }}
+                  style={{ background: 'none', border: '1px solid rgba(255,26,60,.35)', borderRadius: 3, padding: '2px 6px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>
+                  END
+                </button>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {activePoll.options.map(function(opt, idx) {
+              var pct      = activePoll.totalVotes > 0 ? Math.floor((opt.votes / activePoll.totalVotes) * 100) : 0;
+              var isMyVote = myVote === idx;
+              return (
+                <div key={idx}
+                  onClick={function() {
+                    if (!activePoll.active) return;
+                    setMyVote(idx);
+                    if (socket) socket.emit('poll-vote', { roomId: roomId, optionIdx: idx });
+                  }}
+                  style={{ position: 'relative', background: isMyVote ? 'rgba(0,201,167,.1)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isMyVote ? 'rgba(0,201,167,.45)' : '#241C34'), borderRadius: 6, padding: '5px 8px', cursor: activePoll.active ? 'pointer' : 'default', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: pct + '%', background: isMyVote ? 'rgba(0,201,167,.15)' : 'rgba(201,168,76,.08)', transition: 'width .4s ease', zIndex: 0 }} />
+                  <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: isMyVote ? '#00DEC0' : '#EDE8F5' }}>{opt.text}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isMyVote ? '#00DEC0' : '#7A6F90' }}>{pct}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Poll creation modal */}
+      {showPollModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 110, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(4px)', padding: 12 }}>
+          <div style={{ background: '#0F0C14', border: '1px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', letterSpacing: 3, marginBottom: 12 }}>📊 LAUNCH POLL</div>
+            <input
+              value={pollQuestion}
+              onChange={function(e) { setPollQuestion(e.target.value); }}
+              placeholder="What's your question?"
+              maxLength={200}
+              style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }}
+            />
+            {pollOpts.map(function(opt, idx) {
+              return (
+                <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                  <input
+                    value={opt}
+                    onChange={function(e) { var v = e.target.value; setPollOpts(function(os) { var n = os.slice(); n[idx] = v; return n; }); }}
+                    placeholder={'Option ' + (idx + 1)}
+                    maxLength={80}
+                    style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
+                  />
+                  {idx >= 2 && (
+                    <button onClick={function() { setPollOpts(function(os) { return os.filter(function(_, i) { return i !== idx; }); }); }}
+                      style={{ background: 'none', border: '1px solid rgba(255,26,60,.3)', borderRadius: 5, width: 28, color: '#FF6B81', cursor: 'pointer', fontSize: 11 }}>✕</button>
+                  )}
+                </div>
+              );
+            })}
+            {pollOpts.length < 4 && (
+              <button onClick={function() { setPollOpts(function(os) { return os.concat(['']); }); }}
+                style={{ background: 'none', border: '1px dashed rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 12px', color: 'rgba(201,168,76,.6)', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', marginBottom: 10, letterSpacing: 1 }}>
+                + ADD OPTION
+              </button>
+            )}
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <button onClick={function() { setShowPollModal(false); setPollQuestion(''); setPollOpts(['', '']); }}
+                style={{ flex: 1, padding: '9px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button onClick={function() {
+                if (!pollQuestion.trim()) { addToast('Enter a question', 'error'); return; }
+                var valid = pollOpts.filter(function(o) { return o.trim(); });
+                if (valid.length < 2) { addToast('Need at least 2 options', 'error'); return; }
+                if (socket) socket.emit('poll-start', { roomId: roomId, question: pollQuestion.trim(), options: valid, durationSec: 60 });
+                setShowPollModal(false);
+                setPollQuestion('');
+                setPollOpts(['', '']);
+                addToast('📊 Poll launched!', 'success');
+              }}
+                style={{ flex: 2, padding: '9px', background: 'linear-gradient(135deg,rgba(0,201,167,.2),rgba(0,222,192,.3))', border: '1px solid rgba(0,201,167,.5)', borderRadius: 8, color: '#00DEC0', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                🗳 LAUNCH POLL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stream Goal bar */}
       {streamGoal.enabled && (

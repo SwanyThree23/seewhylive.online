@@ -266,8 +266,39 @@ class SwanyBot extends EventEmitter {
       return;
     }
 
+    if (cmd === 'poll') {
+      var pollRaw   = message.slice(1 + cmd.length).trim();
+      var pollArgs  = [];
+      var pollRegex = /"([^"]+)"/g;
+      var pollMatch;
+      while ((pollMatch = pollRegex.exec(pollRaw)) !== null) {
+        pollArgs.push(pollMatch[1]);
+      }
+      if (pollArgs.length < 3) {
+        botSay('📊 Usage: !poll "Question" "Option A" "Option B" [up to 4 options]');
+        return;
+      }
+      self.emit('poll-request', roomId, { question: pollArgs[0], options: pollArgs.slice(1, 5) });
+      self.log('info', 'command', '!poll by ' + (context.username || socketId), null);
+      return;
+    }
+
+    if (cmd === 'endpoll') {
+      self.emit('poll-end-request', roomId);
+      self.log('info', 'command', '!endpoll by ' + (context.username || socketId), null);
+      return;
+    }
+
+    if (cmd === 'vote') {
+      var voteIdx = parseInt(parts[1], 10) - 1;
+      if (!isNaN(voteIdx) && voteIdx >= 0) {
+        self.emit('poll-vote-cmd', roomId, socketId, voteIdx);
+      }
+      return;
+    }
+
     if (cmd === 'commands' || cmd === 'help') {
-      botSay('🤖 Commands: !hype · !info · !score · !commands');
+      botSay('🤖 Commands: !hype · !info · !score · !poll "Q" "A" "B" · !vote 1 · !endpoll · !commands');
       return;
     }
 
