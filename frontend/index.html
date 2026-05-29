@@ -41,6 +41,29 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Force-clear stale SW caches on version bump — runs before React loads
+      (function() {
+        var DEPLOY_VER = 'v33-3';
+        var stored = localStorage.getItem('sw_deploy_ver');
+        if (stored !== DEPLOY_VER) {
+          localStorage.setItem('sw_deploy_ver', DEPLOY_VER);
+          // Also clear the stale undefined username
+          var u = localStorage.getItem('sw_username');
+          if (!u || u === 'undefined' || u === 'null') localStorage.removeItem('sw_username');
+          if ('serviceWorker' in navigator && 'caches' in window) {
+            Promise.all([
+              navigator.serviceWorker.getRegistrations().then(function(rs) {
+                return Promise.all(rs.map(function(r) { return r.unregister(); }));
+              }),
+              caches.keys().then(function(ks) {
+                return Promise.all(ks.map(function(k) { return caches.delete(k); }));
+              })
+            ]).then(function() { window.location.reload(true); });
+          }
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
