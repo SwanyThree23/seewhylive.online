@@ -1,0 +1,72 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - claude/seewhy-live-v33-build-v0L5Z
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            cd /home/user/seewhylive.online || cd /opt/seewhy
+            git fetch origin claude/seewhy-live-v33-build-v0L5Z
+            git checkout claude/seewhy-live-v33-build-v0L5Z
+            git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z
+            echo "✓ Code updated"
+
+      - name: Sync frontend dist
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "frontend/dist/*"
+          target: "/opt/seewhy/frontend/dist/"
+          strip_components: 2
+
+      - name: Restart server + nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            # Sync server files
+            rsync -a --exclude='node_modules' /home/user/seewhylive.online/server/ /opt/seewhy/server/ 2>/dev/null || true
+            cd /opt/seewhy/server && npm install --omit=dev
+            # Restart PM2
+            pm2 restart seewhy-server --update-env 2>/dev/null || pm2 start /home/user/seewhylive.online/ecosystem.config.js
+            pm2 save --force
+            # Reload nginx
+            nginx -t && (systemctl reload nginx || service nginx reload)
+            echo "✅ Deploy complete — https://seewhylive.online"
