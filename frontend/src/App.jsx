@@ -4,6 +4,7 @@ import rtcManager from './webrtc.js';
 
 /* Always-loaded: default tab + persistent overlays */
 import RoomTab from './components/RoomTab.jsx';
+import LiveRoomPage from './components/LiveRoomPage.jsx';
 import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -806,11 +807,11 @@ export default function App() {
       )}
 
       {/* Tab Content */}
-      <main style={{ padding: '16px', flex: 1, paddingBottom: 100 }}>
+      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 100, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
       <ErrorBoundary>
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90', letterSpacing: 2 }}>LOADING...</div>}>
         {activeTab === 'room' && (
-          <RoomTab
+          <LiveRoomPage
             socket={socketRef.current}
             guests={guests}
             chat={chat}
