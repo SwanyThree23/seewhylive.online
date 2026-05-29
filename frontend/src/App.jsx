@@ -146,6 +146,8 @@ export default function App() {
   });
   var [installPrompt, setInstallPrompt] = useState(null);
   var [showInstallBanner, setShowInstallBanner] = useState(false);
+  var [editingTitle, setEditingTitle] = useState(false);
+  var [titleDraft, setTitleDraft] = useState('');
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -401,6 +403,17 @@ export default function App() {
       });
     });
 
+    socket.on('host-alert', function(data) {
+      if (!data) return;
+      if (data.type === 'engagement_surge') {
+        addToast('🚀 SURGE! Viewers up ' + data.pct + '% in 60s — ' + data.viewers + ' watching!', 'success');
+      } else if (data.type === 'viewers_drop') {
+        addToast('⚠ Viewer drop: ' + data.current + ' (was ' + data.previous + ')', 'info');
+      } else if (data.message) {
+        addToast(data.message, 'info');
+      }
+    });
+
     socket.on('overlay-update', function(data) {
       if (!data || !data.overlay) return;
       setOverlayConfig(data.overlay);
@@ -529,7 +542,37 @@ export default function App() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 1 }}>
           {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#00C9A7' }}>{formatUptime(uptime)}</span>}
-          {isLive && streamInfo.title ? <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', letterSpacing: 0.5, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamInfo.title}</span> : null}
+          {isLive && !editingTitle && streamInfo.title ? (
+            <span
+              title="Click to edit title"
+              onClick={function() { setTitleDraft(streamInfo.title); setEditingTitle(true); }}
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', letterSpacing: 0.5, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', borderBottom: '1px dashed rgba(201,168,76,.35)' }}>
+              {streamInfo.title}
+            </span>
+          ) : null}
+          {isLive && editingTitle ? (
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={function(e) { setTitleDraft(e.target.value.slice(0, 80)); }}
+              onKeyDown={function(e) {
+                if (e.key === 'Enter') {
+                  var t = titleDraft.trim();
+                  if (t && socketRef.current) socketRef.current.emit('stream-info', { roomId: APP_ID, title: t, category: streamInfo.category, desc: streamInfo.desc });
+                  if (t) setStreamInfo(function(prev) { return Object.assign({}, prev, { title: t }); });
+                  setEditingTitle(false);
+                }
+                if (e.key === 'Escape') setEditingTitle(false);
+              }}
+              onBlur={function() {
+                var t = titleDraft.trim();
+                if (t && socketRef.current) socketRef.current.emit('stream-info', { roomId: APP_ID, title: t, category: streamInfo.category, desc: streamInfo.desc });
+                if (t) setStreamInfo(function(prev) { return Object.assign({}, prev, { title: t }); });
+                setEditingTitle(false);
+              }}
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', letterSpacing: 0.5, maxWidth: 180, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 4, padding: '1px 5px', outline: 'none' }}
+            />
+          ) : null}
           {isLive && streamInfo.category ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>{streamInfo.category.toUpperCase()}</span> : null}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, justifyContent: 'flex-end' }}>
