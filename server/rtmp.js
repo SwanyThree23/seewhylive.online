@@ -227,11 +227,28 @@ function getFanoutStatus(roomId) {
   };
 }
 
+function getAllFanouts() {
+  var result = [];
+  fanouts.forEach(function(entry, roomId) {
+    result.push({
+      roomId:       roomId,
+      alive:        entry.process.exitCode === null && !entry.process.killed,
+      restartCount: entry.restartCount,
+      lastRestart:  entry.lastRestart,
+      destinations: entry.destinations.map(function(d) {
+        return { platform: d.platform };
+      })
+    });
+  });
+  return result;
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────
 module.exports = {
-  startFanout: startFanout,
-  stopFanout: stopFanout,
+  startFanout:    startFanout,
+  stopFanout:     stopFanout,
   getFanoutStatus: getFanoutStatus,
+  getAllFanouts:   getAllFanouts,
   on:   emitter.on.bind(emitter),
   off:  emitter.off.bind(emitter),
   emit: emitter.emit.bind(emitter)
