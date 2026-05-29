@@ -121,7 +121,9 @@ export default function App() {
     localStorage.setItem('sw_userId', id);
     return id;
   });
-  var [username] = useState(function() { var _u = localStorage.getItem('sw_username'); return (_u && _u !== 'undefined' && _u !== 'null') ? _u : 'Guest' + Math.floor(Math.random() * 9000 + 1000); });
+  var [username, setUsername] = useState(function() { var _u = localStorage.getItem('sw_username'); return (_u && _u !== 'undefined' && _u !== 'null') ? _u : ''; });
+  var [showNameModal, setShowNameModal] = useState(function() { var _u = localStorage.getItem('sw_username'); return !_u || _u === 'undefined' || _u === 'null'; });
+  var [nameInput,     setNameInput]     = useState('');
   var [role] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
   var [branding, setBranding] = useState(function() {
     try {
@@ -514,6 +516,14 @@ export default function App() {
     }
   }, [streamGoal]);
 
+  function handleNameSubmit() {
+    var name = nameInput.trim().slice(0, 32);
+    if (!name) return;
+    localStorage.setItem('sw_username', name);
+    setUsername(name);
+    setShowNameModal(false);
+  }
+
   function formatUptime(s) {
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
@@ -531,6 +541,46 @@ export default function App() {
     var healthInterval = setInterval(checkHealth, 30000);
     return function() { clearInterval(healthInterval); };
   }, []);
+
+  if (showNameModal) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: '#0F0C14', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 24 }}>
+        <div style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: '#EDE8F5', letterSpacing: 4, lineHeight: 1 }}>SeeWhy LIVE</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', marginTop: 4, letterSpacing: 2 }}>v33.0 · WASHINGTON CLASSIC</div>
+          </div>
+          <div style={{ background: 'rgba(22,16,32,.9)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: '#EDE8F5', letterSpacing: 1 }}>What's your display name?</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4 }}>This is how others see you in the room</div>
+            </div>
+            <input
+              autoFocus
+              type="text"
+              maxLength={32}
+              placeholder="Enter your name..."
+              value={nameInput}
+              onChange={function(e) { setNameInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') handleNameSubmit(); }}
+              style={{ width: '100%', boxSizing: 'border-box', background: '#07050A', border: '1px solid rgba(201,168,76,.4)', borderRadius: 9, padding: '12px 14px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, outline: 'none', letterSpacing: 0.5 }}
+            />
+            <button
+              onClick={handleNameSubmit}
+              disabled={!nameInput.trim()}
+              style={{ width: '100%', padding: '13px', background: nameInput.trim() ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(22,16,32,.5)', border: '1px solid ' + (nameInput.trim() ? '#C01838' : '#241C34'), borderRadius: 9, color: nameInput.trim() ? '#C9A84C' : '#483D60', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 3, cursor: nameInput.trim() ? 'pointer' : 'default' }}>
+              JOIN THE ROOM
+            </button>
+            <button
+              onClick={function() { var g = 'Guest' + Math.floor(Math.random() * 9000 + 1000); localStorage.setItem('sw_username', g); setUsername(g); setShowNameModal(false); }}
+              style={{ background: 'none', border: 'none', color: '#483D60', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}>
+              Join anonymously
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (splash) {
     return (
