@@ -75,6 +75,51 @@ async function detectAndTranslate(text) {
   }
 }
 
+async function translateTo(text, targetLang) {
+  var cacheKey = text.substring(0, 100) + ':' + targetLang;
+
+  if (translationCache.has(cacheKey)) {
+    return translationCache.get(cacheKey);
+  }
+
+  var apiKey = process.env.DEEPL_API_KEY;
+  if (!apiKey) {
+    return { translated: text, targetLang: targetLang };
+  }
+
+  try {
+    var response = await axios.post(
+      DEEPL_API_URL,
+      new URLSearchParams({
+        auth_key: apiKey,
+        text: text,
+        target_lang: targetLang
+      }),
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        timeout: 8000
+      }
+    );
+
+    var translations = response.data.translations;
+    if (!translations || translations.length === 0) {
+      return { translated: text, targetLang: targetLang };
+    }
+
+    var result = { translated: translations[0].text, targetLang: targetLang };
+    cacheSet(cacheKey, result);
+    return result;
+  } catch (err) {
+    if (err.response && err.response.status === 456) {
+      console.warn('[translation] DeepL quota exceeded; returning original.');
+      return { translated: text, targetLang: targetLang };
+    }
+    console.error('[translation] translateTo error:', err.message);
+    return { translated: text, targetLang: targetLang };
+  }
+}
+
 module.exports = {
-  detectAndTranslate: detectAndTranslate
+  detectAndTranslate: detectAndTranslate,
+  translateTo: translateTo
 };
