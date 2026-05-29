@@ -52,6 +52,7 @@ var SettingsTab         = React.lazy(function() { return import('./components/Se
 var PKBattleTab         = React.lazy(function() { return import('./components/PKBattleTab.jsx'); });
 var VODLibraryTab       = React.lazy(function() { return import('./components/VODLibraryTab.jsx'); });
 var CreatorTipsTab      = React.lazy(function() { return import('./components/CreatorTipsTab.jsx'); });
+var LiveStreamHubTab    = React.lazy(function() { return import('./components/LiveStreamHubTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -95,6 +96,7 @@ var TABS = [
   { id: 'profile',   label: '👤 PROFILE' },
   { id: 'settings',  label: '⚙ SETTINGS' },
   { id: 'tips',      label: '💡 TIPS' },
+  { id: 'streams',   label: '📡 STREAMS' },
 ];
 
 export default function App() {
@@ -826,6 +828,14 @@ export default function App() {
           <CreatorTipsTab
             addToast={addToast}
             username={username}
+          />
+        )}
+        {activeTab === 'streams' && (
+          <LiveStreamHubTab
+            addToast={addToast}
+            isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
           />
         )}
       </Suspense>
