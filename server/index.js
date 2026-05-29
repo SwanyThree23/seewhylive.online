@@ -158,6 +158,14 @@ db.exec(`
     sort_order  INTEGER DEFAULT 0,
     is_active   INTEGER NOT NULL DEFAULT 1
   );
+
+  CREATE TABLE IF NOT EXISTS clip_markers (
+    id         TEXT    PRIMARY KEY,
+    room_id    TEXT    NOT NULL,
+    ts         INTEGER NOT NULL,
+    label      TEXT,
+    marked_by  TEXT
+  );
 `);
 
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
@@ -252,6 +260,40 @@ var io = new Server(server, {
 // ─── SwanyBot instance ────────────────────────────────────────────────────
 var swanybot = new SwanyBot(io);
 
+// Wire SwanyBot poll/clip EventEmitter events (after io and polls are defined)
+swanybot.on('poll-request', function(roomId, data) {
+  var id   = uuidv4();
+  var opts = data.options.map(function(t) { return { text: t, votes: new Set() }; });
+  var poll = { id: id, question: data.question, options: opts, createdAt: Date.now(), active: true };
+  polls.set(roomId, poll);
+  io.to(roomId).emit('poll-update', serializePoll(poll));
+  io.to(roomId).emit('bot-log', { event: 'poll_created', message: 'Poll: ' + data.question, ts: Date.now() });
+  poll.autoEndT = setTimeout(function() {
+    if (polls.get(roomId) !== poll) return;
+    poll.active = false;
+    io.to(roomId).emit('poll-update', serializePoll(poll));
+    setTimeout(function() { if (polls.get(roomId) === poll) polls.delete(roomId); }, 5000);
+  }, 120000);
+});
+
+swanybot.on('poll-end-request', function(roomId) {
+  var poll = polls.get(roomId);
+  if (!poll || !poll.active) return;
+  poll.active = false;
+  if (poll.autoEndT) clearTimeout(poll.autoEndT);
+  io.to(roomId).emit('poll-update', serializePoll(poll));
+  setTimeout(function() { if (polls.get(roomId) === poll) polls.delete(roomId); }, 5000);
+});
+
+swanybot.on('poll-vote-cmd', function(roomId, socketId, optIdx) {
+  var poll = polls.get(roomId);
+  if (!poll || !poll.active) return;
+  if (optIdx < 0 || optIdx >= poll.options.length) return;
+  poll.options.forEach(function(o) { o.votes.delete(socketId); });
+  poll.options[optIdx].votes.add(socketId);
+  io.to(roomId).emit('poll-update', serializePoll(poll));
+});
+
 // ─── Room state ───────────────────────────────────────────────────────────
 // roomId → { viewers: Set<socketId>, guests: Map<socketId, {guestId, username, role}>,
 //            hostSocketId: string|null, hostUserId: string|null,
@@ -263,8 +305,19 @@ var rooms = new Map();
 var peakViewers    = new Map();  // roomId → peak viewer count this session
 var milestonesSeen = new Map();  // roomId → Set of milestone numbers already fired
 var sessionRevenue = new Map();  // roomId → cumulative gift cents this session
+var polls          = new Map();  // roomId → { id, question, options:[{text,votes:Set}], createdAt, autoEndT, active }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
+
+// Helper: serialize a poll (Set<socketId> votes → plain counts)
+function serializePoll(poll) {
+  var total = 0;
+  var opts = poll.options.map(function(o) {
+    total += o.votes.size;
+    return { text: o.text, votes: o.votes.size };
+  });
+  return { id: poll.id, question: poll.question, options: opts, totalVotes: total, active: poll.active, createdAt: poll.createdAt };
+}
 
 // Helper: auto-trigger AURA and broadcast to room
 function autoAura(roomId, triggerFn) {
@@ -1438,29 +1491,66 @@ io.on('connection', function(socket) {
     });
   });
 
-  // ── live polls ─────────────────────────────────────────────────────────
+  // ── live polls (server-side vote tracking) ────────────────────────────
   socket.on('poll-start', function(data) {
     var roomId = data.roomId || socket.data.roomId;
-    if (!roomId) return;
-    io.to(roomId).emit('poll-start', {
-      question: String(data.question || '').slice(0, 200),
-      options:  (data.options || []).slice(0, 4).map(function(o) { return String(o).slice(0, 80); }),
-      durationSec: Math.floor(data.durationSec || 60),
-      ts: Math.floor(Date.now() / 1000)
-    });
+    if (!roomId || socket.data.role !== 'host') return;
+    var question = String(data.question || '').slice(0, 200);
+    var options  = (data.options || []).slice(0, 4).map(function(o) { return String(o).slice(0, 80); });
+    if (!question || options.length < 2) return;
+    var id   = uuidv4();
+    var opts = options.map(function(t) { return { text: t, votes: new Set() }; });
+    var poll = { id: id, question: question, options: opts, createdAt: Date.now(), active: true };
+    polls.set(roomId, poll);
+    io.to(roomId).emit('poll-update', serializePoll(poll));
+    io.to(roomId).emit('bot-log', { event: 'poll_created', message: 'Poll: ' + question, ts: Date.now() });
+    poll.autoEndT = setTimeout(function() {
+      if (polls.get(roomId) !== poll) return;
+      poll.active = false;
+      io.to(roomId).emit('poll-update', serializePoll(poll));
+      setTimeout(function() { if (polls.get(roomId) === poll) polls.delete(roomId); }, 5000);
+    }, Math.floor(data.durationSec || 60) * 1000);
   });
 
   socket.on('poll-vote', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId    = data.roomId || socket.data.roomId;
     if (!roomId) return;
     var optionIdx = Math.floor(data.optionIdx || 0);
-    io.to(roomId).emit('poll-vote', { optionIdx: optionIdx, ts: Math.floor(Date.now() / 1000) });
+    var poll      = polls.get(roomId);
+    if (!poll || !poll.active) return;
+    if (optionIdx < 0 || optionIdx >= poll.options.length) return;
+    poll.options.forEach(function(o) { o.votes.delete(socket.id); });
+    poll.options[optionIdx].votes.add(socket.id);
+    io.to(roomId).emit('poll-update', serializePoll(poll));
   });
 
   socket.on('poll-end', function(data) {
     var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var poll = polls.get(roomId);
+    if (!poll) return;
+    poll.active = false;
+    if (poll.autoEndT) clearTimeout(poll.autoEndT);
+    io.to(roomId).emit('poll-update', serializePoll(poll));
+    setTimeout(function() { if (polls.get(roomId) === poll) polls.delete(roomId); }, 5000);
+  });
+
+  // ── clip-marker ────────────────────────────────────────────────────────
+  socket.on('clip-marker', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    io.to(roomId).emit('poll-end', { votes: data.votes || {}, ts: Math.floor(Date.now() / 1000) });
+    var label    = data.label ? String(data.label).slice(0, 60) : 'Clip Marker';
+    var markerId = uuidv4();
+    var ts       = Math.floor(Date.now() / 1000);
+    var markedBy = socket.data.username || socket.id;
+    try {
+      db.prepare('INSERT OR IGNORE INTO clip_markers (id, room_id, ts, label, marked_by) VALUES (?, ?, ?, ?, ?)').run(markerId, roomId, ts, label, markedBy);
+    } catch(e) {
+      logger.warn('[clip-marker] DB insert: ' + e.message);
+    }
+    io.to(socket.id).emit('clip-marked', { id: markerId, label: label, ts: ts });
+    io.to(roomId).emit('bot-log', { event: 'clip_marker', message: 'Clip: ' + label + ' by ' + markedBy, ts: Date.now() });
+    logger.info('[clip-marker] ' + label + ' by ' + markedBy + ' in ' + roomId);
   });
 
   // ── collab events ─────────────────────────────────────────────────────
@@ -1648,6 +1738,7 @@ io.on('connection', function(socket) {
     sessionRevenue.delete(roomId);
     swanybot.resetRoomGifts(roomId);
     swanybot.onStreamEnd(roomId);
+    polls.delete(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);
