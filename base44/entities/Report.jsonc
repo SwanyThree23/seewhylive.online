@@ -1,0 +1,121 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "reporter_id": {
+      "type": "string",
+      "description": "User who filed report"
+    },
+    "reported_user_id": {
+      "type": "string",
+      "description": "User being reported"
+    },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "spam",
+        "harassment",
+        "hate_speech",
+        "inappropriate_content",
+        "impersonation",
+        "other"
+      ],
+      "description": "Type of violation"
+    },
+    "description": {
+      "type": "string",
+      "description": "Report details"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Room where violation occurred"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Community where violation occurred"
+    },
+    "message_id": {
+      "type": "string",
+      "description": "Message being reported"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "under_review",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "pending",
+      "description": "Report status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Report priority"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Moderator reviewing"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Review timestamp"
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "Resolution details"
+    },
+    "action_taken": {
+      "type": "string",
+      "description": "Action taken as result"
+    }
+  },
+  "required": [
+    "reporter_id",
+    "reported_user_id",
+    "report_type",
+    "description"
+  ],
+  "rls": {
+    "create": {
+      "data.reporter_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.reporter_id": "{{user.id}}"
+        },
+        {
+          "data.reported_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

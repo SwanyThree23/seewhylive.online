@@ -1,0 +1,174 @@
+{
+  "name": "VideoQueue",
+  "type": "object",
+  "properties": {
+    "party_id": {
+      "type": "string",
+      "description": "Associated WatchParty ID"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Associated Room ID"
+    },
+    "added_by_id": {
+      "type": "string",
+      "description": "User who queued the video"
+    },
+    "added_by_name": {
+      "type": "string",
+      "description": "Display name of user who added"
+    },
+    "title": {
+      "type": "string",
+      "description": "Video title"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "YouTube URL or direct video URL"
+    },
+    "video_type": {
+      "type": "string",
+      "enum": [
+        "youtube",
+        "direct",
+        "twitch_clip",
+        "tiktok"
+      ],
+      "default": "youtube"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Video thumbnail"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 0,
+      "description": "Video duration in seconds"
+    },
+    "position": {
+      "type": "number",
+      "default": 0,
+      "description": "Order in queue (lower plays first)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "playing",
+        "played",
+        "skipped",
+        "removed"
+      ],
+      "default": "queued"
+    },
+    "votes_up": {
+      "type": "number",
+      "default": 0,
+      "description": "Upvotes to boost queue position"
+    },
+    "votes_down": {
+      "type": "number",
+      "default": 0,
+      "description": "Downvotes to lower queue position"
+    },
+    "voter_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of users who already voted"
+    },
+    "host_approved": {
+      "type": "boolean",
+      "default": true,
+      "description": "Host approved this entry"
+    },
+    "require_host_approval": {
+      "type": "boolean",
+      "default": false,
+      "description": "Queue requires host approval before playing"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this video started playing"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this video finished or was skipped"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional note from the user who queued it"
+    }
+  },
+  "required": [
+    "party_id",
+    "added_by_id",
+    "title",
+    "video_url"
+  ],
+  "rls": {
+    "create": {
+      "data.added_by_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.party_id": {
+            "$in": [
+              "{{user.watch_parties_as_host}}"
+            ]
+          }
+        },
+        {
+          "data.added_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.party_id": {
+            "$in": [
+              "{{user.watch_parties_as_host}}"
+            ]
+          }
+        },
+        {
+          "data.added_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.party_id": {
+            "$in": [
+              "{{user.watch_parties_as_host}}"
+            ]
+          }
+        },
+        {
+          "data.added_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

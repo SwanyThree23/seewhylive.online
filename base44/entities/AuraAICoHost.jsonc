@@ -1,0 +1,146 @@
+{
+  "name": "AuraAICoHost",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string"
+    },
+    "host_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Associated StreamSession ID"
+    },
+    "persona_name": {
+      "type": "string",
+      "default": "Aura",
+      "description": "AI co-host persona name"
+    },
+    "persona_style": {
+      "type": "string",
+      "enum": [
+        "hype",
+        "professional",
+        "comedian",
+        "storyteller",
+        "analyst",
+        "custom"
+      ],
+      "default": "hype"
+    },
+    "custom_instructions": {
+      "type": "string",
+      "description": "Host-defined system prompt additions for this session"
+    },
+    "language_primary": {
+      "type": "string",
+      "default": "en"
+    },
+    "languages_supported": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Languages Aura will translate/respond in"
+    },
+    "interventions_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Times Aura spoke this session"
+    },
+    "questions_answered": {
+      "type": "number",
+      "default": 0
+    },
+    "hype_moments": {
+      "type": "number",
+      "default": 0,
+      "description": "Times Aura fired a hype line"
+    },
+    "last_message": {
+      "type": "string",
+      "description": "Last thing Aura said"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "active",
+        "paused",
+        "ended"
+      ],
+      "default": "idle"
+    },
+    "auto_translate": {
+      "type": "boolean",
+      "default": true
+    },
+    "auto_hype": {
+      "type": "boolean",
+      "default": true,
+      "description": "Aura auto-fires hype on tip/sub events"
+    },
+    "auto_moderate": {
+      "type": "boolean",
+      "default": true
+    },
+    "model": {
+      "type": "string",
+      "default": "claude-sonnet-4-20250514"
+    },
+    "tokens_used": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id"
+  ],
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

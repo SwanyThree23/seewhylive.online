@@ -1,0 +1,117 @@
+{
+  "name": "StreamSession",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room ID"
+    },
+    "host_id": {
+      "type": "string",
+      "description": "Host user ID"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "peak_viewers": {
+      "type": "number",
+      "default": 0
+    },
+    "total_viewers": {
+      "type": "number",
+      "default": 0
+    },
+    "total_tips": {
+      "type": "number",
+      "default": 0
+    },
+    "total_messages": {
+      "type": "number",
+      "default": 0
+    },
+    "total_reactions": {
+      "type": "number",
+      "default": 0
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "recording_url": {
+      "type": "string"
+    },
+    "stream_quality": {
+      "type": "string",
+      "enum": [
+        "360p",
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "default": "720p"
+    },
+    "layout_used": {
+      "type": "string"
+    },
+    "rtmp_destinations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "highlights_generated": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id"
+  ],
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

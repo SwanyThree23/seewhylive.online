@@ -1,0 +1,67 @@
+{
+  "name": "Reaction",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Room ID"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "emoji": {
+      "type": "string",
+      "description": "Emoji reaction"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "room",
+        "stage",
+        "participant",
+        "message"
+      ],
+      "description": "What is being reacted to"
+    },
+    "target_id": {
+      "type": "string",
+      "description": "Target ID"
+    }
+  },
+  "required": [
+    "room_id",
+    "user_id",
+    "emoji"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

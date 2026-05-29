@@ -1,0 +1,130 @@
+{
+  "name": "ScheduledContent",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Associated community"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "room",
+        "event",
+        "announcement",
+        "newsletter",
+        "challenge"
+      ],
+      "description": "Type of content"
+    },
+    "title": {
+      "type": "string",
+      "description": "Content title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Content description"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scheduled date/time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "scheduled",
+        "published",
+        "cancelled"
+      ],
+      "default": "draft",
+      "description": "Content status"
+    },
+    "room_config": {
+      "type": "object",
+      "description": "Room configuration if type is room"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Content tags"
+    },
+    "recurrence": {
+      "type": "string",
+      "enum": [
+        "none",
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "none",
+      "description": "Recurrence pattern"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Reminder notification sent"
+    },
+    "created_room_id": {
+      "type": "string",
+      "description": "ID of created room if published"
+    }
+  },
+  "required": [
+    "creator_id",
+    "content_type",
+    "title",
+    "scheduled_for"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "data.is_public": true
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

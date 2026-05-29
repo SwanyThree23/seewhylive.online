@@ -1,0 +1,76 @@
+{
+  "name": "PointsTransaction",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "creator_id": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "delta": {
+      "type": "number",
+      "description": "Positive=earn, negative=spend"
+    },
+    "balance_after": {
+      "type": "number"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "chat_message",
+        "tip",
+        "poll_win",
+        "watch_time",
+        "redemption",
+        "streak_bonus",
+        "raid",
+        "subscription",
+        "admin_grant"
+      ],
+      "default": "chat_message"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Extra context (tip amount, poll id, etc.)"
+    }
+  },
+  "required": [
+    "user_id",
+    "delta",
+    "reason"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

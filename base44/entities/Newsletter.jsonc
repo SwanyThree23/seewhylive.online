@@ -1,0 +1,135 @@
+{
+  "name": "Newsletter",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "Associated community"
+    },
+    "title": {
+      "type": "string",
+      "description": "Newsletter title"
+    },
+    "content": {
+      "type": "string",
+      "description": "Newsletter HTML content"
+    },
+    "preview_text": {
+      "type": "string",
+      "description": "Email preview text"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "scheduled",
+        "sent"
+      ],
+      "default": "draft"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "open_rate": {
+      "type": "number",
+      "default": 0
+    },
+    "click_rate": {
+      "type": "number",
+      "default": 0
+    },
+    "subscriber_count": {
+      "type": "number",
+      "default": 0
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "ai_generated",
+        "stream_recap"
+      ],
+      "default": "manual"
+    },
+    "source_id": {
+      "type": "string",
+      "description": "Source room/event ID"
+    }
+  },
+  "required": [
+    "community_id",
+    "title",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_member}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
