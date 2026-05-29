@@ -530,103 +530,122 @@ export default function BroadcastStudio() {
   return (
     <div className={`flex flex-col ${theaterMode ? 'fixed inset-0 z-50' : 'h-screen'}`} style={{ background: BG }}>
 
-      {/* ── TOP BAR ────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(0,0,0,0.65)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
-        {/* Toggle left panel */}
-        <button onClick={() => setLeftOpen(v => !v)}
-          className="w-7 h-7 flex items-center justify-center rounded-lg shrink-0"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
-          {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </button>
+      {/* ── FANBASE-STYLE TOP BAR ──────────────────────────────────────────── */}
+      <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
 
-        {/* Title + live badge */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="w-2 h-2 rounded-full shrink-0 animate-pulse" style={{ background: '#FF1564' }} />
-          <span className="font-black text-sm text-white truncate max-w-[160px]" style={T}>{party.title}</span>
-          <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0"
-            style={{ background: 'rgba(255,21,100,0.15)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.3)', ...T }}>LIVE</span>
-        </div>
-
-        {/* Mode pills */}
-        <div className="flex items-center gap-1 ml-1">
-          {[
-            { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
-            { id: 'watch',  icon: '🎬', label: 'Watch' },
-            { id: 'live',   icon: '🎙️', label: 'Live' },
-          ].map(mod => (
-            <button key={mod.id} onClick={() => setStudioMode(mod.id)}
-              className="text-[8px] px-2 py-1 rounded font-black uppercase transition-all"
-              style={{
-                background: studioMode === mod.id ? 'rgba(212,175,55,0.15)' : 'transparent',
-                border: studioMode === mod.id ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
-                color: studioMode === mod.id ? GOLD : 'rgba(255,255,255,0.3)', ...T,
-              }}>
-              {mod.icon} {mod.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Right controls */}
-        <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            <Users className="w-3 h-3 inline mr-0.5" />{members.length}/20
-          </span>
-
-          <button onClick={copyLink}
-            className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg"
-            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
-            <Copy className="w-3 h-3" /> Invite
+        {/* Row 1: panel toggle | title + badges | right actions */}
+        <div className="flex items-center gap-2 px-3 h-12">
+          <button onClick={() => setLeftOpen(v => !v)}
+            className="w-8 h-8 flex items-center justify-center rounded-xl shrink-0 transition-all active:scale-95"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+            {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
 
-          {canManage && <GreenroomWaitlistPanel roomId={partyId} currentUser={user} />}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</span>
+            <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+              style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', ...T }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
+            </span>
+            <span className="shrink-0 text-[9px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
+              SeeWhy LIVE
+            </span>
+          </div>
 
-          {isHost && (
-            <VideoSourcePicker
-              compact
-              isHost={isHost}
-              isCoHost={isCoHost}
-              onSelect={src => {
-                const safeSelectUrl = isSafeUrl(src.url) ? src.url : '';
-                base44.entities.WatchParty.update(party.id, {
-                  video_url: safeSelectUrl,
-                  video_type: src.type === 'youtube' ? 'youtube' : 'direct',
-                  current_time: 0,
-                  playback_state: 'paused',
-                  updated_at_ms: Date.now(),
-                }).then(() => {
-                  qc.invalidateQueries(['broadcast-party', partyId]);
-                  setStudioMode('watch');
-                });
-              }}
-            />
-          )}
-
-          <button onClick={() => setTheaterMode(v => !v)}
-            className="w-7 h-7 flex items-center justify-center rounded-lg"
-            style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? GOLD : 'rgba(255,255,255,0.4)' }}>
-            {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-          </button>
-
-          {isHost && (
-            <CompositorOverlay
-              layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
-              slots={compositorSlots}
-              overlayConfig={compositorOverlay}
-              userId={user?.id}
-              onScreenCapture={studioMode === 'watch' ? async () => {
-                const s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-                return s;
-              } : undefined}
-              isHost={isHost}
-            />
-          )}
-
-          {isHost && (
-            <button onClick={() => endMut.mutate()}
-              className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg"
-              style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
-              <LogOut className="w-3 h-3" /> End
+          <div className="flex items-center gap-1 shrink-0">
+            <button onClick={copyLink}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: 'rgba(212,175,55,0.08)', color: GOLD }} title="Copy invite link">
+              <Copy className="w-3.5 h-3.5" />
             </button>
+            <button onClick={() => setTheaterMode(v => !v)}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? GOLD : 'rgba(255,255,255,0.4)' }}>
+              {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
+            {canManage && <GreenroomWaitlistPanel roomId={partyId} currentUser={user} />}
+            {isHost && (
+              <VideoSourcePicker
+                compact
+                isHost={isHost}
+                isCoHost={isCoHost}
+                onSelect={src => {
+                  const safeSelectUrl = isSafeUrl(src.url) ? src.url : '';
+                  base44.entities.WatchParty.update(party.id, {
+                    video_url: safeSelectUrl,
+                    video_type: src.type === 'youtube' ? 'youtube' : 'direct',
+                    current_time: 0,
+                    playback_state: 'paused',
+                    updated_at_ms: Date.now(),
+                  }).then(() => {
+                    qc.invalidateQueries(['broadcast-party', partyId]);
+                    setStudioMode('watch');
+                  });
+                }}
+              />
+            )}
+            {isHost && (
+              <CompositorOverlay
+                layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
+                slots={compositorSlots}
+                overlayConfig={compositorOverlay}
+                userId={user?.id}
+                onScreenCapture={studioMode === 'watch' ? async () => {
+                  const s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+                  return s;
+                } : undefined}
+                isHost={isHost}
+              />
+            )}
+            {isHost && (
+              <button onClick={() => endMut.mutate()}
+                className="flex items-center gap-1 text-[9px] px-2.5 py-1.5 rounded-xl transition-all active:scale-95"
+                style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
+                <LogOut className="w-3 h-3" /> End
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Row 2: host avatar + name | member count | mode pills | speaking indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black text-white"
+            style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+            {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
+          </div>
+          <span className="text-[10px] text-white/50 truncate max-w-[80px]" style={T}>{user?.full_name || 'Host'}</span>
+          <span className="text-white/15 mx-0.5">·</span>
+          <Users className="w-3 h-3 shrink-0" style={{ color: GOLD }} />
+          <span className="text-[10px] font-bold shrink-0" style={{ color: GOLD, ...T }}>{members.length}/20</span>
+          <div className="flex items-center gap-1 ml-1">
+            {[
+              { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
+              { id: 'watch',  icon: '🎬', label: 'Watch' },
+              { id: 'live',   icon: '🎙', label: 'Live' },
+            ].map(mod => (
+              <button key={mod.id} onClick={() => setStudioMode(mod.id)}
+                className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase transition-all active:scale-95"
+                style={{
+                  background: studioMode === mod.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                  border: studioMode === mod.id ? '1px solid rgba(212,175,55,0.35)' : '1px solid rgba(255,255,255,0.07)',
+                  color: studioMode === mod.id ? GOLD : 'rgba(255,255,255,0.3)', ...T,
+                }}>
+                {mod.icon} {mod.label}
+              </button>
+            ))}
+          </div>
+          {isHost && (
+            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, ...T }}>
+              Host
+            </span>
+          )}
+          {isCoHost && !isHost && (
+            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)', ...T }}>
+              Co-Host
+            </span>
           )}
         </div>
       </div>

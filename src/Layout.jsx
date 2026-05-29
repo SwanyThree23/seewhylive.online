@@ -24,11 +24,11 @@ import GlobalChatWidget from '@/components/live/GlobalChatWidget';
 import SwanyBotWidget from '@/components/guide/ARIAWidget';
 
 var MOBILE_NAV = [
-  { name: 'Home',      icon: Home,          href: createPageUrl('Home') },
-  { name: 'Discover',  icon: SearchIcon,    href: createPageUrl('Discover') },
-  { name: 'Studio',    icon: Radio,         href: '/BroadcastStudio',           isCenter: true },
-  { name: 'Battles',   icon: Swords,        href: createPageUrl('PKBattleManager') },
-  { name: 'Dashboard', icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'Home',     icon: Home,       href: createPageUrl('Home') },
+  { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
+  { name: 'Studio',   icon: Radio,      href: '/BroadcastStudio', isCenter: true },
+  { name: 'Battles',  icon: Swords,     href: createPageUrl('PKBattleManager') },
+  { name: 'Profile',  icon: User,       href: createPageUrl('CreatorDashboard') },
 ];
 
 var PRIMARY_NAV = [
@@ -230,54 +230,113 @@ export default function Layout({ children, currentPageName }) {
           </div>
         )}
 
-        {/* Expanded menu — mobile & desktop */}
-        <AnimatePresence>
-          {showMobileMenu && (
+      </header>
+
+      {/* ── SLIDE-OUT LEFT DRAWER ──────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <>
+            {/* Backdrop */}
             <motion.div
-              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden" style={{ background: 'rgba(7,7,15,0.99)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="p-4 space-y-3">
-                {/* All sections in a scrollable grid */}
-                <p className="text-[9px] text-white/20 uppercase font-bold tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Navigate</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {[...PRIMARY_NAV, ...CREATOR_NAV].map(function(item) {
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[90]"
+              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+              onClick={function() { setShowMobileMenu(false); }}
+            />
+            {/* Drawer panel */}
+            <motion.div
+              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              className="fixed top-0 left-0 bottom-0 z-[91] flex flex-col overflow-y-auto"
+              style={{ width: '80vw', maxWidth: 320, background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)' }}>
+
+              {/* Drawer header */}
+              <div className="flex items-center justify-between px-4 pt-10 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                    style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
+                    <Radio className="w-4 h-4 text-black" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-sm leading-none" style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37' }}>SeeWhy</span>
+                    <span className="text-[8px] text-white/30 leading-none mt-0.5" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
+                  </div>
+                </div>
+                <button onClick={function() { setShowMobileMenu(false); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-xl"
+                  style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Primary nav */}
+              <div className="px-3 pt-4 pb-2">
+                <p className="text-[9px] text-white/20 uppercase font-bold tracking-widest mb-2 px-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Primary</p>
+                <div className="space-y-0.5">
+                  {PRIMARY_NAV.map(function(item) {
                     var Icon = item.icon;
                     var active = isActive(item.href);
                     return (
                       <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
-                        <div className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-center transition-all active:scale-95"
-                          style={{ background: active ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.06)' }}>
-                          <Icon className="w-5 h-5" style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
-                          <span className="text-[9px] uppercase font-bold leading-tight" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>{item.name}</span>
+                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all active:scale-98"
+                          style={{ background: active ? 'rgba(212,175,55,0.1)' : 'transparent', borderLeft: active ? '2px solid #d4af37' : '2px solid transparent' }}>
+                          <Icon className="w-4 h-4 shrink-0" style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
+                          <span className="text-sm font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? '#d4af37' : 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>{item.name}</span>
+                          {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: '#d4af37' }} />}
                         </div>
                       </Link>
                     );
                   })}
                 </div>
-                {isAdmin && (
-                  <>
-                    <p className="text-[9px] text-orange-400/50 uppercase font-bold tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Admin</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {ADMIN_NAV.map(function(item) {
-                        var Icon = item.icon;
-                        return (
-                          <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
-                            <div className="flex flex-col items-center gap-1.5 py-3 rounded-xl text-center"
-                              style={{ background: 'rgba(255,140,0,0.06)', border: '1px solid rgba(255,140,0,0.15)' }}>
-                              <Icon className="w-4 h-4 text-orange-400/70" />
-                              <span className="text-[9px] text-orange-400/60 uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{item.name}</span>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
               </div>
+
+              {/* Creator nav */}
+              <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <p className="text-[9px] text-white/20 uppercase font-bold tracking-widest mb-2 px-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Creator</p>
+                <div className="space-y-0.5">
+                  {CREATOR_NAV.map(function(item) {
+                    var Icon = item.icon;
+                    var active = isActive(item.href);
+                    return (
+                      <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
+                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+                          style={{ background: active ? 'rgba(212,175,55,0.08)' : 'transparent', borderLeft: active ? '2px solid #d4af37' : '2px solid transparent' }}>
+                          <Icon className="w-4 h-4 shrink-0" style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.35)' }} />
+                          <span className="text-sm font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? '#d4af37' : 'rgba(255,255,255,0.5)', letterSpacing: '0.04em' }}>{item.name}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Admin nav */}
+              {isAdmin && (
+                <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,140,0,0.12)' }}>
+                  <p className="text-[9px] text-orange-400/40 uppercase font-bold tracking-widest mb-2 px-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Admin</p>
+                  <div className="space-y-0.5">
+                    {ADMIN_NAV.map(function(item) {
+                      var Icon = item.icon;
+                      return (
+                        <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                            style={{ background: 'rgba(255,140,0,0.04)', borderLeft: '2px solid rgba(255,140,0,0.15)' }}>
+                            <Icon className="w-4 h-4 shrink-0 text-orange-400/70" />
+                            <span className="text-sm font-bold text-orange-400/60" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>{item.name}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom padding for safe area */}
+              <div className="h-20" />
             </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main */}
       <main className="pb-[96px] md:pb-10">
