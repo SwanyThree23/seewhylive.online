@@ -101,6 +101,36 @@ fi
 echo "▶ Enabling nginx on boot..."
 systemctl enable nginx 2>/dev/null || true
 
+# ── 10a. Issue/renew Let's Encrypt cert for domain ──────────────────────────
+echo "▶ Checking SSL certificate for seewhylive.online..."
+CERT_PATH="/etc/letsencrypt/live/seewhylive.online/fullchain.pem"
+if [ ! -f "$CERT_PATH" ]; then
+  echo "  No cert found — attempting certbot..."
+  if command -v certbot &>/dev/null; then
+    # Temporarily swap to self-signed so nginx can start for ACME challenge
+    nginx -s reload 2>/dev/null || true
+    certbot certonly --webroot -w /var/www/html \
+      -d seewhylive.online -d www.seewhylive.online \
+      --non-interactive --agree-tos --email admin@seewhylive.online \
+      --keep-until-expiring 2>/dev/null && \
+    echo "  ✓ Let's Encrypt cert issued" || \
+    echo "  ⚠ certbot failed — using self-signed cert (check DNS A record points to $VPS_IP)"
+  else
+    echo "  ⚠ certbot not installed — run: apt install -y certbot python3-certbot-nginx"
+  fi
+else
+  # Renew if within 30 days of expiry
+  certbot renew --quiet 2>/dev/null || true
+  echo "  ✓ Cert present (renewed if needed)"
+fi
+
+# Swap nginx SSL lines to Let's Encrypt cert if it now exists
+if [ -f "$CERT_PATH" ]; then
+  sed -i "s|ssl_certificate .*;|ssl_certificate /etc/letsencrypt/live/seewhylive.online/fullchain.pem;|" /etc/nginx/nginx.conf
+  sed -i "s|ssl_certificate_key .*;|ssl_certificate_key /etc/letsencrypt/live/seewhylive.online/privkey.pem;|" /etc/nginx/nginx.conf
+  echo "  ✓ nginx.conf updated to use Let's Encrypt cert"
+fi
+
 echo "▶ Reloading nginx..."
 if nginx -t 2>/dev/null; then
   systemctl reload nginx 2>/dev/null || service nginx reload 2>/dev/null || true
