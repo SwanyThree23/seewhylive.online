@@ -653,6 +653,7 @@ export default function BroadcastStudio() {
                 onInvite={copyLink}
                 remoteStreams={remoteStreams}
                 peerUserIds={peerUserIds}
+                localStream={localStream}
               />
             </motion.div>
           )}
