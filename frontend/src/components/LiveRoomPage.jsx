@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import OctCell from './OctCell.jsx';
 import rtcManager from '../webrtc.js';
+import MediaConfigPanel from './MediaConfigPanel.jsx';
 
 var MAX_STAGE = 20;
 
@@ -197,10 +198,11 @@ export default function LiveRoomPage({
   var [reactsOpen,    setReactsOpen]    = useState(false);
   var [floatReacts,   setFloatReacts]   = useState([]);
   var [giftFloats,    setGiftFloats]    = useState([]);
-  var [stageLayout,   setStageLayout]   = useState('grid');   // 'grid' | 'featured'
-  var [featuredId,    setFeaturedId]    = useState(userId);
-  var [showLiveModal, setShowLiveModal] = useState(false);
-  var [stageGuests,   setStageGuests]   = useState([userId]);
+  var [stageLayout,    setStageLayout]    = useState('grid');   // 'grid' | 'featured'
+  var [featuredId,     setFeaturedId]     = useState(userId);
+  var [showLiveModal,  setShowLiveModal]  = useState(false);
+  var [stageGuests,    setStageGuests]    = useState([userId]);
+  var [showMediaConf,  setShowMediaConf]  = useState(false);
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -837,8 +839,31 @@ export default function LiveRoomPage({
             danger={true}
             onPress={toggleMute}
           />
+          <IconBtn
+            icon="⚙"
+            label="Camera"
+            active={showMediaConf}
+            onPress={function() { setShowMediaConf(function(v) { return !v; }); }}
+          />
         </div>
       </div>
+
+      {/* ════════════════ MEDIA CONFIG PANEL ════════════════ */}
+      {showMediaConf && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 80, display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ width: '100%', maxHeight: '90vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <MediaConfigPanel
+              addToast={addToast}
+              onClose={function() { setShowMediaConf(false); }}
+              onApply={function(cfg) {
+                setMedConf(cfg);
+                setShowMediaConf(false);
+                if (addToast) addToast('Camera settings applied', 'success');
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
