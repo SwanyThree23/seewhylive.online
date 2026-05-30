@@ -96,53 +96,14 @@
   ],
   "rls": {
     "create": {
-      "data.host_id": "{{user.id}}"
+      "created_by": "{{user.email}}"
     },
-    "read": {
-      "$or": [
-        {
-          "data.is_public": true
-        },
-        {
-          "data.host_id": "{{user.id}}"
-        },
-        {
-          "data.community_id": {
-            "$in": [
-              "{{user.communities_as_member}}"
-            ]
-          }
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
+    "read": null,
     "update": {
-      "$or": [
-        {
-          "data.host_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "created_by": "{{user.email}}"
     },
     "delete": {
-      "$or": [
-        {
-          "data.host_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "created_by": "{{user.email}}"
     }
   }
 }
