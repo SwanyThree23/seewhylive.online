@@ -300,24 +300,14 @@ export default function LiveRoomPage({
       });
     });
 
-    socket.on('poll-started', function(data) {
-      if (!data || !data.q) return;
-      setActivePoll({ q: data.q, opts: (data.opts || []).map(function(t) { return { text: t, votes: 0 }; }) });
-      setPollVoted(false);
-    });
-
-    socket.on('poll-vote', function(data) {
-      if (!data || typeof data.optIdx !== 'number') return;
-      setActivePoll(function(p) {
-        if (!p) return p;
-        var opts = p.opts.map(function(o, i) {
-          return i === data.optIdx ? { text: o.text, votes: o.votes + 1 } : o;
-        });
-        return { q: p.q, opts: opts };
+    socket.on('poll-update', function(data) {
+      if (!data) return;
+      if (!data.active) { setActivePoll(null); setPollVoted(false); return; }
+      setActivePoll({
+        q: data.question || '',
+        opts: (data.options || []).map(function(o) { return { text: o.text, votes: o.votes || 0 }; })
       });
     });
-
-    socket.on('poll-ended', function() { setActivePoll(null); setPollVoted(false); });
 
     socket.on('qa-question', function(data) {
       if (!data || !data.text) return;
@@ -347,9 +337,7 @@ export default function LiveRoomPage({
       socket.off('gift-received');
       socket.off('hand-raise');
       socket.off('stage-invite');
-      socket.off('poll-started');
-      socket.off('poll-vote');
-      socket.off('poll-ended');
+      socket.off('poll-update');
       socket.off('qa-question');
       socket.off('qa-upvote');
       socket.off('qa-dismissed');
@@ -395,7 +383,7 @@ export default function LiveRoomPage({
     if (!socket || !pollDraft.q.trim()) return;
     var opts = pollDraft.opts.filter(function(o) { return o.trim(); });
     if (opts.length < 2) { if (addToast) addToast('Need at least 2 options', 'error'); return; }
-    socket.emit('poll-start', { roomId: roomId, q: pollDraft.q.trim(), opts: opts });
+    socket.emit('poll-start', { roomId: roomId, question: pollDraft.q.trim(), options: opts });
     setShowPollCreate(false);
     setPollDraft({ q: '', opts: ['', '', '', ''] });
     if (addToast) addToast('Poll launched!', 'success');
@@ -403,7 +391,7 @@ export default function LiveRoomPage({
 
   function votePoll(idx) {
     if (!socket || pollVoted) return;
-    socket.emit('poll-vote', { roomId: roomId, optIdx: idx });
+    socket.emit('poll-vote', { roomId: roomId, optionIdx: idx });
     setPollVoted(true);
     setActivePoll(function(p) {
       if (!p) return p;
