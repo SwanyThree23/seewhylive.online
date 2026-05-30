@@ -31,64 +31,14 @@
   ],
   "rls": {
     "create": {
-      "data.user_id": "{{user.id}}"
+      "created_by": "{{user.email}}"
     },
-    "read": {
-      "$or": [
-        {
-          "data.user_id": "{{user.id}}"
-        },
-        {
-          "data.party_id": {
-            "$in": [
-              "{{user.watch_parties_as_host}}"
-            ]
-          }
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
+    "read": null,
     "update": {
-      "$or": [
-        {
-          "data.user_id": "{{user.id}}"
-        },
-        {
-          "data.party_id": {
-            "$in": [
-              "{{user.watch_parties_as_host}}"
-            ]
-          }
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "created_by": "{{user.email}}"
     },
     "delete": {
-      "$or": [
-        {
-          "data.user_id": "{{user.id}}"
-        },
-        {
-          "data.party_id": {
-            "$in": [
-              "{{user.watch_parties_as_host}}"
-            ]
-          }
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "created_by": "{{user.email}}"
     }
   }
 }
