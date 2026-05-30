@@ -33,7 +33,19 @@ var ANIM = [
   '@keyframes qaIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}',
   '@keyframes musicIn{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
   '@keyframes vsIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}',
+  '@keyframes scoreReveal{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}',
+  '@keyframes scoreFade{from{opacity:1}to{opacity:0;transform:scale(.9)}}',
 ].join('\n');
+
+// ─── Gift items ─────────────────────────────────────────────────────────────
+var GIFTS = [
+  { emoji: '💰', name: 'Coin',     valueCents: 100   },
+  { emoji: '🎁', name: 'Gift Box', valueCents: 500   },
+  { emoji: '👑', name: 'Crown',    valueCents: 1000  },
+  { emoji: '💎', name: 'Diamond',  valueCents: 2500  },
+  { emoji: '🔥', name: 'Inferno',  valueCents: 5000  },
+  { emoji: '🚀', name: 'Rocket',   valueCents: 10000 },
+];
 
 // ─── Sub-components ────────────────────────────────────────────────────────
 
@@ -233,6 +245,9 @@ export default function LiveRoomPage({
   var [judgeAssignName, setJudgeAssignName] = useState('');
   var [judgeScoreVal,  setJudgeScoreVal]  = useState('');
   var [judgeScoreLabel, setJudgeScoreLabel] = useState('');
+  var [showGiftSheet,  setShowGiftSheet]  = useState(false);
+  var [giftSending,    setGiftSending]    = useState(false);
+  var [scoreReveal,    setScoreReveal]    = useState(null); // { username, score, label } | null
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -366,7 +381,8 @@ export default function LiveRoomPage({
 
     socket.on('judge-scored', function(data) {
       if (!data) return;
-      if (addToast) addToast('⚖ ' + (data.username || 'Judge') + ' scored ' + data.score + (data.label ? ' — ' + data.label : ''), 'info');
+      setScoreReveal({ username: data.username || 'Judge', score: data.score, label: data.label || '' });
+      setTimeout(function() { setScoreReveal(null); }, 3200);
     });
 
     return function() {
@@ -469,6 +485,27 @@ export default function LiveRoomPage({
     setJudgeScoreVal('');
     setJudgeScoreLabel('');
     if (addToast) addToast('Score submitted!', 'success');
+  }
+
+  function shareRoom() {
+    var url = window.location.origin + (roomId !== '6990f5f24823b53e21fcdc9d' ? ('?room=' + roomId) : '');
+    if (navigator.share) {
+      navigator.share({ title: 'SeeWhy LIVE', text: 'Watch live domino action on SeeWhy LIVE!', url: url });
+    } else {
+      navigator.clipboard.writeText(url).then(function() {
+        if (addToast) addToast('Room link copied!', 'success');
+      }).catch(function() {
+        if (addToast) addToast('seewhylive.online', 'info');
+      });
+    }
+  }
+
+  function sendGift(gift) {
+    if (!socket || giftSending) return;
+    setGiftSending(true);
+    socket.emit('send-gift', { roomId: roomId, fromUser: username, emoji: gift.emoji, name: gift.name, valueCents: Math.floor(gift.valueCents) });
+    if (addToast) addToast(gift.emoji + ' ' + gift.name + ' sent!', 'success');
+    setTimeout(function() { setGiftSending(false); setShowGiftSheet(false); }, 1200);
   }
 
   function goLive() {
@@ -902,16 +939,16 @@ export default function LiveRoomPage({
         {/* ── Quick Action Tools ── */}
         <div style={{ padding: '6px 14px 10px', display: 'flex', gap: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
           {[
-            { emoji: '💰', label: 'Tip'    },
-            { emoji: '🎁', label: 'Gift'   },
-            { emoji: '📊', label: 'Poll'   },
-            { emoji: '🎟', label: 'PPV'    },
-            { emoji: '🔗', label: 'Share'  },
-            { emoji: '⚙',  label: 'Settings' },
+            { emoji: '🎁', label: 'Gift',     onTap: function() { setShowGiftSheet(true); } },
+            { emoji: '📊', label: 'Poll',     onTap: function() { setShowQa(true); setShowPollCreate(true); setShowVsCreate(false); setShowJudges(false); setChatOpen(false); } },
+            { emoji: '⚔',  label: 'VS',       onTap: function() { setShowQa(true); setShowVsCreate(true); setShowPollCreate(false); setShowJudges(false); setChatOpen(false); } },
+            { emoji: '⚖',  label: 'Judges',   onTap: function() { setShowQa(true); setShowJudges(true); setShowPollCreate(false); setShowVsCreate(false); setChatOpen(false); } },
+            { emoji: '🔗', label: 'Share',    onTap: shareRoom },
+            { emoji: '⚙',  label: 'Camera',   onTap: function() { setShowMediaConf(true); } },
           ].map(function(tool) {
             return (
-              <div key={tool.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', background: CARD2, border: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+              <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
+                <div style={{ width: 46, height: 46, borderRadius: '50%', background: CARD2, border: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, transition: 'background .15s', activeBackground: CARD }}>
                   {tool.emoji}
                 </div>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>{tool.label}</span>
@@ -1536,6 +1573,68 @@ export default function LiveRoomPage({
               placeholder="Ask a question..."
               style={{ flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 999, padding: '9px 16px', fontSize: 13, color: TEXT, outline: 'none', fontFamily: "'Barlow Condensed',sans-serif" }} />
             <button onClick={submitQa} style={{ background: gold, border: 'none', borderRadius: 999, padding: '9px 16px', fontWeight: 700, fontSize: 13, color: BG, cursor: 'pointer' }}>Ask</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ GIFT SHEET ════════════════ */}
+      {showGiftSheet && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 18px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1 }}>Send a Gift</div>
+              <button onClick={function() { setShowGiftSheet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 18, letterSpacing: .5 }}>90% goes directly to the creator</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 16 }}>
+              {GIFTS.map(function(g) {
+                return (
+                  <button key={g.name} onClick={function() { sendGift(g); }}
+                    disabled={giftSending}
+                    style={{
+                      background: CARD2, border: '1.5px solid ' + BORDER, borderRadius: 14,
+                      padding: '14px 8px', cursor: giftSending ? 'default' : 'pointer',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                      opacity: giftSending ? .5 : 1, transition: 'opacity .2s',
+                    }}>
+                    <span style={{ fontSize: 26 }}>{g.emoji}</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: TEXT }}>{g.name}</span>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 1 }}>${(Math.floor(g.valueCents) / 100).toFixed(2)}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, textAlign: 'center' }}>
+              Sending as <span style={{ color: GOLD }}>{username}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SCORE REVEAL OVERLAY ════════════════ */}
+      {scoreReveal && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 90,
+          background: 'rgba(0,0,0,.88)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          animation: scoreReveal ? 'fadeSlideIn .2s ease' : 'scoreFade .4s ease forwards',
+          pointerEvents: 'none',
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEAL, letterSpacing: 3, marginBottom: 10, textTransform: 'uppercase' }}>JUDGE SCORE</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: MUTED, letterSpacing: 2, marginBottom: 8 }}>{scoreReveal.username}</div>
+            <div style={{
+              fontFamily: "'Bebas Neue',sans-serif", fontSize: 110, color: GOLD,
+              lineHeight: .9, letterSpacing: -2,
+              animation: 'scoreReveal .5s cubic-bezier(.175,.885,.32,1.275)',
+              textShadow: '0 0 60px rgba(201,168,76,.6), 0 0 120px rgba(201,168,76,.3)',
+            }}>
+              {scoreReveal.score}
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, marginTop: 4, letterSpacing: 2 }}>/ 10</div>
+            {scoreReveal.label ? (
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: TEXT, marginTop: 12, letterSpacing: .5 }}>{scoreReveal.label}</div>
+            ) : null}
           </div>
         </div>
       )}
