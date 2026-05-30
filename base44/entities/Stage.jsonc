@@ -77,6 +77,13 @@
           }
         },
         {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_member}}"
+            ]
+          }
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
