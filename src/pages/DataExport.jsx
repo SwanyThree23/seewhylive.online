@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Download, FileText, Table, FileSpreadsheet, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
+
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function downloadCSV(filename, data) {
   if (!data.length) return;
@@ -39,17 +41,13 @@ function downloadPDF(title, data) {
   } else {
     const headers = Object.keys(data[0]);
     const colW = Math.min(40, Math.floor(180 / headers.length));
-    // Header row
     doc.setFont(undefined, 'bold');
     headers.forEach((h, i) => doc.text(String(h).slice(0, 14), 14 + i * colW, y));
     doc.setFont(undefined, 'normal');
     y += 6;
     data.slice(0, 60).forEach(row => {
       if (y > 270) { doc.addPage(); y = 20; }
-      headers.forEach((h, i) => {
-        const val = String(row[h] ?? '').slice(0, 14);
-        doc.text(val, 14 + i * colW, y);
-      });
+      headers.forEach((h, i) => doc.text(String(row[h] ?? '').slice(0, 14), 14 + i * colW, y));
       y += 6;
     });
   }
@@ -57,42 +55,10 @@ function downloadPDF(title, data) {
 }
 
 const EXPORT_SETS = [
-  {
-    id: 'activity',
-    label: 'Activity History',
-    description: 'All your platform activities and events',
-    entity: 'Activity',
-    filterKey: 'user_id',
-    color: 'bg-blue-50 border-blue-200',
-    iconColor: 'text-blue-500',
-  },
-  {
-    id: 'subscriptions',
-    label: 'My Subscriptions',
-    description: 'Your active and past creator subscriptions',
-    entity: 'Subscription',
-    filterKey: 'user_id',
-    color: 'bg-purple-50 border-purple-200',
-    iconColor: 'text-purple-500',
-  },
-  {
-    id: 'notifications',
-    label: 'Notifications',
-    description: 'Your notification history',
-    entity: 'Notification',
-    filterKey: 'user_id',
-    color: 'bg-yellow-50 border-yellow-200',
-    iconColor: 'text-yellow-500',
-  },
-  {
-    id: 'transactions',
-    label: 'Transactions',
-    description: 'All tips, purchases, and payments',
-    entity: 'Transaction',
-    filterKey: 'user_id',
-    color: 'bg-green-50 border-green-200',
-    iconColor: 'text-green-500',
-  },
+  { id: 'activity', label: 'Activity History', description: 'All your platform activities and events', entity: 'Activity', filterKey: 'user_id', accentColor: '#00d4ff' },
+  { id: 'subscriptions', label: 'My Subscriptions', description: 'Your active and past creator subscriptions', entity: 'Subscription', filterKey: 'user_id', accentColor: '#8B5CF6' },
+  { id: 'notifications', label: 'Notifications', description: 'Your notification history', entity: 'Notification', filterKey: 'user_id', accentColor: GOLD },
+  { id: 'transactions', label: 'Transactions', description: 'All tips, purchases, and payments', entity: 'Transaction', filterKey: 'user_id', accentColor: '#00ff88' },
 ];
 
 export default function DataExportPage() {
@@ -108,79 +74,74 @@ export default function DataExportPage() {
     setLoading(l => ({ ...l, [key]: true }));
     try {
       const data = await base44.entities[set.entity].filter({ [set.filterKey]: user?.id });
-      const filename = `${set.label.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}`;
-
+      const filename = `${set.label.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}`;
       if (format === 'csv') downloadCSV(`${filename}.csv`, data);
       else if (format === 'json') downloadJSON(`${filename}.json`, data);
       else if (format === 'pdf') downloadPDF(set.label, data);
-
       toast.success(`${set.label} exported as ${format.toUpperCase()}`);
-    } catch (e) {
+    } catch {
       toast.error('Export failed');
     }
     setLoading(l => ({ ...l, [key]: false }));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-      <div className="max-w-3xl mx-auto px-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <Download className="w-8 h-8 text-slate-700" />
-          <div>
-            <h1 className="text-3xl font-bold">Export My Data</h1>
-            <p className="text-muted-foreground text-sm">Download your data for external record keeping and analysis</p>
+    <div className="min-h-screen pb-10" style={{ background: BG }}>
+      {/* Header */}
+      <div className="sticky top-0 z-20 px-4 py-4 md:px-8 flex items-center gap-3 border-b"
+        style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
+        <Download className="w-5 h-5" style={{ color: GOLD }} />
+        <div>
+          <h1 className="text-xl font-black text-white leading-none" style={T}>Export My Data</h1>
+          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Download your data for record keeping and analysis</p>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 md:px-6 pt-6 space-y-4">
+        {EXPORT_SETS.map(set => (
+          <div key={set.id} className="rounded-2xl p-5"
+            style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.1)` }}>
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="font-black text-sm text-white" style={T}>{set.label}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{set.description}</p>
+              </div>
+              <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }}>
+                Personal Data
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { format: 'csv', icon: Table, label: 'CSV' },
+                { format: 'json', icon: FileText, label: 'JSON' },
+                { format: 'pdf', icon: FileSpreadsheet, label: 'PDF' },
+              ].map(({ format, icon: Icon, label }) => {
+                const key = `${set.id}-${format}`;
+                const isLoading = loading[key];
+                return (
+                  <button key={format}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px] transition-all"
+                    disabled={isLoading || !user}
+                    onClick={() => handleExport(set, format)}
+                    style={{ ...T, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: isLoading || !user ? 'rgba(255,255,255,0.2)' : set.accentColor, cursor: isLoading || !user ? 'default' : 'pointer' }}>
+                    {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Icon className="w-3 h-3" />}
+                    Export {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ))}
 
-        <div className="grid gap-4">
-          {EXPORT_SETS.map(set => (
-            <Card key={set.id} className={`border ${set.color}`}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-base">{set.label}</CardTitle>
-                    <CardDescription className="text-xs mt-0.5">{set.description}</CardDescription>
-                  </div>
-                  <Badge variant="outline" className="text-xs">Personal Data</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { format: 'csv', icon: Table, label: 'CSV' },
-                    { format: 'json', icon: FileText, label: 'JSON' },
-                    { format: 'pdf', icon: FileSpreadsheet, label: 'PDF' },
-                  ].map(({ format, icon: Icon, label }) => {
-                    const key = `${set.id}-${format}`;
-                    const isLoading = loading[key];
-                    return (
-                      <Button
-                        key={format}
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs"
-                        disabled={isLoading || !user}
-                        onClick={() => handleExport(set, format)}
-                      >
-                        {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5" />}
-                        Export {label}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Privacy note */}
+        <div className="rounded-2xl p-4 flex items-start gap-3"
+          style={{ background: 'rgba(13,6,24,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#00ff88' }} />
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            All exports contain only <strong style={{ color: 'rgba(255,255,255,0.6)' }}>your own data</strong>. Files are generated locally in your browser and never sent to any server.
+          </p>
         </div>
-
-        <Card className="border bg-slate-50">
-          <CardContent className="pt-4 pb-4 flex items-start gap-3">
-            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-muted-foreground">
-              All exports contain only <strong>your own data</strong>. Files are generated locally in your browser and never sent to any server.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
