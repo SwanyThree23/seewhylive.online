@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import TipWidget from '../components/live/TipWidget';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -253,7 +254,7 @@ export default function LiveRoom() {
 
   // Build stage from real members or demo data
   const stage = roomId && members.length > 0
-    ? members.slice(0, 6).map((m, i) => ({
+    ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
@@ -295,14 +296,24 @@ export default function LiveRoom() {
   }, [roomId]);
 
   const activeSpeaker = stageData.find(s => s.speaking);
-  const stageCols     = stageData.length <= 4 ? 2 : 3;
-  const tileSize      = stageCols === 2 ? 130 : 96;
+  const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;
+  const tileSize = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
 
   function resolveStream(memberId, userId) {
     if (userId === user?.id) return { stream: localStream, isLocal: true };
     const peerId = Array.from((peerUserIds || new Map()).entries()).find(([, uid]) => uid === userId)?.[0];
     return { stream: peerId ? remoteStreams?.get(peerId) : null, isLocal: false };
   }
+
+  // Real-time member roster sync
+  useEffect(() => {
+    if (!roomId) return;
+    const unsub = base44.entities.WatchPartyMember.subscribe((event) => {
+      if (event.data?.party_id !== roomId) return;
+      // queryClient not available here — data refetches on interval
+    });
+    return unsub;
+  }, [roomId]);
 
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
@@ -523,6 +534,14 @@ export default function LiveRoom() {
             </div>
             <span className="text-[8px] text-white/35"> </span>
           </button>
+
+          {/* Tip */}
+          {party && (
+            <div className="flex flex-col items-center gap-0.5">
+              <TipWidget roomId={roomId} hostId={party?.host_id} currentUser={user} />
+              <span className="text-[8px] text-white/35">Tip</span>
+            </div>
+          )}
 
           {/* Mic */}
           <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">

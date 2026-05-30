@@ -32,10 +32,11 @@ jobs:
       - name: Upload dist to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 2.24.194.112
-          username: root
+          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
+          username: ${{ secrets.VPS_USER || 'root' }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || '22' }}
           source: "dist/"
           target: "/opt/seewhy/frontend/"
           strip_components: 0
@@ -44,10 +45,11 @@ jobs:
       - name: Upload server to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 2.24.194.112
-          username: root
+          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
+          username: ${{ secrets.VPS_USER || 'root' }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || '22' }}
           source: "server/"
           target: "/opt/seewhy/"
           strip_components: 0
@@ -56,10 +58,11 @@ jobs:
       - name: Restart services on VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: 2.24.194.112
-          username: root
+          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
+          username: ${{ secrets.VPS_USER || 'root' }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || '22' }}
           script: |
             set -e
 

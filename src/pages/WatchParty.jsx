@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
@@ -27,6 +23,37 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+
+function Button({ children, onClick, disabled, className = '', style = {}, size }) {
+  return (
+    <button onClick={onClick} disabled={disabled}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`}
+      style={{ padding: size === 'sm' ? '5px 10px' : '8px 16px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>
+      {children}
+    </button>
+  );
+}
+function Input({ value, onChange, placeholder, className = '', style = {}, maxLength }) {
+  return (
+    <input value={value} onChange={onChange} placeholder={placeholder} maxLength={maxLength}
+      className={className}
+      style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />
+  );
+}
+function Badge({ children, className = '', style = {} }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
+      style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', ...style }}>
+      {children}
+    </span>
+  );
+}
+function Card({ children, className = '', style = {} }) {
+  return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>;
+}
+function CardContent({ children, className = '', style = {} }) {
+  return <div className={className} style={style}>{children}</div>;
+}
 
 function detectType(url) { return detectVideoType(url); }
 

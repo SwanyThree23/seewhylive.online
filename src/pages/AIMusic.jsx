@@ -1,570 +1,1182 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Music, Play, Pause, Square, Zap, Radio, Volume2, VolumeX,
-  Wand2, Mic2, Headphones, Download, Copy, RefreshCw,
-  ChevronRight, Layers, Sliders, Clock, Star, Trash2, Plus
+  Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
+  Mic2, Headphones, RefreshCw, Plus, X, ChevronRight, Zap,
+  Sparkles, Radio
 } from 'lucide-react';
 
-const BG = '#080B18';
-const BG2 = 'rgba(13,6,24,0.9)';
-const GOLD = '#D4AF37';
+// ── Brand tokens ──────────────────────────────────────────────────────────────
+const BG      = '#080B18';
+const BG2     = 'rgba(13,6,24,0.9)';
+const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
-const CYAN = '#00d4ff';
-const PURPLE = '#a78bfa';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const PINK    = '#FF1564';
+const CYAN    = '#00d4ff';
+const PURPLE  = '#a78bfa';
+const GREEN   = '#22c55e';
+const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+// ── Shared input style ─────────────────────────────────────────────────────────
 const inp = {
-  width: '100%', padding: '10px 14px',
-  background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none',
-  boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
+  width: '100%',
+  padding: '12px 16px',
+  background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 10,
+  color: '#fff',
+  fontSize: 14,
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'Barlow Condensed, sans-serif',
 };
-const lbl = {
-  display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif',
-  color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em',
-  textTransform: 'uppercase', marginBottom: 6, marginTop: 14,
-};
 
-const GENRES = [
-  { id: 'lofi', label: 'Lo-Fi Beats', emoji: '🎧', color: PURPLE },
-  { id: 'hiphop', label: 'Hip-Hop', emoji: '🎤', color: PINK },
-  { id: 'edm', label: 'EDM / House', emoji: '🎛️', color: CYAN },
-  { id: 'rnb', label: 'R&B / Soul', emoji: '🎹', color: GOLD },
-  { id: 'trap', label: 'Trap', emoji: '🥁', color: CRIMSON },
-  { id: 'jazz', label: 'Jazz Chill', emoji: '🎷', color: '#22c55e' },
-  { id: 'ambient', label: 'Ambient', emoji: '🌊', color: '#38bdf8' },
-  { id: 'gospel', label: 'Gospel', emoji: '🎺', color: '#f97316' },
+// ── Style tag categories ──────────────────────────────────────────────────────
+const STYLE_CATEGORIES = [
+  {
+    label: 'Genre',
+    color: CYAN,
+    tags: ['Lo-Fi','Hip-Hop','Trap','R&B','Gospel','EDM','House','Drill','Afrobeats','Jazz','Ambient','Pop'],
+  },
+  {
+    label: 'Mood',
+    color: PINK,
+    tags: ['Hype','Chill','Dark','Uplifting','Romantic','Aggressive','Melancholic','Euphoric'],
+  },
+  {
+    label: 'Instruments',
+    color: PURPLE,
+    tags: ['808','Piano','Guitar','Violin','Drums','Brass','Synth','Choir','Bass','Flute'],
+  },
+  {
+    label: 'Tempo',
+    color: GOLD,
+    tags: ['Slow (60-80)','Medium (90-110)','Fast (120-140)','Hyper (150+)'],
+  },
 ];
 
-const MOODS = [
-  { id: 'hype', label: 'Hype', emoji: '🔥' },
-  { id: 'chill', label: 'Chill', emoji: '😌' },
-  { id: 'dark', label: 'Dark', emoji: '🌑' },
-  { id: 'happy', label: 'Happy', emoji: '😄' },
-  { id: 'focused', label: 'Focused', emoji: '🎯' },
-  { id: 'romantic', label: 'Romantic', emoji: '💕' },
+// ── Genre → color mapping for album art ──────────────────────────────────────
+function tagColor(tags) {
+  const map = {
+    'trap': `linear-gradient(135deg, #1a0010, ${CRIMSON})`,
+    'lo-fi': `linear-gradient(135deg, #0d001f, ${PURPLE})`,
+    'gospel': `linear-gradient(135deg, #1a0a00, #f97316)`,
+    'afrobeats': `linear-gradient(135deg, #001a0d, ${GREEN})`,
+    'edm': `linear-gradient(135deg, #001a20, ${CYAN})`,
+    'hip-hop': `linear-gradient(135deg, #1a1a00, ${GOLD})`,
+    'r&b': `linear-gradient(135deg, #0d001a, ${PINK})`,
+    'jazz': `linear-gradient(135deg, #001a10, #38bdf8)`,
+    'ambient': `linear-gradient(135deg, #00101a, #7dd3fc)`,
+    'house': `linear-gradient(135deg, #1a0020, ${PURPLE})`,
+    'drill': `linear-gradient(135deg, #1a0000, #ef4444)`,
+    'pop': `linear-gradient(135deg, #1a0015, ${PINK})`,
+  };
+  for (const t of (tags || [])) {
+    const k = t.toLowerCase();
+    if (map[k]) return map[k];
+  }
+  return `linear-gradient(135deg, #0d0d1a, ${PURPLE})`;
+}
+
+// ── Trending styles data ──────────────────────────────────────────────────────
+const TRENDING = [
+  { emoji: '🌑', label: 'Dark Trap', style: 'trap, 808, dark, hype', count: '128 tracks' },
+  { emoji: '🎧', label: 'Lo-Fi Chill', style: 'lo-fi, piano, chill, ambient', count: '214 tracks' },
+  { emoji: '🎺', label: 'Gospel Vibes', style: 'gospel, choir, uplifting, piano', count: '73 tracks' },
+  { emoji: '🌍', label: 'Afrobeats', style: 'afrobeats, drums, hype, fast', count: '96 tracks' },
+  { emoji: '🎛️', label: 'EDM Hype', style: 'edm, synth, hype, hyper (150+)', count: '142 tracks' },
+  { emoji: '💜', label: 'R&B Late Night', style: 'r&b, bass, romantic, slow (60-80)', count: '61 tracks' },
 ];
 
-const BPM_OPTIONS = [80, 90, 100, 110, 120, 130, 140, 160];
-
-const STREAM_PRESETS = [
-  { id: 'intro', label: 'Stream Intro', desc: 'High-energy opener for your broadcast', emoji: '🚀', genre: 'edm', mood: 'hype', bpm: 130 },
-  { id: 'gaming', label: 'Gaming Session', desc: 'Focused beats for gameplay', emoji: '🎮', genre: 'hiphop', mood: 'focused', bpm: 120 },
-  { id: 'chat', label: 'Chat & Chill', desc: 'Background music for talking sessions', emoji: '💬', genre: 'lofi', mood: 'chill', bpm: 85 },
-  { id: 'outro', label: 'Stream Outro', desc: 'Smooth sign-off vibes', emoji: '🌙', genre: 'rnb', mood: 'chill', bpm: 90 },
-  { id: 'hype', label: 'Hype Train', desc: 'Drop this when subs hit goals', emoji: '💸', genre: 'trap', mood: 'hype', bpm: 140 },
-  { id: 'ambient', label: 'AFK / Break', desc: 'Ambient loops while you\'re away', emoji: '⏸️', genre: 'ambient', mood: 'chill', bpm: 80 },
+// ── Initial mock library ──────────────────────────────────────────────────────
+const INITIAL_TRACKS = [
+  {
+    id: 't1',
+    title: 'Midnight Trap Session',
+    tags: ['trap', '808', 'dark', 'hype'],
+    duration: '2:47',
+    emoji: '🌑',
+    playing: false,
+    liked: false,
+    likeCount: 24,
+    streamReady: true,
+    lyrics: '[Verse 1]\nLate nights in the booth, grinding till the dawn\nEvery bar I spit another diamond born\nDark energy rising, 808 low\nStream started rolling, watch the numbers grow\n\n[Chorus]\nMidnight session, dark trap nation\nEvery beat a dedication\nLive from the shadows, lights are low\nChat is moving, here we go\n\n[Verse 2]\nSub train rolling, hype train lit\nDrops so heavy make the whole room hit\nProducers on the beat while I hold it down\nSeeWhy LIVE, we run this town',
+  },
+  {
+    id: 't2',
+    title: 'Lo-Fi Study Beats Vol.3',
+    tags: ['lo-fi', 'piano', 'chill', 'ambient'],
+    duration: '3:22',
+    emoji: '🎧',
+    playing: false,
+    liked: true,
+    likeCount: 89,
+    streamReady: true,
+    lyrics: null,
+  },
+  {
+    id: 't3',
+    title: 'Gospel Rising',
+    tags: ['gospel', 'choir', 'uplifting', 'piano'],
+    duration: '4:05',
+    emoji: '🎺',
+    playing: false,
+    liked: false,
+    likeCount: 12,
+    streamReady: false,
+    lyrics: '[Intro]\nRise up, rise up\nLet the music carry you\n\n[Verse 1]\nIn the morning when I open my eyes\nI hear the choir singing from the skies\nEvery note a testament to grace\nEvery melody a holy place\n\n[Chorus]\nGospel rising, voices lifting high\nSeeWhy LIVE, we touch the sky\nHands together, hearts aligned\nLeave the darkness far behind',
+  },
+  {
+    id: 't4',
+    title: 'Afrobeats Summer Jam',
+    tags: ['afrobeats', 'drums', 'hype', 'fast'],
+    duration: '3:15',
+    emoji: '🌍',
+    playing: false,
+    liked: false,
+    likeCount: 31,
+    streamReady: true,
+    lyrics: null,
+  },
 ];
 
-const AI_PROMPTS = [
-  'Dark trap beat with 808s and hi-hats for a streaming intro',
-  'Chill lo-fi piano loop with vinyl crackle, perfect for late-night coding',
-  'High-energy EDM drop for hype train moments',
-  'Smooth R&B instrumental with soft keys and percussion',
-  'Gospel choir vibes with uplifting melodies',
-  'Jazz-infused hip-hop with saxophone lead and boom-bap drums',
-  'Ambient soundscape with rain and soft synths',
+// ── Generation status messages ────────────────────────────────────────────────
+const GEN_STEPS = [
+  'Analyzing style tags…',
+  'Composing lyrics…',
+  'Arranging instrumentation…',
+  'Rendering audio…',
+  'Mastering track…',
+  'Finalizing…',
 ];
 
-function WaveformVisualizer({ playing, color = GOLD }) {
-  const bars = 32;
+// ── WaveformVisualizer ────────────────────────────────────────────────────────
+function WaveformVisualizer({ playing, color = GOLD, bars = 28, height = 36 }) {
+  const heights = useRef(
+    Array.from({ length: bars }, () => 4 + Math.random() * 24)
+  );
   return (
-    <div className="flex items-center justify-center gap-0.5" style={{ height: 40 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 2, height }}>
       {Array.from({ length: bars }).map((_, i) => (
         <motion.div
           key={i}
-          animate={playing ? {
-            height: [4, 8 + Math.random() * 28, 4],
-          } : { height: 4 }}
-          transition={playing ? {
-            duration: 0.4 + Math.random() * 0.4,
-            repeat: Infinity,
-            delay: i * 0.03,
-            ease: 'easeInOut',
-          } : {}}
-          style={{ width: 3, borderRadius: 2, background: color, opacity: 0.7 + i % 3 * 0.1 }}
+          animate={playing ? { height: [4, heights.current[i], 4] } : { height: 4 }}
+          transition={
+            playing
+              ? { duration: 0.35 + (i % 5) * 0.09, repeat: Infinity, delay: i * 0.025, ease: 'easeInOut' }
+              : { duration: 0.2 }
+          }
+          style={{ width: 3, borderRadius: 2, background: color, opacity: 0.75 + (i % 3) * 0.08, flexShrink: 0 }}
         />
       ))}
     </div>
   );
 }
 
-function TrackCard({ track, onPlay, isPlaying, onDelete }) {
+// ── StyleChip ─────────────────────────────────────────────────────────────────
+function StyleChip({ label, color, active, onClick, onRemove }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.93 }}
+      onClick={onClick}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        padding: '5px 11px',
+        borderRadius: 999,
+        border: `1px solid ${active ? color + 'aa' : 'rgba(255,255,255,0.12)'}`,
+        background: active ? color + '22' : 'rgba(255,255,255,0.04)',
+        color: active ? color : 'rgba(255,255,255,0.5)',
+        fontSize: 12,
+        fontFamily: 'Barlow Condensed, sans-serif',
+        fontWeight: 700,
+        letterSpacing: '0.04em',
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+        transition: 'all 0.15s',
+      }}
+    >
+      {label}
+      {active && onRemove && (
+        <X size={10} style={{ marginLeft: 2, opacity: 0.7 }} onClick={(e) => { e.stopPropagation(); onRemove(); }} />
+      )}
+    </motion.button>
+  );
+}
+
+// ── TrackCard ─────────────────────────────────────────────────────────────────
+function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [lyricsOpen, setLyricsOpen] = useState(false);
+  const [editingLyrics, setEditingLyrics] = useState(false);
+  const [lyricsText, setLyricsText] = useState(track.lyrics || '');
+  const menuRef = useRef(null);
+
+  // close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handler(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
+  const artGradient = tagColor(track.tags);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 rounded-2xl"
-      style={{ background: BG2, border: `1px solid ${isPlaying ? GOLD + '40' : 'rgba(212,175,55,0.1)'}`, boxShadow: isPlaying ? `0 0 20px ${GOLD}15` : 'none' }}
+      layout
+      style={{
+        borderRadius: 16,
+        background: BG2,
+        border: `1px solid ${isPlaying ? GOLD + '50' : 'rgba(212,175,55,0.1)'}`,
+        boxShadow: isPlaying ? `0 0 24px ${GOLD}18` : 'none',
+        overflow: 'hidden',
+        transition: 'border-color 0.2s, box-shadow 0.2s',
+      }}
     >
-      <div className="flex items-center gap-3 mb-3">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
+      {/* Main row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px' }}>
+        {/* Album art / play button */}
+        <div
+          style={{
+            position: 'relative',
+            width: 80,
+            height: 80,
+            borderRadius: 12,
+            background: artGradient,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            overflow: 'hidden',
+            cursor: 'pointer',
+          }}
           onClick={onPlay}
-          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: isPlaying ? `${GOLD}20` : `${CRIMSON}20`, border: `1px solid ${isPlaying ? GOLD + '50' : CRIMSON + '40'}` }}
         >
-          {isPlaying ? <Pause className="w-4 h-4" style={{ color: GOLD }} /> : <Play className="w-4 h-4 ml-0.5" style={{ color: '#fff' }} />}
-        </motion.button>
-        <div className="flex-1 min-w-0">
-          <p className="font-black text-sm text-white truncate" style={T}>{track.name}</p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full"
-              style={{ ...T, background: `${PURPLE}15`, border: `1px solid ${PURPLE}30`, color: PURPLE }}>
-              {track.genre}
-            </span>
-            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{track.bpm} BPM · {track.mood}</span>
-          </div>
+          <span style={{ fontSize: 28, lineHeight: 1, zIndex: 1 }}>{track.emoji}</span>
+          {/* Play overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(0,0,0,0.55)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 12,
+            }}
+          >
+            {isPlaying
+              ? <Pause size={26} color="#fff" />
+              : <Play size={26} color="#fff" style={{ marginLeft: 3 }} />
+            }
+          </motion.div>
+          {/* Waveform overlay when playing */}
+          {isPlaying && (
+            <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4 }}>
+              <WaveformVisualizer playing bars={18} height={18} color="#fff" />
+            </div>
+          )}
         </div>
-        <button onClick={onDelete}
-          className="p-1.5 rounded-lg shrink-0"
-          style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)' }}>
-          <Trash2 className="w-3.5 h-3.5" style={{ color: PINK }} />
-        </button>
+
+        {/* Info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+            <span style={{ ...T, color: '#fff', fontSize: 15, fontWeight: 800, letterSpacing: '0.02em' }}>
+              {track.title}
+            </span>
+            {track.streamReady && (
+              <span style={{
+                ...T, fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
+                padding: '2px 7px', borderRadius: 999,
+                background: GREEN + '22', border: `1px solid ${GREEN}55`, color: GREEN,
+                textTransform: 'uppercase',
+              }}>
+                Stream Ready
+              </span>
+            )}
+          </div>
+          {/* Tags */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 6 }}>
+            {track.tags.map(tag => (
+              <span key={tag} style={{
+                ...T, fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+                padding: '2px 8px', borderRadius: 999,
+                background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)',
+                color: PURPLE, textTransform: 'uppercase',
+              }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+          {/* Duration */}
+          <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em' }}>
+            {track.duration}
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Like */}
+          <motion.button
+            whileTap={{ scale: 0.85 }}
+            onClick={onLike}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            }}
+          >
+            <Heart
+              size={17}
+              fill={track.liked ? PINK : 'none'}
+              color={track.liked ? PINK : 'rgba(255,255,255,0.35)'}
+            />
+            <span style={{ ...T, fontSize: 10, color: track.liked ? PINK : 'rgba(255,255,255,0.3)' }}>
+              {track.likeCount}
+            </span>
+          </motion.button>
+
+          {/* More menu */}
+          <div style={{ position: 'relative' }} ref={menuRef}>
+            <motion.button
+              whileTap={{ scale: 0.85 }}
+              onClick={() => setMenuOpen(o => !o)}
+              style={{
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 8, width: 30, height: 30,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'rgba(255,255,255,0.5)',
+              }}
+            >
+              <MoreHorizontal size={15} />
+            </motion.button>
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                  style={{
+                    position: 'absolute', right: 0, top: 36, zIndex: 30,
+                    background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
+                    borderRadius: 12, overflow: 'hidden', minWidth: 150,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+                  }}
+                >
+                  {[
+                    { label: 'Remix', icon: RefreshCw, color: CYAN, action: () => { onRemix(); setMenuOpen(false); } },
+                    { label: 'Continue', icon: ChevronRight, color: PURPLE, action: () => { onContinue(); setMenuOpen(false); } },
+                    { label: 'Download', icon: Download, color: GOLD, action: () => setMenuOpen(false) },
+                    { label: 'Delete', icon: X, color: PINK, action: () => { onDelete(); setMenuOpen(false); } },
+                  ].map(item => (
+                    <button
+                      key={item.label}
+                      onClick={item.action}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        width: '100%', padding: '10px 14px',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: item.color, fontSize: 13, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif',
+                        textAlign: 'left', letterSpacing: '0.04em',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                    >
+                      <item.icon size={13} /> {item.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Lyrics toggle if lyrics exist */}
+          {track.lyrics && (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setLyricsOpen(o => !o)}
+              style={{
+                background: lyricsOpen ? PURPLE + '22' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${lyricsOpen ? PURPLE + '55' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 8, width: 30, height: 30,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: lyricsOpen ? PURPLE : 'rgba(255,255,255,0.4)',
+              }}
+              title="View lyrics"
+            >
+              <Mic2 size={13} />
+            </motion.button>
+          )}
+        </div>
       </div>
-      {isPlaying && <WaveformVisualizer playing={true} color={GOLD} />}
+
+      {/* Lyrics panel */}
+      <AnimatePresence>
+        {lyricsOpen && track.lyrics && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            style={{ overflow: 'hidden', borderTop: '1px solid rgba(167,139,250,0.15)' }}
+          >
+            <div style={{ padding: '14px 16px', background: 'rgba(167,139,250,0.04)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ ...T, fontSize: 11, color: PURPLE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  Lyrics
+                </span>
+                <button
+                  onClick={() => setEditingLyrics(e => !e)}
+                  style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: CYAN, fontSize: 11, fontWeight: 700 }}
+                >
+                  {editingLyrics ? 'Done' : 'Edit'}
+                </button>
+              </div>
+              {editingLyrics ? (
+                <textarea
+                  value={lyricsText}
+                  onChange={e => setLyricsText(e.target.value)}
+                  rows={10}
+                  style={{ ...inp, fontSize: 12, resize: 'vertical', lineHeight: 1.7 }}
+                />
+              ) : (
+                <pre style={{
+                  margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: 12,
+                  fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1.8,
+                  whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                }}>
+                  {lyricsText.split('\n').map((line, i) => {
+                    const isTag = /^\[.+\]$/.test(line.trim());
+                    return (
+                      <span key={i} style={{ display: 'block', color: isTag ? GOLD : 'rgba(255,255,255,0.7)', fontWeight: isTag ? 800 : 400 }}>
+                        {line || ' '}
+                      </span>
+                    );
+                  })}
+                </pre>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
+// ── ContinuePanel ─────────────────────────────────────────────────────────────
+function ContinuePanel({ track, onClose, onGenerate }) {
+  const [startTime, setStartTime] = useState(track.duration);
+  const [desc, setDesc] = useState('');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 16 }}
+      style={{
+        borderRadius: 16, background: BG2,
+        border: `1px solid ${PURPLE}55`,
+        padding: 20, marginBottom: 12,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <span style={{ ...T, color: PURPLE, fontSize: 14, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          Continue: {track.title}
+        </span>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
+          <X size={16} />
+        </button>
+      </div>
+      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+        Continue from (end of track)
+      </label>
+      <input
+        value={startTime}
+        onChange={e => setStartTime(e.target.value)}
+        placeholder="e.g. 2:47"
+        style={{ ...inp, marginBottom: 12 }}
+      />
+      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+        Description for next section
+      </label>
+      <textarea
+        value={desc}
+        onChange={e => setDesc(e.target.value)}
+        rows={3}
+        placeholder="Bridge with strings, slower tempo, emotional outro…"
+        style={{ ...inp, resize: 'none', marginBottom: 14 }}
+      />
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={() => onGenerate({ track, startTime, desc })}
+        style={{
+          ...T, width: '100%', padding: '12px',
+          background: `linear-gradient(90deg, ${PURPLE}, ${CYAN})`,
+          border: 'none', borderRadius: 10,
+          color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
+          textTransform: 'uppercase', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        }}
+      >
+        <ChevronRight size={15} /> Generate Continuation
+      </motion.button>
+    </motion.div>
+  );
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function Toast({ message, visible }) {
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          style={{
+            position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            borderRadius: 12, padding: '12px 22px',
+            color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif',
+            fontWeight: 700, letterSpacing: '0.04em',
+            boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${GOLD}18`,
+            zIndex: 9999, whiteSpace: 'nowrap',
+          }}
+        >
+          {message}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
-  const [activeTab, setActiveTab] = useState('generate');
-  const [genre, setGenre] = useState('lofi');
-  const [mood, setMood] = useState('chill');
-  const [bpm, setBpm] = useState(90);
-  const [prompt, setPrompt] = useState('');
-  const [trackName, setTrackName] = useState('');
-  const [duration, setDuration] = useState(60);
+  // Form state
+  const [description, setDescription] = useState('');
+  const [styleInput, setStyleInput] = useState('');
+  const [titleInput, setTitleInput] = useState('');
+  const [instrumental, setInstrumental] = useState(false);
+
+  // Generation state
   const [generating, setGenerating] = useState(false);
+  const [genStep, setGenStep] = useState(0);
+  const genTimerRef = useRef(null);
+
+  // Library
+  const [tracks, setTracks] = useState(INITIAL_TRACKS);
   const [playingId, setPlayingId] = useState(null);
-  const [volume, setVolume] = useState(80);
-  const [muted, setMuted] = useState(false);
-  const [tracks, setTracks] = useState([
-    { id: 't1', name: 'Late Night Lo-Fi Session', genre: 'lofi', mood: 'chill', bpm: 85, duration: 180, created: Date.now() - 86400000 },
-    { id: 't2', name: 'Hype Train Intro', genre: 'trap', mood: 'hype', bpm: 140, duration: 60, created: Date.now() - 3600000 },
-    { id: 't3', name: 'Chat & Chill Vibes', genre: 'rnb', mood: 'chill', bpm: 90, duration: 120, created: Date.now() - 7200000 },
-  ]);
-  const [djMode, setDjMode] = useState(false);
-  const [djQueue, setDjQueue] = useState([]);
-  const [djPlaying, setDjPlaying] = useState(false);
 
-  const selectedGenre = GENRES.find(g => g.id === genre) || GENRES[0];
+  // Continue panel
+  const [continueTrack, setContinueTrack] = useState(null);
 
-  const TABS = [
-    { id: 'generate', label: 'Generate', icon: Wand2, color: GOLD },
-    { id: 'library', label: 'My Tracks', icon: Music, color: PURPLE },
-    { id: 'presets', label: 'Stream Presets', icon: Radio, color: CYAN },
-    { id: 'dj', label: 'AI DJ Mode', icon: Headphones, color: PINK },
-  ];
+  // Toast
+  const [toast, setToast] = useState({ visible: false, message: '' });
 
-  function handleGenerate() {
+  // Mobile tabs
+  const [mobileTab, setMobileTab] = useState('create'); // 'create' | 'library' | 'trending'
+
+  // Active style tag category filter
+  const [activeCategory, setActiveCategory] = useState(0);
+
+  // Parsed style tags (comma-separated from styleInput)
+  const parsedTags = styleInput
+    .split(',')
+    .map(t => t.trim().toLowerCase())
+    .filter(Boolean);
+
+  // Cycling gen steps
+  useEffect(() => {
+    if (!generating) { setGenStep(0); return; }
+    let step = 0;
+    genTimerRef.current = setInterval(() => {
+      step = (step + 1) % GEN_STEPS.length;
+      setGenStep(step);
+    }, 480);
+    return () => clearInterval(genTimerRef.current);
+  }, [generating]);
+
+  function showToast(msg) {
+    setToast({ visible: true, message: msg });
+    setTimeout(() => setToast({ visible: false, message: '' }), 3000);
+  }
+
+  function handleAddStyleTag(tag) {
+    const lower = tag.toLowerCase();
+    if (parsedTags.includes(lower)) return;
+    setStyleInput(prev => prev ? prev + ', ' + lower : lower);
+  }
+
+  function handleRemoveStyleTag(tag) {
+    const newTags = parsedTags.filter(t => t !== tag.toLowerCase());
+    setStyleInput(newTags.join(', '));
+  }
+
+  function handleCreate(forceInstrumental = false) {
     if (generating) return;
     setGenerating(true);
-    const name = trackName || `${selectedGenre.emoji} ${selectedGenre.label} — ${mood} ${bpm}bpm`;
+    const totalDelay = 2500 + Math.random() * 600;
     setTimeout(() => {
+      const tags = parsedTags.length > 0 ? parsedTags : ['chill'];
+      const isInstrumental = forceInstrumental || instrumental;
+      const title = titleInput ||
+        (tags[0] ? tags[0].charAt(0).toUpperCase() + tags[0].slice(1) : 'Track') +
+        ' — AI Generated';
+      const emojiMap = {
+        trap:'🌑', 'lo-fi':'🎧', gospel:'🎺', afrobeats:'🌍',
+        edm:'🎛️', 'hip-hop':'🎤', 'r&b':'💜', jazz:'🎷',
+        ambient:'🌊', house:'🎹', drill:'💥', pop:'⭐',
+        '808':'🥁', piano:'🎹', guitar:'🎸', choir:'🎶',
+      };
+      const emoji = emojiMap[tags[0]] || '🎵';
+      const minutes = 2 + Math.floor(Math.random() * 2);
+      const seconds = 10 + Math.floor(Math.random() * 50);
+      const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
       const newTrack = {
         id: `t${Date.now()}`,
-        name,
-        genre,
-        mood,
-        bpm,
+        title,
+        tags: tags.slice(0, 6),
         duration,
-        prompt,
-        created: Date.now(),
+        emoji,
+        playing: false,
+        liked: false,
+        likeCount: Math.floor(Math.random() * 20),
+        streamReady: isInstrumental || Math.random() > 0.4,
+        lyrics: isInstrumental ? null : generateMockLyrics(tags),
       };
       setTracks(prev => [newTrack, ...prev]);
       setGenerating(false);
-      setTrackName('');
-      setPrompt('');
-      setActiveTab('library');
+      setTitleInput('');
+      setDescription('');
+      setMobileTab('library');
+      showToast('🎵 Your track is ready!');
+    }, totalDelay);
+  }
+
+  function generateMockLyrics(tags) {
+    const mood = tags.find(t => ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t)) || 'chill';
+    const genre = tags[0] || 'music';
+    return `[Verse 1]\nRiding the ${mood} wave, ${genre} in my veins\nSeeWhy LIVE is where the magic remains\nEvery beat a story, every note a dream\nNothing is impossible, or so it seems\n\n[Chorus]\n${genre.toUpperCase()}, can you feel it tonight\nThe music takes over, everything feels right\nLive on the stream, hearts locked in the flow\n${mood.charAt(0).toUpperCase() + mood.slice(1)} vibes only, watch the numbers grow\n\n[Verse 2]\nChat moving fast, the energy is real\nHitting every drop, you know how we feel\nAI composing what the soul demands\nSeeWhy LIVE, we're in your hands\n\n[Outro]\nFade into the ${mood} night\nThis music carries us just right`;
+  }
+
+  function handleContinueGenerate({ track, startTime, desc }) {
+    setContinueTrack(null);
+    setGenerating(true);
+    setTimeout(() => {
+      const newTrack = {
+        ...track,
+        id: `t${Date.now()}`,
+        title: track.title + ' (Continued)',
+        duration: '1:' + (30 + Math.floor(Math.random() * 29)).toString(),
+        likeCount: 0,
+        liked: false,
+      };
+      setTracks(prev => [newTrack, ...prev]);
+      setGenerating(false);
+      showToast('🎵 Continuation ready!');
     }, 2800);
   }
 
-  function applyPreset(preset) {
-    setGenre(preset.genre);
-    setMood(preset.mood);
-    setBpm(preset.bpm);
-    setTrackName(preset.label);
-    setActiveTab('generate');
+  function togglePlay(id) {
+    setPlayingId(prev => (prev === id ? null : id));
   }
 
-  function toggleDjTrack(track) {
-    setDjQueue(prev =>
-      prev.find(t => t.id === track.id)
-        ? prev.filter(t => t.id !== track.id)
-        : [...prev, track]
-    );
+  function toggleLike(id) {
+    setTracks(prev => prev.map(t =>
+      t.id === id
+        ? { ...t, liked: !t.liked, likeCount: t.liked ? t.likeCount - 1 : t.likeCount + 1 }
+        : t
+    ));
   }
 
+  function deleteTrack(id) {
+    setTracks(prev => prev.filter(t => t.id !== id));
+    if (playingId === id) setPlayingId(null);
+  }
+
+  function remixTrack(track) {
+    setStyleInput(track.tags.join(', '));
+    setTitleInput(track.title + ' (Remix)');
+    setMobileTab('create');
+    showToast('🎛️ Remix settings loaded!');
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen pb-10 text-white" style={{ background: BG }}>
-      {/* Header */}
-      <div className="sticky top-0 z-20 px-4 py-4 md:px-8 flex items-center gap-3 border-b"
-        style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: `linear-gradient(135deg, ${CRIMSON}, ${PURPLE})` }}>
-          <Music className="w-5 h-5 text-white" />
+    <div style={{ minHeight: '100vh', background: BG, color: '#fff', paddingBottom: 60 }}>
+
+      {/* ── Header ── */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14,
+        borderBottom: '1px solid rgba(212,175,55,0.12)',
+        background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(14px)',
+      }}>
+        <div style={{
+          width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+          background: `linear-gradient(135deg, ${CRIMSON}, ${PURPLE})`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Music size={20} color="#fff" />
         </div>
         <div>
-          <h1 className="text-xl font-black text-white leading-none" style={T}>AI Music Studio</h1>
-          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
-            Generate beats, build playlists &amp; power your stream soundtrack
+          <h1 style={{ ...T, fontSize: 22, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '0.02em' }}>
+            AI Music Studio
+          </h1>
+          <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, letterSpacing: '0.08em' }}>
+            Powered by SeeWhy LIVE · Suno-style generation
           </p>
         </div>
-
-        {/* Volume control */}
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => setMuted(m => !m)}
-            className="p-2 rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            {muted ? <VolumeX className="w-4 h-4" style={{ color: PINK }} /> : <Volume2 className="w-4 h-4" style={{ color: GOLD }} />}
-          </button>
-          <input type="range" min="0" max="100" value={volume}
-            onChange={e => setVolume(parseInt(e.target.value))}
-            style={{ width: 80, accentColor: GOLD }} />
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{
+            ...T, fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
+            padding: '4px 12px', borderRadius: 999,
+            background: GOLD + '18', border: `1px solid ${GOLD}40`, color: GOLD,
+            textTransform: 'uppercase',
+          }}>
+            <Zap size={10} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+            AI Beta
+          </span>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 space-y-4">
-
-        {/* Now Playing strip */}
-        {playingId && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-3 rounded-2xl"
-            style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}25` }}
+      {/* ── Mobile tabs ── */}
+      <div style={{
+        display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(8,11,24,0.95)', position: 'sticky', top: 71, zIndex: 40,
+      }}>
+        {[
+          { id: 'create', label: 'Create', icon: Wand2, color: GOLD },
+          { id: 'library', label: `My Songs (${tracks.length})`, icon: Music, color: PURPLE },
+          { id: 'trending', label: 'Trending', icon: Radio, color: CYAN },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setMobileTab(tab.id)}
+            style={{
+              flex: 1, padding: '12px 4px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              background: 'none', border: 'none', borderBottom: `2px solid ${mobileTab === tab.id ? tab.color : 'transparent'}`,
+              color: mobileTab === tab.id ? tab.color : 'rgba(255,255,255,0.35)',
+              cursor: 'pointer', fontSize: 11, fontWeight: 800, fontFamily: 'Barlow Condensed, sans-serif',
+              letterSpacing: '0.07em', textTransform: 'uppercase', transition: 'all 0.15s',
+            }}
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: `${GOLD}20` }}>
-              <Music className="w-4 h-4" style={{ color: GOLD }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-black text-white truncate" style={T}>
-                {tracks.find(t => t.id === playingId)?.name || 'Track'}
-              </p>
-              <WaveformVisualizer playing={true} color={GOLD} />
-            </div>
-            <button onClick={() => setPlayingId(null)}
-              className="p-1.5 rounded-lg"
-              style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <Square className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.5)' }} />
-            </button>
-          </motion.div>
-        )}
+            <tab.icon size={13} /> {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* Tabs */}
-        <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
-              style={{ ...T, color: activeTab === tab.id ? tab.color : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === tab.id ? tab.color : 'transparent', background: 'transparent' }}>
-              <tab.icon className="w-3.5 h-3.5" />
-              {tab.label}
-            </button>
-          ))}
+      {/* ── Two-column desktop layout ── */}
+      <div style={{
+        maxWidth: 1280,
+        margin: '0 auto',
+        padding: '0 16px',
+        display: 'flex',
+        gap: 24,
+        paddingTop: 24,
+      }}>
+
+        {/* ════ LEFT / CREATE PANEL ════ */}
+        <div style={{
+          flex: '0 0 520px',
+          maxWidth: 520,
+          display: mobileTab === 'create' ? 'block' : 'none',
+        }}
+          className="desktop-show-left"
+        >
+
+          {/* Hero prompt card */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              borderRadius: 20, background: BG2,
+              border: '1px solid rgba(212,175,55,0.15)',
+              padding: 24, marginBottom: 20,
+              boxShadow: `0 4px 40px rgba(0,0,0,0.4)`,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+              <Sparkles size={16} color={GOLD} />
+              <span style={{ ...T, fontSize: 13, fontWeight: 800, color: GOLD, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Song Description
+              </span>
+            </div>
+
+            {/* Main textarea */}
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              rows={4}
+              placeholder="Describe your song... dark trap beat with 808s, hype stream intro, chill lo-fi piano loop..."
+              style={{ ...inp, resize: 'none', fontSize: 15, lineHeight: 1.6, marginBottom: 14 }}
+            />
+
+            {/* Style of Music */}
+            <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+              Style of Music
+            </label>
+            <input
+              value={styleInput}
+              onChange={e => setStyleInput(e.target.value)}
+              placeholder="trap, 808, dark, hype"
+              style={{ ...inp, marginBottom: 10 }}
+            />
+
+            {/* Active style tag pills */}
+            {parsedTags.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                {parsedTags.map(tag => (
+                  <StyleChip
+                    key={tag}
+                    label={tag}
+                    color={CYAN}
+                    active
+                    onRemove={() => handleRemoveStyleTag(tag)}
+                    onClick={() => {}}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Title */}
+            <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+              Title (optional)
+            </label>
+            <input
+              value={titleInput}
+              onChange={e => setTitleInput(e.target.value)}
+              placeholder="My Stream Intro Beat"
+              style={{ ...inp, marginBottom: 16 }}
+            />
+
+            {/* Instrumental toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+              <button
+                onClick={() => setInstrumental(i => !i)}
+                style={{
+                  width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+                  background: instrumental ? PURPLE : 'rgba(255,255,255,0.12)',
+                  position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                }}
+              >
+                <motion.div
+                  animate={{ x: instrumental ? 20 : 2 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  style={{
+                    position: 'absolute', top: 3, width: 18, height: 18, borderRadius: 9,
+                    background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+                  }}
+                />
+              </button>
+              <span style={{ ...T, fontSize: 13, color: instrumental ? PURPLE : 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
+                Instrumental (no lyrics)
+              </span>
+            </div>
+
+            {/* CTA Buttons */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                disabled={generating}
+                onClick={() => handleCreate(false)}
+                style={{
+                  flex: 1, padding: '13px 0',
+                  background: generating ? 'rgba(212,175,55,0.15)' : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`,
+                  border: 'none', borderRadius: 12, cursor: generating ? 'not-allowed' : 'pointer',
+                  color: generating ? GOLD : '#000', fontSize: 13, fontWeight: 800,
+                  fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
+                  textTransform: 'uppercase', opacity: generating ? 0.7 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                {generating
+                  ? <><motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}><RefreshCw size={14} /></motion.span> Creating…</>
+                  : <><Wand2 size={14} /> Create</>
+                }
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                disabled={generating}
+                onClick={() => handleCreate(true)}
+                style={{
+                  flex: 1, padding: '13px 0',
+                  background: generating ? 'rgba(167,139,250,0.1)' : `linear-gradient(90deg, ${PURPLE}, #6d28d9)`,
+                  border: `1px solid ${PURPLE}55`, borderRadius: 12, cursor: generating ? 'not-allowed' : 'pointer',
+                  color: '#fff', fontSize: 13, fontWeight: 800,
+                  fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
+                  textTransform: 'uppercase', opacity: generating ? 0.6 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                <Headphones size={14} /> Instrumental
+              </motion.button>
+            </div>
+          </motion.div>
+
+          {/* ── Generation progress ── */}
+          <AnimatePresence>
+            {generating && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                style={{
+                  borderRadius: 16, padding: '20px 24px',
+                  background: GOLD + '08', border: `1px solid ${GOLD}25`,
+                  marginBottom: 20, textAlign: 'center',
+                }}
+              >
+                <WaveformVisualizer playing bars={36} height={44} color={GOLD} />
+                <motion.p
+                  key={genStep}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ ...T, color: GOLD, fontSize: 13, fontWeight: 700, marginTop: 12, letterSpacing: '0.05em' }}
+                >
+                  {GEN_STEPS[genStep]}
+                </motion.p>
+                <p style={{ ...T, color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 4 }}>
+                  {parsedTags.slice(0, 4).join(' · ') || 'chill'}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── Style Tags Chips ── */}
+          <div style={{
+            borderRadius: 20, background: BG2,
+            border: '1px solid rgba(255,255,255,0.08)',
+            padding: 20, marginBottom: 20,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <Sparkles size={14} color={PINK} />
+              <span style={{ ...T, fontSize: 12, fontWeight: 800, color: PINK, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Quick Style Tags
+              </span>
+            </div>
+
+            {/* Category tabs */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+              {STYLE_CATEGORIES.map((cat, i) => (
+                <button
+                  key={cat.label}
+                  onClick={() => setActiveCategory(i)}
+                  style={{
+                    ...T, padding: '5px 12px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                    background: activeCategory === i ? cat.color + '25' : 'rgba(255,255,255,0.04)',
+                    color: activeCategory === i ? cat.color : 'rgba(255,255,255,0.4)',
+                    fontSize: 11, fontWeight: 800, letterSpacing: '0.06em',
+                    border: `1px solid ${activeCategory === i ? cat.color + '55' : 'rgba(255,255,255,0.08)'}`,
+                  }}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tag chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+              {STYLE_CATEGORIES[activeCategory].tags.map(tag => {
+                const isActive = parsedTags.includes(tag.toLowerCase());
+                return (
+                  <StyleChip
+                    key={tag}
+                    label={tag}
+                    color={STYLE_CATEGORIES[activeCategory].color}
+                    active={isActive}
+                    onClick={() => isActive ? handleRemoveStyleTag(tag) : handleAddStyleTag(tag)}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Trending styles (left panel desktop) ── */}
+          <div style={{
+            borderRadius: 20, background: BG2,
+            border: '1px solid rgba(0,212,255,0.12)',
+            padding: 20,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <Radio size={14} color={CYAN} />
+              <span style={{ ...T, fontSize: 12, fontWeight: 800, color: CYAN, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Trending Now on SeeWhy LIVE
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {TRENDING.map(item => (
+                <motion.button
+                  key={item.label}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => { setStyleInput(item.style); setMobileTab('create'); }}
+                  style={{
+                    background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.12)',
+                    borderRadius: 12, padding: '12px 14px',
+                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                    cursor: 'pointer', textAlign: 'left',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = CYAN + '40'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.12)'}
+                >
+                  <span style={{ fontSize: 22, marginBottom: 6 }}>{item.emoji}</span>
+                  <span style={{ ...T, color: '#fff', fontSize: 13, fontWeight: 800, display: 'block', marginBottom: 2 }}>
+                    {item.label}
+                  </span>
+                  <span style={{ ...T, color: 'rgba(255,255,255,0.35)', fontSize: 10 }}>{item.count}</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* ── GENERATE TAB ── */}
-        {activeTab === 'generate' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {/* Genre Grid */}
-            <div className="rounded-2xl p-5" style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
-              <p className="font-black text-sm mb-3" style={{ ...T, color: GOLD }}>Genre</p>
-              <div className="grid grid-cols-4 gap-2">
-                {GENRES.map(g => (
-                  <motion.button key={g.id} whileTap={{ scale: 0.9 }}
-                    onClick={() => setGenre(g.id)}
-                    className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all"
-                    style={{
-                      background: genre === g.id ? `${g.color}18` : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${genre === g.id ? g.color + '50' : 'rgba(255,255,255,0.07)'}`,
-                      boxShadow: genre === g.id ? `0 0 14px ${g.color}30` : 'none',
-                    }}>
-                    <span className="text-xl">{g.emoji}</span>
-                    <span className="text-[9px] font-black uppercase text-center leading-tight"
-                      style={{ ...T, color: genre === g.id ? g.color : 'rgba(255,255,255,0.4)' }}>{g.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
+        {/* ════ RIGHT / LIBRARY PANEL ════ */}
+        <div style={{
+          flex: 1,
+          minWidth: 0,
+          display: mobileTab === 'library' ? 'block' : 'none',
+        }}
+          className="desktop-show-right"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <span style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '0.02em' }}>
+              My Library
+            </span>
+            <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
+              {tracks.length} track{tracks.length !== 1 ? 's' : ''}
+            </span>
+          </div>
 
-            {/* Mood & BPM */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-2xl p-5" style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
-                <p className="font-black text-sm mb-3" style={{ ...T, color: CYAN }}>Mood</p>
-                <div className="space-y-1.5">
-                  {MOODS.map(m => (
-                    <button key={m.id} onClick={() => setMood(m.id)}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl transition-all text-left"
-                      style={{
-                        background: mood === m.id ? `${CYAN}12` : 'transparent',
-                        border: `1px solid ${mood === m.id ? CYAN + '40' : 'transparent'}`,
-                      }}>
-                      <span>{m.emoji}</span>
-                      <span className="text-xs font-black" style={{ ...T, color: mood === m.id ? CYAN : 'rgba(255,255,255,0.5)' }}>{m.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-2xl p-5" style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
-                <p className="font-black text-sm mb-3" style={{ ...T, color: PURPLE }}>BPM</p>
-                <div className="space-y-1.5">
-                  {BPM_OPTIONS.map(b => (
-                    <button key={b} onClick={() => setBpm(b)}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all"
-                      style={{
-                        background: bpm === b ? `${PURPLE}12` : 'transparent',
-                        border: `1px solid ${bpm === b ? PURPLE + '40' : 'transparent'}`,
-                      }}>
-                      <span className="text-xs font-black font-mono" style={{ color: bpm === b ? PURPLE : 'rgba(255,255,255,0.5)' }}>{b}</span>
-                      {bpm === b && <div className="w-1.5 h-1.5 rounded-full" style={{ background: PURPLE }} />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* AI Prompt & Options */}
-            <div className="rounded-2xl p-5" style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
-              <p className="font-black text-sm mb-3" style={{ ...T, color: PINK }}>AI Prompt <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>(optional)</span></p>
-              <textarea
-                value={prompt} onChange={e => setPrompt(e.target.value)}
-                placeholder="Describe your track... e.g. 'Dark trap with 808 bass and atmospheric synths'"
-                rows={3}
-                style={{ ...inp, resize: 'none', marginBottom: 8 }}
+          {/* Continue panel */}
+          <AnimatePresence>
+            {continueTrack && (
+              <ContinuePanel
+                track={continueTrack}
+                onClose={() => setContinueTrack(null)}
+                onGenerate={handleContinueGenerate}
               />
-              {/* Quick prompt suggestions */}
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {AI_PROMPTS.slice(0, 3).map((p, i) => (
-                  <button key={i} onClick={() => setPrompt(p)}
-                    className="text-[9px] font-black px-2 py-1 rounded-lg transition-all"
-                    style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-                    {p.slice(0, 38)}…
-                  </button>
-                ))}
-              </div>
+            )}
+          </AnimatePresence>
 
-              <label style={lbl}>Track Name <span style={{ color: 'rgba(255,255,255,0.2)' }}>(optional)</span></label>
-              <input value={trackName} onChange={e => setTrackName(e.target.value)}
-                placeholder="e.g. My Stream Intro Beat" style={inp} />
-
-              <div className="grid grid-cols-2 gap-4 mt-0">
-                <div>
-                  <label style={lbl}>Duration</label>
-                  <select value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={inp}>
-                    <option value={30}>30 seconds</option>
-                    <option value={60}>1 minute</option>
-                    <option value={120}>2 minutes</option>
-                    <option value={180}>3 minutes</option>
-                    <option value={300}>5 minutes</option>
-                    <option value={600}>10 minutes (Loop)</option>
-                  </select>
-                </div>
-                <div className="flex flex-col justify-end">
-                  <motion.button
-                    onClick={handleGenerate}
-                    disabled={generating}
-                    whileTap={{ scale: 0.97 }}
-                    className="w-full py-3 rounded-xl font-black uppercase tracking-wide text-sm mt-2 disabled:opacity-60"
-                    style={{ ...T, background: generating ? 'rgba(212,175,55,0.2)' : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, color: generating ? GOLD : '#000', border: 'none' }}
+          {/* Generating (library view) */}
+          <AnimatePresence>
+            {generating && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                style={{
+                  borderRadius: 16, padding: 18,
+                  background: GOLD + '08', border: `1px solid ${GOLD}25`,
+                  marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14,
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <motion.p
+                    key={genStep}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    style={{ ...T, color: GOLD, fontSize: 13, fontWeight: 700, marginBottom: 8 }}
                   >
-                    {generating ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-                          <RefreshCw className="w-4 h-4" />
-                        </motion.span>
-                        Generating…
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        <Wand2 className="w-4 h-4" /> Generate Track
-                      </span>
-                    )}
-                  </motion.button>
+                    {GEN_STEPS[genStep]}
+                  </motion.p>
+                  <WaveformVisualizer playing bars={24} height={28} color={GOLD} />
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-            {/* Generating Progress */}
-            <AnimatePresence>
-              {generating && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                  className="rounded-2xl p-5 text-center"
-                  style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}25` }}
-                >
-                  <p className="font-black text-sm mb-3" style={{ ...T, color: GOLD }}>🎵 AI is composing your track…</p>
-                  <WaveformVisualizer playing={true} color={GOLD} />
-                  <p className="text-xs mt-3" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
-                    Analyzing {selectedGenre.label} patterns • {mood} mood • {bpm} BPM
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-
-        {/* ── LIBRARY TAB ── */}
-        {activeTab === 'library' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>{tracks.length} tracks generated</p>
-              <button onClick={() => setActiveTab('generate')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black"
-                style={{ ...T, background: `${GOLD}15`, border: `1px solid ${GOLD}30`, color: GOLD }}>
-                <Plus className="w-3.5 h-3.5" /> New Track
-              </button>
+          {/* Track cards */}
+          {tracks.length === 0 ? (
+            <div style={{
+              textAlign: 'center', padding: '60px 20px',
+              borderRadius: 20, background: BG2, border: '1px solid rgba(255,255,255,0.06)',
+            }}>
+              <Music size={44} color="rgba(255,255,255,0.15)" style={{ marginBottom: 12 }} />
+              <p style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: 700 }}>No tracks yet</p>
+              <p style={{ ...T, color: 'rgba(255,255,255,0.25)', fontSize: 12, marginTop: 4 }}>
+                Create your first AI track in the Create tab
+              </p>
             </div>
-            {tracks.length === 0 ? (
-              <div className="text-center py-12 rounded-2xl" style={{ background: BG2, border: '1px solid rgba(255,255,255,0.06)' }}>
-                <Music className="w-10 h-10 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.2)' }} />
-                <p className="text-sm font-black" style={{ ...T, color: 'rgba(255,255,255,0.4)' }}>No tracks yet</p>
-                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Generate your first AI track above</p>
-              </div>
-            ) : (
-              tracks.map(track => (
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {tracks.map(track => (
                 <TrackCard
                   key={track.id}
                   track={track}
                   isPlaying={playingId === track.id}
-                  onPlay={() => setPlayingId(playingId === track.id ? null : track.id)}
-                  onDelete={() => { setTracks(prev => prev.filter(t => t.id !== track.id)); if (playingId === track.id) setPlayingId(null); }}
+                  onPlay={() => togglePlay(track.id)}
+                  onLike={() => toggleLike(track.id)}
+                  onDelete={() => deleteTrack(track.id)}
+                  onContinue={() => setContinueTrack(track)}
+                  onRemix={() => remixTrack(track)}
                 />
-              ))
-            )}
-          </motion.div>
-        )}
-
-        {/* ── PRESETS TAB ── */}
-        {activeTab === 'presets' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <div className="rounded-2xl p-4" style={{ background: `${CYAN}08`, border: `1px solid ${CYAN}20` }}>
-              <p className="text-xs font-black" style={{ ...T, color: CYAN }}>Stream-Ready Presets</p>
-              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
-                One-tap presets optimized for specific stream moments. Click to load into the generator.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {STREAM_PRESETS.map(preset => (
-                <motion.div key={preset.id} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}
-                  className="p-4 rounded-2xl cursor-pointer"
-                  style={{ background: BG2, border: '1px solid rgba(212,175,55,0.12)' }}
-                  onClick={() => applyPreset(preset)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="text-2xl shrink-0">{preset.emoji}</div>
-                    <div className="flex-1">
-                      <p className="font-black text-sm text-white" style={T}>{preset.label}</p>
-                      <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>{preset.desc}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase"
-                          style={{ ...T, background: `${PURPLE}15`, border: `1px solid ${PURPLE}25`, color: PURPLE }}>
-                          {GENRES.find(g => g.id === preset.genre)?.label}
-                        </span>
-                        <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
-                          {preset.mood} · {preset.bpm} BPM
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 shrink-0 mt-1" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                  </div>
-                </motion.div>
               ))}
             </div>
-          </motion.div>
-        )}
+          )}
+        </div>
 
-        {/* ── AI DJ MODE TAB ── */}
-        {activeTab === 'dj' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {/* DJ Header */}
-            <div className="rounded-2xl p-5 text-center relative overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${CRIMSON}20, ${PURPLE}20)`, border: `1px solid ${PINK}25` }}>
-              <div style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none',
-                background: `radial-gradient(ellipse at center top, ${PINK}15 0%, transparent 60%)`,
-              }} />
-              <Headphones className="w-10 h-10 mx-auto mb-3" style={{ color: PINK }} />
-              <p className="font-black text-lg" style={{ ...T, color: PINK }}>AI DJ Mode</p>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
-                Build a queue and let AI auto-mix your stream soundtrack
-              </p>
-
+        {/* ════ TRENDING TAB (mobile only) ════ */}
+        <div style={{
+          flex: 1,
+          minWidth: 0,
+          display: mobileTab === 'trending' ? 'block' : 'none',
+        }}
+          className="desktop-hide-trending"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <Radio size={16} color={CYAN} />
+            <span style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff' }}>
+              Trending Now on SeeWhy LIVE
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14 }}>
+            {TRENDING.map(item => (
               <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setDjPlaying(p => !p)}
-                className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase text-sm"
-                style={{ ...T, background: djPlaying ? `${PINK}20` : `linear-gradient(90deg, ${CRIMSON}, ${PINK})`, border: `1px solid ${PINK}40`, color: djPlaying ? PINK : '#fff' }}
+                key={item.label}
+                whileHover={{ y: -3 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => { setStyleInput(item.style); setMobileTab('create'); }}
+                style={{
+                  background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)',
+                  borderRadius: 16, padding: '20px 16px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  cursor: 'pointer', textAlign: 'center',
+                  transition: 'all 0.15s',
+                }}
               >
-                {djPlaying ? <><Pause className="w-4 h-4" /> Stop DJ</> : <><Play className="w-4 h-4 ml-0.5" /> Start DJ</>}
+                <span style={{ fontSize: 36, marginBottom: 10 }}>{item.emoji}</span>
+                <span style={{ ...T, color: '#fff', fontSize: 15, fontWeight: 800, display: 'block', marginBottom: 4 }}>
+                  {item.label}
+                </span>
+                <span style={{ ...T, color: CYAN, fontSize: 11, fontWeight: 700 }}>{item.count}</span>
               </motion.button>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {djPlaying && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="p-4 rounded-2xl"
-                style={{ background: `${PINK}08`, border: `1px solid ${PINK}25` }}>
-                <p className="text-xs font-black mb-2" style={{ ...T, color: PINK }}>🎧 DJ Active — Auto-mixing your queue</p>
-                <WaveformVisualizer playing={true} color={PINK} />
-              </motion.div>
-            )}
-
-            {/* Queue Builder */}
-            <div className="rounded-2xl p-5" style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
-              <p className="font-black text-sm mb-3" style={{ ...T, color: GOLD }}>Queue ({djQueue.length} tracks)</p>
-              {djQueue.length === 0 ? (
-                <p className="text-xs text-center py-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
-                  Add tracks from your library below
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {djQueue.map((track, i) => (
-                    <div key={track.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
-                      style={{ background: 'rgba(255,255,255,0.04)' }}>
-                      <span className="text-xs font-black w-5 text-center" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{i + 1}</span>
-                      <div className="flex-1">
-                        <p className="text-xs font-black text-white" style={T}>{track.name}</p>
-                        <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{track.genre} · {track.bpm} BPM</p>
-                      </div>
-                      <button onClick={() => toggleDjTrack(track)}>
-                        <Trash2 className="w-3.5 h-3.5" style={{ color: PINK }} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Add from library */}
-            <div className="rounded-2xl p-5" style={{ background: BG2, border: '1px solid rgba(212,175,55,0.1)' }}>
-              <p className="font-black text-sm mb-3" style={{ ...T, color: PURPLE }}>Add to Queue</p>
-              <div className="space-y-2">
-                {tracks.map(track => {
-                  const inQueue = djQueue.find(t => t.id === track.id);
-                  return (
-                    <div key={track.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
-                      style={{ background: inQueue ? `${PURPLE}10` : 'rgba(255,255,255,0.03)', border: `1px solid ${inQueue ? PURPLE + '30' : 'transparent'}` }}>
-                      <div className="flex-1">
-                        <p className="text-xs font-black text-white" style={T}>{track.name}</p>
-                        <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{track.genre} · {track.mood} · {track.bpm} BPM</p>
-                      </div>
-                      <button onClick={() => toggleDjTrack(track)}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
-                        style={{ ...T, background: inQueue ? `${PINK}15` : `${PURPLE}15`, border: `1px solid ${inQueue ? PINK + '30' : PURPLE + '30'}`, color: inQueue ? PINK : PURPLE }}>
-                        {inQueue ? 'Remove' : '+ Add'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        )}
       </div>
+
+      {/* ── Desktop CSS overrides ── */}
+      <style>{`
+        @media (min-width: 768px) {
+          .desktop-show-left { display: block !important; }
+          .desktop-show-right { display: block !important; }
+          .desktop-hide-trending { display: none !important; }
+        }
+      `}</style>
+
+      {/* ── Toast ── */}
+      <Toast message={toast.message} visible={toast.visible} />
     </div>
   );
 }
