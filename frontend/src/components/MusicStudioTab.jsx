@@ -13,6 +13,8 @@ var TEXT  = '#EDE8F5';
 var MUTED = '#7A6F90';
 var DIM   = '#2E2545';
 var BORD  = 'rgba(255,255,255,.06)';
+var BLUE  = '#5A8FFF';
+var PURP  = '#C084FC';
 
 // ─── Animations ────────────────────────────────────────────────────────────
 var ANIM = [
@@ -20,9 +22,13 @@ var ANIM = [
   '@keyframes genPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}70%{box-shadow:0 0 0 10px rgba(201,168,76,0)}}',
   '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
   '@keyframes speakBar{0%{transform:scaleY(.25)}100%{transform:scaleY(1)}}',
+  '@keyframes vocalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}',
+  '@keyframes creatorSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}',
+  '@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
+  '@keyframes copyBlink{0%,100%{opacity:1}50%{opacity:.4}}',
 ].join('\n');
 
-// ─── Constants ─────────────────────────────────────────────────────────────
+// ─── Genre / mood constants ─────────────────────────────────────────────────
 var STYLE_TAGS = ['Trap','R&B','Hip-Hop','Soul','Gospel','Lo-Fi','Drill','Afrobeats','Jazz','Electronic','Classical','Reggae','Pop','Country','Rock'];
 var MOOD_TAGS  = ['Hype','Chill','Emotional','Aggressive','Uplifting','Dark','Romantic','Triumphant','Nostalgic'];
 var DURATIONS  = [{ id: '30s', label: '0:30' }, { id: '1min', label: '1:00' }, { id: '2min', label: '~2:00' }, { id: 'full', label: 'Full' }];
@@ -55,14 +61,14 @@ var COVER_EMOJIS = ['🎵','🎸','🎹','🎺','🎻','🥁','🎙','🎤','�
 
 // ─── Beat Maker ─────────────────────────────────────────────────────────────
 var PADS = [
-  { id: 'kick',  label: '🥁 Kick',  color: RED         },
-  { id: 'snare', label: '🎵 Snare', color: GOLD        },
-  { id: 'clap',  label: '👏 Clap',  color: TEAL        },
-  { id: 'hihat', label: '🔔 Hi-Hat',color: '#5A8FFF'   },
-  { id: 'bass',  label: '🎸 Bass',  color: '#C084FC'   },
-  { id: 'chord', label: '🎹 Chord', color: '#FF6B35'   },
-  { id: 'lead',  label: '🎺 Lead',  color: '#C8FF00'   },
-  { id: 'fx',    label: '✨ FX',    color: '#FF1493'   },
+  { id: 'kick',  label: '🥁 Kick',  color: RED       },
+  { id: 'snare', label: '🎵 Snare', color: GOLD      },
+  { id: 'clap',  label: '👏 Clap',  color: TEAL      },
+  { id: 'hihat', label: '🔔 Hi-Hat',color: BLUE      },
+  { id: 'bass',  label: '🎸 Bass',  color: PURP      },
+  { id: 'chord', label: '🎹 Chord', color: '#FF6B35' },
+  { id: 'lead',  label: '🎺 Lead',  color: '#C8FF00' },
+  { id: 'fx',    label: '✨ FX',    color: '#FF1493' },
 ];
 var GRID_STEPS = 16;
 var BPM_PRESETS = [
@@ -82,17 +88,60 @@ function makeInitGrid() {
   return g;
 }
 
-// ─── Community tracks (simulated) ──────────────────────────────────────────
-var COMMUNITY = [
-  { id: 'c1', title: 'Late Night Drive',     style: 'Lo-Fi',      mood: 'Chill',      emoji: '🎧', grad: COVER_GRADIENTS[1],  dur: '2:34', plays: 1847 },
-  { id: 'c2', title: 'Trap God Season',      style: 'Trap',       mood: 'Hype',       emoji: '👑', grad: COVER_GRADIENTS[0],  dur: '3:12', plays: 3290 },
-  { id: 'c3', title: 'Soul Sunday Morning',  style: 'Soul',       mood: 'Uplifting',  emoji: '🎵', grad: COVER_GRADIENTS[2],  dur: '4:01', plays: 922  },
-  { id: 'c4', title: 'Drill Season Vol. 3',  style: 'Drill',      mood: 'Aggressive', emoji: '🔊', grad: COVER_GRADIENTS[6],  dur: '2:47', plays: 5614 },
-  { id: 'c5', title: 'Golden Hour Vibes',    style: 'R&B',        mood: 'Romantic',   emoji: '💿', grad: COVER_GRADIENTS[4],  dur: '3:55', plays: 2103 },
-  { id: 'c6', title: 'Afrobeats Summer',     style: 'Afrobeats',  mood: 'Hype',       emoji: '🎶', grad: COVER_GRADIENTS[7],  dur: '3:28', plays: 7831 },
+// ─── Vocal constants ─────────────────────────────────────────────────────────
+var VOCAL_STYLES = [
+  { id: 'melodic-trap',  label: 'Melodic Trap',  desc: 'Auto-tuned hooks, emo ad-libs',     color: BURG,         emoji: '🎯' },
+  { id: 'rnb-silk',      label: 'R&B Silk',       desc: 'Silky runs, whisper falsettos',     color: PURP,         emoji: '✨' },
+  { id: 'lyrical-rap',   label: 'Lyrical Rap',    desc: 'Complex flows, internal rhymes',    color: GOLD,         emoji: '🎤' },
+  { id: 'soul-church',   label: 'Soul / Church',  desc: 'Full range, powerful gospel belts', color: '#FF6B35',    emoji: '🙏' },
+  { id: 'afro-flow',     label: 'Afro Flow',      desc: 'Percussive cadence, diaspora vibe', color: '#00C851',    emoji: '🌍' },
+  { id: 'pop-radio',     label: 'Pop Radio',      desc: 'Catchy hooks, clean delivery',      color: BLUE,         emoji: '📻' },
+  { id: 'drill-cadence', label: 'Drill Cadence',  desc: 'Menacing flow, UK/Chicago style',   color: RED,          emoji: '🔱' },
+  { id: 'lo-fi-chill',   label: 'Lo-Fi Chill',    desc: 'Breathy, intimate, bedroom pop',    color: TEAL,         emoji: '🎧' },
 ];
 
-// ─── WaveformBars ────────────────────────────────────────────────────────────
+var KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+var PITCHES = [
+  { id: 'low',  label: 'LOW',  desc: 'Bass / Baritone',    color: BURG },
+  { id: 'mid',  label: 'MID',  desc: 'Tenor / Alto',       color: GOLD },
+  { id: 'high', label: 'HIGH', desc: 'Soprano / Falsetto', color: TEAL },
+  { id: 'flex', label: 'FLEX', desc: 'Full Range',          color: BLUE },
+];
+var VOCAL_EFFECTS = ['Auto-Tune','Reverb','Echo','Harmony','Vibrato','Compression','Distortion','Pitch Shift'];
+
+// ─── Creator tool constants ──────────────────────────────────────────────────
+var CREATOR_TOOLS = [
+  { id: 'bio',      label: 'Artist Bio',       emoji: '🎤', color: GOLD,
+    placeholder: 'Your name, genre, 3 words that describe your sound, notable achievements or collabs...',
+    prompt: 'Write a compelling 3-paragraph artist bio. Include a hook opening, their artistic journey and style, and a closing call-to-action for fans and industry. Make it feel real, vivid, and press-ready.' },
+  { id: 'caption',  label: 'Post Caption',      emoji: '📱', color: TEAL,
+    placeholder: 'Describe what you\'re posting (new song, clip, milestone). Platform: IG / TikTok / Twitter. Vibe: hype / chill / personal...',
+    prompt: 'Write a scroll-stopping social media caption. Keep it authentic, add 2-3 relevant emojis, end with a strong call-to-action. No generic filler. Match the platform energy.' },
+  { id: 'hashtags', label: 'Hashtag Pack',      emoji: '#️⃣', color: PURP,
+    placeholder: 'Your genre, mood, topics in the song, target audience, any relevant cultural references...',
+    prompt: 'Generate a hashtag pack with 30 hashtags across three tiers: 8 mega (1M+ posts), 12 mid (100K–1M), 10 niche (under 100K). Format each tier on its own line. Focus on discoverability and relevance.' },
+  { id: 'press',    label: 'Press Release',     emoji: '📰', color: '#FF6B35',
+    placeholder: 'Event or release name, date, venue or platform, key highlights, artist quote, contact info...',
+    prompt: 'Write a professional press release. Include: headline, dateline, lead paragraph with the who/what/when/where/why, artist quote, boilerplate About section, and media contact. Use AP style.' },
+  { id: 'epk',      label: 'EPK Snippet',       emoji: '📋', color: BLUE,
+    placeholder: 'Artist name, genre, key stats/streams, performance highlights, current project, what makes you unique...',
+    prompt: 'Write a punchy Electronic Press Kit (EPK) paragraph for booking agents and festival promoters. Lead with the hook, include proof points and accolades, close with availability/contact.' },
+  { id: 'drop',     label: 'Drop Announcement', emoji: '🚀', color: RED,
+    placeholder: 'Song/project title, release date, streaming platforms, features/collabs, what\'s the story behind it...',
+    prompt: 'Write a hype drop announcement for social media. Build anticipation, tease what makes it special, create FOMO with a countdown element, and drive to presave/stream. Keep energy high.' },
+];
+
+// ─── Community tracks ────────────────────────────────────────────────────────
+var COMMUNITY = [
+  { id: 'c1', title: 'Late Night Drive',    style: 'Lo-Fi',     mood: 'Chill',      emoji: '🎧', grad: COVER_GRADIENTS[1], dur: '2:34', plays: 1847 },
+  { id: 'c2', title: 'Trap God Season',     style: 'Trap',      mood: 'Hype',       emoji: '👑', grad: COVER_GRADIENTS[0], dur: '3:12', plays: 3290 },
+  { id: 'c3', title: 'Soul Sunday Morning', style: 'Soul',      mood: 'Uplifting',  emoji: '🎵', grad: COVER_GRADIENTS[2], dur: '4:01', plays: 922  },
+  { id: 'c4', title: 'Drill Season Vol. 3', style: 'Drill',     mood: 'Aggressive', emoji: '🔊', grad: COVER_GRADIENTS[6], dur: '2:47', plays: 5614 },
+  { id: 'c5', title: 'Golden Hour Vibes',   style: 'R&B',       mood: 'Romantic',   emoji: '💿', grad: COVER_GRADIENTS[4], dur: '3:55', plays: 2103 },
+  { id: 'c6', title: 'Afrobeats Summer',    style: 'Afrobeats', mood: 'Hype',       emoji: '🎶', grad: COVER_GRADIENTS[7], dur: '3:28', plays: 7831 },
+];
+
+// ─── WaveformBars ─────────────────────────────────────────────────────────────
 function WaveformBars(props) {
   var count  = props.count  || 8;
   var color  = props.color  || TEAL;
@@ -118,16 +167,19 @@ function WaveformBars(props) {
 
 // ─── TrackCard ────────────────────────────────────────────────────────────────
 function TrackCard(props) {
-  var t       = props.track;
-  var playing = props.playing;
-  var onPlay  = props.onPlay;
-  var onDel   = props.onDel;
-  var onShare = props.onShare;
+  var t           = props.track;
+  var playing     = props.playing;
+  var onPlay      = props.onPlay;
+  var onDel       = props.onDel;
+  var onShare     = props.onShare;
+  var onQuickDrop = props.onQuickDrop;
+  var dropActive  = props.dropActive;
+
   return (
     <div style={{
-      background: CARD, border: '1px solid ' + (playing ? GOLD + '55' : BORD),
+      background: CARD, border: '1px solid ' + (playing ? GOLD + '55' : dropActive ? RED + '44' : BORD),
       borderRadius: 14, overflow: 'hidden', animation: 'trackIn .3s ease',
-      boxShadow: playing ? '0 0 20px rgba(201,168,76,.18)' : 'none',
+      boxShadow: playing ? '0 0 20px rgba(201,168,76,.18)' : dropActive ? '0 0 14px rgba(255,26,60,.15)' : 'none',
       transition: 'border-color .2s, box-shadow .2s',
     }}>
       <div style={{ position: 'relative', background: t.grad, height: 88, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -159,6 +211,9 @@ function TrackCard(props) {
           {onShare && (
             <button onClick={onShare} style={{ flex: 1, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.22)', borderRadius: 6, padding: '5px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>📡 STREAM</button>
           )}
+          {onQuickDrop && (
+            <button onClick={onQuickDrop} style={{ flex: 1, background: dropActive ? 'rgba(255,26,60,.22)' : 'rgba(255,26,60,.08)', border: '1px solid ' + (dropActive ? 'rgba(255,26,60,.5)' : 'rgba(255,26,60,.2)'), borderRadius: 6, padding: '5px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>🚀 DROP</button>
+          )}
           {t.plays != null && (
             <div style={{ display: 'flex', alignItems: 'center', padding: '4px 7px', background: CARD2, borderRadius: 6 }}>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>▶ {t.plays >= 1000 ? (t.plays / 1000).toFixed(1) + 'k' : t.plays}</span>
@@ -180,9 +235,9 @@ export default function MusicStudioTab(props) {
   var socket   = props.socket;
   var roomId   = props.roomId;
 
-  var [tab,          setTab]         = useState('generate');
+  var [tab, setTab] = useState('generate');
 
-  // Generate
+  // ── Generate ──
   var [prompt,       setPrompt]      = useState('');
   var [titleInput,   setTitleInput]  = useState('');
   var [selStyles,    setSelStyles]   = useState([]);
@@ -201,29 +256,48 @@ export default function MusicStudioTab(props) {
   });
   var [playingId,    setPlayingId]   = useState(null);
 
-  // Beat Maker
-  var [grid,         setGrid]        = useState(makeInitGrid);
-  var [beatPlaying,  setBeatPlaying] = useState(false);
-  var [beatStep,     setBeatStep]    = useState(-1);
-  var [bpm,          setBpm]         = useState(120);
-  var [beatPreset,   setBeatPreset]  = useState(null);
-  var [padFlash,     setPadFlash]    = useState({});
+  // ── Beat Maker ──
+  var [grid,        setGrid]        = useState(makeInitGrid);
+  var [beatPlaying, setBeatPlaying] = useState(false);
+  var [beatStep,    setBeatStep]    = useState(-1);
+  var [bpm,         setBpm]         = useState(120);
+  var [beatPreset,  setBeatPreset]  = useState(null);
+  var [padFlash,    setPadFlash]    = useState({});
   var beatStepRef = useRef(-1);
   var beatPlayRef = useRef(null);
   var gridRef     = useRef(grid);
   var tapRef      = useRef([]);
 
-  // Library
+  // ── Library ──
   var [libTab,       setLibTab]      = useState('mine');
+  var [quickDropId,  setQuickDropId] = useState(null);
+  var [quickDropLoading, setQuickDropLoading] = useState(false);
+  var [quickDropContent, setQuickDropContent] = useState(null);
+  var [copiedPlatform,   setCopiedPlatform]   = useState(null);
 
-  // Lyrics
-  var [lyricPrompt,  setLyricPrompt] = useState('');
-  var [lyricStyle,   setLyricStyle]  = useState('Hip-Hop');
-  var [lyricsEdited, setLyricsEdited]= useState('');
-  var [genLyricsing, setGenLyricsing]= useState(false);
+  // ── Lyrics ──
+  var [lyricPrompt,   setLyricPrompt]  = useState('');
+  var [lyricStyle,    setLyricStyle]   = useState('Hip-Hop');
+  var [lyricHook,     setLyricHook]    = useState('');
+  var [lyricsEdited,  setLyricsEdited] = useState('');
+  var [genLyricsing,  setGenLyricsing] = useState(false);
 
-  // Live waveform
-  var [waveform,     setWaveform]    = useState([]);
+  // ── Vocal ──
+  var [vocalStyle,    setVocalStyle]   = useState(null);
+  var [vocalKey,      setVocalKey]     = useState('C');
+  var [vocalPitch,    setVocalPitch]   = useState('mid');
+  var [vocalFX,       setVocalFX]      = useState([]);
+  var [vocalNotes,    setVocalNotes]   = useState('');
+
+  // ── Creator ──
+  var [creatorTool,    setCreatorTool]    = useState('bio');
+  var [creatorInput,   setCreatorInput]   = useState('');
+  var [creatorOutput,  setCreatorOutput]  = useState('');
+  var [creatorLoading, setCreatorLoading] = useState(false);
+  var [copiedCreator,  setCopiedCreator]  = useState(false);
+
+  // ── Live waveform ──
+  var [waveform, setWaveform] = useState([]);
 
   useEffect(function() { gridRef.current = grid; }, [grid]);
 
@@ -259,6 +333,23 @@ export default function MusicStudioTab(props) {
     return function() { clearInterval(beatPlayRef.current); };
   }, [beatPlaying, bpm]);
 
+  // ── AI helper ────────────────────────────────────────────────────────────
+  function callAI(systemPrompt, userMsg, onSuccess, onError) {
+    fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: systemPrompt, message: userMsg }),
+    }).then(function(r) {
+      if (!r.ok) throw new Error('AI error ' + r.status);
+      return r.json();
+    }).then(function(d) {
+      onSuccess(d.text || d.response || '');
+    }).catch(function(e) {
+      if (onError) onError(e);
+    });
+  }
+
+  // ── Generate ─────────────────────────────────────────────────────────────
   function generateSong() {
     var p = customMode ? lyricsInput : prompt;
     if (!p.trim() && selStyles.length === 0) { if (addToast) addToast('Add a prompt or select a style first', 'error'); return; }
@@ -270,9 +361,9 @@ export default function MusicStudioTab(props) {
       setGenPct(Math.floor((i / steps) * 100));
       setGenStep(i < steps ? i : steps - 1);
       if (i >= steps) {
-        var gradIdx = Math.floor(Math.random() * COVER_GRADIENTS.length);
+        var gradIdx  = Math.floor(Math.random() * COVER_GRADIENTS.length);
         var emojiIdx = Math.floor(Math.random() * COVER_EMOJIS.length);
-        var durMap = { '30s': '0:30', '1min': '1:00', '2min': '2:' + (String(10 + Math.floor(Math.random() * 50))), 'full': (3 + Math.floor(Math.random() * 2)) + ':' + (String(10 + Math.floor(Math.random() * 50))) };
+        var durMap   = { '30s': '0:30', '1min': '1:00', '2min': '2:' + String(10 + Math.floor(Math.random() * 50)), 'full': (3 + Math.floor(Math.random() * 2)) + ':' + String(10 + Math.floor(Math.random() * 50)) };
         var newTrack = {
           id: 'gen-' + Date.now(),
           title: titleInput.trim() || ((selStyles[0] || 'Custom') + ' Track'),
@@ -295,12 +386,23 @@ export default function MusicStudioTab(props) {
     setTimeout(tick, 850);
   }
 
+  // ── Lyrics (real AI) ─────────────────────────────────────────────────────
   function generateLyrics() {
     if (!lyricPrompt.trim()) { if (addToast) addToast('Describe the song topic first', 'error'); return; }
     setGenLyricsing(true);
-    setTimeout(function() {
+    var system = 'You are a professional songwriter and lyricist specializing in authentic, emotionally resonant music. Write compelling song lyrics that feel real and personal, not generic.';
+    var userMsg = 'Write complete song lyrics in ' + lyricStyle + ' style.' +
+      (lyricHook.trim() ? ' Core hook/theme: "' + lyricHook.trim() + '".' : '') +
+      ' Topic: ' + lyricPrompt.trim() + '.' +
+      ' Include: [Intro] (optional), [Verse 1], [Pre-Chorus] (if applicable), [Chorus], [Verse 2], [Bridge], [Outro].' +
+      ' Make the lyrics authentic, culturally relevant, and emotionally compelling. Use vivid imagery and specific details rather than clichés.';
+    callAI(system, userMsg, function(text) {
+      setLyricsEdited(text);
+      setGenLyricsing(false);
+    }, function() {
+      // Fallback template on error
       var topic = lyricPrompt.trim();
-      var generated =
+      var fallback =
         '[Verse 1]\nI been working on my craft since way back in the day\n' +
         'People tried to tell me that I had to change my ways\n' +
         topic.split(' ').slice(0, 3).join(' ') + ' — that\'s what drives me through the night\n' +
@@ -318,11 +420,111 @@ export default function MusicStudioTab(props) {
         'This right here is everything\n' +
         topic.charAt(0).toUpperCase() + topic.slice(1) + ' gave me wings\n\n' +
         '[Outro]\nWe made it, we made it\nStill chasing, still chasing';
-      setLyricsEdited(generated);
+      setLyricsEdited(fallback);
       setGenLyricsing(false);
-    }, 2600);
+      if (addToast) addToast('Generated with template (AI unavailable)', 'info');
+    });
   }
 
+  // ── Vocal → Generate ────────────────────────────────────────────────────
+  function applyVocalToGenerate() {
+    var vs = VOCAL_STYLES.find(function(v) { return v.id === vocalStyle; });
+    var styleDesc = vs ? vs.label : '';
+    var fxStr = vocalFX.length > 0 ? ', ' + vocalFX.join(', ') : '';
+    var built = [
+      styleDesc && (styleDesc + ' vocal style'),
+      'Key of ' + vocalKey,
+      PITCHES.find(function(p) { return p.id === vocalPitch; }) ? PITCHES.find(function(p) { return p.id === vocalPitch; }).desc + ' range' : '',
+      vocalFX.length > 0 ? 'with ' + vocalFX.join(' + ') : '',
+      vocalNotes.trim(),
+    ].filter(Boolean).join(', ');
+    setPrompt(function(prev) { return prev ? prev + '\n\nVocal settings: ' + built : 'Vocal settings: ' + built; });
+    setTab('generate');
+    if (addToast) addToast('Vocal settings applied to Generate!', 'success');
+  }
+
+  // ── Creator AI ──────────────────────────────────────────────────────────
+  function generateCreatorContent() {
+    if (!creatorInput.trim()) { if (addToast) addToast('Fill in the details first', 'error'); return; }
+    var tool = CREATOR_TOOLS.find(function(t) { return t.id === creatorTool; });
+    if (!tool) return;
+    setCreatorLoading(true);
+    setCreatorOutput('');
+    callAI(
+      'You are an expert music industry publicist, social media strategist, and copywriter. You write compelling content for artists and content creators. Your writing is authentic, punchy, and platform-aware.',
+      tool.prompt + '\n\nArtist/project details: ' + creatorInput.trim(),
+      function(text) {
+        setCreatorOutput(text);
+        setCreatorLoading(false);
+      },
+      function() {
+        setCreatorOutput('Unable to generate content right now. Please try again.');
+        setCreatorLoading(false);
+        if (addToast) addToast('AI unavailable — try again', 'error');
+      }
+    );
+  }
+
+  function copyCreatorOutput() {
+    if (!creatorOutput) return;
+    try {
+      navigator.clipboard.writeText(creatorOutput).then(function() {
+        setCopiedCreator(true);
+        setTimeout(function() { setCopiedCreator(false); }, 2000);
+        if (addToast) addToast('Copied to clipboard!', 'success');
+      });
+    } catch(e) {
+      if (addToast) addToast('Copy failed', 'error');
+    }
+  }
+
+  // ── Quick Drop ──────────────────────────────────────────────────────────
+  function openQuickDrop(track) {
+    if (quickDropId === track.id) { setQuickDropId(null); setQuickDropContent(null); return; }
+    setQuickDropId(track.id);
+    setQuickDropContent(null);
+    setQuickDropLoading(true);
+    var system = 'You are a music marketing expert who writes platform-native social media content for independent artists.';
+    var userMsg = 'Write 3 separate post captions for this track: "' + track.title + '" — ' + track.style + (track.mood ? ', ' + track.mood : '') + ' style.' +
+      ' Format as:\n\nINSTAGRAM:\n[caption]\n\nTIKTOK:\n[caption]\n\nTWITTER/X:\n[caption]\n\n' +
+      'Each should be distinct, platform-appropriate, include relevant emojis, and drive engagement. Max 280 chars for Twitter. IG can be longer with hashtags.';
+    callAI(system, userMsg, function(text) {
+      var ig = '';
+      var tt = '';
+      var tw = '';
+      var igMatch = text.match(/INSTAGRAM[:\s]*\n([\s\S]*?)(?=\nTIKTOK|\nTWITTER|$)/i);
+      var ttMatch = text.match(/TIKTOK[:\s]*\n([\s\S]*?)(?=\nTWITTER|TWITTER\/X|$)/i);
+      var twMatch = text.match(/TWITTER[/\w]*[:\s]*\n([\s\S]*?)(?=$)/i);
+      if (igMatch) ig = igMatch[1].trim();
+      if (ttMatch) tt = ttMatch[1].trim();
+      if (twMatch) tw = twMatch[1].trim();
+      if (!ig && !tt && !tw) {
+        var parts = text.split(/\n{2,}/);
+        ig = parts[0] || text;
+        tt = parts[1] || '';
+        tw = parts[2] || '';
+      }
+      setQuickDropContent({ ig: ig, tt: tt, tw: tw });
+      setQuickDropLoading(false);
+    }, function() {
+      setQuickDropContent({ ig: 'New track "' + track.title + '" is live! 🎵 #' + track.style.replace(/[^a-zA-Z]/g,'') + ' #NewMusic', tt: '🎵 "' + track.title + '" dropped! ' + track.style + ' vibes only 🔥 #music', tw: '"' + track.title + '" is out now — ' + track.style + ' 🎵' });
+      setQuickDropLoading(false);
+    });
+  }
+
+  function copyPlatformText(text, platform) {
+    try {
+      navigator.clipboard.writeText(text).then(function() {
+        setCopiedPlatform(platform);
+        setTimeout(function() { setCopiedPlatform(null); }, 2000);
+        if (addToast) addToast('Copied ' + platform + ' caption!', 'success');
+      });
+    } catch(e) {
+      if (addToast) addToast('Copy failed', 'error');
+    }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
   function toggleTag(arr, setArr, val) {
     setArr(function(prev) {
       var idx = prev.indexOf(val);
@@ -364,7 +566,16 @@ export default function MusicStudioTab(props) {
     if (addToast) addToast('Beat settings sent to Generate!', 'success');
   }
 
-  // ─────────────────────── RENDER ──────────────────────────────────────────
+  var TABS = [
+    { id: 'generate', label: '✨ Gen'     },
+    { id: 'beat',     label: '🥁 Beat'    },
+    { id: 'library',  label: '🎵 Library' },
+    { id: 'lyrics',   label: '📝 Lyrics'  },
+    { id: 'vocal',    label: '🎤 Vocal'   },
+    { id: 'creator',  label: '🚀 Creator' },
+  ];
+
+  // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: ANIM }} />
@@ -381,29 +592,26 @@ export default function MusicStudioTab(props) {
         </div>
       )}
 
-      {/* Tab bar */}
-      <div style={{ display: 'flex', background: SURF, borderBottom: '1px solid ' + BORD, flexShrink: 0 }}>
-        {[
-          { id: 'generate', label: '✨ Generate' },
-          { id: 'beat',     label: '🥁 Beat' },
-          { id: 'library',  label: '🎵 Library' },
-          { id: 'lyrics',   label: '📝 Lyrics' },
-        ].map(function(t) {
-          var active = tab === t.id;
-          return (
-            <button key={t.id} onClick={function() { setTab(t.id); }}
-              style={{
-                flex: 1, background: 'none', border: 'none',
-                borderBottom: '2px solid ' + (active ? GOLD : 'transparent'),
-                padding: '10px 4px', cursor: 'pointer',
-                fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11,
-                color: active ? GOLD : MUTED, letterSpacing: .5,
-                transition: 'color .15s, border-color .15s',
-              }}>
-              {t.label}
-            </button>
-          );
-        })}
+      {/* Tab bar — scrollable */}
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', background: SURF, borderBottom: '1px solid ' + BORD, flexShrink: 0 }}>
+        <div style={{ display: 'flex', minWidth: 'max-content' }}>
+          {TABS.map(function(t) {
+            var active = tab === t.id;
+            return (
+              <button key={t.id} onClick={function() { setTab(t.id); }}
+                style={{
+                  background: 'none', border: 'none',
+                  borderBottom: '2.5px solid ' + (active ? GOLD : 'transparent'),
+                  padding: '10px 14px', cursor: 'pointer',
+                  fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11,
+                  color: active ? GOLD : MUTED, letterSpacing: .5,
+                  transition: 'color .15s, border-color .15s', whiteSpace: 'nowrap',
+                }}>
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
@@ -411,7 +619,6 @@ export default function MusicStudioTab(props) {
         {/* ════ GENERATE ════ */}
         {tab === 'generate' && (
           <div style={{ padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>AI Music Studio</div>
               <button onClick={function() { setCustomMode(function(v) { return !v; }); }}
@@ -420,7 +627,6 @@ export default function MusicStudioTab(props) {
               </button>
             </div>
 
-            {/* Title */}
             <input value={titleInput} onChange={function(e) { setTitleInput(e.target.value); }} placeholder="Song title (optional)..."
               style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 10, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, outline: 'none' }} />
 
@@ -450,7 +656,6 @@ export default function MusicStudioTab(props) {
               </div>
             )}
 
-            {/* Style tags */}
             <div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 7 }}>GENRE / STYLE</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -466,7 +671,6 @@ export default function MusicStudioTab(props) {
               </div>
             </div>
 
-            {/* Mood tags */}
             <div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 7 }}>MOOD</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -482,7 +686,6 @@ export default function MusicStudioTab(props) {
               </div>
             </div>
 
-            {/* Duration + Instrumental row */}
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 7 }}>DURATION</div>
@@ -499,7 +702,7 @@ export default function MusicStudioTab(props) {
                 </div>
               </div>
               <button onClick={function() { setInstr(function(v) { return !v; }); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, background: instrumental ? 'rgba(0,222,192,.12)' : CARD2, border: '1px solid ' + (instrumental ? 'rgba(0,222,192,.4)' : DIM), borderRadius: 10, padding: '8px 11px', cursor: 'pointer', flexShrink: 0, marginBottom: 0 }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: instrumental ? 'rgba(0,222,192,.12)' : CARD2, border: '1px solid ' + (instrumental ? 'rgba(0,222,192,.4)' : DIM), borderRadius: 10, padding: '8px 11px', cursor: 'pointer', flexShrink: 0 }}>
                 <div style={{ width: 18, height: 10, borderRadius: 999, background: instrumental ? TEAL : DIM, position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
                   <div style={{ position: 'absolute', top: 1, left: instrumental ? 9 : 1, width: 8, height: 8, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
                 </div>
@@ -507,7 +710,6 @@ export default function MusicStudioTab(props) {
               </button>
             </div>
 
-            {/* Generate button / progress */}
             {generating ? (
               <div style={{ background: CARD, border: '1px solid rgba(201,168,76,.2)', borderRadius: 14, padding: '18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -520,20 +722,10 @@ export default function MusicStudioTab(props) {
                 <div style={{ height: 5, background: DIM, borderRadius: 999, overflow: 'hidden' }}>
                   <div style={{ height: '100%', background: 'linear-gradient(90deg,' + BURG + ',' + GOLD + ')', borderRadius: 999, width: genPct + '%', transition: 'width .4s ease' }} />
                 </div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {selStyles.concat(selMoods).map(function(tag) {
-                    return <span key={tag} style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.1)', borderRadius: 4, padding: '2px 7px' }}>{tag}</span>;
-                  })}
-                </div>
               </div>
             ) : (
               <button onClick={generateSong}
-                style={{
-                  width: '100%', background: 'linear-gradient(135deg,' + BURG + ',#C01838)', border: 'none', borderRadius: 14,
-                  padding: '16px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 3,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                  animation: 'genPulse 2.2s ease infinite', boxShadow: '0 4px 24px rgba(128,0,32,.4)',
-                }}>
+                style={{ width: '100%', background: 'linear-gradient(135deg,' + BURG + ',#C01838)', border: 'none', borderRadius: 14, padding: '16px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, animation: 'genPulse 2.2s ease infinite', boxShadow: '0 4px 24px rgba(128,0,32,.4)' }}>
                 <span>✨</span> GENERATE
               </button>
             )}
@@ -548,7 +740,6 @@ export default function MusicStudioTab(props) {
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD }}>{bpm} BPM</div>
             </div>
 
-            {/* BPM row */}
             <div style={{ background: CARD, borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                 {BPM_PRESETS.map(function(p) {
@@ -573,7 +764,6 @@ export default function MusicStudioTab(props) {
               </div>
             </div>
 
-            {/* Step sequencer */}
             <div style={{ background: CARD, borderRadius: 12, padding: '12px 8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
               {PADS.map(function(pad) {
                 var isFlash = !!padFlash[pad.id];
@@ -618,6 +808,25 @@ export default function MusicStudioTab(props) {
         {/* ════ LIBRARY ════ */}
         {tab === 'library' && (
           <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+            {/* Stats banner */}
+            {myTracks.length > 0 && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[
+                  { label: 'MY TRACKS', value: myTracks.length, color: GOLD },
+                  { label: 'SHARED',    value: myTracks.filter(function(t) { return t.shared; }).length, color: TEAL },
+                  { label: 'COMMUNITY', value: COMMUNITY.length, color: PURP },
+                ].map(function(stat) {
+                  return (
+                    <div key={stat.label} style={{ flex: 1, background: CARD, border: '1px solid ' + BORD, borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
+                      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: MUTED, letterSpacing: .5, marginTop: 2 }}>{stat.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             <div style={{ display: 'flex', background: CARD2, borderRadius: 10, padding: 4 }}>
               {[{ id: 'mine', label: 'My Songs' }, { id: 'community', label: 'Community' }].map(function(lt) {
                 var active = libTab === lt.id;
@@ -639,17 +848,67 @@ export default function MusicStudioTab(props) {
                   <button onClick={function() { setTab('generate'); }} style={{ background: BURG, border: 'none', borderRadius: 10, padding: '10px 22px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>✨ GENERATE NOW</button>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {myTracks.map(function(t) {
-                    return (
-                      <TrackCard key={t.id} track={t}
-                        playing={playingId === t.id}
-                        onPlay={function() { setPlayingId(function(prev) { return prev === t.id ? null : t.id; }); }}
-                        onDel={function() { setMyTracks(function(mt) { return mt.filter(function(x) { return x.id !== t.id; }); }); setPlayingId(null); if (addToast) addToast('Track removed', 'info'); }}
-                        onShare={function() { shareTrack(t); }}
-                      />
-                    );
-                  })}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {myTracks.map(function(t) {
+                      return (
+                        <TrackCard key={t.id} track={t}
+                          playing={playingId === t.id}
+                          dropActive={quickDropId === t.id}
+                          onPlay={function() { setPlayingId(function(prev) { return prev === t.id ? null : t.id; }); }}
+                          onDel={function() {
+                            setMyTracks(function(mt) { return mt.filter(function(x) { return x.id !== t.id; }); });
+                            setPlayingId(null);
+                            if (quickDropId === t.id) { setQuickDropId(null); setQuickDropContent(null); }
+                            if (addToast) addToast('Track removed', 'info');
+                          }}
+                          onShare={function() { shareTrack(t); }}
+                          onQuickDrop={function() { openQuickDrop(t); }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Quick Drop panel */}
+                  {quickDropId && (
+                    <div style={{ background: CARD, border: '1px solid rgba(255,26,60,.3)', borderRadius: 14, padding: '14px', animation: 'dropIn .25s ease', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: RED, letterSpacing: 1 }}>🚀 Quick Drop</div>
+                        <button onClick={function() { setQuickDropId(null); setQuickDropContent(null); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 16, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>✕</button>
+                      </div>
+
+                      {quickDropLoading ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0' }}>
+                          <div style={{ width: 18, height: 18, border: '2px solid ' + RED, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin .8s linear infinite', flexShrink: 0 }} />
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>Writing platform captions with AI…</span>
+                        </div>
+                      ) : quickDropContent ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {[
+                            { key: 'ig', platform: 'INSTAGRAM', icon: '📸', color: PURP },
+                            { key: 'tt', platform: 'TIKTOK',    icon: '🎵', color: RED  },
+                            { key: 'tw', platform: 'TWITTER/X', icon: '🐦', color: BLUE },
+                          ].map(function(p) {
+                            var txt = quickDropContent[p.key];
+                            var copied = copiedPlatform === p.platform;
+                            if (!txt) return null;
+                            return (
+                              <div key={p.key} style={{ background: CARD2, border: '1px solid ' + BORD, borderRadius: 10, padding: '10px 12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: p.color, letterSpacing: 1 }}>{p.icon} {p.platform}</span>
+                                  <button onClick={function() { copyPlatformText(txt, p.platform); }}
+                                    style={{ background: copied ? 'rgba(0,222,192,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copied ? TEAL : BORD), borderRadius: 6, padding: '3px 8px', color: copied ? TEAL : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', animation: copied ? 'copyBlink .4s ease' : 'none' }}>
+                                    {copied ? '✓ COPIED' : 'COPY'}
+                                  </button>
+                                </div>
+                                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{txt}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               )
             )}
@@ -663,8 +922,7 @@ export default function MusicStudioTab(props) {
                       <TrackCard key={t.id} track={t}
                         playing={playingId === t.id}
                         onPlay={function() { setPlayingId(function(prev) { return prev === t.id ? null : t.id; }); }}
-                        onShare={null}
-                        onDel={null}
+                        onShare={null} onDel={null} onQuickDrop={null}
                       />
                     );
                   })}
@@ -677,20 +935,33 @@ export default function MusicStudioTab(props) {
         {/* ════ LYRICS ════ */}
         {tab === 'lyrics' && (
           <div style={{ padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>AI Lyrics Generator</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>AI Lyrics</div>
+              <div style={{ background: 'rgba(0,222,192,.1)', border: '1px solid rgba(0,222,192,.25)', borderRadius: 8, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>AI POWERED</span>
+              </div>
+            </div>
 
             <div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 5 }}>WHAT SHOULD THE SONG BE ABOUT?</div>
               <textarea value={lyricPrompt} onChange={function(e) { setLyricPrompt(e.target.value); }}
-                placeholder="e.g. overcoming hard times, loyalty, coming up from nothing..."
+                placeholder="e.g. overcoming hard times, loyalty, coming up from nothing, late nights in the studio..."
                 rows={3}
                 style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 10, padding: '12px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', resize: 'none', lineHeight: 1.5 }} />
             </div>
 
             <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 5 }}>CORE HOOK / PHRASE (optional)</div>
+              <input value={lyricHook} onChange={function(e) { setLyricHook(e.target.value); }}
+                placeholder='e.g. "never gave up, still standing" or "real ones only"...'
+                style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 10, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none' }} />
+            </div>
+
+            <div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 7 }}>STYLE</div>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                {['Hip-Hop','R&B','Pop','Soul','Gospel','Trap'].map(function(s) {
+                {['Hip-Hop','R&B','Pop','Soul','Gospel','Trap','Drill','Afrobeats','Lo-Fi'].map(function(s) {
                   var active = lyricStyle === s;
                   return (
                     <button key={s} onClick={function() { setLyricStyle(s); }}
@@ -705,14 +976,21 @@ export default function MusicStudioTab(props) {
             <button onClick={generateLyrics} disabled={genLyricsing}
               style={{ background: genLyricsing ? CARD2 : 'linear-gradient(135deg,' + BURG + ',#C01838)', border: 'none', borderRadius: 12, padding: '13px', color: genLyricsing ? MUTED : GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: genLyricsing ? 'default' : 'pointer', letterSpacing: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               {genLyricsing
-                ? <span><span style={{ display: 'inline-block', animation: 'spin .8s linear infinite', marginRight: 8 }}>⟳</span>Writing lyrics…</span>
+                ? <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ display: 'inline-block', animation: 'spin .8s linear infinite' }}>⟳</span> Writing with AI…</span>
                 : '📝 GENERATE LYRICS'
               }
             </button>
 
             {lyricsEdited ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1 }}>EDIT YOUR LYRICS</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1 }}>EDIT YOUR LYRICS</div>
+                  <button onClick={function() {
+                    navigator.clipboard && navigator.clipboard.writeText(lyricsEdited).then(function() {
+                      if (addToast) addToast('Lyrics copied!', 'success');
+                    });
+                  }} style={{ background: 'rgba(255,255,255,.06)', border: '1px solid ' + BORD, borderRadius: 6, padding: '3px 8px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>COPY</button>
+                </div>
                 <textarea value={lyricsEdited} onChange={function(e) { setLyricsEdited(e.target.value); }} rows={18}
                   style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 10, padding: '12px 14px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 11, outline: 'none', resize: 'none', lineHeight: 1.7 }} />
                 <button onClick={function() { setTab('generate'); setCustomMode(true); setLyricsInput(lyricsEdited); if (addToast) addToast('Lyrics sent to Generate!', 'success'); }}
@@ -721,6 +999,220 @@ export default function MusicStudioTab(props) {
                 </button>
               </div>
             ) : null}
+          </div>
+        )}
+
+        {/* ════ VOCAL ════ */}
+        {tab === 'vocal' && (
+          <div style={{ padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 16, animation: 'vocalIn .3s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>Vocal Settings</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>APPLY TO GENERATE</div>
+            </div>
+
+            {/* Style grid */}
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 9 }}>VOCAL STYLE ARCHETYPE</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {VOCAL_STYLES.map(function(vs) {
+                  var active = vocalStyle === vs.id;
+                  return (
+                    <button key={vs.id} onClick={function() { setVocalStyle(active ? null : vs.id); }}
+                      style={{
+                        background: active ? 'rgba(201,168,76,.12)' : CARD,
+                        border: '1.5px solid ' + (active ? vs.color : BORD),
+                        borderRadius: 12, padding: '10px 12px', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+                        boxShadow: active ? ('0 0 12px ' + vs.color + '33') : 'none',
+                        transition: 'all .15s',
+                      }}>
+                      <span style={{ fontSize: 22, flexShrink: 0 }}>{vs.emoji}</span>
+                      <div>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: active ? vs.color : TEXT, lineHeight: 1 }}>{vs.label}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginTop: 2, lineHeight: 1.3 }}>{vs.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Key picker */}
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 7 }}>KEY</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                {KEYS.map(function(k) {
+                  var active = vocalKey === k;
+                  return (
+                    <button key={k} onClick={function() { setVocalKey(k); }}
+                      style={{ width: 36, height: 36, borderRadius: 8, background: active ? BURG : CARD2, border: '1px solid ' + (active ? 'rgba(128,0,32,.7)' : DIM), color: active ? GOLD : MUTED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', transition: 'all .15s', flexShrink: 0 }}>
+                      {k}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Pitch range */}
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 7 }}>PITCH RANGE</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6 }}>
+                {PITCHES.map(function(p) {
+                  var active = vocalPitch === p.id;
+                  return (
+                    <button key={p.id} onClick={function() { setVocalPitch(p.id); }}
+                      style={{ background: active ? ('rgba(0,0,0,.2)') : CARD2, border: '2px solid ' + (active ? p.color : DIM), borderRadius: 10, padding: '8px 4px', cursor: 'pointer', textAlign: 'center', transition: 'all .15s' }}>
+                      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: active ? p.color : MUTED, letterSpacing: 1 }}>{p.label}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: MUTED, marginTop: 2 }}>{p.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Effects */}
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 7 }}>VOCAL EFFECTS</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {VOCAL_EFFECTS.map(function(fx) {
+                  var active = vocalFX.indexOf(fx) >= 0;
+                  return (
+                    <button key={fx} onClick={function() { toggleTag(vocalFX, setVocalFX, fx); }}
+                      style={{ padding: '5px 12px', background: active ? 'rgba(90,143,255,.18)' : CARD2, border: '1px solid ' + (active ? 'rgba(90,143,255,.5)' : DIM), borderRadius: 999, color: active ? BLUE : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 10, cursor: 'pointer', transition: 'all .15s' }}>
+                      {fx}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Extra notes */}
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 5 }}>ADDITIONAL NOTES (optional)</div>
+              <textarea value={vocalNotes} onChange={function(e) { setVocalNotes(e.target.value); }}
+                placeholder="e.g. raspy delivery, breathy tone, ad-libs on every bar, double-tracked chorus..."
+                rows={2}
+                style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 10, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', resize: 'none', lineHeight: 1.5 }} />
+            </div>
+
+            {/* Current config summary */}
+            {(vocalStyle || vocalFX.length > 0) && (
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1, marginBottom: 5 }}>YOUR VOCAL PROFILE</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: TEXT, lineHeight: 1.6 }}>
+                  {[
+                    vocalStyle ? VOCAL_STYLES.find(function(v) { return v.id === vocalStyle; }).label : null,
+                    'Key of ' + vocalKey,
+                    PITCHES.find(function(p) { return p.id === vocalPitch; }).desc,
+                    vocalFX.length > 0 ? vocalFX.join(' · ') : null,
+                  ].filter(Boolean).join('  ·  ')}
+                </div>
+              </div>
+            )}
+
+            <button onClick={applyVocalToGenerate}
+              style={{ width: '100%', background: 'linear-gradient(135deg,' + BURG + ',#C01838)', border: 'none', borderRadius: 14, padding: '15px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 3, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 4px 20px rgba(128,0,32,.35)' }}>
+              🎤 APPLY TO GENERATE
+            </button>
+          </div>
+        )}
+
+        {/* ════ CREATOR ════ */}
+        {tab === 'creator' && (
+          <div style={{ padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 14, animation: 'creatorSlide .3s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>Creator Hub</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5 }}>AI tools for artists & influencers</div>
+              </div>
+              <div style={{ marginLeft: 'auto', background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 8, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: RED }} />
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, letterSpacing: 1 }}>AI POWERED</span>
+              </div>
+            </div>
+
+            {/* Tool selector */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>
+              {CREATOR_TOOLS.map(function(tool) {
+                var active = creatorTool === tool.id;
+                return (
+                  <button key={tool.id} onClick={function() { setCreatorTool(tool.id); setCreatorOutput(''); }}
+                    style={{
+                      background: active ? 'rgba(201,168,76,.12)' : CARD,
+                      border: '1.5px solid ' + (active ? tool.color : BORD),
+                      borderRadius: 10, padding: '8px 6px', cursor: 'pointer',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                      transition: 'all .15s',
+                    }}>
+                    <span style={{ fontSize: 18 }}>{tool.emoji}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: active ? tool.color : MUTED, letterSpacing: .3, textAlign: 'center', lineHeight: 1.3 }}>{tool.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active tool */}
+            {CREATOR_TOOLS.map(function(tool) {
+              if (creatorTool !== tool.id) return null;
+              return (
+                <div key={tool.id} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid ' + BORD, borderRadius: 10, padding: '10px 12px' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: tool.color }}>{tool.emoji} {tool.label}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, marginTop: 3 }}>{tool.desc}</div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 5 }}>YOUR DETAILS</div>
+                    <textarea value={creatorInput} onChange={function(e) { setCreatorInput(e.target.value); }}
+                      placeholder={tool.placeholder}
+                      rows={4}
+                      style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 10, padding: '12px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', resize: 'none', lineHeight: 1.5 }} />
+                  </div>
+
+                  <button onClick={generateCreatorContent} disabled={creatorLoading}
+                    style={{ background: creatorLoading ? CARD2 : ('linear-gradient(135deg,' + BURG + ',#C01838)'), border: 'none', borderRadius: 12, padding: '13px', color: creatorLoading ? MUTED : GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: creatorLoading ? 'default' : 'pointer', letterSpacing: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                    {creatorLoading
+                      ? <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ display: 'inline-block', animation: 'spin .8s linear infinite' }}>⟳</span>Generating with AI…</span>
+                      : tool.emoji + ' GENERATE'
+                    }
+                  </button>
+
+                  {creatorOutput ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1 }}>OUTPUT</div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button onClick={copyCreatorOutput}
+                            style={{ background: copiedCreator ? 'rgba(0,222,192,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copiedCreator ? TEAL : BORD), borderRadius: 6, padding: '4px 10px', color: copiedCreator ? TEAL : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>
+                            {copiedCreator ? '✓ COPIED' : '📋 COPY'}
+                          </button>
+                          <button onClick={function() { setCreatorOutput(''); }}
+                            style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.15)', borderRadius: 6, padding: '4px 8px', color: RED, fontSize: 10, cursor: 'pointer' }}>✕</button>
+                        </div>
+                      </div>
+                      <div style={{ background: CARD2, border: '1px solid rgba(201,168,76,.15)', borderRadius: 10, padding: '14px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                        {creatorOutput}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={function() {
+                          setCreatorInput('');
+                          setCreatorOutput('');
+                          if (addToast) addToast('Cleared — start fresh', 'info');
+                        }} style={{ flex: 1, background: CARD, border: '1px solid ' + BORD, borderRadius: 8, padding: '9px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                          🔄 NEW
+                        </button>
+                        <button onClick={generateCreatorContent} disabled={creatorLoading}
+                          style={{ flex: 2, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '9px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                          ⟳ REGENERATE
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         )}
 
