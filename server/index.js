@@ -319,6 +319,7 @@ var peakViewers    = new Map();  // roomId → peak viewer count this session
 var milestonesSeen = new Map();  // roomId → Set of milestone numbers already fired
 var sessionRevenue = new Map();  // roomId → cumulative gift cents this session
 var polls               = new Map();  // roomId → { id, question, options:[{text,votes:Set}], createdAt, autoEndT, active }
+var qaQueues            = new Map();  // roomId → Map<id, { id, username, text, upvotes, ts }>
 var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
 
@@ -1595,6 +1596,61 @@ io.on('connection', function(socket) {
     if (poll.autoEndT) clearTimeout(poll.autoEndT);
     io.to(roomId).emit('poll-update', serializePoll(poll));
     setTimeout(function() { if (polls.get(roomId) === poll) polls.delete(roomId); }, 5000);
+  });
+
+  // ── Q&A queue ─────────────────────────────────────────────────────────
+  socket.on('qa-question', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.text) return;
+    var text = String(data.text).slice(0, 300);
+    var id   = data.id || uuidv4();
+    var user = socket.data.username || data.username || 'Guest';
+    if (!qaQueues.has(roomId)) qaQueues.set(roomId, new Map());
+    var queue = qaQueues.get(roomId);
+    queue.set(id, { id: id, username: user, text: text, upvotes: 0, ts: Date.now() });
+    io.to(roomId).emit('qa-question', { id: id, username: user, text: text, upvotes: 0 });
+  });
+
+  socket.on('qa-upvote', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.id) return;
+    var queue = qaQueues.get(roomId);
+    if (!queue) return;
+    var item = queue.get(data.id);
+    if (!item) return;
+    item.upvotes += 1;
+    io.to(roomId).emit('qa-upvote', { id: data.id, upvotes: item.upvotes });
+  });
+
+  socket.on('qa-dismiss', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.id || socket.data.role !== 'host') return;
+    var queue = qaQueues.get(roomId);
+    if (queue) queue.delete(data.id);
+    io.to(roomId).emit('qa-dismissed', { id: data.id });
+  });
+
+  // ── share-music ────────────────────────────────────────────────────────
+  socket.on('share-music', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.title) return;
+    var title = String(data.title).slice(0, 120);
+    var style = String(data.style || '').slice(0, 60);
+    var emoji = String(data.emoji || '🎵').slice(0, 4);
+    var user  = socket.data.username || 'Creator';
+    io.to(roomId).emit('music-shared', { title: title, style: style, emoji: emoji, sharedBy: user, ts: Date.now() });
+  });
+
+  // ── watch-react ────────────────────────────────────────────────────────
+  socket.on('watch-react', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || !data.emoji) return;
+    var emoji  = String(data.emoji).slice(0, 4);
+    var now    = Date.now();
+    var lastTs = viewerReactThrottle.get(socket.id) || 0;
+    if (now - lastTs < 1000) return;
+    viewerReactThrottle.set(socket.id, now);
+    io.to(roomId).emit('watch-react', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
   });
 
   // ── clip-marker ────────────────────────────────────────────────────────
