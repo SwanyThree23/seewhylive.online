@@ -27,6 +27,10 @@ var ANIM = [
   '@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}',
   '@keyframes speakRing{0%,100%{box-shadow:0 0 0 2px '+TEAL+',0 0 14px '+TEAL+'44}50%{box-shadow:0 0 0 3px '+TEAL+',0 0 24px '+TEAL+'66}}',
   '@keyframes goldPulse{0%,100%{opacity:1}50%{opacity:.6}}',
+  '@keyframes tipSlide{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}',
+  '@keyframes tipOut{from{opacity:1}to{opacity:0;transform:translateX(60px)}}',
+  '@keyframes pollBar{from{width:0}to{width:var(--pct)}}',
+  '@keyframes qaIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}',
 ].join('\n');
 
 // ─── Sub-components ────────────────────────────────────────────────────────
@@ -203,6 +207,18 @@ export default function LiveRoomPage({
   var [showLiveModal,  setShowLiveModal]  = useState(false);
   var [stageGuests,    setStageGuests]    = useState([userId]);
   var [showMediaConf,  setShowMediaConf]  = useState(false);
+  var [tipFeed,        setTipFeed]        = useState([]);      // {id,from,amount,emoji,ts}
+  var [tipLeader,      setTipLeader]      = useState([]);      // [{username,totalCents}]
+  var [showLeader,     setShowLeader]     = useState(false);
+  var [activePoll,     setActivePoll]     = useState(null);    // {q,opts:[{text,votes}]}
+  var [pollVoted,      setPollVoted]      = useState(false);
+  var [showPollCreate, setShowPollCreate] = useState(false);
+  var [pollDraft,      setPollDraft]      = useState({ q: '', opts: ['', '', '', ''] });
+  var [qaQueue,        setQaQueue]        = useState([]);      // {id,username,text,upvotes}
+  var [qaInput,        setQaInput]        = useState('');
+  var [showQa,         setShowQa]         = useState(false);
+  var [qaMyVotes,      setQaMyVotes]      = useState({});
+  var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -245,6 +261,29 @@ export default function LiveRoomPage({
       if (!gift) return;
       var fid = Date.now() + Math.random();
       setGiftFloats(function(gf) { return gf.concat([Object.assign({}, gift, { _fid: fid })]); });
+      // Add to tip feed
+      var tipEntry = {
+        id: fid,
+        from: gift.from_user || 'Someone',
+        amount: Math.floor(gift.value_cents || 0),
+        emoji: gift.emoji || '🎁',
+        name: gift.name || 'Gift',
+        ts: Date.now(),
+      };
+      setTipFeed(function(tf) { return [tipEntry].concat(tf).slice(0, 8); });
+      // Update leaderboard
+      setTipLeader(function(lb) {
+        var found = false;
+        var updated = lb.map(function(e) {
+          if (e.username === tipEntry.from) {
+            found = true;
+            return { username: e.username, totalCents: Math.floor(e.totalCents + tipEntry.amount) };
+          }
+          return e;
+        });
+        if (!found) updated = updated.concat([{ username: tipEntry.from, totalCents: Math.floor(tipEntry.amount) }]);
+        return updated.sort(function(a, b) { return b.totalCents - a.totalCents; }).slice(0, 10);
+      });
     });
 
     socket.on('hand-raise', function(data) {
@@ -261,12 +300,59 @@ export default function LiveRoomPage({
       });
     });
 
+    socket.on('poll-started', function(data) {
+      if (!data || !data.q) return;
+      setActivePoll({ q: data.q, opts: (data.opts || []).map(function(t) { return { text: t, votes: 0 }; }) });
+      setPollVoted(false);
+    });
+
+    socket.on('poll-vote', function(data) {
+      if (!data || typeof data.optIdx !== 'number') return;
+      setActivePoll(function(p) {
+        if (!p) return p;
+        var opts = p.opts.map(function(o, i) {
+          return i === data.optIdx ? { text: o.text, votes: o.votes + 1 } : o;
+        });
+        return { q: p.q, opts: opts };
+      });
+    });
+
+    socket.on('poll-ended', function() { setActivePoll(null); setPollVoted(false); });
+
+    socket.on('qa-question', function(data) {
+      if (!data || !data.text) return;
+      setQaQueue(function(q) {
+        return [{ id: data.id || Date.now(), username: data.username || 'Guest', text: data.text, upvotes: 0 }]
+          .concat(q).slice(0, 20);
+      });
+    });
+
+    socket.on('qa-upvote', function(data) {
+      if (!data || !data.id) return;
+      setQaQueue(function(q) {
+        return q.map(function(item) {
+          return item.id === data.id ? { id: item.id, username: item.username, text: item.text, upvotes: item.upvotes + 1 } : item;
+        }).sort(function(a, b) { return b.upvotes - a.upvotes; });
+      });
+    });
+
+    socket.on('qa-dismissed', function(data) {
+      if (!data || !data.id) return;
+      setQaQueue(function(q) { return q.filter(function(item) { return item.id !== data.id; }); });
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
       socket.off('gift-received');
       socket.off('hand-raise');
       socket.off('stage-invite');
+      socket.off('poll-started');
+      socket.off('poll-vote');
+      socket.off('poll-ended');
+      socket.off('qa-question');
+      socket.off('qa-upvote');
+      socket.off('qa-dismissed');
     };
   }, [socket]);
 
@@ -303,6 +389,38 @@ export default function LiveRoomPage({
     setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
     if (socket) socket.emit('react', { roomId: roomId, userId: userId, emoji: emoji });
     setReactsOpen(false);
+  }
+
+  function submitPoll() {
+    if (!socket || !pollDraft.q.trim()) return;
+    var opts = pollDraft.opts.filter(function(o) { return o.trim(); });
+    if (opts.length < 2) { if (addToast) addToast('Need at least 2 options', 'error'); return; }
+    socket.emit('poll-start', { roomId: roomId, q: pollDraft.q.trim(), opts: opts });
+    setShowPollCreate(false);
+    setPollDraft({ q: '', opts: ['', '', '', ''] });
+    if (addToast) addToast('Poll launched!', 'success');
+  }
+
+  function votePoll(idx) {
+    if (!socket || pollVoted) return;
+    socket.emit('poll-vote', { roomId: roomId, optIdx: idx });
+    setPollVoted(true);
+    setActivePoll(function(p) {
+      if (!p) return p;
+      var opts = p.opts.map(function(o, i) {
+        return i === idx ? { text: o.text, votes: o.votes + 1 } : o;
+      });
+      return { q: p.q, opts: opts };
+    });
+  }
+
+  function submitQa() {
+    var text = qaInput.trim();
+    if (!text || !socket) return;
+    var qid = Date.now() + '-' + userId;
+    socket.emit('qa-question', { roomId: roomId, id: qid, username: username, text: text });
+    setQaInput('');
+    if (addToast) addToast('Question sent!', 'success');
   }
 
   function goLive() {
@@ -840,6 +958,13 @@ export default function LiveRoomPage({
             onPress={toggleMute}
           />
           <IconBtn
+            icon="❓"
+            label="Q&A"
+            active={showQa}
+            badge={qaQueue.length > 0 && !showQa ? qaQueue.length : 0}
+            onPress={function() { setShowQa(function(v) { return !v; }); setChatOpen(false); }}
+          />
+          <IconBtn
             icon="⚙"
             label="Camera"
             active={showMediaConf}
@@ -847,6 +972,198 @@ export default function LiveRoomPage({
           />
         </div>
       </div>
+
+      {/* ════════════════ TIP FEED (right edge, floating) ════════════════ */}
+      {tipFeed.length > 0 && (
+        <div style={{ position: 'absolute', right: 8, top: 130, zIndex: 45, display: 'flex', flexDirection: 'column', gap: 5, pointerEvents: 'none', maxWidth: 170 }}>
+          {tipFeed.slice(0, 5).map(function(tip, i) {
+            var isLarge = tip.amount >= 10000;
+            var isMed   = tip.amount >= 500;
+            var border  = isLarge ? 'rgba(201,168,76,.7)' : isMed ? 'rgba(0,222,192,.5)' : 'rgba(255,255,255,.12)';
+            var amtColor = isLarge ? GOLD : isMed ? TEAL : TEXT;
+            return (
+              <div key={tip.id} style={{
+                background: 'rgba(7,5,10,.92)', border: '1px solid ' + border,
+                borderRadius: 10, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 7,
+                animation: 'tipSlide .3s ease ' + (i * .05) + 's both',
+                boxShadow: isLarge ? ('0 0 12px rgba(201,168,76,.25)') : 'none',
+              }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>{tip.emoji}</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tip.from}</div>
+                  {tip.amount > 0 && (
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: amtColor, letterSpacing: 1 }}>
+                      ${(Math.floor(tip.amount) / 100).toFixed(2)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {/* Leaderboard toggle */}
+          <button onClick={function() { setShowLeader(function(v) { return !v; }); }}
+            style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '4px 8px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: .5, pointerEvents: 'all' }}>
+            🏆 TOP TIPPERS
+          </button>
+        </div>
+      )}
+
+      {/* ════════════════ TIP LEADERBOARD PANEL ════════════════ */}
+      {showLeader && tipLeader.length > 0 && (
+        <div style={{
+          position: 'absolute', right: 8, top: 80, zIndex: 60,
+          background: 'rgba(9,7,14,.97)', border: '1px solid rgba(201,168,76,.3)',
+          borderRadius: 14, padding: '12px 14px', width: 180,
+          animation: 'fadeSlideIn .2s ease',
+          boxShadow: '0 8px 32px rgba(0,0,0,.6)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 2 }}>🏆 TOP TIPPERS</span>
+            <button onClick={function() { setShowLeader(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
+          </div>
+          {tipLeader.map(function(e, i) {
+            var medals = ['🥇', '🥈', '🥉'];
+            return (
+              <div key={e.username} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
+                <span style={{ fontSize: 13, flexShrink: 0 }}>{medals[i] || (i + 1) + '.'}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.username}</span>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: GOLD, letterSpacing: 1, flexShrink: 0 }}>${(Math.floor(e.totalCents) / 100).toFixed(2)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ ACTIVE POLL ════════════════ */}
+      {activePoll && (
+        <div style={{
+          position: 'absolute', left: 10, right: 10, bottom: 74, zIndex: 52,
+          background: 'rgba(9,7,14,.96)', border: '1px solid rgba(255,255,255,.1)',
+          borderRadius: 14, padding: '14px 16px',
+          animation: 'fadeSlideIn .25s ease',
+          boxShadow: '0 8px 32px rgba(0,0,0,.5)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>{activePoll.q}</div>
+            {role === 'host' && (
+              <button onClick={function() { if (socket) socket.emit('poll-end', { roomId: roomId }); setActivePoll(null); }}
+                style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: '0 2px', flexShrink: 0 }}>END</button>
+            )}
+          </div>
+          {(function() {
+            var totalVotes = activePoll.opts.reduce(function(s, o) { return s + o.votes; }, 0);
+            return activePoll.opts.map(function(opt, idx) {
+              var pct = totalVotes > 0 ? Math.floor((opt.votes / totalVotes) * 100) : 0;
+              var isWin = opt.votes > 0 && opt.votes === Math.max.apply(null, activePoll.opts.map(function(o) { return o.votes; }));
+              return (
+                <div key={idx} onClick={function() { if (!pollVoted) votePoll(idx); }}
+                  style={{ marginBottom: 6, cursor: pollVoted ? 'default' : 'pointer' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: isWin ? GOLD : TEXT }}>{opt.text}</span>
+                    {pollVoted && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isWin ? GOLD : MUTED }}>{pct}%</span>}
+                  </div>
+                  <div style={{ height: 6, background: 'rgba(255,255,255,.08)', borderRadius: 999, overflow: 'hidden' }}>
+                    {pollVoted && (
+                      <div style={{
+                        height: '100%', borderRadius: 999,
+                        background: isWin ? GOLD : 'rgba(0,222,192,.6)',
+                        width: pct + '%', transition: 'width .5s ease',
+                      }} />
+                    )}
+                  </div>
+                </div>
+              );
+            });
+          })()}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, marginTop: 6 }}>
+            {pollVoted ? (activePoll.opts.reduce(function(s, o) { return s + o.votes; }, 0) + ' votes') : 'Tap to vote'}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ Q&A PANEL ════════════════ */}
+      {showQa && (
+        <div style={{
+          position: 'absolute', left: 0, right: 0, bottom: 62,
+          height: '55%', background: 'rgba(9,7,14,.97)',
+          borderTop: '1px solid ' + BORDER,
+          display: 'flex', flexDirection: 'column',
+          animation: 'slideUp .22s ease', zIndex: 49,
+        }}>
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+            <span style={{ fontWeight: 700, fontSize: 18, color: TEXT }}>Q&A</span>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {role === 'host' && (
+                <button onClick={function() { setShowPollCreate(function(v) { return !v; }); }}
+                  style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '5px 10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                  + POLL
+                </button>
+              )}
+              <button onClick={function() { setShowQa(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+            </div>
+          </div>
+
+          {/* Poll creator (host only) */}
+          {showPollCreate && role === 'host' && (
+            <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, background: CARD, flexShrink: 0 }}>
+              <input value={pollDraft.q} onChange={function(e) { setPollDraft(function(d) { return { q: e.target.value, opts: d.opts }; }); }}
+                placeholder="Poll question..."
+                style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', marginBottom: 8 }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+                {pollDraft.opts.map(function(opt, i) {
+                  return (
+                    <input key={i} value={opt}
+                      onChange={function(e) { var v = e.target.value; setPollDraft(function(d) { var o = d.opts.slice(); o[i] = v; return { q: d.q, opts: o }; }); }}
+                      placeholder={'Option ' + (i + 1)}
+                      style={{ background: CARD2, border: '1px solid ' + DIM, borderRadius: 6, padding: '7px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, outline: 'none' }} />
+                  );
+                })}
+              </div>
+              <button onClick={submitPoll} style={{ width: '100%', background: BURG, border: 'none', borderRadius: 8, padding: '9px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 1 }}>LAUNCH POLL</button>
+            </div>
+          )}
+
+          {/* Q list */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch' }}>
+            {qaQueue.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No questions yet — be the first!</div>
+            )}
+            {qaQueue.map(function(item) {
+              return (
+                <div key={item.id} style={{ marginBottom: 10, background: CARD, borderRadius: 10, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'flex-start', animation: 'qaIn .2s ease' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: GOLD, marginBottom: 3 }}>{item.username}</div>
+                    <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.4 }}>{item.text}</div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                    <button onClick={function() {
+                      if (qaMyVotes[item.id]) return;
+                      if (socket) socket.emit('qa-upvote', { roomId: roomId, id: item.id });
+                      setQaMyVotes(function(v) { return Object.assign({}, v, { [item.id]: true }); });
+                      setQaQueue(function(q) { return q.map(function(x) { return x.id === item.id ? { id: x.id, username: x.username, text: x.text, upvotes: x.upvotes + 1 } : x; }).sort(function(a, b) { return b.upvotes - a.upvotes; }); });
+                    }} style={{ background: qaMyVotes[item.id] ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (qaMyVotes[item.id] ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.1)'), borderRadius: 6, padding: '4px 8px', color: qaMyVotes[item.id] ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                      ▲ {item.upvotes}
+                    </button>
+                    {role === 'host' && (
+                      <button onClick={function() { if (socket) socket.emit('qa-dismiss', { roomId: roomId, id: item.id }); setQaQueue(function(q) { return q.filter(function(x) { return x.id !== item.id; }); }); }}
+                        style={{ background: 'none', border: 'none', color: MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }}>✕</button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Submit question input */}
+          <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
+            <input value={qaInput} onChange={function(e) { setQaInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') submitQa(); }}
+              placeholder="Ask a question..."
+              style={{ flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 999, padding: '9px 16px', fontSize: 13, color: TEXT, outline: 'none', fontFamily: "'Barlow Condensed',sans-serif" }} />
+            <button onClick={submitQa} style={{ background: gold, border: 'none', borderRadius: 999, padding: '9px 16px', fontWeight: 700, fontSize: 13, color: BG, cursor: 'pointer' }}>Ask</button>
+          </div>
+        </div>
+      )}
 
       {/* ════════════════ MEDIA CONFIG PANEL ════════════════ */}
       {showMediaConf && (

@@ -911,6 +911,7 @@ export default function App() {
             role={role}
             addToast={addToast}
             isLive={isLive}
+            chat={chat}
           />
         )}
         {activeTab === 'green' && (
@@ -992,6 +993,8 @@ export default function App() {
           <MusicStudioTab
             addToast={addToast}
             isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
           />
         )}
         {activeTab === 'discover' && (
