@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -20,6 +18,24 @@ import BattleOverlay from '../components/pk/BattleOverlay';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
 
+function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
+  return (
+    <button onClick={onClick} disabled={disabled} {...rest}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`}
+      style={{ padding: size === 'sm' ? '6px 12px' : size === 'icon' ? '6px' : '8px 16px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : '1px solid rgba(255,255,255,0.12)', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>
+      {children}
+    </button>
+  );
+}
+function Badge({ children, className = '', style = {} }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
+      style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', ...style }}>
+      {children}
+    </span>
+  );
+}
+
 /* ─── Earth Tone Palette (No Pink) ─── */
 var ET = {
   rust: '#6B4423',
@@ -29,9 +45,9 @@ var ET = {
   clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
-  darkEarth: '#2C1810',
-  midEarth: '#3D2B1F',
-  bg: '#1A0F0A',
+  darkEarth: 'rgba(13,6,24,0.95)',
+  midEarth: 'rgba(17,8,34,0.9)',
+  bg: '#080B18',
 };
 
 /* ─── Constants ─── */
