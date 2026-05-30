@@ -111,6 +111,13 @@ import OverlayBuilder from './pages/OverlayBuilder';
 import LoyaltyHub from './pages/LoyaltyHub';
 import ChallengesHub from './pages/ChallengesHub';
 import AIMusic from './pages/AIMusic';
+import BroadcastStudio from './pages/BroadcastStudio';
+import Messages from './pages/Messages';
+import ClipsLibrary from './pages/ClipsLibrary';
+import Onboarding from './pages/Onboarding';
+import PKBattle from './pages/PKBattle';
+import PollManager from './pages/PollManager';
+import PlatformShowcase from './pages/PlatformShowcase';
 import __Layout from './Layout.jsx';
 
 
@@ -179,6 +186,13 @@ export const PAGES = {
     "LoyaltyHub": LoyaltyHub,
     "ChallengesHub": ChallengesHub,
     "AIMusic": AIMusic,
+    "BroadcastStudio": BroadcastStudio,
+    "Messages": Messages,
+    "ClipsLibrary": ClipsLibrary,
+    "Onboarding": Onboarding,
+    "PKBattle": PKBattle,
+    "PollManager": PollManager,
+    "PlatformShowcase": PlatformShowcase,
 }
 
 export const pagesConfig = {

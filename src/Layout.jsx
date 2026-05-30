@@ -8,7 +8,7 @@ import {
   Home, Radio, Users, DollarSign, Search as SearchIcon,
   Plus, Video, Zap, LayoutDashboard, Layers, Swords,
   Trophy, Shield, Server, Sparkles, Menu, X, Eye,
-  Bell, User, ChevronRight, Music
+  Bell, User, ChevronRight, Music, MessageSquare
 } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import NotificationHub from '@/components/live/NotificationHub';
@@ -26,7 +26,7 @@ import SwanyBotWidget from '@/components/guide/ARIAWidget';
 var MOBILE_NAV = [
   { name: 'Home',     icon: Home,       href: createPageUrl('Home') },
   { name: 'Discover', icon: SearchIcon, href: createPageUrl('Discover') },
-  { name: 'Studio',   icon: Radio,      href: '/BroadcastStudio', isCenter: true },
+  { name: 'Studio',   icon: Radio,      href: createPageUrl('BroadcastStudio'), isCenter: true },
   { name: 'Battles',  icon: Swords,     href: createPageUrl('PKBattleManager') },
   { name: 'Profile',  icon: User,       href: createPageUrl('CreatorDashboard') },
 ];
@@ -38,16 +38,17 @@ var PRIMARY_NAV = [
   { name: 'Battles',    icon: Swords,         href: createPageUrl('PKBattleManager') },
   { name: 'Leaderboard',icon: Trophy,         href: createPageUrl('Leaderboard') },
   { name: 'Watch Party',icon: Eye,            href: createPageUrl('WatchParty') },
-  { name: 'Studio',    icon: Radio,          href: '/BroadcastStudio' },
-  { name: 'Loyalty',    icon: Trophy,         href: '/LoyaltyHub' },
-  { name: 'Challenges', icon: Zap,            href: '/ChallengesHub' },
+  { name: 'Studio',    icon: Radio,          href: createPageUrl('BroadcastStudio') },
+  { name: 'Messages',  icon: MessageSquare,  href: createPageUrl('Messages') },
+  { name: 'Loyalty',    icon: Trophy,         href: createPageUrl('LoyaltyHub') },
+  { name: 'Challenges', icon: Zap,            href: createPageUrl('ChallengesHub') },
 ];
 
 var CREATOR_NAV = [
-  { name: 'Dashboard',   icon: LayoutDashboard, href: '/CreatorDashboard' },
-  { name: 'Monetize',    icon: DollarSign,      href: '/Monetization' },
-  { name: 'Community',   icon: Users,           href: '/Community' },
-  { name: 'Branding',    icon: Sparkles,        href: '/OverlayEditor' },
+  { name: 'Dashboard',   icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'Monetize',    icon: DollarSign,      href: createPageUrl('Monetization') },
+  { name: 'Community',   icon: Users,           href: createPageUrl('Community') },
+  { name: 'Branding',    icon: Sparkles,        href: createPageUrl('OverlayEditor') },
   { name: 'Schedule',    icon: Radio,           href: createPageUrl('StreamScheduler') },
   { name: 'Stream Setup',icon: Server,          href: createPageUrl('StreamInfra') },
   { name: 'AI Music',   icon: Music,           href: createPageUrl('AIMusic') },
