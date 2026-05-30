@@ -189,7 +189,7 @@ export default function LiveRoomPage({
   socket, guests, chat, isLive, setIsLive,
   userId, username, role, roomId, branding,
   addToast, overlayConfig, viewerCount, mediaConfig,
-  streamInfo, onLeave,
+  streamInfo, streamGoal, setStreamGoal, sessionEarningsCents, onLeave,
 }) {
   var [rtcReady,      setRtcReady]      = useState(false);
   var [isMuted,       setIsMuted]       = useState(false);
@@ -221,6 +221,8 @@ export default function LiveRoomPage({
   var [qaMyVotes,      setQaMyVotes]      = useState({});
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
   var [musicBanner,    setMusicBanner]    = useState(null);   // {title,style,emoji,sharedBy} | null
+  var [showGoalSet,    setShowGoalSet]    = useState(false);
+  var [goalDraft,      setGoalDraft]      = useState({ label: '', amount: '' });
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -565,6 +567,33 @@ export default function LiveRoomPage({
           </div>
         )}
       </div>
+
+      {/* ════════════════ STREAM GOAL BAR ════════════════ */}
+      {streamGoal && isLive && (function() {
+        var earned = Math.floor(sessionEarningsCents || 0);
+        var target = Math.floor(streamGoal.goalCents || 1);
+        var pct    = Math.min(100, Math.floor(earned / target * 100));
+        var bar    = pct >= 100 ? GOLD : pct >= 75 ? TEAL : '#5A8FFF';
+        return (
+          <div style={{ background: 'rgba(7,5,10,.9)', borderBottom: '1px solid ' + BORDER, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, flexShrink: 0 }}>GOAL</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, flexShrink: 0, maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamGoal.label || 'Stream Goal'}</span>
+            <div style={{ flex: 1, background: 'rgba(255,255,255,.07)', borderRadius: 999, height: 6, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 999, background: bar, width: pct + '%', transition: 'width .6s ease' }} />
+            </div>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: bar, letterSpacing: 1, flexShrink: 0 }}>{pct}%</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flexShrink: 0 }}>${(earned / 100).toFixed(0)}/${(target / 100).toFixed(0)}</span>
+            {role === 'host' && <button onClick={function() { if (setStreamGoal) setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: 0, lineHeight: 1 }}>✕</button>}
+          </div>
+        );
+      })()}
+      {!streamGoal && role === 'host' && isLive && (
+        <div style={{ background: 'rgba(7,5,10,.7)', borderBottom: '1px solid ' + BORDER, padding: '4px 14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 }}>
+          <button onClick={function() { setShowGoalSet(true); }} style={{ background: 'none', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '3px 10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer', letterSpacing: 1 }}>
+            + SET STREAM GOAL
+          </button>
+        </div>
+      )}
 
       {/* ════════════════ SCROLLABLE BODY ════════════════ */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
@@ -958,6 +987,45 @@ export default function LiveRoomPage({
               <span>▶</span> START BROADCAST
             </button>
             <button onClick={function() { setShowLiveModal(false); }} style={{ width: '100%', background: 'transparent', border: 'none', marginTop: 12, padding: '12px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ GOAL SETTER MODAL ════════════════ */}
+      {showGoalSet && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 70, animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ fontWeight: 700, fontSize: 20, color: TEXT, marginBottom: 4 }}>Set Stream Goal</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 20 }}>Visible to all viewers as a progress bar</div>
+            <input
+              type="text"
+              maxLength={40}
+              placeholder="Goal label (e.g. New Studio Setup)"
+              value={goalDraft.label}
+              onChange={function(e) { setGoalDraft(function(d) { return { label: e.target.value, amount: d.amount }; }); }}
+              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 16, outline: 'none', marginBottom: 10 }}
+            />
+            <input
+              type="number"
+              min="1"
+              placeholder="Goal amount in $ (e.g. 500)"
+              value={goalDraft.amount}
+              onChange={function(e) { setGoalDraft(function(d) { return { label: d.label, amount: e.target.value }; }); }}
+              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, outline: 'none', marginBottom: 16, letterSpacing: 1 }}
+            />
+            <button onClick={function() {
+              var amt = parseFloat(goalDraft.amount);
+              if (!goalDraft.label.trim() || !amt || amt <= 0) { if (addToast) addToast('Enter a label and amount', 'error'); return; }
+              if (setStreamGoal) setStreamGoal({ label: goalDraft.label.trim(), goalCents: Math.floor(amt * 100) });
+              setShowGoalSet(false);
+              setGoalDraft({ label: '', amount: '' });
+              if (addToast) addToast('Stream goal set!', 'success');
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+              ACTIVATE GOAL
+            </button>
+            <button onClick={function() { setShowGoalSet(false); setGoalDraft({ label: '', amount: '' }); }} style={{ width: '100%', background: 'transparent', border: 'none', marginTop: 10, padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: MUTED, cursor: 'pointer' }}>
               Cancel
             </button>
           </div>
