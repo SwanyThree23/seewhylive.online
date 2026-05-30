@@ -8,7 +8,6 @@ import {
   Radio, LogOut, Copy, Maximize2, Minimize2,
   ChevronLeft, ChevronRight, Swords, Monitor,
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
 import { useLocalMedia } from '../hooks/useLocalMedia';
@@ -212,13 +211,13 @@ function CreateScreen({ onSubmit, isPending }) {
         </div>
 
         <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)' }}>
-          <Input
+          <input
             placeholder="Broadcast title…"
             value={title}
             onChange={e => setTitle(e.target.value)}
             maxLength={120}
             className="h-11 text-white placeholder:text-white/30"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
           />
 
           <div>
@@ -240,13 +239,13 @@ function CreateScreen({ onSubmit, isPending }) {
           </div>
 
           {mode !== 'live' && (
-            <Input
+            <input
               placeholder="YouTube URL or direct video URL (optional)…"
               value={videoUrl}
               onChange={e => setVideoUrl(e.target.value)}
               maxLength={2048}
               className="h-10 text-white placeholder:text-white/30"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ width: '100%', padding: '8px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
             />
           )}
 
