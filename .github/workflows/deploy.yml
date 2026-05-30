@@ -34,7 +34,7 @@ jobs:
         with:
           host: 2.24.194.112
           username: root
-          password: ${{ secrets.VPS_PASSWORD }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           source: "dist/"
           target: "/opt/seewhy/frontend/"
@@ -46,7 +46,7 @@ jobs:
         with:
           host: 2.24.194.112
           username: root
-          password: ${{ secrets.VPS_PASSWORD }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           source: "server/"
           target: "/opt/seewhy/"
@@ -58,7 +58,7 @@ jobs:
         with:
           host: 2.24.194.112
           username: root
-          password: ${{ secrets.VPS_PASSWORD }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
             set -e
