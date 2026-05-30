@@ -33,11 +33,10 @@ if ! command -v gh &>/dev/null; then
   apt-get update -qq && apt-get install gh -y -qq
 fi
 
-echo "$TOKEN" | gh auth login --with-token
-gh secret set VPS_SSH_KEY --body "$(cat "$KEY_FILE")" --repo "$REPO"
+GH_TOKEN="$TOKEN" gh secret set VPS_SSH_KEY --body "$(cat "$KEY_FILE")" --repo "$REPO"
 echo ""
 echo "✅  VPS_SSH_KEY secret set on $REPO"
 echo ""
 echo "Triggering a test deploy…"
-gh workflow run deploy.yml --repo "$REPO"
+GH_TOKEN="$TOKEN" gh workflow run deploy.yml --repo "$REPO"
 echo "✅  Workflow triggered — check: https://github.com/$REPO/actions"
