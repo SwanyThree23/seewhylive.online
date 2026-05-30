@@ -640,15 +640,32 @@ export default function App() {
 
   if (splash) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F0C14', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 64, color: '#EDE8F5', letterSpacing: 4, lineHeight: 1 }}>SeeWhy LIVE</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: '#7A6F90', marginTop: 8 }}>v33.0</div>
-          <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'center' }}>
-            <span style={{ background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 4, padding: '3px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, fontWeight: 700 }}>MERGE BUILD</span>
-            <span style={{ background: 'rgba(128,0,32,.2)', border: '1px solid rgba(128,0,32,.5)', borderRadius: 4, padding: '3px 10px', color: '#FF6B81', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, fontWeight: 700 }}>PRODUCTION</span>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0F0C14', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, overflow: 'hidden' }}>
+        <style dangerouslySetInnerHTML={{ __html: [
+          '@keyframes splashFade{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}',
+          '@keyframes splashPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.5)}70%{box-shadow:0 0 0 24px rgba(201,168,76,0)}}',
+          '@keyframes splashBar{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}',
+          '@keyframes splashDot{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}',
+        ].join('') }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(128,0,32,.18) 0%, transparent 70%)' }} />
+        <div style={{ textAlign: 'center', animation: 'splashFade .5s ease', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
+            {[0,1,2,3,4].map(function(i) {
+              return <div key={i} style={{ width: 4, borderRadius: 2, background: i % 2 === 0 ? '#800020' : '#C9A84C', height: 18 + (i === 2 ? 14 : i === 1 || i === 3 ? 8 : 0), animation: 'splashDot 1s ease ' + (i * .1) + 's infinite' }} />;
+            })}
           </div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#7A6F90', marginTop: 16 }}>Washington Classic × Domino Entertainment × VibeN'Bones</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 62, color: '#EDE8F5', letterSpacing: 5, lineHeight: 1, animation: 'splashPulse 1.8s infinite' }}>SeeWhy LIVE</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C', marginTop: 6, letterSpacing: 3 }}>v33.0 · WASHINGTON CLASSIC</div>
+          <div style={{ marginTop: 14, display: 'flex', gap: 8, justifyContent: 'center' }}>
+            {['DOMINO ENTERTAINMENT','VIBENBONES','WASHINGTON DC'].map(function(label, i) {
+              return <span key={i} style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '3px 9px', color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{label}</span>;
+            })}
+          </div>
+          <div style={{ marginTop: 24, display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'flex-end', height: 28 }}>
+            {[4,7,5,9,6,8,4,6,9,7,5,8,6].map(function(h, i) {
+              return <div key={i} style={{ width: 3, borderRadius: 2, background: 'rgba(201,168,76,.5)', height: h * 2 + 4, animation: 'splashBar ' + (.6 + i * .07) + 's ease ' + (i * .04) + 's infinite' }} />;
+            })}
+          </div>
         </div>
       </div>
     );
@@ -829,6 +846,9 @@ export default function App() {
             overlayConfig={overlayConfig}
             viewerCount={viewerCount}
             streamInfo={streamInfo}
+            streamGoal={streamGoal}
+            setStreamGoal={setStreamGoal}
+            sessionEarningsCents={sessionEarningsCents}
             onLeave={function() { setActiveTab('discover'); addToast('Left the room', 'info'); }}
           />
         )}
