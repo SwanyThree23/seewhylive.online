@@ -3,11 +3,11 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 var C = {
-  bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
+  bg: "#080B18", card: "rgba(13,6,24,0.97)", surface: "rgba(17,8,34,0.85)",
   burgundy: "#800020", gold: "#D4AF37", volt: "#C8FF00",
   white: "#FFFFFF", gray: "#888", dim: "#444",
-  fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
-  fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
+  fOrb: "'Orbitron',sans-serif", fRaj: "'Barlow Condensed',sans-serif",
+  fMon: "'Share Tech Mono',monospace", fBeb: "'Barlow Condensed',sans-serif",
 };
 
 function initials(name) {
@@ -99,7 +99,7 @@ export default function Messages() {
   return (
     <div style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column" }}>
       {/* Header */}
-      <div style={{ background: C.card, borderBottom: "1px solid " + C.burgundy, padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 30, background: "rgba(8,11,24,0.97)", borderBottom: "1px solid rgba(212,175,55,0.1)", backdropFilter: "blur(12px)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
         <button onClick={() => window.history.back()} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 18 }}>←</button>
         <span style={{ fontFamily: C.fOrb, fontSize: 14, color: C.gold, letterSpacing: 2 }}>MESSAGES</span>
         {totalUnread > 0 && (
