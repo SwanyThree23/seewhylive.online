@@ -8,7 +8,7 @@ import {
   Home, Radio, Users, DollarSign, Search as SearchIcon,
   Plus, Video, Zap, LayoutDashboard, Layers, Swords,
   Trophy, Shield, Server, Sparkles, Menu, X, Eye,
-  Bell, User, ChevronRight
+  Bell, User, ChevronRight, Music
 } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import NotificationHub from '@/components/live/NotificationHub';
@@ -50,6 +50,7 @@ var CREATOR_NAV = [
   { name: 'Branding',    icon: Sparkles,        href: '/OverlayEditor' },
   { name: 'Schedule',    icon: Radio,           href: createPageUrl('StreamScheduler') },
   { name: 'Stream Setup',icon: Server,          href: createPageUrl('StreamInfra') },
+  { name: 'AI Music',   icon: Music,           href: createPageUrl('AIMusic') },
 ];
 
 var ADMIN_NAV = [

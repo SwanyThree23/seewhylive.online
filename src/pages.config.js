@@ -110,6 +110,7 @@ import Dashboard from './pages/Dashboard';
 import OverlayBuilder from './pages/OverlayBuilder';
 import LoyaltyHub from './pages/LoyaltyHub';
 import ChallengesHub from './pages/ChallengesHub';
+import AIMusic from './pages/AIMusic';
 import __Layout from './Layout.jsx';
 
 
@@ -177,6 +178,7 @@ export const PAGES = {
     "OverlayBuilder": OverlayBuilder,
     "LoyaltyHub": LoyaltyHub,
     "ChallengesHub": ChallengesHub,
+    "AIMusic": AIMusic,
 }
 
 export const pagesConfig = {
