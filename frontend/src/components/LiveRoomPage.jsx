@@ -32,6 +32,7 @@ var ANIM = [
   '@keyframes pollBar{from{width:0}to{width:var(--pct)}}',
   '@keyframes qaIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}',
   '@keyframes musicIn{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
+  '@keyframes vsIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}',
 ].join('\n');
 
 // ─── Sub-components ────────────────────────────────────────────────────────
@@ -223,6 +224,15 @@ export default function LiveRoomPage({
   var [musicBanner,    setMusicBanner]    = useState(null);   // {title,style,emoji,sharedBy} | null
   var [showGoalSet,    setShowGoalSet]    = useState(false);
   var [goalDraft,      setGoalDraft]      = useState({ label: '', amount: '' });
+  var [vsPoll,         setVsPoll]         = useState(null);   // { id,sideA,sideB,votesA,votesB,pctA,pctB,totalVotes,active }
+  var [vsVoted,        setVsVoted]        = useState(null);   // 'A' | 'B' | null
+  var [showVsCreate,   setShowVsCreate]   = useState(false);
+  var [vsDraft,        setVsDraft]        = useState({ sideA: '', sideB: '', duration: '60' });
+  var [judges,         setJudges]         = useState([]);     // [{ userId, username, scoreCount, avgScore, lastScore }]
+  var [showJudges,     setShowJudges]     = useState(false);
+  var [judgeAssignName, setJudgeAssignName] = useState('');
+  var [judgeScoreVal,  setJudgeScoreVal]  = useState('');
+  var [judgeScoreLabel, setJudgeScoreLabel] = useState('');
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -341,6 +351,24 @@ export default function LiveRoomPage({
       setTimeout(function() { setMusicBanner(null); }, 6000);
     });
 
+    socket.on('vs-update', function(data) {
+      if (!data) { setVsPoll(null); setVsVoted(null); return; }
+      setVsPoll(data);
+      if (!data.active) {
+        setTimeout(function() { setVsPoll(null); setVsVoted(null); }, 8000);
+      }
+    });
+
+    socket.on('judges-update', function(data) {
+      if (!data) return;
+      setJudges(data);
+    });
+
+    socket.on('judge-scored', function(data) {
+      if (!data) return;
+      if (addToast) addToast('⚖ ' + (data.username || 'Judge') + ' scored ' + data.score + (data.label ? ' — ' + data.label : ''), 'info');
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
@@ -352,6 +380,9 @@ export default function LiveRoomPage({
       socket.off('qa-upvote');
       socket.off('qa-dismissed');
       socket.off('music-shared');
+      socket.off('vs-update');
+      socket.off('judges-update');
+      socket.off('judge-scored');
     };
   }, [socket]);
 
@@ -420,6 +451,24 @@ export default function LiveRoomPage({
     socket.emit('qa-question', { roomId: roomId, id: qid, username: username, text: text });
     setQaInput('');
     if (addToast) addToast('Question sent!', 'success');
+  }
+
+  function startVs() {
+    if (!socket || !vsDraft.sideA.trim() || !vsDraft.sideB.trim()) return;
+    var dur = Math.min(300, Math.max(10, parseInt(vsDraft.duration) || 60));
+    socket.emit('vs-start', { roomId: roomId, sideA: vsDraft.sideA.trim(), sideB: vsDraft.sideB.trim(), durationSec: dur });
+    setShowVsCreate(false);
+    setVsDraft({ sideA: '', sideB: '', duration: '60' });
+    if (addToast) addToast('VS Poll launched!', 'success');
+  }
+
+  function submitJudgeScore() {
+    var s = parseInt(judgeScoreVal);
+    if (!socket || isNaN(s) || s < 0 || s > 10) { if (addToast) addToast('Score must be 0–10', 'error'); return; }
+    socket.emit('judge-score', { roomId: roomId, score: s, label: judgeScoreLabel.trim() });
+    setJudgeScoreVal('');
+    setJudgeScoreLabel('');
+    if (addToast) addToast('Score submitted!', 'success');
   }
 
   function goLive() {
@@ -1176,6 +1225,81 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ VS POLL OVERLAY ════════════════ */}
+      {vsPoll && (
+        <div style={{
+          position: 'absolute', left: 10, right: 10,
+          bottom: activePoll ? 228 : 74, zIndex: 53,
+          background: 'rgba(9,7,14,.97)',
+          border: '1px solid rgba(255,255,255,.12)',
+          borderRadius: 14, overflow: 'hidden',
+          animation: 'vsIn .3s ease',
+          boxShadow: '0 8px 36px rgba(0,0,0,.65)',
+        }}>
+          {/* VS header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px 4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: GOLD, letterSpacing: 2 }}>VS POLL</span>
+              {vsPoll.active && <div style={{ width: 5, height: 5, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />}
+              {!vsPoll.active && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>FINAL</span>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{vsPoll.totalVotes} vote{vsPoll.totalVotes !== 1 ? 's' : ''}</span>
+              {role === 'host' && vsPoll.active && (
+                <button onClick={function() { if (socket) socket.emit('vs-end', { roomId: roomId }); }}
+                  style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: '0 2px', letterSpacing: .5, fontFamily: "'DM Mono',monospace" }}>END</button>
+              )}
+            </div>
+          </div>
+          {/* Animated split bar */}
+          <div style={{ margin: '0 14px 6px', height: 7, background: 'rgba(255,255,255,.07)', borderRadius: 999, overflow: 'hidden', position: 'relative' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, background: 'linear-gradient(90deg,#5A8FFF,#2A6FFF)', width: (vsPoll.pctA || 50) + '%', transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
+            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, borderRadius: 999, background: 'linear-gradient(270deg,' + RED + ',#C01230)', width: (vsPoll.pctB || 50) + '%', transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
+          </div>
+          {/* Side cards */}
+          <div style={{ display: 'flex', padding: '0 10px 10px', gap: 8 }}>
+            <button onClick={function() {
+              if (!socket || vsVoted || !vsPoll.active) return;
+              socket.emit('vs-vote', { roomId: roomId, side: 'A' });
+              setVsVoted('A');
+            }} style={{
+              flex: 1, background: vsVoted === 'A' ? 'rgba(90,143,255,.22)' : 'rgba(90,143,255,.07)',
+              border: '1.5px solid ' + (vsVoted === 'A' ? '#5A8FFF' : 'rgba(90,143,255,.28)'),
+              borderRadius: 10, padding: '8px 6px',
+              cursor: (vsPoll.active && !vsVoted) ? 'pointer' : 'default',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'background .2s, border-color .2s',
+            }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, textAlign: 'center', lineHeight: 1.2 }}>{vsPoll.sideA}</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#5A8FFF', letterSpacing: 1, lineHeight: 1 }}>{vsPoll.pctA}%</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{vsPoll.votesA} vote{vsPoll.votesA !== 1 ? 's' : ''}</span>
+              {vsVoted === 'A' && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF', marginTop: 1 }}>✓ YOUR PICK</span>}
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 3 }}>VS</span>
+            </div>
+            <button onClick={function() {
+              if (!socket || vsVoted || !vsPoll.active) return;
+              socket.emit('vs-vote', { roomId: roomId, side: 'B' });
+              setVsVoted('B');
+            }} style={{
+              flex: 1, background: vsVoted === 'B' ? 'rgba(255,26,60,.22)' : 'rgba(255,26,60,.07)',
+              border: '1.5px solid ' + (vsVoted === 'B' ? RED : 'rgba(255,26,60,.28)'),
+              borderRadius: 10, padding: '8px 6px',
+              cursor: (vsPoll.active && !vsVoted) ? 'pointer' : 'default',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'background .2s, border-color .2s',
+            }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, textAlign: 'center', lineHeight: 1.2 }}>{vsPoll.sideB}</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: RED, letterSpacing: 1, lineHeight: 1 }}>{vsPoll.pctB}%</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{vsPoll.votesB} vote{vsPoll.votesB !== 1 ? 's' : ''}</span>
+              {vsVoted === 'B' && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, marginTop: 1 }}>✓ YOUR PICK</span>}
+            </button>
+          </div>
+          {!vsVoted && vsPoll.active && (
+            <div style={{ padding: '0 14px 8px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>Tap a side to cast your vote</div>
+          )}
+        </div>
+      )}
+
       {/* ════════════════ ACTIVE POLL ════════════════ */}
       {activePoll && (
         <div style={{
@@ -1227,18 +1351,30 @@ export default function LiveRoomPage({
       {showQa && (
         <div style={{
           position: 'absolute', left: 0, right: 0, bottom: 62,
-          height: '55%', background: 'rgba(9,7,14,.97)',
+          height: '60%', background: 'rgba(9,7,14,.97)',
           borderTop: '1px solid ' + BORDER,
           display: 'flex', flexDirection: 'column',
           animation: 'slideUp .22s ease', zIndex: 49,
         }}>
           <div style={{ padding: '10px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 18, color: TEXT }}>Q&A</span>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               {role === 'host' && (
-                <button onClick={function() { setShowPollCreate(function(v) { return !v; }); }}
-                  style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '5px 10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
-                  + POLL
+                <button onClick={function() { setShowPollCreate(function(v) { var next = !v; if (next) { setShowVsCreate(false); setShowJudges(false); } return next; }); }}
+                  style={{ background: showPollCreate ? 'rgba(201,168,76,.25)' : 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '5px 8px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                  📊 POLL
+                </button>
+              )}
+              {role === 'host' && (
+                <button onClick={function() { setShowVsCreate(function(v) { var next = !v; if (next) { setShowPollCreate(false); setShowJudges(false); } return next; }); }}
+                  style={{ background: showVsCreate ? 'rgba(255,26,60,.25)' : 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '5px 8px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                  ⚔ VS
+                </button>
+              )}
+              {(role === 'host' || judges.some(function(j) { return j.userId === userId; })) && (
+                <button onClick={function() { setShowJudges(function(v) { var next = !v; if (next) { setShowPollCreate(false); setShowVsCreate(false); } return next; }); }}
+                  style={{ background: showJudges ? 'rgba(0,222,192,.2)' : 'rgba(0,222,192,.08)', border: '1px solid rgba(0,222,192,.3)', borderRadius: 8, padding: '5px 8px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                  ⚖{judges.length > 0 ? (' ' + judges.length) : ''}
                 </button>
               )}
               <button onClick={function() { setShowQa(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
@@ -1262,6 +1398,103 @@ export default function LiveRoomPage({
                 })}
               </div>
               <button onClick={submitPoll} style={{ width: '100%', background: BURG, border: 'none', borderRadius: 8, padding: '9px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 1 }}>LAUNCH POLL</button>
+            </div>
+          )}
+
+          {/* VS Poll creator (host only) */}
+          {showVsCreate && role === 'host' && (
+            <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, background: CARD, flexShrink: 0 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: RED, letterSpacing: 2, marginBottom: 8 }}>HEAD-TO-HEAD VS POLL</div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input value={vsDraft.sideA}
+                  onChange={function(e) { var v = e.target.value; setVsDraft(function(d) { return { sideA: v, sideB: d.sideB, duration: d.duration }; }); }}
+                  placeholder="Side A (e.g. Player 1)"
+                  style={{ flex: 1, background: 'rgba(90,143,255,.08)', border: '1px solid rgba(90,143,255,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+                <div style={{ display: 'flex', alignItems: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, padding: '0 2px' }}>VS</div>
+                <input value={vsDraft.sideB}
+                  onChange={function(e) { var v = e.target.value; setVsDraft(function(d) { return { sideA: d.sideA, sideB: v, duration: d.duration }; }); }}
+                  placeholder="Side B (e.g. Player 2)"
+                  style={{ flex: 1, background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0 }}>DURATION (sec)</span>
+                <input type="number" min="10" max="300" value={vsDraft.duration}
+                  onChange={function(e) { var v = e.target.value; setVsDraft(function(d) { return { sideA: d.sideA, sideB: d.sideB, duration: v }; }); }}
+                  style={{ width: 70, background: CARD2, border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 12, outline: 'none', textAlign: 'center' }} />
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>10–300s</span>
+              </div>
+              <button onClick={startVs} style={{ width: '100%', background: 'linear-gradient(90deg,rgba(90,143,255,.8),rgba(255,26,60,.8))', border: 'none', borderRadius: 8, padding: '9px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>LAUNCH VS POLL</button>
+            </div>
+          )}
+
+          {/* Judges panel */}
+          {showJudges && (
+            <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, background: CARD, flexShrink: 0, maxHeight: 240, overflowY: 'auto' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: TEAL, letterSpacing: 2, marginBottom: 8 }}>JUDGE PANEL</div>
+              {role === 'host' && (
+                <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                  <input value={judgeAssignName}
+                    onChange={function(e) { setJudgeAssignName(e.target.value); }}
+                    placeholder="Username to assign as judge"
+                    style={{ flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 8, padding: '7px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, outline: 'none' }} />
+                  <button onClick={function() {
+                    var name = judgeAssignName.trim();
+                    if (!name) return;
+                    var found = allParticipants.find(function(p) { return (p.username || '').toLowerCase() === name.toLowerCase(); });
+                    var uid = found ? (found.guestId || found.userId) : name;
+                    var uname = found ? (found.username || name) : name;
+                    if (socket) socket.emit('judge-assign', { roomId: roomId, userId: uid, username: uname });
+                    setJudgeAssignName('');
+                    if (addToast) addToast(uname + ' assigned as judge', 'success');
+                  }} style={{ background: TEAL, border: 'none', borderRadius: 8, padding: '7px 12px', color: BG, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>ADD</button>
+                </div>
+              )}
+              {judges.length === 0 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '8px 0' }}>No judges assigned yet</div>
+              )}
+              {judges.map(function(j) {
+                return (
+                  <div key={j.userId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, background: CARD2, borderRadius: 8, padding: '6px 10px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.username}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{j.scoreCount} score{j.scoreCount !== 1 ? 's' : ''}</div>
+                    </div>
+                    {j.avgScore !== null && (
+                      <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD, lineHeight: 1, letterSpacing: 1 }}>{j.avgScore}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>AVG</div>
+                      </div>
+                    )}
+                    {role === 'host' && (
+                      <button onClick={function() { if (socket) socket.emit('judge-remove', { roomId: roomId, userId: j.userId }); }}
+                        style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, padding: '2px 4px', flexShrink: 0 }}>✕</button>
+                    )}
+                  </div>
+                );
+              })}
+              {judges.some(function(j) { return j.userId === userId; }) && (
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid ' + BORDER }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 1, marginBottom: 8 }}>YOUR SCORE</div>
+                  <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+                    {[0,1,2,3,4,5,6,7,8,9,10].map(function(n) {
+                      return (
+                        <button key={n} onClick={function() { setJudgeScoreVal(String(n)); }}
+                          style={{ width: 30, height: 30, borderRadius: 7, background: judgeScoreVal === String(n) ? TEAL : CARD2, border: '1px solid ' + (judgeScoreVal === String(n) ? TEAL : DIM), color: judgeScoreVal === String(n) ? BG : TEXT, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <input value={judgeScoreLabel}
+                    onChange={function(e) { setJudgeScoreLabel(e.target.value); }}
+                    placeholder="Optional label (e.g. Round 1)"
+                    style={{ width: '100%', boxSizing: 'border-box', background: CARD2, border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, outline: 'none', marginBottom: 6 }} />
+                  <button onClick={submitJudgeScore}
+                    style={{ width: '100%', background: judgeScoreVal !== '' ? TEAL : CARD2, border: 'none', borderRadius: 8, padding: '8px', color: judgeScoreVal !== '' ? BG : MUTED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: judgeScoreVal !== '' ? 'pointer' : 'default', letterSpacing: 1 }}>
+                    SUBMIT{judgeScoreVal !== '' ? ' (' + judgeScoreVal + '/10)' : ' SCORE'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
