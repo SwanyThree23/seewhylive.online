@@ -31,6 +31,7 @@ var ANIM = [
   '@keyframes tipOut{from{opacity:1}to{opacity:0;transform:translateX(60px)}}',
   '@keyframes pollBar{from{width:0}to{width:var(--pct)}}',
   '@keyframes qaIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}',
+  '@keyframes musicIn{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}',
 ].join('\n');
 
 // ─── Sub-components ────────────────────────────────────────────────────────
@@ -219,6 +220,7 @@ export default function LiveRoomPage({
   var [showQa,         setShowQa]         = useState(false);
   var [qaMyVotes,      setQaMyVotes]      = useState({});
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
+  var [musicBanner,    setMusicBanner]    = useState(null);   // {title,style,emoji,sharedBy} | null
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -331,6 +333,12 @@ export default function LiveRoomPage({
       setQaQueue(function(q) { return q.filter(function(item) { return item.id !== data.id; }); });
     });
 
+    socket.on('music-shared', function(data) {
+      if (!data || !data.title) return;
+      setMusicBanner({ title: data.title, style: data.style || '', emoji: data.emoji || '🎵', sharedBy: data.sharedBy || '' });
+      setTimeout(function() { setMusicBanner(null); }, 6000);
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
@@ -341,6 +349,7 @@ export default function LiveRoomPage({
       socket.off('qa-question');
       socket.off('qa-upvote');
       socket.off('qa-dismissed');
+      socket.off('music-shared');
     };
   }, [socket]);
 
@@ -570,7 +579,21 @@ export default function LiveRoomPage({
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, letterSpacing: 1 }}>{onStage.length}/{MAX_STAGE}</span>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              {/* Layout toggle */}
+              {/* Panel mode (list vs grid for 20-person) */}
+              <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
+                {[
+                  { id: 'grid', icon: '⊞', title: 'Grid' },
+                  { id: 'list', icon: '☰', title: 'List' },
+                ].map(function(m) {
+                  return (
+                    <button key={m.id} onClick={function() { setPanelMode(m.id); }}
+                      style={{ background: panelMode === m.id ? CARD2 : 'transparent', border: 'none', color: panelMode === m.id ? TEXT : MUTED, cursor: 'pointer', padding: '5px 10px', fontSize: 12, transition: 'background .15s' }}>
+                      {m.icon}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Stage layout (single focus) */}
               <div style={{ display: 'flex', background: CARD, borderRadius: 8, overflow: 'hidden', border: '1px solid ' + BORDER }}>
                 {[
                   { id: 'grid',     icon: '⊞' },
@@ -588,7 +611,46 @@ export default function LiveRoomPage({
           </div>
 
           {/* Grid layout */}
-          {stageLayout === 'grid' && (
+          {stageLayout === 'grid' && panelMode === 'list' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {onStage.map(function(g) {
+                var gid  = g.guestId || g.userId || 'x';
+                var isOwn = gid === userId;
+                var isSp  = !!speakingIds[gid];
+                return (
+                  <div key={gid} onClick={function() { setFeaturedId(gid); setStageLayout('featured'); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+                      background: CARD, borderRadius: 12, padding: '8px 12px',
+                      border: '1.5px solid ' + (isSp ? TEAL + '88' : (gid === featuredId ? gold + '44' : BORDER)),
+                      boxShadow: isSp ? ('0 0 10px ' + TEAL + '33') : 'none',
+                      animation: 'fadeSlideIn .2s ease',
+                    }}>
+                    {isSp && <SpeakBars color={TEAL} small />}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {g.username || gid}
+                      </div>
+                    </div>
+                    <RolePill role={g.role || 'guest'} />
+                    {isOwn && (
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button onClick={function(e) { e.stopPropagation(); toggleMute(); }}
+                          style={{ background: isMuted ? 'rgba(255,26,60,.15)' : CARD2, border: 'none', borderRadius: 8, padding: '4px 8px', color: isMuted ? RED : MUTED, cursor: 'pointer', fontSize: 12 }}>
+                          {isMuted ? '🔇' : '🎙'}
+                        </button>
+                        <button onClick={function(e) { e.stopPropagation(); toggleCam(); }}
+                          style={{ background: isCamOff ? 'rgba(255,26,60,.15)' : CARD2, border: 'none', borderRadius: 8, padding: '4px 8px', color: isCamOff ? RED : MUTED, cursor: 'pointer', fontSize: 12 }}>
+                          {isCamOff ? '📷' : '🎥'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {stageLayout === 'grid' && panelMode !== 'list' && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: n === 1 ? 'center' : 'flex-start' }}>
               {onStage.map(function(g) {
                 var gid  = g.guestId || g.userId || 'x';
@@ -898,6 +960,30 @@ export default function LiveRoomPage({
             <button onClick={function() { setShowLiveModal(false); }} style={{ width: '100%', background: 'transparent', border: 'none', marginTop: 12, padding: '12px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ MUSIC BANNER ════════════════ */}
+      {musicBanner && (
+        <div style={{
+          position: 'absolute', bottom: 68, left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(7,5,10,.96)',
+          border: '1.5px solid rgba(0,222,192,.5)',
+          borderRadius: 999, padding: '8px 18px',
+          display: 'flex', alignItems: 'center', gap: 10,
+          animation: 'musicIn .35s ease',
+          boxShadow: '0 0 18px rgba(0,222,192,.2)',
+          whiteSpace: 'nowrap', zIndex: 42, pointerEvents: 'none',
+        }}>
+          <span style={{ fontSize: 18 }}>{musicBanner.emoji}</span>
+          <div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, letterSpacing: .3 }}>{musicBanner.title}</div>
+            {musicBanner.style ? <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 1 }}>{musicBanner.style.toUpperCase()}</div> : null}
+          </div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, borderLeft: '1px solid ' + BORDER, paddingLeft: 10 }}>
+            shared by {musicBanner.sharedBy}
           </div>
         </div>
       )}
