@@ -196,10 +196,10 @@ export default function OverlayBuilderPage() {
   const obsUrl = `https://seewhylive.online/overlay/live?creator_id=${user?.id}&layout_id=${selectedLayout || 'NEW'}`;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#080B18' }}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4" style={{ color: GOLD }} />
           <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</span>
@@ -266,7 +266,7 @@ export default function OverlayBuilderPage() {
         {/* Center: Canvas */}
         <div className="flex-1 flex items-center justify-center p-6 overflow-auto" style={{ background: '#111' }}>
           <div className="relative w-full max-w-3xl"
-            style={{ aspectRatio: '16/9', background: '#0D0D0D', border: `1px solid rgba(212,175,55,0.2)`, borderRadius: 8 }}>
+            style={{ aspectRatio: '16/9', background: '#080B18', border: `1px solid rgba(212,175,55,0.2)`, borderRadius: 8 }}>
             {/* Grid overlay */}
             <div className="absolute inset-0 opacity-10"
               style={{

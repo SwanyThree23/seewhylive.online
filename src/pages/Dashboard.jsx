@@ -115,7 +115,7 @@ function OverviewTab({ user }) {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="label" tick={{ fill: 'rgba(245,230,211,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 9 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: '#1A1A1A', border: `1px solid ${GOLD}30`, color: CREAM }} />
+              <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
               <Bar dataKey="total" fill={GOLD} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -409,7 +409,7 @@ function ContentTab({ user }) {
               onClick={() => { setShowCreate(false); setEditVod(null); }} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md rounded-2xl p-5 space-y-3"
-              style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>{editVod ? 'Edit VOD' : 'Upload VOD'}</span>
                 <button onClick={() => { setShowCreate(false); setEditVod(null); }}><X className="w-4 h-4 text-white/40" /></button>
@@ -503,7 +503,7 @@ function CommunityTab({ user }) {
       <div className="flex items-center gap-2">
         <select value={selectedCommunity || ''} onChange={e => setSelectedCommunity(e.target.value)}
           className="flex-1 px-3 py-2 rounded-xl text-[11px] outline-none"
-          style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)`, color: CREAM }}>
+          style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)`, color: CREAM }}>
           {communities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           {communities.length === 0 && <option value="">No communities yet</option>}
         </select>
@@ -597,7 +597,7 @@ function CommunityTab({ user }) {
               className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPollForm(false)} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-2xl p-5 space-y-3"
-              style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase" style={{ color: GOLD, ...T }}>Create Poll</span>
                 <button onClick={() => setShowPollForm(false)}><X className="w-4 h-4 text-white/40" /></button>
@@ -732,7 +732,7 @@ function MonetizationTab({ user }) {
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value">
                       {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ background: '#1A1A1A', border: `1px solid ${GOLD}30`, color: CREAM }} />
+                    <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -995,7 +995,7 @@ function SettingsTab({ user }) {
       {/* Overlay Builder link */}
       <Link to="/OverlayBuilder">
         <div className="flex items-center justify-between p-4 rounded-xl cursor-pointer"
-          style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
+          style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5" style={{ color: GOLD }} />
             <div>

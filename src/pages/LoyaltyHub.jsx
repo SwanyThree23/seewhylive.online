@@ -39,7 +39,7 @@ function LoyaltyCard({ loyalty, isMain = false }) {
 
   return (
     <div className="rounded-2xl p-5 space-y-4"
-      style={{ background: `linear-gradient(135deg, #2A1F1F, #1A1A1A)`, border: `2px solid ${tc.color}40`, boxShadow: `0 0 30px ${tc.color}15` }}>
+      style={{ background: `linear-gradient(135deg, rgba(30,10,20,0.95), rgba(13,6,24,0.95))`, border: `2px solid ${tc.color}40`, boxShadow: `0 0 30px ${tc.color}15` }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
@@ -88,7 +88,7 @@ function LoyaltyCard({ loyalty, isMain = false }) {
 function PointsBreakdownRow({ vp }) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
       <button className="w-full flex items-center justify-between px-4 py-3" onClick={() => setExpanded(e => !e)}>
         <div className="flex items-center gap-2">
           <Star className="w-3.5 h-3.5" style={{ color: GOLD }} />
@@ -160,8 +160,8 @@ export default function LoyaltyHubPage() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
-      <div className="px-4 md:px-6 py-4" style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+    <div className="min-h-screen" style={{ background: '#080B18' }}>
+      <div className="px-4 md:px-6 py-4" style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -192,7 +192,7 @@ export default function LoyaltyHubPage() {
               <div className="space-y-4">
                 {mainLoyalty
                   ? <LoyaltyCard loyalty={mainLoyalty} isMain />
-                  : <div className="rounded-xl p-8 text-center" style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
+                  : <div className="rounded-xl p-8 text-center" style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
                       <Trophy className="w-10 h-10 mx-auto mb-3" style={{ color: GOLD + '30' }} />
                       <p className="text-[12px] font-black uppercase" style={{ color: GOLD + '50', ...T }}>No loyalty data yet</p>
                       <p className="text-[10px] mt-1" style={{ color: CREAM + '30' }}>Watch streams to earn loyalty points</p>
@@ -208,7 +208,7 @@ export default function LoyaltyHubPage() {
                     { icon: DollarSign, label: 'Tips Sent', value: viewerPoints.reduce((s, v) => s + (v.tips_sent_count || 0), 0) },
                   ].map(({ icon: Icon, label, value }) => (
                     <div key={label} className="rounded-xl p-3 text-center"
-                      style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
                       <Icon className="w-4 h-4 mx-auto mb-1" style={{ color: GOLD + '70' }} />
                       <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{value}</p>
                       <p className="text-[7px]" style={{ color: CREAM + '35', ...T }}>{label}</p>
@@ -218,7 +218,7 @@ export default function LoyaltyHubPage() {
 
                 {/* Creator tabs */}
                 {myLoyalties.slice(1).map(l => (
-                  <div key={l.id} className="rounded-xl p-3" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div key={l.id} className="rounded-xl p-3" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
                     <p className="text-[9px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.creator_id?.slice(0,12)}</p>
                     <LoyaltyCard loyalty={l} />
                   </div>
@@ -234,7 +234,7 @@ export default function LoyaltyHubPage() {
                     const canRedeem = totalPoints >= r.points_required;
                     return (
                       <div key={r.id} className="rounded-xl p-3 flex items-center gap-3"
-                        style={{ background: '#1A1A1A', border: canRedeem ? `1px solid ${GOLD}35` : '1px solid rgba(255,255,255,0.07)' }}>
+                        style={{ background: 'rgba(13,6,24,0.9)', border: canRedeem ? `1px solid ${GOLD}35` : '1px solid rgba(255,255,255,0.07)' }}>
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
                           style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}30` }}>
                           {['🏅','🎟','🔒','📣','😎'][i % 5]}
@@ -254,7 +254,7 @@ export default function LoyaltyHubPage() {
                   })}
 
                 {/* How to earn guide */}
-                <div className="rounded-xl p-4" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <p className="text-[10px] font-black uppercase mb-3" style={{ color: CREAM + '50', ...T }}>How to Earn Points</p>
                   {[
                     { icon: '⏱', label: 'Watch streams', rate: '1 pt / min' },
@@ -291,7 +291,7 @@ export default function LoyaltyHubPage() {
                   const tc = TIER_MAP[tier];
                   return (
                     <div key={l.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
-                      style={{ background: i < 3 ? `${tc.color}08` : '#1A1A1A', border: i < 3 ? `1px solid ${tc.color}25` : '1px solid rgba(255,255,255,0.07)' }}>
+                      style={{ background: i < 3 ? `${tc.color}08` : 'rgba(13,6,24,0.9)', border: i < 3 ? `1px solid ${tc.color}25` : '1px solid rgba(255,255,255,0.07)' }}>
                       <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black shrink-0"
                         style={{ background: i < 3 ? `${tc.color}20` : 'rgba(255,255,255,0.06)', color: i < 3 ? tc.color : CREAM + '40' }}>
                         {i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}
