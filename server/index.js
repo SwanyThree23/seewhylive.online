@@ -320,6 +320,8 @@ var milestonesSeen = new Map();  // roomId → Set of milestone numbers already 
 var sessionRevenue = new Map();  // roomId → cumulative gift cents this session
 var polls               = new Map();  // roomId → { id, question, options:[{text,votes:Set}], createdAt, autoEndT, active }
 var qaQueues            = new Map();  // roomId → Map<id, { id, username, text, upvotes, ts }>
+var vsPolls             = new Map();  // roomId → { id, sideA, sideB, votesA:Set, votesB:Set, active, createdAt, autoEndT }
+var judgeRosters        = new Map();  // roomId → Map<userId, { userId, username, scores:[] }>
 var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
 
@@ -333,6 +335,39 @@ function serializePoll(poll) {
     return { text: o.text, votes: o.votes.size };
   });
   return { id: poll.id, question: poll.question, options: opts, totalVotes: total, active: poll.active, createdAt: poll.createdAt };
+}
+
+// Helper: serialize a VS poll
+function serializeVs(vp) {
+  var a = vp.votesA.size;
+  var b = vp.votesB.size;
+  var total = a + b;
+  return {
+    id: vp.id, sideA: vp.sideA, sideB: vp.sideB,
+    votesA: a, votesB: b, totalVotes: total,
+    pctA: total > 0 ? Math.floor(a / total * 100) : 50,
+    pctB: total > 0 ? Math.floor(b / total * 100) : 50,
+    active: vp.active, endsAt: vp.endsAt, createdAt: vp.createdAt
+  };
+}
+
+// Helper: serialize judge roster for a room
+function serializeJudges(roomId) {
+  var roster = judgeRosters.get(roomId);
+  if (!roster) return [];
+  var out = [];
+  roster.forEach(function(j) {
+    var total = j.scores.reduce(function(s, x) { return s + x.score; }, 0);
+    var avg   = j.scores.length > 0 ? total / j.scores.length : null;
+    out.push({
+      userId:     j.userId,
+      username:   j.username,
+      scoreCount: j.scores.length,
+      avgScore:   avg !== null ? Math.round(avg * 10) / 10 : null,
+      lastScore:  j.scores.length > 0 ? j.scores[j.scores.length - 1] : null
+    });
+  });
+  return out;
 }
 
 // Helper: auto-trigger AURA and broadcast to room
@@ -1651,6 +1686,87 @@ io.on('connection', function(socket) {
     if (now - lastTs < 1000) return;
     viewerReactThrottle.set(socket.id, now);
     io.to(roomId).emit('watch-react', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
+  });
+
+  // ── VS Poll ───────────────────────────────────────────────────────────
+  socket.on('vs-start', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var sideA = String(data.sideA || 'Side A').slice(0, 60);
+    var sideB = String(data.sideB || 'Side B').slice(0, 60);
+    var dur   = Math.min(Math.max(Math.floor(data.durationSec || 60), 10), 300);
+    var id    = uuidv4();
+    var vp    = { id: id, sideA: sideA, sideB: sideB, votesA: new Set(), votesB: new Set(), active: true, createdAt: Date.now(), endsAt: Date.now() + dur * 1000 };
+    vsPolls.set(roomId, vp);
+    io.to(roomId).emit('vs-update', serializeVs(vp));
+    vp.autoEndT = setTimeout(function() {
+      if (vsPolls.get(roomId) !== vp) return;
+      vp.active = false;
+      io.to(roomId).emit('vs-update', serializeVs(vp));
+      setTimeout(function() { if (vsPolls.get(roomId) === vp) vsPolls.delete(roomId); }, 8000);
+    }, dur * 1000);
+  });
+
+  socket.on('vs-vote', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var vp = vsPolls.get(roomId);
+    if (!vp || !vp.active) return;
+    var side = data.side; // 'A' or 'B'
+    if (side !== 'A' && side !== 'B') return;
+    vp.votesA.delete(socket.id);
+    vp.votesB.delete(socket.id);
+    if (side === 'A') vp.votesA.add(socket.id);
+    else vp.votesB.add(socket.id);
+    io.to(roomId).emit('vs-update', serializeVs(vp));
+  });
+
+  socket.on('vs-end', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var vp = vsPolls.get(roomId);
+    if (!vp) return;
+    vp.active = false;
+    if (vp.autoEndT) clearTimeout(vp.autoEndT);
+    io.to(roomId).emit('vs-update', serializeVs(vp));
+    setTimeout(function() { if (vsPolls.get(roomId) === vp) vsPolls.delete(roomId); }, 8000);
+  });
+
+  // ── Judges ────────────────────────────────────────────────────────────
+  socket.on('judge-assign', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var uid  = String(data.userId || '').slice(0, 80);
+    var uname = String(data.username || 'Judge').slice(0, 40);
+    if (!uid) return;
+    if (!judgeRosters.has(roomId)) judgeRosters.set(roomId, new Map());
+    var roster = judgeRosters.get(roomId);
+    roster.set(uid, { userId: uid, username: uname, scores: [] });
+    io.to(roomId).emit('judges-update', serializeJudges(roomId));
+  });
+
+  socket.on('judge-remove', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId || socket.data.role !== 'host') return;
+    var uid = String(data.userId || '').slice(0, 80);
+    var roster = judgeRosters.get(roomId);
+    if (roster) roster.delete(uid);
+    io.to(roomId).emit('judges-update', serializeJudges(roomId));
+  });
+
+  socket.on('judge-score', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var uid = socket.data.userId || socket.id;
+    var roster = judgeRosters.get(roomId);
+    if (!roster || !roster.has(uid)) return;
+    var score = Math.min(10, Math.max(0, Math.floor(data.score || 0)));
+    var label = String(data.label || '').slice(0, 40);
+    var judge = roster.get(uid);
+    judge.scores.push({ score: score, label: label, ts: Date.now() });
+    if (judge.scores.length > 20) judge.scores = judge.scores.slice(-20);
+    io.to(roomId).emit('judges-update', serializeJudges(roomId));
+    io.to(roomId).emit('judge-scored', { userId: uid, username: judge.username, score: score, label: label, ts: Date.now() });
   });
 
   // ── clip-marker ────────────────────────────────────────────────────────
