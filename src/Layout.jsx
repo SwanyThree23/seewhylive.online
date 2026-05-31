@@ -66,6 +66,9 @@ export default function Layout({ children, currentPageName }) {
   var location = useLocation();
   var { backgroundStyle, backgrounds } = useBackground();
 
+  // Pages that own their full viewport — suppress header, bottom nav, and padding
+  var isFullscreen = ['BroadcastStudio', 'LiveRoom'].includes(currentPageName);
+
   var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
@@ -109,6 +112,7 @@ export default function Layout({ children, currentPageName }) {
         {showSearch && <GlobalSearch onClose={function() { setShowSearch(false); }} />}
       </AnimatePresence>
 
+      {!isFullscreen && <>
       {/* Brand accent line */}
       <div className="fixed top-0 left-0 right-0 z-[101] h-[3px]"
         style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
@@ -247,6 +251,7 @@ export default function Layout({ children, currentPageName }) {
         )}
 
       </header>
+      </>}
 
       {/* ── SLIDE-OUT LEFT DRAWER ──────────────────────────────────────────── */}
       <AnimatePresence>
@@ -355,7 +360,7 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Main */}
-      <main className="pb-[96px] md:pb-10">
+      <main className={isFullscreen ? '' : 'pb-[96px] md:pb-10'}>
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
 
@@ -369,7 +374,7 @@ export default function Layout({ children, currentPageName }) {
       <SwanyBotWidget />
 
       {/* ── MOBILE BOTTOM NAV ── */}
-      <div className="md:hidden fixed bottom-[34px] left-0 right-0 z-40"
+      {!isFullscreen && <div className="md:hidden fixed bottom-[34px] left-0 right-0 z-40"
         style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
         <nav className="flex items-end justify-around px-2 pt-2 pb-safe" style={{ height: 60 }}>
           {MOBILE_NAV.map(function(item) {
@@ -408,7 +413,7 @@ export default function Layout({ children, currentPageName }) {
             );
           })}
         </nav>
-      </div>
+      </div>}
 
       {/* Desktop footer */}
       <footer className="hidden md:block py-3 px-6 text-[10px]"
