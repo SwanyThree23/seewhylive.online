@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
+import { getPlatformHandles, setPlatformHandle } from '../platformConfig.js';
 
 var PLATFORM_TIERS = [
   { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#7A6F90', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
@@ -64,6 +65,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   var [stripeChecking, setStripeChecking] = useState(true);
   var [availableCents, setAvailableCents] = useState(0);
   var [payoutLoading, setPayoutLoading] = useState(false);
+  var [platformHandles, setPlatformHandles] = useState(function() { return getPlatformHandles(); });
 
   var [notifyNewStream, setNotifyNewStream] = useState(true);
   var [notifyTip, setNotifyTip] = useState(true);
@@ -381,6 +383,38 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', lineHeight: 1.6 }}>
             90% creator / 10% platform &mdash; this is immutable
           </div>
+        </div>
+
+        {/* Platform Fee Accounts */}
+        <div style={Object.assign({}, cardStyle, { border: '1px solid rgba(201,168,76,.2)' })}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1.5, marginBottom: 10 }}>SEEWHY PLATFORM ACCOUNTS (10% FEE)</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#7A6F90', marginBottom: 12, lineHeight: 1.4 }}>
+            Viewers sending DirectPay will be shown these handles for the platform&rsquo;s 10% cut.
+          </div>
+          {[
+            { id: 'paypal',  emoji: '💸', name: 'PayPal' },
+            { id: 'cashapp', emoji: '💚', name: 'CashApp' },
+            { id: 'venmo',   emoji: '💙', name: 'Venmo' },
+            { id: 'zelle',   emoji: '💜', name: 'Zelle' },
+            { id: 'chime',   emoji: '🟢', name: 'Chime' },
+          ].map(function(p) {
+            return (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>{p.emoji}</span>
+                <input
+                  value={platformHandles[p.id] || ''}
+                  onChange={function(e) {
+                    var v = e.target.value;
+                    setPlatformHandle(p.id, v);
+                    setPlatformHandles(getPlatformHandles());
+                    if (addToast) addToast('Platform ' + p.name + ' saved', 'success');
+                  }}
+                  placeholder={p.name + ' handle / phone / email'}
+                  style={inputStyle}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     );
