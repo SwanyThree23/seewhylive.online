@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 import { listClips, loadClip, deleteClip } from '../clipStore.js';
 
-var BG    = '#0F0C14';
-var SURF  = '#130F1C';
-var CARD  = '#1A1526';
-var CARD2 = '#211A30';
+var BG    = '#0E0C09';
+var SURF  = '#1A1510';
+var CARD  = '#241C12';
+var CARD2 = '#2E2318';
 var GOLD  = '#C9A84C';
-var TEAL  = '#00DEC0';
+var TEAL  = '#D4854A';
 var RED   = '#FF1A3C';
-var TEXT  = '#EDE8F5';
-var MUTED = '#7A6F90';
-var DIM   = '#2E2545';
-var BORDER = 'rgba(255,255,255,.06)';
+var TEXT  = '#F0E8D4';
+var MUTED = '#8A7A62';
+var DIM   = '#3D3020';
+var BORDER = 'rgba(201,168,76,.12)';
 
 var CHANNELS = [
   { id: 'c1', name: 'Domino Entertainment',  handle: '@dominoent', thumb: '🎲', color: GOLD,     status: 'live'   },
@@ -55,8 +55,10 @@ export default function VODLibraryTab({ addToast, isLive }) {
   var [clips,         setClips]         = useState([]);
   var [playingClip,   setPlayingClip]   = useState(null);  // { meta, url }
   var [loadingId,     setLoadingId]     = useState(null);
-  var [showShare,     setShowShare]     = useState(null);  // clip meta for share sheet
+  var [showShare,     setShowShare]     = useState(null);  // clip meta for old share sheet
+  var [shareClip,     setShareClip]     = useState(null);  // clip meta for branded share modal
   var [confirmDelete, setConfirmDelete] = useState(null);  // clip id
+  var [shareCopied,   setShareCopied]   = useState(false);
 
   useEffect(function() {
     setClips(listClips());
@@ -86,7 +88,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
     setConfirmDelete(null);
   }
 
-  function shareClip(meta, url) {
+  function doShareClip(meta) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       loadClip(meta.id).then(function(blob) {
         if (!blob) return;
@@ -94,8 +96,30 @@ export default function VODLibraryTab({ addToast, isLive }) {
         navigator.share({ files: [file], title: meta.title || 'SeeWhy Clip' }).catch(function() {});
       });
     } else {
-      setShowShare(meta);
+      setShareClip(meta);
     }
+  }
+
+  function copyShareLink(clip) {
+    var url = 'https://seewhylive.online/clip/' + (clip.id || clip.ts);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() {
+        setShareCopied(true);
+        setTimeout(function() { setShareCopied(false); }, 2000);
+        if (addToast) addToast('Link copied!', 'success');
+      }).catch(function() {});
+    }
+  }
+
+  function downloadShareClip(clip) {
+    loadClip(clip.id).then(function(blob) {
+      if (!blob) { if (addToast) addToast('Clip not found', 'error'); return; }
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = (clip.title || 'seewhy-clip') + '.webm';
+      a.click();
+    }).catch(function() { if (addToast) addToast('Download failed', 'error'); });
   }
 
   return (
@@ -148,8 +172,8 @@ export default function VODLibraryTab({ addToast, isLive }) {
                 return (
                   <div key={meta.id} style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 14, overflow: 'hidden' }}>
                     {/* Clip thumbnail area */}
-                    <div onClick={function() { if (!isLoading) openClip(meta); }} style={{ background: 'linear-gradient(135deg,#1A1230,#0F0C14)', padding: '18px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
-                      <div style={{ width: 52, height: 52, borderRadius: 10, background: 'rgba(0,222,192,.1)', border: '1.5px solid rgba(0,222,192,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+                    <div onClick={function() { if (!isLoading) openClip(meta); }} style={{ background: 'linear-gradient(135deg,#1A1510,#0E0C09)', padding: '18px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}>
+                      <div style={{ width: 52, height: 52, borderRadius: 10, background: 'rgba(212,133,74,.1)', border: '1.5px solid rgba(212,133,74,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
                         {isLoading ? '⏳' : '▶'}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -171,7 +195,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
                         style={{ flex: 1, background: 'none', border: 'none', borderRight: '1px solid ' + BORDER, padding: '10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
                         💾 SAVE
                       </button>
-                      <button onClick={function() { shareClip(meta); }}
+                      <button onClick={function() { setShareClip(meta); }}
                         style={{ flex: 1, background: 'none', border: 'none', borderRight: '1px solid ' + BORDER, padding: '10px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
                         📤 SHARE
                       </button>
@@ -239,8 +263,8 @@ export default function VODLibraryTab({ addToast, isLive }) {
                   style={{ flex: 1, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '10px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1, textAlign: 'center', textDecoration: 'none' }}>
                   💾 SAVE
                 </a>
-                <button onClick={function() { shareClip(playingClip.meta, playingClip.url); }}
-                  style={{ flex: 1, background: 'rgba(0,222,192,.12)', border: '1px solid rgba(0,222,192,.35)', borderRadius: 10, padding: '10px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                <button onClick={function() { setShareClip(playingClip.meta); }}
+                  style={{ flex: 1, background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 10, padding: '10px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
                   📤 SHARE
                 </button>
               </div>
@@ -267,7 +291,7 @@ export default function VODLibraryTab({ addToast, isLive }) {
         </div>
       )}
 
-      {/* ── SHARE CLIP SHEET ── */}
+      {/* ── SHARE CLIP SHEET (legacy fallback) ── */}
       {showShare && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.78)', zIndex: 1002, display: 'flex', alignItems: 'flex-end' }}
           onClick={function(e) { if (e.target === e.currentTarget) setShowShare(null); }}>
@@ -301,6 +325,67 @@ export default function VODLibraryTab({ addToast, isLive }) {
               style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: MUTED, cursor: 'pointer' }}>
               Done
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── BRANDED SHARE MODAL ── */}
+      {shareClip && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.85)', zIndex: 1003, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={function(e) { if (e.target === e.currentTarget) setShareClip(null); }}>
+          <div style={{ width: '100%', maxWidth: 400, background: SURF, borderRadius: 18, border: '1px solid ' + BORDER, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,.6)' }}>
+
+            {/* Branded clip preview card */}
+            <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.3),rgba(201,168,76,.08))', padding: '18px 16px', borderBottom: '1px solid ' + BORDER }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(212,133,74,.15)', border: '1.5px solid rgba(212,133,74,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>▶</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: 1 }}>{shareClip.title || 'Untitled Clip'}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1, marginTop: 2 }}>SeeWhy LIVE · {fmtDur(shareClip.duration)} · {fmtDate(shareClip.ts)}</div>
+                </div>
+              </div>
+              <div style={{ marginTop: 10, padding: '6px 10px', background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 7, fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 0.5 }}>
+                🔴 SeeWhy LIVE · seewhylive.online
+              </div>
+            </div>
+
+            <div style={{ padding: '14px 16px' }}>
+              {/* Copy link */}
+              <button onClick={function() { copyShareLink(shareClip); }}
+                style={{ width: '100%', background: shareCopied ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1, marginBottom: 10 }}>
+                {shareCopied ? '✓ LINK COPIED' : '🔗 COPY LINK'}
+              </button>
+
+              {/* Social share buttons */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                {[
+                  { label: '𝕏 / Twitter', url: function(u,t) { return 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(t + ' ' + u); } },
+                  { label: '💬 WhatsApp', url: function(u,t) { return 'https://wa.me/?text=' + encodeURIComponent(t + ' ' + u); } },
+                  { label: '📘 Facebook', url: function(u,t) { return 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&quote=' + encodeURIComponent(t); } },
+                ].map(function(soc) {
+                  return (
+                    <button key={soc.label} onClick={function() {
+                      var clipUrl = 'https://seewhylive.online/clip/' + (shareClip.id || shareClip.ts);
+                      var msg     = 'Check out this clip from SeeWhy LIVE!';
+                      window.open(soc.url(clipUrl, msg), '_blank', 'noopener,width=600,height=450');
+                    }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 9, padding: '8px 4px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 0.5, textAlign: 'center' }}>
+                      {soc.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Download */}
+              <button onClick={function() { downloadShareClip(shareClip); }}
+                style={{ width: '100%', background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 10, padding: '10px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1, marginBottom: 10 }}>
+                💾 DOWNLOAD CLIP
+              </button>
+
+              <button onClick={function() { setShareClip(null); setShareCopied(false); }}
+                style={{ width: '100%', background: 'transparent', border: 'none', padding: '8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: MUTED, cursor: 'pointer' }}>
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

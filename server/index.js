@@ -832,6 +832,26 @@ app.get('/api/rooms/live', function(req, res) {
   res.json({ ts: Date.now(), rooms: result });
 });
 
+// ─── /api/active-rooms — for DiscoverTab room listing ─────────────────────
+app.get('/api/active-rooms', function(req, res) {
+  var rooms_out = [];
+  rooms.forEach(function(room, id) {
+    if (room && room.hostSocketId) {
+      rooms_out.push({
+        id:          id,
+        title:       room.streamTitle || 'Live Stream',
+        hostName:    room.hostSocketId && io.sockets.sockets.get(room.hostSocketId)
+                       ? (io.sockets.sockets.get(room.hostSocketId).data.username || 'Host')
+                       : 'Host',
+        viewerCount: room.viewers ? room.viewers.size : 0,
+        isLive:      true,
+        category:    room.streamCategory || 'GENERAL',
+      });
+    }
+  });
+  res.json({ rooms: rooms_out });
+});
+
 // ─── New API routes (analytics, search, moderation, aura, payments) ──────
 var apiRoutes = null;
 try {
@@ -1907,6 +1927,12 @@ io.on('connection', function(socket) {
         break;
       }
     }
+  });
+
+  // ── bracket-update ─────────────────────────────────────────────────────
+  socket.on('bracket-update', function(data) {
+    if (!data || !data.roomId) return;
+    io.to(data.roomId).emit('bracket-update', data);
   });
 
   // ── viewer-react ───────────────────────────────────────────────────────
