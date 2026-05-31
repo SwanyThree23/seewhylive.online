@@ -1001,6 +1001,9 @@ export default function App() {
           <WashingtonClassicTab
             addToast={addToast}
             isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
           />
         )}
         {activeTab === 'money' && (

@@ -44,7 +44,7 @@ var QUICK_ACTIONS = [
   { id: 'watch',   label: 'Watch Party',  icon: '📺', color: '#00C9A7' },
   { id: 'battles', label: 'PK Battles',   icon: '⚡', color: '#C9A84C' },
   { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C084FC' },
-  { id: 'create',  label: 'Create Room',  icon: '➕', color: '#7A6F90' },
+  { id: 'create',  label: 'Create Room',  icon: '➕', color: '#8A7A62' },
 ];
 
 function formatFollowers(n) {
@@ -56,6 +56,7 @@ function formatFollowers(n) {
 
 export default function DiscoverTab(props) {
   var addToast = props.addToast;
+  var socket   = props.socket;
 
   var queryState = useState('');
   var query = queryState[0];
@@ -88,6 +89,24 @@ export default function DiscoverTab(props) {
   var contentTabState = useState('live');
   var contentTab = contentTabState[0];
   var setContentTab = contentTabState[1];
+
+  var notifsState = useState(function() {
+    try { return JSON.parse(localStorage.getItem('sw_notifications') || '[]'); } catch(e) { return []; }
+  });
+  var notifs    = notifsState[0];
+  var setNotifs = notifsState[1];
+
+  var notifOpenState = useState(false);
+  var notifOpen    = notifOpenState[0];
+  var setNotifOpen = notifOpenState[1];
+
+  var followingState = useState(function() {
+    try { return JSON.parse(localStorage.getItem('sw_following') || '[]'); } catch(e) { return []; }
+  });
+  var following    = followingState[0];
+  var setFollowing = followingState[1];
+
+  var unreadCount = notifs.filter(function(n) { return !n.read; }).length;
 
   var debounceRef = useRef(null);
 
@@ -125,6 +144,75 @@ export default function DiscoverTab(props) {
     var iv = setInterval(fetchLiveRooms, 15000);
     return function() { clearInterval(iv); };
   }, []);
+
+  // ── Fetch /api/active-rooms on mount for live room data ──
+  useEffect(function() {
+    fetch('/api/active-rooms')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.rooms && data.rooms.length > 0) {
+          var roomStreams = data.rooms.map(function(room) {
+            return {
+              id:           room.id,
+              title:        room.title || 'Live Stream',
+              hostName:     room.hostName || 'Host',
+              viewerCount:  room.viewerCount || 0,
+              genre:        room.category || 'GENERAL',
+              isLive:       true,
+              durationMins: 0,
+              tier:         'free',
+              category:     room.category || 'GENERAL',
+              fromApi:      true
+            };
+          });
+          setStreams(function(prev) {
+            var mockFallback = prev.filter(function(s) { return !s.fromApi; });
+            return roomStreams.concat(mockFallback);
+          });
+        }
+      })
+      .catch(function() {});
+  }, []);
+
+  // ── Socket: listen for notification events ──
+  useEffect(function() {
+    if (!socket) return;
+    function onNotification(data) {
+      if (!data) return;
+      var entry = Object.assign({ id: Date.now(), ts: Date.now(), read: false }, data);
+      setNotifs(function(prev) {
+        var next = [entry].concat(prev).slice(0, 50);
+        try { localStorage.setItem('sw_notifications', JSON.stringify(next)); } catch(e) {}
+        return next;
+      });
+    }
+    socket.on('notification', onNotification);
+    return function() { socket.off('notification', onNotification); };
+  }, [socket]);
+
+  function markAllRead() {
+    setNotifs(function(prev) {
+      var next = prev.map(function(n) { return Object.assign({}, n, { read: true }); });
+      try { localStorage.setItem('sw_notifications', JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+  }
+
+  function toggleFollow(username) {
+    setFollowing(function(prev) {
+      var idx = prev.indexOf(username);
+      var next;
+      if (idx >= 0) {
+        next = prev.filter(function(u) { return u !== username; });
+        if (addToast) addToast('Unfollowed @' + username, 'info');
+      } else {
+        next = prev.concat([username]);
+        if (addToast) addToast('Following @' + username, 'success');
+      }
+      try { localStorage.setItem('sw_following', JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+  }
 
   function handleQueryChange(e) {
     var val = e.target.value;
@@ -188,13 +276,13 @@ export default function DiscoverTab(props) {
       'span',
       {
         style: {
-          background: 'rgba(122,111,144,.12)',
+          background: 'rgba(138,122,98,.12)',
           border: '1px solid rgba(122,111,144,.3)',
           borderRadius: 4,
           padding: '1px 6px',
           fontFamily: "'DM Mono',monospace",
           fontSize: 9,
-          color: '#7A6F90',
+          color: '#8A7A62',
           letterSpacing: 1,
         }
       },
@@ -203,14 +291,14 @@ export default function DiscoverTab(props) {
   }
 
   function renderStreamCard(stream) {
-    var genreColor = GENRE_COLORS[stream.genre] || '#7A6F90';
+    var genreColor = GENRE_COLORS[stream.genre] || '#8A7A62';
     var isTrending = stream.viewerCount >= 2000;
     return React.createElement(
       'div',
       {
         key: stream.id,
         style: {
-          background: 'rgba(7,5,10,.95)',
+          background: 'rgba(14,12,9,.95)',
           border: '1px solid rgba(255,255,255,.07)',
           borderRadius: 8,
           padding: '10px 12px',
@@ -245,7 +333,7 @@ export default function DiscoverTab(props) {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontWeight: 700,
             fontSize: 14,
-            color: '#EDE8F5',
+            color: '#F0E8D4',
             marginBottom: 2,
           }
         },
@@ -257,7 +345,7 @@ export default function DiscoverTab(props) {
           style: {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 11,
-            color: '#7A6F90',
+            color: '#8A7A62',
             marginBottom: 6,
           }
         },
@@ -269,14 +357,14 @@ export default function DiscoverTab(props) {
         React.createElement(
           'span',
           { style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
-          React.createElement(SignalBars, { isActive: stream.isLive, count: 5, color: stream.isLive ? '#FF1564' : '#7A6F90' }),
+          React.createElement(SignalBars, { isActive: stream.isLive, count: 5, color: stream.isLive ? '#FF1564' : '#8A7A62' }),
           React.createElement(
             'span',
             {
               style: {
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 10,
-                color: '#7A6F90',
+                color: '#8A7A62',
                 marginLeft: 4,
               }
             },
@@ -305,7 +393,7 @@ export default function DiscoverTab(props) {
             style: {
               fontFamily: "'DM Mono',monospace",
               fontSize: 9,
-              color: '#7A6F90',
+              color: '#8A7A62',
             }
           },
           stream.isLive ? (stream.durationMins + 'm') : 'ENDED'
@@ -338,7 +426,7 @@ export default function DiscoverTab(props) {
       {
         key: creator.id,
         style: {
-          background: 'rgba(7,5,10,.95)',
+          background: 'rgba(14,12,9,.95)',
           border: '1px solid rgba(255,255,255,.07)',
           borderRadius: 8,
           padding: '10px 12px',
@@ -362,7 +450,7 @@ export default function DiscoverTab(props) {
                 fontFamily: "'Barlow Condensed',sans-serif",
                 fontWeight: 700,
                 fontSize: 14,
-                color: '#EDE8F5',
+                color: '#F0E8D4',
               }
             },
             creator.displayName
@@ -392,7 +480,7 @@ export default function DiscoverTab(props) {
             style: {
               fontFamily: "'DM Mono',monospace",
               fontSize: 10,
-              color: '#7A6F90',
+              color: '#8A7A62',
               marginBottom: 3,
             }
           },
@@ -404,7 +492,7 @@ export default function DiscoverTab(props) {
             style: {
               fontFamily: "'Barlow Condensed',sans-serif",
               fontSize: 12,
-              color: '#7A6F90',
+              color: '#8A7A62',
               marginBottom: 6,
             }
           },
@@ -419,7 +507,7 @@ export default function DiscoverTab(props) {
               style: {
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 10,
-                color: '#7A6F90',
+                color: '#8A7A62',
               }
             },
             formatFollowers(creator.followerCount) + ' followers'
@@ -427,20 +515,20 @@ export default function DiscoverTab(props) {
           React.createElement(
             'button',
             {
-              onClick: function() { addToast('Followed @' + creator.username, 'success'); },
+              onClick: function() { toggleFollow(creator.username); },
               style: {
-                background: 'rgba(255,21,100,.15)',
-                border: '1px solid rgba(255,21,100,.4)',
+                background: following.indexOf(creator.username) >= 0 ? 'rgba(201,168,76,.15)' : 'rgba(255,21,100,.15)',
+                border: '1px solid ' + (following.indexOf(creator.username) >= 0 ? 'rgba(201,168,76,.4)' : 'rgba(255,21,100,.4)'),
                 borderRadius: 4,
                 padding: '3px 10px',
                 fontFamily: "'Barlow Condensed',sans-serif",
                 fontWeight: 700,
                 fontSize: 11,
-                color: '#FF1564',
+                color: following.indexOf(creator.username) >= 0 ? '#C9A84C' : '#FF1564',
                 cursor: 'pointer',
               }
             },
-            'FOLLOW'
+            following.indexOf(creator.username) >= 0 ? '✓ FOLLOWING' : 'FOLLOW'
           )
         )
       )
@@ -462,7 +550,7 @@ export default function DiscoverTab(props) {
           fontFamily: "'Barlow Condensed',sans-serif",
           fontWeight: 700,
           fontSize: 13,
-          color: active ? '#FF1564' : '#7A6F90',
+          color: active ? '#FF1564' : '#8A7A62',
           cursor: 'pointer',
           letterSpacing: 1,
         }
@@ -494,7 +582,7 @@ export default function DiscoverTab(props) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 4,
-              background: 'rgba(22,16,32,.8)',
+              background: 'rgba(26,21,16,.8)',
               border: '1px solid ' + item.color + '44',
               borderRadius: 20,
               padding: '6px 12px',
@@ -545,7 +633,7 @@ export default function DiscoverTab(props) {
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 11,
-              color: active ? '#C9A84C' : '#7A6F90',
+              color: active ? '#C9A84C' : '#8A7A62',
               cursor: 'pointer',
               letterSpacing: 1,
             }
@@ -584,7 +672,7 @@ export default function DiscoverTab(props) {
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 10,
-              color: active ? '#07050A' : '#7A6F90',
+              color: active ? '#07050A' : '#8A7A62',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               flexShrink: 0,
@@ -602,7 +690,7 @@ export default function DiscoverTab(props) {
       'div',
       {
         style: {
-          background: 'rgba(22,16,32,.8)',
+          background: 'rgba(26,21,16,.8)',
           border: '1px solid rgba(255,255,255,.07)',
           borderRadius: 10,
           padding: '12px 14px',
@@ -619,7 +707,7 @@ export default function DiscoverTab(props) {
             style: {
               fontFamily: "'Bebas Neue',sans-serif",
               fontSize: 16,
-              color: '#EDE8F5',
+              color: '#F0E8D4',
               letterSpacing: 2,
             }
           },
@@ -649,7 +737,7 @@ export default function DiscoverTab(props) {
           style: {
             fontFamily: "'DM Mono',monospace",
             fontSize: 8,
-            color: '#7A6F90',
+            color: '#8A7A62',
             letterSpacing: 2,
             marginBottom: 8,
           }
@@ -672,7 +760,7 @@ export default function DiscoverTab(props) {
             {
               key: channel.id,
               style: {
-                background: 'rgba(22,16,32,.8)',
+                background: 'rgba(26,21,16,.8)',
                 border: '1px solid rgba(255,255,255,.07)',
                 borderRadius: 10,
                 padding: '8px 10px',
@@ -695,7 +783,7 @@ export default function DiscoverTab(props) {
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    background: 'rgba(22,16,32,.9)',
+                    background: 'rgba(26,21,16,.9)',
                     border: '2px solid ' + channel.color,
                     display: 'flex',
                     alignItems: 'center',
@@ -734,7 +822,7 @@ export default function DiscoverTab(props) {
                   fontFamily: "'Barlow Condensed',sans-serif",
                   fontWeight: 700,
                   fontSize: 11,
-                  color: '#EDE8F5',
+                  color: '#F0E8D4',
                   textAlign: 'center',
                   lineHeight: 1.2,
                 }
@@ -747,7 +835,7 @@ export default function DiscoverTab(props) {
                 style: {
                   fontFamily: "'DM Mono',monospace",
                   fontSize: 7,
-                  color: '#7A6F90',
+                  color: '#8A7A62',
                 }
               },
               channel.handle
@@ -808,7 +896,7 @@ export default function DiscoverTab(props) {
           style: {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 11,
-            color: '#7A6F90',
+            color: '#8A7A62',
             marginBottom: 3,
           }
         },
@@ -820,7 +908,7 @@ export default function DiscoverTab(props) {
           style: {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 11,
-            color: '#7A6F90',
+            color: '#8A7A62',
             marginBottom: 3,
           }
         },
@@ -832,7 +920,7 @@ export default function DiscoverTab(props) {
           style: {
             fontFamily: "'DM Mono',monospace",
             fontSize: 9,
-            color: '#7A6F90',
+            color: '#8A7A62',
             marginBottom: 10,
           }
         },
@@ -845,14 +933,14 @@ export default function DiscoverTab(props) {
           'span',
           {
             style: {
-              background: 'rgba(122,111,144,.1)',
+              background: 'rgba(138,122,98,.1)',
               border: '1px solid rgba(122,111,144,.25)',
               borderRadius: 6,
               padding: '4px 12px',
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 10,
-              color: '#7A6F90',
+              color: '#8A7A62',
               letterSpacing: 0.5,
             }
           },
@@ -862,14 +950,14 @@ export default function DiscoverTab(props) {
           'span',
           {
             style: {
-              background: 'rgba(122,111,144,.1)',
+              background: 'rgba(138,122,98,.1)',
               border: '1px solid rgba(122,111,144,.25)',
               borderRadius: 6,
               padding: '4px 12px',
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 10,
-              color: '#7A6F90',
+              color: '#8A7A62',
               letterSpacing: 0.5,
             }
           },
@@ -886,7 +974,7 @@ export default function DiscoverTab(props) {
         style: {
           textAlign: 'center',
           padding: '24px',
-          color: '#7A6F90',
+          color: '#8A7A62',
           fontFamily: "'DM Mono',monospace",
           fontSize: 10,
         }
@@ -905,17 +993,73 @@ export default function DiscoverTab(props) {
     'div',
     {
       style: {
-        background: '#0F0C14',
+        background: '#0E0C09',
         minHeight: '100vh',
         padding: '12px 10px 50px',
+        position: 'relative',
       }
     },
+    // ── Notification Bell ──
+    React.createElement(
+      'div',
+      { style: { position: 'absolute', top: 12, right: 10, zIndex: 100 } },
+      React.createElement(
+        'button',
+        {
+          onClick: function() { setNotifOpen(function(v) { return !v; }); if (!notifOpen) markAllRead(); },
+          style: { background: 'rgba(26,21,16,.9)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 20, padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, position: 'relative' }
+        },
+        React.createElement('span', { style: { fontSize: 14 } }, '🔔'),
+        unreadCount > 0
+          ? React.createElement(
+              'span',
+              { style: { background: '#FF1A3C', color: '#fff', fontFamily: "'DM Mono',monospace", fontSize: 8, borderRadius: 999, padding: '0 4px', minWidth: 14, textAlign: 'center', lineHeight: '14px' } },
+              unreadCount > 9 ? '9+' : String(unreadCount)
+            )
+          : null
+      ),
+      notifOpen
+        ? React.createElement(
+            'div',
+            {
+              style: { position: 'absolute', top: 32, right: 0, background: 'rgba(26,21,16,.97)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 10, width: 260, maxHeight: 320, overflowY: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,.5)', zIndex: 200 }
+            },
+            React.createElement(
+              'div',
+              { style: { padding: '8px 12px', borderBottom: '1px solid rgba(201,168,76,.1)', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1 } },
+              'NOTIFICATIONS'
+            ),
+            notifs.length === 0
+              ? React.createElement(
+                  'div',
+                  { style: { padding: '16px 12px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' } },
+                  'No notifications yet'
+                )
+              : notifs.slice(0, 10).map(function(n, i) {
+                  return React.createElement(
+                    'div',
+                    { key: n.id || i, style: { padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,.04)', background: n.read ? 'transparent' : 'rgba(201,168,76,.05)' } },
+                    React.createElement(
+                      'div',
+                      { style: { fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', marginBottom: 2 } },
+                      n.message || n.text || JSON.stringify(n)
+                    ),
+                    React.createElement(
+                      'div',
+                      { style: { fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' } },
+                      n.ts ? new Date(n.ts).toLocaleTimeString() : ''
+                    )
+                  );
+                })
+          )
+        : null
+    ),
     renderQuickActions(),
     React.createElement(
       'div',
       {
         style: {
-          background: 'rgba(7,5,10,.95)',
+          background: 'rgba(14,12,9,.95)',
           border: '1px solid rgba(255,255,255,.07)',
           borderRadius: 10,
           padding: '14px 14px 10px',
@@ -941,7 +1085,7 @@ export default function DiscoverTab(props) {
           style: {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 12,
-            color: '#7A6F90',
+            color: '#8A7A62',
             marginBottom: 10,
           }
         },
@@ -970,13 +1114,13 @@ export default function DiscoverTab(props) {
           placeholder: 'Search streams, creators, genres...',
           style: {
             width: '100%',
-            background: 'rgba(22,16,32,.8)',
+            background: 'rgba(26,21,16,.8)',
             border: '1px solid rgba(255,255,255,.07)',
             borderRadius: 6,
             padding: '8px 10px 8px 34px',
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 13,
-            color: '#EDE8F5',
+            color: '#F0E8D4',
             outline: 'none',
             boxSizing: 'border-box',
           }
@@ -997,7 +1141,7 @@ export default function DiscoverTab(props) {
           {
             style: {
               textAlign: 'center',
-              color: '#7A6F90',
+              color: '#8A7A62',
               fontFamily: "'Barlow Condensed',sans-serif",
               fontSize: 13,
               padding: 20,
