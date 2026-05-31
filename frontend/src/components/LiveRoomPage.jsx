@@ -35,16 +35,28 @@ var ANIM = [
   '@keyframes vsIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}',
   '@keyframes scoreReveal{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}',
   '@keyframes scoreFade{from{opacity:1}to{opacity:0;transform:scale(.9)}}',
+  '@keyframes cellExpand{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}',
+  '@keyframes recPulse{0%,100%{opacity:1;background:rgba(255,26,60,.9)}50%{opacity:.6;background:rgba(255,26,60,.5)}}',
+  '@keyframes waveBar{0%{height:4px}100%{height:20px}}',
 ].join('\n');
 
-// ─── Gift items ─────────────────────────────────────────────────────────────
-var GIFTS = [
-  { emoji: '💰', name: 'Coin',     valueCents: 100   },
-  { emoji: '🎁', name: 'Gift Box', valueCents: 500   },
-  { emoji: '👑', name: 'Crown',    valueCents: 1000  },
-  { emoji: '💎', name: 'Diamond',  valueCents: 2500  },
-  { emoji: '🔥', name: 'Inferno',  valueCents: 5000  },
-  { emoji: '🚀', name: 'Rocket',   valueCents: 10000 },
+// ─── Direct Pay platforms ───────────────────────────────────────────────────
+var DP_PLATFORMS = [
+  { id: 'paypal',  emoji: '💸', name: 'PayPal',  color: '#0070BA', buildUrl: function(h) { return 'https://paypal.me/' + h.replace(/^@/,''); } },
+  { id: 'cashapp', emoji: '💚', name: 'CashApp', color: '#00D54B', buildUrl: function(h) { return 'https://cash.app/$' + h.replace(/^\$/,''); } },
+  { id: 'venmo',   emoji: '💙', name: 'Venmo',   color: '#3D95CE', buildUrl: function(h) { return 'https://venmo.com/' + h.replace(/^@/,''); } },
+  { id: 'zelle',   emoji: '💜', name: 'Zelle',   color: '#6D1ED4', buildUrl: null },
+  { id: 'chime',   emoji: '🟢', name: 'Chime',   color: '#16BE45', buildUrl: null },
+];
+
+// ─── Social share platforms ─────────────────────────────────────────────────
+var SOC_PLATFORMS = [
+  { id: 'facebook',  emoji: '📘', name: 'Facebook',   open: true,  buildUrl: function(u,t){ return 'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(u)+'&quote='+encodeURIComponent(t); } },
+  { id: 'twitter',   emoji: '🐦', name: 'X / Twitter', open: true,  buildUrl: function(u,t){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(t+' '+u); } },
+  { id: 'whatsapp',  emoji: '💬', name: 'WhatsApp',   open: true,  buildUrl: function(u,t){ return 'https://wa.me/?text='+encodeURIComponent(t+' '+u); } },
+  { id: 'instagram', emoji: '📸', name: 'Instagram',  open: false, buildUrl: null },
+  { id: 'tiktok',    emoji: '🎵', name: 'TikTok',     open: false, buildUrl: null },
+  { id: 'snapchat',  emoji: '👻', name: 'Snapchat',   open: false, buildUrl: null },
 ];
 
 // ─── Sub-components ────────────────────────────────────────────────────────
@@ -173,25 +185,19 @@ function IconBtn({ icon, label, active, danger, badge, onPress, size }) {
   );
 }
 
-function GiftFloat({ item, onDone }) {
-  useEffect(function() {
-    var t = setTimeout(onDone, 3500);
-    return function() { clearTimeout(t); };
-  }, []);
+function WaveBars({ color }) {
+  var c = color || TEAL;
   return (
-    <div style={{
-      pointerEvents: 'none', position: 'absolute', left: '50%',
-      bottom: 80, transform: 'translateX(-50%)',
-      background: 'rgba(7,5,10,.88)', border: '1px solid ' + GOLD + '55',
-      borderRadius: 20, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6,
-      animation: 'fadeSlideIn .3s ease',
-      zIndex: 60,
-    }}>
-      <span style={{ fontSize: 20 }}>{item.emoji || '🎁'}</span>
-      <div>
-        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: GOLD }}>{item.from_user}</div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{item.name}</div>
-      </div>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 20, flexShrink: 0 }}>
+      {[0,1,2,3,4].map(function(i) {
+        return (
+          <div key={i} style={{
+            width: 4, height: 4, background: c, borderRadius: 2,
+            transformOrigin: 'bottom',
+            animation: 'waveBar .6s ease-in-out ' + (i * .12) + 's infinite alternate',
+          }} />
+        );
+      })}
     </div>
   );
 }
@@ -215,7 +221,6 @@ export default function LiveRoomPage({
   var [medConf,       setMedConf]       = useState(mediaConfig || null);
   var [reactsOpen,    setReactsOpen]    = useState(false);
   var [floatReacts,   setFloatReacts]   = useState([]);
-  var [giftFloats,    setGiftFloats]    = useState([]);
   var [stageLayout,    setStageLayout]    = useState('grid');   // 'grid' | 'featured'
   var [featuredId,     setFeaturedId]     = useState(userId);
   var [showLiveModal,  setShowLiveModal]  = useState(false);
@@ -245,8 +250,20 @@ export default function LiveRoomPage({
   var [judgeAssignName, setJudgeAssignName] = useState('');
   var [judgeScoreVal,  setJudgeScoreVal]  = useState('');
   var [judgeScoreLabel, setJudgeScoreLabel] = useState('');
-  var [showGiftSheet,  setShowGiftSheet]  = useState(false);
-  var [giftSending,    setGiftSending]    = useState(false);
+  var [showPaySheet,   setShowPaySheet]   = useState(false);
+  var [showShareSheet, setShowShareSheet] = useState(false);
+  var [audioOnly,      setAudioOnly]      = useState(false);
+  var [privateMode,    setPrivateMode]    = useState(false);
+  var [privatePwd,     setPrivatePwd]     = useState('');
+  var [showPrivateSet, setShowPrivateSet] = useState(false);
+  var [expandedCell,   setExpandedCell]   = useState(null);
+  var [showRecorder,   setShowRecorder]   = useState(false);
+  var [recState,       setRecState]       = useState('idle');
+  var [recSeconds,     setRecSeconds]     = useState(0);
+  var [recUrl,         setRecUrl]         = useState(null);
+  var recTimerRef   = useRef(null);
+  var mediaRecRef   = useRef(null);
+  var recChunksRef  = useRef([]);
   var [scoreReveal,    setScoreReveal]    = useState(null); // { username, score, label } | null
 
   var chatEndRef    = useRef(null);
@@ -286,34 +303,6 @@ export default function LiveRoomPage({
       });
     });
 
-    socket.on('gift-received', function(gift) {
-      if (!gift) return;
-      var fid = Date.now() + Math.random();
-      setGiftFloats(function(gf) { return gf.concat([Object.assign({}, gift, { _fid: fid })]); });
-      // Add to tip feed
-      var tipEntry = {
-        id: fid,
-        from: gift.from_user || 'Someone',
-        amount: Math.floor(gift.value_cents || 0),
-        emoji: gift.emoji || '🎁',
-        name: gift.name || 'Gift',
-        ts: Date.now(),
-      };
-      setTipFeed(function(tf) { return [tipEntry].concat(tf).slice(0, 8); });
-      // Update leaderboard
-      setTipLeader(function(lb) {
-        var found = false;
-        var updated = lb.map(function(e) {
-          if (e.username === tipEntry.from) {
-            found = true;
-            return { username: e.username, totalCents: Math.floor(e.totalCents + tipEntry.amount) };
-          }
-          return e;
-        });
-        if (!found) updated = updated.concat([{ username: tipEntry.from, totalCents: Math.floor(tipEntry.amount) }]);
-        return updated.sort(function(a, b) { return b.totalCents - a.totalCents; }).slice(0, 10);
-      });
-    });
 
     socket.on('hand-raise', function(data) {
       if (!data || role !== 'host') return;
@@ -388,7 +377,6 @@ export default function LiveRoomPage({
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
-      socket.off('gift-received');
       socket.off('hand-raise');
       socket.off('stage-invite');
       socket.off('poll-update');
@@ -500,12 +488,75 @@ export default function LiveRoomPage({
     }
   }
 
-  function sendGift(gift) {
-    if (!socket || giftSending) return;
-    setGiftSending(true);
-    socket.emit('send-gift', { roomId: roomId, fromUser: username, emoji: gift.emoji, name: gift.name, valueCents: Math.floor(gift.valueCents) });
-    if (addToast) addToast(gift.emoji + ' ' + gift.name + ' sent!', 'success');
-    setTimeout(function() { setGiftSending(false); setShowGiftSheet(false); }, 1200);
+  function openPayLink(platform, handle) {
+    if (!handle || !handle.trim()) {
+      if (addToast) addToast('Host hasn\'t set up ' + platform.name + ' yet', 'info');
+      return;
+    }
+    if (platform.buildUrl) {
+      window.open(platform.buildUrl(handle.trim()), '_blank', 'noopener');
+    } else {
+      navigator.clipboard.writeText(handle.trim()).then(function() {
+        if (addToast) addToast(platform.name + ': ' + handle + ' copied!', 'success');
+      }).catch(function() {
+        if (addToast) addToast(platform.name + ': ' + handle, 'info');
+      });
+    }
+  }
+
+  function openSocialShare(platform, roomUrl, msg) {
+    if (platform.open && platform.buildUrl) {
+      window.open(platform.buildUrl(roomUrl, msg), '_blank', 'noopener,width=600,height=450');
+    } else {
+      navigator.clipboard.writeText(msg + ' ' + roomUrl).then(function() {
+        if (addToast) addToast(platform.name + ': link copied — paste to share!', 'success');
+      }).catch(function() {
+        if (addToast) addToast('Link: ' + roomUrl, 'info');
+      });
+    }
+  }
+
+  function startRecording() {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(stream) {
+      recChunksRef.current = [];
+      var opts = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? { mimeType: 'video/webm;codecs=vp9' } : {};
+      var mr = new MediaRecorder(stream, opts);
+      mr.ondataavailable = function(e) { if (e.data && e.data.size > 0) recChunksRef.current.push(e.data); };
+      mr.onstop = function() {
+        var blob = new Blob(recChunksRef.current, { type: 'video/webm' });
+        var url  = URL.createObjectURL(blob);
+        setRecUrl(url);
+        setRecState('done');
+        stream.getTracks().forEach(function(t) { t.stop(); });
+        clearInterval(recTimerRef.current);
+      };
+      mr.start(1000);
+      mediaRecRef.current = mr;
+      setRecState('recording');
+      setRecSeconds(0);
+      recTimerRef.current = setInterval(function() {
+        setRecSeconds(function(s) {
+          var next = s + 1;
+          if (next >= 600) { mr.stop(); }
+          return next;
+        });
+      }, 1000);
+    }).catch(function() {
+      if (addToast) addToast('Camera access required to record', 'error');
+    });
+  }
+
+  function stopRecording() {
+    if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
+      mediaRecRef.current.stop();
+    }
+    clearInterval(recTimerRef.current);
+  }
+
+  function fmtTime(s) {
+    var m = Math.floor(s / 60);
+    var sec = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
   function goLive() {
@@ -601,6 +652,18 @@ export default function LiveRoomPage({
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, marginTop: 2 }}>
+            {privateMode && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(109,30,212,.2)', border: '1px solid rgba(109,30,212,.5)', borderRadius: 999, padding: '3px 8px' }}>
+                <span style={{ fontSize: 9 }}>🔒</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#B08FFF', letterSpacing: 1 }}>PRIVATE</span>
+              </div>
+            )}
+            {audioOnly && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(0,222,192,.1)', border: '1px solid rgba(0,222,192,.35)', borderRadius: 999, padding: '3px 8px' }}>
+                <span style={{ fontSize: 9 }}>🎤</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>AUDIO</span>
+              </div>
+            )}
             {isLive ? (
               <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />
@@ -772,33 +835,48 @@ export default function LiveRoomPage({
                 var isOwn = gid === userId;
                 var isSp  = !!speakingIds[gid];
                 return (
-                  <div key={gid} onClick={function() { setFeaturedId(gid); setStageLayout('featured'); }}
+                  <div key={gid}
                     style={{
-                      width: sz, flexShrink: 0, cursor: 'pointer',
+                      width: sz, flexShrink: 0,
                       background: CARD, borderRadius: 14, overflow: 'hidden',
                       border: '1.5px solid ' + (isSp ? TEAL + '88' : (gid === featuredId ? gold + '44' : BORDER)),
                       boxShadow: isSp ? ('0 0 16px ' + TEAL + '33') : 'none',
                       transition: 'border-color .2s, box-shadow .2s',
                       animation: 'fadeSlideIn .25s ease',
+                      position: 'relative',
                     }}>
-                    <div style={{ position: 'relative' }}>
-                      <OctCell
-                        guest={g}
-                        sz={sz}
-                        isHost={role === 'host'}
-                        fadesMode={false}
-                        branding={branding}
-                        onTap={null}
-                        socket={socket}
-                        roomId={roomId}
-                        userId={userId}
-                        rtcManager={rtcReady ? rtcManager : null}
-                        mediaConfig={isOwn ? medConf : null}
-                        isMuted={isOwn ? isMuted : false}
-                        isCamOff={isOwn ? isCamOff : false}
-                        onMuteToggle={isOwn ? toggleMute : null}
-                        onCamToggle={isOwn ? toggleCam : null}
-                      />
+                    <div style={{ position: 'relative' }} onClick={function() { setFeaturedId(gid); setStageLayout('featured'); }}>
+                      {audioOnly ? (
+                        <div style={{ width: sz, height: sz, background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                          <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD + ')', border: '2px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD }}>{(g.username || gid).charAt(0).toUpperCase()}</span>
+                          </div>
+                          {isSp && <WaveBars color={TEAL} />}
+                        </div>
+                      ) : (
+                        <OctCell
+                          guest={g}
+                          sz={sz}
+                          isHost={role === 'host'}
+                          fadesMode={false}
+                          branding={branding}
+                          onTap={null}
+                          socket={socket}
+                          roomId={roomId}
+                          userId={userId}
+                          rtcManager={rtcReady ? rtcManager : null}
+                          mediaConfig={isOwn ? medConf : null}
+                          isMuted={isOwn ? isMuted : false}
+                          isCamOff={isOwn ? isCamOff : false}
+                          onMuteToggle={isOwn ? toggleMute : null}
+                          onCamToggle={isOwn ? toggleCam : null}
+                        />
+                      )}
+                      {/* Expand button overlay */}
+                      <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
+                        style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,.55)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 6, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: TEXT, zIndex: 5 }}>
+                        ⤢
+                      </button>
                     </div>
                     {/* Cell footer */}
                     <div style={{ padding: '6px 8px 8px', background: CARD }}>
@@ -939,19 +1017,22 @@ export default function LiveRoomPage({
         {/* ── Quick Action Tools ── */}
         <div style={{ padding: '6px 14px 10px', display: 'flex', gap: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
           {[
-            { emoji: '🎁', label: 'Gift',     onTap: function() { setShowGiftSheet(true); } },
-            { emoji: '📊', label: 'Poll',     onTap: function() { setShowQa(true); setShowPollCreate(true); setShowVsCreate(false); setShowJudges(false); setChatOpen(false); } },
-            { emoji: '⚔',  label: 'VS',       onTap: function() { setShowQa(true); setShowVsCreate(true); setShowPollCreate(false); setShowJudges(false); setChatOpen(false); } },
-            { emoji: '⚖',  label: 'Judges',   onTap: function() { setShowQa(true); setShowJudges(true); setShowPollCreate(false); setShowVsCreate(false); setChatOpen(false); } },
-            { emoji: '🔗', label: 'Share',    onTap: shareRoom },
-            { emoji: '⚙',  label: 'Camera',   onTap: function() { setShowMediaConf(true); } },
+            { emoji: '💸', label: 'Pay',      active: false, onTap: function() { setShowPaySheet(true); } },
+            { emoji: '🔗', label: 'Share',    active: false, onTap: function() { setShowShareSheet(true); } },
+            { emoji: '🎤', label: audioOnly ? 'Video ON' : 'Audio', active: audioOnly, onTap: function() { setAudioOnly(function(v) { return !v; }); if (addToast) addToast(audioOnly ? 'Video mode on' : '🎤 Audio-only mode', 'info'); } },
+            { emoji: privateMode ? '🔒' : '🔓', label: 'Private', active: privateMode, onTap: function() { if (role === 'host') { setShowPrivateSet(true); } else { if (addToast) addToast(privateMode ? 'Room is private — invite only' : 'Room is open', 'info'); } } },
+            { emoji: '📹', label: 'Record',   active: recState === 'recording', onTap: function() { setShowRecorder(true); } },
+            { emoji: '📊', label: 'Poll',     active: false, onTap: function() { setShowQa(true); setShowPollCreate(true); setShowVsCreate(false); setShowJudges(false); setChatOpen(false); } },
+            { emoji: '⚔',  label: 'VS',      active: false, onTap: function() { setShowQa(true); setShowVsCreate(true); setShowPollCreate(false); setShowJudges(false); setChatOpen(false); } },
+            { emoji: '⚖',  label: 'Judges',  active: false, onTap: function() { setShowQa(true); setShowJudges(true); setShowPollCreate(false); setShowVsCreate(false); setChatOpen(false); } },
+            { emoji: '⚙',  label: 'Camera',  active: false, onTap: function() { setShowMediaConf(true); } },
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', background: CARD2, border: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, transition: 'background .15s', activeBackground: CARD }}>
+                <div style={{ width: 46, height: 46, borderRadius: '50%', background: tool.active ? 'rgba(0,222,192,.18)' : CARD2, border: '1px solid ' + (tool.active ? 'rgba(0,222,192,.4)' : BORDER), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, transition: 'background .15s' }}>
                   {tool.emoji}
                 </div>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>{tool.label}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: tool.active ? TEAL : MUTED, letterSpacing: .5 }}>{tool.label}</span>
               </div>
             );
           })}
@@ -974,14 +1055,13 @@ export default function LiveRoomPage({
         );
       })}
 
-      {/* ════════════════ GIFT FLOATS ════════════════ */}
-      {giftFloats.slice(-1).map(function(g) {
-        return (
-          <GiftFloat key={g._fid} item={g} onDone={function() {
-            setGiftFloats(function(gf) { return gf.filter(function(x) { return x._fid !== g._fid; }); });
-          }} />
-        );
-      })}
+      {/* ════════════════ AUDIO-ONLY BANNER ════════════════ */}
+      {audioOnly && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,222,192,.12)', borderBottom: '1px solid rgba(0,222,192,.3)', padding: '5px 14px', display: 'flex', alignItems: 'center', gap: 8, zIndex: 35, pointerEvents: 'none' }}>
+          <WaveBars color={TEAL} />
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 2 }}>AUDIO-ONLY MODE</span>
+        </div>
+      )}
 
       {/* ════════════════ REACT PICKER ════════════════ */}
       {reactsOpen && (
@@ -1577,36 +1657,292 @@ export default function LiveRoomPage({
         </div>
       )}
 
-      {/* ════════════════ GIFT SHEET ════════════════ */}
-      {showGiftSheet && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }}>
-          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 18px 32px', border: '1px solid ' + BORDER }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1 }}>Send a Gift</div>
-              <button onClick={function() { setShowGiftSheet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 20, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+      {/* ════════════════ DIRECT PAY SHEET ════════════════ */}
+      {showPaySheet && (function() {
+        var handles = (function() {
+          try { return JSON.parse(localStorage.getItem('sw_directpay_handles') || '{}'); } catch(e) { return {}; }
+        })();
+        return (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowPaySheet(false); }}>
+            <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 18px 34px', border: '1px solid ' + BORDER, maxHeight: '80vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1 }}>Support {hostName}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>100% goes straight to the creator</div>
+                </div>
+                <button onClick={function() { setShowPaySheet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+              </div>
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {DP_PLATFORMS.map(function(p) {
+                  var handle = handles[p.id] || '';
+                  var hasHandle = !!handle.trim();
+                  return (
+                    <button key={p.id} onClick={function() { openPayLink(p, handle); }}
+                      style={{
+                        background: hasHandle ? ('rgba(255,255,255,.05)') : 'rgba(255,255,255,.02)',
+                        border: '1.5px solid ' + (hasHandle ? (p.color + '55') : 'rgba(255,255,255,.07)'),
+                        borderRadius: 14, padding: '14px 16px', cursor: hasHandle ? 'pointer' : 'default',
+                        display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
+                        opacity: hasHandle ? 1 : .45,
+                        transition: 'background .2s',
+                      }}>
+                      <span style={{ fontSize: 28, flexShrink: 0 }}>{p.emoji}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>{p.name}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: hasHandle ? p.color : MUTED, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {hasHandle ? handle : 'Not set up by host'}
+                        </div>
+                      </div>
+                      {hasHandle && (
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: p.color, letterSpacing: 1, flexShrink: 0 }}>
+                          {p.buildUrl ? 'OPEN →' : 'COPY'}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {role === 'host' && (
+                <div style={{ marginTop: 16, padding: '12px 14px', background: CARD, borderRadius: 12, border: '1px solid ' + BORDER }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 10 }}>SET UP YOUR PAY LINKS</div>
+                  {DP_PLATFORMS.map(function(p) {
+                    var handle = handles[p.id] || '';
+                    return (
+                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 16, flexShrink: 0 }}>{p.emoji}</span>
+                        <input
+                          value={handle}
+                          onChange={function(e) {
+                            var v = e.target.value;
+                            var next = Object.assign({}, handles);
+                            next[p.id] = v;
+                            localStorage.setItem('sw_directpay_handles', JSON.stringify(next));
+                            if (addToast) addToast(p.name + ' handle saved', 'success');
+                          }}
+                          placeholder={p.name + ' handle / phone / email'}
+                          style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 18, letterSpacing: .5 }}>90% goes directly to the creator</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 16 }}>
-              {GIFTS.map(function(g) {
-                return (
-                  <button key={g.name} onClick={function() { sendGift(g); }}
-                    disabled={giftSending}
-                    style={{
-                      background: CARD2, border: '1.5px solid ' + BORDER, borderRadius: 14,
-                      padding: '14px 8px', cursor: giftSending ? 'default' : 'pointer',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-                      opacity: giftSending ? .5 : 1, transition: 'opacity .2s',
-                    }}>
-                    <span style={{ fontSize: 26 }}>{g.emoji}</span>
-                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: TEXT }}>{g.name}</span>
-                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, letterSpacing: 1 }}>${(Math.floor(g.valueCents) / 100).toFixed(2)}</span>
+          </div>
+        );
+      })()}
+
+      {/* ════════════════ SOCIAL SHARE SHEET ════════════════ */}
+      {showShareSheet && (function() {
+        var roomUrl = window.location.origin + (roomId !== '6990f5f24823b53e21fcdc9d' ? ('?room=' + roomId) : '');
+        var shareMsg = 'Watch live on SeeWhy LIVE! ' + (streamInfo && streamInfo.title ? streamInfo.title + ' — ' : '') + 'No app needed 🔴';
+        return (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowShareSheet(false); }}>
+            <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 18px 34px', border: '1px solid ' + BORDER }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1 }}>Share This Live</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>Outsiders can watch without the app</div>
+                </div>
+                <button onClick={function() { setShowShareSheet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+              </div>
+              {/* Link preview */}
+              <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 12px', marginTop: 14, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEAL, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{roomUrl}</span>
+                <button onClick={function() { navigator.clipboard.writeText(roomUrl).then(function() { if (addToast) addToast('Link copied!', 'success'); }); }}
+                  style={{ background: 'rgba(0,222,192,.15)', border: '1px solid rgba(0,222,192,.35)', borderRadius: 8, padding: '5px 10px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  COPY
+                </button>
+              </div>
+              {/* Native share */}
+              {typeof navigator !== 'undefined' && navigator.share && (
+                <button onClick={function() { navigator.share({ title: 'SeeWhy LIVE', text: shareMsg, url: roomUrl }); setShowShareSheet(false); }}
+                  style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 12, padding: '13px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer', letterSpacing: 2, marginBottom: 12 }}>
+                  📤 SHARE VIA PHONE
+                </button>
+              )}
+              {/* Platform grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+                {SOC_PLATFORMS.map(function(p) {
+                  return (
+                    <button key={p.id} onClick={function() { openSocialShare(p, roomUrl, shareMsg); setShowShareSheet(false); }}
+                      style={{ background: CARD2, border: '1.5px solid ' + BORDER, borderRadius: 14, padding: '14px 8px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, transition: 'background .15s' }}>
+                      <span style={{ fontSize: 26 }}>{p.emoji}</span>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, textAlign: 'center' }}>{p.name}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: .5 }}>{p.open ? 'OPENS APP' : 'COPY LINK'}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ════════════════ EXPANDED CELL OVERLAY ════════════════ */}
+      {expandedCell && (function() {
+        var g = allGuestMap[expandedCell] || { guestId: expandedCell, username: expandedCell, role: 'guest' };
+        var gid = expandedCell;
+        var isOwn = gid === userId;
+        var isSp  = !!speakingIds[gid];
+        return (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.92)', zIndex: 85, display: 'flex', flexDirection: 'column', animation: 'cellExpand .25s ease' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, position: 'relative' }}>
+              {audioOnly ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+                  <div style={{ width: 120, height: 120, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD + ')', border: '3px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: isSp ? ('0 0 40px ' + TEAL + '55') : 'none' }}>
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 56, color: GOLD, lineHeight: 1 }}>{(g.username || gid).charAt(0).toUpperCase()}</span>
+                  </div>
+                  {isSp && <WaveBars color={TEAL} />}
+                </div>
+              ) : (
+                <div style={{ width: '100%', maxWidth: 380, borderRadius: 20, overflow: 'hidden', border: '2px solid ' + (isSp ? TEAL + '88' : BORDER), boxShadow: isSp ? ('0 0 40px ' + TEAL + '33') : 'none' }}>
+                  <OctCell
+                    guest={g}
+                    sz={380}
+                    isHost={role === 'host'}
+                    fadesMode={false}
+                    branding={branding}
+                    onTap={null}
+                    socket={socket}
+                    roomId={roomId}
+                    userId={userId}
+                    rtcManager={rtcReady ? rtcManager : null}
+                    mediaConfig={isOwn ? medConf : null}
+                    isMuted={isOwn ? isMuted : false}
+                    isCamOff={isOwn ? isCamOff : false}
+                    onMuteToggle={isOwn ? toggleMute : null}
+                    onCamToggle={isOwn ? toggleCam : null}
+                  />
+                </div>
+              )}
+              <button onClick={function() { setExpandedCell(null); }}
+                style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,.12)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: TEXT, fontSize: 16 }}>
+                ✕
+              </button>
+            </div>
+            <div style={{ padding: '14px 20px 28px', background: 'rgba(9,7,14,.97)', borderTop: '1px solid ' + BORDER }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 22, color: TEXT }}>{g.username || gid}</div>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
+                    <RolePill role={g.role || (isOwn ? role : 'guest')} />
+                    {isSp && <SpeakBars color={TEAL} />}
+                  </div>
+                </div>
+                {isOwn && (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={toggleMute} style={{ background: isMuted ? 'rgba(255,26,60,.2)' : CARD2, border: '1px solid ' + (isMuted ? 'rgba(255,26,60,.5)' : BORDER), borderRadius: 12, padding: '10px 16px', color: isMuted ? RED : MUTED, cursor: 'pointer', fontSize: 18 }}>{isMuted ? '🔇' : '🎙'}</button>
+                    <button onClick={toggleCam}  style={{ background: isCamOff ? 'rgba(255,26,60,.2)' : CARD2, border: '1px solid ' + (isCamOff ? 'rgba(255,26,60,.5)' : BORDER), borderRadius: 12, padding: '10px 16px', color: isCamOff ? RED : MUTED, cursor: 'pointer', fontSize: 18 }}>{isCamOff ? '📷' : '🎥'}</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ════════════════ PRIVATE ROOM SETUP ════════════════ */}
+      {showPrivateSet && role === 'host' && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1, marginBottom: 4 }}>Private Room</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 20, letterSpacing: .5 }}>
+              {privateMode ? 'Room is private — only invited guests can join' : 'Anyone with the link can join'}
+            </div>
+            {!privateMode ? (
+              <>
+                <input
+                  type="password"
+                  value={privatePwd}
+                  onChange={function(e) { setPrivatePwd(e.target.value); }}
+                  placeholder="Set room password (optional)"
+                  style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '12px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 16, outline: 'none', marginBottom: 12 }}
+                />
+                <button onClick={function() {
+                  setPrivateMode(true);
+                  setShowPrivateSet(false);
+                  if (socket) socket.emit('room-private', { roomId: roomId, private: true, password: privatePwd.trim() || null });
+                  if (addToast) addToast('🔒 Room is now private', 'success');
+                }} style={{ width: '100%', background: 'rgba(109,30,212,.8)', border: 'none', borderRadius: 12, padding: '13px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
+                  LOCK ROOM 🔒
+                </button>
+              </>
+            ) : (
+              <button onClick={function() {
+                setPrivateMode(false);
+                setPrivatePwd('');
+                setShowPrivateSet(false);
+                if (socket) socket.emit('room-private', { roomId: roomId, private: false });
+                if (addToast) addToast('🔓 Room is now open', 'info');
+              }} style={{ width: '100%', background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 12, padding: '13px', color: RED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
+                UNLOCK ROOM 🔓
+              </button>
+            )}
+            <button onClick={function() { setShowPrivateSet(false); }} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ VIDEO RECORDER PANEL ════════════════ */}
+      {showRecorder && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.85)', display: 'flex', alignItems: 'flex-end', zIndex: 76, animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1 }}>Record Clip</div>
+              <button onClick={function() {
+                if (recState === 'recording') stopRecording();
+                setShowRecorder(false);
+                if (recState !== 'done') { setRecState('idle'); setRecSeconds(0); setRecUrl(null); }
+              }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 20, letterSpacing: .5 }}>Max 10 minutes · saves to your device</div>
+            {recState === 'idle' && (
+              <button onClick={startRecording} style={{ width: '100%', background: RED, border: 'none', borderRadius: 12, padding: '15px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff' }} /> START RECORDING
+              </button>
+            )}
+            {recState === 'recording' && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 20 }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', animation: 'recPulse 1s infinite' }} />
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 38, color: RED, letterSpacing: 2 }}>{fmtTime(recSeconds)}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>/ 10:00</span>
+                </div>
+                <div style={{ height: 5, background: 'rgba(255,255,255,.07)', borderRadius: 999, marginBottom: 20, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: RED, borderRadius: 999, width: (recSeconds / 600 * 100) + '%', transition: 'width 1s linear' }} />
+                </div>
+                <button onClick={stopRecording} style={{ width: '100%', background: 'rgba(255,26,60,.15)', border: '1.5px solid rgba(255,26,60,.4)', borderRadius: 12, padding: '13px', color: RED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: 'pointer', letterSpacing: 2 }}>
+                  STOP RECORDING
+                </button>
+              </div>
+            )}
+            {recState === 'done' && recUrl && (
+              <div>
+                <div style={{ textAlign: 'center', padding: '12px 0 20px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: TEAL }}>
+                  ✓ Recording ready — {fmtTime(recSeconds)}
+                </div>
+                <a href={recUrl} download={'seewhy-clip-' + Date.now() + '.webm'}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: TEAL, border: 'none', borderRadius: 12, padding: '14px', color: BG, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: 'pointer', letterSpacing: 2, textAlign: 'center', textDecoration: 'none', marginBottom: 10 }}>
+                  💾 SAVE VIDEO
+                </a>
+                {typeof navigator !== 'undefined' && navigator.share && (
+                  <button onClick={function() {
+                    fetch(recUrl).then(function(r) { return r.blob(); }).then(function(blob) {
+                      var file = new File([blob], 'seewhy-clip.webm', { type: 'video/webm' });
+                      navigator.share({ files: [file], title: 'SeeWhy LIVE Clip' }).catch(function() {});
+                    });
+                  }} style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 12, padding: '13px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
+                    📤 SHARE CLIP
                   </button>
-                );
-              })}
-            </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, textAlign: 'center' }}>
-              Sending as <span style={{ color: GOLD }}>{username}</span>
-            </div>
+                )}
+                <button onClick={function() { setRecState('idle'); setRecSeconds(0); setRecUrl(null); }} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: MUTED, cursor: 'pointer' }}>
+                  Record another clip
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
