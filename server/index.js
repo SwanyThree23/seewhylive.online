@@ -370,6 +370,23 @@ function serializeJudges(roomId) {
   return out;
 }
 
+function getJoinStateForRoom(roomId) {
+  var state = { chatHistory: [], activePoll: null, activeVsPoll: null, judges: [], sessionRevenueCents: 0 };
+  try {
+    var rows = db.prepare(
+      'SELECT id, username, message, translated, lang, ts FROM chat_history WHERE room_id = ? ORDER BY ts DESC LIMIT 50'
+    ).all(roomId);
+    state.chatHistory = rows.reverse();
+  } catch(e) { logger.warn('[getJoinState] chat: ' + e.message); }
+  var poll = polls.get(roomId);
+  if (poll && poll.active) state.activePoll = serializePoll(poll);
+  var vp = vsPolls.get(roomId);
+  if (vp && vp.active) state.activeVsPoll = serializeVs(vp);
+  state.judges = serializeJudges(roomId);
+  state.sessionRevenueCents = sessionRevenue.get(roomId) || 0;
+  return state;
+}
+
 // Helper: auto-trigger AURA and broadcast to room
 function autoAura(roomId, triggerFn) {
   try {
@@ -948,6 +965,7 @@ io.on('connection', function(socket) {
             recvTransport:         recvTransport.params,
             existingProducers:     existingProducers
           };
+          Object.assign(ackPayload, getJoinStateForRoom(roomId));
 
           // Emit as socket event (for listeners like RoomTab) AND ack callback
           io.to(socket.id).emit('join-room-ack', ackPayload);
@@ -981,6 +999,7 @@ io.on('connection', function(socket) {
           if (room.watchParty) {
             viewerAck.watchParty = room.watchParty;
           }
+          Object.assign(viewerAck, getJoinStateForRoom(roomId));
           io.to(socket.id).emit('join-room-ack', viewerAck);
           if (ack) ack(viewerAck);
         })
@@ -988,6 +1007,7 @@ io.on('connection', function(socket) {
           logger.warn('[join-room] viewer router setup error: ' + err.message);
           var fallbackAck = { joined: true };
           if (room.watchParty) fallbackAck.watchParty = room.watchParty;
+          Object.assign(fallbackAck, getJoinStateForRoom(roomId));
           io.to(socket.id).emit('join-room-ack', fallbackAck);
           if (ack) ack(fallbackAck);
         });
@@ -1370,6 +1390,19 @@ io.on('connection', function(socket) {
     }
 
     swanybot.onGiftReceived(roomId, fromUser, name, valueCents);
+
+    // Push live earnings update to host
+    try {
+      var gifRoom = rooms.get(roomId);
+      if (gifRoom && gifRoom.hostSocketId) {
+        io.to(gifRoom.hostSocketId).emit('earnings-update', {
+          sessionCents: sessionRevenue.get(roomId) || 0,
+          lastCents:    valueCents,
+          source:       'gift',
+          username:     fromUser
+        });
+      }
+    } catch(geu) { logger.warn('[send-gift] earnings-update: ' + geu.message); }
 
     // Session revenue milestone tracking
     var prevRevenue = sessionRevenue.get(roomId) || 0;
@@ -1850,6 +1883,19 @@ io.on('connection', function(socket) {
     });
 
     autoAura(roomId, function(cb) { aura.triggerTip(roomId, username, amountCents, message, cb); });
+
+    // Push live earnings update to host
+    try {
+      var scRoom = rooms.get(roomId);
+      if (scRoom && scRoom.hostSocketId) {
+        io.to(scRoom.hostSocketId).emit('earnings-update', {
+          sessionCents: sessionRevenue.get(roomId) || 0,
+          lastCents:    amountCents,
+          source:       'super-chat',
+          username:     username
+        });
+      }
+    } catch(eu) { logger.warn('[super-chat] earnings-update: ' + eu.message); }
 
     var prevScRev = sessionRevenue.get(roomId) || 0;
     var newScRev  = prevScRev + amountCents;
