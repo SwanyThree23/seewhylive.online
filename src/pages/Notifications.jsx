@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const GOLD = '#D4AF37';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const PINK = '#FF1564';
+const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
   tip:          { icon: Gift,      color: '#D4AF37' },
@@ -20,6 +21,7 @@ const TYPE_CONFIG = {
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const navigate    = useNavigate();
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -55,9 +57,15 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
+  const handleNotifClick = (notif) => {
+    if (!notif.is_read) markReadMutation.mutate(notif.id);
+    if (notif.link) navigate(notif.link);
+  };
+
   return (
-    <div className="min-h-screen pb-8" style={{ background: '#080B18' }}>
-      {/* Sticky header */}
+    <div className="min-h-screen pb-8" style={{ background: '#080B18', ...T }}>
+
+      {/* ── sticky header ── */}
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2">
@@ -65,77 +73,98 @@ export default function NotificationsPage() {
           <h1 className="font-black text-lg text-white leading-none" style={T}>Notifications</h1>
           {unreadCount > 0 && (
             <span className="px-2 py-0.5 rounded-full font-black text-[9px]"
-              style={{ background: '#FF1564', color: '#fff', ...T }}>{unreadCount}</span>
+              style={{ background: PINK, color: '#fff', ...T }}>{unreadCount}</span>
           )}
         </div>
         {unreadCount > 0 && (
-          <button onClick={() => markAllReadMutation.mutate()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
-            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
-            <Check className="w-3 h-3" />Mark all read
+          <button
+            onClick={() => markAllReadMutation.mutate()}
+            disabled={markAllReadMutation.isPending}
+            className="font-black text-[10px] uppercase transition-opacity"
+            style={{ color: GOLD, ...T }}>
+            {markAllReadMutation.isPending ? 'Marking…' : 'Mark all read'}
           </button>
         )}
       </div>
 
       <div className="max-w-3xl mx-auto px-4 pt-4">
+
+        {/* ── empty state ── */}
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Bell className="w-16 h-16 mb-4" style={{ color: 'rgba(255,255,255,0.12)' }} />
-            <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No notifications yet</p>
+          <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
+            <Bell className="w-16 h-16 mb-2" style={{ color: 'rgba(255,255,255,0.12)' }} />
+            <p className="font-black text-base uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+              No notifications yet
+            </p>
+            <p className="text-sm max-w-xs" style={{ color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
+              Activity from tips, invites, and challenges will appear here
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
             {notifications.map((notif) => {
-              const cfg = TYPE_CONFIG[notif.type] || { icon: Bell, color: GOLD };
+              const cfg  = TYPE_CONFIG[notif.type] || { icon: Bell, color: GOLD };
               const Icon = cfg.icon;
               return (
-                <div key={notif.id} className="rounded-xl p-3 flex items-start gap-3 transition-all"
+                <div
+                  key={notif.id}
+                  className="rounded-2xl flex items-start gap-3 p-4 transition-all cursor-pointer"
                   style={{
                     background: notif.is_read ? 'rgba(13,6,24,0.6)' : 'rgba(13,6,24,0.95)',
-                    border: `1px solid ${notif.is_read ? 'rgba(255,255,255,0.05)' : `${cfg.color}30`}`,
-                    opacity: notif.is_read ? 0.7 : 1,
-                  }}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: `${cfg.color}15`, border: `1px solid ${cfg.color}25` }}>
-                    <Icon className="w-4 h-4" style={{ color: cfg.color }} />
+                    border: `1px solid ${notif.is_read ? 'rgba(255,255,255,0.06)' : `${cfg.color}35`}`,
+                  }}
+                  onClick={() => handleNotifClick(notif)}
+                >
+                  {/* ── left: colored icon circle ── */}
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: `${cfg.color}20`, border: `1px solid ${cfg.color}35` }}>
+                    <Icon className="w-5 h-5" style={{ color: cfg.color }} />
                   </div>
 
+                  {/* ── center ── */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-0.5">
-                      <h3 className="font-black text-sm text-white leading-snug" style={T}>{notif.title}</h3>
-                      {!notif.is_read && (
-                        <span className="shrink-0 px-1.5 py-0.5 rounded font-black text-[8px] uppercase"
-                          style={{ background: `${cfg.color}20`, color: cfg.color, border: `1px solid ${cfg.color}30`, ...T }}>
-                          New
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{notif.message}</p>
-                    <div className="flex items-center gap-2">
+                    <h3 className="font-black text-sm text-white leading-snug mb-0.5" style={T}>
+                      {notif.title}
+                    </h3>
+                    <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                      {notif.message}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>
                         {format(new Date(notif.created_date), 'PPp')}
                       </span>
                       {notif.link && (
-                        <Link to={notif.link}>
-                          <span className="text-[10px] font-black" style={{ color: GOLD, ...T }}>View →</span>
-                        </Link>
+                        <span
+                          className="text-[10px] font-black"
+                          style={{ color: GOLD, ...T }}
+                          onClick={(e) => { e.stopPropagation(); navigate(notif.link); }}>
+                          View →
+                        </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex gap-1 shrink-0">
+                  {/* ── right: unread dot + delete ── */}
+                  <div className="flex flex-col items-center gap-2 shrink-0">
                     {!notif.is_read && (
-                      <button onClick={() => markReadMutation.mutate(notif.id)}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center"
-                        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                      <span className="w-2 h-2 rounded-full" style={{ background: PINK }} />
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
+                      style={{ background: 'rgba(255,30,80,0.1)', color: 'rgba(255,80,80,0.5)', border: '1px solid rgba(255,30,80,0.15)' }}
+                      title="Delete notification">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    {!notif.is_read && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); markReadMutation.mutate(notif.id); }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)' }}
+                        title="Mark as read">
                         <Check className="w-3.5 h-3.5" />
                       </button>
                     )}
-                    <button onClick={() => deleteMutation.mutate(notif.id)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)' }}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 </div>
               );
