@@ -58,13 +58,14 @@ var LiveStreamHubTab    = React.lazy(function() { return import('./components/Li
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
-  { id: 'room',   label: '🎙 ROOM' },
-  { id: 'fades',  label: '⚡ FADES' },
-  { id: 'brand',  label: '🎨 BRAND' },
-  { id: 'embed',  label: '🎬 EMBED' },
-  { id: 'bot',    label: '🤖 SWANYBOT' },
-  { id: 'data',   label: '📊 DATA' },
-  { id: 'keys',   label: '🔑 KEYS' },
+  { id: 'room',      label: '🎙 ROOM' },
+  { id: 'fades',     label: '⚡ FADES' },
+  { id: 'brand',     label: '🎨 BRAND' },
+  { id: 'embed',     label: '🎬 EMBED' },
+  { id: 'bot',       label: '🤖 SWANYBOT' },
+  { id: 'data',      label: '📊 DATA' },
+  { id: 'analytics', label: '📊 STATS', roles: ['host', 'cohost'] },
+  { id: 'keys',      label: '🔑 KEYS' },
   { id: 'fanout',   label: '📡 FANOUT' },
   { id: 'push',     label: '📺 PUSH' },
   { id: 'clips',    label: '🎞 CLIPS' },
@@ -871,7 +872,11 @@ export default function App() {
       {/* Secondary tab bar — hidden on room tab, shown when More drawer is open */}
       {activeTab !== 'room' && (
       <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(7,5,10,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none' }}>
-        {TABS.filter(function(t) { return t.id !== 'room' && t.id !== 'discover' && t.id !== 'profile' && t.id !== 'settings'; }).map(function(tab) { return (
+        {TABS.filter(function(t) {
+          if (t.id === 'room' || t.id === 'discover' || t.id === 'profile' || t.id === 'settings') return false;
+          if (t.roles && t.roles.indexOf(role) === -1) return false;
+          return true;
+        }).map(function(tab) { return (
           <button
             key={tab.id}
             style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(26,21,16,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#F0E8D4' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
@@ -983,6 +988,15 @@ export default function App() {
             gifts={gifts}
             viewerCount={viewerCount}
             isLive={isLive}
+          />
+        )}
+        {activeTab === 'analytics' && (role === 'host' || role === 'cohost') && (
+          <AnalyticsTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            isLive={isLive}
+            addToast={addToast}
           />
         )}
         {activeTab === 'keys' && (

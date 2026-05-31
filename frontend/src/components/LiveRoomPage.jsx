@@ -6,6 +6,7 @@ import { saveClip } from '../clipStore.js';
 import { creatorCents, platformCents, getPlatformHandles } from '../platformConfig.js';
 import HostHUD from './HostHUD.jsx';
 import ChyronOverlay from './ChyronOverlay.jsx';
+import PollOverlay from './PollOverlay.jsx';
 
 var MAX_STAGE = 20;
 
@@ -2194,6 +2195,15 @@ export default function LiveRoomPage({
           </div>
         </div>
       )}
+
+      {/* ════════════════ POLL OVERLAY ════════════════ */}
+      <PollOverlay
+        socket={socket}
+        roomId={roomId}
+        role={role}
+        isLive={isLive}
+        addToast={addToast}
+      />
     </div>
   );
 }
