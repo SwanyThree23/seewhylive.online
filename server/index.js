@@ -181,6 +181,15 @@ db.exec(`
   );
 `);
 
+db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  endpoint TEXT UNIQUE NOT NULL,
+  username TEXT,
+  p256dh TEXT,
+  auth TEXT,
+  created_at INTEGER DEFAULT (strftime('%s','now'))
+)`);
+
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
 
@@ -552,6 +561,64 @@ app.delete('/api/schedule/:id', function(req, res) {
     res.json({ deleted: true });
   } catch (err) {
     logger.error('[schedule/delete] ' + err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/push/subscribe
+app.post('/api/push/subscribe', function(req, res) {
+  var sub = req.body.subscription;
+  var username = req.body.username || 'viewer';
+  if (!sub || !sub.endpoint) return res.status(400).json({ error: 'Invalid subscription' });
+  var p256dh = (sub.keys && sub.keys.p256dh) ? sub.keys.p256dh : '';
+  var auth   = (sub.keys && sub.keys.auth)   ? sub.keys.auth   : '';
+  try {
+    db.prepare('INSERT OR REPLACE INTO push_subscriptions (endpoint, username, p256dh, auth) VALUES (?, ?, ?, ?)').run(sub.endpoint, username, p256dh, auth);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/push/unsubscribe
+app.post('/api/push/unsubscribe', function(req, res) {
+  var endpoint = req.body.endpoint;
+  if (!endpoint) return res.status(400).json({ error: 'Missing endpoint' });
+  try {
+    db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(endpoint);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/payout-history
+app.get('/api/payout-history', function(req, res) {
+  var roomId = req.query.roomId || null;
+  var stmt;
+  var rows;
+  try {
+    if (roomId) {
+      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id = ? GROUP BY day ORDER BY day DESC LIMIT 30');
+      rows = stmt.all(roomId);
+    } else {
+      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats GROUP BY day ORDER BY day DESC LIMIT 30');
+      rows = stmt.all();
+    }
+    var sessions = (rows || []).map(function(row, i) {
+      return {
+        id: i + 1,
+        date: Math.floor(Date.now() / 1000) - i * 86400,
+        label: 'Stream Session ' + (new Date(row.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+        totalCents: Math.floor(row.totalCents || 0),
+        superChats: row.events || 0,
+        gifts: 0,
+        tips: 0,
+        viewers: 0,
+      };
+    });
+    res.json({ sessions: sessions });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -1936,6 +2003,12 @@ io.on('connection', function(socket) {
     io.to(data.roomId).emit('bracket-update', data);
   });
 
+  // ── chyron-update ──────────────────────────────────────────────────────
+  socket.on('chyron-update', function(data) {
+    if (!data || !data.roomId) return;
+    io.to(data.roomId).emit('chyron-update', data);
+  });
+
   // ── PK Battle v2 vote aggregation ──────────────────────────────────────
   socket.on('pk-start', function(data) {
     if (!data || !data.roomId) return;
@@ -2110,6 +2183,21 @@ io.on('connection', function(socket) {
     }
 
     if (ack) ack({ started: true });
+
+    // TODO: npm install web-push on VPS then wire webpush.sendNotification() here
+    // Send push to all subscribers (log only until web-push is installed)
+    try {
+      var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions').all();
+      if (pushSubs && pushSubs.length > 0) {
+        var hostName = room.streamTitle || 'A host';
+        pushSubs.forEach(function(s) {
+          if (!s.endpoint) return;
+          logger.info('[push] would notify: ' + s.endpoint.slice(-20));
+        });
+      }
+    } catch(pushErr) {
+      logger.warn('[push] send error: ' + pushErr.message);
+    }
   });
 
   // ── end-broadcast ──────────────────────────────────────────────────────
