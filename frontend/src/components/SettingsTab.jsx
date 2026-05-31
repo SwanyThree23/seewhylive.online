@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 import { getPlatformHandles, setPlatformHandle } from '../platformConfig.js';
+import { usePushNotifications } from '../usePushNotifications.js';
 
 var PLATFORM_TIERS = [
   { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#7A6F90', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
@@ -73,6 +74,10 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   var [notifySubscriber, setNotifySubscriber] = useState(true);
   var [notifyEmailDigest, setNotifyEmailDigest] = useState(true);
 
+  var push = usePushNotifications();
+  var [pushSubscribed, setPushSubscribed] = useState(false);
+  var [pushLoading, setPushLoading] = useState(false);
+
   var [currentTier, setCurrentTier] = useState('free');
 
   var [publicProfile, setPublicProfile] = useState(true);
@@ -105,6 +110,10 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   useEffect(function() {
     try { localStorage.setItem('sw_bio', bio); } catch(e) {}
   }, [bio]);
+
+  useEffect(function() {
+    push.isSubscribed(function(subbed) { setPushSubscribed(subbed); });
+  }, []);
 
   function saveProfile() {
     setProfileSaving(true);
@@ -454,18 +463,30 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           SAVE PREFERENCES
         </button>
 
-        <div style={Object.assign({}, cardStyle, { display: 'flex', flexDirection: 'column', gap: 8 })}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#EDE8F5', letterSpacing: 2 }}>
-            &#x1F4F2; PUSH NOTIFICATIONS
+        {/* Push Notifications */}
+        <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 12, padding: '16px' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 10 }}>PUSH NOTIFICATIONS</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#8A7A62', marginBottom: 12, lineHeight: 1.4 }}>
+            {push.supported ? 'Get notified when your favorite hosts go live.' : 'Push notifications not supported in this browser.'}
           </div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#7A6F90' }}>
-            Get notified even when SeeWhy LIVE is closed
-          </div>
-          <button
-            onClick={enablePush}
-            style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 8, padding: '8px 16px', color: '#00C9A7', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer', alignSelf: 'flex-start' }}>
-            ENABLE PUSH
-          </button>
+          {push.supported && (
+            <button
+              disabled={pushLoading}
+              onClick={function() {
+                setPushLoading(true);
+                if (pushSubscribed) {
+                  push.unsubscribe(function() { setPushSubscribed(false); setPushLoading(false); if (addToast) addToast('Push notifications disabled', 'info'); });
+                } else {
+                  push.subscribe(username || 'viewer',
+                    function() { setPushSubscribed(true); setPushLoading(false); if (addToast) addToast('Push notifications enabled!', 'success'); },
+                    function(e) { setPushLoading(false); if (addToast) addToast('Could not enable notifications: ' + (e && e.message ? e.message : String(e)), 'error'); }
+                  );
+                }
+              }}
+              style={{ width: '100%', padding: '11px', background: pushSubscribed ? 'rgba(128,0,32,.25)' : 'linear-gradient(135deg,#800020,#C01838)', border: '1px solid ' + (pushSubscribed ? 'rgba(128,0,32,.5)' : 'transparent'), borderRadius: 9, color: pushSubscribed ? '#C01838' : '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: pushLoading ? 'wait' : 'pointer' }}>
+              {pushLoading ? 'WORKING...' : pushSubscribed ? 'DISABLE NOTIFICATIONS' : 'ENABLE NOTIFICATIONS'}
+            </button>
+          )}
         </div>
       </div>
     );

@@ -101,6 +101,25 @@ var TABS = [
   { id: 'streams',   label: '📡 STREAMS' },
 ];
 
+function CountdownClock({ targetTs }) {
+  var [secs, setSecs] = React.useState(Math.max(0, Math.floor(targetTs - Date.now() / 1000)));
+  React.useEffect(function() {
+    var id = setInterval(function() {
+      setSecs(Math.max(0, Math.floor(targetTs - Date.now() / 1000)));
+    }, 1000);
+    return function() { clearInterval(id); };
+  }, [targetTs]);
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs % 3600) / 60);
+  var s = secs % 60;
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  return (
+    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#F0E8D4', letterSpacing: 4, marginTop: 4 }}>
+      {pad(h)}:{pad(m)}:{pad(s)}
+    </div>
+  );
+}
+
 export default function App() {
   var [splash, setSplash] = useState(true);
   var [activeTab, setActiveTab] = useState('room');
@@ -159,6 +178,7 @@ export default function App() {
   var [titleDraft, setTitleDraft] = useState('');
   var [showMoreDrawer, setShowMoreDrawer] = useState(false);
   var [canGoBack, setCanGoBack] = useState(false);
+  var [nextEventCountdown, setNextEventCountdown] = useState(null);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -181,6 +201,26 @@ export default function App() {
 
   useEffect(function() {
     setCanGoBack(window.history.length > 1);
+  }, []);
+
+  useEffect(function() {
+    var stored = localStorage.getItem('sw_reminders');
+    if (!stored) return;
+    fetch('/api/schedule')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var events = data && data.events ? data.events : [];
+        var reminders = [];
+        try { reminders = JSON.parse(stored); } catch(e) {}
+        var now = Date.now() / 1000;
+        var upcoming = events.filter(function(ev) {
+          return reminders.indexOf(ev.id) >= 0 && ev.scheduled_at > now;
+        }).sort(function(a, b) { return a.scheduled_at - b.scheduled_at; });
+        if (upcoming.length > 0) {
+          setNextEventCountdown({ label: upcoming[0].title || upcoming[0].label, ts: upcoming[0].scheduled_at });
+        }
+      })
+      .catch(function() {});
   }, []);
 
   // Earnings milestone celebration toasts
@@ -689,6 +729,13 @@ export default function App() {
               return <span key={i} style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '3px 9px', color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{label}</span>;
             })}
           </div>
+          {nextEventCountdown && (
+            <div style={{ background: 'rgba(128,0,32,.3)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 20px', textAlign: 'center', marginTop: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 4 }}>NEXT EVENT</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 2 }}>{nextEventCountdown.label}</div>
+              <CountdownClock targetTs={nextEventCountdown.ts} />
+            </div>
+          )}
           <div style={{ marginTop: 24, display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'flex-end', height: 28 }}>
             {[4,7,5,9,6,8,4,6,9,7,5,8,6].map(function(h, i) {
               return <div key={i} style={{ width: 3, borderRadius: 2, background: 'rgba(201,168,76,.5)', height: h * 2 + 4, animation: 'splashBar ' + (.6 + i * .07) + 's ease ' + (i * .04) + 's infinite' }} />;

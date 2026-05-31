@@ -111,3 +111,33 @@ function networkFirstWithCache(request, cacheName) {
     return caches.match(request);
   });
 }
+
+// Push notifications
+self.addEventListener('push', function(event) {
+  var data = {};
+  try { data = event.data ? event.data.json() : {}; } catch(e) {}
+  var title = data.title || 'SeeWhy LIVE';
+  var options = {
+    body: data.body || 'A stream just went live!',
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
+    tag: data.tag || 'seewhy-live',
+    data: { url: data.url || '/' },
+    requireInteraction: false,
+    vibrate: [200, 100, 200],
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  var url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(cls) {
+      for (var i = 0; i < cls.length; i++) {
+        if (cls[i].url === url && 'focus' in cls[i]) return cls[i].focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
+});

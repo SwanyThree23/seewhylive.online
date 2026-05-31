@@ -5,6 +5,7 @@ import MediaConfigPanel from './MediaConfigPanel.jsx';
 import { saveClip } from '../clipStore.js';
 import { creatorCents, platformCents, getPlatformHandles } from '../platformConfig.js';
 import HostHUD from './HostHUD.jsx';
+import ChyronOverlay from './ChyronOverlay.jsx';
 
 var MAX_STAGE = 20;
 
@@ -814,7 +815,7 @@ export default function LiveRoomPage({
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
         {/* ── Stage Section ── */}
-        <div style={{ padding: '12px 14px 6px' }}>
+        <div style={{ padding: '12px 14px 6px', position: 'relative', overflow: 'hidden' }}>
 
           {/* Stage header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -1046,6 +1047,7 @@ export default function LiveRoomPage({
               )}
             </div>
           )}
+          <ChyronOverlay socket={socket} roomId={roomId} role={role} isLive={isLive} />
         </div>
 
         {/* ── Audience Section ── */}
