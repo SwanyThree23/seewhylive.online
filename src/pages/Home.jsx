@@ -66,12 +66,41 @@ function OctTile({ label, color, size }) {
   );
 }
 
+function SignalBars({ count }) {
+  var level = count > 2000 ? 4 : count > 500 ? 3 : count > 100 ? 2 : 1;
+  return (
+    <span className="flex items-end gap-[2px]" aria-label={`${count} viewers`}>
+      {[1,2,3,4].map(function(n) {
+        return <span key={n} style={{ width: 3, height: 4 + n * 3, borderRadius: 1, background: n <= level ? '#D4AF37' : 'rgba(255,255,255,0.15)', display: 'inline-block' }} />;
+      })}
+    </span>
+  );
+}
+
+function streamDuration(room) {
+  var start = room.started_at || room.created_at;
+  if (!start) return null;
+  var mins = Math.floor((Date.now() - new Date(start).getTime()) / 60000);
+  if (mins < 1) return '< 1m';
+  if (mins < 60) return mins + 'm';
+  return Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm';
+}
+
 function FanbaseRoomCard({ room }) {
   var participantCount = room.participant_count || room.viewer_count || 0;
   var displayNames = (room.participant_names || []).slice(0, 3);
   var extra = participantCount > 3 ? participantCount - 3 : 0;
-  var categoryColor = { Music: '#FF1564', Gaming: '#8B5CF6', Tech: '#00d4ff', Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755', Lifestyle: '#FF6B8A' };
-  var tagColor = room.tags && room.tags[0] ? (categoryColor[room.tags[0]] || '#D4AF37') : '#D4AF37';
+  var isTrending = participantCount >= 500;
+  var categoryColor = { Music: '#FF1564', Gaming: '#8B5CF6', Tech: '#00d4ff', Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755', Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#8B5CF6' };
+  var tag = room.tags && room.tags[0];
+  var tagColor = tag ? (categoryColor[tag] || '#D4AF37') : '#D4AF37';
+  var duration = streamDuration(room);
+  var accessLabel = room.ppv_price ? 'PPV' : room.is_fan_only ? 'FAN' : 'FREE';
+  var accessStyle = accessLabel === 'PPV'
+    ? { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }
+    : accessLabel === 'FAN'
+    ? { background: 'rgba(128,0,32,0.2)', color: '#ff9999', border: '1px solid rgba(128,0,32,0.4)' }
+    : { background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' };
 
   return (
     <Link to={`/LiveRoom?id=${room.id}`}>
@@ -79,19 +108,20 @@ function FanbaseRoomCard({ room }) {
         className="rounded-2xl overflow-hidden cursor-pointer"
         style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
 
-        {/* Category badge + Join button */}
+        {/* Top row: LIVE + TRENDING badges | Join */}
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
-          {room.tags && room.tags[0] ? (
-            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full"
-              style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
-              {room.tags[0]}
+          <div className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1 text-[8px] font-black px-1.5 py-0.5 rounded-full"
+              style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
-          ) : (
-            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              Live
-            </span>
-          )}
+            {isTrending && (
+              <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                🔥 TRENDING
+              </span>
+            )}
+          </div>
           <span className="text-[9px] font-black uppercase px-2.5 py-1 rounded-full"
             style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
             Join
@@ -108,18 +138,6 @@ function FanbaseRoomCard({ room }) {
             </div>
           )}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
-          {/* LIVE indicator on thumbnail */}
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black"
-            style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            LIVE
-          </div>
-          {participantCount > 0 && (
-            <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[9px] font-bold"
-              style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              <Users className="w-3 h-3" />{participantCount}
-            </div>
-          )}
         </div>
 
         {/* Room title + host */}
@@ -135,21 +153,38 @@ function FanbaseRoomCard({ room }) {
           )}
         </div>
 
-        {/* Participant oct-tile row */}
-        <div className="flex items-center gap-1.5 px-3 pt-2 pb-3">
-          {displayNames.map(function(name, i) {
-            return <OctTile key={i} label={name} size={36} />;
-          })}
-          {displayNames.length === 0 && participantCount > 0 && (
-            <OctTile label="?" size={36} />
+        {/* Stats row: signal+count | category | duration | access */}
+        <div className="flex items-center gap-2 px-3 pt-1.5 pb-2.5 flex-wrap">
+          {participantCount > 0 && (
+            <span className="flex items-center gap-1.5">
+              <SignalBars count={participantCount} />
+              <span className="text-[10px] font-black" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {participantCount.toLocaleString()}
+              </span>
+            </span>
           )}
-          {extra > 0 && (
-            <span className="text-[9px] font-black ml-1" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>+{extra} more</span>
+          {tag && (
+            <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
+              style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {tag}
+            </span>
           )}
-          {participantCount === 0 && displayNames.length === 0 && (
-            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Be first to join</span>
+          {duration && (
+            <span className="text-[9px] font-black" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{duration}</span>
           )}
+          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full ml-auto" style={{ ...accessStyle, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {accessLabel}
+          </span>
         </div>
+
+        {/* Participant oct-tile row */}
+        {(displayNames.length > 0 || participantCount > 0) && (
+          <div className="flex items-center gap-1.5 px-3 pb-3 -mt-1">
+            {displayNames.map(function(name, i) { return <OctTile key={i} label={name} size={32} />; })}
+            {displayNames.length === 0 && <OctTile label="?" size={32} />}
+            {extra > 0 && <span className="text-[9px] font-black ml-0.5" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>+{extra}</span>}
+          </div>
+        )}
       </motion.div>
     </Link>
   );
