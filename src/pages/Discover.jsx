@@ -15,7 +15,6 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
-import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -163,44 +162,49 @@ export default function DiscoverPage() {
           </motion.div>
         )}
       </motion.div>
-      {/* Hero banner */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 60%, #0B0B18 100%)' }}>
-        {/* Grid overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
+      {/* Dark header */}
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #0d0618 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 opacity-[0.025]" style={{
           backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
           backgroundSize: '40px 40px',
         }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-          {/* Stats row */}
-          <div className="flex items-center gap-4 sm:gap-6 mb-6 overflow-x-auto scrollbar-hide pb-1">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+          {/* Title row */}
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl sm:text-4xl font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.02em' }}>
+              Discover
+            </h1>
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#FF1564] animate-pulse" />
-              <span className="text-3xl font-black text-white" style={{ fontFamily: 'monospace' }}>
-                {liveRooms.length}
+              <div className="w-2 h-2 rounded-full bg-[#FF1564] animate-pulse" />
+              <span className="text-sm font-bold text-white/70" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {liveRooms.length} <span style={{ color: '#FF1564' }}>LIVE</span>
               </span>
-              <span className="text-[#FF1564] text-sm font-bold uppercase tracking-wider">Live Now</span>
             </div>
-            <div className="w-px h-8 bg-white/10" />
+          </div>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-4 sm:gap-6 mb-5 overflow-x-auto scrollbar-hide pb-1">
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4 text-[#00F5FF]" />
-              <span className="text-3xl font-black text-white" style={{ fontFamily: 'monospace' }}>
+              <span className="text-2xl font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {totalViewers.toLocaleString()}
               </span>
-              <span className="text-[#00F5FF] text-sm font-bold uppercase tracking-wider">Viewers</span>
+              <span className="text-[#00F5FF] text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewers</span>
             </div>
-            <div className="w-px h-8 bg-white/10" />
+            <div className="w-px h-6 bg-white/10" />
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#FFB800]" />
-              <span className="text-3xl font-black text-white" style={{ fontFamily: 'monospace' }}>
+              <Users className="w-4 h-4" style={{ color: '#D4AF37' }} />
+              <span className="text-2xl font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {communities.length}
               </span>
-              <span className="text-[#FFB800] text-sm font-bold uppercase tracking-wider">Communities</span>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Communities</span>
             </div>
           </div>
 
           {/* Hero trending */}
           {trending.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {trending.map((room, i) => (
                 <TrendingCard key={room.id} room={room} rank={i + 1} />
               ))}
@@ -214,15 +218,13 @@ export default function DiscoverPage() {
               placeholder="Search streams, creators, topics…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#FF1564]/50 focus:bg-white/8 transition-all"
+              className="w-full rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-all"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(212,175,55,0.5)'; e.target.style.background = 'rgba(255,255,255,0.07)'; }}
+              onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
             />
           </div>
         </div>
-      </div>
-
-      {/* ZEGOCLOUD Mobile App Banner */}
-      <div className="max-w-7xl mx-auto px-6 pt-6">
-        <ZEGOMobileAppBanner />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
@@ -255,13 +257,14 @@ export default function DiscoverPage() {
 
         {/* Genre pills */}
         {(tab === 'live' || tab === 'scheduled') && (
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-6 px-6 pb-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-6 px-6 pb-1" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             {GENRES.map(g => (
               <button key={g} onClick={() => setGenre(g)}
-                className={`shrink-0 text-[10px] px-3 py-1.5 rounded-full border transition-all active:scale-95 whitespace-nowrap ${
-                  genre === g ? 'text-white' : 'border-white/10 text-white/40'
-                }`}
-                style={genre === g ? { background: 'rgba(204,119,85,0.2)', border: '1px solid rgba(204,119,85,0.4)', color: '#CC7755' } : {}}>
+                className="shrink-0 text-[11px] px-3.5 py-1.5 rounded-full transition-all active:scale-95 whitespace-nowrap font-bold"
+                style={genre === g
+                  ? { background: '#D4AF37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', border: '1px solid #D4AF37' }
+                  : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }
+                }>
                 {g}
               </button>
             ))}
@@ -279,7 +282,17 @@ export default function DiscoverPage() {
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
-                <EmptyState icon={Radio} title="No live streams" desc={search ? 'Try a different search' : 'Check back soon — creators are spinning up!'} />
+                {search ? (
+                  <EmptyState icon={Radio} title="No live rooms yet" desc="Try a different search" />
+                ) : (
+                  <div className="text-center py-20">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                      <Radio className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
+                    </div>
+                    <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>No live rooms yet</h3>
+                    <Link to={createPageUrl('BroadcastStudio')} className="text-sm font-bold transition-colors" style={{ color: '#D4AF37' }}>Be the first to go live →</Link>
+                  </div>
+                )}
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filtered.map((room, i) => (
@@ -438,11 +451,11 @@ function CreatorCard({ creator }) {
 function EmptyState({ icon: Icon, title, desc }) {
   return (
     <div className="text-center py-20">
-      <div className="w-16 h-16 rounded-2xl bg-[#0B0B18] border border-[#16162A] flex items-center justify-center mx-auto mb-4">
-        <Icon className="w-7 h-7 text-white/20" />
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <Icon className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
       </div>
-      <h3 className="text-lg font-bold text-white/60 mb-1">{title}</h3>
-      <p className="text-sm text-white/30">{desc}</p>
+      <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
+      <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>
     </div>
   );
 }
