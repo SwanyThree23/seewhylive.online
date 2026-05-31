@@ -1,654 +1,291 @@
+'use strict';
 import React, { useState, useEffect, useRef } from 'react';
-import AvatarPortrait from './AvatarPortrait.jsx';
+import UpgradeGate from './UpgradeGate.jsx';
 
-var CREATOR  = 0.90;
-var PLATFORM = 0.10;
+var BG     = '#0E0C09';
+var SURF   = '#1A1510';
+var CARD   = '#241C12';
+var CARD2  = '#2E2318';
+var BORDER = 'rgba(201,168,76,.12)';
+var GOLD   = '#C9A84C';
+var BURG   = '#800020';
+var AMBER  = '#D4854A';
+var RED    = '#FF1A3C';
+var TEXT   = '#F0E8D4';
+var MUTED  = '#8A7A62';
+var DIM    = '#3D3020';
 
-function fmtC(cents) { return '$' + (Math.floor(cents || 0) / 100).toFixed(2); }
+function fmtDollars(cents) {
+  return '$' + (Math.floor(cents || 0) / 100).toFixed(2);
+}
 
-export default function AnalyticsTab({ roomId, gifts, viewerCount, isLive }) {
-  var [metrics,   setMetrics]   = useState(null);
-  var [loading,   setLoading]   = useState(true);
-  var [refreshed, setRefreshed] = useState(null);
-  var [tab,       setTab]       = useState('overview');
-  var [viewerSpark, setViewerSpark] = useState(function() {
-    var base = viewerCount || 200;
-    var arr = [];
-    for (var i = 0; i < 24; i++) { arr.push(Math.max(0, base - Math.floor(Math.random() * 100) + i * 8)); }
-    return arr;
+function pad2(n) {
+  return n < 10 ? '0' + n : String(n);
+}
+
+// ── SVG Sparkline ────────────────────────────────────────────────────────────
+function Sparkline({ data }) {
+  var W = 400;
+  var H = 80;
+  if (!data || data.length < 2) {
+    return (
+      <svg width="100%" viewBox={'0 0 ' + W + ' ' + H} preserveAspectRatio="none" style={{ display: 'block' }}>
+        <line x1="0" y1={H / 2} x2={W} y2={H / 2} stroke={GOLD} strokeWidth="2" opacity="0.3" />
+      </svg>
+    );
+  }
+  var maxVal = Math.max.apply(null, data.concat([1]));
+  var pts = data.map(function(v, i) {
+    var x = Math.floor((i / (data.length - 1)) * W);
+    var y = Math.floor(H - (v / maxVal) * (H - 8) - 4);
+    return x + ',' + y;
   });
-  var sparkRef = useRef(null);
+  var polyPts = pts.join(' ');
+  // Fill area under line
+  var fillPts = '0,' + H + ' ' + polyPts + ' ' + W + ',' + H;
+  return (
+    <svg width="100%" viewBox={'0 0 ' + W + ' ' + H} preserveAspectRatio="none" style={{ display: 'block' }}>
+      <defs>
+        <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={GOLD} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={GOLD} stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      <polygon points={fillPts} fill="url(#sparkFill)" />
+      <polyline points={polyPts} fill="none" stroke={GOLD} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {(function() {
+        var last = pts[pts.length - 1].split(',');
+        return <circle cx={last[0]} cy={last[1]} r="4" fill={GOLD} />;
+      })()}
+    </svg>
+  );
+}
 
-  var [goalCents, setGoalCents] = useState(function() {
-    try { var g = localStorage.getItem('sw_revenue_goal'); if (g) return parseInt(g, 10); } catch(e) {}
-    return 5000;
-  });
-  var [goalEdit, setGoalEdit]  = useState(false);
-  var [goalDraft, setGoalDraft] = useState('');
+// ── Mini bar chart for chat buckets ──────────────────────────────────────────
+function ChatBucketBars({ buckets }) {
+  var maxV = Math.max.apply(null, (buckets || []).concat([1]));
+  return (
+    <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', height: 40 }}>
+      {(buckets || []).map(function(v, i) {
+        var h = Math.max(3, Math.floor((v / maxV) * 36));
+        var isLast = i === (buckets.length - 1);
+        return (
+          <div key={i} style={{
+            flex: 1,
+            height: h,
+            background: isLast ? GOLD : (v > 0 ? 'rgba(201,168,76,.45)' : DIM),
+            borderRadius: '2px 2px 0 0',
+            transition: 'height .35s ease',
+          }} />
+        );
+      })}
+    </div>
+  );
+}
 
-  var [liveViewerCount, setLiveViewerCount] = useState(viewerCount || 0);
-  var [peakViewers, setPeakViewers] = useState(viewerCount || 0);
-  var liveViewerRef = useRef(null);
+// ── Stat card ─────────────────────────────────────────────────────────────────
+function StatCard({ label, value, sub, color }) {
+  return (
+    <div style={{
+      background: CARD,
+      border: '1px solid ' + BORDER,
+      borderRadius: 10,
+      padding: '10px 12px',
+    }}>
+      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1.5, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: color || GOLD, lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: DIM, marginTop: 3 }}>{sub}</div>}
+    </div>
+  );
+}
 
-  var [liveGiftCount,  setLiveGiftCount]  = useState(0);
-  var liveGiftRef = useRef(null);
-  var [loyaltyPoints,  setLoyaltyPoints]  = useState(1247);
-  var [watchStreakDays, setWatchStreakDays] = useState(7);
-  var [watchMinutes,   setWatchMinutes]   = useState(0);
-  var [pointsLog,      setPointsLog]      = useState([
-    { reason: 'Watched 30 min',     pts: 30,  ts: Date.now() - 3600000 },
-    { reason: 'Sent a gift',        pts: 50,  ts: Date.now() - 2400000 },
-    { reason: 'Day 7 streak bonus', pts: 100, ts: Date.now() - 1800000 },
-    { reason: 'Chat engagement',    pts: 10,  ts: Date.now() - 900000  },
-    { reason: 'Watched 30 min',     pts: 30,  ts: Date.now() - 600000  },
-  ]);
+export default function AnalyticsTab({ socket, roomId, role, isLive, addToast }) {
+  var [viewerHistory, setViewerHistory] = useState([]);
+  var [viewers, setViewers] = useState(0);
+  var [peak, setPeak] = useState(0);
+  var [msgRate, setMsgRate] = useState(0);
+  var [earnings, setEarnings] = useState(0);
+  var [chatBuckets, setChatBuckets] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  var [streamSecs, setStreamSecs] = useState(0);
+  var pingRef = useRef(null);
+  var timerRef = useRef(null);
+  var liveStartRef = useRef(null);
 
-  var [topSupporters, setTopSupporters] = useState([
-    { userId: 'u1', username: 'DominoKing_84',   totalCents: 15000, count: 8  },
-    { userId: 'u2', username: 'viewer_4821',      totalCents: 8500,  count: 3  },
-    { userId: 'u3', username: 'fan_0391',         totalCents: 5000,  count: 12 },
-    { userId: 'u4', username: 'chat_2247',        totalCents: 2500,  count: 1  },
-    { userId: 'u5', username: 'supporter_102',    totalCents: 1000,  count: 4  },
-  ]);
-
-  var [earningsHistory, setEarningsHistory] = useState(function() {
-    var days = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
-    var result = [];
-    var i;
-    for (i = 0; i < 7; i++) {
-      result.push({ day: days[i], cents: Math.floor(Math.random() * 4000) + 200 });
-    }
-    return result;
-  });
-
-  var [byType, setByType] = useState({ tip: 0, subscription: 0, paywall: 0, gift: 0 });
-
+  // Start stream timer when isLive flips true
   useEffect(function() {
-    fetch('/api/creator/analytics?period=month')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (!data) return;
-        if (data.topSupporters && data.topSupporters.length > 0) {
-          setTopSupporters(data.topSupporters);
-        }
-        if (data.byType) {
-          setByType(data.byType);
-        }
-        if (data.recentEarnings && data.recentEarnings.length > 0) {
-          var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-          var today = new Date();
-          var bucketsMap = {};
-          var di;
-          for (di = 6; di >= 0; di--) {
-            var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - di);
-            var key = d.toISOString().slice(0, 10);
-            bucketsMap[key] = { day: days[d.getDay()], cents: 0 };
-          }
-          data.recentEarnings.forEach(function(e) {
-            var raw = e.created_at || '';
-            var key2 = typeof raw === 'string' ? raw.slice(0, 10) : new Date(raw).toISOString().slice(0, 10);
-            if (bucketsMap[key2]) {
-              bucketsMap[key2].cents += Math.floor(e.amount_cents || 0);
-            }
-          });
-          var hist = [];
-          for (var k in bucketsMap) {
-            if (Object.prototype.hasOwnProperty.call(bucketsMap, k)) {
-              hist.push(bucketsMap[k]);
-            }
-          }
-          if (hist.length > 0) setEarningsHistory(hist);
-        }
-      })
-      .catch(function() {});
-  }, []);
-
-  useEffect(function() {
-    sparkRef.current = setInterval(function() {
-      setViewerSpark(function(prev) {
-        var next = prev.slice(1);
-        var last = prev[prev.length - 1] || 0;
-        var drift = Math.floor(Math.random() * 40) - 15;
-        next.push(Math.max(0, last + drift));
-        return next;
-      });
-    }, 5000);
-    return function() { clearInterval(sparkRef.current); };
-  }, []);
-
-  useEffect(function() {
-    if (liveViewerRef.current) {
-      clearInterval(liveViewerRef.current);
-      liveViewerRef.current = null;
+    if (isLive) {
+      if (!liveStartRef.current) liveStartRef.current = Date.now();
+      timerRef.current = setInterval(function() {
+        setStreamSecs(Math.floor((Date.now() - liveStartRef.current) / 1000));
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+      liveStartRef.current = null;
+      setStreamSecs(0);
     }
-    if (liveGiftRef.current) {
-      clearInterval(liveGiftRef.current);
-      liveGiftRef.current = null;
-    }
-    if (!isLive) { return; }
-
-    liveViewerRef.current = setInterval(function() {
-      setLiveViewerCount(function(prev) {
-        var drift = Math.floor(Math.random() * 30) - 10;
-        var next = Math.max(0, prev + drift);
-        setPeakViewers(function(peak) { return next > peak ? next : peak; });
-        return next;
-      });
-    }, 6000);
-
-    liveGiftRef.current = setInterval(function() {
-      setLiveGiftCount(function(prev) {
-        return prev + Math.floor(Math.random() * 3) + 1;
-      });
-    }, 12000);
-
     return function() {
-      if (liveViewerRef.current) { clearInterval(liveViewerRef.current); liveViewerRef.current = null; }
-      if (liveGiftRef.current) { clearInterval(liveGiftRef.current); liveGiftRef.current = null; }
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [isLive]);
 
+  // Socket listener for analytics-update
   useEffect(function() {
-    if (!isLive) return;
-    var t = setInterval(function() {
-      setWatchMinutes(function(m) {
-        var next = m + 1;
-        if (Math.floor(next % 30) === 0) {
-          setLoyaltyPoints(function(p) { return p + 30; });
-          setPointsLog(function(prev) {
-            return [{ reason: 'Watched 30 min', pts: 30, ts: Date.now() }].concat(prev.slice(0, 9));
-          });
-        } else {
-          setLoyaltyPoints(function(p) { return p + 1; });
-        }
-        return next;
-      });
-    }, 60000);
-    return function() { clearInterval(t); };
-  }, [isLive]);
+    if (!socket) return;
+    function onUpdate(data) {
+      if (!data) return;
+      if (typeof data.viewers === 'number') setViewers(data.viewers);
+      if (typeof data.peak    === 'number') setPeak(data.peak);
+      if (typeof data.msgRate === 'number') setMsgRate(data.msgRate);
+      if (typeof data.earnings === 'number') setEarnings(data.earnings);
+      if (Array.isArray(data.chatBuckets))  setChatBuckets(data.chatBuckets);
+      if (Array.isArray(data.viewerHistory)) setViewerHistory(data.viewerHistory);
+    }
+    socket.on('analytics-update', onUpdate);
+    return function() { socket.off('analytics-update', onUpdate); };
+  }, [socket]);
 
-  function getTierFromPoints(pts) {
-    if (pts >= 5000) return { name: 'Diamond', color: '#00FFFF', icon: '💎', next: null,     nextAt: null };
-    if (pts >= 2000) return { name: 'Gold',    color: '#C9A84C', icon: '👑', next: 'Diamond', nextAt: 5000 };
-    if (pts >= 800)  return { name: 'Silver',  color: '#C0C0C0', icon: '🥈', next: 'Gold',    nextAt: 2000 };
-    return                  { name: 'Bronze',  color: '#cd7f32', icon: '🥉', next: 'Silver',  nextAt: 800  };
-  }
+  // Ping every 10s
+  useEffect(function() {
+    if (!socket || !roomId) return;
+    function ping() {
+      socket.emit('analytics-ping', { roomId: roomId });
+    }
+    ping(); // immediate first ping
+    pingRef.current = setInterval(ping, 10000);
+    return function() {
+      if (pingRef.current) clearInterval(pingRef.current);
+    };
+  }, [socket, roomId]);
 
-  function fmtAgo(ts) {
-    var d = Math.floor((Date.now() - ts) / 1000);
-    if (d < 60) return d + 's ago';
-    if (d < 3600) return Math.floor(d / 60) + 'm ago';
-    return Math.floor(d / 3600) + 'h ago';
-  }
+  var h = Math.floor(streamSecs / 3600);
+  var m = Math.floor((streamSecs % 3600) / 60);
+  var s = streamSecs % 60;
+  var streamTime = pad2(h) + ':' + pad2(m) + ':' + pad2(s);
 
-  function load() {
-    setLoading(true);
-    fetch('/api/metrics?roomId=' + roomId)
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        setMetrics(data);
-        setLoading(false);
-        setRefreshed(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-      })
-      .catch(function() { setLoading(false); });
-  }
+  var revenuePerViewer = (peak > 0)
+    ? fmtDollars(Math.floor(earnings / peak))
+    : '$0.00';
 
-  useEffect(function() { load(); }, [roomId]);
-
-  var giftList = gifts || [];
-  var totalGiftCents   = giftList.reduce(function(s, g) { return s + (g.value_cents || g.valueCents || 0); }, 0);
-  var creatorCents     = Math.floor(totalGiftCents * CREATOR);
-  var platformCents    = Math.floor(totalGiftCents * PLATFORM);
-
-  // Build 12-bucket chart (5 min each = last hour)
-  var buckets = [];
-  var now = Date.now();
-  var BUCKET_MS = 5 * 60 * 1000;
-  for (var bi = 0; bi < 12; bi++) {
-    var bStart = now - (12 - bi) * BUCKET_MS;
-    var bEnd   = bStart + BUCKET_MS;
-    var cnt = giftList.filter(function(g) {
-      var ts = g.ts || g.timestamp || 0;
-      return ts >= bStart && ts < bEnd;
-    }).length;
-    buckets.push(cnt);
-  }
-  var maxBucket = Math.max.apply(null, buckets.concat([1]));
-
-  var displayViewers = isLive ? liveViewerCount : (viewerCount || 0);
-
-  var kpis = [
-    ['LIVE VIEWERS',  String(displayViewers),                           'Real-time',                               '#C8FF00'],
-    ['GIFTS',         String(giftList.length),                          'This session',                            '#C9A84C'],
-    ['GIFT REVENUE',  fmtC(totalGiftCents),                             'Total sent',                              '#00C9A7'],
-    ['CREATOR EARN',  fmtC(creatorCents),                               '90% of gifts',                            '#FF8C5A'],
-    ['PEAK VIEWERS',  isLive ? String(peakViewers) : (metrics && metrics.peakViewers ? String(metrics.peakViewers) : '—'), 'Session peak', '#5A8FFF'],
-    ['CHAT MSGS',     metrics && metrics.totalMessages ? String(metrics.totalMessages) : '—', 'This session',     '#C084FC'],
-  ];
-
-  var TABS = [['overview', '📊 OVERVIEW'], ['gifts', '🎁 GIFTS'], ['revenue', '💰 REVENUE'], ['loyalty', '⭐ LOYALTY']];
-
-  var TYPE_CHIPS = [
-    { key: 'tip',          label: 'TIPS',    color: '#00C9A7' },
-    { key: 'subscription', label: 'SUBS',    color: '#C9A84C' },
-    { key: 'paywall',      label: 'PAYWALL', color: '#8B5CF6' },
-    { key: 'gift',         label: 'GIFTS',   color: '#FF1564' },
-  ];
-
-  return (
-    <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
-
+  var inner = (
+    <div style={{
+      padding: 12,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 12,
+      maxWidth: 480,
+    }}>
       {/* Header */}
-      <div style={{ background: 'rgba(200,255,0,.05)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C8FF00', letterSpacing: 3 }}>📊 SESSION ANALYTICS</div>
-            {isLive && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,30,30,.18)', border: '1px solid rgba(255,30,30,.4)', borderRadius: 999, padding: '2px 8px' }}>
-                <span style={{ fontSize: 8, color: '#FF3030' }}>●</span>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#FF3030', letterSpacing: 2 }}>LIVE</span>
-              </div>
-            )}
-          </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>
-            Live metrics · {refreshed ? 'Last: ' + refreshed : 'Loading...'}
+      <div style={{
+        background: 'rgba(201,168,76,.06)',
+        border: '1px solid rgba(201,168,76,.25)',
+        borderRadius: 12,
+        padding: '10px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: GOLD, letterSpacing: 3 }}>📊 CREATOR ANALYTICS</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
+            {isLive ? 'LIVE · updates every 10s' : 'Stream offline'}
           </div>
         </div>
-        <button onClick={load} disabled={loading}
-          style={{ background: loading ? 'transparent' : 'rgba(200,255,0,.1)', border: '1px solid rgba(200,255,0,.3)', borderRadius: 7, padding: '6px 12px', color: '#C8FF00', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1, letterSpacing: 1 }}>
-          {loading ? '...' : '↻ REFRESH'}
-        </button>
+        {isLive && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            background: 'rgba(255,26,60,.15)',
+            border: '1px solid rgba(255,26,60,.4)',
+            borderRadius: 999, padding: '3px 10px',
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED }} />
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, letterSpacing: 1 }}>LIVE</span>
+          </div>
+        )}
       </div>
 
-      {/* Live stat chips */}
-      {isLive && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <div style={{ background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.35)', borderRadius: 999, padding: '4px 12px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#5A8FFF', letterSpacing: 1 }}>
-            PEAK: {peakViewers}
-          </div>
-          <div style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 999, padding: '4px 12px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#C9A84C', letterSpacing: 1 }}>
-            GIFTS RECV: {liveGiftCount}
-          </div>
+      {/* Sparkline */}
+      <div style={{
+        background: CARD,
+        border: '1px solid ' + BORDER,
+        borderRadius: 12,
+        padding: '10px 12px',
+        overflow: 'hidden',
+      }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>
+          VIEWER TREND
         </div>
-      )}
-
-      {/* Sub-tabs */}
-      <div style={{ display: 'flex', gap: 4, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3 }}>
-        {TABS.map(function(t) {
-          var active = tab === t[0];
-          return (
-            <button key={t[0]} onClick={function() { setTab(t[0]); }}
-              style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(200,255,0,.1)' : 'transparent', border: 'none', borderRadius: 6, color: active ? '#C8FF00' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
-              {t[1]}
-            </button>
-          );
-        })}
+        <Sparkline data={viewerHistory.length > 0 ? viewerHistory : [0]} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: DIM }}>older</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>last 20 pings</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: DIM }}>now</span>
+        </div>
       </div>
 
-      {/* ── OVERVIEW ── */}
-      {tab === 'overview' && (
-        <>
-          {/* KPI grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-            {kpis.map(function(k) {
-              return (
-                <div key={k[0]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1.5, marginBottom: 4 }}>{k[0]}</div>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: k[3], lineHeight: 1 }}>{k[1]}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', marginTop: 3 }}>{k[2]}</div>
-                </div>
-              );
-            })}
-          </div>
+      {/* Stats grid (2x3) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <StatCard label="LIVE NOW"         value={viewers}          sub="current viewers"       color={RED}   />
+        <StatCard label="PEAK VIEWERS"     value={peak}             sub="session maximum"        color={AMBER} />
+        <StatCard label="SESSION EARNINGS" value={fmtDollars(earnings)} sub="superchat + gifts" color={GOLD}  />
+        <StatCard label="REVENUE/VIEWER"   value={revenuePerViewer} sub="earnings ÷ peak"        color={GOLD}  />
+        <StatCard label="CHAT MSGS/MIN"    value={msgRate}          sub="last 2 min avg"         color={MUTED} />
+        <StatCard label="STREAM TIME"      value={streamTime}       sub={isLive ? 'running' : 'not live'} color={TEXT} />
+      </div>
 
-          {/* Payment type breakdown chips */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {TYPE_CHIPS.map(function(chip) {
-              return (
-                <div key={chip.key} style={{ background: chip.color + '12', border: '1px solid ' + chip.color + '33', borderRadius: 999, padding: '4px 10px', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: chip.color }}>{chip.label}</span>
-                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#EDE8F5' }}>{'$' + (Math.floor(byType[chip.key] || 0) / 100).toFixed(2)}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Live viewer sparkline */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid rgba(200,255,0,.15)', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C8FF00', letterSpacing: 2 }}>LIVE VIEWERS</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C8FF00', boxShadow: '0 0 4px #C8FF00' }} />
-                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C8FF00', lineHeight: 1 }}>
-                  {isLive ? liveViewerCount.toLocaleString() : (viewerSpark.length > 0 ? viewerSpark[viewerSpark.length - 1].toLocaleString() : (viewerCount || 0).toLocaleString())}
-                </span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 36, position: 'relative' }}>
-              {viewerSpark.map(function(v, i) {
-                var peak = Math.max.apply(null, viewerSpark.concat([1]));
-                var h = Math.max(3, Math.floor((v / peak) * 100));
-                var isLatest = i === viewerSpark.length - 1;
-                return (
-                  <div key={i} style={{ flex: 1, height: h + '%', background: isLatest ? '#C8FF00' : 'rgba(200,255,0,' + (0.15 + i * 0.025) + ')', borderRadius: '2px 2px 0 0', minHeight: 3, transition: 'height .5s ease' }} />
-                );
-              })}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3450' }}>2m ago</span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>updates every 5s</span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3450' }}>now</span>
-            </div>
-          </div>
-
-          {/* Gift activity sparkline */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 10 }}>GIFT ACTIVITY — LAST 60 MIN</div>
-            <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 44 }}>
-              {buckets.map(function(v, i) {
-                var barH = maxBucket > 0 ? Math.max(3, Math.floor((v / maxBucket) * 40)) : 3;
-                return (
-                  <div key={i} style={{ flex: 1, height: barH, background: v > 0 ? 'linear-gradient(180deg,#C9A84C,rgba(201,168,76,.5))' : '#241C34', borderRadius: 2, transition: 'height .3s ease' }} />
-                );
-              })}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3450' }}>60m ago</span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>{giftList.length} total</span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3450' }}>now</span>
-            </div>
-          </div>
-
-          {/* Revenue split bar */}
-          {totalGiftCents > 0 && (
-            <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>REVENUE SPLIT</div>
-              <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', marginBottom: 7 }}>
-                <div style={{ width: Math.floor(CREATOR * 100) + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)' }} />
-                <div style={{ flex: 1, background: '#241C34' }} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', lineHeight: 1 }}>{fmtC(creatorCents)}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>CREATOR 90%</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#7A6F90', lineHeight: 1 }}>{fmtC(platformCents)}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>PLATFORM 10%</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Revenue goal */}
-          {(function() {
-            var goalProg = goalCents > 0 ? Math.min(100, Math.floor((creatorCents / goalCents) * 100)) : 0;
-            var goalMet  = creatorCents >= goalCents && goalCents > 0;
-            return (
-              <div style={{ background: goalMet ? 'rgba(0,201,106,.06)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (goalMet ? 'rgba(0,201,106,.35)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: goalMet ? '#00C96A' : '#7A6F90', letterSpacing: 2 }}>
-                    {goalMet ? '🏆 GOAL REACHED!' : '🎯 REVENUE GOAL'}
-                  </div>
-                  {!goalEdit ? (
-                    <button onClick={function() { setGoalDraft(String(Math.floor(goalCents / 100))); setGoalEdit(true); }}
-                      style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 8px', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
-                      EDIT
-                    </button>
-                  ) : (
-                    <div style={{ display: 'flex', gap: 5 }}>
-                      <input value={goalDraft} onChange={function(e) { setGoalDraft(e.target.value); }}
-                        style={{ width: 64, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 5, padding: '2px 6px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9 }} />
-                      <button onClick={function() {
-                        var v = Math.floor(parseFloat(goalDraft) * 100) || 500;
-                        setGoalCents(v);
-                        try { localStorage.setItem('sw_revenue_goal', String(v)); } catch(e2) {}
-                        setGoalEdit(false);
-                      }} style={{ background: 'rgba(0,201,106,.15)', border: '1px solid rgba(0,201,106,.35)', borderRadius: 5, padding: '2px 8px', color: '#00C96A', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
-                        ✓
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#00C9A7', lineHeight: 1 }}>{fmtC(creatorCents)}</span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>goal: {fmtC(goalCents)}</span>
-                </div>
-                <div style={{ height: 8, borderRadius: 4, background: '#241C34', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: goalProg + '%', background: goalMet ? 'linear-gradient(90deg,#00C96A,#00DEC0)' : 'linear-gradient(90deg,#800020,#00C9A7)', borderRadius: 4, transition: 'width .6s ease' }} />
-                </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 4, textAlign: 'right' }}>{goalProg}%</div>
-              </div>
-            );
-          })()}
-
-          {/* Earnings trend bar chart */}
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>📈 EARNINGS TREND (7 DAYS)</div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 60, marginTop: 8, marginBottom: 4 }}>
-              {(function() {
-                var maxCents = 0;
-                earningsHistory.forEach(function(d) { if (d.cents > maxCents) maxCents = d.cents; });
-                return earningsHistory.map(function(d, idx) {
-                  var barH = Math.floor((d.cents / (maxCents || 1)) * 56) + 4;
-                  return (
-                    <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
-                        <div style={{ flex: 1, background: 'rgba(201,168,76,.55)', borderRadius: '3px 3px 0 0', height: barH + 'px' }} />
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {earningsHistory.map(function(d, idx) {
-                return (
-                  <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', textAlign: 'center' }}>{d.day}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', textAlign: 'center' }}>{'$' + (Math.floor(d.cents) / 100).toFixed(0)}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Top supporters */}
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#C9A84C', letterSpacing: 3, marginBottom: 8 }}>🏆 TOP SUPPORTERS</div>
-            {topSupporters.slice(0, 5).map(function(s, idx) {
-              var rankBadge = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1);
-              var topCents = topSupporters[0] ? topSupporters[0].totalCents : 1;
-              var barW = Math.max(4, Math.floor((s.totalCents / topCents) * 60));
-              return (
-                <div key={s.userId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,.05)' }}>
-                  <div style={{ flexShrink: 0 }}>
-                    <AvatarPortrait username={s.username} size={32} rank={idx < 3 ? idx + 1 : undefined} />
-                  </div>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', flex: 1 }}>{s.username}</div>
-                  <div style={{ width: barW + 'px', height: 4, background: '#C9A84C', borderRadius: 2, marginRight: 8 }} />
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', lineHeight: 1 }}>{'$' + (Math.floor(s.totalCents) / 100).toFixed(2)}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{s.count + ' tips'}</div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Engagement metrics from API */}
-          {metrics && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
-              {[
-                [metrics.totalRevenueCents !== undefined ? fmtC(metrics.totalRevenueCents) : '—', 'ALL REVENUE', '#00C9A7'],
-                [metrics.avgWatchSeconds   !== undefined ? Math.floor(metrics.avgWatchSeconds / 60) + 'm' : '—', 'AVG WATCH', '#5A8FFF'],
-                [metrics.chatEngagement    !== undefined ? metrics.chatEngagement + '%' : '—', 'ENG SCORE', '#C8FF00'],
-              ].map(function(row) {
-                return (
-                  <div key={row[1]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', letterSpacing: 1, marginBottom: 3 }}>{row[1]}</div>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: row[2], lineHeight: 1 }}>{row[0]}</div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* ── GIFTS ── */}
-      {tab === 'gifts' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {giftList.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 28, fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>No gifts this session yet</div>
-          ) : (
-            giftList.slice().reverse().slice(0, 30).map(function(g, i) {
-              return (
-                <div key={i} style={{ background: 'rgba(22,16,32,.6)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>{g.emoji || '🎁'}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {g.from_user || g.from || 'Anonymous'}
-                    </div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{g.name || 'Gift'}</div>
-                  </div>
-                  {g.value_cents ? (
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#00C9A7', lineHeight: 1 }}>{fmtC(g.value_cents)}</div>
-                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>cr: {fmtC(Math.floor(g.value_cents * CREATOR))}</div>
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })
-          )}
+      {/* Chat activity bars */}
+      <div style={{
+        background: CARD,
+        border: '1px solid ' + BORDER,
+        borderRadius: 12,
+        padding: '10px 12px',
+      }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 2, marginBottom: 8 }}>
+          CHAT ACTIVITY — LAST 10 MIN
         </div>
-      )}
+        <ChatBucketBars buckets={chatBuckets} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: DIM }}>10m ago</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: DIM }}>now</span>
+        </div>
+      </div>
 
-      {/* ── REVENUE ── */}
-      {tab === 'revenue' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {/* Summary cards */}
-          {[
-            ['TOTAL GIFTS',     fmtC(totalGiftCents),   'All gift transactions',          '#C9A84C'],
-            ['CREATOR EARNED',  fmtC(creatorCents),     '90% of all gifts',               '#00C9A7'],
-            ['PLATFORM FEE',    fmtC(platformCents),    '10% of all gifts',               '#7A6F90'],
-          ].map(function(row) {
-            return (
-              <div key={row[0]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 9, padding: '12px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 1, marginBottom: 3 }}>{row[0]}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>{row[2]}</div>
-                </div>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: row[3], lineHeight: 1 }}>{row[1]}</div>
+      {/* Revenue split reminder */}
+      {earnings > 0 && (
+        <div style={{
+          background: CARD,
+          border: '1px solid ' + BORDER,
+          borderRadius: 12,
+          padding: '10px 14px',
+        }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 2, marginBottom: 8 }}>
+            REVENUE SPLIT
+          </div>
+          <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', marginBottom: 8 }}>
+            <div style={{ width: '90%', background: 'linear-gradient(90deg,' + BURG + ',' + GOLD + ')' }} />
+            <div style={{ flex: 1, background: DIM }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, lineHeight: 1 }}>
+                {fmtDollars(Math.floor(earnings * 0.9))}
               </div>
-            );
-          })}
-
-          {/* 90/10 visual */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 10 }}>REVENUE SPLIT VISUALIZATION</div>
-            <div style={{ display: 'flex', height: 32, borderRadius: 6, overflow: 'hidden', gap: 2 }}>
-              <div style={{ width: Math.floor(CREATOR * 100) + '%', background: 'linear-gradient(90deg,rgba(128,0,32,.8),rgba(201,168,76,.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#07050A', letterSpacing: 2 }}>CREATOR 90%</span>
-              </div>
-              <div style={{ flex: 1, background: '#241C34', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}>10%</span>
-              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD }}>YOU (90%)</div>
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', textAlign: 'center', marginTop: 6 }}>
-              IMMUTABLE — All platform transactions enforce this split
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: MUTED, lineHeight: 1 }}>
+                {fmtDollars(Math.floor(earnings * 0.1))}
+              </div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>PLATFORM (10%)</div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* ── LOYALTY ── */}
-      {tab === 'loyalty' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {(function() {
-            var tier = getTierFromPoints(loyaltyPoints);
-            var nextPts = tier.nextAt ? (tier.nextAt - loyaltyPoints) : 0;
-            var prog = tier.nextAt ? Math.floor(((loyaltyPoints - (tier.nextAt === 2000 ? 800 : tier.nextAt === 5000 ? 2000 : 0)) / (tier.nextAt - (tier.nextAt === 2000 ? 800 : tier.nextAt === 5000 ? 2000 : 0))) * 100) : 100;
-            return (
-              <>
-                {/* Tier card */}
-                <div style={{ background: 'rgba(22,16,32,.8)', border: '2px solid ' + tier.color + '44', borderRadius: 12, padding: '14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: 12, background: tier.color + '18', border: '2px solid ' + tier.color + '55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>{tier.icon}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: tier.color, lineHeight: 1, letterSpacing: 2 }}>{loyaltyPoints.toLocaleString()} PTS</div>
-                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: tier.color, letterSpacing: 1 }}>{tier.name} TIER</div>
-                      {watchStreakDays >= 3 && (
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B35', marginTop: 2 }}>🔥 {watchStreakDays}-day watch streak</div>
-                      )}
-                    </div>
-                  </div>
-                  {tier.next && (
-                    <div style={{ marginTop: 12 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>→ {tier.next}</span>
-                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: tier.color }}>{nextPts} pts needed</span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 3, background: '#241C34', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: Math.min(100, prog) + '%', background: 'linear-gradient(90deg,' + tier.color + '88,' + tier.color + ')', borderRadius: 3, transition: 'width .5s ease' }} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* How to earn */}
-                <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>HOW TO EARN</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-                    {[
-                      ['👁', 'Watch Time', '+1 pt/min'],
-                      ['🎁', 'Send Gift',  '+50 pts'],
-                      ['💬', 'Chat',       '+5 pts/msg'],
-                      ['📅', 'Daily Streak','+100 pts'],
-                      ['⭐', 'Subscribe',  '+500 pts'],
-                      ['🏆', 'Top Gifter', '+200 pts'],
-                    ].map(function(row) {
-                      return (
-                        <div key={row[1]} style={{ background: 'rgba(7,5,10,.6)', border: '1px solid #241C34', borderRadius: 7, padding: '7px 9px', display: 'flex', gap: 6, alignItems: 'center' }}>
-                          <span style={{ fontSize: 14, flexShrink: 0 }}>{row[0]}</span>
-                          <div>
-                            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#EDE8F5', fontWeight: 700 }}>{row[1]}</div>
-                            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C' }}>{row[2]}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Points history */}
-                <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>POINTS HISTORY</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {pointsLog.slice(0, 5).map(function(entry, i) {
-                      return (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0', borderBottom: i < pointsLog.slice(0,5).length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none' }}>
-                          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#A89CC8', flex: 1 }}>{entry.reason}</span>
-                          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', lineHeight: 1 }}>+{entry.pts}</span>
-                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', minWidth: 48, textAlign: 'right' }}>{fmtAgo(entry.ts)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Watch session */}
-                {isLive && (
-                  <div style={{ background: 'rgba(0,201,167,.05)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C9A7', boxShadow: '0 0 6px #00C9A7', flexShrink: 0 }} />
-                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#00C9A7', fontWeight: 700 }}>EARNING NOW</span>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{watchMinutes} min this session · +1 pt/min</span>
-                  </div>
-                )}
-              </>
-            );
-          })()}
         </div>
       )}
     </div>
+  );
+
+  return (
+    <UpgradeGate feature="analytics">
+      {inner}
+    </UpgradeGate>
   );
 }
