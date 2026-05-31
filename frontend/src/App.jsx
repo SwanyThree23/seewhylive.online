@@ -1001,6 +1001,11 @@ export default function App() {
             isLive={isLive}
             viewerCount={viewerCount}
             addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            sessionEarningsCents={sessionEarningsCents}
+            username={username}
+            role={role}
           />
         )}
         {activeTab === 'avatar' && (
