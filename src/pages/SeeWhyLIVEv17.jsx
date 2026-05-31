@@ -1790,6 +1790,7 @@ export default function SeeWhyLIVEv17() {
     var style = document.createElement("style");
     style.textContent = CSS;
     document.head.appendChild(style);
+    return function(){ document.head.removeChild(style); };
   }, []);
 
   if (!entered) {

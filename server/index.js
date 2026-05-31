@@ -147,7 +147,8 @@ app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/socket.io')
 }));
 app.use(express.json());
 app.use(xssClean());

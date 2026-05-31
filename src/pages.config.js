@@ -1,125 +1,85 @@
 /**
  * pages.config.js - Page routing configuration
- * 
- * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
- * Pages are auto-registered when you create files in the ./pages/ folder.
- * 
- * THE ONLY EDITABLE VALUE: mainPage
- * This controls which page is the landing page (shown when users visit the app).
- * 
- * Example file structure:
- * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
- *   
- *   export const PAGES = {
- *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
- *   }
- *   
- *   export const pagesConfig = {
- *       mainPage: "HomePage",
- *       Pages: PAGES,
- *   };
- * 
- * Example with Layout (wraps all pages):
  *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
+ * Pages use React.lazy() for code splitting — each page is a separate JS chunk
+ * loaded on demand. The Layout is eagerly imported since it renders on every route.
  *
- *   export const PAGES = {
- *       "Home": Home,
- *       "Settings": Settings,
- *   }
- *
- *   export const pagesConfig = {
- *       mainPage: "Home",
- *       Pages: PAGES,
- *       Layout: __Layout,
- *   };
- *
- * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
- *
- * The mainPage value must match a key in the PAGES object exactly.
+ * THE ONLY EDITABLE VALUE: mainPage (controls the landing page)
  */
-import AIModeration from './pages/AIModeration';
-import Activity from './pages/Activity';
-import AdvancedAnalytics from './pages/AdvancedAnalytics';
-import Analytics from './pages/Analytics';
-import Communities from './pages/Communities';
-import Community from './pages/Community';
-import CommunityAdmin from './pages/CommunityAdmin';
-import CommunityGrowth from './pages/CommunityGrowth';
-import CommunitySettings from './pages/CommunitySettings';
-import ContentCalendar from './pages/ContentCalendar';
-import CreateCommunity from './pages/CreateCommunity';
-import CreateRoom from './pages/CreateRoom';
-import CreatorChannel from './pages/CreatorChannel';
-import CreatorDashboard from './pages/CreatorDashboard';
-import CreatorSubscriptions from './pages/CreatorSubscriptions';
-import Discover from './pages/Discover';
-import Home from './pages/Home';
-import HybridStreamRoom from './pages/HybridStreamRoom';
-import LiveRoom from './pages/LiveRoom';
-import LoyaltyProgram from './pages/LoyaltyProgram';
-import ModerationDashboard from './pages/ModerationDashboard';
-import Monetization from './pages/Monetization';
-import MonetizationWidgets from './pages/MonetizationWidgets';
-import MultiStreamManager from './pages/MultiStreamManager';
-import Newsletter from './pages/Newsletter';
-import Notifications from './pages/Notifications';
-import OverlayEditor from './pages/OverlayEditor';
-import PayPerViewEvents from './pages/PayPerViewEvents';
-import Profile from './pages/Profile';
-import Room from './pages/Room';
-import Search from './pages/Search';
-import Settings from './pages/Settings';
-import StreamAnalytics from './pages/StreamAnalytics';
-import StreamScheduler from './pages/StreamScheduler';
-import ViewerDashboard from './pages/ViewerDashboard';
-import Welcome from './pages/Welcome';
-import DataExport from './pages/DataExport';
-import EnhancementSuite from './pages/EnhancementSuite';
-import InviteUsers from './pages/InviteUsers';
-import BetaStatus from './pages/BetaStatus';
-import Payouts from './pages/Payouts';
-import VideoPost from './pages/VideoPost';
-import FeaturedContent from './pages/FeaturedContent';
-import WatchParty from './pages/WatchParty';
-import PublicProfile from './pages/PublicProfile';
-import TermsOfService from './pages/TermsOfService';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import StageCleanup from './pages/StageCleanup';
-import VODLibrary from './pages/VODLibrary';
-import PKBattlePage from './pages/PKBattlePage';
-import RTMPServer from './pages/RTMPServer';
-import LiveBattles from './pages/LiveBattles';
-import AdminDashboard from './pages/AdminDashboard';
-import Leaderboard from './pages/Leaderboard';
-import GuestJoin from './pages/GuestJoin';
-import StreamInfra from './pages/StreamInfra';
-import PKBattleManager from './pages/PKBattleManager';
-import Greenroom from './pages/Greenroom';
-import ControlRoom from './pages/ControlRoom';
-import Dashboard from './pages/Dashboard';
-import OverlayBuilder from './pages/OverlayBuilder';
-import LoyaltyHub from './pages/LoyaltyHub';
-import ChallengesHub from './pages/ChallengesHub';
-import AIMusic from './pages/AIMusic';
-import BroadcastStudio from './pages/BroadcastStudio';
-import Messages from './pages/Messages';
-import ClipsLibrary from './pages/ClipsLibrary';
-import Onboarding from './pages/Onboarding';
-import PKBattle from './pages/PKBattle';
-import PollManager from './pages/PollManager';
-import PlatformShowcase from './pages/PlatformShowcase';
+import { lazy } from 'react';
 import __Layout from './Layout.jsx';
 
+const AIModeration        = lazy(() => import('./pages/AIModeration'));
+const Activity            = lazy(() => import('./pages/Activity'));
+const AdvancedAnalytics   = lazy(() => import('./pages/AdvancedAnalytics'));
+const Analytics           = lazy(() => import('./pages/Analytics'));
+const Communities         = lazy(() => import('./pages/Communities'));
+const Community           = lazy(() => import('./pages/Community'));
+const CommunityAdmin      = lazy(() => import('./pages/CommunityAdmin'));
+const CommunityGrowth     = lazy(() => import('./pages/CommunityGrowth'));
+const CommunitySettings   = lazy(() => import('./pages/CommunitySettings'));
+const ContentCalendar     = lazy(() => import('./pages/ContentCalendar'));
+const CreateCommunity     = lazy(() => import('./pages/CreateCommunity'));
+const CreateRoom          = lazy(() => import('./pages/CreateRoom'));
+const CreatorChannel      = lazy(() => import('./pages/CreatorChannel'));
+const CreatorDashboard    = lazy(() => import('./pages/CreatorDashboard'));
+const CreatorSubscriptions = lazy(() => import('./pages/CreatorSubscriptions'));
+const Discover            = lazy(() => import('./pages/Discover'));
+const Home                = lazy(() => import('./pages/Home'));
+const HybridStreamRoom    = lazy(() => import('./pages/HybridStreamRoom'));
+const LiveRoom            = lazy(() => import('./pages/LiveRoom'));
+const LoyaltyProgram      = lazy(() => import('./pages/LoyaltyProgram'));
+const ModerationDashboard = lazy(() => import('./pages/ModerationDashboard'));
+const Monetization        = lazy(() => import('./pages/Monetization'));
+const MonetizationWidgets = lazy(() => import('./pages/MonetizationWidgets'));
+const MultiStreamManager  = lazy(() => import('./pages/MultiStreamManager'));
+const Newsletter          = lazy(() => import('./pages/Newsletter'));
+const Notifications       = lazy(() => import('./pages/Notifications'));
+const OverlayEditor       = lazy(() => import('./pages/OverlayEditor'));
+const PayPerViewEvents    = lazy(() => import('./pages/PayPerViewEvents'));
+const Profile             = lazy(() => import('./pages/Profile'));
+const Room                = lazy(() => import('./pages/Room'));
+const Search              = lazy(() => import('./pages/Search'));
+const Settings            = lazy(() => import('./pages/Settings'));
+const StreamAnalytics     = lazy(() => import('./pages/StreamAnalytics'));
+const StreamScheduler     = lazy(() => import('./pages/StreamScheduler'));
+const ViewerDashboard     = lazy(() => import('./pages/ViewerDashboard'));
+const Welcome             = lazy(() => import('./pages/Welcome'));
+const DataExport          = lazy(() => import('./pages/DataExport'));
+const EnhancementSuite    = lazy(() => import('./pages/EnhancementSuite'));
+const InviteUsers         = lazy(() => import('./pages/InviteUsers'));
+const BetaStatus          = lazy(() => import('./pages/BetaStatus'));
+const Payouts             = lazy(() => import('./pages/Payouts'));
+const VideoPost           = lazy(() => import('./pages/VideoPost'));
+const FeaturedContent     = lazy(() => import('./pages/FeaturedContent'));
+const WatchParty          = lazy(() => import('./pages/WatchParty'));
+const PublicProfile       = lazy(() => import('./pages/PublicProfile'));
+const TermsOfService      = lazy(() => import('./pages/TermsOfService'));
+const PrivacyPolicy       = lazy(() => import('./pages/PrivacyPolicy'));
+const StageCleanup        = lazy(() => import('./pages/StageCleanup'));
+const VODLibrary          = lazy(() => import('./pages/VODLibrary'));
+const PKBattlePage        = lazy(() => import('./pages/PKBattlePage'));
+const RTMPServer          = lazy(() => import('./pages/RTMPServer'));
+const LiveBattles         = lazy(() => import('./pages/LiveBattles'));
+const AdminDashboard      = lazy(() => import('./pages/AdminDashboard'));
+const Leaderboard         = lazy(() => import('./pages/Leaderboard'));
+const GuestJoin           = lazy(() => import('./pages/GuestJoin'));
+const StreamInfra         = lazy(() => import('./pages/StreamInfra'));
+const PKBattleManager     = lazy(() => import('./pages/PKBattleManager'));
+const Greenroom           = lazy(() => import('./pages/Greenroom'));
+const ControlRoom         = lazy(() => import('./pages/ControlRoom'));
+const Dashboard           = lazy(() => import('./pages/Dashboard'));
+const OverlayBuilder      = lazy(() => import('./pages/OverlayBuilder'));
+const LoyaltyHub          = lazy(() => import('./pages/LoyaltyHub'));
+const ChallengesHub       = lazy(() => import('./pages/ChallengesHub'));
+const AIMusic             = lazy(() => import('./pages/AIMusic'));
+const BroadcastStudio     = lazy(() => import('./pages/BroadcastStudio'));
+const Messages            = lazy(() => import('./pages/Messages'));
+const ClipsLibrary        = lazy(() => import('./pages/ClipsLibrary'));
+const Onboarding          = lazy(() => import('./pages/Onboarding'));
+const PKBattle            = lazy(() => import('./pages/PKBattle'));
+const PollManager         = lazy(() => import('./pages/PollManager'));
+const PlatformShowcase    = lazy(() => import('./pages/PlatformShowcase'));
 
 export const PAGES = {
     "AIModeration": AIModeration,
