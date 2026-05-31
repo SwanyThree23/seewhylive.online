@@ -21,6 +21,18 @@ var Database      = require('better-sqlite3');
 var winston       = require('winston');
 require('winston-daily-rotate-file');
 
+var webpush = null;
+try {
+  webpush = require('web-push');
+  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails('mailto:admin@seewhylive.online', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+  } else {
+    webpush = null;
+  }
+} catch(wpErr) {
+  logger.warn('[push] web-push not loaded: ' + wpErr.message);
+}
+
 var mediasoup    = require('./mediasoup');
 var rtmp         = require('./rtmp');
 var vault        = require('./vault');
@@ -1566,6 +1578,7 @@ io.on('connection', function(socket) {
   socket.on('overlay-update', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.overlay) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(roomId).emit('overlay-update', { overlay: data.overlay });
   });
 
@@ -1657,6 +1670,7 @@ io.on('connection', function(socket) {
   socket.on('bot-manual-message', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.message) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var msg = String(data.message).substring(0, 300);
     io.to(roomId).emit('chat-message', {
       userId: 'swanybot',
@@ -1688,18 +1702,21 @@ io.on('connection', function(socket) {
   socket.on('room-audio-only', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(roomId).emit('room-audio-only', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
 
   socket.on('room-private', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(roomId).emit('room-private', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
 
   socket.on('room-paywall', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var amountCents = Math.floor(data.amountCents || 0);
     io.to(roomId).emit('room-paywall', { enabled: Boolean(data.enabled), amountCents: amountCents, ts: Math.floor(Date.now() / 1000) });
   });
@@ -1792,6 +1809,9 @@ io.on('connection', function(socket) {
     if (!queue) return;
     var item = queue.get(data.id);
     if (!item) return;
+    if (!item.upvoters) item.upvoters = new Set();
+    if (item.upvoters.has(socket.id)) return;
+    item.upvoters.add(socket.id);
     item.upvotes += 1;
     io.to(roomId).emit('qa-upvote', { id: data.id, upvotes: item.upvotes });
   });
@@ -2022,12 +2042,14 @@ io.on('connection', function(socket) {
   // ── bracket-update ─────────────────────────────────────────────────────
   socket.on('bracket-update', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(data.roomId).emit('bracket-update', data);
   });
 
   // ── chyron-update ──────────────────────────────────────────────────────
   socket.on('chyron-update', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(data.roomId).emit('chyron-update', data);
   });
 
@@ -2120,6 +2142,7 @@ io.on('connection', function(socket) {
   socket.on('stream-info', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = rooms.get(roomId);
     if (room) {
       if (data.title)    room.streamTitle    = String(data.title).slice(0, 120);
@@ -2206,15 +2229,24 @@ io.on('connection', function(socket) {
 
     if (ack) ack({ started: true });
 
-    // TODO: npm install web-push on VPS then wire webpush.sendNotification() here
-    // Send push to all subscribers (log only until web-push is installed)
+    // Send push notifications to all subscribers
     try {
       var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions').all();
       if (pushSubs && pushSubs.length > 0) {
-        var hostName = room.streamTitle || 'A host';
+        var pushTitle = room.streamTitle || 'SeeWhy LIVE';
+        var pushPayload = JSON.stringify({ title: pushTitle + ' is LIVE!', body: 'Tap to watch now on SeeWhy LIVE', url: '/' });
         pushSubs.forEach(function(s) {
           if (!s.endpoint) return;
-          logger.info('[push] would notify: ' + s.endpoint.slice(-20));
+          if (webpush) {
+            var sub = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } };
+            webpush.sendNotification(sub, pushPayload).catch(function(err) {
+              if (err.statusCode === 410 || err.statusCode === 404) {
+                db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(s.endpoint);
+              }
+            });
+          } else {
+            logger.info('[push] would notify: ' + s.endpoint.slice(-20));
+          }
         });
       }
     } catch(pushErr) {
@@ -2267,6 +2299,12 @@ io.on('connection', function(socket) {
     swanybot.onStreamEnd(roomId);
     polls.delete(roomId);
     chatReactions.delete(roomId);
+    activePolls.delete(roomId);
+    vsPolls.delete(roomId);
+    qaQueues.delete(roomId);
+    judgeRosters.delete(roomId);
+    pkVotes.delete(roomId);
+    roomAnalytics.delete(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);
@@ -2324,6 +2362,7 @@ io.on('connection', function(socket) {
   socket.on('mute-user', function(data) {
     var sId = data.roomId || socket.data.roomId;
     if (!sId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(sId).emit('user-muted', { userId: data.targetUser, reason: data.reason, ts: Math.floor(Date.now() / 1000) });
   });
 
@@ -2331,6 +2370,7 @@ io.on('connection', function(socket) {
   socket.on('ban-user', function(data) {
     var sId = data.roomId || socket.data.roomId;
     if (!sId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var bannedId = data.userId || data.targetUser;
     io.to(sId).emit('user-banned', { userId: bannedId, ts: Math.floor(Date.now() / 1000) });
     // Disconnect the banned socket if it is connected to this room
@@ -2389,7 +2429,14 @@ io.on('connection', function(socket) {
     for (var pbi = 9; pbi >= 0; pbi--) {
       pingBuckets.push(a.msgCounts[pingMinKey - pbi] || 0);
     }
-    io.to(pingRoomId).emit('analytics-update', {
+    // Prune old msgCounts keys (keep only last 60 minutes)
+    var staleMinKey = pingMinKey - 60;
+    Object.keys(a.msgCounts).forEach(function(k) {
+      if (parseInt(k, 10) < staleMinKey) delete a.msgCounts[k];
+    });
+
+    // Send only to the requesting host socket — not to all viewers
+    io.to(socket.id).emit('analytics-update', {
       viewers:       pingViewers,
       peak:          a.peak,
       msgRate:       pingMsgRate,
