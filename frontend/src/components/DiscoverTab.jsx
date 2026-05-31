@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SignalBars from './SignalBars';
 import AvatarPortrait from './AvatarPortrait.jsx';
+import PullToRefresh from './PullToRefresh.jsx';
 
 var MOCK_STREAMS = [
   { id: 's1', title: 'Washington Classic Round 2', hostName: 'SwanyThree', viewerCount: 2847, genre: 'Tournament', isLive: true, durationMins: 94, tier: 'free', category: 'SPORTS' },
@@ -989,7 +990,14 @@ export default function DiscoverTab(props) {
 
   var filteredCreators = creators;
 
+  function handleRefresh() {
+    fetch('/api/active-rooms').then(function(r) { return r.json(); }).then(function(d) { if (d && d.rooms && d.rooms.length) setStreams(d.rooms); });
+  }
+
   return React.createElement(
+    PullToRefresh,
+    { onRefresh: handleRefresh },
+    React.createElement(
     'div',
     {
       style: {
@@ -1158,5 +1166,6 @@ export default function DiscoverTab(props) {
             : React.createElement('div', null, filteredCreators.map(renderCreatorCard)),
     renderFeaturedYouTube(),
     renderMobileBanner()
+  )
   );
 }

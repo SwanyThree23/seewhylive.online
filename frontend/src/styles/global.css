@@ -229,6 +229,9 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
 }
 
 a {
@@ -244,6 +247,10 @@ a:hover {
 button {
   font-family: inherit;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 input, select, textarea {
@@ -514,6 +521,9 @@ input, select, textarea {
   white-space: nowrap;
   transition: color 0.2s, border-color 0.2s;
   flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tab-btn:hover {
@@ -2445,6 +2455,9 @@ input, select, textarea {
   transition: all .15s;
   flex-shrink: 0;
   min-width: 44px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mc-btn:hover {
@@ -2599,4 +2612,97 @@ input, select, textarea {
   .stage-panel--3 { grid-template-columns: 1fr 1fr; }
   .stage-panel--6 { grid-template-columns: 1fr 1fr; }
   .lower-third-name { font-size: 14px; }
+}
+
+/* ============================================================
+   DARK MODE (explicit for PWA / system preference)
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg0: #07050A;
+    --bg1: #0E0C09;
+    --bg2: #1A1510;
+    --bg3: #241C12;
+    --gold: #C9A84C;
+    --burg: #800020;
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--bg0);
+    color: #F0E8D4;
+  }
+}
+
+/* ============================================================
+   NATIVE SELECT GLOBAL STYLING
+   ============================================================ */
+
+select {
+  background: #1A1510;
+  border: 1px solid rgba(201,168,76,.2);
+  color: #F0E8D4;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+  min-height: 40px;
+}
+select:focus { border-color: rgba(201,168,76,.5); }
+
+/* ============================================================
+   PULL-TO-REFRESH
+   ============================================================ */
+
+@keyframes ptrSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.ptr-indicator {
+  position: absolute;
+  top: -48px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(26,21,16,.95);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: #C9A84C;
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 50;
+  white-space: nowrap;
+  transition: top .2s ease;
+}
+
+.ptr-indicator--visible { top: 12px; }
+
+.ptr-spinner {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(201,168,76,.3);
+  border-top-color: #C9A84C;
+  border-radius: 50%;
+  animation: ptrSpin .7s linear infinite;
+}
+
+/* ============================================================
+   SAFE AREA INSETS (notched phones)
+   ============================================================ */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .tab-bar { padding-bottom: env(safe-area-inset-bottom); }
+  .media-controls-bar { padding-bottom: env(safe-area-inset-bottom); }
+  .toasts-container { bottom: calc(60px + env(safe-area-inset-bottom)); }
 }
