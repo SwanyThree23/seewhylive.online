@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import OctCell from './OctCell.jsx';
 import rtcManager from '../webrtc.js';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
+import { saveClip } from '../clipStore.js';
 
 var MAX_STAGE = 20;
 
@@ -256,6 +257,8 @@ export default function LiveRoomPage({
   var [privateMode,    setPrivateMode]    = useState(false);
   var [privatePwd,     setPrivatePwd]     = useState('');
   var [showPrivateSet, setShowPrivateSet] = useState(false);
+  var [paywallOn,      setPaywallOn]      = useState(false);
+  var [paywallPrice,   setPaywallPrice]   = useState('');
   var [expandedCell,   setExpandedCell]   = useState(null);
   var [showRecorder,   setShowRecorder]   = useState(false);
   var [recState,       setRecState]       = useState('idle');
@@ -529,6 +532,15 @@ export default function LiveRoomPage({
         setRecState('done');
         stream.getTracks().forEach(function(t) { t.stop(); });
         clearInterval(recTimerRef.current);
+        // Persist to IndexedDB so VOD Library can access it
+        var clipId = 'clip-' + Date.now();
+        var dur    = recSeconds;
+        saveClip(clipId, blob, {
+          title:    'Clip ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          duration: dur,
+          ts:       Date.now(),
+          size:     blob.size,
+        }).catch(function() {});
       };
       mr.start(1000);
       mediaRecRef.current = mr;
@@ -1844,43 +1856,64 @@ export default function LiveRoomPage({
 
       {/* ════════════════ PRIVATE ROOM SETUP ════════════════ */}
       {showPrivateSet && role === 'host' && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }}>
-          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1, marginBottom: 4 }}>Private Room</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 20, letterSpacing: .5 }}>
-              {privateMode ? 'Room is private — only invited guests can join' : 'Anyone with the link can join'}
-            </div>
-            {!privateMode ? (
-              <>
-                <input
-                  type="password"
-                  value={privatePwd}
-                  onChange={function(e) { setPrivatePwd(e.target.value); }}
-                  placeholder="Set room password (optional)"
-                  style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '12px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 16, outline: 'none', marginBottom: 12 }}
-                />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowPrivateSet(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER, maxHeight: '85vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1, marginBottom: 20 }}>Room Access Controls</div>
+
+            {/* ── Private toggle ── */}
+            <div style={{ background: CARD, borderRadius: 12, padding: '14px 16px', marginBottom: 12, border: '1px solid ' + (privateMode ? 'rgba(109,30,212,.4)' : BORDER) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: privateMode ? 0 : 12 }}>
+                <div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>🔒 Private Room</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 2 }}>{privateMode ? 'Only invited guests can join' : 'Anyone with the link can join'}</div>
+                </div>
                 <button onClick={function() {
-                  setPrivateMode(true);
-                  setShowPrivateSet(false);
-                  if (socket) socket.emit('room-private', { roomId: roomId, private: true, password: privatePwd.trim() || null });
-                  if (addToast) addToast('🔒 Room is now private', 'success');
-                }} style={{ width: '100%', background: 'rgba(109,30,212,.8)', border: 'none', borderRadius: 12, padding: '13px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
-                  LOCK ROOM 🔒
+                  var next = !privateMode;
+                  setPrivateMode(next);
+                  if (socket) socket.emit('room-private', { roomId: roomId, private: next, password: next ? (privatePwd.trim() || null) : null });
+                  if (addToast) addToast(next ? '🔒 Room locked' : '🔓 Room opened', next ? 'success' : 'info');
+                }} style={{ background: privateMode ? 'rgba(109,30,212,.7)' : 'rgba(255,255,255,.08)', border: '1px solid ' + (privateMode ? 'rgba(109,30,212,.5)' : BORDER), borderRadius: 8, padding: '6px 14px', color: privateMode ? '#fff' : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  {privateMode ? 'LOCKED' : 'OPEN'}
                 </button>
-              </>
-            ) : (
-              <button onClick={function() {
-                setPrivateMode(false);
-                setPrivatePwd('');
-                setShowPrivateSet(false);
-                if (socket) socket.emit('room-private', { roomId: roomId, private: false });
-                if (addToast) addToast('🔓 Room is now open', 'info');
-              }} style={{ width: '100%', background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 12, padding: '13px', color: RED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
-                UNLOCK ROOM 🔓
-              </button>
-            )}
+              </div>
+              {!privateMode && (
+                <input type="password" value={privatePwd} onChange={function(e) { setPrivatePwd(e.target.value); }}
+                  placeholder="Optional password"
+                  style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none' }} />
+              )}
+            </div>
+
+            {/* ── Paywall toggle ── */}
+            <div style={{ background: CARD, borderRadius: 12, padding: '14px 16px', marginBottom: 16, border: '1px solid ' + (paywallOn ? 'rgba(201,168,76,.4)' : BORDER) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: paywallOn ? 0 : 12 }}>
+                <div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>💰 Paid Entry</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 2 }}>{paywallOn ? ('$' + (Math.floor((parseFloat(paywallPrice) || 0) * 100) / 100).toFixed(2) + ' entry — viewers pay before entering') : 'Free to watch'}</div>
+                </div>
+                <button onClick={function() {
+                  var next = !paywallOn;
+                  var cents = next ? Math.floor((parseFloat(paywallPrice) || 0) * 100) : 0;
+                  setPaywallOn(next);
+                  if (socket) socket.emit('room-paywall', { roomId: roomId, enabled: next, priceCents: cents });
+                  if (addToast) addToast(next ? ('💰 Paywall on — $' + (cents / 100).toFixed(2)) : 'Paywall removed', next ? 'success' : 'info');
+                }} style={{ background: paywallOn ? 'rgba(201,168,76,.6)' : 'rgba(255,255,255,.08)', border: '1px solid ' + (paywallOn ? 'rgba(201,168,76,.5)' : BORDER), borderRadius: 8, padding: '6px 14px', color: paywallOn ? BG : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  {paywallOn ? 'ACTIVE' : 'OFF'}
+                </button>
+              </div>
+              {!paywallOn && (
+                <input type="number" min="0" step="0.01" value={paywallPrice} onChange={function(e) { setPaywallPrice(e.target.value); }}
+                  placeholder="Entry price in $ (e.g. 5.00)"
+                  style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, outline: 'none', letterSpacing: 1 }} />
+              )}
+              {!paywallOn && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, marginTop: 6, letterSpacing: .5 }}>
+                  Make sure your DirectPay handles are set so viewers know where to send money
+                </div>
+              )}
+            </div>
+
             <button onClick={function() { setShowPrivateSet(false); }} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>
-              Cancel
+              Done
             </button>
           </div>
         </div>
