@@ -319,38 +319,65 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
 
         {/* ══════════════ TIERS TAB ══════════════ */}
         {tab === 'tiers' && (
-          <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ fontFamily: fD, fontSize: 20, color: TEXT, letterSpacing: 2 }}>CREATOR PLAN TIERS</div>
             <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, lineHeight: 1.6, marginBottom: 4 }}>
               More features → more revenue streams → flywheel spins faster
             </div>
-            {SAAS_TIERS.map(function(plan) {
+            {[
+              { id: 'free',    label: 'FREE',    price: 0,     fee: 10, color: MUTED,  panels: 2,  streams: 1,   features: ['2 panels', '1 stream dest', 'Basic analytics', 'Chat + reactions'] },
+              { id: 'creator', label: 'CREATOR', price: 1900,  fee: 8,  color: AMBER,  panels: 5,  streams: 3,   features: ['5 panels', '3 stream dests', 'Super Chat', 'Clips', 'Subs', 'PK Battle'] },
+              { id: 'pro',     label: 'PRO',     price: 4900,  fee: 6,  color: GOLD,   panels: 10, streams: 7,   features: ['10 panels', '7 stream dests', 'PPV', 'Full Analytics', 'AURA AI'] },
+              { id: 'studio',  label: 'STUDIO',  price: 14900, fee: 5,  color: AMBER,  panels: 20, streams: 999, features: ['20 panels', 'Unlimited dests', 'White-label', 'API Access', 'Priority'] },
+            ].map(function(plan) {
               var active = currentPlan === plan.id;
+              var planRanks = { free: 0, creator: 1, pro: 2, studio: 3 };
+              var currentRank = planRanks[currentPlan] || 0;
+              var planRank = planRanks[plan.id] || 0;
+              var isDowngrade = planRank < currentRank;
               return (
-                <div key={plan.id} style={{ background: SURF, border: '1.5px solid ' + (active ? plan.color : BORDER), borderRadius: 14, overflow: 'hidden', transition: 'border .2s' }}>
+                <div key={plan.id} style={{ background: SURF, border: '1.5px solid ' + (active ? plan.color : BORDER), borderRadius: 14, overflow: 'hidden', transition: 'border .2s', boxShadow: active ? ('0 0 20px ' + plan.color + '22') : 'none' }}>
                   <div style={{ height: 3, background: 'linear-gradient(90deg,' + plan.color + ',transparent)' }} />
                   <div style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
                       <div>
-                        <div style={{ fontFamily: fD, fontSize: 20, color: plan.color, letterSpacing: 2, lineHeight: 1 }}>{plan.label}</div>
-                        <div style={{ fontFamily: fD, fontSize: 26, color: TEXT, lineHeight: 1.2 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                          <div style={{ fontFamily: fD, fontSize: 22, color: plan.color, letterSpacing: 2, lineHeight: 1 }}>{plan.label}</div>
+                          {active && (
+                            <div style={{ background: plan.color, borderRadius: 4, padding: '2px 8px', fontFamily: fM, fontSize: 7, color: '#0E0C09', letterSpacing: 1.5, fontWeight: 700 }}>CURRENT PLAN</div>
+                          )}
+                        </div>
+                        <div style={{ fontFamily: fD, fontSize: 28, color: TEXT, lineHeight: 1 }}>
                           {plan.price === 0 ? 'FREE' : ('$' + Math.floor(plan.price / 100) + '/mo')}
                         </div>
+                        <div style={{ fontFamily: fM, fontSize: 7.5, color: MUTED, marginTop: 2 }}>
+                          Platform fee: <span style={{ color: plan.fee <= 6 ? GOLD : AMBER }}>{plan.fee}%</span> · Creator keeps <span style={{ color: GOLD }}>{100 - plan.fee}%</span>
+                        </div>
                       </div>
-                      {active ? (
-                        <div style={{ background: plan.color + '22', border: '1px solid ' + plan.color, borderRadius: 8, padding: '6px 12px', fontFamily: fM, fontSize: 8, color: plan.color, letterSpacing: 1 }}>CURRENT</div>
-                      ) : (
-                        <button
-                          onClick={function() { setPlan(plan.id); localStorage.setItem('sw_saas_tier', plan.id); if (addToast) addToast('Upgrade to ' + plan.label + ' — billing coming soon', 'info'); }}
-                          style={{ background: plan.color, border: 'none', borderRadius: 8, padding: '8px 14px', color: '#0E0C09', fontFamily: fD, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
-                          UPGRADE
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                        <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, textAlign: 'right' }}>
+                          <div>{plan.panels} panels</div>
+                          <div>{plan.streams === 999 ? 'Unlimited' : plan.streams} stream{plan.streams !== 1 ? 's' : ''}</div>
+                        </div>
+                        {active ? (
+                          <div style={{ background: plan.color + '18', border: '1px solid ' + plan.color, borderRadius: 8, padding: '7px 14px', fontFamily: fD, fontSize: 13, color: plan.color, letterSpacing: 1 }}>CURRENT</div>
+                        ) : (
+                          <button
+                            onClick={function() {
+                              localStorage.setItem('sw_saas_tier', plan.id);
+                              setPlan(plan.id);
+                              if (addToast) addToast('Plan updated to ' + plan.label + '!', 'success');
+                            }}
+                            style={{ background: isDowngrade ? 'transparent' : plan.color, border: '1px solid ' + plan.color, borderRadius: 8, padding: '7px 14px', color: isDowngrade ? plan.color : '#0E0C09', fontFamily: fD, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                            {isDowngrade ? 'DOWNGRADE' : 'UPGRADE'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                       {plan.features.map(function(f) {
                         return (
-                          <div key={f} style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 6, padding: '3px 8px', fontFamily: fM, fontSize: 7.5, color: TEXT }}>
+                          <div key={f} style={{ background: CARD, border: '1px solid ' + (active ? plan.color + '44' : BORDER), borderRadius: 6, padding: '3px 8px', fontFamily: fM, fontSize: 7.5, color: active ? TEXT : MUTED }}>
                             {f}
                           </div>
                         );
