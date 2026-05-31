@@ -49,6 +49,7 @@ var cardStyle = {
 
 export default function SettingsTab({ addToast, username, socket, roomId, isLive }) {
   var [activeTab, setActiveTab] = useState('profile');
+  var [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   var [displayName, setDisplayName] = useState(function() {
     try { return localStorage.getItem('sw_displayName') || username || 'Creator'; } catch(e) { return username || 'Creator'; }
@@ -528,6 +529,13 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
     );
   }
 
+  function handleDeleteAccount() {
+    localStorage.clear();
+    if (addToast) addToast('Account data cleared. Refresh to reset.', 'info');
+    setShowDeleteConfirm(false);
+    setTimeout(function() { window.location.reload(); }, 1500);
+  }
+
   function renderPrivacyTab() {
     var toggleRows = [
       { label: 'Public Profile',   desc: 'Your profile is visible to everyone', value: publicProfile,   setter: setPublicProfile },
@@ -631,6 +639,35 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
       {activeTab === 'notifications' && renderNotificationsTab()}
       {activeTab === 'subscription'  && renderSubscriptionTab()}
       {activeTab === 'privacy'       && renderPrivacyTab()}
+
+      {/* Danger Zone */}
+      <div style={{ marginTop: 24, background: 'rgba(128,0,32,.08)', border: '1px solid rgba(128,0,32,.3)', borderRadius: 12, padding: '16px' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#800020', letterSpacing: 2, marginBottom: 12 }}>DANGER ZONE</div>
+        {!showDeleteConfirm ? (
+          <button
+            onClick={function() { setShowDeleteConfirm(true); }}
+            style={{ width: '100%', padding: '11px', background: 'transparent', border: '1px solid rgba(128,0,32,.5)', borderRadius: 9, color: '#C01838', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, letterSpacing: 2, cursor: 'pointer' }}>
+            🗑 DELETE ACCOUNT
+          </button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', textAlign: 'center', lineHeight: 1.4 }}>
+              This will clear all local account data.<br />
+              <strong style={{ color: '#C9A84C' }}>This action cannot be undone.</strong>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() { setShowDeleteConfirm(false); }}
+                style={{ flex: 1, padding: '10px', background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, color: '#8A7A62', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
+                CANCEL
+              </button>
+              <button onClick={handleDeleteAccount}
+                style={{ flex: 1, padding: '10px', background: 'rgba(128,0,32,.5)', border: '1px solid rgba(192,24,56,.6)', borderRadius: 8, color: '#F0E8D4', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
+                CONFIRM DELETE
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
     </div>
   );

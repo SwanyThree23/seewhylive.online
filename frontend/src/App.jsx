@@ -158,6 +158,7 @@ export default function App() {
   var [editingTitle, setEditingTitle] = useState(false);
   var [titleDraft, setTitleDraft] = useState('');
   var [showMoreDrawer, setShowMoreDrawer] = useState(false);
+  var [canGoBack, setCanGoBack] = useState(false);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -176,6 +177,10 @@ export default function App() {
   useEffect(function() {
     var t = setTimeout(function() { setSplash(false); }, 2200);
     return function() { clearTimeout(t); };
+  }, []);
+
+  useEffect(function() {
+    setCanGoBack(window.history.length > 1);
   }, []);
 
   // Earnings milestone celebration toasts
@@ -700,6 +705,13 @@ export default function App() {
       {/* Header HUD */}
       <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+          {canGoBack && (
+            <button
+              onClick={function() { window.history.back(); }}
+              style={{ background: 'none', border: 'none', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', padding: '4px 8px 4px 0', letterSpacing: 1, userSelect: 'none', WebkitUserSelect: 'none', flexShrink: 0 }}>
+              ← BACK
+            </button>
+          )}
           <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#F0E8D4', letterSpacing: 2 }}>SeeWhy LIVE</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>v33.0</span>
           {isLive && <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 4, padding: '2px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
