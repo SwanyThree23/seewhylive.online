@@ -8,7 +8,7 @@
 const mediasoup = require('mediasoup');
 const os = require('os');
 
-const ANNOUNCED_IP = '2.24.194.112';
+const ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
 
 // ─── Internal state maps ───────────────────────────────────────────────────
 const workers = [];       // mediasoup.Worker[]
