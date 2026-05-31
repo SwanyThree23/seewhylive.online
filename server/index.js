@@ -324,6 +324,7 @@ var vsPolls             = new Map();  // roomId → { id, sideA, sideB, votesA:S
 var judgeRosters        = new Map();  // roomId → Map<userId, { userId, username, scores:[] }>
 var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
+var pkVotes             = new Map();  // roomId → { challenger: n, defender: n }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -1933,6 +1934,28 @@ io.on('connection', function(socket) {
   socket.on('bracket-update', function(data) {
     if (!data || !data.roomId) return;
     io.to(data.roomId).emit('bracket-update', data);
+  });
+
+  // ── PK Battle v2 vote aggregation ──────────────────────────────────────
+  socket.on('pk-start', function(data) {
+    if (!data || !data.roomId) return;
+    pkVotes.set(data.roomId, { challenger: 0, defender: 0 });
+    io.to(data.roomId).emit('pk-start', data);
+  });
+
+  socket.on('pk-vote', function(data) {
+    if (!data || !data.roomId || !data.side) return;
+    var votes = pkVotes.get(data.roomId) || { challenger: 0, defender: 0 };
+    if (data.side === 'challenger') votes.challenger = (votes.challenger || 0) + 1;
+    if (data.side === 'defender')   votes.defender   = (votes.defender   || 0) + 1;
+    pkVotes.set(data.roomId, votes);
+    io.to(data.roomId).emit('pk-vote-update', { challengerVotes: votes.challenger, defenderVotes: votes.defender });
+  });
+
+  socket.on('pk-end', function(data) {
+    if (!data || !data.roomId) return;
+    pkVotes.delete(data.roomId);
+    io.to(data.roomId).emit('pk-end', data);
   });
 
   // ── viewer-react ───────────────────────────────────────────────────────

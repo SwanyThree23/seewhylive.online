@@ -574,6 +574,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var defPct = 100 - challPct;
 
   return (
+    <UpgradeGate feature="pkBattle">
     <div style={containerStyle}>
       {/* Support bar */}
       <div style={{ display: 'flex', height: 28, borderRadius: 14, overflow: 'hidden', margin: '0 0 10px', border: '1px solid rgba(201,168,76,.2)' }}>
@@ -726,5 +727,6 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
       )}
     </div>
+    </UpgradeGate>
   );
 }
