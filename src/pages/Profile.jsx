@@ -1,21 +1,57 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { User, Mail, Award, Star, Gift, TrendingUp, Camera, Radio, BarChart2 } from 'lucide-react';
+import {
+  User, Mail, Award, Star, Gift, TrendingUp, Camera, Radio, BarChart2,
+  Settings, DollarSign, Activity, Clock,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
-const GOLD = '#D4AF37';
+const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const PINK    = '#FF1564';
+const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+/* ── primitives ─────────────────────────────────────────────────────── */
 
 function DarkCard({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-2xl ${className}`}
       style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
       {children}
+    </div>
+  );
+}
+
+function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
+  return (
+    <div className="relative cursor-pointer shrink-0" style={{ width: size, height: size }} onClick={onClick}>
+      {/* gold border layer */}
+      <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
+      {/* inner filled layer */}
+      <div className="absolute flex items-center justify-center overflow-hidden"
+        style={{
+          inset: size <= 48 ? '2px' : '3px',
+          clipPath: OCT,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+        }}>
+        {src
+          ? <img src={src} alt="" className="w-full h-full object-cover" />
+          : <span className="font-black text-white"
+              style={{ fontSize: size * 0.3, fontFamily: 'Orbitron, monospace' }}>{initials}</span>}
+      </div>
+      {/* hover overlay */}
+      {onClick && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+          style={{ clipPath: OCT, background: 'rgba(0,0,0,0.6)' }}>
+          {uploading
+            ? <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+            : <Camera className="w-5 h-5 text-white" />}
+        </div>
+      )}
     </div>
   );
 }
@@ -39,14 +75,20 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
   );
 }
 
+const TABS = ['Overview', 'Streams', 'Clips', 'About'];
+
+/* ── main page ──────────────────────────────────────────────────────── */
+
 export default function ProfilePage() {
-  const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const queryClient   = useQueryClient();
+  const [isEditing, setIsEditing]         = useState(false);
+  const [bio, setBio]                     = useState('');
+  const [displayName, setDisplayName]     = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [activeTab, setActiveTab]         = useState('Overview');
   const fileRef = useRef();
 
+  /* ── queries ── */
   const { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -70,6 +112,7 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
+  /* ── mutations ── */
   const updateProfileMutation = useMutation({
     mutationFn: async (data) => base44.auth.updateMe(data),
     onSuccess: () => {
@@ -97,6 +140,7 @@ export default function ProfilePage() {
     setUploadingAvatar(false);
   };
 
+  /* ── loading ── */
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#080B18' }}>
@@ -109,172 +153,285 @@ export default function ProfilePage() {
   const completedReferrals = referrals.filter(r => r.status === 'completed').length;
   const initials = (user?.full_name || user?.email || '?')[0].toUpperCase();
 
+  /* ── activity items (derived from available data) ── */
+  const activityItems = [
+    subscriptions.length > 0 && {
+      id: 'subs',
+      icon: TrendingUp,
+      color: '#00F5FF',
+      desc: `${subscriptions.length} active subscription${subscriptions.length !== 1 ? 's' : ''}`,
+      time: 'Active now',
+    },
+    completedReferrals > 0 && {
+      id: 'refs',
+      icon: Gift,
+      color: '#8B5CF6',
+      desc: `${completedReferrals} completed referral${completedReferrals !== 1 ? 's' : ''}`,
+      time: 'Recent',
+    },
+    inventory.length > 0 && {
+      id: 'inv',
+      icon: Award,
+      color: '#00FF88',
+      desc: `${inventory.length} virtual item${inventory.length !== 1 ? 's' : ''} in inventory`,
+      time: 'Collected',
+    },
+    {
+      id: 'joined',
+      icon: Star,
+      color: GOLD,
+      desc: 'Joined SeeWhy LIVE',
+      time: user?.created_date ? new Date(user.created_date).toLocaleDateString() : 'Member',
+    },
+  ].filter(Boolean);
+
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}>
-      {/* Sticky header */}
-      <div className="sticky top-0 z-20 px-4 py-3" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+    <div className="min-h-screen pb-10" style={{ background: '#080B18', ...T }}>
+
+      {/* ── sticky header ── */}
+      <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <h1 className="font-black text-lg text-white" style={T}>My Profile</h1>
+        <button
+          onClick={() => setIsEditing(e => !e)}
+          className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
+          style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+          {isEditing ? 'Cancel' : 'Edit Profile'}
+        </button>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 pt-5 space-y-4">
-        {/* Profile header card */}
-        <DarkCard>
-          <div className="p-5 flex items-start gap-5">
-            {/* Octagonal avatar */}
-            <div className="relative shrink-0 cursor-pointer" onClick={() => fileRef.current?.click()}>
-              <div className="relative" style={{ width: 80, height: 80 }}>
-                <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
-                <div className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
-                  style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
-                  {user?.avatar_url
-                    ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-                    : <span className="text-2xl font-black text-white" style={{ fontFamily: 'Orbitron, monospace' }}>{initials}</span>}
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-full"
-                  style={{ clipPath: OCT, background: 'rgba(0,0,0,0.6)' }}>
-                  {uploadingAvatar
-                    ? <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                    : <Camera className="w-5 h-5 text-white" />}
-                </div>
+      {/* ── hero banner ── */}
+      <div className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #080B18)', minHeight: 160 }}>
+        {/* glow spot */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at center, ${CRIMSON}33 0%, transparent 70%)` }} />
+
+        <div className="relative max-w-4xl mx-auto px-6 pt-8 pb-6 flex items-end gap-5">
+          {/* octagonal avatar with camera upload */}
+          <div onClick={() => fileRef.current?.click()}>
+            <OctAvatar size={80} src={user?.avatar_url} initials={initials} uploading={uploadingAvatar} onClick={() => {}} />
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+
+          <div className="flex-1 min-w-0 pb-1">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <div>
+                <h2 className="font-black text-2xl text-white leading-none" style={T}>
+                  {user?.full_name || 'Anonymous'}
+                </h2>
+                <p className="flex items-center gap-1 mt-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <Mail className="w-3 h-3" />{user?.email}
+                </p>
               </div>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              <span className="px-2 py-0.5 rounded-md font-black uppercase text-[9px]"
+                style={{ background: user?.role === 'admin' ? 'rgba(128,0,32,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                {user?.role || 'member'}
+              </span>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h2 className="font-black text-xl text-white leading-none" style={T}>
-                    {user?.full_name || 'Anonymous'}
-                  </h2>
-                  <p className="flex items-center gap-1 mt-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                    <Mail className="w-3 h-3" />{user?.email}
-                  </p>
-                </div>
-                <span className="px-2 py-0.5 rounded-md font-black uppercase text-[9px]"
-                  style={{ background: user?.role === 'admin' ? 'rgba(128,0,32,0.2)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
-                  {user?.role || 'member'}
-                </span>
+      <div className="max-w-4xl mx-auto px-4 pt-4 space-y-4">
+
+        {/* ── edit form ── */}
+        {isEditing && (
+          <DarkCard>
+            <div className="p-4 space-y-3">
+              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Edit Profile</p>
+              <input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Display name"
+                className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+              />
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell us about yourself..."
+                rows={2}
+                className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none resize-none"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => updateProfileMutation.mutate({ bio, full_name: displayName })}
+                  disabled={updateProfileMutation.isPending}
+                  className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
+                  style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>
+                  {updateProfileMutation.isPending ? 'Saving…' : 'Save'}
+                </button>
+                <button onClick={() => setIsEditing(false)}
+                  className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', ...T }}>
+                  Cancel
+                </button>
               </div>
+            </div>
+          </DarkCard>
+        )}
 
-              {isEditing ? (
-                <div className="space-y-2 mt-2">
-                  <input
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Display name"
-                    className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
-                  />
-                  <textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell us about yourself..."
-                    rows={2}
-                    className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none resize-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => updateProfileMutation.mutate({ bio, full_name: displayName })}
-                      disabled={updateProfileMutation.isPending}
-                      className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
-                      style={{ background: CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>
-                      {updateProfileMutation.isPending ? 'Saving…' : 'Save'}
-                    </button>
-                    <button onClick={() => setIsEditing(false)}
-                      className="px-4 py-1.5 rounded-xl font-black uppercase text-[10px]"
-                      style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', ...T }}>
-                      Cancel
-                    </button>
+        {/* ── stats row ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatTile label="Followers"   value={user?.points || 0}      icon={User}       color={GOLD} />
+          <StatTile label="Following"   value={completedReferrals}     icon={Gift}       color="#8B5CF6" />
+          <StatTile label="Streams"     value={subscriptions.length}   icon={TrendingUp} color="#00F5FF" />
+          <StatTile label="Tips Earned" value={inventory.length}       icon={DollarSign} color="#00FF88" />
+        </div>
+
+        {/* ── section tabs ── */}
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
+          {TABS.map(tab => {
+            const active = activeTab === tab;
+            return (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                className="relative shrink-0 px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
+                style={{
+                  background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${active ? GOLD + '50' : 'rgba(255,255,255,0.08)'}`,
+                  color: active ? GOLD : 'rgba(255,255,255,0.45)',
+                  ...T,
+                }}>
+                {tab}
+                {active && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full"
+                    style={{ background: GOLD }} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── tab content ── */}
+        {activeTab === 'Overview' && (
+          <>
+            {/* activity feed */}
+            <DarkCard>
+              <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4" style={{ color: GOLD }} />
+                  <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Recent Activity</p>
+                </div>
+              </div>
+              <div className="p-3 space-y-2">
+                {activityItems.map(item => (
+                  <div key={item.id} className="flex items-center gap-3 p-3 rounded-2xl"
+                    style={{ background: `${item.color}08`, borderLeft: `2px solid ${item.color}30` }}>
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: `${item.color}15`, border: `1px solid ${item.color}25` }}>
+                      <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                    </div>
+                    <p className="flex-1 font-black text-[12px] text-white" style={T}>{item.desc}</p>
+                    <span className="text-[9px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.time}</span>
+                  </div>
+                ))}
+              </div>
+            </DarkCard>
+
+            {/* quick links */}
+            <DarkCard>
+              <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Quick Access</p>
+              </div>
+              <div className="p-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {[
+                  { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
+                  { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
+                  { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#00F5FF' },
+                ].map(item => (
+                  <Link key={item.href} to={item.href}>
+                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110"
+                      style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ background: `${item.color}18`, border: `1px solid ${item.color}30` }}>
+                        <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                      </div>
+                      <p className="font-black text-[11px] text-white" style={T}>{item.label}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </DarkCard>
+          </>
+        )}
+
+        {activeTab === 'Streams' && (
+          <DarkCard>
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Radio className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
+              <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No streams yet</p>
+              <Link to={createPageUrl('CreatorDashboard')}>
+                <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
+                  style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                  Go Live
+                </button>
+              </Link>
+            </div>
+          </DarkCard>
+        )}
+
+        {activeTab === 'Clips' && (
+          <DarkCard>
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <BarChart2 className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
+              <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No clips yet</p>
+            </div>
+          </DarkCard>
+        )}
+
+        {activeTab === 'About' && (
+          <DarkCard>
+            <div className="p-5 space-y-4">
+              <div>
+                <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Bio</p>
+                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
+                  {user?.bio || 'No bio yet.'}
+                </p>
+              </div>
+              <div>
+                <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Email</p>
+                <p className="text-sm flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <Mail className="w-3.5 h-3.5" style={{ color: GOLD }} />{user?.email}
+                </p>
+              </div>
+              {user?.badges && user.badges.length > 0 && (
+                <div>
+                  <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Badges</p>
+                  <div className="flex flex-wrap gap-2">
+                    {user.badges.map((badge, idx) => (
+                      <span key={idx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase"
+                        style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
+                        <Award className="w-3 h-3" />{badge}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              ) : (
-                <div className="mt-1">
-                  <p className="text-[12px] mb-2" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                    {user?.bio || 'No bio yet. Click Edit to add one.'}
-                  </p>
-                  <button onClick={() => setIsEditing(true)}
-                    className="px-3 py-1 rounded-xl font-black uppercase text-[10px]"
-                    style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
-                    Edit Profile
-                  </button>
+              )}
+              {subscriptions.length > 0 && (
+                <div>
+                  <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Active Subscriptions</p>
+                  <div className="space-y-2">
+                    {subscriptions.map((sub) => (
+                      <div key={sub.id} className="flex items-center justify-between p-3 rounded-xl"
+                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <div>
+                          <p className="font-black text-sm text-white" style={T}>{sub.tier_name || 'Subscription'}</p>
+                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>${sub.price}/month</p>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-md font-black text-[9px] uppercase"
+                          style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88', ...T }}>
+                          Active
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
-          </div>
-        </DarkCard>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatTile label="Points" value={user?.points || 0} icon={Star} color={GOLD} />
-          <StatTile label="Referrals" value={completedReferrals} icon={Gift} color="#8B5CF6" />
-          <StatTile label="Subscriptions" value={subscriptions.length} icon={TrendingUp} color="#00F5FF" />
-          <StatTile label="Virtual Items" value={inventory.length} icon={Award} color="#00FF88" />
-        </div>
-
-        {/* Badges */}
-        {user?.badges && user.badges.length > 0 && (
-          <DarkCard>
-            <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Badges</p>
-            </div>
-            <div className="p-4 flex flex-wrap gap-2">
-              {user.badges.map((badge, idx) => (
-                <span key={idx} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase"
-                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
-                  <Award className="w-3 h-3" />{badge}
-                </span>
-              ))}
-            </div>
           </DarkCard>
         )}
 
-        {/* Active Subscriptions */}
-        {subscriptions.length > 0 && (
-          <DarkCard>
-            <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Active Subscriptions</p>
-            </div>
-            <div className="p-3 space-y-2">
-              {subscriptions.map((sub) => (
-                <div key={sub.id} className="flex items-center justify-between p-3 rounded-xl"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <div>
-                    <p className="font-black text-sm text-white" style={T}>{sub.tier_name || 'Subscription'}</p>
-                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>${sub.price}/month</p>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-md font-black text-[9px] uppercase"
-                    style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88', ...T }}>
-                    Active
-                  </span>
-                </div>
-              ))}
-            </div>
-          </DarkCard>
-        )}
-
-        {/* Quick Links */}
-        <DarkCard>
-          <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Quick Access</p>
-          </div>
-          <div className="p-3 grid grid-cols-2 gap-2">
-            {[
-              { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio, color: '#FF1564' },
-              { label: 'Viewer Feed', href: createPageUrl('ViewerDashboard'), icon: BarChart2, color: '#00F5FF' },
-            ].map(item => (
-              <Link key={item.href} to={item.href}>
-                <div className="flex items-center gap-3 p-3 rounded-xl transition-colors cursor-pointer"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <item.icon className="w-4 h-4 shrink-0" style={{ color: item.color }} />
-                  <div>
-                    <p className="font-black text-[11px] text-white" style={T}>{item.label}</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </DarkCard>
       </div>
     </div>
   );

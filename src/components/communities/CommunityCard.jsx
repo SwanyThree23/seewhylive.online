@@ -1,136 +1,156 @@
 import React from 'react';
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, CheckCircle, Lock, Globe, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
+const GOLD    = '#D4AF37';
+const CRIMSON = '#800020';
+const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
+const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const CATEGORY_COLORS = {
+  music:         '#FF1564',
+  gaming:        '#00d4ff',
+  tech:          '#D4AF37',
+  education:     '#4ade80',
+  business:      '#fb923c',
+  entertainment: '#a78bfa',
+  sports:        '#38bdf8',
+  lifestyle:     '#f472b6',
+  all:           '#D4AF37',
+};
+
 export default function CommunityCard({ community, isMember, isAdmin, onJoin }) {
+  const catColor = CATEGORY_COLORS[community.category] || GOLD;
+  const initial  = community.name?.charAt(0).toUpperCase() || '?';
+
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300">
-      {/* Cover Image */}
-      <div className="relative h-32 bg-gradient-to-r from-purple-500 to-pink-500 overflow-hidden">
+    <div
+      className="rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:scale-[1.01]"
+      style={{
+        background: 'rgba(13,6,24,0.9)',
+        border: `1px solid rgba(212,175,55,0.18)`,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+      }}
+    >
+      {/* Cover band */}
+      <div className="relative h-24 overflow-hidden">
         {community.cover_url ? (
-          <img 
-            src={community.cover_url} 
-            alt={community.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          <img src={community.cover_url} alt={community.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full" />
+          <div style={{ background: `linear-gradient(135deg,${CRIMSON}55,rgba(212,175,55,0.12))`, width: '100%', height: '100%' }} />
         )}
-        <div className="absolute top-3 right-3 flex gap-2">
+        {/* badges top-right */}
+        <div className="absolute top-2 right-2 flex gap-1.5">
           {community.verified && (
-            <Badge className="bg-blue-500 text-white">
-              <CheckCircle className="w-3 h-3 mr-1" />
-              Verified
-            </Badge>
+            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase"
+              style={{ background: 'rgba(0,212,255,0.15)', border: '1px solid rgba(0,212,255,0.35)', color: '#00d4ff', ...T }}>
+              <CheckCircle className="w-2.5 h-2.5" />Verified
+            </span>
           )}
           {!community.is_public && (
-            <Badge variant="secondary">
-              <Lock className="w-3 h-3 mr-1" />
-              Private
-            </Badge>
+            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.5)', ...T }}>
+              <Lock className="w-2.5 h-2.5" />Private
+            </span>
           )}
         </div>
       </div>
 
-      <CardHeader className="relative pb-2">
-        <div className="flex items-start gap-3">
-          {/* Community Avatar */}
-          <Avatar className="w-16 h-16 -mt-8 ring-4 ring-background">
-            <AvatarImage src={community.avatar_url} />
-            <AvatarFallback className="text-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-              {community.name?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+      {/* Body */}
+      <div className="flex flex-col flex-1 p-4 gap-3">
+        {/* Avatar + name row */}
+        <div className="flex items-start gap-3 -mt-10">
+          {/* Octagonal avatar */}
+          <div style={{
+            width: 52, height: 52, clipPath: OCT, flexShrink: 0,
+            background: community.avatar_url ? 'transparent' : `linear-gradient(135deg,${CRIMSON},${GOLD})`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {community.avatar_url
+              ? <img src={community.avatar_url} alt={community.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 20, fontWeight: 900, color: '#fff' }}>{initial}</span>
+            }
+          </div>
 
-          <div className="flex-1 mt-2">
-            <h3 className="font-bold text-lg line-clamp-1 group-hover:text-purple-600 transition-colors">
-              {community.name}
-            </h3>
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span>{community.member_count || 0} members</span>
+          <div className="flex-1 pt-7 min-w-0">
+            <h3 className="font-black text-base text-white leading-tight truncate" style={T}>{community.name}</h3>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Users className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.35)' }} />
+              <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
+                {(community.member_count || 0).toLocaleString()} members
+              </span>
             </div>
           </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="space-y-3">
+        {/* Description */}
         {community.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-[12px] leading-relaxed line-clamp-2" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
             {community.description}
           </p>
         )}
 
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="capitalize">
-            {community.category}
-          </Badge>
-          {community.is_public ? (
-            <Badge variant="outline" className="text-green-600">
-              <Globe className="w-3 h-3 mr-1" />
-              Public
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-yellow-600">
-              <Lock className="w-3 h-3 mr-1" />
-              Private
-            </Badge>
+        {/* Pills row */}
+        <div className="flex flex-wrap gap-1.5">
+          {community.category && (
+            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase"
+              style={{ background: `${catColor}18`, border: `1px solid ${catColor}40`, color: catColor, ...T }}>
+              {community.category}
+            </span>
           )}
+          <span className="flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...T }}>
+            {community.is_public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+            {community.is_public ? 'Public' : 'Private'}
+          </span>
+          {community.tags?.slice(0, 2).map((tag, i) => (
+            <span key={i} className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase"
+              style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)', color: 'rgba(212,175,55,0.6)', ...T }}>
+              #{tag}
+            </span>
+          ))}
         </div>
 
-        {community.tags && community.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {community.tags.slice(0, 3).map((tag, idx) => (
-              <Badge key={idx} variant="secondary" className="text-xs">
-                #{tag}
-              </Badge>
-            ))}
-          </div>
-        )}
+        {/* Spacer */}
+        <div className="flex-1" />
 
-        <div className="space-y-2 pt-2">
-          <div className="flex gap-2">
-            <Link to={createPageUrl(`Community?id=${community.id}`)} className="flex-1">
-              <Button variant="outline" className="w-full">
-                View
-              </Button>
+        {/* Action buttons */}
+        <div className="flex gap-2 mt-auto">
+          <Link to={createPageUrl(`Community?id=${community.id}`)} className="flex-1">
+            <button className="w-full py-2 rounded-xl font-black uppercase text-[10px] transition-all"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', ...T }}>
+              View
+            </button>
+          </Link>
+
+          {!isMember && (
+            <button className="flex-1 py-2 rounded-xl font-black uppercase text-[10px] transition-all"
+              onClick={e => { e.preventDefault(); onJoin?.(community); }}
+              style={{ background: 'rgba(212,175,55,0.1)', border: `1px solid rgba(212,175,55,0.4)`, color: GOLD, ...T }}>
+              + Join
+            </button>
+          )}
+
+          {isMember && isAdmin && (
+            <Link to={createPageUrl(`CommunityAdmin?id=${community.id}`)} className="flex-1">
+              <button className="w-full py-2 rounded-xl font-black uppercase text-[10px] transition-all"
+                style={{ background: `rgba(128,0,32,0.18)`, border: `1px solid rgba(128,0,32,0.4)`, color: '#ff6680', ...T }}>
+                Admin
+              </button>
             </Link>
-            {!isMember && (
-              <Button 
-                className="flex-1" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  onJoin?.(community);
-                }}
-              >
-                Join
-              </Button>
-            )}
-          </div>
+          )}
+
           {isMember && (
-            <div className="flex gap-2">
-              {isAdmin && (
-                <Link to={createPageUrl(`CommunityAdmin?id=${community.id}`)} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
-                    Admin
-                  </Button>
-                </Link>
-              )}
-              <Link to={createPageUrl(`CommunityGrowth?id=${community.id}`)} className="flex-1">
-                <Button variant="ghost" size="sm" className="w-full text-purple-600">
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  Growth
-                </Button>
-              </Link>
-            </div>
+            <Link to={createPageUrl(`CommunityGrowth?id=${community.id}`)}>
+              <button className="p-2 rounded-xl transition-all"
+                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD }}>
+                <TrendingUp className="w-3.5 h-3.5" />
+              </button>
+            </Link>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
