@@ -9,6 +9,7 @@ var UPGRADE_LABELS = {
   pkBattle:   { need: 'CREATOR', label: 'PK Battle', icon: '⚔️' },
   clips:      { need: 'CREATOR', label: 'Clip Engine', icon: '🎬' },
   subs:       { need: 'CREATOR', label: 'Subscriptions', icon: '⭐' },
+  polls:      { need: 'CREATOR', label: 'Live Polls', icon: '📊' },
 };
 
 export default function UpgradeGate({ feature, children }) {

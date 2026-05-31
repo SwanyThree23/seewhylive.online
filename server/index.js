@@ -334,8 +334,17 @@ var judgeRosters        = new Map();  // roomId → Map<userId, { userId, userna
 var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
 var pkVotes             = new Map();  // roomId → { challenger: n, defender: n }
+var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
+var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
+
+function getAnalytics(roomId) {
+  if (!roomAnalytics.has(roomId)) {
+    roomAnalytics.set(roomId, { viewerHistory: [], msgCounts: {}, sessionEarnings: 0, peak: 0 });
+  }
+  return roomAnalytics.get(roomId);
+}
 
 // Helper: serialize a poll (Set<socketId> votes → plain counts)
 function serializePoll(poll) {
@@ -1393,6 +1402,11 @@ io.on('connection', function(socket) {
     }
     swanybot.onChatMessage(roomId, socket.id, message, { username: username, room: rooms.get(roomId) });
 
+    // Analytics: increment per-minute message count
+    var chatA = getAnalytics(roomId);
+    var chatMinKey = Math.floor(Date.now() / 60000);
+    chatA.msgCounts[chatMinKey] = (chatA.msgCounts[chatMinKey] || 0) + 1;
+
     // Detect and translate
     translation.detectAndTranslate(message)
       .then(function(result) {
@@ -1457,6 +1471,10 @@ io.on('connection', function(socket) {
     } catch (dbErr) {
       logger.error('[send-gift] DB insert failed: ' + dbErr.message);
     }
+
+    // Analytics: track session earnings
+    var giftAnalytics = getAnalytics(roomId);
+    giftAnalytics.sessionEarnings += valueCents;
 
     io.to(roomId).emit('gift-received', {
       id:            giftId,
@@ -1960,6 +1978,10 @@ io.on('connection', function(socket) {
       logger.error('[super-chat] DB insert: ' + e.message);
     }
 
+    // Analytics: track super-chat earnings
+    var scAnalytics = getAnalytics(roomId);
+    scAnalytics.sessionEarnings += amountCents;
+
     io.to(roomId).emit('super-chat', {
       id:           scId,
       username:     username,
@@ -2349,6 +2371,108 @@ io.on('connection', function(socket) {
     var sId = data.roomId || socket.data.roomId;
     if (!sId) return;
     io.to(sId).emit('subscriber-only-changed', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── analytics-ping ────────────────────────────────────────────────────
+  socket.on('analytics-ping', function(data) {
+    var pingRoomId = (data && data.roomId) ? data.roomId : socket.data.roomId;
+    if (!pingRoomId) return;
+    var a = getAnalytics(pingRoomId);
+    var pingRoom = io.sockets.adapter.rooms.get(pingRoomId);
+    var pingViewers = pingRoom ? pingRoom.size : 0;
+    if (pingViewers > a.peak) a.peak = pingViewers;
+    a.viewerHistory.push(pingViewers);
+    if (a.viewerHistory.length > 20) a.viewerHistory = a.viewerHistory.slice(-20);
+    var pingMinKey = Math.floor(Date.now() / 60000);
+    var pingMsgRate = (a.msgCounts[pingMinKey] || 0) + (a.msgCounts[pingMinKey - 1] || 0);
+    var pingBuckets = [];
+    for (var pbi = 9; pbi >= 0; pbi--) {
+      pingBuckets.push(a.msgCounts[pingMinKey - pbi] || 0);
+    }
+    io.to(pingRoomId).emit('analytics-update', {
+      viewers:       pingViewers,
+      peak:          a.peak,
+      msgRate:       pingMsgRate,
+      earnings:      a.sessionEarnings,
+      chatBuckets:   pingBuckets,
+      viewerHistory: a.viewerHistory
+    });
+  });
+
+  // ── poll-create ───────────────────────────────────────────────────────
+  socket.on('poll-create', function(data) {
+    var pollRoomId = data.roomId || socket.data.roomId;
+    if (!pollRoomId) return;
+    var duration = data.duration || 60;
+    var newPoll = {
+      id: Date.now().toString(),
+      question: String(data.question || '').slice(0, 200),
+      options: (Array.isArray(data.options) ? data.options : []).map(function(o) { return String(o).slice(0, 80); }),
+      votes: {},
+      totalVotes: 0,
+      endsAt: Date.now() + duration * 1000
+    };
+    var existingPoll = activePolls.get(pollRoomId);
+    if (existingPoll && existingPoll.timer) clearTimeout(existingPoll.timer);
+    newPoll.timer = setTimeout(function() {
+      var finCounts = {};
+      Object.keys(newPoll.votes).forEach(function(k) {
+        var opt = newPoll.votes[k];
+        finCounts[opt] = (finCounts[opt] || 0) + 1;
+      });
+      io.to(pollRoomId).emit('poll-end', { id: newPoll.id, final: true, votes: finCounts, totalVotes: newPoll.totalVotes });
+      activePolls.delete(pollRoomId);
+    }, duration * 1000);
+    activePolls.set(pollRoomId, newPoll);
+    io.to(pollRoomId).emit('poll-start', {
+      id: newPoll.id,
+      question: newPoll.question,
+      options: newPoll.options,
+      votes: {},
+      totalVotes: 0,
+      endsAt: newPoll.endsAt
+    });
+  });
+
+  // ── poll-vote ─────────────────────────────────────────────────────────
+  socket.on('poll-vote', function(data) {
+    var voteRoomId = data.roomId || socket.data.roomId;
+    if (!voteRoomId) return;
+    var pollToVote = activePolls.get(voteRoomId);
+    if (!pollToVote || pollToVote.id !== data.pollId) return;
+    var voteKey = socket.id;
+    if (pollToVote.votes[voteKey] !== undefined) return;
+    pollToVote.votes[voteKey] = data.option;
+    pollToVote.totalVotes = (pollToVote.totalVotes || 0) + 1;
+    var voteCounts = {};
+    Object.keys(pollToVote.votes).forEach(function(k) {
+      var opt = pollToVote.votes[k];
+      voteCounts[opt] = (voteCounts[opt] || 0) + 1;
+    });
+    io.to(voteRoomId).emit('poll-update', {
+      id: pollToVote.id,
+      question: pollToVote.question,
+      options: pollToVote.options,
+      votes: voteCounts,
+      totalVotes: pollToVote.totalVotes,
+      endsAt: pollToVote.endsAt
+    });
+  });
+
+  // ── poll-end (manual) ─────────────────────────────────────────────────
+  socket.on('poll-end', function(data) {
+    var endRoomId = data.roomId || socket.data.roomId;
+    if (!endRoomId) return;
+    var endPoll = activePolls.get(endRoomId);
+    if (!endPoll) return;
+    if (endPoll.timer) clearTimeout(endPoll.timer);
+    activePolls.delete(endRoomId);
+    var endCounts = {};
+    Object.keys(endPoll.votes).forEach(function(k) {
+      var opt = endPoll.votes[k];
+      endCounts[opt] = (endCounts[opt] || 0) + 1;
+    });
+    io.to(endRoomId).emit('poll-end', { id: endPoll.id, final: true, votes: endCounts, totalVotes: endPoll.totalVotes });
   });
 
   // ── disconnect ─────────────────────────────────────────────────────────

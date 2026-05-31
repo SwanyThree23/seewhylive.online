@@ -3,10 +3,10 @@
 var PLANS = ['free', 'creator', 'pro', 'studio'];
 
 var PLAN_FEATURES = {
-  free:    { maxPanels: 2,  superChat: false, ppv: false, analytics: false, pkBattle: false, clips: false, subs: false },
-  creator: { maxPanels: 5,  superChat: true,  ppv: false, analytics: true,  pkBattle: true,  clips: true,  subs: true  },
-  pro:     { maxPanels: 10, superChat: true,  ppv: true,  analytics: true,  pkBattle: true,  clips: true,  subs: true  },
-  studio:  { maxPanels: 20, superChat: true,  ppv: true,  analytics: true,  pkBattle: true,  clips: true,  subs: true  },
+  free:    { maxPanels: 2,  superChat: false, ppv: false, analytics: false, pkBattle: false, clips: false, subs: false, polls: false },
+  creator: { maxPanels: 5,  superChat: true,  ppv: false, analytics: true,  pkBattle: true,  clips: true,  subs: true,  polls: true  },
+  pro:     { maxPanels: 10, superChat: true,  ppv: true,  analytics: true,  pkBattle: true,  clips: true,  subs: true,  polls: true  },
+  studio:  { maxPanels: 20, superChat: true,  ppv: true,  analytics: true,  pkBattle: true,  clips: true,  subs: true,  polls: true  },
 };
 
 function getCurrentPlan() {
