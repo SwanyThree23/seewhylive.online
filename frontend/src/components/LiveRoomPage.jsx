@@ -8,18 +8,18 @@ import { creatorCents, platformCents, getPlatformHandles } from '../platformConf
 var MAX_STAGE = 20;
 
 // ─── Palette ───────────────────────────────────────────────────────────────
-var BG      = '#0F0C14';
-var SURF    = '#130F1C';
-var CARD    = '#1A1526';
-var CARD2   = '#211A30';
-var BORDER  = 'rgba(255,255,255,.06)';
+var BG      = '#0E0C09';
+var SURF    = '#1A1510';
+var CARD    = '#241C12';
+var CARD2   = '#2E2318';
+var BORDER  = 'rgba(201,168,76,.12)';
 var GOLD    = '#C9A84C';
 var BURG    = '#800020';
-var TEAL    = '#00DEC0';
+var TEAL    = '#D4854A';
 var RED     = '#FF1A3C';
-var TEXT    = '#EDE8F5';
-var MUTED   = '#7A6F90';
-var DIM     = '#2E2545';
+var TEXT    = '#F0E8D4';
+var MUTED   = '#8A7A62';
+var DIM     = '#3D3020';
 
 // ─── Animation CSS ─────────────────────────────────────────────────────────
 var ANIM = [
