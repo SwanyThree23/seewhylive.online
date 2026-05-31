@@ -3,22 +3,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
 var GOLD = '#C9A84C';
-var TEAL = '#00DEC0';
+var TEAL = '#D4854A';
 
 var ANIM =
   '@keyframes giftRise{0%{transform:translateY(0);opacity:1}85%{opacity:1}100%{transform:translateY(-200px);opacity:0}}' +
   '@keyframes legendBurst{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.1);opacity:1}100%{transform:scale(1);opacity:1}}' +
   '@keyframes comboPop{0%,100%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.18)}}' +
-  '@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}';
+  '@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}' +
+  '@keyframes showerFall{0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(540deg);opacity:0}}' +
+  '@keyframes showerBurst{0%{transform:translateX(-50%) scale(0);opacity:0}40%{transform:translateX(-50%) scale(1.2);opacity:1}100%{transform:translateX(-50%) scale(1);opacity:1}}';
 
 export default function GiftLayer(props) {
   var giftFloats = props.giftFloats;
 
   var [combo,     setCombo]     = useState(0);
   var [comboShow, setComboShow] = useState(false);
+  var [showerActive, setShowerActive] = useState(false);
+  var [showerItems,  setShowerItems]  = useState([]);
   var comboTimer = useRef(null);
   var comboCount = useRef(0);
   var prevLen    = useRef(0);
+  var showerRef  = useRef(null);
 
   useEffect(function() {
     var len = giftFloats ? giftFloats.length : 0;
@@ -33,6 +38,28 @@ export default function GiftLayer(props) {
       setCombo(0);
       setComboShow(false);
     }, 4200);
+    if (comboCount.current >= 5) {
+      setShowerActive(true);
+      var EMOJIS = ['🎲','🎲','🏆','💎','🔥','⚡','👑','🎁','💰','🎯'];
+      var items = [];
+      for (var i = 0; i < 18; i++) {
+        items.push({
+          id: Date.now() + i,
+          emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
+          left: Math.floor(Math.random() * 92) + '%',
+          delay: (Math.floor(Math.random() * 20) / 10) + 's',
+          size: 18 + Math.floor(Math.random() * 22),
+          dur: (1.4 + Math.floor(Math.random() * 14) / 10) + 's',
+        });
+      }
+      setShowerItems(items);
+      if (showerRef.current) clearTimeout(showerRef.current);
+      showerRef.current = setTimeout(function() { setShowerActive(false); setShowerItems([]); }, 4500);
+    }
+    return function() {
+      if (comboTimer.current) clearTimeout(comboTimer.current);
+      if (showerRef.current) clearTimeout(showerRef.current);
+    };
   }, [giftFloats]);
 
   if (!giftFloats || giftFloats.length === 0) return null;
@@ -61,6 +88,17 @@ export default function GiftLayer(props) {
           <span style={{ fontSize: 20 }}>{combo >= 10 ? '🔥' : combo >= 5 ? '💎' : '⚡'}</span>
         </div>
       )}
+
+      {showerActive && combo >= 5 && (
+        <div style={{ position: 'absolute', top: '7%', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,rgba(128,0,32,.95),rgba(36,28,18,.9))', border: '2px solid #C9A84C', borderRadius: 999, padding: '9px 26px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, letterSpacing: 4, color: '#C9A84C', animation: 'showerBurst .35s ease', boxShadow: '0 0 36px rgba(201,168,76,.45)', whiteSpace: 'nowrap', zIndex: 802, pointerEvents: 'none' }}>
+          {combo >= 10 ? '🎲 DOMINO RAIN! 🎲' : '🔥 GIFT SHOWER! 🔥'}
+        </div>
+      )}
+      {showerActive && showerItems.map(function(item) {
+        return (
+          <div key={item.id} style={{ position: 'absolute', left: item.left, top: '-50px', fontSize: item.size, animation: 'showerFall ' + item.dur + ' ease-in ' + item.delay + ' forwards', pointerEvents: 'none', zIndex: 801 }}>{item.emoji}</div>
+        );
+      })}
 
       {/* Gift floats */}
       {giftFloats.map(function(g) {
