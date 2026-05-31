@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft } from "lucide-react";
 
-var C = {
-  bg: "#080B18", card: "rgba(13,6,24,0.97)", surface: "rgba(17,8,34,0.85)",
-  burgundy: "#800020", gold: "#D4AF37", volt: "#C8FF00",
-  white: "#FFFFFF", gray: "#888", dim: "#444",
-  fOrb: "'Orbitron',sans-serif", fRaj: "'Barlow Condensed',sans-serif",
-  fMon: "'Share Tech Mono',monospace", fBeb: "'Barlow Condensed',sans-serif",
-};
+const GOLD    = "#D4AF37";
+const CRIMSON = "#800020";
+const PINK    = "#FF1564";
+const CYAN    = "#00d4ff";
+const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
+const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
 function initials(name) {
   if (!name) return "?";
@@ -21,8 +21,8 @@ function fmtTime(ts) {
   var now = new Date();
   var diff = now - d;
   if (diff < 60000) return "just now";
-  if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
-  if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago";
+  if (diff < 3600000) return Math.floor(diff / 60000) + "m";
+  if (diff < 86400000) return Math.floor(diff / 3600000) + "h";
   return d.toLocaleDateString();
 }
 
@@ -69,7 +69,9 @@ export default function Messages() {
   });
 
   var currentThread = selectedThread ? (threadMap[selectedThread] || null) : null;
-  var threadMessages = currentThread ? currentThread.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)) : [];
+  var threadMessages = currentThread
+    ? currentThread.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
+    : [];
 
   var sendMutation = useMutation({
     mutationFn: (content) => base44.entities.DirectMessage.create({
@@ -87,9 +89,9 @@ export default function Messages() {
 
   useEffect(() => {
     if (msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
-    // Mark unread messages as read
     if (currentThread) {
-      currentThread.messages.filter(m => m.recipient_id === user?.id && !m.read_at)
+      currentThread.messages
+        .filter(m => m.recipient_id === user?.id && !m.read_at)
         .forEach(m => markReadMutation.mutate(m.id));
     }
   }, [threadMessages.length, selectedThread]);
@@ -97,122 +99,242 @@ export default function Messages() {
   var totalUnread = threads.reduce((sum, t) => sum + t.unread, 0);
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column" }}>
-      {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 30, background: "rgba(8,11,24,0.97)", borderBottom: "1px solid rgba(212,175,55,0.1)", backdropFilter: "blur(12px)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-        <button onClick={() => window.history.back()} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontSize: 18 }}>←</button>
-        <span style={{ fontFamily: C.fOrb, fontSize: 14, color: C.gold, letterSpacing: 2 }}>MESSAGES</span>
-        {totalUnread > 0 && (
-          <span style={{ background: C.burgundy, color: C.white, borderRadius: 10, padding: "2px 8px", fontFamily: C.fMon, fontSize: 10 }}>{totalUnread}</span>
-        )}
+    <div className="flex flex-col" style={{ minHeight: "100vh", background: "#080B18" }}>
+
+      {/* ── Sticky header ──────────────────────────────────────── */}
+      <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-3"
+        style={{
+          background: "rgba(8,11,24,0.97)",
+          borderBottom: "1px solid rgba(212,175,55,0.1)",
+          backdropFilter: "blur(12px)",
+        }}>
+        <div className="flex items-center gap-2.5">
+          {selectedThread ? (
+            <button
+              onClick={() => setSelectedThread(null)}
+              className="flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:brightness-125"
+              style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", color: GOLD }}>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          ) : (
+            <MessageSquare className="w-5 h-5" style={{ color: GOLD }} />
+          )}
+          <h1 className="font-black text-xl text-white leading-none" style={T}>
+            {selectedThread && currentThread ? currentThread.partnerName : "Messages"}
+          </h1>
+          {!selectedThread && totalUnread > 0 && (
+            <span className="flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-black"
+              style={{ background: PINK, color: "#fff", ...T }}>
+              {totalUnread}
+            </span>
+          )}
+        </div>
+        <button
+          className="flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:brightness-125"
+          style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", color: GOLD }}>
+          <PenSquare className="w-4 h-4" />
+        </button>
       </div>
 
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {/* Thread list */}
-        <div style={{
-          width: selectedThread ? "35%" : "100%", borderRight: "1px solid #1a1a1a",
-          overflowY: "auto", background: C.card,
-        }}>
-          {threads.length === 0 && (
-            <div style={{ padding: 24, textAlign: "center", color: C.dim, fontFamily: C.fMon, fontSize: 11 }}>No messages yet</div>
-          )}
-          {threads.map(t => {
-            var last = t.messages[t.messages.length - 1];
-            var isSelected = selectedThread === t.partnerId;
-            return (
-              <div key={t.partnerId} onClick={() => setSelectedThread(t.partnerId)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "12px 14px",
-                  borderBottom: "1px solid #1a1a1a", cursor: "pointer",
-                  background: isSelected ? "rgba(128,0,32,0.2)" : "transparent",
-                  transition: "background .15s",
-                }}>
-                {/* Avatar */}
-                <div style={{
-                  width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg," + C.burgundy + "," + C.gold + ")",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: C.fBeb, fontSize: 14, color: C.white, flexShrink: 0,
-                }}>
-                  {initials(t.partnerName)}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                    <span style={{ fontFamily: C.fRaj, fontSize: 13, fontWeight: 700, color: isSelected ? C.gold : C.white }}>{t.partnerName}</span>
-                    <span style={{ fontFamily: C.fMon, fontSize: 8, color: C.dim }}>{fmtTime(last?.created_date)}</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    {last?.is_whisper && <span style={{ fontSize: 10 }}>🤫</span>}
-                    <span style={{
-                      fontFamily: C.fRaj, fontSize: 11, color: t.unread > 0 ? C.white : C.gray,
-                      fontWeight: t.unread > 0 ? 700 : 400,
-                      fontStyle: last?.is_whisper ? "italic" : "normal",
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    }}>{last?.content || ""}</span>
-                  </div>
-                </div>
-                {t.unread > 0 && (
-                  <div style={{ background: C.burgundy, borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: C.fMon, fontSize: 8, color: C.white, flexShrink: 0 }}>{t.unread}</div>
-                )}
+      {/* ── Body ───────────────────────────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0, flex: 1 }}>
+
+        {/* Thread list — full width on mobile when no thread selected, 35% on desktop */}
+        <div
+          className={selectedThread ? "hidden md:flex md:flex-col" : "flex flex-col w-full"}
+          style={{
+            width: selectedThread ? "35%" : undefined,
+            borderRight: selectedThread ? "1px solid rgba(255,255,255,0.04)" : "none",
+            overflowY: "auto",
+            background: "rgba(13,6,24,0.9)",
+            minWidth: 0,
+          }}>
+
+          {threads.length === 0 ? (
+            /* Empty state */
+            <div className="flex flex-col items-center justify-center py-24 px-6">
+              <div style={{
+                width: 72, height: 72, clipPath: OCT,
+                background: "rgba(212,175,55,0.07)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                marginBottom: 16,
+              }}>
+                <MessageSquare className="w-8 h-8" style={{ color: "rgba(212,175,55,0.35)" }} />
               </div>
-            );
-          })}
+              <p className="font-black text-sm uppercase mb-2" style={{ color: "rgba(255,255,255,0.35)", ...T }}>
+                No messages yet
+              </p>
+              <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.2)", ...T }}>
+                Start a conversation
+              </p>
+            </div>
+          ) : (
+            threads.map((t, idx) => {
+              var last = t.messages[t.messages.length - 1];
+              var isSelected = selectedThread === t.partnerId;
+              return (
+                <div key={t.partnerId}>
+                  <div
+                    onClick={() => setSelectedThread(t.partnerId)}
+                    className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-all"
+                    style={{
+                      background: isSelected
+                        ? "rgba(212,175,55,0.08)"
+                        : "transparent",
+                    }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(212,175,55,0.05)"; }}
+                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}>
+
+                    {/* Octagonal avatar */}
+                    <div style={{
+                      width: 44, height: 44, clipPath: OCT, flexShrink: 0,
+                      background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <span className="font-black text-sm text-white" style={T}>
+                        {initials(t.partnerName)}
+                      </span>
+                    </div>
+
+                    {/* Text content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="font-black text-[13px] text-white truncate" style={T}>
+                          {t.partnerName}
+                        </span>
+                        <span className="text-[9px] ml-2 shrink-0" style={{ color: "rgba(255,255,255,0.25)", ...T }}>
+                          {fmtTime(last?.created_date)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {last?.is_whisper && <span style={{ fontSize: 10 }}>🤫</span>}
+                        <span
+                          className="text-[11px] truncate"
+                          style={{
+                            color: t.unread > 0 ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.35)",
+                            fontWeight: t.unread > 0 ? 700 : 400,
+                            fontStyle: last?.is_whisper ? "italic" : "normal",
+                            ...T,
+                          }}>
+                          {last?.content || ""}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Unread badge */}
+                    {t.unread > 0 && (
+                      <div className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[9px] font-black text-white"
+                        style={{ background: PINK, ...T }}>
+                        {t.unread}
+                      </div>
+                    )}
+                  </div>
+                  {idx < threads.length - 1 && (
+                    <div style={{ height: 1, background: "rgba(255,255,255,0.04)", marginLeft: 64 }} />
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
 
-        {/* Message thread */}
+        {/* ── Active chat view ──────────────────────────────────── */}
         {selectedThread && currentThread && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", background: C.bg }}>
-            {/* Thread header */}
-            <div style={{ padding: "10px 14px", borderBottom: "1px solid #1a1a1a", background: C.card, display: "flex", alignItems: "center", gap: 10 }}>
-              <button onClick={() => setSelectedThread(null)} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer" }}>←</button>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg," + C.burgundy + "," + C.gold + ")", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: C.fBeb, fontSize: 12, color: C.white }}>{initials(currentThread.partnerName)}</div>
-              <span style={{ fontFamily: C.fRaj, fontSize: 14, fontWeight: 700, color: C.white }}>{currentThread.partnerName}</span>
+          <div className="flex flex-col flex-1" style={{ background: "#080B18", minWidth: 0, overflow: "hidden" }}>
+
+            {/* Thread sub-header (visible on desktop alongside list) */}
+            <div className="hidden md:flex items-center gap-3 px-4 py-2.5"
+              style={{
+                background: "rgba(13,6,24,0.97)",
+                borderBottom: "1px solid rgba(255,255,255,0.04)",
+              }}>
+              <div style={{
+                width: 32, height: 32, clipPath: OCT,
+                background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <span className="font-black text-xs text-white" style={T}>
+                  {initials(currentThread.partnerName)}
+                </span>
+              </div>
+              <span className="font-black text-sm text-white" style={T}>{currentThread.partnerName}</span>
             </div>
 
-            {/* Messages */}
-            <div ref={msgRef} style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: 8 }}>
+            {/* Messages scroll area */}
+            <div ref={msgRef} className="flex-1 overflow-y-auto px-4 py-3"
+              style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {threadMessages.map(m => {
                 var isMe = m.sender_id === user?.id;
                 var isWhisper = m.is_whisper;
                 var isGiftNotif = m.type === "gift_notification";
                 return (
                   <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
-                    {isGiftNotif && (
-                      <div style={{ padding: "8px 12px", background: "rgba(212,175,55,0.1)", border: "1px solid " + C.gold + "44", borderRadius: 10, fontFamily: C.fRaj, fontSize: 12, color: C.gold }}>
+                    {isGiftNotif ? (
+                      <div className="px-3 py-2 rounded-2xl text-[12px]"
+                        style={{
+                          background: "rgba(212,175,55,0.1)",
+                          border: `1px solid rgba(212,175,55,0.3)`,
+                          color: GOLD,
+                          ...T,
+                        }}>
                         🎁 Gift notification: {m.content}
                       </div>
-                    )}
-                    {!isGiftNotif && (
-                      <div style={{
-                        maxWidth: "75%", padding: "8px 12px", borderRadius: 10,
-                        background: isMe ? "rgba(128,0,32,0.35)" : "rgba(255,255,255,0.06)",
-                        border: "1px solid " + (isMe ? C.burgundy : "#2a2a2a"),
-                        fontFamily: C.fRaj, fontSize: 13,
-                        color: isWhisper ? C.gold : (isMe ? "#ffcccc" : C.white),
-                        fontStyle: isWhisper ? "italic" : "normal",
-                      }}>
+                    ) : (
+                      <div className="px-3 py-2 rounded-2xl text-[13px] max-w-[75%]"
+                        style={{
+                          background: isMe ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.06)",
+                          border: `1px solid ${isMe ? "rgba(212,175,55,0.25)" : "rgba(255,255,255,0.08)"}`,
+                          color: isWhisper ? GOLD : (isMe ? "#fff" : "rgba(255,255,255,0.9)"),
+                          fontStyle: isWhisper ? "italic" : "normal",
+                          alignSelf: isMe ? "flex-end" : "flex-start",
+                          ...T,
+                        }}>
                         {isWhisper && <span style={{ fontSize: 11, marginRight: 4 }}>🤫</span>}
                         {m.content}
                       </div>
                     )}
-                    <div style={{ display: "flex", gap: 4, marginTop: 2, alignItems: "center" }}>
-                      <span style={{ fontFamily: C.fMon, fontSize: 8, color: C.dim }}>{fmtTime(m.created_date)}</span>
-                      {isMe && <span style={{ fontSize: 9, color: m.read_at ? "#4fc3f7" : C.dim }}>{m.read_at ? "✓✓" : "✓"}</span>}
+                    <div className="flex gap-1.5 mt-0.5 items-center">
+                      <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.2)", ...T }}>
+                        {fmtTime(m.created_date)}
+                      </span>
+                      {isMe && (
+                        <span style={{ fontSize: 9, color: m.read_at ? CYAN : "rgba(255,255,255,0.2)" }}>
+                          {m.read_at ? "✓✓" : "✓"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Input */}
-            <div style={{ padding: "10px 12px", borderTop: "1px solid #1a1a1a", background: C.card, display: "flex", gap: 8 }}>
+            {/* ── Input bar ──────────────────────────────────────── */}
+            <div className="flex items-center gap-2 px-4 py-3"
+              style={{
+                borderTop: "1px solid rgba(255,255,255,0.04)",
+                background: "rgba(13,6,24,0.97)",
+              }}>
               <input
-                style={{ flex: 1, background: "#111", border: "1px solid #333", borderRadius: 8, color: C.white, fontFamily: C.fMon, fontSize: 12, padding: "8px 12px", outline: "none" }}
-                placeholder="Type a message…" value={input} onChange={e => setInput(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(212,175,55,0.15)",
+                  ...T,
+                }}
+                placeholder="Type a message…"
+                value={input}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
               />
-              <button onClick={() => input.trim() && sendMutation.mutate(input.trim())}
-                style={{ padding: "8px 16px", background: C.burgundy, border: "1px solid " + C.gold, borderRadius: 8, color: C.gold, fontFamily: C.fMon, fontSize: 11, cursor: "pointer", fontWeight: 700 }}>
-                SEND
+              <button
+                onClick={() => input.trim() && sendMutation.mutate(input.trim())}
+                className="flex items-center justify-center w-10 h-10 rounded-2xl transition-all hover:brightness-110 shrink-0"
+                style={{
+                  background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                  border: "none",
+                  cursor: "pointer",
+                }}>
+                <Send className="w-4 h-4 text-white" />
               </button>
             </div>
           </div>
