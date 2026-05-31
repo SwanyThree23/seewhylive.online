@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { getSocket, setRejoinPayload, onReconnectCallback } from './socket.js';
+import { creatorCents, platformCents, getPlatformHandles } from './platformConfig.js';
 import rtcManager from './webrtc.js';
 
 /* Always-loaded: default tab + persistent overlays */
@@ -1190,13 +1191,14 @@ export default function App() {
 
 // ─── Paywall screen shown to viewers before entering a paid room ────────────
 function PaywallScreen({ priceCents, onUnlock, addToast }) {
-  var BG   = '#0F0C14'; var SURF = '#130F1C'; var CARD = '#1A1526'; var CARD2 = '#211A30';
+  var BG   = '#0F0C14'; var SURF = '#130F1C'; var CARD = '#1A1526';
   var GOLD = '#C9A84C'; var TEAL = '#00DEC0'; var MUTED = '#7A6F90'; var TEXT = '#EDE8F5';
   var BORDER = 'rgba(255,255,255,.06)';
 
-  var handles = (function() {
+  var creatorHandles = (function() {
     try { return JSON.parse(localStorage.getItem('sw_directpay_handles') || '{}'); } catch(e) { return {}; }
   })();
+  var platHandles = getPlatformHandles();
 
   var DP_PLATFORMS = [
     { id: 'paypal',  emoji: '💸', name: 'PayPal',  color: '#0070BA', buildUrl: function(h) { return 'https://paypal.me/' + h.replace(/^@/,''); } },
@@ -1206,54 +1208,86 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
     { id: 'chime',   emoji: '🟢', name: 'Chime',   color: '#16BE45', buildUrl: null },
   ];
 
-  var activePlatforms = DP_PLATFORMS.filter(function(p) { return handles[p.id] && handles[p.id].trim(); });
-  var dollars = priceCents > 0 ? ('$' + (Math.floor(priceCents) / 100).toFixed(2)) : null;
+  var activeCreator = DP_PLATFORMS.filter(function(p) { return !!(creatorHandles[p.id] || '').trim(); });
+  var activePlat    = DP_PLATFORMS.filter(function(p) { return !!(platHandles[p.id] || '').trim(); });
 
-  function openPay(p) {
-    var h = (handles[p.id] || '').trim();
+  var totalCents   = Math.floor(priceCents) || 0;
+  var cCents       = creatorCents(totalCents);
+  var pCents       = platformCents(totalCents);
+  var totalDollars = totalCents > 0 ? ('$' + (totalCents / 100).toFixed(2)) : null;
+  var cDollars     = cCents > 0     ? ('$' + (cCents / 100).toFixed(2))     : null;
+  var pDollars     = pCents > 0     ? ('$' + (pCents / 100).toFixed(2))     : null;
+
+  function openPay(p, h) {
+    h = (h || '').trim();
     if (!h) return;
     if (p.buildUrl) { window.open(p.buildUrl(h), '_blank', 'noopener'); }
     else { navigator.clipboard.writeText(h).then(function() { if (addToast) addToast(p.name + ': ' + h + ' copied!', 'success'); }); }
   }
 
+  function renderPayRow(p, h, accentColor) {
+    return (
+      <button key={p.id} onClick={function() { openPay(p, h); }}
+        style={{ background: 'rgba(255,255,255,.04)', border: '1.5px solid ' + accentColor + '55', borderRadius: 14, padding: '12px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', transition: 'background .2s' }}>
+        <span style={{ fontSize: 24, flexShrink: 0 }}>{p.emoji}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT }}>{p.name}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: accentColor, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</div>
+        </div>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: accentColor, letterSpacing: 1, flexShrink: 0 }}>{p.buildUrl ? 'PAY →' : 'COPY'}</span>
+      </button>
+    );
+  }
+
   return (
-    <div style={{ height: '100%', background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', fontFamily: "'Barlow Condensed',sans-serif" }}>
+    <div style={{ height: '100%', background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', fontFamily: "'Barlow Condensed',sans-serif", overflowY: 'auto' }}>
       <div style={{ width: '100%', maxWidth: 380 }}>
         {/* Lock icon + title */}
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 52, marginBottom: 12 }}>🔒</div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 30, color: TEXT, letterSpacing: 2, marginBottom: 4 }}>PAID ACCESS</div>
-          {dollars && (
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 44, color: GOLD, letterSpacing: 1, lineHeight: 1, marginBottom: 6 }}>{dollars}</div>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: 48, marginBottom: 10 }}>🔒</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: TEXT, letterSpacing: 2, marginBottom: 4 }}>PAID ACCESS</div>
+          {totalDollars && (
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: GOLD, letterSpacing: 1, lineHeight: 1, marginBottom: 6 }}>{totalDollars}</div>
           )}
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 1 }}>
-            {activePlatforms.length > 0 ? 'Pay the host to enter this live room' : 'Contact the host to pay and get access'}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: MUTED, letterSpacing: 1 }}>
+            90% creator &bull; 10% platform fee
           </div>
         </div>
 
-        {/* Payment buttons */}
-        {activePlatforms.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-            {activePlatforms.map(function(p) {
-              return (
-                <button key={p.id} onClick={function() { openPay(p); }}
-                  style={{ background: 'rgba(255,255,255,.04)', border: '1.5px solid ' + p.color + '55', borderRadius: 14, padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', transition: 'background .2s' }}>
-                  <span style={{ fontSize: 26, flexShrink: 0 }}>{p.emoji}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>{p.name}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: p.color, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{handles[p.id]}</div>
-                  </div>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: p.color, letterSpacing: 1, flexShrink: 0 }}>{p.buildUrl ? 'PAY →' : 'COPY'}</span>
-                </button>
-              );
-            })}
+        {/* Creator section */}
+        {activeCreator.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 1.5, marginBottom: 8 }}>
+              CREATOR — 90%{cDollars ? (' (' + cDollars + ')') : ''}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {activeCreator.map(function(p) { return renderPayRow(p, creatorHandles[p.id], p.color); })}
+            </div>
+          </div>
+        )}
+
+        {/* Platform fee section */}
+        {activePlat.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1.5, marginBottom: 8 }}>
+              SEEWHY FEE — 10%{pDollars ? (' (' + pDollars + ')') : ''}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {activePlat.map(function(p) { return renderPayRow(p, platHandles[p.id], GOLD); })}
+            </div>
+          </div>
+        )}
+
+        {activeCreator.length === 0 && activePlat.length === 0 && (
+          <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 20 }}>
+            Contact the host to get payment details
           </div>
         )}
 
         {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, height: 1, background: BORDER }} />
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>AFTER PAYING</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>AFTER PAYING BOTH</span>
           <div style={{ flex: 1, height: 1, background: BORDER }} />
         </div>
 
@@ -1262,7 +1296,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
           ✓ I'VE PAID — ENTER LIVE
         </button>
         <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: .5 }}>
-          By entering you confirm you've sent payment to the host
+          By entering you confirm you've sent payment to the creator and platform
         </div>
       </div>
     </div>
