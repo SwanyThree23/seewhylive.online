@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
+import UpgradeGate from './UpgradeGate.jsx';
 
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
 function fmtCountdown(s) {
@@ -10,6 +11,15 @@ function rndInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
 function fmtTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
+
+var BG    = '#0E0C09';
+var SURF  = '#1A1510';
+var CARD  = '#241C12';
+var GOLD  = '#C9A84C';
+var BURG  = '#800020';
+var AMBER = '#D4854A';
+var TEXT  = '#F0E8D4';
+var MUTED = '#8A7A62';
 
 var DURATION_LABELS = { 60: '1 MIN', 180: '3 MIN', 300: '5 MIN', 600: '10 MIN' };
 
@@ -60,9 +70,42 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       if (data && typeof data.challengerScore === 'number') setChallengerScore(data.challengerScore);
       if (data && typeof data.defenderScore   === 'number') setDefenderScore(data.defenderScore);
     });
+    socket.on('pk-start', function(data) {
+      if (!data) return;
+      setChallenger(data.challenger || '');
+      setDefender(data.defender || '');
+      setBattleState('active');
+      setChallengerScore(0);
+      setDefenderScore(0);
+      setCountdown(data.duration || 300);
+      setBattleLog([]);
+      setWinner(null);
+      if (addToast) addToast('⚔️ PK Battle started!', 'success');
+    });
+    socket.on('pk-score', function(data) {
+      if (!data) return;
+      if (typeof data.challengerScore === 'number') setChallengerScore(data.challengerScore);
+      if (typeof data.defenderScore   === 'number') setDefenderScore(data.defenderScore);
+    });
+    socket.on('pk-end', function(data) {
+      if (!data) return;
+      setWinner(data.winner || null);
+      setBattleState('ended');
+      clearAllIntervals();
+      if (addToast) addToast('🏆 ' + (data.winner || 'Battle') + ' wins the PK!', 'success');
+    });
+    socket.on('pk-vote-update', function(data) {
+      if (!data) return;
+      if (typeof data.challengerVotes === 'number') setChallengerScore(data.challengerVotes);
+      if (typeof data.defenderVotes   === 'number') setDefenderScore(data.defenderVotes);
+    });
 
     return function() {
       socket.off('pk-update');
+      socket.off('pk-start');
+      socket.off('pk-score');
+      socket.off('pk-end');
+      socket.off('pk-vote-update');
     };
   }, [socket]);
 
@@ -228,6 +271,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   // ── IDLE STATE ──────────────────────────────────────────────────────────────
   if (battleState === 'idle') {
     return (
+      <UpgradeGate feature="pkBattle">
       <div style={containerStyle}>
         <div style={cardStyle}>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', letterSpacing: 2, marginBottom: 4 }}>
@@ -403,10 +447,34 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           </div>
         </div>
       </div>
+      </UpgradeGate>
     );
   }
 
   // ── ENDED STATE — ELITE LEAGUE HERO CARD ───────────────────────────────────
+  if (battleState === 'ended' && winner) {
+    return (
+      <UpgradeGate feature="pkBattle">
+        <div style={containerStyle}>
+          <div style={{ background: 'rgba(201,168,76,.12)', border: '2px solid #C9A84C', borderRadius: 14, padding: '20px 16px', textAlign: 'center', margin: '12px 0' }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🏆</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 3 }}>{winner}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>WINS THE PK BATTLE</div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 12 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#800020' }}>{challenger}: {challengerScore}</span>
+              <span style={{ color: '#8A7A62' }}>·</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C' }}>{defender}: {defenderScore}</span>
+            </div>
+            <button onClick={function() { setBattleState('idle'); setWinner(null); setChallengerScore(0); setDefenderScore(0); setChallenger(''); setDefender(''); setBattleLog([]); }}
+              style={{ marginTop: 14, padding: '9px 24px', background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+              NEW BATTLE
+            </button>
+          </div>
+        </div>
+      </UpgradeGate>
+    );
+  }
+
   if (battleState === 'ended') {
     var isWinnerChallenger = winner === challenger;
     var winnerScore  = isWinnerChallenger ? challengerScore : defenderScore;
@@ -414,6 +482,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     var loserScore   = isWinnerChallenger ? defenderScore : challengerScore;
 
     return (
+      <UpgradeGate feature="pkBattle">
       <div style={containerStyle}>
 
         {/* ELITE LEAGUE badge */}
@@ -493,15 +562,28 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           </button>
         )}
       </div>
+      </UpgradeGate>
     );
   }
 
   // ── ACTIVE BATTLE ───────────────────────────────────────────────────────────
   var countdownColor = countdown < 30 ? '#FF1564' : '#EDE8F5';
   var lastLog = battleLog.slice(-5);
+  var totalVotes = (challengerScore || 0) + (defenderScore || 0);
+  var challPct = totalVotes > 0 ? Math.floor((challengerScore || 0) / totalVotes * 100) : 50;
+  var defPct = 100 - challPct;
 
   return (
     <div style={containerStyle}>
+      {/* Support bar */}
+      <div style={{ display: 'flex', height: 28, borderRadius: 14, overflow: 'hidden', margin: '0 0 10px', border: '1px solid rgba(201,168,76,.2)' }}>
+        <div style={{ width: challPct + '%', background: 'linear-gradient(90deg,#800020,#C01838)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'width .6s ease', minWidth: challPct > 0 ? 32 : 0 }}>
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#F0E8D4', letterSpacing: 1 }}>{challPct}%</span>
+        </div>
+        <div style={{ width: defPct + '%', background: 'linear-gradient(90deg,#A07820,#C9A84C)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'width .6s ease', minWidth: defPct > 0 ? 32 : 0 }}>
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#0E0C09', letterSpacing: 1 }}>{defPct}%</span>
+        </div>
+      </div>
       {/* Countdown Timer */}
       <div style={Object.assign({}, cardStyle, { textAlign: 'center', padding: '16px 20px' })}>
         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: countdownColor, letterSpacing: 4, lineHeight: 1 }}>
