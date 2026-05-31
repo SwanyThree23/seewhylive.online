@@ -269,6 +269,9 @@ export default function LiveRoomPage({
   var mediaRecRef   = useRef(null);
   var recChunksRef  = useRef([]);
   var [scoreReveal,    setScoreReveal]    = useState(null); // { username, score, label } | null
+  var [showSuperChatSheet, setShowSuperChatSheet] = useState(false);
+  var [scMsg,              setScMsg]              = useState('');
+  var [scAmt,              setScAmt]              = useState(100);
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -290,6 +293,21 @@ export default function LiveRoomPage({
         if (addToast) addToast('Room connect failed', 'error');
         return;
       }
+      // Pre-load chat history and room state
+      if (Array.isArray(data.chatHistory) && data.chatHistory.length > 0) {
+        setChat(function(prev) { return prev.length > 0 ? prev : data.chatHistory; });
+      }
+      if (data.activePoll) {
+        setPoll(data.activePoll);
+        setShowQa(true);
+      }
+      if (data.activeVsPoll) {
+        setVsPoll(data.activeVsPoll);
+        setShowQa(true);
+      }
+      if (Array.isArray(data.judges) && data.judges.length > 0) {
+        setJudges(data.judges);
+      }
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -307,6 +325,20 @@ export default function LiveRoomPage({
       });
     });
 
+    socket.on('super-chat', function(sc) {
+      if (!sc) return;
+      // Inject into chat stream as a super-chat type message
+      var scEntry = Object.assign({ type: 'super' }, sc);
+      setChat(function(prev) { return [...prev.slice(-200), scEntry]; });
+      if (addToast && role !== 'host') addToast('💬 ' + sc.username + ' sent a $' + (Math.floor(sc.amountCents) / 100).toFixed(2) + ' Super Chat!', 'success');
+    });
+
+    socket.on('react-burst', function(data) {
+      if (!data || !data.emoji) return;
+      var fid = Date.now() + Math.random();
+      setFloatReacts(function(r) { return r.concat([{ emoji: data.emoji, fid: fid }]); });
+      setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
+    });
 
     socket.on('hand-raise', function(data) {
       if (!data || role !== 'host') return;
@@ -391,6 +423,8 @@ export default function LiveRoomPage({
       socket.off('vs-update');
       socket.off('judges-update');
       socket.off('judge-scored');
+      socket.off('super-chat');
+      socket.off('react-burst');
     };
   }, [socket]);
 
@@ -1031,6 +1065,7 @@ export default function LiveRoomPage({
         <div style={{ padding: '6px 14px 10px', display: 'flex', gap: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
           {[
             { emoji: '💸', label: 'Pay',      active: false, onTap: function() { setShowPaySheet(true); } },
+            { emoji: '💬', label: 'SC',       active: false, onTap: function() { setShowSuperChatSheet(true); } },
             { emoji: '🔗', label: 'Share',    active: false, onTap: function() { setShowShareSheet(true); } },
             { emoji: '🎤', label: audioOnly ? 'Video ON' : 'Audio', active: audioOnly, onTap: function() { setAudioOnly(function(v) { return !v; }); if (addToast) addToast(audioOnly ? 'Video mode on' : '🎤 Audio-only mode', 'info'); } },
             { emoji: privateMode ? '🔒' : '🔓', label: 'Private', active: privateMode, onTap: function() { if (role === 'host') { setShowPrivateSet(true); } else { if (addToast) addToast(privateMode ? 'Room is private — invite only' : 'Room is open', 'info'); } } },
@@ -1116,6 +1151,20 @@ export default function LiveRoomPage({
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No messages yet</div>
             )}
             {chat && chat.map(function(m, i) {
+              if (m.type === 'super') {
+                var scColor = m.tierColor || '#5A8FFF';
+                var scDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
+                return (
+                  <div key={m.id || i} style={{ marginBottom: 12, background: scColor + '18', border: '1.5px solid ' + scColor + '66', borderRadius: 12, padding: '10px 12px', animation: 'fadeSlideIn .2s ease' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 14 }}>💬</span>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: scColor, letterSpacing: 1 }}>{scDollars} SUPER CHAT</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: scColor, opacity: .8 }}>from {m.username}</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45, fontWeight: 600 }}>{m.message}</p>
+                  </div>
+                );
+              }
               return (
                 <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
@@ -1758,6 +1807,87 @@ export default function LiveRoomPage({
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ════════════════ SUPER CHAT SHEET ════════════════ */}
+      {showSuperChatSheet && (function() {
+        var SC_TIERS = [
+          { cents: 100,  label: '$1',  color: '#5A8FFF' },
+          { cents: 200,  label: '$2',  color: '#00C96A' },
+          { cents: 500,  label: '$5',  color: '#C9A84C' },
+          { cents: 1000, label: '$10', color: '#FF8C42' },
+          { cents: 2000, label: '$20', color: '#FF1A3C' },
+          { cents: 5000, label: '$50', color: '#9B59B6' },
+        ];
+        var selectedTier = SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0] || SC_TIERS[0];
+
+        function sendSuperChat() {
+          var msg = scMsg.trim();
+          if (!msg) { if (addToast) addToast('Write a message first', 'error'); return; }
+          if (!socket) return;
+          socket.emit('super-chat', {
+            roomId:      roomId,
+            userId:      userId,
+            username:    username,
+            message:     msg,
+            amountCents: scAmt,
+          });
+          setScMsg('');
+          setShowSuperChatSheet(false);
+          if (addToast) addToast('💬 Super Chat sent!', 'success');
+        }
+
+        return (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowSuperChatSheet(false); }}>
+            <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 18px 34px', border: '1px solid ' + BORDER }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1 }}>Super Chat</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>Highlighted message · 90% to creator · 10% platform</div>
+                </div>
+                <button onClick={function() { setShowSuperChatSheet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+              </div>
+
+              {/* Tier selector */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+                {SC_TIERS.map(function(t) {
+                  var active = scAmt === t.cents;
+                  return (
+                    <button key={t.cents} onClick={function() { setScAmt(t.cents); }}
+                      style={{ flexShrink: 0, background: active ? (t.color + '28') : 'rgba(255,255,255,.04)', border: '2px solid ' + (active ? t.color : 'rgba(255,255,255,.1)'), borderRadius: 12, padding: '10px 14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'border .15s' }}>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: active ? t.color : TEXT, letterSpacing: 1 }}>{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Message input */}
+              <div style={{ position: 'relative', marginBottom: 14 }}>
+                <textarea
+                  value={scMsg}
+                  onChange={function(e) { setScMsg(e.target.value.slice(0, 200)); }}
+                  placeholder="Your message (max 200 chars)..."
+                  rows={3}
+                  style={{ width: '100%', background: CARD2, border: '1.5px solid ' + selectedTier.color + '66', borderRadius: 12, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+                />
+                <span style={{ position: 'absolute', bottom: 8, right: 12, fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{scMsg.length}/200</span>
+              </div>
+
+              {/* Preview */}
+              <div style={{ background: selectedTier.color + '18', border: '1.5px solid ' + selectedTier.color + '55', borderRadius: 10, padding: '10px 12px', marginBottom: 16 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: selectedTier.color, letterSpacing: 1, marginBottom: 2 }}>
+                  💬 {SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0] && SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0].label} SUPER CHAT · {username}
+                </div>
+                <div style={{ fontSize: 12, color: TEXT, lineHeight: 1.4 }}>{scMsg || 'Your message here...'}</div>
+              </div>
+
+              <button onClick={sendSuperChat}
+                style={{ width: '100%', background: selectedTier.color, border: 'none', borderRadius: 14, padding: '15px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 2 }}>
+                SEND SUPER CHAT · {SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0] && SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0].label}
+              </button>
             </div>
           </div>
         );

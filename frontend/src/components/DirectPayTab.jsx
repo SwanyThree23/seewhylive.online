@@ -203,7 +203,7 @@ export default function DirectPayTab({ addToast, username }) {
           </div>
         </div>
         <div style={{ fontFamily: fM, fontSize: 9, color: MUTED }}>
-          No platform fees · Direct to creator · {configuredCount}/5 methods active
+          90% creator · 10% platform fee · {configuredCount}/5 methods active
         </div>
       </div>
 
@@ -303,8 +303,8 @@ export default function DirectPayTab({ addToast, username }) {
             {/* Disclaimer */}
             {configuredCount > 0 && (
               <div style={{ background: 'rgba(0,201,106,.04)', border: '1px solid rgba(0,201,106,.15)', borderRadius: 8, padding: '8px 12px', fontFamily: fM, fontSize: 8, color: MUTED, lineHeight: 1.5 }}>
-                ✓ 100% goes directly to the creator. Zero platform fees on P2P transfers.<br />
-                SeeWhy LIVE does not process or take a cut of direct P2P payments.
+                90% goes directly to the creator · 10% platform fee.<br />
+                Viewers are shown both payment destinations automatically.
               </div>
             )}
           </div>

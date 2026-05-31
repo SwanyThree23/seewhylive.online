@@ -292,6 +292,24 @@ export default function App() {
       setChat(function(prev) { return [...prev.slice(-200), msg]; });
     });
 
+    socket.on('super-chat', function(sc) {
+      if (!sc) return;
+      if (role === 'host') {
+        var scCents = Math.floor(sc.amountCents || 0);
+        setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + scCents; return prev + scCents; });
+        addToast('💬 Super Chat $' + (scCents / 100).toFixed(2) + ' from ' + (sc.username || 'viewer'), 'success');
+      }
+    });
+
+    socket.on('earnings-update', function(data) {
+      if (!data || role !== 'host') return;
+      var newTotal = Math.floor(data.sessionCents || 0);
+      if (newTotal > sessionEarningsRef.current) {
+        setSessionEarningsCents(newTotal);
+        sessionEarningsRef.current = newTotal;
+      }
+    });
+
     socket.on('room-paywall', function(data) {
       if (!data) return;
       setPaidRoom({ enabled: !!data.enabled, priceCents: Math.floor(data.priceCents || 0) });
@@ -523,6 +541,8 @@ export default function App() {
       socket.off('aura-message');
       socket.off('user-muted');
       socket.off('username-updated');
+      socket.off('super-chat');
+      socket.off('earnings-update');
     };
   }, [userId, username, role, addToast]);
 
