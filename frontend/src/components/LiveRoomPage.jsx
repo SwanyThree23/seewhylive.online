@@ -4,6 +4,7 @@ import rtcManager from '../webrtc.js';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
 import { saveClip } from '../clipStore.js';
 import { creatorCents, platformCents, getPlatformHandles } from '../platformConfig.js';
+import HostHUD from './HostHUD.jsx';
 
 var MAX_STAGE = 20;
 
@@ -272,6 +273,8 @@ export default function LiveRoomPage({
   var [showSuperChatSheet, setShowSuperChatSheet] = useState(false);
   var [scMsg,              setScMsg]              = useState('');
   var [scAmt,              setScAmt]              = useState(100);
+  var [giftCount,          setGiftCount]          = useState(0);
+  var [superChatCount,     setSuperChatCount]     = useState(0);
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -330,7 +333,13 @@ export default function LiveRoomPage({
       // Inject into chat stream as a super-chat type message
       var scEntry = Object.assign({ type: 'super' }, sc);
       setChat(function(prev) { return [...prev.slice(-200), scEntry]; });
+      setSuperChatCount(function(c) { return c + 1; });
       if (addToast && role !== 'host') addToast('💬 ' + sc.username + ' sent a $' + (Math.floor(sc.amountCents) / 100).toFixed(2) + ' Super Chat!', 'success');
+    });
+
+    socket.on('gift-received', function(gift) {
+      if (!gift) return;
+      setGiftCount(function(c) { return c + 1; });
     });
 
     socket.on('react-burst', function(data) {
@@ -425,6 +434,7 @@ export default function LiveRoomPage({
       socket.off('judge-scored');
       socket.off('super-chat');
       socket.off('react-burst');
+      socket.off('gift-received');
     };
   }, [socket]);
 
@@ -682,6 +692,15 @@ export default function LiveRoomPage({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: ANIM }} />
+
+      <HostHUD
+        sessionEarningsCents={sessionEarningsCents}
+        viewerCount={viewerCount}
+        superChatCount={superChatCount}
+        giftCount={giftCount}
+        addToast={addToast}
+        isVisible={role === 'host' || role === 'cohost'}
+      />
 
       {/* ════════════════ ROOM HEADER ════════════════ */}
       <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '10px 16px 10px', flexShrink: 0 }}>
