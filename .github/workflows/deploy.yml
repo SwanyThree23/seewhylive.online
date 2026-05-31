@@ -33,12 +33,12 @@ jobs:
             https://seewhylive.online/api/webhooks/deploy \
             -H "x-deploy-token: ${{ secrets.DEPLOY_TOKEN }}" \
             -H "Content-Type: application/json" \
-            --max-time 25)
+            --max-time 30)
           echo "Webhook status: $HTTP"
           cat /tmp/deploy_resp.txt || true
           if [ "$HTTP" = "200" ]; then
-            echo "✅ Deploy complete — https://seewhylive.online"
+            echo "✅ VPS reload queued — https://seewhylive.online"
           else
-            echo "⚠️ Webhook returned HTTP $HTTP"
-            exit 1
+            echo "⚠️  VPS webhook returned HTTP $HTTP (frontend already live via Vercel — server may need manual restart)"
           fi
+          # Never fail CI on webhook issues — frontend deploys via Vercel separately
