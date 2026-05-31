@@ -22,6 +22,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 var CATEGORIES = ['All', 'Music', 'Gaming', 'Tech', 'Education', 'Business', 'Sports', 'Lifestyle'];
 
+function usePullToRefresh(onRefresh) {
+  var [pullY, setPullY] = useState(0);
+  var [refreshing, setRefreshing] = useState(false);
+  var startY = React.useRef(0);
+  var THRESHOLD = 65;
+
+  function onTouchStart(e) {
+    if (window.scrollY > 0) return;
+    startY.current = e.touches[0].clientY;
+  }
+  function onTouchMove(e) {
+    if (window.scrollY > 0) return;
+    var dy = e.touches[0].clientY - startY.current;
+    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+  }
+  async function onTouchEnd() {
+    if (pullY >= THRESHOLD && !refreshing) {
+      setRefreshing(true);
+      setPullY(THRESHOLD);
+      await onRefresh();
+      setRefreshing(false);
+    }
+    setPullY(0);
+  }
+  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
+}
+
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 function OctTile({ label, color, size }) {
@@ -152,6 +179,7 @@ export default function Home() {
   var [showActivitySidebar, setShowActivitySidebar] = useState(false);
   var [showQuickActions, setShowQuickActions] = useState(false);
   var qc = useQueryClient();
+  var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await qc.invalidateQueries(); });
 
   useEffect(function() {
     var unsub = base44.entities.Room.subscribe(function() {
@@ -240,7 +268,19 @@ export default function Home() {
         <Activity className="w-5 h-5 text-yellow-300" />
       </motion.button>
 
-      <div className="min-h-screen" style={{ background: '#0B0B18' }}>
+      <div className="min-h-screen" style={{ background: '#0B0B18' }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+        {/* Pull-to-refresh indicator */}
+        <motion.div
+          style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+          {pullY > 10 && (
+            <motion.div
+              animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+              transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+              style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            </motion.div>
+          )}
+        </motion.div>
 
         {/* ── HERO ── */}
         <div className="relative overflow-hidden px-4 pt-6 pb-5"

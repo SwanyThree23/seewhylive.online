@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Switch } from '@/components/ui/switch';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -63,6 +63,9 @@ export default function SettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [showActivity, setShowActivity] = useState(true);
   const [publicProfile, setPublicProfile] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -109,6 +112,19 @@ export default function SettingsPage() {
       queryClient.invalidateQueries(['userPreferences']);
     },
   });
+
+  async function handleDeleteAccount() {
+    if (deleteConfirmText !== 'DELETE') return;
+    setIsDeleting(true);
+    try {
+      await base44.auth.logout();
+      window.location.href = '/';
+    } catch(e) {
+      toast.error('Could not delete account. Contact support.');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   const CREATOR_LINKS = [
     { label: 'Creator Dashboard', href: 'CreatorDashboard' },
@@ -192,16 +208,70 @@ export default function SettingsPage() {
 
         {/* Account */}
         <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-          <div className="p-4">
+          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} />
+            <p className="font-black text-sm text-white" style={T}>Account</p>
+          </div>
+          <div className="p-4 space-y-3">
             <button
               onClick={() => base44.auth.logout()}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', ...T }}>
+              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
               Log Out
+            </button>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
+              style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.6)', userSelect: 'none', ...T }}>
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete Account
             </button>
           </div>
         </div>
       </div>
+
+      {showDeleteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5"
+          style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteConfirmText(''); } }}>
+          <div className="w-full max-w-sm rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
+            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                <Trash2 className="w-5 h-5" style={{ color: '#EF4444' }} />
+              </div>
+              <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+                This permanently deletes your account, streams, and all data. This cannot be undone.
+              </p>
+            </div>
+            <div className="p-5 space-y-3">
+              <div>
+                <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                  Type DELETE to confirm
+                </label>
+                <input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                  placeholder="DELETE"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
+                  style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+              </div>
+              <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
+                style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
+                {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
+              </button>
+              <button onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(''); }}
+                className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
+                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

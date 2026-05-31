@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import {
   Home, Radio, Users, DollarSign, Search as SearchIcon,
   Plus, Video, Zap, LayoutDashboard, Layers, Swords,
   Trophy, Shield, Server, Sparkles, Menu, X, Eye,
-  Bell, User, ChevronRight, Music, MessageSquare
+  Bell, User, ChevronRight, Music, MessageSquare, ArrowLeft
 } from 'lucide-react';
 import NotificationBell from '@/components/shared/NotificationBell';
 import NotificationHub from '@/components/live/NotificationHub';
@@ -99,6 +99,10 @@ export default function Layout({ children, currentPageName }) {
     return path === hrefPath || path === '/' + currentPageName;
   }
 
+  var MAIN_TABS = MOBILE_NAV.map(function(i) { return i.href.split('?')[0]; });
+  var isMainPage = MAIN_TABS.includes(location.pathname) || location.pathname === '/';
+  var navigate = useNavigate();
+
   return (
     <div className="min-h-screen" style={backgrounds[backgroundStyle] || backgrounds.default}>
       <AnimatePresence>
@@ -114,26 +118,35 @@ export default function Layout({ children, currentPageName }) {
         style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
-          {/* Logo */}
-          <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0 active:opacity-70 transition-opacity">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
-              <Video className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-base leading-none"
-                style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37', letterSpacing: '0.05em' }}>SeeWhy</span>
-              <span className="text-[9px] text-white/30 leading-none"
-                style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
-            </div>
-            {liveCount > 0 && (
-              <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(180,50,30,0.25)', border: '1px solid rgba(200,80,30,0.3)' }}>
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-                <span className="text-[9px] font-bold text-orange-300">{liveCount}</span>
+          {/* Logo / Back */}
+          {isMainPage ? (
+            <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0 active:opacity-70 transition-opacity" style={{ userSelect: 'none' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
+                <Video className="w-5 h-5 text-white" />
               </div>
-            )}
-          </Link>
+              <div className="flex flex-col">
+                <span className="font-bold text-base leading-none"
+                  style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37', letterSpacing: '0.05em' }}>SeeWhy</span>
+                <span className="text-[9px] text-white/30 leading-none"
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
+              </div>
+              {liveCount > 0 && (
+                <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
+                  style={{ background: 'rgba(180,50,30,0.25)', border: '1px solid rgba(200,80,30,0.3)' }}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+                  <span className="text-[9px] font-bold text-orange-300">{liveCount}</span>
+                </div>
+              )}
+            </Link>
+          ) : (
+            <button onClick={function() { navigate(-1); }}
+              className="flex items-center gap-2 shrink-0 active:opacity-70 transition-all active:scale-95"
+              style={{ userSelect: 'none', WebkitUserSelect: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '6px 12px 6px 8px' }}>
+              <ArrowLeft className="w-4 h-4" style={{ color: '#d4af37' }} />
+              <span className="text-sm font-black" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.7)', letterSpacing: '0.04em' }}>Back</span>
+            </button>
+          )}
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-0.5">
@@ -145,7 +158,8 @@ export default function Layout({ children, currentPageName }) {
                   <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
                       background: active ? 'rgba(212,175,55,0.1)' : 'transparent',
-                      color: active ? '#d4af37' : 'rgba(255,255,255,0.45)' }}>
+                      color: active ? '#d4af37' : 'rgba(255,255,255,0.45)',
+                      userSelect: 'none', WebkitUserSelect: 'none' }}>
                     <Icon className="w-3.5 h-3.5" />
                     {item.name}
                   </button>
@@ -281,7 +295,7 @@ export default function Layout({ children, currentPageName }) {
                     return (
                       <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all active:scale-98"
-                          style={{ background: active ? 'rgba(212,175,55,0.1)' : 'transparent', borderLeft: active ? '2px solid #d4af37' : '2px solid transparent' }}>
+                          style={{ background: active ? 'rgba(212,175,55,0.1)' : 'transparent', borderLeft: active ? '2px solid #d4af37' : '2px solid transparent', userSelect: 'none', WebkitUserSelect: 'none' }}>
                           <Icon className="w-4 h-4 shrink-0" style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
                           <span className="text-sm font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? '#d4af37' : 'rgba(255,255,255,0.6)', letterSpacing: '0.04em' }}>{item.name}</span>
                           {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: '#d4af37' }} />}
@@ -302,7 +316,7 @@ export default function Layout({ children, currentPageName }) {
                     return (
                       <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
-                          style={{ background: active ? 'rgba(212,175,55,0.08)' : 'transparent', borderLeft: active ? '2px solid #d4af37' : '2px solid transparent' }}>
+                          style={{ background: active ? 'rgba(212,175,55,0.08)' : 'transparent', borderLeft: active ? '2px solid #d4af37' : '2px solid transparent', userSelect: 'none', WebkitUserSelect: 'none' }}>
                           <Icon className="w-4 h-4 shrink-0" style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.35)' }} />
                           <span className="text-sm font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? '#d4af37' : 'rgba(255,255,255,0.5)', letterSpacing: '0.04em' }}>{item.name}</span>
                         </div>
@@ -322,7 +336,7 @@ export default function Layout({ children, currentPageName }) {
                       return (
                         <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
-                            style={{ background: 'rgba(255,140,0,0.04)', borderLeft: '2px solid rgba(255,140,0,0.15)' }}>
+                            style={{ background: 'rgba(255,140,0,0.04)', borderLeft: '2px solid rgba(255,140,0,0.15)', userSelect: 'none', WebkitUserSelect: 'none' }}>
                             <Icon className="w-4 h-4 shrink-0 text-orange-400/70" />
                             <span className="text-sm font-bold text-orange-400/60" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>{item.name}</span>
                           </div>
@@ -380,7 +394,7 @@ export default function Layout({ children, currentPageName }) {
             return (
               <Link key={item.name} to={item.href}
                 className="flex flex-col items-center gap-1 px-3 pb-1 transition-all active:scale-90"
-                style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)' }}>
+                style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', userSelect: 'none', WebkitUserSelect: 'none' }}>
                 <div className="relative">
                   <Icon className="w-5 h-5" />
                   {active && (
