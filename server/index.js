@@ -2283,12 +2283,25 @@ app.post('/api/webhooks/deploy', function(req, res) {
     return res.status(401).json({ error: 'unauthorized' });
   }
   res.json({ ok: true, queued: true, ts: Date.now() });
-  var exec = require('child_process').exec;
-  var cmd  = 'cd /opt/seewhy && git fetch origin claude/seewhy-live-v33-build-v0L5Z && git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z && cd server && npm install --omit=dev --silent && pm2 restart seewhy-server --update-env && pm2 save --force';
-  exec(cmd, { timeout: 120000 }, function(err, stdout) {
-    if (err) { logger.error('[deploy-webhook] ' + err.message); return; }
-    logger.info('[deploy-webhook] deployed: ' + stdout.slice(-300));
-  });
+  // Defer to give the HTTP response time to flush before any restart
+  setTimeout(function() {
+    var exec = require('child_process').exec;
+    // Use `pm2 reload` (graceful 0-downtime) instead of restart.
+    // Frontend-only changes don't need a restart at all, but we pull anyway
+    // so server picks up any server/index.js changes via a fresh reload.
+    var cmd = [
+      'cd /opt/seewhy',
+      'git fetch origin claude/seewhy-live-v33-build-v0L5Z',
+      'git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z',
+      'cd server && npm install --omit=dev --silent',
+      'pm2 reload seewhy-server --update-env',
+      'pm2 save --force'
+    ].join(' && ');
+    exec(cmd, { timeout: 150000 }, function(err, stdout, stderr) {
+      if (err) { logger.error('[deploy-webhook] ' + err.message + (stderr ? ' | ' + stderr.slice(-200) : '')); return; }
+      logger.info('[deploy-webhook] reload ok: ' + stdout.slice(-400));
+    });
+  }, 500);
 });
 
 // ─── Server startup ────────────────────────────────────────────────────────

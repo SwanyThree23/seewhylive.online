@@ -5,11 +5,9 @@ import rtcManager from './webrtc.js';
 /* Always-loaded: default tab + persistent overlays */
 import RoomTab from './components/RoomTab.jsx';
 import LiveRoomPage from './components/LiveRoomPage.jsx';
-import GiftLayer from './components/GiftLayer.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
 import BrandChyron from './components/BrandChyron.jsx';
-import GoldenWallPanel from './components/GoldenWallPanel.jsx';
 import MobileNavBar from './components/MobileNavBar.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import WelcomeAudio from './components/WelcomeAudio.jsx';
@@ -108,7 +106,6 @@ export default function App() {
   var [viewerCount, setViewerCount] = useState(0);
   var [guests, setGuests] = useState([]);
   var [chat, setChat] = useState([]);
-  var [gifts, setGifts] = useState([]);
   var [botLogs, setBotLogs] = useState([]);
   var [toasts, setToasts] = useState([]);
   var [uptime, setUptime] = useState(0);
@@ -136,7 +133,8 @@ export default function App() {
     return { gold: '#C9A84C', burg: '#800020', showScoreBar: true };
   });
   var [fadesScores, setFadesScores] = useState({ team1: 0, team2: 0 });
-  var [giftFloats, setGiftFloats] = useState([]);
+  var [paidRoom,    setPaidRoom]    = useState({ enabled: false, priceCents: 0 });
+  var [paidUnlocked, setPaidUnlocked] = useState(function() { return role === 'host'; });
   var [ppvToken, setPpvToken] = useState(function() { return sessionStorage.getItem('sw_ppv_token') || null; });
   var [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
   var [streamInfo, setStreamInfo] = useState({ title: '', category: '', desc: '' });
@@ -293,15 +291,10 @@ export default function App() {
       setChat(function(prev) { return [...prev.slice(-200), msg]; });
     });
 
-    socket.on('gift-received', function(gift) {
-      if (!gift) return;
-      setGifts(function(prev) { return [...prev, gift]; });
-      var floatId = Date.now() + Math.random();
-      setGiftFloats(function(prev) { return [...prev, { ...gift, floatId }]; });
-      setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 4000);
-      addToast((gift.from_user || 'Someone') + ' sent ' + (gift.name || 'a gift') + '! ' + (gift.emoji || '🎁'), 'gift');
-      var giftCents = Math.floor(gift.value_cents || gift.valueCents || 0);
-      setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + giftCents; return prev + giftCents; });
+    socket.on('room-paywall', function(data) {
+      if (!data) return;
+      setPaidRoom({ enabled: !!data.enabled, priceCents: Math.floor(data.priceCents || 0) });
+      if (!data.enabled) setPaidUnlocked(false);
     });
 
     socket.on('new-subscription', function(data) {
@@ -507,7 +500,7 @@ export default function App() {
       socket.off('roster-update');
       socket.off('viewer-count');
       socket.off('chat-message');
-      socket.off('gift-received');
+      socket.off('room-paywall');
       socket.off('bot-log');
       socket.off('go-live-confirmed');
       socket.off('broadcast-ended');
@@ -830,7 +823,14 @@ export default function App() {
       <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
       <ErrorBoundary>
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90', letterSpacing: 2 }}>LOADING...</div>}>
-        {activeTab === 'room' && (
+        {activeTab === 'room' && paidRoom.enabled && !paidUnlocked && (
+          <PaywallScreen
+            priceCents={paidRoom.priceCents}
+            onUnlock={function() { setPaidUnlocked(true); }}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'room' && (!paidRoom.enabled || paidUnlocked) && (
           <LiveRoomPage
             socket={socketRef.current}
             guests={guests}
@@ -1180,16 +1180,91 @@ export default function App() {
       )}
 
       {/* Overlays */}
-      <GiftLayer giftFloats={giftFloats} />
       <Toasts toasts={toasts} />
       <Ticker chat={chat} isLive={isLive} />
-      {isLive && gifts.length > 0 && (
-        <div style={{ position: 'fixed', bottom: 50, right: 12, zIndex: 200, width: 260 }}>
-          <GoldenWallPanel items={gifts.slice(-10)} />
-        </div>
-      )}
       <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />
       <WelcomeAudio socket={socketRef.current} />
+    </div>
+  );
+}
+
+// ─── Paywall screen shown to viewers before entering a paid room ────────────
+function PaywallScreen({ priceCents, onUnlock, addToast }) {
+  var BG   = '#0F0C14'; var SURF = '#130F1C'; var CARD = '#1A1526'; var CARD2 = '#211A30';
+  var GOLD = '#C9A84C'; var TEAL = '#00DEC0'; var MUTED = '#7A6F90'; var TEXT = '#EDE8F5';
+  var BORDER = 'rgba(255,255,255,.06)';
+
+  var handles = (function() {
+    try { return JSON.parse(localStorage.getItem('sw_directpay_handles') || '{}'); } catch(e) { return {}; }
+  })();
+
+  var DP_PLATFORMS = [
+    { id: 'paypal',  emoji: '💸', name: 'PayPal',  color: '#0070BA', buildUrl: function(h) { return 'https://paypal.me/' + h.replace(/^@/,''); } },
+    { id: 'cashapp', emoji: '💚', name: 'CashApp', color: '#00D54B', buildUrl: function(h) { return 'https://cash.app/$' + h.replace(/^\$/,''); } },
+    { id: 'venmo',   emoji: '💙', name: 'Venmo',   color: '#3D95CE', buildUrl: function(h) { return 'https://venmo.com/' + h.replace(/^@/,''); } },
+    { id: 'zelle',   emoji: '💜', name: 'Zelle',   color: '#6D1ED4', buildUrl: null },
+    { id: 'chime',   emoji: '🟢', name: 'Chime',   color: '#16BE45', buildUrl: null },
+  ];
+
+  var activePlatforms = DP_PLATFORMS.filter(function(p) { return handles[p.id] && handles[p.id].trim(); });
+  var dollars = priceCents > 0 ? ('$' + (Math.floor(priceCents) / 100).toFixed(2)) : null;
+
+  function openPay(p) {
+    var h = (handles[p.id] || '').trim();
+    if (!h) return;
+    if (p.buildUrl) { window.open(p.buildUrl(h), '_blank', 'noopener'); }
+    else { navigator.clipboard.writeText(h).then(function() { if (addToast) addToast(p.name + ': ' + h + ' copied!', 'success'); }); }
+  }
+
+  return (
+    <div style={{ height: '100%', background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', fontFamily: "'Barlow Condensed',sans-serif" }}>
+      <div style={{ width: '100%', maxWidth: 380 }}>
+        {/* Lock icon + title */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: 52, marginBottom: 12 }}>🔒</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 30, color: TEXT, letterSpacing: 2, marginBottom: 4 }}>PAID ACCESS</div>
+          {dollars && (
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 44, color: GOLD, letterSpacing: 1, lineHeight: 1, marginBottom: 6 }}>{dollars}</div>
+          )}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 1 }}>
+            {activePlatforms.length > 0 ? 'Pay the host to enter this live room' : 'Contact the host to pay and get access'}
+          </div>
+        </div>
+
+        {/* Payment buttons */}
+        {activePlatforms.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            {activePlatforms.map(function(p) {
+              return (
+                <button key={p.id} onClick={function() { openPay(p); }}
+                  style={{ background: 'rgba(255,255,255,.04)', border: '1.5px solid ' + p.color + '55', borderRadius: 14, padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', transition: 'background .2s' }}>
+                  <span style={{ fontSize: 26, flexShrink: 0 }}>{p.emoji}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>{p.name}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: p.color, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{handles[p.id]}</div>
+                  </div>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: p.color, letterSpacing: 1, flexShrink: 0 }}>{p.buildUrl ? 'PAY →' : 'COPY'}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{ flex: 1, height: 1, background: BORDER }} />
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>AFTER PAYING</span>
+          <div style={{ flex: 1, height: 1, background: BORDER }} />
+        </div>
+
+        {/* Enter button */}
+        <button onClick={onUnlock} style={{ width: '100%', background: 'rgba(0,222,192,.15)', border: '1.5px solid rgba(0,222,192,.4)', borderRadius: 14, padding: '16px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
+          ✓ I'VE PAID — ENTER LIVE
+        </button>
+        <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: .5 }}>
+          By entering you confirm you've sent payment to the host
+        </div>
+      </div>
     </div>
   );
 }
