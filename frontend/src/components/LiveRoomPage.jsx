@@ -3,6 +3,7 @@ import OctCell from './OctCell.jsx';
 import rtcManager from '../webrtc.js';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
 import { saveClip } from '../clipStore.js';
+import { creatorCents, platformCents, getPlatformHandles } from '../platformConfig.js';
 
 var MAX_STAGE = 20;
 
@@ -1674,46 +1675,64 @@ export default function LiveRoomPage({
         var handles = (function() {
           try { return JSON.parse(localStorage.getItem('sw_directpay_handles') || '{}'); } catch(e) { return {}; }
         })();
+        var platHandles = getPlatformHandles();
+        var hasAnyCreator = DP_PLATFORMS.some(function(p) { return !!(handles[p.id] || '').trim(); });
+        var hasAnyPlat    = DP_PLATFORMS.some(function(p) { return !!(platHandles[p.id] || '').trim(); });
+
+        function renderPayRow(p, handle, accentColor) {
+          var hasHandle = !!handle.trim();
+          return (
+            <button key={p.id} onClick={function() { openPayLink(p, handle); }}
+              style={{
+                background: hasHandle ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.02)',
+                border: '1.5px solid ' + (hasHandle ? (accentColor + '55') : 'rgba(255,255,255,.07)'),
+                borderRadius: 14, padding: '12px 16px', cursor: hasHandle ? 'pointer' : 'default',
+                display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
+                opacity: hasHandle ? 1 : .4, transition: 'background .2s',
+              }}>
+              <span style={{ fontSize: 24, flexShrink: 0 }}>{p.emoji}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT }}>{p.name}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: hasHandle ? accentColor : MUTED, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {hasHandle ? handle : 'Not set up'}
+                </div>
+              </div>
+              {hasHandle && (
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: accentColor, letterSpacing: 1, flexShrink: 0 }}>
+                  {p.buildUrl ? 'OPEN →' : 'COPY'}
+                </span>
+              )}
+            </button>
+          );
+        }
+
         return (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowPaySheet(false); }}>
-            <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 18px 34px', border: '1px solid ' + BORDER, maxHeight: '80vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '20px 18px 34px', border: '1px solid ' + BORDER, maxHeight: '85vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 1 }}>Support {hostName}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>100% goes straight to the creator</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>90% creator &bull; 10% platform fee</div>
                 </div>
                 <button onClick={function() { setShowPaySheet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 22, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
               </div>
-              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {DP_PLATFORMS.map(function(p) {
-                  var handle = handles[p.id] || '';
-                  var hasHandle = !!handle.trim();
-                  return (
-                    <button key={p.id} onClick={function() { openPayLink(p, handle); }}
-                      style={{
-                        background: hasHandle ? ('rgba(255,255,255,.05)') : 'rgba(255,255,255,.02)',
-                        border: '1.5px solid ' + (hasHandle ? (p.color + '55') : 'rgba(255,255,255,.07)'),
-                        borderRadius: 14, padding: '14px 16px', cursor: hasHandle ? 'pointer' : 'default',
-                        display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
-                        opacity: hasHandle ? 1 : .45,
-                        transition: 'background .2s',
-                      }}>
-                      <span style={{ fontSize: 28, flexShrink: 0 }}>{p.emoji}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT }}>{p.name}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: hasHandle ? p.color : MUTED, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {hasHandle ? handle : 'Not set up by host'}
-                        </div>
-                      </div>
-                      {hasHandle && (
-                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: p.color, letterSpacing: 1, flexShrink: 0 }}>
-                          {p.buildUrl ? 'OPEN →' : 'COPY'}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+
+              {/* ── Creator 90% ── */}
+              <div style={{ marginBottom: 4 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 1.5, marginBottom: 8 }}>CREATOR — 90%</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {DP_PLATFORMS.map(function(p) { return renderPayRow(p, handles[p.id] || '', p.color); })}
+                </div>
               </div>
+
+              {/* ── Platform 10% ── */}
+              <div style={{ marginTop: 16, marginBottom: 4 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1.5, marginBottom: 8 }}>SEEWHY PLATFORM FEE — 10%</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {DP_PLATFORMS.map(function(p) { return renderPayRow(p, platHandles[p.id] || '', GOLD); })}
+                </div>
+              </div>
+
               {role === 'host' && (
                 <div style={{ marginTop: 16, padding: '12px 14px', background: CARD, borderRadius: 12, border: '1px solid ' + BORDER }}>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1, marginBottom: 10 }}>SET UP YOUR PAY LINKS</div>
