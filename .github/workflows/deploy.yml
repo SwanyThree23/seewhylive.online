@@ -54,6 +54,19 @@ jobs:
           target: "/opt/seewhy/"
           strip_components: 0
 
+      # ── Deploy nginx config ─────────────────────────────────────────────
+      - name: Upload nginx config to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
+          username: ${{ secrets.VPS_USER || 'root' }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || '22' }}
+          source: "nginx/nginx.conf"
+          target: "/tmp/"
+          strip_components: 1
+
       # ── Install deps, reload nginx, restart PM2 ─────────────────────────
       - name: Restart services on VPS
         uses: appleboy/ssh-action@v1.0.0
@@ -66,15 +79,22 @@ jobs:
           script: |
             set -e
 
-            # Server: install production deps and restart
+            # Server: install production deps and restart via pm2.config.js
             cd /opt/seewhy/server
             npm install --production --silent
-            pm2 restart seewhy-server 2>/dev/null || pm2 start /opt/seewhy/server/index.js --name seewhy-server
+            pm2 reload seewhy-server --update-env 2>/dev/null \
+              || pm2 start /opt/seewhy/server/pm2.config.js
             pm2 save
 
-            # Frontend: fix ownership and reload nginx
-            chown -R www-data:www-data /opt/seewhy/frontend/dist 2>/dev/null || true
+            # Nginx: apply new config if it changed
+            if [ -f /tmp/nginx.conf ]; then
+              cp /tmp/nginx.conf /etc/nginx/nginx.conf
+              rm -f /tmp/nginx.conf
+            fi
             nginx -t && nginx -s reload
+
+            # Frontend: fix ownership
+            chown -R www-data:www-data /opt/seewhy/frontend/dist 2>/dev/null || true
 
             echo ""
             echo "=== Deploy complete: $(date) ==="
