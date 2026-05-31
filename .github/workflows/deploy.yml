@@ -30,10 +30,10 @@ jobs:
       - name: Trigger VPS deploy via webhook
         run: |
           HTTP=$(curl -s -o /tmp/deploy_resp.txt -w "%{http_code}" -X POST \
-            http://2.24.194.112:3001/api/webhooks/deploy \
+            https://seewhylive.online/api/webhooks/deploy \
             -H "x-deploy-token: ${{ secrets.DEPLOY_TOKEN }}" \
             -H "Content-Type: application/json" \
-            --max-time 20)
+            --max-time 25)
           echo "Webhook status: $HTTP"
           cat /tmp/deploy_resp.txt || true
           if [ "$HTTP" = "200" ]; then
