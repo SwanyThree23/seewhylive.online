@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,33 @@ import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+
+function usePullToRefresh(onRefresh) {
+  var [pullY, setPullY] = useState(0);
+  var [refreshing, setRefreshing] = useState(false);
+  var startY = React.useRef(0);
+  var THRESHOLD = 65;
+
+  function onTouchStart(e) {
+    if (window.scrollY > 0) return;
+    startY.current = e.touches[0].clientY;
+  }
+  function onTouchMove(e) {
+    if (window.scrollY > 0) return;
+    var dy = e.touches[0].clientY - startY.current;
+    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+  }
+  async function onTouchEnd() {
+    if (pullY >= THRESHOLD && !refreshing) {
+      setRefreshing(true);
+      setPullY(THRESHOLD);
+      await onRefresh();
+      setRefreshing(false);
+    }
+    setPullY(0);
+  }
+  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
+}
 
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
@@ -72,6 +99,8 @@ export default function DiscoverPage() {
   const [genre, setGenre] = useState('All');
   const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
   const debounceRef = useRef(null);
+  const queryClient = useQueryClient();
+  var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
 
   // 300ms debounce
   useEffect(() => {
@@ -121,7 +150,19 @@ export default function DiscoverPage() {
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
-    <div className="min-h-screen bg-[#03030A] text-white">
+    <div className="min-h-screen bg-[#03030A] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      {/* Pull-to-refresh indicator */}
+      <motion.div
+        style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+        {pullY > 10 && (
+          <motion.div
+            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          </motion.div>
+        )}
+      </motion.div>
       {/* Hero banner */}
       <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 60%, #0B0B18 100%)' }}>
         {/* Grid overlay */}
