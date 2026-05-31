@@ -282,7 +282,7 @@ export default function DiscoverPage() {
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
-                {search ? (
+                search ? (
                   <EmptyState icon={Radio} title="No live rooms yet" desc="Try a different search" />
                 ) : (
                   <div className="text-center py-20">
@@ -292,7 +292,7 @@ export default function DiscoverPage() {
                     <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>No live rooms yet</h3>
                     <Link to={createPageUrl('BroadcastStudio')} className="text-sm font-bold transition-colors" style={{ color: '#D4AF37' }}>Be the first to go live →</Link>
                   </div>
-                )}
+                )
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filtered.map((room, i) => (
