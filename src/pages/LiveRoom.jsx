@@ -10,6 +10,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import TipWidget from '../components/live/TipWidget';
+import ShareModal from '../components/live/ShareModal';
+import DirectPayments from '../components/live/DirectPayments';
+import { DollarSign } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -280,6 +283,8 @@ export default function LiveRoom() {
   const [liked, setLiked]           = useState(false);
   const [likeCount, setLikeCount]   = useState(3);
   const [handRaised, setHandRaised] = useState(false);
+  const [shareOpen, setShareOpen]   = useState(false);
+  const [payOpen, setPayOpen]       = useState(false);
 
   // Sync stage when real data arrives
   useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
@@ -339,7 +344,7 @@ export default function LiveRoom() {
         <button className="w-7 h-7 flex items-center justify-center">
           <MoreHorizontal className="w-4 h-4 text-white/40" />
         </button>
-        <button className="w-7 h-7 flex items-center justify-center">
+        <button className="w-7 h-7 flex items-center justify-center" onClick={() => setShareOpen(true)}>
           <Share2 className="w-4 h-4 text-white/40" />
         </button>
         <button className="w-7 h-7 rounded-full flex items-center justify-center"
@@ -475,11 +480,13 @@ export default function LiveRoom() {
               { label: 'Auction',      icon: '🏆', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
               { label: 'AI Trip',      icon: '🤖', bg: 'rgba(139,92,246,0.08)'  },
-              { label: 'Tips',         icon: '💸', bg: 'rgba(255,21,100,0.08)'  },
+              { label: 'Pay',          icon: '💸', bg: 'rgba(255,21,100,0.08)', action: () => setPayOpen(true) },
               { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
             ].map(s => (
-              <div key={s.label} className="flex flex-col items-center gap-1 shrink-0">
+              <div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+                onClick={s.action}
+                style={{ userSelect: 'none' }}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
                   style={{ background: s.bg, border: '1px solid rgba(255,255,255,0.07)' }}>
                   {s.icon}
@@ -566,6 +573,29 @@ export default function LiveRoom() {
               onClick={() => setChatOpen(false)} />
             <ChatPanel messages={chatMsgs} onClose={() => setChatOpen(false)} onSend={sendChat} />
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Share modal */}
+      <AnimatePresence>
+        {shareOpen && (
+          <ShareModal
+            isOpen={shareOpen}
+            onClose={() => setShareOpen(false)}
+            url={`${window.location.origin}/LiveRoom?id=${roomId || 'demo'}`}
+            title={roomTitle}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Direct payments sheet */}
+      <AnimatePresence>
+        {payOpen && (
+          <DirectPayments
+            isOpen={payOpen}
+            onClose={() => setPayOpen(false)}
+            creatorName={hostName}
+          />
         )}
       </AnimatePresence>
     </div>
