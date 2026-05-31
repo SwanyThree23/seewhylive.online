@@ -2274,6 +2274,23 @@ rtmp.on('fanout-restarted', function(data) {
   }
 });
 
+// ─── Deploy webhook ────────────────────────────────────────────────────────
+app.post('/api/webhooks/deploy', function(req, res) {
+  var token    = req.headers['x-deploy-token'] || '';
+  var expected = process.env.DEPLOY_TOKEN || '';
+  if (!expected || token !== expected) {
+    logger.warn('[deploy-webhook] unauthorized attempt from ' + req.ip);
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  res.json({ ok: true, queued: true, ts: Date.now() });
+  var exec = require('child_process').exec;
+  var cmd  = 'cd /opt/seewhy && git fetch origin claude/seewhy-live-v33-build-v0L5Z && git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z && cd server && npm install --omit=dev --silent && pm2 restart seewhy-server --update-env && pm2 save --force';
+  exec(cmd, { timeout: 120000 }, function(err, stdout) {
+    if (err) { logger.error('[deploy-webhook] ' + err.message); return; }
+    logger.info('[deploy-webhook] deployed: ' + stdout.slice(-300));
+  });
+});
+
 // ─── Server startup ────────────────────────────────────────────────────────
 var PORT = parseInt(process.env.PORT || '3001', 10);
 

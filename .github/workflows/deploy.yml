@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Build & Deploy to VPS
 
 on:
   push:
@@ -25,48 +25,19 @@ jobs:
           cd frontend
           npm ci
           npm run build
+          echo "✓ Frontend built"
 
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            set -e
-            cd /home/user/seewhylive.online || cd /opt/seewhy
-            git fetch origin claude/seewhy-live-v33-build-v0L5Z
-            git checkout claude/seewhy-live-v33-build-v0L5Z
-            git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z
-            echo "✓ Code updated"
-
-      - name: Sync frontend dist
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          source: "frontend/dist/*"
-          target: "/opt/seewhy/frontend/dist/"
-          strip_components: 2
-
-      - name: Restart server + nginx
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          script: |
-            set -e
-            # Sync server files
-            rsync -a --exclude='node_modules' /home/user/seewhylive.online/server/ /opt/seewhy/server/ 2>/dev/null || true
-            cd /opt/seewhy/server && npm install --omit=dev
-            # Restart PM2
-            pm2 restart seewhy-server --update-env 2>/dev/null || pm2 start /home/user/seewhylive.online/ecosystem.config.js
-            pm2 save --force
-            # Reload nginx
-            nginx -t && (systemctl restart nginx || service nginx restart || nginx)
+      - name: Trigger VPS deploy via webhook
+        run: |
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            https://srv1581658.hstgr.cloud:3001/api/webhooks/deploy \
+            -H "x-deploy-token: ${{ secrets.DEPLOY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --max-time 15 --insecure)
+          echo "Webhook status: $HTTP"
+          if [ "$HTTP" = "200" ]; then
             echo "✅ Deploy complete — https://seewhylive.online"
+          else
+            echo "⚠️ Webhook returned HTTP $HTTP"
+            exit 1
+          fi
