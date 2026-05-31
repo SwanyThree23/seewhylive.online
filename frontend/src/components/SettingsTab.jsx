@@ -21,11 +21,11 @@ var SETTINGS_TABS = [
 
 var inputStyle = {
   width: '100%',
-  background: 'rgba(7,5,10,.8)',
-  border: '1px solid rgba(255,255,255,.1)',
+  background: 'rgba(14,12,9,.8)',
+  border: '1px solid rgba(201,168,76,.18)',
   borderRadius: 8,
   padding: '8px 12px',
-  color: '#EDE8F5',
+  color: '#F0E8D4',
   fontFamily: "'Barlow Condensed',sans-serif",
   fontSize: 13,
   boxSizing: 'border-box'
@@ -34,15 +34,15 @@ var inputStyle = {
 var labelStyle = {
   fontFamily: "'DM Mono',monospace",
   fontSize: 8,
-  color: '#7A6F90',
+  color: '#8A7A62',
   letterSpacing: 2,
   marginBottom: 4,
   display: 'block'
 };
 
 var cardStyle = {
-  background: 'rgba(22,16,32,.8)',
-  border: '1px solid rgba(255,255,255,.07)',
+  background: 'rgba(26,21,16,.8)',
+  border: '1px solid rgba(201,168,76,.12)',
   borderRadius: 10,
   padding: '12px 14px'
 };
