@@ -113,6 +113,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
   var [tick,         setTick]         = useState(0);
   var [countdown,    setCountdown]    = useState(0);
   var [simNextEvent, setSimNextEvent] = useState(0);
+  var [reminders,    setReminders]    = useState(function() { try { return JSON.parse(localStorage.getItem('sw_reminders') || '[]'); } catch(e) { return []; } });
 
   // Load from API on mount; fall back to INIT_SCHEDULE seed if empty
   useEffect(function() {
@@ -229,6 +230,20 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       fetch('/api/schedule/' + id, { method: 'DELETE' }).catch(function() {});
     }
     setSchedule(function(p) { return p.filter(function(s) { return s.id !== id; }); });
+  }
+
+  function toggleReminder(eventId) {
+    var idx = reminders.indexOf(eventId);
+    var updated;
+    if (idx >= 0) {
+      updated = reminders.filter(function(id) { return id !== eventId; });
+      if (addToast) addToast('Reminder removed', 'info');
+    } else {
+      updated = reminders.concat([eventId]);
+      if (addToast) addToast('Reminder set!', 'success');
+    }
+    setReminders(updated);
+    localStorage.setItem('sw_reminders', JSON.stringify(updated));
   }
 
   function setStatus(id, status) {
@@ -374,9 +389,9 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                   {/* Reminder button */}
                   {ev.status !== 'LIVE' && ev.status !== 'ENDED' && (
                     <button
-                      onClick={function() { if (addToast) addToast('🔔 Reminder set · ' + ev.title + ' · ' + formatDt(ev.time), 'success'); }}
-                      style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 5, padding: '3px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1, marginTop: 4 }}>
-                      🔔 SET REMINDER
+                      onClick={function() { toggleReminder(ev.id); }}
+                      style={{ background: reminders.indexOf(ev.id) >= 0 ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,' + (reminders.indexOf(ev.id) >= 0 ? '.5' : '.2') + ')', borderRadius: 6, padding: '4px 10px', color: reminders.indexOf(ev.id) >= 0 ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1, marginTop: 4 }}>
+                      {reminders.indexOf(ev.id) >= 0 ? 'REMIND SET' : 'REMIND ME'}
                     </button>
                   )}
 

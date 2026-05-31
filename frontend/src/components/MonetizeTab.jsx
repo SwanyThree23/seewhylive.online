@@ -1,5 +1,6 @@
 'use strict';
 import React, { useState, useEffect, useRef } from 'react';
+import PayoutDashboard from './PayoutDashboard.jsx';
 
 var BG    = '#0E0C09';
 var SURF  = '#1A1510';
@@ -61,6 +62,7 @@ var FLYWHEEL_STEPS = [
 
 export default function MonetizeTab({ addToast, isLive, socket, roomId, username, streamGoal, setStreamGoal, sessionEarningsCents }) {
   var [tab,         setTab]       = useState('flywheel');
+  var [showPayout,  setShowPayout] = useState(false);
   var [subTier,     setSubTier]   = useState(null);
   var [tipAmt,      setTipAmt]    = useState(null);
   var [tipMsg,      setTipMsg]    = useState('');
@@ -268,6 +270,15 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
                 <input value={goalAmt} onChange={function(e) { setGoalAmt(e.target.value); }} placeholder="Target amount in $ (e.g. 100)" type="number" style={{ width: '100%', boxSizing: 'border-box', background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fU, fontSize: 13, marginBottom: 10, outline: 'none' }} />
                 <button onClick={setGoal} style={{ width: '100%', background: BURG, border: 'none', borderRadius: 10, padding: '12px', color: GOLD, fontFamily: fD, fontSize: 17, cursor: 'pointer', letterSpacing: 2 }}>SET GOAL</button>
               </div>
+            )}
+
+            {/* Payout history toggle */}
+            <button onClick={function() { setShowPayout(function(v) { return !v; }); }}
+              style={{ width: '100%', background: showPayout ? 'rgba(201,168,76,.14)' : SURF, border: '1px solid ' + (showPayout ? 'rgba(201,168,76,.5)' : BORDER), borderRadius: 12, padding: '12px', color: showPayout ? GOLD : MUTED, fontFamily: fD, fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+              {showPayout ? '▲ HIDE PAYOUT HISTORY' : '▼ PAYOUT HISTORY'}
+            </button>
+            {showPayout && (
+              <PayoutDashboard addToast={addToast} roomId={roomId} />
             )}
           </div>
         )}
