@@ -1,3 +1,3 @@
 'use strict';
-var VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBB4x4E9D5FMqBaEdLBw';
+var VAPID_PUBLIC_KEY = 'BGqP0TeKMfRXY9YrK7bytKyxd-1s3hkJmQvgtjtWG9yNOCXtQLgcFavHouE9YxVb8QOdtoXfkUtJt4al-DK4PnA';
 export { VAPID_PUBLIC_KEY };
