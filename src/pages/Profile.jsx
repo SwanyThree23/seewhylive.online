@@ -223,10 +223,18 @@ export default function ProfilePage() {
                   <Mail className="w-3 h-3" />{user?.email}
                 </p>
               </div>
-              <span className="px-2 py-0.5 rounded-md font-black uppercase text-[9px]"
-                style={{ background: user?.role === 'admin' ? 'rgba(128,0,32,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
-                {user?.role || 'member'}
-              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2 py-0.5 rounded-md font-black uppercase text-[9px]"
+                  style={{ background: user?.role === 'admin' ? 'rgba(128,0,32,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                  {user?.role || 'member'}
+                </span>
+                <button
+                  onClick={() => setIsEditing(e => !e)}
+                  className="hidden sm:flex px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all items-center gap-1.5"
+                  style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}50`, color: GOLD, ...T }}>
+                  {isEditing ? 'Cancel' : 'Edit Profile'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -80,7 +80,7 @@ export default function NotificationsPage() {
           <button
             onClick={() => markAllReadMutation.mutate()}
             disabled={markAllReadMutation.isPending}
-            className="font-black text-[10px] uppercase transition-opacity"
+            className="font-black text-[10px] uppercase transition-opacity hover:opacity-80"
             style={{ color: GOLD, ...T }}>
             {markAllReadMutation.isPending ? 'Marking…' : 'Mark all read'}
           </button>
@@ -92,11 +92,14 @@ export default function NotificationsPage() {
         {/* ── empty state ── */}
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-            <Bell className="w-16 h-16 mb-2" style={{ color: 'rgba(255,255,255,0.12)' }} />
-            <p className="font-black text-base uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <Bell className="w-10 h-10" style={{ color: 'rgba(255,255,255,0.12)' }} />
+            </div>
+            <p className="font-black text-base uppercase" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
               No notifications yet
             </p>
-            <p className="text-sm max-w-xs" style={{ color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
+            <p className="text-sm max-w-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.25)' }}>
               Activity from tips, invites, and challenges will appear here
             </p>
           </div>
@@ -108,16 +111,16 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={notif.id}
-                  className="rounded-2xl flex items-start gap-3 p-4 transition-all cursor-pointer"
+                  className="rounded-2xl flex items-start gap-3 p-4 transition-all cursor-pointer hover:brightness-110"
                   style={{
                     background: notif.is_read ? 'rgba(13,6,24,0.6)' : 'rgba(13,6,24,0.95)',
                     border: `1px solid ${notif.is_read ? 'rgba(255,255,255,0.06)' : `${cfg.color}35`}`,
                   }}
                   onClick={() => handleNotifClick(notif)}
                 >
-                  {/* ── left: colored icon circle ── */}
+                  {/* ── left: colored icon circle (40px) ── */}
                   <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: `${cfg.color}20`, border: `1px solid ${cfg.color}35` }}>
+                    style={{ background: `${cfg.color}20`, border: `1px solid ${cfg.color}40` }}>
                     <Icon className="w-5 h-5" style={{ color: cfg.color }} />
                   </div>
 
@@ -135,7 +138,7 @@ export default function NotificationsPage() {
                       </span>
                       {notif.link && (
                         <span
-                          className="text-[10px] font-black"
+                          className="text-[10px] font-black cursor-pointer hover:underline"
                           style={{ color: GOLD, ...T }}
                           onClick={(e) => { e.stopPropagation(); navigate(notif.link); }}>
                           View →
@@ -144,7 +147,7 @@ export default function NotificationsPage() {
                     </div>
                   </div>
 
-                  {/* ── right: unread dot + delete ── */}
+                  {/* ── right: unread dot (PINK, 8px) + delete + mark-read ── */}
                   <div className="flex flex-col items-center gap-2 shrink-0">
                     {!notif.is_read && (
                       <span className="w-2 h-2 rounded-full" style={{ background: PINK }} />
@@ -152,15 +155,15 @@ export default function NotificationsPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
-                      style={{ background: 'rgba(255,30,80,0.1)', color: 'rgba(255,80,80,0.5)', border: '1px solid rgba(255,30,80,0.15)' }}
+                      style={{ background: 'rgba(255,30,80,0.12)', color: 'rgba(255,80,80,0.6)', border: '1px solid rgba(255,30,80,0.2)' }}
                       title="Delete notification">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                     {!notif.is_read && (
                       <button
                         onClick={(e) => { e.stopPropagation(); markReadMutation.mutate(notif.id); }}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                        style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)' }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
+                        style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}
                         title="Mark as read">
                         <Check className="w-3.5 h-3.5" />
                       </button>
