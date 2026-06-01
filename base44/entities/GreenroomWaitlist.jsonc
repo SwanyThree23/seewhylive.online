@@ -88,14 +88,64 @@
   "type": "object",
   "rls": {
     "create": {
-      "created_by": "{{user.email}}"
+      "data.user_id": "{{user.id}}"
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
-      "created_by": "{{user.email}}"
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "delete": {
-      "created_by": "{{user.email}}"
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     }
   }
 }
