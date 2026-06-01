@@ -3,10 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   User, Mail, Award, Star, Gift, TrendingUp, Camera, Radio, BarChart2,
-  Settings, DollarSign, Activity, Clock,
+  Settings, DollarSign, Activity, Clock, Share2, Scissors,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
 const GOLD    = '#D4AF37';
@@ -81,11 +81,13 @@ const TABS = ['Overview', 'Streams', 'Clips', 'About'];
 
 export default function ProfilePage() {
   const queryClient   = useQueryClient();
+  const navigate      = useNavigate();
   const [isEditing, setIsEditing]         = useState(false);
   const [bio, setBio]                     = useState('');
   const [displayName, setDisplayName]     = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab]         = useState('Overview');
+  const [isOnline]                        = useState(true);
   const fileRef = useRef();
 
   /* ── queries ── */
@@ -110,6 +112,18 @@ export default function ProfilePage() {
     queryKey: ['userInventory', user?.id],
     queryFn: () => base44.entities.UserInventory.filter({ user_id: user?.id }),
     enabled: !!user,
+  });
+
+  const { data: myRooms = [] } = useQuery({
+    queryKey: ['myRooms', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id }, '-created_date', 10),
+    enabled: !!user?.id,
+  });
+
+  const { data: myClips = [] } = useQuery({
+    queryKey: ['myClips', user?.id],
+    queryFn: () => base44.entities.Clip.filter({ creator_id: user?.id }, '-created_date', 12),
+    enabled: !!user?.id,
   });
 
   /* ── mutations ── */
@@ -149,6 +163,15 @@ export default function ProfilePage() {
       </div>
     );
   }
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: user?.full_name, url: window.location.href }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Profile link copied!');
+    }
+  };
 
   const completedReferrals = referrals.filter(r => r.status === 'completed').length;
   const initials = (user?.full_name || user?.email || '?')[0].toUpperCase();
@@ -219,15 +242,31 @@ export default function ProfilePage() {
                 <h2 className="font-black text-2xl text-white leading-none" style={T}>
                   {user?.full_name || 'Anonymous'}
                 </h2>
-                <p className="flex items-center gap-1 mt-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                  <Mail className="w-3 h-3" />{user?.email}
-                </p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <p className="flex items-center gap-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <Mail className="w-3 h-3" />{user?.email}
+                  </p>
+                  {isOnline && (
+                    <span className="flex items-center gap-1 text-[10px] font-black"
+                      style={{ color: '#00FF88', ...T }}>
+                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#00FF88' }} />
+                      Online
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="px-2 py-0.5 rounded-md font-black uppercase text-[9px]"
                   style={{ background: user?.role === 'admin' ? 'rgba(128,0,32,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                   {user?.role || 'member'}
                 </span>
+                <button
+                  onClick={handleShare}
+                  className="hidden sm:flex px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all items-center gap-1.5"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', ...T }}>
+                  <Share2 className="w-3 h-3" />
+                  Share
+                </button>
                 <button
                   onClick={() => setIsEditing(e => !e)}
                   className="hidden sm:flex px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all items-center gap-1.5"
@@ -282,10 +321,10 @@ export default function ProfilePage() {
 
         {/* ── stats row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatTile label="Followers"   value={user?.points || 0}      icon={User}       color={GOLD} />
-          <StatTile label="Following"   value={completedReferrals}     icon={Gift}       color="#8B5CF6" />
-          <StatTile label="Streams"     value={subscriptions.length}   icon={TrendingUp} color="#00F5FF" />
-          <StatTile label="Tips Earned" value={inventory.length}       icon={DollarSign} color="#00FF88" />
+          <StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} />
+          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#00F5FF" />
+          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#8B5CF6" />
+          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#00FF88" />
         </div>
 
         {/* ── section tabs ── */}
@@ -366,25 +405,103 @@ export default function ProfilePage() {
 
         {activeTab === 'Streams' && (
           <DarkCard>
-            <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <Radio className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
-              <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No streams yet</p>
-              <Link to={createPageUrl('CreatorDashboard')}>
-                <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-                  style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
-                  Go Live
-                </button>
-              </Link>
-            </div>
+            {myRooms.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Radio className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No streams yet</p>
+                <Link to={createPageUrl('GoLive')}>
+                  <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
+                    style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    Go Live
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="p-3 space-y-2">
+                {myRooms.slice(0, 10).map(room => {
+                  const isLive = room.status === 'live';
+                  return (
+                    <div key={room.id}
+                      onClick={() => navigate(createPageUrl('LiveRoom') + '?id=' + room.id)}
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all hover:brightness-110"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ background: isLive ? PINK : 'rgba(255,255,255,0.2)' }} />
+                      <span className="flex-1 font-black text-[13px] text-white truncate" style={T}>
+                        {room.title || 'Untitled Stream'}
+                      </span>
+                      {room.viewer_count != null && (
+                        <span className="text-[10px] shrink-0" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
+                          {room.viewer_count} viewers
+                        </span>
+                      )}
+                      {room.duration != null && (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black shrink-0"
+                          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', ...T }}>
+                          {Math.floor((room.duration || 0) / 60)}m
+                        </span>
+                      )}
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase shrink-0"
+                        style={{
+                          background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)',
+                          border: `1px solid ${isLive ? 'rgba(255,21,100,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          color: isLive ? PINK : 'rgba(255,255,255,0.4)',
+                          ...T,
+                        }}>
+                        {isLive ? 'LIVE' : room.status || 'ended'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </DarkCard>
         )}
 
         {activeTab === 'Clips' && (
           <DarkCard>
-            <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <BarChart2 className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
-              <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No clips yet</p>
-            </div>
+            {myClips.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <Scissors className="w-12 h-12" style={{ color: 'rgba(255,255,255,0.12)' }} />
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No clips yet</p>
+                <Link to={createPageUrl('ClipsLibrary')}>
+                  <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
+                    style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                    Go to Clips Library
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="p-3 grid grid-cols-2 gap-2">
+                {myClips.slice(0, 12).map(clip => (
+                  <div key={clip.id} className="rounded-xl overflow-hidden cursor-pointer transition-all hover:brightness-110"
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                      {clip.thumbnail_url ? (
+                        <img src={clip.thumbnail_url} alt={clip.title}
+                          className="absolute inset-0 w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center"
+                          style={{ background: 'rgba(255,255,255,0.03)' }}>
+                          <span style={{ fontSize: 28 }}>✂️</span>
+                        </div>
+                      )}
+                      {clip.duration != null && (
+                        <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-black"
+                          style={{ background: 'rgba(0,0,0,0.75)', color: 'rgba(255,255,255,0.85)', ...T }}>
+                          {Math.floor((clip.duration || 0) / 60)}:{String((clip.duration || 0) % 60).padStart(2, '0')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="px-2 py-1.5">
+                      <p className="font-black text-[11px] text-white truncate" style={T}>
+                        {clip.title || 'Untitled Clip'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </DarkCard>
         )}
 
