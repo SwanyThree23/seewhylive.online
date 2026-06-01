@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -48,6 +48,7 @@ var DRAWER_CREATE = [
 var DRAWER_ACCOUNT = [
   { name: 'Profile',  icon: User,       href: createPageUrl('Profile') },
   { name: 'Settings', icon: SearchIcon, href: createPageUrl('Settings') },
+  { name: 'VaultPro', icon: Lock,       href: createPageUrl('VaultPro') },
   { name: 'Terms',    icon: Video,      href: createPageUrl('TermsOfService') },
   { name: 'Privacy',  icon: Video,      href: createPageUrl('PrivacyPolicy') },
   { name: 'BetaStatus', icon: Radio,   href: createPageUrl('BetaStatus') },

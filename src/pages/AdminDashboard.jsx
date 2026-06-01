@@ -337,6 +337,150 @@ export default function AdminDashboard() {
           )
         )}
 
+        {/* SECURITY */}
+        {activeTab === 'security' && (
+          <div className="space-y-4">
+            {/* IP Ban */}
+            <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(255,68,68,0.15)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm">🚫</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#FF4444', ...T }}>IP Bans</span>
+                <span className="ml-auto text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
+              </div>
+              <div className="flex gap-2 mb-3">
+                <input value={newBanIP} onChange={e => setNewBanIP(e.target.value)}
+                  placeholder="IP address (e.g. 192.168.1.1)"
+                  className="flex-1 h-9 px-3 rounded-xl text-xs text-white outline-none"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                <button onClick={() => { if(newBanIP.trim()) { setBannedIPs(p => [...p, { ip: newBanIP.trim(), reason: banReason, date: new Date().toISOString() }]); setNewBanIP(''); setBanReason(''); toast.success('IP banned'); }}}
+                  className="h-9 px-3 rounded-xl text-xs font-black"
+                  style={{ background: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.3)', ...T }}>
+                  Ban IP
+                </button>
+              </div>
+              <input value={banReason} onChange={e => setBanReason(e.target.value)}
+                placeholder="Reason (optional)"
+                className="w-full h-8 px-3 rounded-xl text-xs text-white outline-none mb-3"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }} />
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {bannedIPs.length === 0 ? (
+                  <p className="text-[10px] text-center py-3" style={{ color: 'rgba(255,255,255,0.2)' }}>No IPs banned</p>
+                ) : bannedIPs.map((b, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(255,68,68,0.05)', border: '1px solid rgba(255,68,68,0.1)' }}>
+                    <span className="text-xs font-mono text-white/60 flex-1">{b.ip}</span>
+                    {b.reason && <span className="text-[9px] text-white/30">{b.reason}</span>}
+                    <button onClick={() => setBannedIPs(p => p.filter((_, j) => j !== i))}
+                      className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>
+                      Unban
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* User suspension */}
+            <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(255,136,0,0.15)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm">⚠️</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#FF8800', ...T }}>User Suspension</span>
+              </div>
+              <div className="flex gap-2 mb-2">
+                <input value={suspendUser} onChange={e => setSuspendUser(e.target.value)}
+                  placeholder="Username or user ID"
+                  className="flex-1 h-9 px-3 rounded-xl text-xs text-white outline-none"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                <select value={suspendDuration} onChange={e => setSuspendDuration(e.target.value)}
+                  className="h-9 px-2 rounded-xl text-xs text-white outline-none"
+                  style={{ background: 'rgba(255,136,0,0.1)', border: '1px solid rgba(255,136,0,0.2)', color: '#FF8800' }}>
+                  <option value="1h">1 Hour</option>
+                  <option value="24h">24 Hours</option>
+                  <option value="7d">7 Days</option>
+                  <option value="30d">30 Days</option>
+                  <option value="perm">Permanent</option>
+                </select>
+                <button onClick={() => { if(suspendUser.trim()) { setSuspensions(p => [...p, { user: suspendUser.trim(), duration: suspendDuration, date: new Date().toISOString() }]); setSuspendUser(''); toast.success('User suspended'); }}}
+                  className="h-9 px-3 rounded-xl text-xs font-black"
+                  style={{ background: 'rgba(255,136,0,0.12)', color: '#FF8800', border: '1px solid rgba(255,136,0,0.25)', ...T }}>
+                  Suspend
+                </button>
+              </div>
+              {suspensions.map((s, i) => (
+                <div key={i} className="flex items-center gap-2 p-2 rounded-lg mt-1" style={{ background: 'rgba(255,136,0,0.05)', border: '1px solid rgba(255,136,0,0.1)' }}>
+                  <span className="text-xs font-bold text-white/60 flex-1">{s.user}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(255,136,0,0.15)', color: '#FF8800', ...T }}>{s.duration}</span>
+                  <button onClick={() => setSuspensions(p => p.filter((_, j) => j !== i))}
+                    className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>Lift</button>
+                </div>
+              ))}
+            </div>
+
+            {/* DMCA Takedowns */}
+            <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(212,175,55,0.12)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm">⚖️</span>
+                <span className="text-sm font-black uppercase" style={{ color: GOLD, ...T }}>DMCA Takedowns</span>
+              </div>
+              <div className="space-y-2 text-xs text-white/40">
+                <p>DMCA counter-notice workflow. Takedown requests are logged and acted on within 24 hours.</p>
+                <div className="p-2 rounded-lg" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                  <p className="font-bold text-white/60 mb-1">Process:</p>
+                  <p>1. Complaint received → Logged → Stream/content paused</p>
+                  <p>2. Creator notified → 48h response window</p>
+                  <p>3. Admin reviews → Reinstates or removes permanently</p>
+                </div>
+                <button className="w-full py-2 rounded-xl text-[10px] font-black uppercase"
+                  style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  + Log DMCA Request
+                </button>
+              </div>
+            </div>
+
+            {/* Rate limiting */}
+            <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(0,200,200,0.12)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm">⚡</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#00C8C8', ...T }}>Rate Limiting</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'API Requests/min', value: '100', status: 'ok' },
+                  { label: 'WS Connections', value: '4,096', status: 'ok' },
+                  { label: 'Chat msgs/min', value: '30/user', status: 'ok' },
+                  { label: 'Room creates/hr', value: '10/user', status: 'ok' },
+                ].map(r => (
+                  <div key={r.label} className="p-2 rounded-lg" style={{ background: 'rgba(0,200,200,0.05)', border: '1px solid rgba(0,200,200,0.1)' }}>
+                    <p className="text-[8px] uppercase tracking-wide" style={{ color: 'rgba(0,200,200,0.6)' }}>{r.label}</p>
+                    <p className="text-sm font-black text-white">{r.value}</p>
+                    <p className="text-[8px]" style={{ color: '#00FF88' }}>● {r.status}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AUDIT */}
+        {activeTab === 'audit' && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Admin Audit Log</span>
+              <button onClick={() => setAuditLog([])} className="text-[9px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Clear</button>
+            </div>
+            {auditLog.length === 0 ? (
+              <div className="text-center py-8 text-white/20 text-xs">No audit entries yet. Actions you take appear here.</div>
+            ) : auditLog.map((entry, i) => (
+              <div key={i} className="flex items-start gap-2 p-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <span className="text-base">{entry.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-white">{entry.action}</p>
+                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{entry.time}</p>
+                </div>
+                <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0" style={{ background: `${entry.color}18`, color: entry.color, border: `1px solid ${entry.color}33`, ...T }}>{entry.severity}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* REVENUE */}
         {activeTab === 'revenue' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
