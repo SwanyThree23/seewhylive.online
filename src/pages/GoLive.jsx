@@ -163,6 +163,34 @@ export default function GoLive() {
           href={createPageUrl('WatchParty')}
         />
 
+        {/* Share section */}
+        <div className="mt-4 rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+          <div className="text-sm font-black mb-1" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>📢 Tell your audience first</div>
+          <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            Share on social before you go live — builds anticipation and pulls more viewers in from the start.
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { emoji: '💬', label: 'WhatsApp', href: `https://wa.me/?text=${encodeURIComponent('🔴 Going LIVE on SeeWhy LIVE soon! Come join me → ' + window.location.origin)}` },
+              { emoji: '🐦', label: 'Twitter/X', href: `https://twitter.com/intent/tweet?text=${encodeURIComponent('🔴 Going LIVE on SeeWhy LIVE soon! Come join me → ' + window.location.origin)}` },
+              { emoji: '👥', label: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.origin)}` },
+            ].map(p => (
+              <a key={p.label} href={p.href} target="_blank" rel="noopener noreferrer"
+                className="flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <span className="text-xl">{p.emoji}</span>
+                <span className="text-[9px] font-bold" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>{p.label}</span>
+              </a>
+            ))}
+          </div>
+          <button
+            onClick={() => { navigator.clipboard?.writeText(window.location.origin); }}
+            className="mt-2 w-full py-2 rounded-xl text-[10px] font-black uppercase"
+            style={{ background: 'rgba(212,175,55,0.08)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            📋 Copy Your Profile Link
+          </button>
+        </div>
+
         {/* Info bar */}
         <p style={{
           textAlign: 'center',
