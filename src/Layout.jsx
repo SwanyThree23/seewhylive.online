@@ -38,11 +38,12 @@ var DRAWER_WATCH = [
 ];
 
 var DRAWER_CREATE = [
-  { name: 'Go Live',   icon: Radio,          href: createPageUrl('GoLive') },
-  { name: 'Monetize',  icon: DollarSign,     href: createPageUrl('Monetization') },
-  { name: 'Dashboard', icon: LayoutDashboard,href: createPageUrl('CreatorDashboard') },
-  { name: 'AI Hub',    icon: Sparkles,       href: createPageUrl('AIHub') },
-  { name: 'Messages',  icon: MessageSquare,  href: createPageUrl('Messages') },
+  { name: 'Go Live',     icon: Radio,          href: createPageUrl('GoLive') },
+  { name: 'Green Room',  icon: Video,          href: createPageUrl('GreenroomEnhanced') },
+  { name: 'Monetize',   icon: DollarSign,     href: createPageUrl('Monetization') },
+  { name: 'Dashboard',  icon: LayoutDashboard,href: createPageUrl('CreatorDashboard') },
+  { name: 'AI Hub',     icon: Sparkles,       href: createPageUrl('AIHub') },
+  { name: 'Messages',   icon: MessageSquare,  href: createPageUrl('Messages') },
 ];
 
 var DRAWER_ACCOUNT = [
