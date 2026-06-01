@@ -81,6 +81,7 @@ const PKBattle            = lazy(() => import('./pages/PKBattle'));
 const PollManager         = lazy(() => import('./pages/PollManager'));
 const PlatformShowcase    = lazy(() => import('./pages/PlatformShowcase'));
 const TestMode            = lazy(() => import('./pages/TestMode'));
+const GoLive              = lazy(() => import('./pages/GoLive'));
 
 export const PAGES = {
     "AIModeration": AIModeration,
@@ -155,6 +156,7 @@ export const PAGES = {
     "PollManager": PollManager,
     "PlatformShowcase": PlatformShowcase,
     "TestMode": TestMode,
+    "GoLive": GoLive,
 }
 
 export const pagesConfig = {
