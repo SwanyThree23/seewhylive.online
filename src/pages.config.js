@@ -83,6 +83,8 @@ const PollManager         = lazy(() => import('./pages/PollManager'));
 const PlatformShowcase    = lazy(() => import('./pages/PlatformShowcase'));
 const TestMode            = lazy(() => import('./pages/TestMode'));
 const GoLive              = lazy(() => import('./pages/GoLive'));
+const GreenroomEnhanced   = lazy(() => import('./pages/GreenroomEnhanced'));
+const VaultPro            = lazy(() => import('./pages/VaultPro'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -159,6 +161,8 @@ export const PAGES = {
     "PlatformShowcase": PlatformShowcase,
     "TestMode": TestMode,
     "GoLive": GoLive,
+    "GreenroomEnhanced": GreenroomEnhanced,
+    "VaultPro": VaultPro,
 }
 
 export const pagesConfig = {

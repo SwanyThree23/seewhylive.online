@@ -7,5 +7,6 @@ Disallow: /RTMPServer
 Disallow: /ControlRoom
 Disallow: /ModerationDashboard
 Disallow: /TestMode
+Disallow: /VaultPro
 
 Sitemap: https://seewhylive.online/sitemap.xml
