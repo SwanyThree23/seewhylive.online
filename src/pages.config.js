@@ -85,6 +85,7 @@ const TestMode            = lazy(() => import('./pages/TestMode'));
 const GoLive              = lazy(() => import('./pages/GoLive'));
 const GreenroomEnhanced   = lazy(() => import('./pages/GreenroomEnhanced'));
 const VaultPro            = lazy(() => import('./pages/VaultPro'));
+const AudioRoom           = lazy(() => import('./pages/AudioRoom'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -163,6 +164,7 @@ export const PAGES = {
     "GoLive": GoLive,
     "GreenroomEnhanced": GreenroomEnhanced,
     "VaultPro": VaultPro,
+    "AudioRoom": AudioRoom,
 }
 
 export const pagesConfig = {
