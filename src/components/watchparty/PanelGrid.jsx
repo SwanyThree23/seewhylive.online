@@ -15,11 +15,59 @@ function getColor(name) {
   return COLORS[idx];
 }
 
-function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal }) {
-  var speaking = member.is_audio_enabled !== false;
+function useAudioLevel(stream) {
+  var [isSpeaking, setIsSpeaking] = useState(false);
+  var ctxRef = useRef(null);
+  var analyserRef = useRef(null);
+  var rafRef = useRef(null);
+
+  useEffect(() => {
+    if (!stream) { setIsSpeaking(false); return; }
+    var audioTracks = stream.getAudioTracks();
+    if (!audioTracks.length) { setIsSpeaking(false); return; }
+
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      ctxRef.current = ctx;
+      var analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyserRef.current = analyser;
+      var source = ctx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      var data = new Uint8Array(analyser.frequencyBinCount);
+
+      var check = function() {
+        analyser.getByteTimeDomainData(data);
+        var sum = 0;
+        for (var i = 0; i < data.length; i++) {
+          var v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        var rms = Math.sqrt(sum / data.length);
+        setIsSpeaking(rms > 0.01);
+        rafRef.current = requestAnimationFrame(check);
+      };
+      check();
+    } catch (e) {
+      setIsSpeaking(false);
+    }
+
+    return function() {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (ctxRef.current) { try { ctxRef.current.close(); } catch (e) {} }
+    };
+  }, [stream]);
+
+  return isSpeaking;
+}
+
+function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands }) {
+  var localSpeaking = useAudioLevel(isLocal ? stream : null);
+  var speaking = isLocal ? localSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
   var isHostMember = member.user_id === hostId;
   var videoRef = useRef(null);
+  var isRaised = raisedHands && member.user_id && raisedHands.has(member.user_id);
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -33,15 +81,30 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
     ? 'rgba(212,175,55,0.35)'
     : 'rgba(255,255,255,0.12)';
 
+  var connDotColor = stream && stream.active ? '#00FF88' : member ? '#FFD700' : 'rgba(255,255,255,0.25)';
+
+  var roleBadge = null;
+  if (member.role === 'host') {
+    roleBadge = { label: 'HOST', color: '#D4AF37', bg: 'rgba(212,175,55,0.25)' };
+  } else if (member.role === 'cohost') {
+    roleBadge = { label: 'CO-HOST', color: 'rgba(192,192,192,1)', bg: 'rgba(192,192,192,0.18)' };
+  }
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.85 }}
-      animate={{ opacity: 1, scale: 1 }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        boxShadow: speaking
+          ? ['0 0 0 2px rgba(212,175,55,0.8)', '0 0 0 6px rgba(212,175,55,0.15)']
+          : '0 0 0 0px rgba(212,175,55,0)',
+      }}
+      transition={speaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}}
       exit={{ opacity: 0, scale: 0.85 }}
       className="relative group aspect-square"
     >
-      {/* Octagonal border/glow layer */}
       <div
         className="absolute inset-0"
         style={{
@@ -52,7 +115,6 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
         }}
       />
 
-      {/* Octagonal content layer */}
       <div
         className="absolute inset-[2px] overflow-hidden"
         style={{
@@ -60,7 +122,6 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           background: 'linear-gradient(135deg, #1A0F0A, #0d0618)',
         }}
       >
-        {/* Live video or avatar fallback */}
         {stream ? (
           <video
             ref={videoRef}
@@ -93,7 +154,6 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           </div>
         )}
 
-        {/* Bottom name bar */}
         <div
           className="absolute bottom-0 left-0 right-0 px-1 py-0.5"
           style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.92), transparent)' }}
@@ -101,19 +161,29 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           <div className="flex items-center gap-0.5">
             {isHostMember && <Crown className="w-2 h-2 shrink-0" style={{ color: '#d4af37' }} />}
             <span className="text-[8px] text-white font-semibold truncate flex-1">{member.user_name}</span>
+            {roleBadge && (
+              <span className="text-[6px] px-0.5 rounded font-bold shrink-0"
+                style={{ background: roleBadge.bg, color: roleBadge.color }}>
+                {roleBadge.label}
+              </span>
+            )}
             {speaking ? <Mic className="w-2 h-2 text-green-400 shrink-0" /> : <MicOff className="w-2 h-2 text-white/30 shrink-0" />}
           </div>
         </div>
 
-        {/* You / host badge */}
         {isCurrentUser && (
           <div className="absolute top-1 left-1">
             <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: 'rgba(212,175,55,0.3)', color: '#d4af37' }}>You</span>
           </div>
         )}
 
-        {/* Hover controls */}
-        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+        {isRaised && (
+          <div className="absolute top-1 right-1 z-10 text-[14px] leading-none">✋</div>
+        )}
+
+        <div className="absolute bottom-1 right-1 z-10" style={{ width: 5, height: 5, borderRadius: '50%', background: connDotColor }} />
+
+        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5" style={{ top: isRaised ? 18 : 4 }}>
           <button
             onClick={function() { onSpotlight(member.user_id); }}
             className="w-4 h-4 rounded flex items-center justify-center"
@@ -211,6 +281,64 @@ function EmptyTile({ onClick, canInvite }) {
   );
 }
 
+function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
+  var videoRef = useRef(null);
+  useEffect(() => {
+    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+  }, [stream]);
+  var isHostMember = member.user_id === hostId;
+  var color = getColor(member.user_name);
+
+  return (
+    <div className="flex flex-col items-center shrink-0 gap-0.5">
+      <div
+        className="relative"
+        style={{
+          width: 48,
+          height: 48,
+          boxShadow: isSpeaking ? '0 0 0 2px rgba(212,175,55,0.8)' : isHostMember ? '0 0 0 2px rgba(212,175,55,0.5)' : 'none',
+          borderRadius: 2,
+        }}
+      >
+        <div className="absolute inset-0" style={{ clipPath: OCT, background: isHostMember ? 'rgba(212,175,55,0.6)' : 'rgba(255,255,255,0.15)' }} />
+        <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: color + '30' }}>
+          {stream ? (
+            <video ref={videoRef} autoPlay playsInline muted={isLocal}
+              className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
+              {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
+            </div>
+          )}
+          {isHostMember && (
+            <div className="absolute top-0 right-0">
+              <Crown style={{ width: 8, height: 8, color: '#d4af37' }} />
+            </div>
+          )}
+        </div>
+      </div>
+      <span className="text-white/70 truncate max-w-[48px]" style={{ fontSize: 7 }}>{member.user_name}</span>
+    </div>
+  );
+}
+
+function ScreenShareTile({ screenStream }) {
+  var videoRef = useRef(null);
+  useEffect(() => {
+    if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
+  }, [screenStream]);
+
+  return (
+    <div className="relative w-full shrink-0" style={{ aspectRatio: '16/9', background: '#000', border: '1px solid rgba(212,175,55,0.3)' }}>
+      <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-contain" />
+      <div className="absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded font-bold"
+        style={{ background: 'rgba(212,175,55,0.2)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)' }}>
+        📺 Screen Share
+      </div>
+    </div>
+  );
+}
+
 function resolveStream(member, currentUser, localStream, remoteStreams, peerUserIds) {
   var isMe = currentUser && member.user_id === currentUser.id;
   if (isMe) return { stream: localStream || null, isLocal: true };
@@ -218,7 +346,7 @@ function resolveStream(member, currentUser, localStream, remoteStreams, peerUser
   return { stream: peerId ? remoteStreams?.get(peerId) || null : null, isLocal: false };
 }
 
-export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream }) {
+export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream, compact, screenStream, raisedHands }) {
   var [spotlitId, setSpotlitId] = useState(null);
   var [slots, setSlots] = useState(maxSlots);
 
@@ -229,9 +357,22 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
 
   var gridCols = slots <= 4 ? 'grid-cols-2' : slots <= 6 ? 'grid-cols-3' : slots <= 9 ? 'grid-cols-3' : slots <= 12 ? 'grid-cols-4' : slots <= 16 ? 'grid-cols-4' : 'grid-cols-5';
 
+  if (compact) {
+    return (
+      <div className="flex overflow-x-auto gap-2 px-2 py-1" style={{ background: '#0d0618' }}>
+        {members.slice(0, 20).map(function(m) {
+          var { stream, isLocal } = resolveStream(m, currentUser, localStream, remoteStreams, peerUserIds);
+          var isSpeaking = m.is_audio_enabled !== false;
+          return (
+            <CompactTile key={m.id || m.user_id} member={m} hostId={hostId} stream={stream} isLocal={isLocal} isSpeaking={isSpeaking} />
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full" style={{ background: '#0d0618' }}>
-      {/* Controls bar */}
       <div className="flex items-center gap-2 px-2 py-1.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <Badge className="text-[9px]" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)' }}>
           {members.length}/{maxSlots} panelists
@@ -257,7 +398,8 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
         )}
       </div>
 
-      {/* Spotlight + strip */}
+      {screenStream && <ScreenShareTile screenStream={screenStream} />}
+
       {spotlit ? (
         <div className="flex-1 flex flex-col gap-2 p-2 overflow-hidden">
           {(() => {
@@ -282,6 +424,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                     isCurrentUser={!!(currentUser && m.user_id === currentUser.id)}
                     onSpotlight={setSpotlitId} canManage={isHost}
                     stream={stream} isLocal={isLocal}
+                    raisedHands={raisedHands}
                   />
                 </div>
               );
@@ -299,6 +442,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                   isCurrentUser={!!(currentUser && m.user_id === currentUser.id)}
                   onSpotlight={setSpotlitId} canManage={isHost}
                   stream={stream} isLocal={isLocal}
+                  raisedHands={raisedHands}
                 />
               );
             })}
