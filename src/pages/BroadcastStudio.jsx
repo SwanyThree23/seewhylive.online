@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Users,
   Radio, LogOut, Copy, Maximize2, Minimize2,
-  ChevronLeft, ChevronRight, Swords, Monitor,
+  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid,
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
@@ -402,6 +402,8 @@ export default function BroadcastStudio() {
   const isCoHost = myMember?.role === 'cohost';
   const canManage = isHost || isCoHost;
 
+  const speakingName = members.find(m => m.is_audio_enabled && m.user_id !== user?.id)?.user_name || null;
+
   // AI highlight detector — auto-clips when hype + sentiment spike
   useHighlightDetector({
     partyId,
@@ -666,6 +668,11 @@ export default function BroadcastStudio() {
               Co-Host
             </span>
           )}
+          {speakingName && (
+            <span className="ml-auto text-[10px] italic shrink-0" style={{ color: 'rgba(255,255,255,0.6)', ...T }}>
+              &quot;{speakingName} is speaking&quot;
+            </span>
+          )}
         </div>
       </div>
 
@@ -680,19 +687,63 @@ export default function BroadcastStudio() {
               animate={{ width: 216, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="shrink-0 overflow-hidden h-full"
+              className="shrink-0 overflow-hidden h-full flex flex-col"
               style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-              <PanelGrid
-                members={members}
-                currentUser={user}
-                hostId={party.host_id}
-                maxSlots={hostSettings.maxViewers}
-                isHost={canManage}
-                onInvite={copyLink}
-                remoteStreams={remoteStreams}
-                peerUserIds={peerUserIds}
-                localStream={localStream}
-              />
+              <div className="shrink-0 flex items-center justify-between px-3 py-2"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+                <span className="text-[14px] font-black text-white" style={T}>Stage</span>
+                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
+                  {members.length}/{hostSettings.maxViewers}
+                </span>
+                <button className="w-6 h-6 flex items-center justify-center rounded"
+                  style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <LayoutGrid className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto min-h-0">
+                <PanelGrid
+                  members={members}
+                  currentUser={user}
+                  hostId={party.host_id}
+                  maxSlots={hostSettings.maxViewers}
+                  isHost={canManage}
+                  onInvite={copyLink}
+                  remoteStreams={remoteStreams}
+                  peerUserIds={peerUserIds}
+                  localStream={localStream}
+                />
+                {members.length > 6 && (() => {
+                  const stageMembers = members.filter(m => m.user_id === party.host_id || m.role === 'cohost' || m.role === 'speaker');
+                  const audienceMembers = members.filter(m => m.role === 'audience' || m.role === 'viewer' || (!m.role && m.user_id !== party.host_id));
+                  if (audienceMembers.length === 0) return null;
+                  const shown = audienceMembers.slice(0, 15);
+                  const overflow = audienceMembers.length - 15;
+                  return (
+                    <div className="px-2 pt-2 pb-3">
+                      <p className="text-[9px] uppercase font-bold mb-2 tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>Others in the Room</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {shown.map(m => (
+                          <div key={m.id} className="flex flex-col items-center gap-0.5">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-black text-white"
+                              style={{ background: 'rgba(255,255,255,0.08)' }}>
+                              {(m.user_name || '?')[0].toUpperCase()}
+                            </div>
+                            <span className="text-[8px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 32 }}>{m.user_name?.split(' ')[0]}</span>
+                          </div>
+                        ))}
+                        {overflow > 0 && (
+                          <div className="flex flex-col items-center gap-0.5">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold"
+                              style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>
+                              +{overflow}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -823,6 +874,29 @@ export default function BroadcastStudio() {
                   borderBottom: activeTab === tab.id ? `2px solid ${GOLD}` : '2px solid transparent',
                 }}>
                 <span className="text-[9px] font-black uppercase" style={T}>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Quick-action feature row */}
+          <div className="shrink-0 flex items-center gap-2 px-3 py-2 overflow-x-auto"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+            {[
+              { icon: '🎁', label: 'Gifts',  action: () => { window.location.href = '/PKBattlePage'; } },
+              { icon: '📊', label: 'Poll',   action: () => { window.location.href = '/PollManager'; } },
+              { icon: '🔔', label: 'Alert',  action: () => toast.info('Alert sent to audience!') },
+              { icon: '📱', label: 'QR',     action: () => toast.info(window.location.href) },
+              { icon: '🎵', label: 'Music',  action: () => { window.location.href = '/AIMusic'; } },
+            ].map(item => (
+              <button key={item.label}
+                onClick={item.action}
+                className="flex flex-col items-center gap-0.5 shrink-0 transition-all hover:opacity-80"
+              >
+                <div className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {item.icon}
+                </div>
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{item.label}</span>
               </button>
             ))}
           </div>
