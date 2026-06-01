@@ -270,9 +270,10 @@ export default function LiveRoom() {
     ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
     : DEMO_AUDIENCE;
 
-  const roomTitle  = party?.title || 'Testing Desktop — Android Station';
+  const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
   const hostName   = party ? (members.find(m => m.user_id === party.host_id)?.user_name || 'Host') : 'SwanyThree';
   const liveCount  = members.length || 20;
+  const isLive     = !roomId || members.length > 0 || (remoteStreams?.size ?? 0) > 0;
 
   // Local UI state
   const [stageData, setStageData]   = useState(stage);
@@ -386,12 +387,20 @@ export default function LiveRoom() {
 
         {/* LIVE + SeeWhy badge row */}
         <div className="px-4 pb-3 flex items-center gap-2">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-            style={{ background: `${PINK}1A`, border: `1px solid ${PINK}44` }}>
-            <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
-              animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 0.9, repeat: Infinity }} />
-            <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
-          </div>
+          {isLive ? (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style={{ background: `${PINK}1A`, border: `1px solid ${PINK}44` }}>
+              <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
+                animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 0.9, repeat: Infinity }} />
+              <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.25)' }} />
+              <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>Waiting to go live</span>
+            </div>
+          )}
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <Radio className="w-2.5 h-2.5" style={{ color: GOLD }} />
