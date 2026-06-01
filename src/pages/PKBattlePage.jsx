@@ -11,11 +11,23 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import AggregatedChat from '../components/live/AggregatedChat';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+
+const GIFTS = [
+  { emoji: '🌹', label: 'Rose', pts: 1 },
+  { emoji: '🍰', label: 'Cake', pts: 5 },
+  { emoji: '💎', label: 'Diamond', pts: 10 },
+  { emoji: '🔥', label: 'Fire', pts: 20 },
+  { emoji: '🚀', label: 'Rocket', pts: 50 },
+  { emoji: '👑', label: 'Crown', pts: 100 },
+  { emoji: '💫', label: 'Star Shower', pts: 200 },
+  { emoji: '🌊', label: 'Wave', pts: 500 },
+];
 
 function OctCamTile({ stream, label, isLocal }) {
   const ref = useRef(null);
@@ -40,7 +52,19 @@ function OctCamTile({ stream, label, isLocal }) {
   );
 }
 
+function GhostOctTile() {
+  return (
+    <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
+      <div className="absolute inset-0" style={{ clipPath: OCT, border: '1px dashed rgba(212,175,55,0.3)', background: 'rgba(255,255,255,0.03)' }} />
+      <div className="absolute inset-[2px] flex items-center justify-center" style={{ clipPath: OCT, background: 'rgba(0,0,0,0.4)' }}>
+        <span className="text-[9px] font-bold" style={{ color: 'rgba(212,175,55,0.5)' }}>Join</span>
+      </div>
+    </div>
+  );
+}
+
 function AudienceCameraStrip({ localStream, remoteStreams, currentUserId }) {
+  var hasStreams = localStream || (remoteStreams && remoteStreams.size > 0);
   return (
     <div className="flex items-center gap-2 px-4 py-1.5 shrink-0 overflow-x-auto"
       style={{ background: 'rgba(0,0,0,0.6)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
@@ -49,16 +73,16 @@ function AudienceCameraStrip({ localStream, remoteStreams, currentUserId }) {
       {remoteStreams && Array.from(remoteStreams.entries()).map(([peerId, stream]) => (
         <OctCamTile key={peerId} stream={stream} label="Viewer" isLocal={false} />
       ))}
+      {!hasStreams && (
+        <>
+          <GhostOctTile />
+          <GhostOctTile />
+          <GhostOctTile />
+        </>
+      )}
     </div>
   );
 }
-const GIFTS = [
-  { emoji: '🌹', label: 'Rose', pts: 1 },
-  { emoji: '🍰', label: 'Cake', pts: 5 },
-  { emoji: '💎', label: 'Diamond', pts: 10 },
-  { emoji: '🔥', label: 'Fire', pts: 20 },
-  { emoji: '🚀', label: 'Rocket', pts: 50 },
-];
 
 function FlyingGift({ emoji, side }) {
   return (
@@ -71,6 +95,43 @@ function FlyingGift({ emoji, side }) {
     >
       {emoji}
     </motion.div>
+  );
+}
+
+function ComboBadge({ combo }) {
+  if (!combo || combo < 2) return null;
+  var color = combo >= 10 ? '#FF1564' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
+  var glow = combo >= 10 ? '0 0 12px rgba(255,21,100,0.8)' : 'none';
+  return (
+    <motion.div
+      key={combo}
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.5, opacity: 0 }}
+      className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full font-black text-sm px-2 py-0.5 rounded-full z-20"
+      style={{ background: color + '30', color, border: `1px solid ${color}60`, boxShadow: glow, fontFamily: 'Barlow Condensed, sans-serif' }}
+    >
+      x{combo}
+    </motion.div>
+  );
+}
+
+function OnFireBadge({ show }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0 }}
+          className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
+        >
+          <div className="text-sm font-black px-3 py-1 rounded-xl" style={{ background: 'rgba(255,100,0,0.3)', border: '1px solid rgba(255,100,0,0.6)', color: '#FF6400' }}>
+            🔥 ON FIRE!
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -98,6 +159,64 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
         <span className="text-red-400">{rightVotes.toLocaleString()} pts</span>
       </div>
     </div>
+  );
+}
+
+function CircularTimer({ timeLeft, totalTime }) {
+  var size = 40;
+  var stroke = 3;
+  var radius = (size - stroke) / 2;
+  var circumference = 2 * Math.PI * radius;
+  var pct = totalTime > 0 ? timeLeft / totalTime : 0;
+  var offset = circumference * (1 - pct);
+  var color = pct > 0.5 ? '#D4AF37' : pct > 0.25 ? '#FF8C00' : '#FF3030';
+  var mm = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+  var ss = String(timeLeft % 60).padStart(2, '0');
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={stroke} />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius}
+          fill="none" stroke={color} strokeWidth={stroke}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s' }}
+        />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontFamily: 'monospace', fontWeight: 'bold', color }}>
+        {mm}:{ss}
+      </div>
+    </div>
+  );
+}
+
+function CountdownOverlay({ countdown }) {
+  return (
+    <AnimatePresence>
+      {countdown !== null && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        >
+          <motion.div
+            key={countdown}
+            initial={{ scale: 2, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="font-black text-[#D4AF37]"
+            style={{ fontSize: 120, fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1, textShadow: '0 0 40px rgba(212,175,55,0.8)' }}
+          >
+            {countdown}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -140,12 +259,37 @@ export default function PKBattlePage() {
   const [rightVotes, setRightVotes] = useState(0);
   const [flyingGifts, setFlyingGifts] = useState([]);
   const [winner, setWinner] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+  const [countdownDone, setCountdownDone] = useState(false);
+  const [leftCombo, setLeftCombo] = useState(0);
+  const [rightCombo, setRightCombo] = useState(0);
+  const [leftOnFire, setLeftOnFire] = useState(false);
+  const [rightOnFire, setRightOnFire] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   const timerRef = useRef(null);
   const giftIdRef = useRef(0);
+  const leftLastGiftRef = useRef(0);
+  const rightLastGiftRef = useRef(0);
+  const leftComboTimerRef = useRef(null);
+  const rightComboTimerRef = useRef(null);
+  const leftVelocityRef = useRef([]);
+  const rightVelocityRef = useRef([]);
+  const leftFireTimerRef = useRef(null);
+  const rightFireTimerRef = useRef(null);
+  const countdownStartedRef = useRef(false);
+  const battleDurationRef = useRef(BATTLE_DURATION);
+
+  useEffect(() => {
+    var check = function() { setIsMobile(window.innerWidth < 768); };
+    check();
+    window.addEventListener('resize', check);
+    return function() { window.removeEventListener('resize', check); };
+  }, []);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  // Poll battle state from entity
   const { data: battle } = useQuery({
     queryKey: ['pk-battle', battleId],
     queryFn: () => base44.entities.LiveAuction.filter({ id: battleId }).then(r => r[0]),
@@ -153,7 +297,6 @@ export default function PKBattlePage() {
     refetchInterval: 3000,
   });
 
-  // Sync battle scores from entity
   useEffect(() => {
     if (!battleId) return;
     const unsub = base44.entities.LiveAuction.subscribe((event) => {
@@ -165,6 +308,20 @@ export default function PKBattlePage() {
     });
     return unsub;
   }, [battleId]);
+
+  useEffect(() => {
+    if (!battle || battle.status !== 'active' || countdownStartedRef.current) return;
+    var endsAt = new Date(battle.ends_at).getTime();
+    var remaining = Math.floor((endsAt - Date.now()) / 1000);
+    if (Math.abs(remaining - battleDurationRef.current) <= 2 || remaining >= battleDurationRef.current - 2) {
+      countdownStartedRef.current = true;
+      setCountdown(3);
+      var t1 = setTimeout(function() { setCountdown(2); }, 1000);
+      var t2 = setTimeout(function() { setCountdown(1); }, 2000);
+      var t3 = setTimeout(function() { setCountdown(null); setCountdownDone(true); }, 3000);
+      return function() { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    }
+  }, [battle?.status, battle?.ends_at]);
 
   const createBattle = useMutation({
     mutationFn: () => base44.entities.LiveAuction.create({
@@ -178,29 +335,67 @@ export default function PKBattlePage() {
       status: 'active',
     }),
     onSuccess: (b) => {
+      battleDurationRef.current = duration;
       window.location.href = `${window.location.pathname}?id=${b.id}`;
     },
   });
 
-  const addVote = async (side, pts) => {
-    const emoji = GIFTS.find(g => g.pts === pts)?.emoji || '🎁';
-    // Fly the gift
-    const id = ++giftIdRef.current;
-    setFlyingGifts(p => [...p, { id, emoji, side }]);
-    setTimeout(() => setFlyingGifts(p => p.filter(g => g.id !== id)), 1600);
+  var addVote = function(side, pts, combo) {
+    var multiplier = combo || 1;
+    var totalPts = pts * multiplier;
+    var emoji = GIFTS.find(function(g) { return g.pts === pts; })?.emoji || '🎁';
+    var id = ++giftIdRef.current;
+    setFlyingGifts(function(p) { return [...p, { id, emoji, side }]; });
+    setTimeout(function() { setFlyingGifts(function(p) { return p.filter(function(g) { return g.id !== id; }); }); }, 1600);
 
+    var now = Date.now();
     if (side === 'left') {
-      const newVal = leftVotes + pts;
+      var lastLeft = leftLastGiftRef.current;
+      leftLastGiftRef.current = now;
+      if (now - lastLeft < 2000) {
+        setLeftCombo(function(c) { return c + 1; });
+      } else {
+        setLeftCombo(1);
+      }
+      if (leftComboTimerRef.current) clearTimeout(leftComboTimerRef.current);
+      leftComboTimerRef.current = setTimeout(function() { setLeftCombo(0); }, 2000);
+
+      leftVelocityRef.current = [...leftVelocityRef.current, now].slice(-5);
+      var leftRecent = leftVelocityRef.current.filter(function(t) { return now - t < 3000; });
+      if (leftRecent.length > 3) {
+        setLeftOnFire(true);
+        if (leftFireTimerRef.current) clearTimeout(leftFireTimerRef.current);
+        leftFireTimerRef.current = setTimeout(function() { setLeftOnFire(false); }, 2000);
+      }
+
+      var newVal = leftVotes + totalPts;
       setLeftVotes(newVal);
-      if (battleId) await base44.entities.LiveAuction.update(battleId, { current_bid: newVal });
+      if (battleId) base44.entities.LiveAuction.update(battleId, { current_bid: newVal });
     } else {
-      const newVal = rightVotes + pts;
-      setRightVotes(newVal);
-      if (battleId) await base44.entities.LiveAuction.update(battleId, { bid_count: newVal });
+      var lastRight = rightLastGiftRef.current;
+      rightLastGiftRef.current = now;
+      if (now - lastRight < 2000) {
+        setRightCombo(function(c) { return c + 1; });
+      } else {
+        setRightCombo(1);
+      }
+      if (rightComboTimerRef.current) clearTimeout(rightComboTimerRef.current);
+      rightComboTimerRef.current = setTimeout(function() { setRightCombo(0); }, 2000);
+
+      rightVelocityRef.current = [...rightVelocityRef.current, now].slice(-5);
+      var rightRecent = rightVelocityRef.current.filter(function(t) { return now - t < 3000; });
+      if (rightRecent.length > 3) {
+        setRightOnFire(true);
+        if (rightFireTimerRef.current) clearTimeout(rightFireTimerRef.current);
+        rightFireTimerRef.current = setTimeout(function() { setRightOnFire(false); }, 2000);
+      }
+
+      var newRightVal = rightVotes + totalPts;
+      setRightVotes(newRightVal);
+      if (battleId) base44.entities.LiveAuction.update(battleId, { bid_count: newRightVal });
     }
   };
 
-  // Timer
   useEffect(() => {
     if (!battleId || !battle || battle.status !== 'active') return;
     const endsAt = battle ? new Date(battle.ends_at).getTime() : Date.now() + duration * 1000;
@@ -219,10 +414,8 @@ export default function PKBattlePage() {
     return () => clearInterval(timerRef.current);
   }, [battleId, battle?.status]);
 
-  const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
   const copyLink = () => { navigator.clipboard.writeText(window.location.href); toast.success('Battle link copied!'); };
 
-  // ── Create screen ──────────────────────────────────────────────────────────
   if (!battleId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0d0618] via-[#1a0030] to-[#0d0618] flex items-center justify-center px-4">
@@ -310,15 +503,12 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
-  // Camera feeds for audience/host self-view in the battle arena
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
 
-  // Screen-capture streams for compositor (null until user selects)
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
 
-  // Stop capture streams on unmount to release screen capture permission
   React.useEffect(() => () => {
     leftCaptureStream?.getTracks().forEach(t => t.stop());
     rightCaptureStream?.getTracks().forEach(t => t.stop());
@@ -335,27 +525,28 @@ export default function PKBattlePage() {
 
   const handleBattleScreenCapture = async () => {
     const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-    // Assign to left if empty, else right
     if (!leftCaptureStream) setLeftCaptureStream(stream);
     else setRightCaptureStream(stream);
     return stream;
   };
 
+  var giftsDisabled = countdown !== null;
+  var splitDir = isMobile ? 'flex-col' : 'flex-row';
+
   return (
     <div className="min-h-screen bg-[#050010] text-white flex flex-col overflow-hidden relative">
-      {/* Winner overlay */}
       <AnimatePresence>
         {winner && <WinnerOverlay winner={winner} onClose={() => setWinner(null)} />}
       </AnimatePresence>
 
-      {/* Flying gifts */}
+      <CountdownOverlay countdown={countdown} />
+
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
         <AnimatePresence>
           {flyingGifts.map(g => <FlyingGift key={g.id} emoji={g.emoji} side={g.side} />)}
         </AnimatePresence>
       </div>
 
-      {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-3 bg-black/60 border-b border-white/10 z-10 shrink-0">
         <Link to={createPageUrl('Home')}>
           <Button variant="ghost" size="icon" className="w-8 h-8 text-white/40 hover:text-white">
@@ -372,9 +563,12 @@ export default function PKBattlePage() {
             <Badge className="bg-gray-600 text-white border-0 text-[10px]">ENDED</Badge>
           )}
         </div>
-        <div className="font-mono text-xl font-black text-[#d4af37] tabular-nums">
-          {formatTime(timeLeft)}
-        </div>
+        <CircularTimer timeLeft={timeLeft} totalTime={battleDurationRef.current} />
+        <button onClick={function() { setShowChat(function(v) { return !v; }); }}
+          className="w-8 h-8 flex items-center justify-center rounded-lg transition-all text-sm"
+          style={{ background: showChat ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.07)', border: showChat ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)' }}>
+          💬
+        </button>
         <ShareButtons
           url={window.location.href}
           title={`Watch this PK Battle: ${battle?.title || 'Live Battle'}`}
@@ -390,11 +584,8 @@ export default function PKBattlePage() {
         />
       </div>
 
-      {/* Main split-screen */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT */}
-        <div className="flex-1 relative flex flex-col bg-gradient-to-br from-blue-950 to-black border-r-2 border-[#d4af37]/30">
-          {/* Stream embed or placeholder */}
+      <div className={'flex-1 flex overflow-hidden ' + splitDir}>
+        <div className={'flex-1 relative flex flex-col bg-gradient-to-br from-blue-950 to-black ' + (isMobile ? 'border-b-2' : 'border-r-2') + ' border-[#d4af37]/30'}>
           <div className="flex-1 relative overflow-hidden">
             {isSafeUrl(bLeftStream) ? (
               <iframe src={bLeftStream} className="w-full h-full" allowFullScreen allow="autoplay" />
@@ -407,19 +598,23 @@ export default function PKBattlePage() {
                 <Badge className="bg-blue-700/50 text-blue-200 border-blue-600/40">Left Creator</Badge>
               </div>
             )}
-            {/* Score overlay */}
-            <div className="absolute top-3 left-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center">
+            <div className="absolute top-3 left-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
+              <AnimatePresence>
+                <ComboBadge combo={leftCombo} />
+              </AnimatePresence>
               <p className="text-3xl font-black text-blue-400 font-mono">{leftVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
+              <OnFireBadge show={leftOnFire} />
             </div>
           </div>
-          {/* Gift buttons */}
-          <div className="flex items-center gap-1.5 px-3 py-2 bg-black/60 justify-center flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-black/60 overflow-x-auto" style={{ flexWrap: 'nowrap' }}>
             {GIFTS.map(g => (
               <button
                 key={g.pts}
-                onClick={() => addVote('left', g.pts)}
-                className="flex items-center gap-1 px-2 py-1.5 bg-blue-900/40 border border-blue-700/40 rounded-lg text-[11px] text-blue-300 font-bold hover:bg-blue-700/50 transition-all"
+                onClick={() => !giftsDisabled && addVote('left', g.pts, leftCombo)}
+                disabled={giftsDisabled}
+                className="flex items-center gap-1 px-2 py-1.5 bg-blue-900/40 border border-blue-700/40 rounded-lg text-[11px] text-blue-300 font-bold hover:bg-blue-700/50 transition-all shrink-0"
+                style={{ opacity: giftsDisabled ? 0.4 : 1 }}
               >
                 {g.emoji} +{g.pts}
               </button>
@@ -427,16 +622,14 @@ export default function PKBattlePage() {
           </div>
         </div>
 
-        {/* VS Divider */}
-        <div className="flex flex-col items-center justify-center w-10 bg-black z-10 shrink-0">
-          <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent" />
-          <div className="w-9 h-9 rounded-full bg-[#d4af37] flex items-center justify-center my-2">
+        <div className={'flex flex-col items-center justify-center bg-black z-10 shrink-0 ' + (isMobile ? 'h-8 flex-row w-full' : 'w-10')}>
+          <div className={'bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent ' + (isMobile ? 'flex-1 h-px' : 'flex-1 w-px')} />
+          <div className="w-9 h-9 rounded-full bg-[#d4af37] flex items-center justify-center my-2 shrink-0">
             <span className="text-black font-black text-[10px]">VS</span>
           </div>
-          <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent" />
+          <div className={'bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent ' + (isMobile ? 'flex-1 h-px' : 'flex-1 w-px')} />
         </div>
 
-        {/* RIGHT */}
         <div className="flex-1 relative flex flex-col bg-gradient-to-bl from-red-950 to-black">
           <div className="flex-1 relative overflow-hidden">
             {isSafeUrl(bRightStream) ? (
@@ -450,19 +643,23 @@ export default function PKBattlePage() {
                 <Badge className="bg-red-700/50 text-red-200 border-red-600/40">Right Creator</Badge>
               </div>
             )}
-            {/* Score overlay */}
-            <div className="absolute top-3 right-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center">
+            <div className="absolute top-3 right-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
+              <AnimatePresence>
+                <ComboBadge combo={rightCombo} />
+              </AnimatePresence>
               <p className="text-3xl font-black text-red-400 font-mono">{rightVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
+              <OnFireBadge show={rightOnFire} />
             </div>
           </div>
-          {/* Gift buttons */}
-          <div className="flex items-center gap-1.5 px-3 py-2 bg-black/60 justify-center flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-2 bg-black/60 overflow-x-auto" style={{ flexWrap: 'nowrap' }}>
             {GIFTS.map(g => (
               <button
                 key={g.pts}
-                onClick={() => addVote('right', g.pts)}
-                className="flex items-center gap-1 px-2 py-1.5 bg-red-900/40 border border-red-700/40 rounded-lg text-[11px] text-red-300 font-bold hover:bg-red-700/50 transition-all"
+                onClick={() => !giftsDisabled && addVote('right', g.pts, rightCombo)}
+                disabled={giftsDisabled}
+                className="flex items-center gap-1 px-2 py-1.5 bg-red-900/40 border border-red-700/40 rounded-lg text-[11px] text-red-300 font-bold hover:bg-red-700/50 transition-all shrink-0"
+                style={{ opacity: giftsDisabled ? 0.4 : 1 }}
               >
                 {g.emoji} +{g.pts}
               </button>
@@ -471,16 +668,12 @@ export default function PKBattlePage() {
         </div>
       </div>
 
-      {/* Audience camera strip — octagonal self + peer views */}
-      {(localCamStream || battleRemoteStreams?.size > 0) && (
-        <AudienceCameraStrip
-          localStream={localCamStream}
-          remoteStreams={battleRemoteStreams}
-          currentUserId={user?.id}
-        />
-      )}
+      <AudienceCameraStrip
+        localStream={localCamStream}
+        remoteStreams={battleRemoteStreams}
+        currentUserId={user?.id}
+      />
 
-      {/* Bottom score bar */}
       <div className="bg-black/80 border-t border-white/10 px-6 py-3 shrink-0">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-sm font-bold text-blue-400 truncate flex-1 text-right">{bLeftName}</span>
@@ -489,6 +682,27 @@ export default function PKBattlePage() {
         </div>
         <ScoreBar leftVotes={leftVotes} rightVotes={rightVotes} leftName={bLeftName} rightName={bRightName} />
       </div>
+
+      <AnimatePresence>
+        {showChat && (
+          <motion.div
+            initial={{ x: 240 }}
+            animate={{ x: 0 }}
+            exit={{ x: 240 }}
+            transition={{ type: 'tween', duration: 0.25 }}
+            className="fixed right-0 bottom-0 z-40 flex flex-col"
+            style={{ width: 240, height: '90vh', top: '10vh', background: 'rgba(8,5,20,0.97)', borderLeft: '1px solid rgba(212,175,55,0.2)' }}
+          >
+            <div className="flex items-center justify-between px-3 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <span className="text-[11px] font-black uppercase" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>Live Chat</span>
+              <button onClick={function() { setShowChat(false); }} className="text-white/40 hover:text-white text-xs">✕</button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <AggregatedChat roomId={battleId} currentUser={user} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

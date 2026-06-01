@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
@@ -23,6 +24,9 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+
+var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
 function Button({ children, onClick, disabled, className = '', style = {}, size }) {
   return (
@@ -57,12 +61,10 @@ function CardContent({ children, className = '', style = {} }) {
 
 function detectType(url) { return detectVideoType(url); }
 
-// ── Sync Engine ──────────────────────────────────────────────────────────────
 function useSyncEngine({ party, isHost, onTimeSync }) {
   const qc = useQueryClient();
   const syncInterval = useRef(null);
 
-  // Host: push state every 3s
   const pushState = useCallback(async (playerState) => {
     if (!isHost || !party?.id) return;
     await base44.entities.WatchParty.update(party.id, {
@@ -72,7 +74,6 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
     });
   }, [isHost, party?.id]);
 
-  // Subscribe to real-time updates
   useEffect(() => {
     if (!party?.id) return;
     const unsub = base44.entities.WatchParty.subscribe((event) => {
@@ -88,7 +89,6 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
   return { pushState };
 }
 
-// ── YouTube Player ────────────────────────────────────────────────────────────
 function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
@@ -118,7 +118,6 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
     };
   }, [videoId]);
 
-  // Periodic sync push every 3s so viewers stay in sync during continuous playback
   useEffect(() => {
     if (!isHost) return;
     const iv = setInterval(() => {
@@ -131,7 +130,6 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
     return () => clearInterval(iv);
   }, [isHost, onStateChange]);
 
-  // Sync from host
   useEffect(() => {
     if (isHost || !playerRef.current || !syncData) return;
     const serverTime = syncData.current_time || 0;
@@ -151,7 +149,6 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
   return <div ref={iframeRef} className="w-full h-full" />;
 }
 
-// ── Direct Video Player ───────────────────────────────────────────────────────
 function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   const videoRef = useRef(null);
 
@@ -163,7 +160,6 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
     });
   };
 
-  // Periodic sync push every 3s so viewers stay in sync during continuous playback
   useEffect(() => {
     if (!isHost) return;
     const iv = setInterval(() => {
@@ -197,7 +193,132 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+function MobileParticipantStrip({ members, hostId, speakingIds }) {
+  var displayMembers = members.slice(0, 8);
+  var overflow = members.length - 8;
+  return (
+    <div className="flex md:hidden items-center gap-2 px-3 py-1.5 overflow-x-auto shrink-0"
+      style={{ background: 'rgba(8,11,24,0.9)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      {displayMembers.map(function(m) {
+        var isHostMember = m.user_id === hostId;
+        var isSpeaking = speakingIds && speakingIds.has(m.user_id);
+        return (
+          <div key={m.id || m.user_id} className="flex flex-col items-center shrink-0 gap-0.5">
+            <motion.div
+              style={{ width: 44, height: 44, borderRadius: 2 }}
+              animate={{
+                boxShadow: isSpeaking
+                  ? ['0 0 0 2px rgba(212,175,55,0.8)', '0 0 0 6px rgba(212,175,55,0.15)']
+                  : isHostMember
+                  ? '0 0 0 2px rgba(212,175,55,0.5)'
+                  : '0 0 0 0px transparent',
+              }}
+              transition={isSpeaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}}
+            >
+              <div className="w-full h-full relative" style={{ clipPath: OCT, background: isHostMember ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.12)' }}>
+                <div className="absolute inset-[2px] flex items-center justify-center font-bold text-white text-xs"
+                  style={{ clipPath: OCT, background: '#1a0f2e' }}>
+                  {m.user_name ? m.user_name.charAt(0).toUpperCase() : '?'}
+                  {isHostMember && (
+                    <span className="absolute top-0 right-0 text-[6px]">👑</span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+            <span className="text-white/50 truncate max-w-[44px]" style={{ fontSize: 7 }}>{m.user_name}</span>
+          </div>
+        );
+      })}
+      {overflow > 0 && (
+        <div className="shrink-0 flex flex-col items-center gap-0.5">
+          <div className="flex items-center justify-center text-[10px] font-bold rounded"
+            style={{ width: 44, height: 44, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', clipPath: OCT }}>
+            +{overflow}
+          </div>
+          <span style={{ fontSize: 7, color: 'transparent' }}>.</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReactionsPanel({ partyId }) {
+  var [counts, setCounts] = useState({});
+  var [floaters, setFloaters] = useState([]);
+  var floaterIdRef = useRef(0);
+
+  var handleReaction = function(emoji) {
+    setCounts(function(prev) { return { ...prev, [emoji]: (prev[emoji] || 0) + 1 }; });
+    var id = ++floaterIdRef.current;
+    setFloaters(function(prev) { return [...prev, { id, emoji }]; });
+    setTimeout(function() { setFloaters(function(prev) { return prev.filter(function(f) { return f.id !== id; }); }); }, 1200);
+  };
+
+  return (
+    <div className="relative space-y-3">
+      <div className="grid grid-cols-3 gap-2">
+        {REACTION_EMOJIS.map(function(emoji) {
+          return (
+            <button key={emoji}
+              onClick={function() { handleReaction(emoji); }}
+              className="relative flex flex-col items-center justify-center rounded-xl transition-all"
+              style={{ height: 52, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              onMouseEnter={function(e) { e.currentTarget.style.borderColor = 'rgba(212,175,55,0.5)'; }}
+              onMouseLeave={function(e) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+            >
+              <span style={{ fontSize: 24 }}>{emoji}</span>
+              {counts[emoji] > 0 && (
+                <span className="absolute top-1 right-1 text-[9px] font-bold rounded-full px-1"
+                  style={{ background: 'rgba(212,175,55,0.3)', color: '#d4af37' }}>
+                  {counts[emoji]}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <AnimatePresence>
+          {floaters.map(function(f) {
+            return (
+              <motion.div key={f.id}
+                initial={{ y: 0, opacity: 1, x: Math.random() * 80 + 40 }}
+                animate={{ y: -80, opacity: 0 }}
+                exit={{}}
+                transition={{ duration: 1.1, ease: 'easeOut' }}
+                className="absolute bottom-0 text-2xl pointer-events-none"
+              >
+                {f.emoji}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+function InviteCard({ partyUrl }) {
+  var handleCopy = function() {
+    navigator.clipboard.writeText(partyUrl).then(function() {
+      toast.success('Link copied!');
+    });
+  };
+  return (
+    <div className="rounded-xl p-3 space-y-2" style={{ border: '1px solid rgba(212,175,55,0.35)', background: 'rgba(212,175,55,0.04)' }}>
+      <p className="text-[11px] font-black uppercase" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>Invite Friends</p>
+      <div className="rounded px-2 py-1.5 text-[10px] truncate" style={{ fontFamily: 'monospace', background: 'rgba(0,0,0,0.4)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        {partyUrl}
+      </div>
+      <button onClick={handleCopy}
+        className="w-full py-1.5 rounded-lg text-[11px] font-bold transition-all"
+        style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37' }}>
+        Copy Link
+      </button>
+    </div>
+  );
+}
+
 export default function WatchPartyPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const partyId = urlParams.get('id');
@@ -212,7 +333,9 @@ export default function WatchPartyPage() {
   const [pollCount, setPollCount] = useState(0);
   const [playlist, setPlaylist] = useState([]);
   const [theaterMode, setTheaterMode] = useState(false);
+  const [showSyncWarn, setShowSyncWarn] = useState(false);
   const directVideoRef = useRef(null);
+  const prevMemberCountRef = useRef(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -232,11 +355,9 @@ export default function WatchPartyPage() {
 
   const isHost = party?.host_id === user?.id;
 
-  // Camera feeds — local + peer WebRTC mesh for this party room
   const { localStream } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
 
-  // Broadcast compositor
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
 
@@ -250,7 +371,6 @@ export default function WatchPartyPage() {
     return stream;
   };
 
-  // Stop screen capture on unmount to release screen-share permission
   useEffect(() => () => {
     screenCaptureStream?.getTracks().forEach(t => t.stop());
   }, [screenCaptureStream]);
@@ -263,7 +383,6 @@ export default function WatchPartyPage() {
     chatLines,
   };
 
-  // Real-time member roster — keep 20-person panel in sync instantly
   useEffect(() => {
     if (!partyId) return;
     const unsub = base44.entities.WatchPartyMember.subscribe((event) => {
@@ -273,7 +392,6 @@ export default function WatchPartyPage() {
     return unsub;
   }, [partyId, qc]);
 
-  // Join party on load
   useEffect(() => {
     if (!party || !user) return;
     const join = async () => {
@@ -293,7 +411,6 @@ export default function WatchPartyPage() {
     join();
   }, [party?.id, user?.id]);
 
-  // Leave on unmount
   useEffect(() => {
     return () => {
       if (!party || !user) return;
@@ -304,7 +421,35 @@ export default function WatchPartyPage() {
     };
   }, [party?.id, user?.id]);
 
-  const onTimeSync = useCallback((data) => setSyncData(data), []);
+  useEffect(() => {
+    if (prevMemberCountRef.current === null) {
+      prevMemberCountRef.current = members.length;
+      return;
+    }
+    if (members.length > prevMemberCountRef.current) {
+      const newest = members[members.length - 1];
+      toast.success(`👤 ${newest?.user_name || 'Someone'} joined!`, { duration: 2500 });
+    }
+    prevMemberCountRef.current = members.length;
+  }, [members.length]);
+
+  useEffect(() => {
+    if (isHost || !partyId) return;
+    const iv = setInterval(function() {
+      var lastMs = syncData?.updated_at_ms || party?.updated_at_ms;
+      if (lastMs && (Date.now() - lastMs) > 8000) {
+        setShowSyncWarn(true);
+      } else {
+        setShowSyncWarn(false);
+      }
+    }, 5000);
+    return function() { clearInterval(iv); };
+  }, [isHost, syncData, party, partyId]);
+
+  const onTimeSync = useCallback((data) => {
+    setSyncData(data);
+    setShowSyncWarn(false);
+  }, []);
   const { pushState } = useSyncEngine({ party, isHost, onTimeSync });
 
   const createMutation = useMutation({
@@ -358,7 +503,15 @@ export default function WatchPartyPage() {
     toast.success('Video changed!');
   };
 
-  // ── Create screen ─────────────────────────────────────────────────────────
+  var handlePip = function() {
+    try {
+      var el = document.querySelector('[data-video-container] video, [data-video-container] iframe');
+      if (el && el.requestPictureInPicture) {
+        el.requestPictureInPicture();
+      }
+    } catch (e) {}
+  };
+
   if (!partyId) {
     return (
       <div className="max-w-lg mx-auto mt-10 p-6 space-y-6" style={{ background: '#0B0B18', minHeight: '100vh' }}>
@@ -376,7 +529,6 @@ export default function WatchPartyPage() {
             className="h-11 text-white placeholder:text-white/30"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
           />
-          {/* Source tabs */}
           <div className="space-y-2">
             <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Video Source</p>
             <div className="grid grid-cols-2 gap-2">
@@ -432,14 +584,10 @@ export default function WatchPartyPage() {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   }
 
-  // ytId now comes from the imported helper
-
   return (
     <div className={`flex flex-col overflow-hidden transition-all duration-300 ${theaterMode ? 'h-screen fixed inset-0 z-50' : 'h-[calc(100vh-120px)]'}`} style={{ background: '#0B0B18' }}>
-      {/* ── FANBASE-STYLE TOP BAR ──────────────────────────────────────────── */}
       <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
 
-        {/* Row 1: title + badges | right actions */}
         <div className="flex items-center gap-2 px-3 h-12">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <h2 className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</h2>
@@ -454,6 +602,14 @@ export default function WatchPartyPage() {
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {document.pictureInPictureEnabled && (
+              <button onClick={handlePip}
+                className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95 text-sm"
+                style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}
+                title="Picture in Picture">
+                📺
+              </button>
+            )}
             <ShareButtons
               url={window.location.href}
               title={`Join my Watch Party: ${party?.title}`}
@@ -492,7 +648,6 @@ export default function WatchPartyPage() {
           </div>
         </div>
 
-        {/* Row 2: host avatar + name | member count | synced/host badge */}
         <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
           <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black text-white"
             style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
@@ -518,7 +673,17 @@ export default function WatchPartyPage() {
         </div>
       </div>
 
-      {/* ── VIDEO PLAYER — always visible at top on mobile ── */}
+      {showSyncWarn && !isHost && (
+        <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(255,176,0,0.15)', borderBottom: '1px solid rgba(255,176,0,0.3)' }}>
+          <span className="text-xs font-bold" style={{ color: '#FFB000' }}>⚠️ Sync lost — tap to resync</span>
+          <button onClick={function() { if (syncData) onTimeSync(syncData); else if (party) onTimeSync(party); setShowSyncWarn(false); }}
+            className="ml-auto px-3 py-1 rounded-lg text-[10px] font-bold"
+            style={{ background: 'rgba(255,176,0,0.25)', color: '#FFB000', border: '1px solid rgba(255,176,0,0.4)' }}>
+            Resync
+          </button>
+        </div>
+      )}
+
       <div className="shrink-0 relative bg-black group" data-video-container style={{ aspectRatio: '16/9', width: '100%' }}>
         {party.video_type === 'youtube' ? (
           <YouTubeEmbed
@@ -535,7 +700,6 @@ export default function WatchPartyPage() {
             onStateChange={pushState}
           />
         )}
-        {/* Host / Co-Host controls overlay */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
           <VideoPlayerControls
             playerRef={directVideoRef}
@@ -556,15 +720,14 @@ export default function WatchPartyPage() {
         )}
       </div>
 
-      {/* Viewer rail — horizontal scrolling avatars */}
+      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={null} />
+
       <ViewerRail members={members} hostId={party.host_id} />
 
-      {/* Hype Meter */}
       <div className="shrink-0 px-3 py-1.5">
         <PartyHypeMeter partyId={partyId} memberCount={members.length} />
       </div>
 
-      {/* Reactions overlay — entity-backed */}
       <div className="shrink-0 relative">
         <PartyReactionsOverlay
           partyId={partyId}
@@ -573,15 +736,12 @@ export default function WatchPartyPage() {
         />
       </div>
 
-      {/* Live Emoticon Storm bar */}
       <LiveEmoticonStorm partyId={partyId} currentUser={user} />
 
-      {/* Main area: panel grid + tabbed right panel */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
-        {/* ── 20-PERSON PANEL GRID — hidden on mobile to save space ── */}
-        <div className="hidden md:block shrink-0 overflow-hidden"
-          style={{ width: '220px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className={`shrink-0 overflow-hidden ${theaterMode ? 'hidden md:block md:w-[160px] relative' : 'hidden md:block'}`}
+          style={{ width: theaterMode ? undefined : '220px', borderRight: '1px solid rgba(255,255,255,0.06)', ...(theaterMode ? { position: 'absolute', right: 0, top: 0, bottom: 0, zIndex: 10, background: 'rgba(8,11,24,0.95)' } : {}) }}>
           <PanelGrid
             members={members}
             currentUser={user}
@@ -595,9 +755,7 @@ export default function WatchPartyPage() {
           />
         </div>
 
-        {/* ── TABBED PANEL ── */}
         <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#0d0618' }}>
-          {/* Tab bar */}
           <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
             {[
               { id: 'chat',        label: '💬 Chat' },
@@ -623,7 +781,6 @@ export default function WatchPartyPage() {
             ))}
           </div>
 
-          {/* Tab content */}
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
             {activePanel === 'chat' && (
               <>
@@ -631,6 +788,9 @@ export default function WatchPartyPage() {
                   <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+                {members.length < 10 && (
+                  <InviteCard partyUrl={window.location.href} />
+                )}
               </>
             )}
             {activePanel === 'queue' && (
@@ -647,11 +807,7 @@ export default function WatchPartyPage() {
               />
             )}
             {activePanel === 'reactions' && (
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  Use the reaction bar below the video to react live. Recent reactions appear on the right side of the player.
-                </p>
-              </div>
+              <ReactionsPanel partyId={partyId} />
             )}
             {activePanel === 'polls' && (
               <WatchPartyPoll
