@@ -9,6 +9,7 @@
 import { lazy } from 'react';
 import __Layout from './Layout.jsx';
 
+const AIHub               = lazy(() => import('./pages/AIHub'));
 const AIModeration        = lazy(() => import('./pages/AIModeration'));
 const Activity            = lazy(() => import('./pages/Activity'));
 const AdvancedAnalytics   = lazy(() => import('./pages/AdvancedAnalytics'));
@@ -84,6 +85,7 @@ const TestMode            = lazy(() => import('./pages/TestMode'));
 const GoLive              = lazy(() => import('./pages/GoLive'));
 
 export const PAGES = {
+    "AIHub": AIHub,
     "AIModeration": AIModeration,
     "Activity": Activity,
     "AdvancedAnalytics": AdvancedAnalytics,

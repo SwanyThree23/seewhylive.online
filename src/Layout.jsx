@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -41,6 +41,7 @@ var DRAWER_CREATE = [
   { name: 'Go Live',   icon: Radio,          href: createPageUrl('GoLive') },
   { name: 'Monetize',  icon: DollarSign,     href: createPageUrl('Monetization') },
   { name: 'Dashboard', icon: LayoutDashboard,href: createPageUrl('CreatorDashboard') },
+  { name: 'AI Hub',    icon: Sparkles,       href: createPageUrl('AIHub') },
   { name: 'Messages',  icon: MessageSquare,  href: createPageUrl('Messages') },
 ];
 
