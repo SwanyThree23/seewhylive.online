@@ -6,5 +6,6 @@ Disallow: /StageCleanup
 Disallow: /RTMPServer
 Disallow: /ControlRoom
 Disallow: /ModerationDashboard
+Disallow: /TestMode
 
 Sitemap: https://seewhylive.online/sitemap.xml

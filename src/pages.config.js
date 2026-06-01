@@ -80,6 +80,7 @@ const Onboarding          = lazy(() => import('./pages/Onboarding'));
 const PKBattle            = lazy(() => import('./pages/PKBattle'));
 const PollManager         = lazy(() => import('./pages/PollManager'));
 const PlatformShowcase    = lazy(() => import('./pages/PlatformShowcase'));
+const TestMode            = lazy(() => import('./pages/TestMode'));
 
 export const PAGES = {
     "AIModeration": AIModeration,
@@ -153,6 +154,7 @@ export const PAGES = {
     "PKBattle": PKBattle,
     "PollManager": PollManager,
     "PlatformShowcase": PlatformShowcase,
+    "TestMode": TestMode,
 }
 
 export const pagesConfig = {
