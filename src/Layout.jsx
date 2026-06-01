@@ -34,6 +34,7 @@ var DRAWER_WATCH = [
   { name: 'Home',        icon: Home,         href: createPageUrl('Home') },
   { name: 'Watch',       icon: Eye,          href: createPageUrl('Discover') },
   { name: 'Watch Party', icon: Eye,          href: createPageUrl('WatchParty') },
+  { name: 'Audio Room',  icon: Radio,        href: createPageUrl('AudioRoom') },
   { name: 'Leaderboard', icon: Trophy,       href: createPageUrl('Leaderboard') },
 ];
 
