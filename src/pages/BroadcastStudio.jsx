@@ -290,6 +290,12 @@ export default function BroadcastStudio() {
   });
   const [chatMessages, setChatMessages] = useState([]);
   const [elapsed, setElapsed] = useState(0);
+  const [aiMusicGenre, setAiMusicGenre] = useState(null);
+  const [aiMusicPlaying, setAiMusicPlaying] = useState(false);
+  const [guardianEnabled, setGuardianEnabled] = useState(true);
+  const [guardianStats, setGuardianStats] = useState({ blocked: 0, warned: 0, muted: 0 });
+  const [ariaEnabled, setAriaEnabled] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -476,6 +482,8 @@ export default function BroadcastStudio() {
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success('Invite link copied!');
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   // Build compositor slots from localStream + remoteStreams
@@ -524,6 +532,8 @@ export default function BroadcastStudio() {
     { id: 'polls',   label: '📊 Polls',  desc: 'Live polls' },
     { id: 'viewers', label: '👥 Panel',  desc: 'Manage' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
+    { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
+    { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
 
   return (
