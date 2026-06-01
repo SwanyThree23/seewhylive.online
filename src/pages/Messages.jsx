@@ -151,22 +151,17 @@ export default function Messages() {
           }}>
 
           {threads.length === 0 ? (
-            /* Empty state */
             <div className="flex flex-col items-center justify-center py-24 px-6">
-              <div style={{
-                width: 72, height: 72, clipPath: OCT,
-                background: "rgba(212,175,55,0.07)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                marginBottom: 16,
-              }}>
-                <MessageSquare className="w-8 h-8" style={{ color: "rgba(212,175,55,0.35)" }} />
-              </div>
+              <div style={{ fontSize: 48, marginBottom: 16, lineHeight: 1 }}>💬</div>
               <p className="font-black text-sm uppercase mb-2" style={{ color: "rgba(255,255,255,0.35)", ...T }}>
                 No messages yet
               </p>
-              <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.2)", ...T }}>
+              <button
+                onClick={() => setShowCompose(true)}
+                className="px-4 py-2 rounded-xl font-black uppercase text-[10px] mt-1"
+                style={{ background: "rgba(212,175,55,0.12)", border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
                 Start a conversation
-              </p>
+              </button>
             </div>
           ) : (
             threads.map((t, idx) => {
