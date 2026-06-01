@@ -163,6 +163,25 @@ export default function GoLive() {
           href={createPageUrl('WatchParty')}
         />
 
+        {/* Green Room card */}
+        <a href="/GreenroomEnhanced"
+          className="block rounded-2xl p-5 transition-all hover:border-green-500/30"
+          style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(0,255,136,0.12)', textDecoration: 'none' }}>
+          <div className="text-4xl mb-3">🎬</div>
+          <h2 className="text-xl font-black text-white mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Green Room</h2>
+          <p className="text-sm mb-3" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>Test camera, mic, and lighting before you go live. AES-256 room PINs included.</p>
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {['🎥 Camera Test', '🎤 Mic Check', '📋 Checklist', '🔐 Room PIN'].map(f => (
+              <span key={f} className="text-[9px] px-2 py-0.5 rounded-full font-bold"
+                style={{ background: 'rgba(0,255,136,0.08)', color: 'rgba(0,255,136,0.7)', border: '1px solid rgba(0,255,136,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>{f}</span>
+            ))}
+          </div>
+          <div className="w-full py-2 rounded-xl text-sm font-black uppercase text-center"
+            style={{ background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            Enter Green Room →
+          </div>
+        </a>
+
         {/* Share section */}
         <div className="mt-4 rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
           <div className="text-sm font-black mb-1" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>📢 Tell your audience first</div>
