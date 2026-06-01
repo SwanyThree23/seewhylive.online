@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft } from "lucide-react";
+import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
@@ -30,6 +30,12 @@ export default function Messages() {
   var [user, setUser] = useState(null);
   var [selectedThread, setSelectedThread] = useState(null);
   var [input, setInput] = useState("");
+  var [showCompose, setShowCompose] = useState(false);
+  var [composeName, setComposeName] = useState("");
+  var [composeMsg, setComposeMsg] = useState("");
+  var [hoveredMsg, setHoveredMsg] = useState(null);
+  var [reactionPickerMsg, setReactionPickerMsg] = useState(null);
+  var [msgReactions, setMsgReactions] = useState(new Map());
   var msgRef = useRef(null);
   var qc = useQueryClient();
 
@@ -43,6 +49,15 @@ export default function Messages() {
     enabled: !!user?.id,
     refetchInterval: 5000,
   });
+
+  var { data: onlineRecords = [] } = useQuery({
+    queryKey: ["presence-online"],
+    queryFn: () => base44.entities.PresenceRecord.filter({ is_online: true }),
+    enabled: !!user?.id,
+    refetchInterval: 15000,
+  });
+
+  var onlineSet = new Set(onlineRecords.map(r => r.user_id));
 
   // Build threads grouped by conversation partner
   var myMessages = allMessages.filter(m =>
@@ -87,6 +102,29 @@ export default function Messages() {
     onSuccess: () => qc.invalidateQueries(["all-dms", user?.id]),
   });
 
+  var composeMutation = useMutation({
+    mutationFn: () => base44.entities.DirectMessage.create({
+      sender_id: user?.id, sender_name: user?.full_name || "Me",
+      recipient_id: composeName.trim(), recipient_name: composeName.trim(),
+      content: composeMsg.trim(), is_whisper: false,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries(["all-dms", user?.id]);
+      setShowCompose(false);
+      setComposeName("");
+      setComposeMsg("");
+    },
+  });
+
+  function handleReaction(msgId, emoji) {
+    setMsgReactions(prev => {
+      var next = new Map(prev);
+      next.set(msgId, emoji);
+      return next;
+    });
+    setReactionPickerMsg(null);
+  }
+
   useEffect(() => {
     if (msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
     if (currentThread) {
@@ -130,6 +168,7 @@ export default function Messages() {
           )}
         </div>
         <button
+          onClick={() => setShowCompose(true)}
           className="flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:brightness-125"
           style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", color: GOLD }}>
           <PenSquare className="w-4 h-4" />
