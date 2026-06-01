@@ -51,13 +51,25 @@ function DarkCard({ title, children }) {
   );
 }
 
-const TABS = ['overview', 'users', 'rooms', 'reports', 'revenue'];
+const BG2 = 'rgba(13,6,24,0.9)';
+const TABS = ['overview', 'users', 'rooms', 'reports', 'revenue', 'security', 'audit'];
 
 export default function AdminDashboard() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
   const [userSearch, setUserSearch] = useState('');
   const [roomFilter, setRoomFilter] = useState('all');
+  const [bannedIPs, setBannedIPs] = useState([]);
+  const [newBanIP, setNewBanIP] = useState('');
+  const [banReason, setBanReason] = useState('');
+  const [suspensions, setSuspensions] = useState([]);
+  const [suspendUser, setSuspendUser] = useState('');
+  const [suspendDuration, setSuspendDuration] = useState('24h');
+  const [auditLog, setAuditLog] = useState([
+    { icon: '🛡️', action: 'Guardian AI enabled for all rooms', time: 'Jun 1, 7:00 PM', color: '#00FF88', severity: 'info' },
+    { icon: '📋', action: 'Reports dashboard accessed', time: 'Jun 1, 6:45 PM', color: '#D4AF37', severity: 'low' },
+    { icon: '⚙️', action: 'Rate limits verified — all healthy', time: 'Jun 1, 6:30 PM', color: '#00C8C8', severity: 'info' },
+  ]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: allUsers = [], isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: () => base44.entities.User.list('-created_date', 200), enabled: user?.role === 'admin' });
