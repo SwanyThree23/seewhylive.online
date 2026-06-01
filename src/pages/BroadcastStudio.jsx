@@ -25,6 +25,7 @@ import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -296,6 +297,7 @@ export default function BroadcastStudio() {
   const [guardianStats, setGuardianStats] = useState({ blocked: 0, warned: 0, muted: 0 });
   const [ariaEnabled, setAriaEnabled] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [showCameraPicker, setShowCameraPicker] = useState(false);
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -1121,6 +1123,17 @@ export default function BroadcastStudio() {
           <Monitor className="w-4 h-4" />
         </motion.button>
 
+        <motion.button whileTap={{ scale: 0.92 }} onClick={() => setShowCameraPicker(true)}
+          title="Switch camera / OBS source"
+          className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
+          style={{
+            background: 'rgba(212,175,55,0.08)',
+            border: '1px solid rgba(212,175,55,0.2)',
+            color: GOLD,
+          }}>
+          <Video className="w-4 h-4" />
+        </motion.button>
+
         <div className="w-px h-6" style={{ background: 'rgba(255,255,255,0.1)' }} />
 
         <span className="text-[9px] px-2 py-1 rounded font-black uppercase"
@@ -1146,6 +1159,25 @@ export default function BroadcastStudio() {
           </motion.button>
         )}
       </div>
+
+      {showCameraPicker && (
+        <CameraSourcePicker
+          currentStream={localStream}
+          onSelect={(stream) => {
+            if (stream && localStream) {
+              const newTrack = stream.getVideoTracks()[0];
+              if (newTrack) {
+                peersRef.current.forEach(({ pc }) => {
+                  const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+                  if (sender) sender.replaceTrack(newTrack).catch(() => {});
+                });
+              }
+            }
+            setShowCameraPicker(false);
+          }}
+          onClose={() => setShowCameraPicker(false)}
+        />
+      )}
     </div>
   );
 }
