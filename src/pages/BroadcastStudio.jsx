@@ -912,6 +912,176 @@ export default function BroadcastStudio() {
                 )}
               </div>
             )}
+
+            {/* 🤖 AI TAB */}
+            {activeTab === 'ai' && (
+              <div className="p-3 space-y-4">
+                {/* AI Music */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm">🎵</span>
+                    <span className="text-[11px] font-black uppercase" style={{ color: '#a78bfa', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Background Music</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz'].map(g => (
+                      <button key={g}
+                        onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
+                        className="px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
+                        style={aiMusicGenre === g
+                          ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
+                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setAiMusicPlaying(v => !v)}
+                      className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
+                      style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {aiMusicPlaying ? '⏸ Pause Music' : '▶ Play Music'}
+                    </button>
+                    <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
+                      className="px-3 py-2 rounded-xl text-[11px] font-black"
+                      style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      Full →
+                    </a>
+                  </div>
+                  {aiMusicPlaying && (
+                    <div className="mt-2 flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.08)' }}>
+                      <div className="flex items-end gap-[2px]">
+                        {[3,6,4,7,3,5].map((h,i) => (
+                          <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
+                        ))}
+                      </div>
+                      <span className="text-[9px]" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Guardian AI Moderation */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🛡️</span>
+                      <span className="text-[11px] font-black uppercase" style={{ color: '#22c55e', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI</span>
+                    </div>
+                    <button onClick={() => setGuardianEnabled(v => !v)}
+                      className="relative w-9 h-5 rounded-full transition-all"
+                      style={{ background: guardianEnabled ? '#22c55e' : 'rgba(255,255,255,0.1)' }}>
+                      <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                        style={{ left: guardianEnabled ? '17px' : '2px' }} />
+                    </button>
+                  </div>
+                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    {guardianEnabled ? '✓ Auto-removing hate speech, spam, and toxic messages' : 'Enable to auto-moderate chat in real time'}
+                  </p>
+                  {guardianEnabled && (
+                    <div className="mt-2 flex gap-3 text-center">
+                      {[['Blocked', guardianStats.blocked], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
+                        <div key={l} className="flex-1">
+                          <div className="text-sm font-black" style={{ color: '#22c55e' }}>{v}</div>
+                          <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* ARIA Co-host */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🤖</span>
+                      <span className="text-[11px] font-black uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>ARIA Co-host</span>
+                    </div>
+                    <button onClick={() => setAriaEnabled(v => !v)}
+                      className="relative w-9 h-5 rounded-full transition-all"
+                      style={{ background: ariaEnabled ? '#D4AF37' : 'rgba(255,255,255,0.1)' }}>
+                      <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                        style={{ left: ariaEnabled ? '17px' : '2px' }} />
+                    </button>
+                  </div>
+                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    {ariaEnabled ? '✓ ARIA is answering audience questions and keeping chat active' : 'Enable ARIA to engage your audience automatically'}
+                  </p>
+                </div>
+
+                {/* Quick link to full AI Hub */}
+                <a href="/AIHub" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-xl transition-all"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span className="text-[11px] font-bold text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Open Full AI Hub</span>
+                  <span className="text-white/25 text-xs">→</span>
+                </a>
+              </div>
+            )}
+
+            {/* 📢 SHARE TAB */}
+            {activeTab === 'share' && (
+              <div className="p-3 space-y-3">
+                <div className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Share Your Live Session</div>
+
+                {/* Copy link */}
+                <div className="flex gap-2">
+                  <div className="flex-1 h-9 px-3 flex items-center rounded-xl text-[10px] truncate"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+                    {window.location.href}
+                  </div>
+                  <button onClick={copyLink}
+                    className="h-9 px-3 rounded-xl text-[10px] font-black transition-all"
+                    style={{ background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(212,175,55,0.15)', color: linkCopied ? '#22c55e' : '#D4AF37', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.3)' : 'rgba(212,175,55,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    {linkCopied ? '✓ Copied' : 'Copy'}
+                  </button>
+                </div>
+
+                {/* Social platforms grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { name: 'WhatsApp',  emoji: '💬', color: '#25D366', href: `https://wa.me/?text=${encodeURIComponent('🔴 I\'m LIVE on SeeWhy! Join me → ' + window.location.href)}` },
+                    { name: 'Twitter/X', emoji: '🐦', color: '#1DA1F2', href: `https://twitter.com/intent/tweet?text=${encodeURIComponent('🔴 LIVE on SeeWhy LIVE! Join me → ' + window.location.href)}` },
+                    { name: 'Facebook',  emoji: '👥', color: '#1877F2', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
+                    { name: 'Telegram',  emoji: '✈️', color: '#2AABEE', href: `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('🔴 Join me LIVE on SeeWhy!')}` },
+                    { name: 'Instagram', emoji: '📸', color: '#E1306C', href: null, note: 'Copy link → paste in story' },
+                    { name: 'TikTok',    emoji: '🎵', color: '#000000', href: null, note: 'Copy link → paste in bio' },
+                  ].map(p => (
+                    <button key={p.name}
+                      onClick={() => p.href ? window.open(p.href, '_blank', 'noopener,noreferrer') : copyLink()}
+                      className="flex items-center gap-2 p-2 rounded-xl transition-all text-left"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <span className="text-base">{p.emoji}</span>
+                      <div>
+                        <div className="text-[10px] font-bold text-white">{p.name}</div>
+                        {p.note && <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{p.note}</div>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Native share if available */}
+                {navigator.share && (
+                  <button
+                    onClick={() => navigator.share({ title: 'Join me LIVE on SeeWhy!', url: window.location.href }).catch(() => {})}
+                    className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase"
+                    style={{ background: 'linear-gradient(135deg, #800020, #A0003A)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    📱 Share via Phone
+                  </button>
+                )}
+
+                {/* Embed code */}
+                <div className="rounded-xl p-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="text-[9px] font-bold uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Embed Code</div>
+                  <code className="text-[8px] break-all" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    {`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`}
+                  </code>
+                  <button onClick={() => { navigator.clipboard.writeText(`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`); }}
+                    className="mt-1.5 text-[8px] px-2 py-0.5 rounded"
+                    style={{ background: 'rgba(212,175,55,0.08)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    Copy Embed
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
