@@ -219,15 +219,25 @@ export default function Messages() {
                     onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(212,175,55,0.05)"; }}
                     onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}>
 
-                    {/* Octagonal avatar */}
-                    <div style={{
-                      width: 44, height: 44, clipPath: OCT, flexShrink: 0,
-                      background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <span className="font-black text-sm text-white" style={T}>
-                        {initials(t.partnerName)}
-                      </span>
+                    {/* Octagonal avatar with optional online dot */}
+                    <div style={{ position: "relative", flexShrink: 0, width: 44, height: 44 }}>
+                      <div style={{
+                        width: 44, height: 44, clipPath: OCT,
+                        background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <span className="font-black text-sm text-white" style={T}>
+                          {initials(t.partnerName)}
+                        </span>
+                      </div>
+                      {onlineSet.has(t.partnerId) && (
+                        <div style={{
+                          position: "absolute", bottom: 1, right: 1,
+                          width: 7, height: 7, borderRadius: "50%",
+                          background: "#00FF88",
+                          border: "1.5px solid #080B18",
+                        }} />
+                      )}
                     </div>
 
                     {/* Text content */}
@@ -301,8 +311,34 @@ export default function Messages() {
                 var isMe = m.sender_id === user?.id;
                 var isWhisper = m.is_whisper;
                 var isGiftNotif = m.type === "gift_notification";
+                var reaction = msgReactions.get(m.id);
+                var isHovered = hoveredMsg === m.id;
+                var showPicker = reactionPickerMsg === m.id;
                 return (
-                  <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start" }}>
+                  <div key={m.id}
+                    style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", position: "relative" }}
+                    onMouseEnter={() => setHoveredMsg(m.id)}
+                    onMouseLeave={() => { setHoveredMsg(null); if (reactionPickerMsg === m.id) setReactionPickerMsg(null); }}>
+                    {showPicker && (
+                      <div style={{
+                        position: "absolute", bottom: "calc(100% + 4px)",
+                        [isMe ? "right" : "left"]: 0,
+                        zIndex: 10,
+                        background: "rgba(13,6,24,0.97)",
+                        border: "1px solid rgba(212,175,55,0.2)",
+                        borderRadius: 12,
+                        padding: "4px 8px",
+                        display: "flex", gap: 6,
+                      }}>
+                        {["❤️","😂","🔥","👏","💯"].map(emoji => (
+                          <button key={emoji}
+                            onClick={() => handleReaction(m.id, emoji)}
+                            style={{ fontSize: 16, background: "none", border: "none", cursor: "pointer", padding: "2px" }}>
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     {isGiftNotif ? (
                       <div className="px-3 py-2 rounded-2xl text-[12px]"
                         style={{
@@ -314,25 +350,50 @@ export default function Messages() {
                         🎁 Gift notification: {m.content}
                       </div>
                     ) : (
-                      <div className="px-3 py-2 rounded-2xl text-[13px] max-w-[75%]"
-                        style={{
-                          background: isMe ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.06)",
-                          border: `1px solid ${isMe ? "rgba(212,175,55,0.25)" : "rgba(255,255,255,0.08)"}`,
-                          color: isWhisper ? GOLD : (isMe ? "#fff" : "rgba(255,255,255,0.9)"),
-                          fontStyle: isWhisper ? "italic" : "normal",
-                          alignSelf: isMe ? "flex-end" : "flex-start",
-                          ...T,
-                        }}>
-                        {isWhisper && <span style={{ fontSize: 11, marginRight: 4 }}>🤫</span>}
-                        {m.content}
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 4, flexDirection: isMe ? "row-reverse" : "row" }}>
+                        <div className="px-3 py-2 rounded-2xl text-[13px] max-w-[75%]"
+                          style={{
+                            background: isMe ? "rgba(212,175,55,0.12)" : "rgba(255,255,255,0.06)",
+                            border: `1px solid ${isMe ? "rgba(212,175,55,0.25)" : "rgba(255,255,255,0.08)"}`,
+                            color: isWhisper ? GOLD : (isMe ? "#fff" : "rgba(255,255,255,0.9)"),
+                            fontStyle: isWhisper ? "italic" : "normal",
+                            position: "relative",
+                            ...T,
+                          }}>
+                          {isWhisper && <span style={{ fontSize: 11, marginRight: 4 }}>🤫</span>}
+                          {m.content}
+                          {reaction && (
+                            <span style={{
+                              position: "absolute", bottom: -8, [isMe ? "left" : "right"]: -4,
+                              fontSize: 12, background: "rgba(13,6,24,0.9)",
+                              border: "1px solid rgba(212,175,55,0.2)",
+                              borderRadius: 10, padding: "0 3px", lineHeight: "16px",
+                            }}>{reaction}</span>
+                          )}
+                        </div>
+                        {isHovered && !showPicker && (
+                          <button
+                            onClick={() => setReactionPickerMsg(m.id)}
+                            style={{
+                              width: 20, height: 20, borderRadius: "50%",
+                              background: "rgba(255,255,255,0.1)",
+                              border: "1px solid rgba(255,255,255,0.15)",
+                              color: "rgba(255,255,255,0.5)",
+                              fontSize: 11, cursor: "pointer",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              flexShrink: 0,
+                            }}>
+                            +
+                          </button>
+                        )}
                       </div>
                     )}
-                    <div className="flex gap-1.5 mt-0.5 items-center">
+                    <div className="flex gap-1.5 mt-0.5 items-center" style={{ marginTop: reaction ? 8 : 2 }}>
                       <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.2)", ...T }}>
                         {fmtTime(m.created_date)}
                       </span>
                       {isMe && (
-                        <span style={{ fontSize: 9, color: m.read_at ? CYAN : "rgba(255,255,255,0.2)" }}>
+                        <span style={{ fontSize: 9, color: m.read_at ? GOLD : "rgba(255,255,255,0.4)" }}>
                           {m.read_at ? "✓✓" : "✓"}
                         </span>
                       )}
@@ -374,6 +435,62 @@ export default function Messages() {
           </div>
         )}
       </div>
+
+      {/* ── Compose modal ── */}
+      {showCompose && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowCompose(false); }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 50,
+            background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "0 16px",
+          }}>
+          <div style={{
+            background: "rgba(13,6,24,0.98)",
+            border: "1px solid rgba(212,175,55,0.2)",
+            borderRadius: 20, padding: 24, width: "100%", maxWidth: 400,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <span className="font-black text-base text-white" style={T}>New Message</span>
+              <button
+                onClick={() => setShowCompose(false)}
+                style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <X style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <input
+                value={composeName}
+                onChange={e => setComposeName(e.target.value)}
+                placeholder="Recipient name or ID…"
+                className="text-sm text-white outline-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(212,175,55,0.15)", ...T }}
+              />
+              <textarea
+                value={composeMsg}
+                onChange={e => setComposeMsg(e.target.value)}
+                placeholder="Write a message…"
+                rows={3}
+                className="text-sm text-white outline-none resize-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(212,175,55,0.15)", ...T }}
+              />
+              <button
+                onClick={() => { if (composeName.trim() && composeMsg.trim()) composeMutation.mutate(); }}
+                disabled={composeMutation.isPending || !composeName.trim() || !composeMsg.trim()}
+                className="font-black uppercase text-[11px] py-2.5 rounded-2xl transition-all"
+                style={{
+                  background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                  color: "#fff", border: "none", cursor: "pointer",
+                  opacity: (!composeName.trim() || !composeMsg.trim()) ? 0.5 : 1,
+                  ...T,
+                }}>
+                {composeMutation.isPending ? "Sending…" : "Send Message"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
