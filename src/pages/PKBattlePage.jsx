@@ -267,6 +267,9 @@ export default function PKBattlePage() {
   const [rightOnFire, setRightOnFire] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [pkRound, setPkRound] = useState(1);
+  const [leftSupporters, setLeftSupporters] = useState(new Set());
+  const [rightSupporters, setRightSupporters] = useState(new Set());
 
   const timerRef = useRef(null);
   const giftIdRef = useRef(0);
@@ -348,6 +351,13 @@ export default function PKBattlePage() {
     setFlyingGifts(function(p) { return [...p, { id, emoji, side }]; });
     setTimeout(function() { setFlyingGifts(function(p) { return p.filter(function(g) { return g.id !== id; }); }); }, 1600);
 
+    var uid = user?.id || ('anon_' + id);
+    if (side === 'left') {
+      setLeftSupporters(function(prev) { var next = new Set(prev); next.add(uid); return next; });
+    } else {
+      setRightSupporters(function(prev) { var next = new Set(prev); next.add(uid); return next; });
+    }
+
     var now = Date.now();
     if (side === 'left') {
       var lastLeft = leftLastGiftRef.current;
@@ -406,6 +416,7 @@ export default function PKBattlePage() {
         clearInterval(timerRef.current);
         const w = leftVotes >= rightVotes ? (battle?.title?.split(' vs ')[0] || 'Left') : (battle?.title?.split(' vs ')[1] || 'Right');
         setWinner(w);
+        setPkRound(function(r) { return r + 1; });
         base44.entities.LiveAuction.update(battleId, { status: 'ended' });
       }
     };
@@ -604,6 +615,7 @@ export default function PKBattlePage() {
               </AnimatePresence>
               <p className="text-3xl font-black text-blue-400 font-mono">{leftVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
+              <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {leftSupporters.size} supporting</p>
               <OnFireBadge show={leftOnFire} />
             </div>
           </div>
@@ -624,8 +636,9 @@ export default function PKBattlePage() {
 
         <div className={'flex flex-col items-center justify-center bg-black z-10 shrink-0 ' + (isMobile ? 'h-8 flex-row w-full' : 'w-10')}>
           <div className={'bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent ' + (isMobile ? 'flex-1 h-px' : 'flex-1 w-px')} />
-          <div className="w-9 h-9 rounded-full bg-[#d4af37] flex items-center justify-center my-2 shrink-0">
-            <span className="text-black font-black text-[10px]">VS</span>
+          <div className="w-9 h-9 rounded-full bg-[#d4af37] flex flex-col items-center justify-center my-2 shrink-0">
+            <span className="text-black font-black leading-none" style={{ fontSize: 8 }}>PK</span>
+            <span className="text-black font-black leading-none" style={{ fontSize: 10 }}>{pkRound}</span>
           </div>
           <div className={'bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent ' + (isMobile ? 'flex-1 h-px' : 'flex-1 w-px')} />
         </div>
@@ -649,6 +662,7 @@ export default function PKBattlePage() {
               </AnimatePresence>
               <p className="text-3xl font-black text-red-400 font-mono">{rightVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
+              <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {rightSupporters.size} supporting</p>
               <OnFireBadge show={rightOnFire} />
             </div>
           </div>
@@ -673,6 +687,36 @@ export default function PKBattlePage() {
         remoteStreams={battleRemoteStreams}
         currentUserId={user?.id}
       />
+
+      <div className="shrink-0 flex items-center gap-3 px-4 py-2"
+        style={{ background: 'rgba(0,0,0,0.5)', borderTop: '1px solid rgba(212,175,55,0.08)' }}>
+        <span className="text-[9px] uppercase tracking-widest shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }}>Supporting</span>
+        <div className="flex-1 flex items-center gap-1.5 overflow-x-auto">
+          {Array.from(leftSupporters).slice(0, 5).map((uid, i) => (
+            <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
+              style={{ background: 'rgba(59,130,246,0.4)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.4)' }}>
+              {uid.charAt(0).toUpperCase()}
+            </div>
+          ))}
+          {leftSupporters.size > 5 && (
+            <span className="text-[9px] text-blue-300">+{leftSupporters.size - 5}</span>
+          )}
+          {leftSupporters.size === 0 && <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
+        </div>
+        <div className="w-px h-4" style={{ background: 'rgba(212,175,55,0.3)' }} />
+        <div className="flex-1 flex items-center gap-1.5 overflow-x-auto justify-end">
+          {rightSupporters.size === 0 && <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
+          {rightSupporters.size > 5 && (
+            <span className="text-[9px] text-red-300">+{rightSupporters.size - 5}</span>
+          )}
+          {Array.from(rightSupporters).slice(0, 5).map((uid, i) => (
+            <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
+              style={{ background: 'rgba(239,68,68,0.4)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.4)' }}>
+              {uid.charAt(0).toUpperCase()}
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="bg-black/80 border-t border-white/10 px-6 py-3 shrink-0">
         <div className="flex items-center gap-3 mb-2">

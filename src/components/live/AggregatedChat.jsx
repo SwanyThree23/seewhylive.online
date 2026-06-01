@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clampStr, LIMITS } from '@/lib/security';
 import { Button } from '@/components/ui/button';
-import { Languages, ShieldAlert, ShieldCheck, Send, AlertTriangle } from 'lucide-react';
+import { Languages, ShieldAlert, ShieldCheck, Send, AlertTriangle, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PLATFORM_ICONS = {
@@ -42,6 +42,9 @@ export default function AggregatedChat({ roomId, currentUser, isHost, onMessages
   const [translationMap, setTranslationMap] = useState({});
   const [isTranslating, setIsTranslating] = useState(false);
   const [appealingId, setAppealingId] = useState(null);
+  const [boostMode, setBoostMode] = useState(false);
+  const [pinnedMsg, setPinnedMsg] = useState(null);
+  const [pinCountdown, setPinCountdown] = useState(0);
   const bottomRef = useRef(null);
   const translateTimerRef = useRef(null);
 
@@ -194,11 +197,36 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
     return () => clearTimeout(translateTimerRef.current);
   }, [translateEnabled, messages.length, targetLang]);
 
+  useEffect(() => {
+    if (!pinnedMsg) return;
+    const iv = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((pinnedMsg.expiresAt - Date.now()) / 1000));
+      setPinCountdown(remaining);
+      if (remaining === 0) {
+        setPinnedMsg(null);
+        clearInterval(iv);
+      }
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [pinnedMsg]);
+
   // ── SEND ─────────────────────────────────────────────────────────────────────
   const sendMessage = async () => {
     if (!input.trim() || !currentUser) return;
     const content = clampStr(input.trim(), LIMITS.CHAT_MESSAGE);
+    const isRocket = boostMode;
     setInput('');
+    setBoostMode(false);
+    if (isRocket) {
+      setPinnedMsg({
+        text: content,
+        sender: currentUser?.full_name || currentUser?.email,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + 30000,
+      });
+      setPinCountdown(30);
+      toast.success('🚀 RocketChat launched! Message pinned for 30s');
+    }
     const msg = await base44.entities.Message.create({
       room_id: roomId,
       user_id: currentUser.id,
@@ -206,7 +234,6 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
       content,
       type: 'text',
     });
-    // Screen our own outgoing message too
     if (msg) autoModerateSingle({ ...msg, id: msg.id });
   };
 
@@ -245,6 +272,26 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           </Button>
         </div>
       </div>
+
+      {pinnedMsg && Date.now() < pinnedMsg.expiresAt && (
+        <div style={{
+          margin: '4px 8px',
+          background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(255,21,100,0.1))',
+          border: '1px solid rgba(212,175,55,0.4)',
+          borderRadius: 12,
+          padding: '8px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <span style={{ fontSize: 16 }}>🚀</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMsg.sender} </span>
+            <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12 }}>{pinnedMsg.text}</span>
+          </div>
+          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0 }}>{pinCountdown}s</span>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 min-h-0">
@@ -298,10 +345,31 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          placeholder="Send a message..."
+          placeholder={boostMode ? 'RocketChat — pinned 30s (50 Love)…' : 'Send a message...'}
           maxLength={LIMITS.CHAT_MESSAGE}
-          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37]/50"
+          className="flex-1 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none"
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: boostMode ? '1px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)',
+            boxShadow: boostMode ? '0 0 12px rgba(212,175,55,0.5)' : 'none',
+            transition: 'all 0.2s',
+          }}
         />
+        <div style={{ position: 'relative' }}>
+          <Button
+            size="sm"
+            onClick={() => setBoostMode(v => !v)}
+            title="RocketChat — pin your message for 30s (costs 50 Love)"
+            className="h-8 w-8 p-0"
+            style={{
+              background: boostMode ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.06)',
+              border: boostMode ? '1px solid rgba(212,175,55,0.6)' : '1px solid rgba(255,255,255,0.1)',
+              color: boostMode ? '#D4AF37' : 'rgba(255,255,255,0.4)',
+            }}
+          >
+            <Rocket className="w-3.5 h-3.5" />
+          </Button>
+        </div>
         <Button
           size="sm"
           onClick={sendMessage}

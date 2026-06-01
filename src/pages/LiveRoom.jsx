@@ -12,6 +12,7 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
+import LoveHearts from '../components/live/LoveHearts';
 import { DollarSign } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
@@ -254,6 +255,18 @@ export default function LiveRoom() {
     queryFn: () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
+
+  const isExclusiveStream = party?.is_exclusive === true;
+  const isHost = user?.id && party?.host_id && user.id === party.host_id;
+
+  const { data: activeSubs = [] } = useQuery({
+    queryKey: ['user-subscriptions', user?.id, party?.host_id],
+    queryFn: () => base44.entities.Subscription.filter({ user_id: user.id, creator_id: party.host_id, status: 'active' }),
+    enabled: !!user?.id && !!party?.host_id && isExclusiveStream && !isHost,
+  });
+
+  const isSubscribed = activeSubs.length > 0;
+  const showExclusiveGate = isExclusiveStream && !isHost && !isSubscribed && !!party;
 
   // Build stage from real members or demo data
   const stage = roomId && members.length > 0
@@ -607,6 +620,82 @@ export default function LiveRoom() {
           />
         )}
       </AnimatePresence>
+
+      {(roomId || party?.id) && (
+        <LoveHearts roomId={roomId || party?.id} currentUser={user} creatorId={party?.host_id} />
+      )}
+
+      {showExclusiveGate && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 60,
+          background: 'rgba(8,11,24,0.96)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24,
+        }}>
+          <div style={{
+            width: '100%', maxWidth: 360,
+            background: 'rgba(13,6,24,0.98)',
+            border: '1px solid rgba(212,175,55,0.3)',
+            borderRadius: 20,
+            padding: 32,
+            textAlign: 'center',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+          }}>
+            <span style={{ fontSize: 60 }}>🔐</span>
+            <h2 style={{ margin: 0, color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 32, fontWeight: 900, letterSpacing: '0.04em' }}>
+              Exclusive Live
+            </h2>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.5 }}>
+              This stream is for subscribers only
+            </p>
+            {hostName && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #800020, #D4AF37)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontWeight: 900, fontSize: 14,
+                }}>
+                  {hostName.charAt(0).toUpperCase()}
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{hostName}</span>
+              </div>
+            )}
+            <a
+              href={`/CreatorSubscriptions?creator=${party?.host_id}`}
+              style={{
+                display: 'block', width: '100%',
+                padding: '12px 0',
+                background: 'linear-gradient(135deg, #D4AF37, #B8960C)',
+                color: '#080B18',
+                fontFamily: 'Barlow Condensed, sans-serif',
+                fontWeight: 900, fontSize: 15,
+                letterSpacing: '0.05em',
+                borderRadius: 12, textDecoration: 'none',
+                textTransform: 'uppercase',
+              }}
+            >
+              Subscribe to Watch
+            </a>
+            <button
+              onClick={() => history.back()}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: 12,
+                color: 'rgba(255,255,255,0.5)',
+                fontFamily: 'Barlow Condensed, sans-serif',
+                fontWeight: 700, fontSize: 14,
+                padding: '10px 0',
+                width: '100%',
+                cursor: 'pointer',
+              }}
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
