@@ -26,6 +26,7 @@ import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import LoveHearts from '../components/live/LoveHearts';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -298,6 +299,7 @@ export default function BroadcastStudio() {
   const [ariaEnabled, setAriaEnabled] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
+  const [isExclusive, setIsExclusive] = useState(false);
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -558,6 +560,12 @@ export default function BroadcastStudio() {
               style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', ...T }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
+            {isExclusive && (
+              <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+                style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: `1px solid rgba(212,175,55,0.5)`, ...T }}>
+                🔐 EXCLUSIVE
+              </span>
+            )}
             <span className="shrink-0 text-[9px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
               style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
               SeeWhy LIVE
@@ -761,6 +769,48 @@ export default function BroadcastStudio() {
 
         {/* ── RIGHT: Tabbed tools panel ─────────────────────────────────── */}
         <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: 296, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0D0618' }}>
+
+          {/* Exclusive Live toggle */}
+          <div className="shrink-0 flex items-center gap-2 px-3 py-2"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)' }}>
+            <span style={{ fontSize: 14 }}>🔒</span>
+            <span className="flex-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Exclusive Live
+            </span>
+            <button
+              onClick={() => {
+                const next = !isExclusive;
+                setIsExclusive(next);
+                if (partyId && next) {
+                  base44.entities.WatchParty.update(partyId, { is_exclusive: true });
+                } else if (partyId && !next) {
+                  base44.entities.WatchParty.update(partyId, { is_exclusive: false });
+                }
+              }}
+              style={{
+                position: 'relative',
+                width: 36,
+                height: 20,
+                borderRadius: 10,
+                background: isExclusive ? GOLD : 'rgba(255,255,255,0.2)',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: 2,
+                left: isExclusive ? 18 : 2,
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                background: '#fff',
+                transition: 'left 0.2s',
+              }} />
+            </button>
+          </div>
 
           {/* Tab bar */}
           <div className="flex shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#0B0B18' }}>
@@ -1177,6 +1227,10 @@ export default function BroadcastStudio() {
           }}
           onClose={() => setShowCameraPicker(false)}
         />
+      )}
+
+      {partyId && (
+        <LoveHearts roomId={partyId} currentUser={user} creatorId={party?.host_id} />
       )}
     </div>
   );
