@@ -15,6 +15,7 @@ import WelcomeAudio from './components/WelcomeAudio.jsx';
 import AgeGate from './components/AgeGate.jsx';
 import LoveTap from './components/LoveTap.jsx';
 import GiftLeaderboardOverlay from './components/GiftLeaderboardOverlay.jsx';
+import StreamGoalBar from './components/StreamGoalBar.jsx';
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -58,6 +59,7 @@ var VODLibraryTab       = React.lazy(function() { return import('./components/VO
 var CreatorTipsTab      = React.lazy(function() { return import('./components/CreatorTipsTab.jsx'); });
 var LiveStreamHubTab    = React.lazy(function() { return import('./components/LiveStreamHubTab.jsx'); });
 var AudioStageTab       = React.lazy(function() { return import('./components/AudioStageTab.jsx'); });
+var SoundBoardTab       = React.lazy(function() { return import('./components/SoundBoardTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -74,6 +76,7 @@ var TABS = [
   { id: 'clips',    label: '🎞 CLIPS' },
   { id: 'watch',    label: '📺 WATCH' },
   { id: 'stage',    label: '🎙 STAGE' },
+  { id: 'sfx',      label: '🎚 SFX' },
   { id: 'green',    label: '🟢 GREEN' },
   { id: 'forge',    label: '⚙️ FORGE' },
   { id: 'deepdata', label: '📊 DEEP' },
@@ -130,6 +133,7 @@ export default function App() {
   var [activeTab, setActiveTab] = useState('room');
   var [isLive, setIsLive] = useState(false);
   var [viewerCount, setViewerCount] = useState(0);
+  var [loveTotal, setLoveTotal] = useState(0);
   var [guests, setGuests] = useState([]);
   var [chat, setChat] = useState([]);
   var [botLogs, setBotLogs] = useState([]);
@@ -394,7 +398,20 @@ export default function App() {
       liveStartRef.current = Date.now();
       peakViewerRef.current = 0;
       sessionEarningsRef.current = 0;
+      setLoveTotal(0);
       addToast('🔴 LIVE! Stream is broadcasting', 'success');
+    });
+
+    socket.on('love-update', function(data) {
+      if (!data || String(data.roomId) !== String(APP_ID)) return;
+      setLoveTotal(data.total || 0);
+    });
+
+    socket.on('stream-goal-set', function(data) {
+      if (!data || String(data.roomId) !== String(APP_ID)) return;
+    });
+    socket.on('stream-goal-clear', function(data) {
+      if (!data || String(data.roomId) !== String(APP_ID)) return;
     });
 
     socket.on('broadcast-ended', function() {
@@ -1051,6 +1068,14 @@ export default function App() {
             addToast={addToast}
           />
         )}
+        {activeTab === 'sfx' && (
+          <SoundBoardTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            addToast={addToast}
+          />
+        )}
         {activeTab === 'green' && (
           <GreenRoomTab
             guests={guests}
@@ -1316,6 +1341,17 @@ export default function App() {
           socket={socketRef.current}
           roomId={APP_ID}
           isLive={isLive}
+        />
+      )}
+      {socketRef.current && (
+        <StreamGoalBar
+          socket={socketRef.current}
+          roomId={APP_ID}
+          role={role}
+          isLive={isLive}
+          viewerCount={viewerCount}
+          earningsCents={sessionEarningsCents}
+          loveTotal={loveTotal}
         />
       )}
       <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />

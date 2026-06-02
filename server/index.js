@@ -2455,6 +2455,34 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── Stream Goal handlers ──────────────────────────────────────────────
+  socket.on('stream-goal-set', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var sgRoomId = String(data.roomId);
+    io.to(sgRoomId).emit('stream-goal-set', {
+      roomId:  sgRoomId,
+      type:    data.type   || 'viewers',
+      target:  Math.floor(data.target || 0),
+      label:   data.label  || null
+    });
+  });
+
+  socket.on('stream-goal-clear', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var sgcRoomId = String(data.roomId);
+    io.to(sgcRoomId).emit('stream-goal-clear', { roomId: sgcRoomId });
+  });
+
+  // ── Sound FX handler ────────────────────────────────────────────────────
+  socket.on('sound-fx', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var sfxRoomId = String(data.roomId);
+    io.to(sfxRoomId).emit('sound-fx', { sfxId: data.sfxId, sfxLabel: data.sfxLabel || '' });
+  });
+
   // ── end-broadcast ──────────────────────────────────────────────────────
   socket.on('end-broadcast', function(data, ack) {
     var roomId = data.roomId || socket.data.roomId;
