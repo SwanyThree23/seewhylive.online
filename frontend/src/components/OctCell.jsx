@@ -1,181 +1,340 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
+var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager }) {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const analyserRef = useRef(null);
-  const sourceRef = useRef(null);
-  const animRef = useRef(null);
-  const audioCtxRef = useRef(null);
-  const [speaking, setSpeaking] = useState(false);
-  const [online, setOnline] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [connQuality, setConnQuality] = useState('green'); // green/yellow/red
-  const [eqBars, setEqBars] = useState([0,0,0,0,0,0,0,0]);
-  const streamRef = useRef(null);
+export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle }) {
+  var videoRef    = useRef(null);
+  var analyserRef = useRef(null);
+  var animRef     = useRef(null);
+  var audioCtxRef = useRef(null);
+  var streamRef   = useRef(null);
+  var [speaking,     setSpeaking]     = useState(false);
+  var [online,       setOnline]       = useState(false);
+  var [loading,      setLoading]      = useState(false);
+  var [connQuality,  setConnQuality]  = useState('green');
+  var [eqBars,       setEqBars]       = useState([0,0,0,0,0,0,0,0]);
+  var [camError,     setCamError]     = useState('');
+  var [streamReady,  setStreamReady]  = useState(false);
+  var [retryCount,   setRetryCount]   = useState(0);
 
-  const size = sz || 200;
-  const guestId = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
-  const guestName = guest && guest.username ? guest.username : guestId;
-  const isOwnCell = guestId === userId;
-  const color = fadesMode && guest && guest.teamColor ? guest.teamColor : (branding && branding.gold ? branding.gold : '#C9A84C');
+  var size      = sz || 200;
+  var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
+  var guestName = guest && guest.username ? guest.username : guestId;
+  var isOwnCell = guestId === userId;
+  var color     = fadesMode && guest && guest.teamColor ? guest.teamColor : (branding && branding.gold ? branding.gold : '#C9A84C');
 
-  // Host cell: getUserMedia and publish
-  useEffect(() => {
-    if (!isOwnCell || !rtcManager) return;
-    let cancelled = false;
+  // Own cell: acquire camera immediately (no rtcManager dependency)
+  useEffect(function() {
+    if (!isOwnCell) return;
+    var cancelled = false;
     setLoading(true);
+    setCamError('');
+    setStreamReady(false);
+
+    // Stop any existing stream when mediaConfig changes
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(function(t) { t.stop(); });
+      streamRef.current = null;
+    }
 
     async function initCamera() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 1280, height: 720, facingMode: 'user' },
-          audio: true
-        });
-        if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.muted = true;
+        var preset = mediaConfig && mediaConfig.preset ? mediaConfig.preset : { width: 1280, height: 720, frameRate: 30 };
+        var videoConstraints = {
+          width:     { ideal: preset.width },
+          height:    { ideal: preset.height },
+          frameRate: { ideal: preset.frameRate },
+        };
+        if (mediaConfig && mediaConfig.camId) {
+          videoConstraints.deviceId = { exact: mediaConfig.camId };
+        } else {
+          videoConstraints.facingMode = mediaConfig && !mediaConfig.facingFront ? 'environment' : 'user';
         }
+        var audioConstraints = {
+          noiseSuppression: mediaConfig ? mediaConfig.noiseSup !== false : true,
+          echoCancellation: mediaConfig ? mediaConfig.echoCan  !== false : true,
+          autoGainControl:  mediaConfig ? mediaConfig.autoGain !== false : true,
+        };
+        if (mediaConfig && mediaConfig.micId) audioConstraints.deviceId = { exact: mediaConfig.micId };
+
+        var stream;
+        if (mediaConfig && mediaConfig.stream && mediaConfig.stream.active) {
+          stream = mediaConfig.stream;
+        } else {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: videoConstraints,
+            audio: audioConstraints,
+          });
+        }
+
+        if (cancelled) { stream.getTracks().forEach(function(t) { t.stop(); }); return; }
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(function() {});
+        }
+
         setLoading(false);
         setOnline(true);
         initAnalyser(stream);
-        if (rtcManager && rtcManager.sendTransport) {
-          await rtcManager.publishStream(stream);
+        setStreamReady(true);
+
+        if (isMuted) {
+          stream.getAudioTracks().forEach(function(t) { t.enabled = false; });
         }
-      } catch (e) {
-        if (!cancelled) { setLoading(false); console.error('[OctCell] getUserMedia error:', e); }
+        if (isCamOff) {
+          stream.getVideoTracks().forEach(function(t) { t.enabled = false; });
+        }
+
+      } catch(e) {
+        if (!cancelled) {
+          setLoading(false);
+          setCamError(e.name === 'NotAllowedError' ? 'Permission denied' : e.message);
+          console.error('[OctCell] getUserMedia error:', e);
+        }
       }
     }
 
     initCamera();
-    return () => { cancelled = true; };
-  }, [isOwnCell, rtcManager]);
+    return function() { cancelled = true; };
+  }, [isOwnCell, mediaConfig, retryCount]);
 
-  // Remote cell: subscribe to producer
-  useEffect(() => {
+  // Own cell: publish stream once both stream and rtcManager are ready
+  useEffect(function() {
+    if (!isOwnCell || !streamReady || !rtcManager || !rtcManager.sendTransport) return;
+    rtcManager.publishStream(streamRef.current).catch(function(e) {
+      console.error('[OctCell] publishStream error:', e);
+    });
+  }, [isOwnCell, streamReady, rtcManager]);
+
+  // Apply mute state to local audio tracks
+  useEffect(function() {
+    if (!isOwnCell || !streamRef.current) return;
+    streamRef.current.getAudioTracks().forEach(function(t) {
+      t.enabled = !isMuted;
+    });
+    if (rtcManager) {
+      if (isMuted) {
+        rtcManager.pauseProducer('audio');
+      } else {
+        rtcManager.resumeProducer('audio');
+      }
+    }
+  }, [isMuted, isOwnCell]);
+
+  // Apply cam off state to local video tracks
+  useEffect(function() {
+    if (!isOwnCell || !streamRef.current) return;
+    streamRef.current.getVideoTracks().forEach(function(t) {
+      t.enabled = !isCamOff;
+    });
+    if (rtcManager) {
+      if (isCamOff) {
+        rtcManager.pauseProducer('video');
+      } else {
+        rtcManager.resumeProducer('video');
+      }
+    }
+  }, [isCamOff, isOwnCell]);
+
+  // Remote cell: subscribe to video + audio producers
+  useEffect(function() {
     if (isOwnCell || !rtcManager || !guest) return;
     if (!guest.producerId) return;
-    let cancelled = false;
+    var cancelled = false;
 
     async function subscribeRemote() {
       try {
         setLoading(true);
-        const stream = await rtcManager.subscribeToProducer(guest.producerId);
+        var videoStream = await rtcManager.subscribeToProducer(guest.producerId);
         if (cancelled) return;
-        streamRef.current = stream;
+
+        var combined = new MediaStream(videoStream.getTracks());
+
+        if (guest.audioProducerId) {
+          try {
+            var audioStream = await rtcManager.subscribeToProducer(guest.audioProducerId);
+            audioStream.getAudioTracks().forEach(function(t) { combined.addTrack(t); });
+          } catch(ae) {
+            console.warn('[OctCell] audio subscribe failed:', ae.message);
+          }
+        }
+
+        if (cancelled) return;
+        streamRef.current = combined;
         if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+          videoRef.current.srcObject = combined;
+          videoRef.current.play().catch(function() {});
         }
         setOnline(true);
         setLoading(false);
-        initAnalyser(stream);
-      } catch (e) {
+        initAnalyser(combined);
+      } catch(e) {
         if (!cancelled) { setLoading(false); console.error('[OctCell] subscribe error:', e); }
       }
     }
 
     subscribeRemote();
-    return () => { cancelled = true; };
-  }, [isOwnCell, rtcManager, guest && guest.producerId]);
+    return function() { cancelled = true; };
+  }, [isOwnCell, rtcManager, guest && guest.producerId, guest && guest.audioProducerId]);
 
   function initAnalyser(stream) {
     try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      var audioCtx = new AudioContext();
       audioCtxRef.current = audioCtx;
-      const source = audioCtx.createMediaStreamSource(stream);
-      sourceRef.current = source;
-      const analyser = audioCtx.createAnalyser();
+      var source = audioCtx.createMediaStreamSource(stream);
+      var analyser = audioCtx.createAnalyser();
       analyser.fftSize = 32;
       source.connect(analyser);
       analyserRef.current = analyser;
       drawEQ();
-    } catch (e) {
+    } catch(e) {
       console.error('[OctCell] AudioContext error:', e);
     }
   }
 
   function drawEQ() {
     if (!analyserRef.current) return;
-    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+    var dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
     function tick() {
       animRef.current = requestAnimationFrame(tick);
       analyserRef.current.getByteFrequencyData(dataArray);
-      const bars = [];
-      const step = Math.floor(dataArray.length / 8);
-      for (let i = 0; i < 8; i++) {
+      var bars = [];
+      var step = Math.floor(dataArray.length / 8);
+      for (var i = 0; i < 8; i++) {
         bars.push(Math.round((dataArray[i * step] / 255) * 100));
       }
       setEqBars(bars);
-      const avg = bars.reduce((a, b) => a + b, 0) / bars.length;
+      var avg = bars.reduce(function(a, b) { return a + b; }, 0) / bars.length;
       setSpeaking(avg > 20);
     }
     tick();
   }
 
-  useEffect(() => {
-    return () => {
+  useEffect(function() {
+    return function() {
       if (animRef.current) cancelAnimationFrame(animRef.current);
-      if (audioCtxRef.current) audioCtxRef.current.close();
-      if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
+      if (audioCtxRef.current) audioCtxRef.current.close().catch(function(){});
+      if (streamRef.current) streamRef.current.getTracks().forEach(function(t) { t.stop(); });
     };
   }, []);
 
-  // Emit speaking state to socket
-  useEffect(() => {
-    if (!socket || !roomId) return;
-    socket.emit('speaking', { roomId, guestId: userId, speaking });
+  useEffect(function() {
+    if (!isOwnCell || !socket || !roomId) return;
+    socket.emit('speaking', { roomId: roomId, guestId: userId, speaking: speaking });
   }, [speaking]);
 
-  const ringClass = fadesMode ? 'oct-ring-corrupt' : (speaking ? 'oct-ring-speak' : (online ? 'oct-ring-active' : ''));
+  var ringGlow = fadesMode
+    ? '0 0 0 3px #FF1A3C, 0 0 14px rgba(255,26,60,.6)'
+    : (speaking && !isMuted ? '0 0 0 3px ' + color + ', 0 0 12px ' + color + '88' : (online ? '0 0 0 2px rgba(201,168,76,.5)' : 'none'));
+
+  var connDotColor = connQuality === 'green' ? '#C9A84C' : (connQuality === 'yellow' ? '#C9A84C' : '#FF1A3C');
 
   return (
     <div
-      className={'oct-cell' + (fadesMode ? ' fades-mode' : '')}
-      style={{ width: size, height: size, cursor: onTap ? 'pointer' : 'default' }}
-      onClick={onTap ? () => onTap(guest) : undefined}
+      style={{ width: size, height: size, cursor: onTap ? 'pointer' : 'default', position: 'relative', flexShrink: 0 }}
+      onClick={onTap ? function() { onTap(guest); } : undefined}
     >
       {/* Octagonal clip container */}
-      <div className={'oct-inner ' + ringClass} style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0F0C14' }}>
-        {/* Loading spinner */}
+      <div style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
         {loading && (
-          <div className="oct-loading">
-            <div className="oct-spinner" />
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,12,9,.8)', zIndex: 2 }}>
+            <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + color, borderTopColor: 'transparent' }} />
           </div>
         )}
-        {/* Video */}
+
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted={isOwnCell}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: online ? 'block' : 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: (online && !isCamOff) ? 'block' : 'none' }}
         />
-        {/* Offline crosshatch */}
-        {!online && !loading && (
-          <div className="oct-offline">
-            <span className="oct-offline-name">{guestName}</span>
+
+        {/* Cam off overlay */}
+        {online && isCamOff && isOwnCell && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#07050A', gap: 4 }}>
+            <div style={{ fontSize: 28 }}>🚫</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>CAM OFF</div>
           </div>
         )}
+
+        {/* Offline — avatar + name */}
+        {!online && !loading && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0A0710', gap: 6 }}>
+            <div style={{ width: Math.round(size * 0.38), height: Math.round(size * 0.38), borderRadius: '50%', background: 'linear-gradient(135deg,' + color + '33,' + color + '11)', border: '2px solid ' + color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: Math.round(size * 0.18), color: color + 'BB', lineHeight: 1 }}>
+                {guestName ? guestName.charAt(0).toUpperCase() : '?'}
+              </span>
+            </div>
+            {camError && isOwnCell ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#FF6B81', textAlign: 'center', padding: '0 6px', lineHeight: 1.3 }}>{camError}</span>
+                <button onClick={function(e) { e.stopPropagation(); setCamError(''); setOnline(false); setStreamReady(false); setRetryCount(function(n) { return n + 1; }); }}
+                  style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 4, padding: '2px 6px', color: '#C9A84C', cursor: 'pointer' }}>
+                  RETRY
+                </button>
+              </div>
+            ) : (
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: Math.max(8, Math.round(size * 0.07)), color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
+            )}
+          </div>
+        )}
+
+        {/* Status overlays */}
+        {isMuted && isOwnCell && (
+          <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,26,60,.85)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff' }}>
+            🔇 MUTED
+          </div>
+        )}
+        {!isOwnCell && guest && guest.remoteMuted && (
+          <div style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,26,60,.75)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff' }}>
+            🔇 MUTED
+          </div>
+        )}
+
         {/* Connection quality dot */}
-        <div className={'conn-dot conn-dot--' + connQuality} />
+        <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
       </div>
 
       {/* Name bar */}
-      <div className="oct-name" style={{ color: speaking ? color : '#B0A0C0' }}>
+      <div style={{ textAlign: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: speaking && !isMuted ? color : '#B0A0C0', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {guestName}
-        {isOwnCell && <span className="oct-you-tag"> (YOU)</span>}
+        {isOwnCell && <span style={{ color: '#8A7A62', fontStyle: 'italic' }}> (YOU)</span>}
       </div>
 
       {/* EQ bars */}
-      <div className="eq-bars">
-        {eqBars.map((h, i) => (
-          <div key={i} className="eq-bar" style={{ height: Math.max(3, h * 0.2) + 'px', backgroundColor: color }} />
-        ))}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1, height: 12, marginTop: 2 }}>
+        {eqBars.map(function(h, i) {
+          return <div key={i} style={{ width: 3, height: Math.max(3, h * 0.2) + 'px', backgroundColor: isMuted ? '#3D3020' : color, borderRadius: 1 }} />;
+        })}
       </div>
+
+      {/* Own cell controls: mic + cam toggles */}
+      {isOwnCell && (onMuteToggle || onCamToggle) && (
+        <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', flexDirection: 'column', gap: 3, zIndex: 10 }}>
+          {onMuteToggle && (
+            <button
+              onClick={function(e) { e.stopPropagation(); onMuteToggle(); }}
+              style={{ width: 26, height: 26, borderRadius: '50%', background: isMuted ? 'rgba(255,26,60,.8)' : 'rgba(201,168,76,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title={isMuted ? 'Unmute' : 'Mute'}>
+              {isMuted ? '🔇' : '🎙'}
+            </button>
+          )}
+          {onCamToggle && (
+            <button
+              onClick={function(e) { e.stopPropagation(); onCamToggle(); }}
+              style={{ width: 26, height: 26, borderRadius: '50%', background: isCamOff ? 'rgba(255,26,60,.8)' : 'rgba(201,168,76,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title={isCamOff ? 'Turn camera on' : 'Turn camera off'}>
+              {isCamOff ? '📵' : '📷'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

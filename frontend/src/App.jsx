@@ -1,222 +1,976 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { getSocket } from './socket.js';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { getSocket, setRejoinPayload, onReconnectCallback } from './socket.js';
+import { creatorCents, platformCents, getPlatformHandles } from './platformConfig.js';
 import rtcManager from './webrtc.js';
+
+/* Always-loaded: default tab + persistent overlays */
 import RoomTab from './components/RoomTab.jsx';
-import FadesTab from './components/FadesTab.jsx';
-import BrandingTab from './components/BrandingTab.jsx';
-import EmbedTab from './components/EmbedTab.jsx';
-import SwanyBotTab from './components/SwanyBotTab.jsx';
-import AnalyticsTab from './components/AnalyticsTab.jsx';
-import GiftLayer from './components/GiftLayer.jsx';
+import LiveRoomPage from './components/LiveRoomPage.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
+import BrandChyron from './components/BrandChyron.jsx';
+import MobileNavBar from './components/MobileNavBar.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
+import WelcomeAudio from './components/WelcomeAudio.jsx';
+import AgeGate from './components/AgeGate.jsx';
+import LoveTap from './components/LoveTap.jsx';
+import GiftLeaderboardOverlay from './components/GiftLeaderboardOverlay.jsx';
+import StreamGoalBar from './components/StreamGoalBar.jsx';
+import DonationAlert from './components/DonationAlert.jsx';
 
-const APP_ID = '6990f5f24823b53e21fcdc9d';
-const TABS = [
-  { id: 'room', label: '🎙 ROOM' },
-  { id: 'fades', label: '⚡ FADES' },
-  { id: 'brand', label: '🎨 BRAND' },
-  { id: 'embed', label: '🎬 EMBED' },
-  { id: 'bot', label: '🤖 SWANYBOT' },
-  { id: 'data', label: '📊 DATA' },
-  { id: 'keys', label: '🔑 KEYS' }
+/* Lazy-loaded tabs — each splits into its own chunk */
+var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
+var BrandingTab         = React.lazy(function() { return import('./components/BrandingTab.jsx'); });
+var EmbedTab            = React.lazy(function() { return import('./components/EmbedTab.jsx'); });
+var SwanyBotTab         = React.lazy(function() { return import('./components/SwanyBotTab.jsx'); });
+var AnalyticsTab        = React.lazy(function() { return import('./components/AnalyticsTab.jsx'); });
+var RTMPFanoutTab       = React.lazy(function() { return import('./components/RTMPFanoutTab.jsx'); });
+var PushStreamTab       = React.lazy(function() { return import('./components/PushStreamTab.jsx'); });
+var ClipEngineTab       = React.lazy(function() { return import('./components/ClipEngineTab.jsx'); });
+var WatchPartyTab       = React.lazy(function() { return import('./components/WatchPartyTab.jsx'); });
+var GreenRoomTab        = React.lazy(function() { return import('./components/GreenRoomTab.jsx'); });
+var InsForgeTab         = React.lazy(function() { return import('./components/InsForgeTab.jsx'); });
+var AnalyticsDeepDiveTab= React.lazy(function() { return import('./components/AnalyticsDeepDiveTab.jsx'); });
+var ScheduleTab         = React.lazy(function() { return import('./components/ScheduleTab.jsx'); });
+var WashingtonClassicTab= React.lazy(function() { return import('./components/WashingtonClassicTab.jsx'); });
+var MonetizeTab         = React.lazy(function() { return import('./components/MonetizeTab.jsx'); });
+var AuraTab             = React.lazy(function() { return import('./components/AuraTab.jsx'); });
+var SwanAITab           = React.lazy(function() { return import('./components/SwanAITab.jsx'); });
+var AvatarHubTab        = React.lazy(function() { return import('./components/AvatarHubTab.jsx'); });
+var MusicStudioTab      = React.lazy(function() { return import('./components/MusicStudioTab.jsx'); });
+var CreatorDiscoveryTab = React.lazy(function() { return import('./components/CreatorDiscoveryTab.jsx'); });
+var StateRankingsTab    = React.lazy(function() { return import('./components/StateRankingsTab.jsx'); });
+var ShowcaseTab         = React.lazy(function() { return import('./components/ShowcaseTab.jsx'); });
+var UploadTab           = React.lazy(function() { return import('./components/UploadTab.jsx'); });
+var OverlayTab          = React.lazy(function() { return import('./components/OverlayTab.jsx'); });
+var PortalTab           = React.lazy(function() { return import('./components/PortalTab.jsx'); });
+var CollabTab           = React.lazy(function() { return import('./components/CollabTab.jsx'); });
+var N8nTab              = React.lazy(function() { return import('./components/N8nTab.jsx'); });
+var MerchTab            = React.lazy(function() { return import('./components/MerchTab.jsx'); });
+var ReplayTab           = React.lazy(function() { return import('./components/ReplayTab.jsx'); });
+var MCPTab              = React.lazy(function() { return import('./components/MCPTab.jsx'); });
+var GuardianTab         = React.lazy(function() { return import('./components/GuardianTab.jsx'); });
+var DirectPayTab        = React.lazy(function() { return import('./components/DirectPayTab.jsx'); });
+var SocialShareTab      = React.lazy(function() { return import('./components/SocialShareTab.jsx'); });
+var DiscoverTab         = React.lazy(function() { return import('./components/DiscoverTab.jsx'); });
+var CreatorProfileTab   = React.lazy(function() { return import('./components/CreatorProfileTab.jsx'); });
+var SettingsTab         = React.lazy(function() { return import('./components/SettingsTab.jsx'); });
+var PKBattleTab         = React.lazy(function() { return import('./components/PKBattleTab.jsx'); });
+var VODLibraryTab       = React.lazy(function() { return import('./components/VODLibraryTab.jsx'); });
+var CreatorTipsTab      = React.lazy(function() { return import('./components/CreatorTipsTab.jsx'); });
+var LiveStreamHubTab    = React.lazy(function() { return import('./components/LiveStreamHubTab.jsx'); });
+var AudioStageTab       = React.lazy(function() { return import('./components/AudioStageTab.jsx'); });
+var SoundBoardTab       = React.lazy(function() { return import('./components/SoundBoardTab.jsx'); });
+var TriviaTab           = React.lazy(function() { return import('./components/TriviaTab.jsx'); });
+
+var APP_ID = '6990f5f24823b53e21fcdc9d';
+var TABS = [
+  { id: 'room',      label: '🎙 ROOM' },
+  { id: 'fades',     label: '⚡ FADES' },
+  { id: 'brand',     label: '🎨 BRAND' },
+  { id: 'embed',     label: '🎬 EMBED' },
+  { id: 'bot',       label: '🤖 SWANYBOT' },
+  { id: 'data',      label: '📊 DATA' },
+  { id: 'analytics', label: '📊 STATS', roles: ['host', 'cohost'] },
+  { id: 'keys',      label: '🔑 KEYS' },
+  { id: 'fanout',   label: '📡 FANOUT' },
+  { id: 'push',     label: '📺 PUSH' },
+  { id: 'clips',    label: '🎞 CLIPS' },
+  { id: 'watch',    label: '📺 WATCH' },
+  { id: 'stage',    label: '🎙 STAGE' },
+  { id: 'sfx',      label: '🎚 SFX' },
+  { id: 'trivia',   label: '🎯 TRIVIA' },
+  { id: 'green',    label: '🟢 GREEN' },
+  { id: 'forge',    label: '⚙️ FORGE' },
+  { id: 'deepdata', label: '📊 DEEP' },
+  { id: 'schedule', label: '📅 SCHED' },
+  { id: 'classic',  label: '🎲 DC' },
+  { id: 'money',    label: '💰 MONEY' },
+  { id: 'aura',      label: '🤖 AURA' },
+  { id: 'swanai',    label: '🎯 SWANAI' },
+  { id: 'avatar',    label: '🎭 AVATAR' },
+  { id: 'music',     label: '🎵 STUDIO' },
+  { id: 'discover',  label: '🔭 DISCOVER' },
+  { id: 'rankings',  label: '🏅 RANKS' },
+  { id: 'showcase',  label: '🏆 SHOWCASE' },
+  { id: 'upload',    label: '📤 UPLOAD' },
+  { id: 'overlay',   label: '🎬 OVERLAY' },
+  { id: 'portal',    label: '🌐 PORTAL' },
+  { id: 'collab',    label: '🤝 COLLAB' },
+  { id: 'n8n',       label: '⚙ N8N' },
+  { id: 'merch',     label: '👕 MERCH' },
+  { id: 'replay',    label: '▶ REPLAY' },
+  { id: 'mcp',       label: '🔌 MCP' },
+  { id: 'guardian',  label: '🛡 GUARDIAN' },
+  { id: 'directpay', label: '💸 DIRECT PAY' },
+  { id: 'share',     label: '📡 SHARE' },
+  { id: 'battles',   label: '⚡ BATTLES' },
+  { id: 'vod',       label: '🎬 VOD' },
+  { id: 'profile',   label: '👤 PROFILE' },
+  { id: 'settings',  label: '⚙ SETTINGS' },
+  { id: 'tips',      label: '💡 TIPS' },
+  { id: 'streams',   label: '📡 STREAMS' },
 ];
 
+function CountdownClock({ targetTs }) {
+  var [secs, setSecs] = React.useState(Math.max(0, Math.floor(targetTs - Date.now() / 1000)));
+  React.useEffect(function() {
+    var id = setInterval(function() {
+      setSecs(Math.max(0, Math.floor(targetTs - Date.now() / 1000)));
+    }, 1000);
+    return function() { clearInterval(id); };
+  }, [targetTs]);
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs % 3600) / 60);
+  var s = secs % 60;
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  return (
+    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#F0E8D4', letterSpacing: 4, marginTop: 4 }}>
+      {pad(h)}:{pad(m)}:{pad(s)}
+    </div>
+  );
+}
+
 export default function App() {
-  const [splash, setSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState('room');
-  const [isLive, setIsLive] = useState(false);
-  const [viewerCount, setViewerCount] = useState(0);
-  const [guests, setGuests] = useState([]);
-  const [chat, setChat] = useState([]);
-  const [gifts, setGifts] = useState([]);
-  const [botLogs, setBotLogs] = useState([]);
-  const [toasts, setToasts] = useState([]);
-  const [uptime, setUptime] = useState(0);
-  const [connected, setConnected] = useState(false);
-  const [sessionId] = useState(() => 'sess-' + Date.now());
-  const [userId] = useState(() => {
-    const stored = localStorage.getItem('sw_userId');
+  var [splash, setSplash] = useState(true);
+  var [activeTab, setActiveTab] = useState('room');
+  var [isLive, setIsLive] = useState(false);
+  var [viewerCount, setViewerCount] = useState(0);
+  var [loveTotal, setLoveTotal] = useState(0);
+  var [guests, setGuests] = useState([]);
+  var [chat, setChat] = useState([]);
+  var [botLogs, setBotLogs] = useState([]);
+  var [toasts, setToasts] = useState([]);
+  var [uptime, setUptime] = useState(0);
+  var [connected, setConnected] = useState(false);
+  var [apiHealth, setApiHealth] = useState('unknown');
+  var [sessionId] = useState(function() { return 'sess-' + Date.now(); });
+  var [userId] = useState(function() {
+    var stored = localStorage.getItem('sw_userId');
     if (stored) return stored;
-    const id = 'u-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+    var id = 'u-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
     localStorage.setItem('sw_userId', id);
     return id;
   });
-  const [username] = useState(() => localStorage.getItem('sw_username') || 'Guest' + Math.floor(Math.random() * 9000 + 1000));
-  const [role] = useState(() => localStorage.getItem('sw_role') || 'viewer');
-  const [branding, setBranding] = useState(() => {
+  var [username, setUsername] = useState(function() { var _u = localStorage.getItem('sw_username'); return (_u && _u !== 'undefined' && _u !== 'null') ? _u : ''; });
+  var [showNameModal, setShowNameModal] = useState(function() { var _u = localStorage.getItem('sw_username'); return !_u || _u === 'undefined' || _u === 'null'; });
+  var [nameInput,     setNameInput]     = useState('');
+  var [editingName,   setEditingName]   = useState(false);
+  var [nameEditVal,   setNameEditVal]   = useState('');
+  var [role] = useState(function() { return localStorage.getItem('sw_role') || 'viewer'; });
+  var [showAgeGate, setShowAgeGate] = useState(function() {
+    var key = (localStorage.getItem('sw_role') === 'host' || localStorage.getItem('sw_role') === 'cohost') ? 'sw_age_ok_host' : 'sw_age_ok_viewer';
+    return !localStorage.getItem(key);
+  });
+  var [branding, setBranding] = useState(function() {
     try {
-      const b = localStorage.getItem('sw_branding');
+      var b = localStorage.getItem('sw_branding');
       if (b) return JSON.parse(b);
     } catch(e) {}
     return { gold: '#C9A84C', burg: '#800020', showScoreBar: true };
   });
-  const [fadesScores, setFadesScores] = useState({ team1: 0, team2: 0 });
-  const [giftFloats, setGiftFloats] = useState([]);
-  const [ppvToken, setPpvToken] = useState(() => sessionStorage.getItem('sw_ppv_token') || null);
+  var [fadesScores, setFadesScores] = useState({ team1: 0, team2: 0 });
+  var [paidRoom,    setPaidRoom]    = useState({ enabled: false, priceCents: 0 });
+  var [paidUnlocked, setPaidUnlocked] = useState(function() { return role === 'host'; });
+  var [ppvToken, setPpvToken] = useState(function() { return sessionStorage.getItem('sw_ppv_token') || null; });
+  var [overlayConfig, setOverlayConfig] = useState({ banner: { text: '', position: 'bottom', color: '#C9A84C', visible: false }, countdown: { label: 'STARTING SOON', targetTs: 0, visible: false }, scoreBug: { label: 'DOMINO CLASSIC', team1: { name: 'EAST', score: 0 }, team2: { name: 'WEST', score: 0 }, visible: false }, lowerThirds: {} });
+  var [streamInfo, setStreamInfo] = useState({ title: '', category: '', desc: '' });
+  var [userTier, setUserTier] = useState(function() { return localStorage.getItem('sw_user_tier') || 'free'; });
+  var [auraMessages, setAuraMessages] = useState([]);
+  var [auraUnread, setAuraUnread] = useState(0);
+  var [sessionEarningsCents, setSessionEarningsCents] = useState(0);
+  var [streamRecap, setStreamRecap] = useState(null);
+  var [streamGoal, setStreamGoal] = useState(function() {
+    try { var g = localStorage.getItem('sw_stream_goal'); if (g) return JSON.parse(g); } catch(e) {}
+    return null;
+  });
+  var [installPrompt, setInstallPrompt] = useState(null);
+  var [showInstallBanner, setShowInstallBanner] = useState(false);
+  var [editingTitle, setEditingTitle] = useState(false);
+  var [titleDraft, setTitleDraft] = useState('');
+  var [showMoreDrawer, setShowMoreDrawer] = useState(false);
+  var [canGoBack, setCanGoBack] = useState(false);
+  var [nextEventCountdown, setNextEventCountdown] = useState(null);
+  var [tabResetKey, setTabResetKey] = useState(0);
 
-  const socketRef = useRef(null);
-  const uptimeRef = useRef(null);
-  const liveStartRef = useRef(null);
+  var socketRef = useRef(null);
+  var uptimeRef = useRef(null);
+  var liveStartRef = useRef(null);
+  var peakViewerRef = useRef(0);
+  var sessionEarningsRef = useRef(0);
+  var popstateNavRef = useRef(false);
+  var prevEarningsRef = useRef(0);
+  var prevGuestIdsRef = useRef(null);
 
-  const addToast = useCallback((msg, type) => {
-    const id = Date.now() + Math.random();
-    setToasts((prev) => [...prev, { id, msg, type: type || 'info' }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+  var addToast = useCallback(function(msg, type) {
+    var id = Date.now() + Math.random();
+    setToasts(function(prev) { return [...prev, { id, msg, type: type || 'info' }]; });
+    setTimeout(function() { setToasts(function(prev) { return prev.filter(function(t) { return t.id !== id; }); }); }, 4000);
   }, []);
 
-  useEffect(() => {
-    const t = setTimeout(() => setSplash(false), 2200);
-    return () => clearTimeout(t);
+  useEffect(function() {
+    var t = setTimeout(function() { setSplash(false); }, 2200);
+    return function() { clearTimeout(t); };
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('sw_token') || '';
-    const socket = getSocket(token);
+  // History API — wire Android back button to tab navigation
+  useEffect(function() {
+    window.history.replaceState({ swTab: 'room' }, '');
+    function onPop(e) {
+      if (e.state && e.state.swTab) {
+        popstateNavRef.current = true;
+        setActiveTab(e.state.swTab);
+      }
+    }
+    window.addEventListener('popstate', onPop);
+    return function() { window.removeEventListener('popstate', onPop); };
+  }, []);
+
+  useEffect(function() {
+    if (popstateNavRef.current) { popstateNavRef.current = false; return; }
+    window.history.pushState({ swTab: activeTab }, '');
+  }, [activeTab]);
+
+  useEffect(function() {
+    setCanGoBack(window.history.length > 1);
+  }, []);
+
+  useEffect(function() {
+    var stored = localStorage.getItem('sw_reminders');
+    if (!stored) return;
+    fetch('/api/schedule')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var events = data && data.events ? data.events : [];
+        var reminders = [];
+        try { reminders = JSON.parse(stored); } catch(e) {}
+        var now = Date.now() / 1000;
+        var upcoming = events.filter(function(ev) {
+          return reminders.indexOf(ev.id) >= 0 && ev.scheduled_at > now;
+        }).sort(function(a, b) { return a.scheduled_at - b.scheduled_at; });
+        if (upcoming.length > 0) {
+          setNextEventCountdown({ label: upcoming[0].title || upcoming[0].label, ts: upcoming[0].scheduled_at });
+        }
+      })
+      .catch(function() {});
+  }, []);
+
+  // Earnings milestone celebration toasts
+  useEffect(function() {
+    var prev = prevEarningsRef.current;
+    var curr = sessionEarningsCents;
+    var MILESTONES = [1000, 2500, 5000, 10000, 25000, 50000];
+    for (var i = 0; i < MILESTONES.length; i++) {
+      if (curr >= MILESTONES[i] && prev < MILESTONES[i]) {
+        addToast('🏆 $' + Math.floor(MILESTONES[i] / 100) + ' milestone — stream is POPPING!', 'success');
+        break;
+      }
+    }
+    prevEarningsRef.current = curr;
+  }, [sessionEarningsCents, addToast]);
+
+  useEffect(function() {
+    function handleInstallPrompt(e) {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    }
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    return function() { window.removeEventListener('beforeinstallprompt', handleInstallPrompt); };
+  }, []);
+
+  useEffect(function() {
+    var token = localStorage.getItem('sw_token') || '';
+    var socket = getSocket(token);
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    var joinPayload = { roomId: APP_ID, userId: userId, username: username, role: role, token: token };
+    setRejoinPayload(joinPayload);
+    onReconnectCallback(function() {
       setConnected(true);
-      socket.emit('join-room', { roomId: APP_ID, userId, username, role, token });
+      addToast('Reconnected to SeeWhy LIVE', 'success');
     });
 
-    socket.on('disconnect', () => setConnected(false));
-
-    socket.on('roster-update', (data) => {
-      if (data && data.guests) setGuests(data.guests);
+    socket.on('connect', function() {
+      setConnected(true);
+      socket.emit('join-room', joinPayload);
     });
 
-    socket.on('viewer-count', (data) => {
-      if (data && typeof data.count === 'number') setViewerCount(data.count);
+    socket.on('disconnect', function() {
+      setConnected(false);
+      addToast('Connection lost — reconnecting...', 'error');
     });
 
-    socket.on('chat-message', (msg) => {
+    socket.on('roster-update', function(data) {
+      if (!data || !data.guests) return;
+      var newGuests = data.guests;
+      var prevMap = prevGuestIdsRef.current;
+      if (prevMap !== null) {
+        newGuests.forEach(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid && gid !== userId && !prevMap[gid]) {
+            addToast((g.username || gid) + ' joined the room', 'info');
+          }
+        });
+        var newGuestIds = {};
+        newGuests.forEach(function(g) { var gid = g.guestId || g.userId; if (gid) newGuestIds[gid] = true; });
+        Object.keys(prevMap).forEach(function(gid) {
+          if (!newGuestIds[gid] && gid !== userId) {
+            addToast((prevMap[gid] || gid) + ' left', 'info');
+          }
+        });
+      }
+      var nextMap = {};
+      newGuests.forEach(function(g) { var gid = g.guestId || g.userId; if (gid) nextMap[gid] = g.username || gid; });
+      prevGuestIdsRef.current = nextMap;
+      setGuests(function(prev) {
+        return newGuests.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          var existing = null;
+          for (var i = 0; i < prev.length; i++) {
+            var pid = prev[i].guestId ? prev[i].guestId : prev[i].userId;
+            if (pid === gid) { existing = prev[i]; break; }
+          }
+          if (!existing) return g;
+          var merged = Object.assign({}, g);
+          if (existing.producerId)      merged.producerId      = existing.producerId;
+          if (existing.audioProducerId) merged.audioProducerId = existing.audioProducerId;
+          return merged;
+        });
+      });
+    });
+
+    socket.on('username-updated', function(data) {
+      if (!data || !data.userId || !data.username) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.userId) return g;
+          return Object.assign({}, g, { username: data.username });
+        });
+      });
+    });
+
+    var viewerMilestones = [50, 100, 250, 500, 1000, 2500, 5000, 10000];
+    var passedMilestones = {};
+    socket.on('viewer-count', function(data) {
+      if (!data || typeof data.count !== 'number') return;
+      var prev = viewerCount;
+      setViewerCount(data.count);
+      if (data.count > peakViewerRef.current) peakViewerRef.current = data.count;
+      viewerMilestones.forEach(function(m) {
+        if (data.count >= m && prev < m && !passedMilestones[m]) {
+          passedMilestones[m] = true;
+          addToast('🎉 ' + m.toLocaleString() + ' VIEWERS!', 'success');
+          var floatId = Date.now() + Math.random();
+          setGiftFloats(function(gf) { return gf.concat([{ floatId: floatId, emoji: '👁', name: m.toLocaleString() + ' viewers!', from_user: 'Milestone', value_cents: 0 }]); });
+          setTimeout(function() { setGiftFloats(function(gf) { return gf.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
+        }
+      });
+    });
+
+    socket.on('chat-message', function(msg) {
       if (!msg) return;
-      setChat((prev) => [...prev.slice(-200), msg]);
+      setChat(function(prev) { return [...prev.slice(-200), msg]; });
     });
 
-    socket.on('gift-received', (gift) => {
-      if (!gift) return;
-      setGifts((prev) => [...prev, gift]);
-      const floatId = Date.now() + Math.random();
-      setGiftFloats((prev) => [...prev, { ...gift, floatId }]);
-      setTimeout(() => setGiftFloats((prev) => prev.filter((g) => g.floatId !== floatId)), 4000);
-      addToast((gift.from_user || 'Someone') + ' sent ' + (gift.name || 'a gift') + '! ' + (gift.emoji || '🎁'), 'gift');
+    socket.on('super-chat', function(sc) {
+      if (!sc) return;
+      if (role === 'host') {
+        var scCents = Math.floor(sc.amountCents || 0);
+        setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + scCents; return prev + scCents; });
+        addToast('💬 Super Chat $' + (scCents / 100).toFixed(2) + ' from ' + (sc.username || 'viewer'), 'success');
+      }
     });
 
-    socket.on('bot-log', (log) => {
+    socket.on('earnings-update', function(data) {
+      if (!data || role !== 'host') return;
+      var newTotal = Math.floor(data.sessionCents || 0);
+      if (newTotal > sessionEarningsRef.current) {
+        setSessionEarningsCents(newTotal);
+        sessionEarningsRef.current = newTotal;
+      }
+    });
+
+    socket.on('room-paywall', function(data) {
+      if (!data) return;
+      setPaidRoom({ enabled: !!data.enabled, priceCents: Math.floor(data.priceCents || 0) });
+      if (!data.enabled) setPaidUnlocked(false);
+    });
+
+    socket.on('new-subscription', function(data) {
+      if (!data) return;
+      var name = data.username || data.from_user || 'Someone';
+      var tier = data.tier || 'bronze';
+      var tierLabel = tier === 'gold' ? '👑 GOLD' : tier === 'silver' ? '🥈 SILVER' : '🥉 BRONZE';
+      addToast('⭐ ' + name + ' subscribed at ' + tierLabel + '!', 'success');
+      var floatId = Date.now() + Math.random();
+      setGiftFloats(function(prev) { return prev.concat([{ floatId: floatId, emoji: '⭐', name: tierLabel + ' Sub', from_user: name, value_cents: data.price_cents || 0 }]); });
+      setTimeout(function() { setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); }); }, 5000);
+      var subCents = Math.floor(data.price_cents || 0);
+      setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + subCents; return prev + subCents; });
+    });
+
+    socket.on('bot-log', function(log) {
       if (!log) return;
-      setBotLogs((prev) => [...prev.slice(-100), { ...log, id: Date.now() + Math.random() }]);
+      setBotLogs(function(prev) { return [...prev.slice(-100), { ...log, id: Date.now() + Math.random() }]; });
     });
 
-    socket.on('go-live-confirmed', () => {
+    socket.on('go-live-confirmed', function() {
       setIsLive(true);
       liveStartRef.current = Date.now();
+      peakViewerRef.current = 0;
+      sessionEarningsRef.current = 0;
+      setLoveTotal(0);
       addToast('🔴 LIVE! Stream is broadcasting', 'success');
     });
 
-    socket.on('broadcast-ended', () => {
-      setIsLive(false);
-      liveStartRef.current = null;
-      addToast('Stream ended', 'info');
+    socket.on('love-update', function(data) {
+      if (!data || String(data.roomId) !== String(APP_ID)) return;
+      setLoveTotal(data.total || 0);
     });
 
-    socket.on('fades-event', (data) => {
+    socket.on('stream-goal-set', function(data) {
+      if (!data || String(data.roomId) !== String(APP_ID)) return;
+    });
+    socket.on('stream-goal-clear', function(data) {
+      if (!data || String(data.roomId) !== String(APP_ID)) return;
+    });
+
+    socket.on('broadcast-ended', function() {
+      setIsLive(false);
+      var durationSecs = liveStartRef.current ? Math.floor((Date.now() - liveStartRef.current) / 1000) : 0;
+      liveStartRef.current = null;
+      addToast('Stream ended', 'info');
+      var recap = {
+        durationSecs:   durationSecs,
+        peakViewers:    peakViewerRef.current,
+        earningsCents:  sessionEarningsRef.current,
+        giftCount:      0
+      };
+      setStreamRecap(recap);
+      peakViewerRef.current = 0;
+      sessionEarningsRef.current = 0;
+      setSessionEarningsCents(0);
+    });
+
+    socket.on('fades-event', function(data) {
       if (data && data.scores) setFadesScores(data.scores);
     });
 
-    socket.on('new-producer', (data) => {
-      if (!data) return;
-      // RTC manager will handle subscription, notify UI
+    socket.on('new-producer', function(data) {
+      if (!data || !data.guestId || !data.producerId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          var update = Object.assign({}, g);
+          if (data.kind === 'video') update.producerId      = data.producerId;
+          if (data.kind === 'audio') update.audioProducerId = data.producerId;
+          return update;
+        });
+      });
     });
 
-    return () => {
+    socket.on('join-room-ack', function(ackData) {
+      if (!ackData || !Array.isArray(ackData.existingProducers)) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          var update = Object.assign({}, g);
+          for (var i = 0; i < ackData.existingProducers.length; i++) {
+            var p = ackData.existingProducers[i];
+            if (p.guestId !== gid) continue;
+            if (p.kind === 'video') update.producerId      = p.producerId;
+            if (p.kind === 'audio') update.audioProducerId = p.producerId;
+          }
+          return update;
+        });
+      });
+    });
+
+    socket.on('producer-closed', function(data) {
+      if (!data || !data.producerId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var update = Object.assign({}, g);
+          if (g.producerId      === data.producerId) update.producerId      = null;
+          if (g.audioProducerId === data.producerId) update.audioProducerId = null;
+          return update;
+        });
+      });
+    });
+
+    socket.on('guest-muted', function(data) {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          return Object.assign({}, g, { remoteMuted: true });
+        });
+      });
+      addToast('Host muted a guest', 'info');
+    });
+
+    socket.on('muted', function() {
+      addToast('⚠ Your chat has been restricted by SwanyBot', 'error');
+    });
+
+    socket.on('fanout-failed', function() {
+      addToast('⚠ Stream fanout lost — attempting to reconnect', 'error');
+    });
+
+    socket.on('fanout-restarted', function(data) {
+      var attempt = data && data.attempt ? ' (attempt ' + data.attempt + ')' : '';
+      addToast('✓ Stream fanout reconnected' + attempt, 'success');
+    });
+
+    socket.on('guest-unmuted', function(data) {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          return Object.assign({}, g, { remoteMuted: false });
+        });
+      });
+    });
+
+    socket.on('guest-kicked', function(data) {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.filter(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          return gid !== data.guestId;
+        });
+      });
+      addToast('A guest was removed from the room', 'info');
+    });
+
+    socket.on('you-were-kicked', function() {
+      addToast('⚠ You were removed from this room by the host', 'error');
+    });
+
+    socket.on('role-changed', function(data) {
+      if (!data || !data.guestId) return;
+      setGuests(function(prev) {
+        return prev.map(function(g) {
+          var gid = g.guestId ? g.guestId : g.userId;
+          if (gid !== data.guestId) return g;
+          return Object.assign({}, g, { role: data.role });
+        });
+      });
+    });
+
+    socket.on('host-alert', function(data) {
+      if (!data) return;
+      if (data.type === 'engagement_surge') {
+        addToast('🚀 SURGE! Viewers up ' + data.pct + '% in 60s — ' + data.viewers + ' watching!', 'success');
+      } else if (data.type === 'viewers_drop') {
+        addToast('⚠ Viewer drop: ' + data.current + ' (was ' + data.previous + ')', 'info');
+      } else if (data.type === 'revenue_milestone') {
+        addToast('💰 ' + data.message, 'success');
+      } else if (data.type === 'retention_coach') {
+        addToast(data.message, 'info');
+      } else if (data.message) {
+        addToast(data.message, 'info');
+      }
+    });
+
+    socket.on('overlay-update', function(data) {
+      if (!data || !data.overlay) return;
+      setOverlayConfig(data.overlay);
+    });
+
+    socket.on('stream-info', function(data) {
+      if (!data) return;
+      setStreamInfo({ title: data.title || '', category: data.category || '', desc: data.desc || '' });
+    });
+
+    socket.on('watch-party-started', function() {
+      addToast('🎉 Watch Party started! Head to the WATCH tab.', 'success');
+    });
+
+    socket.on('host-disconnected', function() {
+      addToast('Host lost connection — watch party paused', 'error');
+    });
+
+    socket.on('aura-message', function(data) {
+      if (!data || !data.text) return;
+      var msg = { text: data.text, mode: data.mode || 'hype', ts: Date.now() };
+      setAuraMessages(function(prev) { return [msg].concat(prev.slice(0, 19)); });
+      setAuraUnread(function(n) { return n + 1; });
+    });
+
+    socket.on('user-muted', function(data) {
+      if (!data) return;
+      addToast('Guardian muted a user: ' + (data.reason || 'violation'), 'info');
+    });
+
+    return function() {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('roster-update');
       socket.off('viewer-count');
       socket.off('chat-message');
-      socket.off('gift-received');
+      socket.off('room-paywall');
       socket.off('bot-log');
       socket.off('go-live-confirmed');
       socket.off('broadcast-ended');
       socket.off('fades-event');
       socket.off('new-producer');
+      socket.off('join-room-ack');
+      socket.off('producer-closed');
+      socket.off('guest-muted');
+      socket.off('muted');
+      socket.off('fanout-failed');
+      socket.off('fanout-restarted');
+      socket.off('guest-unmuted');
+      socket.off('guest-kicked');
+      socket.off('you-were-kicked');
+      socket.off('role-changed');
+      socket.off('overlay-update');
+      socket.off('stream-info');
+      socket.off('watch-party-started');
+      socket.off('aura-message');
+      socket.off('user-muted');
+      socket.off('username-updated');
+      socket.off('super-chat');
+      socket.off('earnings-update');
     };
   }, [userId, username, role, addToast]);
 
-  useEffect(() => {
-    uptimeRef.current = setInterval(() => {
+  useEffect(function() {
+    uptimeRef.current = setInterval(function() {
       if (isLive && liveStartRef.current) {
         setUptime(Math.floor((Date.now() - liveStartRef.current) / 1000));
       }
     }, 1000);
-    return () => clearInterval(uptimeRef.current);
+    return function() { clearInterval(uptimeRef.current); };
   }, [isLive]);
 
-  useEffect(() => {
+  useEffect(function() {
     localStorage.setItem('sw_branding', JSON.stringify(branding));
   }, [branding]);
 
+  useEffect(function() {
+    if (streamGoal) {
+      try { localStorage.setItem('sw_stream_goal', JSON.stringify(streamGoal)); } catch(e) {}
+    } else {
+      try { localStorage.removeItem('sw_stream_goal'); } catch(e) {}
+    }
+  }, [streamGoal]);
+
+  function handleNameSubmit() {
+    var name = nameInput.trim().slice(0, 32);
+    if (!name) return;
+    localStorage.setItem('sw_username', name);
+    setUsername(name);
+    setShowNameModal(false);
+  }
+
+  function saveNameEdit() {
+    var name = nameEditVal.trim().slice(0, 32);
+    if (!name) { setEditingName(false); return; }
+    localStorage.setItem('sw_username', name);
+    setUsername(name);
+    setEditingName(false);
+    if (socketRef.current) socketRef.current.emit('update-username', { roomId: APP_ID, userId: userId, username: name });
+    addToast('Name updated', 'success');
+  }
+
+  function shareRoom() {
+    var url = window.location.origin;
+    if (navigator.share) {
+      navigator.share({ title: 'SeeWhy LIVE', text: 'Join me on SeeWhy LIVE!', url: url }).catch(function() {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() { addToast('Link copied!', 'success'); }).catch(function() {});
+    }
+  }
+
   function formatUptime(s) {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
     return (h > 0 ? String(h).padStart(2,'0') + ':' : '') + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  }
+
+  useEffect(function() {
+    function checkHealth() {
+      fetch('/api/health').then(function(r) {
+        setApiHealth(r.ok ? 'good' : 'degraded');
+      }).catch(function() { setApiHealth('down'); });
+    }
+    checkHealth();
+    var healthInterval = setInterval(checkHealth, 30000);
+    return function() { clearInterval(healthInterval); };
+  }, []);
+
+  if (showNameModal) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: '#0E0C09', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 24 }}>
+        <div style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: '#F0E8D4', letterSpacing: 4, lineHeight: 1 }}>SeeWhy LIVE</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', marginTop: 4, letterSpacing: 2 }}>v33.0 · WASHINGTON CLASSIC</div>
+          </div>
+          <div style={{ background: 'rgba(26,21,16,.95)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: '#F0E8D4', letterSpacing: 1 }}>What's your display name?</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>This is how others see you in the room</div>
+            </div>
+            <input
+              autoFocus
+              type="text"
+              maxLength={32}
+              placeholder="Enter your name..."
+              value={nameInput}
+              onChange={function(e) { setNameInput(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') handleNameSubmit(); }}
+              style={{ width: '100%', boxSizing: 'border-box', background: '#07050A', border: '1px solid rgba(201,168,76,.4)', borderRadius: 9, padding: '12px 14px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, outline: 'none', letterSpacing: 0.5 }}
+            />
+            <button
+              onClick={handleNameSubmit}
+              disabled={!nameInput.trim()}
+              style={{ width: '100%', padding: '13px', background: nameInput.trim() ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (nameInput.trim() ? '#C01838' : '#6B5A44'), borderRadius: 9, color: nameInput.trim() ? '#C9A84C' : '#6B5A44', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 3, cursor: nameInput.trim() ? 'pointer' : 'default' }}>
+              JOIN THE ROOM
+            </button>
+            <button
+              onClick={function() { var g = 'Guest' + Math.floor(Math.random() * 9000 + 1000); localStorage.setItem('sw_username', g); setUsername(g); setShowNameModal(false); }}
+              style={{ background: 'none', border: 'none', color: '#6B5A44', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}>
+              Join anonymously
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showAgeGate) {
+    return <AgeGate role={role} onConfirm={function() { setShowAgeGate(false); }} />;
   }
 
   if (splash) {
     return (
-      <div className="splash-screen">
-        <div className="splash-inner">
-          <div className="splash-title">SeeWhy LIVE</div>
-          <div className="splash-version">v33.0</div>
-          <div className="splash-tags">
-            <span className="tag-merge">MERGE BUILD</span>
-            <span className="tag-prod">PRODUCTION</span>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#0E0C09', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, overflow: 'hidden' }}>
+        <style dangerouslySetInnerHTML={{ __html: [
+          '@keyframes splashFade{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}',
+          '@keyframes splashPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.5)}70%{box-shadow:0 0 0 24px rgba(201,168,76,0)}}',
+          '@keyframes splashBar{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}',
+          '@keyframes splashDot{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}',
+        ].join('') }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 40%, rgba(128,0,32,.18) 0%, transparent 70%)' }} />
+        <div style={{ textAlign: 'center', animation: 'splashFade .5s ease', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
+            {[0,1,2,3,4].map(function(i) {
+              return <div key={i} style={{ width: 4, borderRadius: 2, background: i % 2 === 0 ? '#800020' : '#C9A84C', height: 18 + (i === 2 ? 14 : i === 1 || i === 3 ? 8 : 0), animation: 'splashDot 1s ease ' + (i * .1) + 's infinite' }} />;
+            })}
           </div>
-          <div className="splash-brands">Washington Classic × Domino Entertainment × VibeN'Bones</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 62, color: '#F0E8D4', letterSpacing: 5, lineHeight: 1, animation: 'splashPulse 1.8s infinite' }}>SeeWhy LIVE</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C', marginTop: 6, letterSpacing: 3 }}>v33.0 · WASHINGTON CLASSIC</div>
+          <div style={{ marginTop: 14, display: 'flex', gap: 8, justifyContent: 'center' }}>
+            {['DOMINO ENTERTAINMENT','VIBENBONES','WASHINGTON DC'].map(function(label, i) {
+              return <span key={i} style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '3px 9px', color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{label}</span>;
+            })}
+          </div>
+          {nextEventCountdown && (
+            <div style={{ background: 'rgba(128,0,32,.3)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 20px', textAlign: 'center', marginTop: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 4 }}>NEXT EVENT</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 2 }}>{nextEventCountdown.label}</div>
+              <CountdownClock targetTs={nextEventCountdown.ts} />
+            </div>
+          )}
+          <div style={{ marginTop: 24, display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'flex-end', height: 28 }}>
+            {[4,7,5,9,6,8,4,6,9,7,5,8,6].map(function(h, i) {
+              return <div key={i} style={{ width: 3, borderRadius: 2, background: 'rgba(201,168,76,.5)', height: h * 2 + 4, animation: 'splashBar ' + (.6 + i * .07) + 's ease ' + (i * .04) + 's infinite' }} />;
+            })}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="app-root">
+    <div style={{ minHeight: '100vh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
+      <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
-      <header className="hud-header">
-        <div className="hud-left">
-          <span className="hud-logo">SeeWhy LIVE</span>
-          <span className="hud-version">v33.0</span>
-          {isLive && <span className="hud-live-badge">● LIVE</span>}
-          {!connected && <span className="hud-offline-badge">OFFLINE</span>}
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44, paddingTop: 'max(6px, env(safe-area-inset-top, 6px))' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+          {canGoBack && (
+            <button
+              onClick={function() { window.history.back(); }}
+              style={{ background: 'none', border: 'none', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', padding: '4px 8px 4px 0', letterSpacing: 1, userSelect: 'none', WebkitUserSelect: 'none', flexShrink: 0 }}>
+              ← BACK
+            </button>
+          )}
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#F0E8D4', letterSpacing: 2 }}>SeeWhy LIVE</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>v33.0</span>
+          {isLive && <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 4, padding: '2px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
+          {!connected && <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>OFFLINE</span>}
         </div>
-        <div className="hud-center">
-          {isLive && <span className="hud-uptime">{formatUptime(uptime)}</span>}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 1 }}>
+          {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#C9A84C' }}>{formatUptime(uptime)}</span>}
+          {isLive && !editingTitle && streamInfo.title ? (
+            <span
+              title="Click to edit title"
+              onClick={function() { setTitleDraft(streamInfo.title); setEditingTitle(true); }}
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', letterSpacing: 0.5, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', borderBottom: '1px dashed rgba(201,168,76,.35)' }}>
+              {streamInfo.title}
+            </span>
+          ) : null}
+          {isLive && editingTitle ? (
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={function(e) { setTitleDraft(e.target.value.slice(0, 80)); }}
+              onKeyDown={function(e) {
+                if (e.key === 'Enter') {
+                  var t = titleDraft.trim();
+                  if (t && socketRef.current) socketRef.current.emit('stream-info', { roomId: APP_ID, title: t, category: streamInfo.category, desc: streamInfo.desc });
+                  if (t) setStreamInfo(function(prev) { return Object.assign({}, prev, { title: t }); });
+                  setEditingTitle(false);
+                }
+                if (e.key === 'Escape') setEditingTitle(false);
+              }}
+              onBlur={function() {
+                var t = titleDraft.trim();
+                if (t && socketRef.current) socketRef.current.emit('stream-info', { roomId: APP_ID, title: t, category: streamInfo.category, desc: streamInfo.desc });
+                if (t) setStreamInfo(function(prev) { return Object.assign({}, prev, { title: t }); });
+                setEditingTitle(false);
+              }}
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', letterSpacing: 0.5, maxWidth: 180, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 4, padding: '1px 5px', outline: 'none' }}
+            />
+          ) : null}
+          {isLive && streamInfo.category ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>{streamInfo.category.toUpperCase()}</span> : null}
         </div>
-        <div className="hud-right">
-          <span className="hud-viewers">👁 {viewerCount}</span>
-          <span className="hud-room">{APP_ID.substring(0, 8)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, justifyContent: 'flex-end' }}>
+          {isLive && viewerCount > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '3px 8px' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 5px #FF1A3C' }} />
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#FF6B81', letterSpacing: 1 }}>
+                {viewerCount >= 1000 ? (Math.floor(viewerCount / 100) / 10).toFixed(1) + 'K' : viewerCount}
+              </span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>LIVE</span>
+            </div>
+          )}
+          {!isLive && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>👁 {viewerCount}</span>
+          )}
+          {isLive && sessionEarningsCents > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '3px 7px' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 1 }}>
+                ${(Math.floor(sessionEarningsCents) / 100).toFixed(2)}
+              </span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>SESSION</span>
+            </div>
+          )}
+          {/* Username chip — tap to edit */}
+          {editingName ? (
+            <input
+              autoFocus
+              value={nameEditVal}
+              maxLength={32}
+              onChange={function(e) { setNameEditVal(e.target.value); }}
+              onKeyDown={function(e) { if (e.key === 'Enter') saveNameEdit(); if (e.key === 'Escape') setEditingName(false); }}
+              onBlur={saveNameEdit}
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 6, padding: '2px 7px', outline: 'none', width: 90 }}
+            />
+          ) : (
+            <button
+              onClick={function() { setNameEditVal(username); setEditingName(true); }}
+              title="Edit display name"
+              style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '3px 8px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</span>
+              <span style={{ fontSize: 8, color: '#8A7A62', flexShrink: 0 }}>✏</span>
+            </button>
+          )}
+          {/* Share / Invite button */}
+          <button onClick={shareRoom} title="Share room link"
+            style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+            🔗
+          </button>
+          <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#C9A84C' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
+            {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
+          </span>
+          {showInstallBanner && installPrompt && (
+            <button
+              onClick={function() {
+                installPrompt.prompt();
+                installPrompt.userChoice.then(function(result) {
+                  if (result.outcome === 'accepted') {
+                    addToast('SeeWhy LIVE installed!', 'success');
+                  }
+                  setInstallPrompt(null);
+                  setShowInstallBanner(false);
+                });
+              }}
+              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 6, padding: '4px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, whiteSpace: 'nowrap' }}
+            >
+              ⬇ INSTALL
+            </button>
+          )}
         </div>
       </header>
 
-      {/* Tab Bar */}
-      <nav className="tab-bar">
-        {TABS.map((tab) => (
+      {/* Secondary tab bar — hidden on room tab, shown when More drawer is open */}
+      {activeTab !== 'room' && (
+      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(14,12,9,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none' }}>
+        {TABS.filter(function(t) {
+          if (t.id === 'room' || t.id === 'discover' || t.id === 'profile' || t.id === 'settings') return false;
+          if (t.roles && t.roles.indexOf(role) === -1) return false;
+          return true;
+        }).map(function(tab) { return (
           <button
             key={tab.id}
-            className={'tab-btn' + (activeTab === tab.id ? ' tab-btn--active' : '')}
-            onClick={() => setActiveTab(tab.id)}
+            style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(26,21,16,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#F0E8D4' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            onClick={function() { setActiveTab(tab.id); if (tab.id === 'aura') setAuraUnread(0); }}
           >
             {tab.label}
+            {tab.id === 'aura' && auraUnread > 0 && (
+              <span style={{ position: 'absolute', top: -4, right: -4, background: '#FF1A3C', color: '#fff', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, fontWeight: 700, lineHeight: 1, border: '1px solid rgba(15,12,20,.8)' }}>
+                {auraUnread > 9 ? '9+' : auraUnread}
+              </span>
+            )}
           </button>
-        ))}
+        ); })}
       </nav>
+      )}
+
+      {/* Stream Goal Progress Bar */}
+      {streamGoal && isLive && (
+        (function() {
+          var pct = Math.min(100, Math.floor((sessionEarningsCents / Math.max(1, streamGoal.goalCents)) * 100));
+          var barColor = pct >= 100 ? '#C9A84C' : pct >= 75 ? '#C9A84C' : '#C9A84C';
+          return (
+            <div style={{ background: 'rgba(14,12,9,.95)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1, flexShrink: 0 }}>GOAL</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamGoal.label || 'Stream Goal'}</span>
+              <div style={{ flex: 1, background: 'rgba(255,255,255,.06)', borderRadius: 999, height: 6, overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 999, background: barColor, width: pct + '%', transition: 'width .5s ease, background .3s' }} />
+              </div>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: barColor, letterSpacing: 1, flexShrink: 0 }}>{pct}%</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', flexShrink: 0 }}>${(Math.floor(sessionEarningsCents) / 100).toFixed(0)}/${(Math.floor(streamGoal.goalCents) / 100).toFixed(0)}</span>
+              <button onClick={function() { setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: '#6B5A44', cursor: 'pointer', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1 }}>✕</button>
+            </div>
+          );
+        })()
+      )}
 
       {/* Tab Content */}
-      <main className="tab-content">
-        {activeTab === 'room' && (
-          <RoomTab
+      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
+      <ErrorBoundary>
+      <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 2 }}>LOADING...</div>}>
+      <div key={activeTab + '-' + tabResetKey} style={{ display: 'flex', flexDirection: 'column', flex: 1, animation: activeTab !== 'room' ? 'tabSlideIn .18s ease-out' : 'none' }}>
+        {activeTab === 'room' && paidRoom.enabled && !paidUnlocked && (
+          <PaywallScreen
+            priceCents={paidRoom.priceCents}
+            onUnlock={function() { setPaidUnlocked(true); }}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'room' && (!paidRoom.enabled || paidUnlocked) && (
+          <LiveRoomPage
             socket={socketRef.current}
             guests={guests}
             chat={chat}
@@ -228,6 +982,13 @@ export default function App() {
             roomId={APP_ID}
             branding={branding}
             addToast={addToast}
+            overlayConfig={overlayConfig}
+            viewerCount={viewerCount}
+            streamInfo={streamInfo}
+            streamGoal={streamGoal}
+            setStreamGoal={setStreamGoal}
+            sessionEarningsCents={sessionEarningsCents}
+            onLeave={function() { setActiveTab('discover'); addToast('Left the room', 'info'); }}
           />
         )}
         {activeTab === 'fades' && (
@@ -237,12 +998,16 @@ export default function App() {
             guests={guests}
             roomId={APP_ID}
             isLive={isLive}
+            role={role}
+            userId={userId}
           />
         )}
         {activeTab === 'brand' && (
           <BrandingTab
             branding={branding}
             setBranding={setBranding}
+            isLive={isLive}
+            streamInfo={streamInfo}
           />
         )}
         {activeTab === 'embed' && (
@@ -258,6 +1023,8 @@ export default function App() {
             socket={socketRef.current}
             botLogs={botLogs}
             roomId={APP_ID}
+            addToast={addToast}
+            isLive={isLive}
           />
         )}
         {activeTab === 'data' && (
@@ -265,6 +1032,16 @@ export default function App() {
             roomId={APP_ID}
             gifts={gifts}
             viewerCount={viewerCount}
+            isLive={isLive}
+          />
+        )}
+        {activeTab === 'analytics' && (role === 'host' || role === 'cohost') && (
+          <AnalyticsTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            isLive={isLive}
+            addToast={addToast}
           />
         )}
         {activeTab === 'keys' && (
@@ -276,24 +1053,482 @@ export default function App() {
             addToast={addToast}
           />
         )}
+        {activeTab === 'fanout' && (
+          <RTMPFanoutTab
+            isLive={isLive}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'push' && (
+          <PushStreamTab
+            isLive={isLive}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'clips' && (
+          <ClipEngineTab
+            isLive={isLive}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'watch' && (
+          <WatchPartyTab
+            guests={guests}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            addToast={addToast}
+            isLive={isLive}
+            chat={chat}
+          />
+        )}
+        {activeTab === 'stage' && (
+          <AudioStageTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            userId={userId}
+            username={username}
+            role={role}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'sfx' && (
+          <SoundBoardTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'trivia' && (
+          <TriviaTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            username={username}
+            addToast={addToast}
+            isLive={isLive}
+          />
+        )}
+        {activeTab === 'green' && (
+          <GreenRoomTab
+            guests={guests}
+            addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            userId={userId}
+            role={role}
+            isLive={isLive}
+            streamInfo={streamInfo}
+          />
+        )}
+        {activeTab === 'forge' && (
+          <InsForgeTab
+            addToast={addToast}
+            isLive={isLive}
+          />
+        )}
+        {activeTab === 'deepdata' && (
+          <AnalyticsDeepDiveTab
+            viewerCount={viewerCount}
+            gifts={gifts}
+            isLive={isLive}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'schedule' && (
+          <ScheduleTab
+            addToast={addToast}
+            isLive={isLive}
+            streamInfo={streamInfo}
+          />
+        )}
+        {activeTab === 'classic' && (
+          <WashingtonClassicTab
+            addToast={addToast}
+            isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+          />
+        )}
+        {activeTab === 'money' && (
+          <MonetizeTab
+            addToast={addToast}
+            isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            username={username}
+            streamGoal={streamGoal}
+            setStreamGoal={setStreamGoal}
+            sessionEarningsCents={sessionEarningsCents}
+          />
+        )}
+        {activeTab === 'aura' && (
+          <AuraTab
+            isLive={isLive}
+            viewerCount={viewerCount}
+            addToast={addToast}
+            userTier={userTier}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            incomingMessages={auraMessages}
+          />
+        )}
+        {activeTab === 'swanai' && (
+          <SwanAITab
+            isLive={isLive}
+            viewerCount={viewerCount}
+            addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            sessionEarningsCents={sessionEarningsCents}
+            username={username}
+            role={role}
+          />
+        )}
+        {activeTab === 'avatar' && (
+          <AvatarHubTab
+            addToast={addToast}
+            isLive={isLive}
+          />
+        )}
+        {activeTab === 'music' && (
+          <MusicStudioTab
+            addToast={addToast}
+            isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
+        )}
+        {activeTab === 'discover' && (
+          <DiscoverTab
+            addToast={addToast}
+            isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            username={username}
+          />
+        )}
+        {activeTab === 'rankings' && (
+          <StateRankingsTab isLive={isLive} addToast={addToast} />
+        )}
+        {activeTab === 'showcase' && (
+          <ShowcaseTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'upload' && (
+          <UploadTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'overlay' && (
+          <OverlayTab
+            overlayConfig={overlayConfig}
+            setOverlayConfig={setOverlayConfig}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            guests={guests}
+            userId={userId}
+            username={username}
+            isLive={isLive}
+          />
+        )}
+        {activeTab === 'portal' && (
+          <PortalTab addToast={addToast} isLive={isLive} socket={socketRef.current} roomId={APP_ID} />
+        )}
+        {activeTab === 'collab' && (
+          <CollabTab addToast={addToast} isLive={isLive} userId={userId} username={username} socket={socketRef.current} roomId={APP_ID} />
+        )}
+        {activeTab === 'n8n' && (
+          <N8nTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'merch' && (
+          <MerchTab addToast={addToast} isLive={isLive} socket={socketRef.current} roomId={APP_ID} username={username} />
+        )}
+        {activeTab === 'replay' && (
+          <ReplayTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'mcp' && (
+          <MCPTab addToast={addToast} isLive={isLive} />
+        )}
+        {activeTab === 'guardian' && (
+          <GuardianTab
+            addToast={addToast}
+            isLive={isLive}
+            chat={chat}
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
+        )}
+        {activeTab === 'directpay' && (
+          <DirectPayTab addToast={addToast} username={username} />
+        )}
+        {activeTab === 'share' && (
+          <SocialShareTab addToast={addToast} isLive={isLive} roomId={APP_ID} username={username} />
+        )}
+        {activeTab === 'profile' && (
+          <CreatorProfileTab
+            addToast={addToast}
+            creatorUsername={username}
+            isLive={isLive}
+            viewerCount={viewerCount}
+            streamTitle={streamInfo.title}
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
+        )}
+        {activeTab === 'settings' && (
+          <SettingsTab
+            addToast={addToast}
+            userId={userId}
+            username={username}
+            userTier={userTier}
+            setUserTier={setUserTier}
+          />
+        )}
+        {activeTab === 'battles' && (
+          <PKBattleTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            isLive={isLive}
+            addToast={addToast}
+            viewerCount={viewerCount}
+            username={username}
+          />
+        )}
+        {activeTab === 'vod' && (
+          <VODLibraryTab
+            addToast={addToast}
+            isLive={isLive}
+          />
+        )}
+        {activeTab === 'tips' && (
+          <CreatorTipsTab
+            addToast={addToast}
+            username={username}
+          />
+        )}
+        {activeTab === 'streams' && (
+          <LiveStreamHubTab
+            addToast={addToast}
+            isLive={isLive}
+            socket={socketRef.current}
+            roomId={APP_ID}
+          />
+        )}
+      </div>
+      </Suspense>
+      </ErrorBoundary>
       </main>
 
+      {/* Stream Recap Modal */}
+      {streamRecap && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(14,12,9,.88)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: 'linear-gradient(160deg,#1A1510,#0E0C09)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 16, padding: '28px 24px', maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 0 60px rgba(201,168,76,.15), 0 4px 30px rgba(0,0,0,.7)' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: '#C9A84C', letterSpacing: 4, marginBottom: 4 }}>STREAM RECAP</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 20 }}>SeeWhy LIVE · Washington Classic</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+              <div style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF6B81', letterSpacing: 1 }}>{streamRecap.peakViewers >= 1000 ? (Math.floor(streamRecap.peakViewers / 100) / 10).toFixed(1) + 'K' : streamRecap.peakViewers}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
+              </div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
+              </div>
+              <div style={{ background: 'rgba(90,143,255,.08)', border: '1px solid rgba(90,143,255,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#7AAEFF', letterSpacing: 1 }}>
+                  {streamRecap.durationSecs >= 3600
+                    ? Math.floor(streamRecap.durationSecs / 3600) + 'h ' + Math.floor((streamRecap.durationSecs % 3600) / 60) + 'm'
+                    : Math.floor(streamRecap.durationSecs / 60) + 'm ' + (streamRecap.durationSecs % 60) + 's'}
+                </div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>DURATION</div>
+              </div>
+            </div>
+            <button
+              onClick={function() { setStreamRecap(null); }}
+              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 10, padding: '12px 32px', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 3, cursor: 'pointer', width: '100%' }}
+            >
+              CLOSE RECAP
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Overlays */}
-      <GiftLayer giftFloats={giftFloats} />
       <Toasts toasts={toasts} />
       <Ticker chat={chat} isLive={isLive} />
+      {socketRef.current && (
+        <LoveTap
+          socket={socketRef.current}
+          roomId={APP_ID}
+          userId={userId}
+          username={username}
+          addToast={addToast}
+        />
+      )}
+      {socketRef.current && (
+        <GiftLeaderboardOverlay
+          socket={socketRef.current}
+          roomId={APP_ID}
+          isLive={isLive}
+        />
+      )}
+      {socketRef.current && (
+        <StreamGoalBar
+          socket={socketRef.current}
+          roomId={APP_ID}
+          role={role}
+          isLive={isLive}
+          viewerCount={viewerCount}
+          earningsCents={sessionEarningsCents}
+          loveTotal={loveTotal}
+        />
+      )}
+      {socketRef.current && (
+        <DonationAlert
+          socket={socketRef.current}
+          roomId={APP_ID}
+        />
+      )}
+      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
+      <WelcomeAudio socket={socketRef.current} />
+    </div>
+  );
+}
+
+// ─── Paywall screen shown to viewers before entering a paid room ────────────
+function PaywallScreen({ priceCents, onUnlock, addToast }) {
+  var BG   = '#0E0C09'; var SURF = '#1A1510'; var CARD = '#241C12';
+  var GOLD = '#C9A84C'; var TEAL = '#D4854A'; var MUTED = '#8A7A62'; var TEXT = '#F0E8D4';
+  var BORDER = 'rgba(201,168,76,.12)';
+
+  var creatorHandles = (function() {
+    try { return JSON.parse(localStorage.getItem('sw_directpay_handles') || '{}'); } catch(e) { return {}; }
+  })();
+  var platHandles = getPlatformHandles();
+
+  var DP_PLATFORMS = [
+    { id: 'paypal',  emoji: '💸', name: 'PayPal',  color: '#0070BA', buildUrl: function(h) { return 'https://paypal.me/' + h.replace(/^@/,''); } },
+    { id: 'cashapp', emoji: '💚', name: 'CashApp', color: '#00D54B', buildUrl: function(h) { return 'https://cash.app/$' + h.replace(/^\$/,''); } },
+    { id: 'venmo',   emoji: '💙', name: 'Venmo',   color: '#3D95CE', buildUrl: function(h) { return 'https://venmo.com/' + h.replace(/^@/,''); } },
+    { id: 'zelle',   emoji: '💜', name: 'Zelle',   color: '#6D1ED4', buildUrl: null },
+    { id: 'chime',   emoji: '🟢', name: 'Chime',   color: '#16BE45', buildUrl: null },
+  ];
+
+  var activeCreator = DP_PLATFORMS.filter(function(p) { return !!(creatorHandles[p.id] || '').trim(); });
+  var activePlat    = DP_PLATFORMS.filter(function(p) { return !!(platHandles[p.id] || '').trim(); });
+
+  var totalCents   = Math.floor(priceCents) || 0;
+  var cCents       = creatorCents(totalCents);
+  var pCents       = platformCents(totalCents);
+  var totalDollars = totalCents > 0 ? ('$' + (totalCents / 100).toFixed(2)) : null;
+  var cDollars     = cCents > 0     ? ('$' + (cCents / 100).toFixed(2))     : null;
+  var pDollars     = pCents > 0     ? ('$' + (pCents / 100).toFixed(2))     : null;
+
+  function openPay(p, h) {
+    h = (h || '').trim();
+    if (!h) return;
+    if (p.buildUrl) { window.open(p.buildUrl(h), '_blank', 'noopener'); }
+    else { navigator.clipboard.writeText(h).then(function() { if (addToast) addToast(p.name + ': ' + h + ' copied!', 'success'); }); }
+  }
+
+  function renderPayRow(p, h, accentColor) {
+    return (
+      <button key={p.id} onClick={function() { openPay(p, h); }}
+        style={{ background: 'rgba(255,255,255,.04)', border: '1.5px solid ' + accentColor + '55', borderRadius: 14, padding: '12px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', transition: 'background .2s' }}>
+        <span style={{ fontSize: 24, flexShrink: 0 }}>{p.emoji}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT }}>{p.name}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: accentColor, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</div>
+        </div>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: accentColor, letterSpacing: 1, flexShrink: 0 }}>{p.buildUrl ? 'PAY →' : 'COPY'}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ height: '100%', background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', fontFamily: "'Barlow Condensed',sans-serif", overflowY: 'auto' }}>
+      <div style={{ width: '100%', maxWidth: 380 }}>
+        {/* Lock icon + title */}
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: 48, marginBottom: 10 }}>🔒</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: TEXT, letterSpacing: 2, marginBottom: 4 }}>PAID ACCESS</div>
+          {totalDollars && (
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: GOLD, letterSpacing: 1, lineHeight: 1, marginBottom: 6 }}>{totalDollars}</div>
+          )}
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: MUTED, letterSpacing: 1 }}>
+            90% creator &bull; 10% platform fee
+          </div>
+        </div>
+
+        {/* Creator section */}
+        {activeCreator.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 1.5, marginBottom: 8 }}>
+              CREATOR — 90%{cDollars ? (' (' + cDollars + ')') : ''}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {activeCreator.map(function(p) { return renderPayRow(p, creatorHandles[p.id], p.color); })}
+            </div>
+          </div>
+        )}
+
+        {/* Platform fee section */}
+        {activePlat.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1.5, marginBottom: 8 }}>
+              SEEWHY FEE — 10%{pDollars ? (' (' + pDollars + ')') : ''}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {activePlat.map(function(p) { return renderPayRow(p, platHandles[p.id], GOLD); })}
+            </div>
+          </div>
+        )}
+
+        {activeCreator.length === 0 && activePlat.length === 0 && (
+          <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 20 }}>
+            Contact the host to get payment details
+          </div>
+        )}
+
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <div style={{ flex: 1, height: 1, background: BORDER }} />
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>AFTER PAYING BOTH</span>
+          <div style={{ flex: 1, height: 1, background: BORDER }} />
+        </div>
+
+        {/* Enter button */}
+        <button onClick={onUnlock} style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1.5px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '16px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
+          ✓ I'VE PAID — ENTER LIVE
+        </button>
+        <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: .5 }}>
+          By entering you confirm you've sent payment to the creator and platform
+        </div>
+      </div>
     </div>
   );
 }
 
 // StreamKeysTab inline (7th tab)
-function StreamKeysTab({ socket, userId, guests, role, addToast }) {
-  const [platform, setPlatform] = useState('youtube');
-  const [streamKey, setStreamKey] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [savedKeys, setSavedKeys] = useState([]);
+function StreamKeysTab(props) {
+  var socket = props.socket;
+  var userId = props.userId;
+  var guests = props.guests;
+  var role = props.role;
+  var addToast = props.addToast;
 
-  const PLATFORMS = [
+  var [platform, setPlatform] = useState('youtube');
+  var [streamKey, setStreamKey] = useState('');
+  var [saving, setSaving] = useState(false);
+  var [savedKeys, setSavedKeys] = useState([]);
+
+  var PLATFORMS = [
     { id: 'youtube', label: 'YouTube' },
     { id: 'tiktok', label: 'TikTok' },
     { id: 'twitch', label: 'Twitch' },
@@ -301,13 +1536,13 @@ function StreamKeysTab({ socket, userId, guests, role, addToast }) {
     { id: 'custom', label: 'Custom RTMP' }
   ];
 
-  useEffect(() => {
+  useEffect(function() {
     fetch('/api/keys/meta/' + userId)
-      .then((r) => r.json())
-      .then((data) => {
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
         if (data && Array.isArray(data)) setSavedKeys(data);
       })
-      .catch((e) => console.error('fetch keys meta error:', e));
+      .catch(function(e) { console.error('fetch keys meta error:', e); });
   }, [userId]);
 
   function handleSave() {
@@ -318,86 +1553,103 @@ function StreamKeysTab({ socket, userId, guests, role, addToast }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guestId: userId, destId: platform, plainKey: streamKey })
     })
-      .then((r) => r.json())
-      .then((data) => {
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
         setSaving(false);
         if (data && data.saved) {
           setStreamKey('');
           addToast('🔒 Encrypted & Vaulted', 'success');
-          setSavedKeys((prev) => {
-            const filtered = prev.filter((k) => k.destId !== platform);
+          setSavedKeys(function(prev) {
+            var filtered = prev.filter(function(k) { return k.destId !== platform; });
             return [...filtered, { destId: platform, createdAt: Date.now() }];
           });
         } else {
           addToast('Save failed', 'error');
         }
       })
-      .catch((e) => { setSaving(false); addToast('Save error: ' + e.message, 'error'); });
+      .catch(function(e) { setSaving(false); addToast('Save error: ' + e.message, 'error'); });
   }
 
   function handleDelete(destId) {
     fetch('/api/keys/delete', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guestId: userId, destId })
+      body: JSON.stringify({ guestId: userId, destId: destId })
     })
-      .then((r) => r.json())
-      .then((data) => {
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
         if (data && data.deleted) {
-          setSavedKeys((prev) => prev.filter((k) => k.destId !== destId));
+          setSavedKeys(function(prev) { return prev.filter(function(k) { return k.destId !== destId; }); });
           addToast('Key deleted', 'info');
         }
       })
-      .catch((e) => addToast('Delete error: ' + e.message, 'error'));
+      .catch(function(e) { addToast('Delete error: ' + e.message, 'error'); });
   }
 
+  var glassCard = { background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 12, padding: '16px' };
+  var panelTitle = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#F0E8D4', letterSpacing: 2, margin: '0 0 4px 0' };
+  var panelSub = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', margin: '0 0 12px 0' };
+  var formRow = { marginBottom: 10 };
+  var inputStyle = { background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, width: '100%', boxSizing: 'border-box' };
+  var btnGold = { background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, padding: '9px 18px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, cursor: 'pointer' };
+  var btnDelete = { background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '4px 10px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' };
+  var keyRow = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.04)' };
+  var keyPlatform = { fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', flex: 1 };
+  var keyStatus = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' };
+  var keyDate = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' };
+  var mutedText = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' };
+
   return (
-    <div className="tab-panel">
-      <div className="glass-card" style={{marginBottom: '1rem'}}>
-        <h2 className="panel-title">🔑 STREAM KEYS VAULT</h2>
-        <p className="panel-sub">Keys are encrypted with AES-256-GCM. They cannot be retrieved after saving.</p>
-        <div className="form-row">
-          <select className="select-input" value={platform} onChange={(e) => setPlatform(e.target.value)}>
-            {PLATFORMS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+    <div style={{ padding: '8px 0' }}>
+      <div style={Object.assign({}, glassCard, { marginBottom: '1rem' })}>
+        <h2 style={panelTitle}>🔑 STREAM KEYS VAULT</h2>
+        <p style={panelSub}>Keys are encrypted with AES-256-GCM. They cannot be retrieved after saving.</p>
+        <div style={formRow}>
+          <select style={inputStyle} value={platform} onChange={function(e) { setPlatform(e.target.value); }}>
+            {PLATFORMS.map(function(p) { return <option key={p.id} value={p.id}>{p.label}</option>; })}
           </select>
         </div>
-        <div className="form-row">
+        <div style={formRow}>
           <input
-            className="text-input"
+            style={inputStyle}
             type="password"
             placeholder="Paste your stream key..."
             value={streamKey}
-            onChange={(e) => setStreamKey(e.target.value)}
+            onChange={function(e) { setStreamKey(e.target.value); }}
             autoComplete="off"
           />
         </div>
-        <button className="btn-gold" onClick={handleSave} disabled={saving}>
+        <button style={btnGold} onClick={handleSave} disabled={saving}>
           {saving ? 'Encrypting...' : '🔒 SAVE TO VAULT'}
         </button>
       </div>
 
-      <div className="glass-card">
-        <h3 className="panel-title">Saved Keys</h3>
-        {savedKeys.length === 0 && <p className="muted-text">No keys saved yet.</p>}
-        {savedKeys.map((k) => (
-          <div key={k.destId} className="key-row">
-            <span className="key-platform">{k.destId.toUpperCase()}</span>
-            <span className="key-status">🔒 Encrypted</span>
-            <span className="key-date">{new Date(k.createdAt).toLocaleDateString()}</span>
-            <button className="btn-delete" onClick={() => handleDelete(k.destId)}>Delete</button>
-          </div>
-        ))}
+      <div style={glassCard}>
+        <h3 style={panelTitle}>Saved Keys</h3>
+        {savedKeys.length === 0 && <p style={mutedText}>No keys saved yet.</p>}
+        {savedKeys.map(function(k) {
+          return (
+            <div key={k.destId} style={keyRow}>
+              <span style={keyPlatform}>{k.destId.toUpperCase()}</span>
+              <span style={keyStatus}>🔒 Encrypted</span>
+              <span style={keyDate}>{new Date(k.createdAt).toLocaleDateString()}</span>
+              <button style={btnDelete} onClick={function() { handleDelete(k.destId); }}>Delete</button>
+            </div>
+          );
+        })}
       </div>
 
       {role === 'host' && (
-        <div className="glass-card" style={{marginTop: '1rem'}}>
-          <h3 className="panel-title">Guest Key Status (Host View)</h3>
-          {guests.map((g) => (
-            <div key={g.guestId || g.userId} className="key-row">
-              <span className="key-platform">{g.username || g.guestId}</span>
-              <span className="key-status muted-text">Key status visible to host only</span>
-            </div>
-          ))}
+        <div style={Object.assign({}, glassCard, { marginTop: '1rem' })}>
+          <h3 style={panelTitle}>Guest Key Status (Host View)</h3>
+          {guests.map(function(g) {
+            return (
+              <div key={g.guestId || g.userId} style={keyRow}>
+                <span style={keyPlatform}>{g.username || g.guestId}</span>
+                <span style={mutedText}>Key status visible to host only</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
