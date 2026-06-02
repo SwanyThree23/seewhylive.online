@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import SelectSheet from './SelectSheet.jsx';
 
 var GOLD   = '#C9A84C';
 var GOLD_H = '#E8C46A';
@@ -311,16 +312,18 @@ export default function ReplayTab({ addToast, isLive }) {
             style={{ background: 'rgba(255,255,255,.06)', border: '1px solid ' + BORDER, borderRadius: 6, width: 28, height: 28, color: TEXT_M, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >⏭</button>
 
-          <select
+          <SelectSheet
+            label="Export Mode"
             value={exportMode}
-            onChange={function(e) { setExportMode(e.target.value); }}
-            style={{ flex: 1, background: FAINT, border: '1px solid ' + BORDER, borderRadius: 6, color: TEXT_M, fontFamily: fM, fontSize: 9, padding: '4px 6px', cursor: 'pointer', outline: 'none' }}
-          >
-            <option value="full">Full Replay</option>
-            <option value="highlights">Highlights Only</option>
-            <option value="chapters">Chapters</option>
-            <option value="reel">Highlight Reel</option>
-          </select>
+            options={[
+              { value: 'full',       label: 'Full Replay' },
+              { value: 'highlights', label: 'Highlights Only' },
+              { value: 'chapters',   label: 'Chapters' },
+              { value: 'reel',       label: 'Highlight Reel' },
+            ]}
+            onChange={function(v) { setExportMode(v); }}
+            style={{ flex: 1 }}
+          />
 
           <button
             onClick={function() {

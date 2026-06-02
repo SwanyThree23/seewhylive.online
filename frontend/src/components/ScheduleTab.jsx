@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SelectSheet from './SelectSheet.jsx';
 
 var NOW = Date.now();
 
@@ -447,21 +448,24 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
               onChange={function(e) { setNewTime(e.target.value); }}
               style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, colorScheme: 'dark' }}
             />
-            <select
+            <SelectSheet
+              label="Category"
               value={newCat}
-              onChange={function(e) { setNewCat(e.target.value); }}
-              style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>
-              {CATS.map(function(c) { return <option key={c} value={c}>{c}</option>; })}
-            </select>
+              options={CATS}
+              onChange={function(v) { setNewCat(v); }}
+              style={{ flexShrink: 0 }}
+            />
           </div>
-          <select
+          <SelectSheet
+            label="Recurrence"
             value={newRecur}
-            onChange={function(e) { setNewRecur(e.target.value); }}
-            style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, cursor: 'pointer' }}>
-            <option value="none">One-time event</option>
-            <option value="weekly">Weekly recurring (\xD74)</option>
-            <option value="biweekly">Bi-weekly recurring (\xD72)</option>
-          </select>
+            options={[
+              { value: 'none',     label: 'One-time event' },
+              { value: 'weekly',   label: 'Weekly recurring (\xD74)' },
+              { value: 'biweekly', label: 'Bi-weekly recurring (\xD72)' },
+            ]}
+            onChange={function(v) { setNewRecur(v); }}
+          />
           <button
             onClick={addEvent}
             disabled={!newTitle.trim() || !newTime.trim()}

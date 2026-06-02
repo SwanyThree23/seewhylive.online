@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
+import SelectSheet from './SelectSheet.jsx';
 
 var CREATORS = [
   { id: 'c1', name: 'CaliBonesOG',  handle: 'calibonesog',  flag: '🇺🇸', category: 'Domino',  followers: 12400, live: true,  viewers: 892,  color: '#C01838' },
@@ -131,14 +132,17 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#00DEC0', letterSpacing: 3 }}>🔭 CREATOR DISCOVERY</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{CREATORS.length} creators · {liveCount} live now</div>
         </div>
-        <select
+        <SelectSheet
+          label="Sort By"
           value={sortBy}
-          onChange={function(e) { setSortBy(e.target.value); }}
-          style={{ background: 'rgba(7,5,10,.9)', border: '1px solid #241C34', borderRadius: 7, padding: '5px 8px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
-          <option value="live">Sort: LIVE</option>
-          <option value="followers">Sort: FOLLOWERS</option>
-          <option value="viewers">Sort: VIEWERS</option>
-        </select>
+          options={[
+            { value: 'live',      label: 'Sort: LIVE' },
+            { value: 'followers', label: 'Sort: FOLLOWERS' },
+            { value: 'viewers',   label: 'Sort: VIEWERS' },
+          ]}
+          onChange={function(v) { setSortBy(v); }}
+          style={{ minWidth: 120 }}
+        />
       </div>
 
       {/* Search */}
