@@ -30,6 +30,7 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
   const qc = useQueryClient();
   const [bursts, setBursts] = useState([]);
   const burstId = useRef(0);
+  const [optimisticPts, setOptimisticPts] = useState({});
 
   // Fetch all tier events from the DB (Message entity, type battle_tier)
   const { data: tierMessages = [] } = useQuery({
@@ -60,28 +61,44 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
     return map;
   }, [tierMessages]);
 
-  const myPts = currentUser ? (scores[currentUser.id] || 0) : 0;
+  // Merge optimistic points on top of DB scores
+  const mergedScores = useMemo(() => {
+    const merged = { ...scores };
+    Object.entries(optimisticPts).forEach(([uid, pts]) => {
+      merged[uid] = (merged[uid] || 0) + pts;
+    });
+    return merged;
+  }, [scores, optimisticPts]);
+
+  const myPts = currentUser ? (mergedScores[currentUser.id] || 0) : 0;
 
   const sendTier = async (tier) => {
     if (!currentUser || !partyId) return;
-    // Optimistic burst animation
+    // Optimistic burst animation + instant score update
     const id = ++burstId.current;
     setBursts(p => [...p, { id, tier }]);
     setTimeout(() => setBursts(p => p.filter(b => b.id !== id)), 1300);
-    // Persist to DB
-    await base44.entities.Message.create({
-      room_id: partyId,
-      user_id: currentUser.id,
-      user_name: currentUser.full_name || currentUser.email,
-      message_type: 'battle_tier',
-      content: JSON.stringify({ userId: currentUser.id, pts: tier.pts, tierId: tier.id }),
-    });
-    qc.invalidateQueries(['battle-tiers', partyId]);
+    setOptimisticPts(prev => ({ ...prev, [currentUser.id]: (prev[currentUser.id] || 0) + tier.pts }));
+    try {
+      await base44.entities.Message.create({
+        room_id: partyId,
+        user_id: currentUser.id,
+        user_name: currentUser.full_name || currentUser.email,
+        message_type: 'battle_tier',
+        content: JSON.stringify({ userId: currentUser.id, pts: tier.pts, tierId: tier.id }),
+      });
+      qc.invalidateQueries(['battle-tiers', partyId]);
+      // Clear optimistic delta once DB query refreshes
+      setOptimisticPts(prev => { const n = { ...prev }; delete n[currentUser.id]; return n; });
+    } catch {
+      // Roll back optimistic pts on failure
+      setOptimisticPts(prev => ({ ...prev, [currentUser.id]: Math.max(0, (prev[currentUser.id] || 0) - tier.pts) }));
+    }
   };
 
-  // Sorted leaderboard derived from DB scores
+  // Sorted leaderboard derived from merged scores
   const board = members
-    .map(m => ({ name: m.user_name, uid: m.user_id, pts: scores[m.user_id] || 0 }))
+    .map(m => ({ name: m.user_name, uid: m.user_id, pts: mergedScores[m.user_id] || 0 }))
     .sort((a, b) => b.pts - a.pts)
     .slice(0, 5);
 

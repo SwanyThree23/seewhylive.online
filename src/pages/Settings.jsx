@@ -117,9 +117,9 @@ export default function SettingsPage() {
     if (deleteConfirmText !== 'DELETE') return;
     setIsDeleting(true);
     try {
-      await base44.auth.logout();
+      await base44.auth.deleteMe();
       window.location.href = '/';
-    } catch(e) {
+    } catch {
       toast.error('Could not delete account. Contact support.');
     } finally {
       setIsDeleting(false);
