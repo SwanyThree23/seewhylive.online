@@ -254,10 +254,10 @@ export default function RoomPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#080B18' }}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading room...</p>
+          <div className="w-16 h-16 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'rgba(212,175,55,0.3)', borderTopColor: '#D4AF37' }} />
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Loading room…</p>
         </div>
       </div>
     );
@@ -265,13 +265,15 @@ export default function RoomPage() {
 
   if (!room) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#080B18' }}>
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Room not found</h2>
-          <p className="text-muted-foreground mb-4">This room doesn't exist or has been deleted</p>
-          <Button onClick={() => window.location.href = createPageUrl('Home')}>
+          <h2 className="text-2xl font-black text-white mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room not found</h2>
+          <p className="mb-4 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>This room doesn't exist or has been deleted</p>
+          <button onClick={() => window.location.href = createPageUrl('Home')}
+            className="px-5 py-2.5 rounded-xl font-black uppercase text-sm"
+            style={{ background: '#800020', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Go Home
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -280,106 +282,115 @@ export default function RoomPage() {
   const isHost = currentParticipant?.role === 'host';
   const isSpeaker = ['host', 'co-host', 'speaker'].includes(currentParticipant?.role);
 
+  const hostParticipant = participants.find(p => p.user_id === room.host_id);
+  const speakerName = participants.find(p => p.is_speaking)?.user_name;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Tip Alert */}
       <TipAlert roomId={roomId} recipientId={room?.host_id} />
-      
-      {/* Top Bar */}
-      <div className="bg-white border-b shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {room.status === 'live' && (
-                <Badge className="bg-red-500 text-white animate-pulse">
-                  <Radio className="w-3 h-3 mr-1" />
-                  LIVE
-                </Badge>
-              )}
-              <div>
-                <h1 className="text-xl font-bold">{room.title}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {participants.length} {participants.length === 1 ? 'participant' : 'participants'}
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <ShareButtons
-                url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`}
-                title={room?.title}
-              />
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => setShowWhiteboard(!showWhiteboard)}
-                title="Toggle Whiteboard"
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
-              {isHost && (
-                <>
-                  <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
-                  <RaidPanelButton room={room} currentUser={user} isHost={isHost} />
-                  <Link to={`/ControlRoom?room_id=${roomId}`}>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
-                      style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      📡 Control Room
-                    </button>
-                  </Link>
-                  <Link to={`/ModerationDashboard?room_id=${roomId}`}>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
-                      style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      🛡 Moderation
-                    </button>
-                  </Link>
-                  <Button
-                    variant={isRecording ? 'destructive' : 'outline'}
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={() => {
-                      if (isRecording) stopRecordingMutation.mutate();
-                      else startRecordingMutation.mutate();
-                    }}
-                    disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
-                  >
-                    {isRecording ? <StopCircle className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
-                    {isRecording ? 'Stop Rec' : 'Record'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="End stream"
-                    onClick={async () => {
-                      if (isRecording) await stopRecordingMutation.mutateAsync();
-                      await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
-                      toast.success('Stream ended');
-                      queryClient.invalidateQueries(['room', roomId]);
-                    }}
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-              <Button 
-                variant="destructive"
-                onClick={() => leaveRoomMutation.mutate()}
-              >
-                <PhoneOff className="w-4 h-4 mr-2" />
-                Leave
-              </Button>
-            </div>
+      {/* Fanbase-style top bar */}
+      <div className="sticky top-0 z-50" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        {/* Row 1: nav + title + badges + actions */}
+        <div className="flex items-center gap-2 px-3 h-12">
+          <button onClick={() => leaveRoomMutation.mutate()}
+            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+            <PhoneOff className="w-4 h-4" />
+          </button>
+          <h1 className="flex-1 font-black text-white text-sm leading-none truncate"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {room.title}
+          </h1>
+          {room.status === 'live' && (
+            <span className="shrink-0 px-2 py-0.5 rounded-md text-white font-black text-[9px] uppercase animate-pulse"
+              style={{ background: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
+          )}
+          <span className="shrink-0 px-2 py-0.5 rounded-md font-black text-[9px] uppercase"
+            style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            SeeWhy LIVE
+          </span>
+          <ShareButtons url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={room?.title} />
+          <button onClick={() => setShowWhiteboard(!showWhiteboard)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+            <Share2 className="w-4 h-4" />
+          </button>
+          {isHost && (
+            <>
+              <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
+              <RaidPanelButton room={room} currentUser={user} isHost={isHost} />
+              <button
+                onClick={() => { if (isRecording) stopRecordingMutation.mutate(); else startRecordingMutation.mutate(); }}
+                disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#EF4444' : 'rgba(255,255,255,0.4)' }}>
+                {isRecording ? <StopCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={async () => {
+                  if (isRecording) await stopRecordingMutation.mutateAsync();
+                  await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
+                  toast.success('Stream ended');
+                  queryClient.invalidateQueries(['room', roomId]);
+                }}
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                <Settings className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Row 2: host + count + meta */}
+        <div className="flex items-center gap-3 px-3 pb-2">
+          <div className="w-6 h-6 rounded-full overflow-hidden shrink-0"
+            style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+            {hostParticipant?.user_avatar
+              ? <img src={hostParticipant.user_avatar} alt="" className="w-full h-full object-cover" />
+              : <span className="w-full h-full flex items-center justify-center text-[8px] font-black text-black">
+                  {(hostParticipant?.user_name || room.title || '?')[0].toUpperCase()}
+                </span>}
           </div>
+          <span className="text-[10px] font-black truncate max-w-[100px]"
+            style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {hostParticipant?.user_name || 'Host'}
+          </span>
+          <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <Users className="w-3 h-3 inline mr-0.5" />{participants.length}
+          </span>
+          {speakerName && (
+            <span className="text-[10px] ml-auto" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              🎙 {speakerName} is speaking
+            </span>
+          )}
+          {isHost && (
+            <div className="flex items-center gap-1 ml-auto">
+              <Link to={`/ControlRoom?room_id=${roomId}`}>
+                <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[8px]"
+                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  📡 Ctrl
+                </button>
+              </Link>
+              <Link to={`/ModerationDashboard?room_id=${roomId}`}>
+                <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[8px]"
+                  style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  🛡 Mod
+                </button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Left Column - Stage & Controls */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-4">
             {/* Stage */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               {stages.length > 0 ? (
                 <Tabs defaultValue={stages[0]?.id} className="space-y-4">
                   {stages.length > 1 && (
@@ -421,17 +432,17 @@ export default function RoomPage() {
 
             {/* Whiteboard */}
             {showWhiteboard && (
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="font-semibold mb-4">Collaborative Whiteboard</h3>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                <h3 className="font-semibold mb-4 text-white">Collaborative Whiteboard</h3>
                 <CollaborativeWhiteboard roomId={roomId} />
               </div>
             )}
 
             {/* Quick Tip */}
             {room?.host_id !== user?.id && (
-              <div className="bg-white rounded-xl shadow-lg p-4">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
+              <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                <h3 className="font-semibold mb-3 flex items-center gap-2 text-white">
+                  <DollarSign className="w-5 h-5" style={{ color: '#D4AF37' }} />
                   Support the Creator
                 </h3>
                 <QuickTip recipientId={room.host_id} recipientName="Host" />
@@ -439,7 +450,7 @@ export default function RoomPage() {
             )}
 
             {/* Control Bar */}
-            <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <div className="flex items-center justify-center gap-3">
                 {/* Gift Shop Tray + Tip for viewers */}
                 {user && !isHost && (
@@ -499,7 +510,7 @@ export default function RoomPage() {
           </div>
 
           {/* Right Column - Chat & Participants */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 text-white">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-[calc(100vh-200px)]">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="chat">
@@ -561,16 +572,16 @@ export default function RoomPage() {
 
             {/* Moderation Panel for Host */}
             {isHost && (
-             <div className="mt-4">
-               <ChatModerationPanel roomId={roomId} />
-             </div>
+              <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
+                <ChatModerationPanel roomId={roomId} />
+              </div>
             )}
             {/* Live Auctions - visible to all */}
-            <div className="mt-4">
+            <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LiveAuctionWidget roomId={roomId} currentUser={user} isHost={isHost} />
             </div>
             {/* Live Poll Widget */}
-            <div className="mt-4">
+            <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
             </div>
           </div>

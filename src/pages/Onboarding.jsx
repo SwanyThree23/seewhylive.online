@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const C = { burg: '#800020', gold: '#D4AF37', volt: '#C8FF00', obs: '#0D0D0D', gray: '#666', white: '#F5F0E8' };
+const C = { burg: '#800020', gold: '#D4AF37', volt: '#C8FF00', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
 
 const STEPS = [
   { id: 1, label: 'Profile', key: 'step_1_profile' },
@@ -94,7 +94,7 @@ function Step1({ onboarding, user, onDone }) {
     <div style={{ padding: '20px' }}>
       <h2 style={{ fontFamily: 'Barlow Condensed', fontSize: 22, color: C.gold, marginBottom: 16 }}>Set Up Your Creator Profile</h2>
       <label style={lbl}>Display Name</label>
-      <input style={inp} value={form.display_name} onChange={e => setForm(f => ({...f, display_name: e.target.value}))} placeholder="Your creator name" />
+      <input style={inp} value={form.display_name} onChange={e => setForm(f => ({...f, display_name: e.target.value}))} placeholder="Your creator name" maxLength={80} />
       <label style={lbl}>Bio <span style={{color:C.gray}}>{form.bio.length}/140</span></label>
       <textarea style={{...inp, height: 70, resize:'none'}} maxLength={140} value={form.bio} onChange={e => setForm(f => ({...f, bio: e.target.value}))} placeholder="Tell viewers about yourself…" />
       <label style={lbl}>Avatar Emoji</label>
@@ -130,7 +130,7 @@ function Step2({ onboarding, onDone }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
         {THEMES.map((t, i) => (
           <button key={t.name} onClick={() => setTheme(i)}
-            style={{ padding: '10px', borderRadius: 8, border: `2px solid ${theme===i?C.gold:'#333'}`, background: '#0d0d0d', cursor: 'pointer', textAlign: 'left' }}>
+            style={{ padding: '10px', borderRadius: 8, border: `2px solid ${theme===i?C.gold:'#333'}`, background: 'rgba(13,6,24,0.9)', cursor: 'pointer', textAlign: 'left' }}>
             <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
               {t.preview.map((c, j) => <div key={j} style={{ width: 18, height: 18, borderRadius: 4, background: c }} />)}
             </div>
@@ -142,7 +142,7 @@ function Step2({ onboarding, onDone }) {
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {FONTS.map((f, i) => (
           <button key={f.name} onClick={() => setFont(i)}
-            style={{ flex: 1, padding: '8px', borderRadius: 8, border: `2px solid ${font===i?C.gold:'#333'}`, background: '#0d0d0d', cursor: 'pointer' }}>
+            style={{ flex: 1, padding: '8px', borderRadius: 8, border: `2px solid ${font===i?C.gold:'#333'}`, background: 'rgba(13,6,24,0.9)', cursor: 'pointer' }}>
             <div style={{ fontFamily: 'Barlow Condensed', fontSize: 13, color: font===i?C.gold:C.gray }}>{f.name}</div>
             <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>{f.sample}</div>
           </button>
@@ -266,9 +266,14 @@ function Step5({ user, onDone }) {
       <label style={lbl}>Description</label>
       <textarea style={{...inp, height:70, resize:'none'}} value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} placeholder="What is your community about?" />
       <label style={lbl}>Category</label>
-      <select style={{...inp, cursor:'pointer'}} value={form.category} onChange={e => setForm(f => ({...f, category: e.target.value}))}>
-        {['music','gaming','tech','education','entertainment','sports','lifestyle','other'].map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
-      </select>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+        {['music','gaming','tech','education','entertainment','sports','lifestyle','other'].map(c => (
+          <button key={c} type="button" onClick={() => setForm(f => ({...f, category: c}))}
+            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 11, border: `1px solid ${form.category === c ? C.gold : '#333'}`, background: form.category === c ? 'rgba(212,175,55,0.15)' : 'transparent', color: form.category === c ? C.gold : C.gray, cursor: 'pointer', fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>
+            {c.charAt(0).toUpperCase()+c.slice(1)}
+          </button>
+        ))}
+      </div>
       <label style={lbl}>Welcome Message</label>
       <textarea style={{...inp, height:56, resize:'none'}} value={form.welcome_message} onChange={e => setForm(f => ({...f, welcome_message: e.target.value}))} placeholder="Message shown to new members…" />
       <NavButtons step={5} setStep={() => {}} onSave={save} saving={saving} canNext={!!form.name} onSkip={() => onDone({ step_5_community: true, current_step: 6 })} />
@@ -410,12 +415,12 @@ export default function OnboardingPage() {
     if (data.current_step) setStep(data.current_step);
   };
 
-  if (!user) return <div style={{background:'#0D0D0D',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#666',fontFamily:'Barlow Condensed',fontSize:14}}>Loading…</div>;
+  if (!user) return <div style={{background:'#080B18',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#666',fontFamily:'Barlow Condensed',fontSize:14}}>Loading…</div>;
 
   return (
-    <div style={{ minHeight:'100vh', background:'#0D0D0D', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
+    <div style={{ minHeight:'100vh', background:'#080B18', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
       <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-        style={{ width:'100%', maxWidth:480, background:'#111', borderRadius:12, border:`1px solid rgba(212,175,55,0.15)`, overflow:'hidden' }}>
+        style={{ width:'100%', maxWidth:480, background:'rgba(13,6,24,0.97)', borderRadius:12, border:`1px solid rgba(212,175,55,0.15)`, overflow:'hidden' }}>
         {/* Logo bar */}
         <div style={{ padding:'14px 20px', background:`linear-gradient(90deg, ${C.burg}22, transparent)`, borderBottom:'1px solid rgba(212,175,55,0.1)', display:'flex', alignItems:'center', gap:8 }}>
           <span style={{ fontSize:18 }}>📡</span>

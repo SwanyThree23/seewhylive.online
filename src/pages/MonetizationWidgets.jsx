@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Target, Bell, Gavel, Zap, Info } from 'lucide-react';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
@@ -12,7 +9,18 @@ import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const TABS = [
+  { id: 'goals', label: 'Goals', icon: Target, color: GOLD },
+  { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#22c55e' },
+  { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#a78bfa' },
+];
+
 export default function MonetizationWidgets() {
+  const [activeTab, setActiveTab] = useState('goals');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const { data: myRooms = [] } = useQuery({
@@ -24,28 +32,30 @@ export default function MonetizationWidgets() {
   const activeRoom = myRooms[0];
 
   return (
-    <div className="min-h-screen bg-[#0d0618] text-white p-4 md:p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-
-        {/* Header */}
+    <div className="min-h-screen pb-10 text-white" style={{ background: BG }}>
+      {/* Header */}
+      <div className="sticky top-0 z-20 px-4 py-4 md:px-8 flex items-center gap-3 border-b"
+        style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
+        <Zap className="w-5 h-5" style={{ color: GOLD }} />
         <div>
-          <h1 className="text-2xl font-bold text-[#d4af37] flex items-center gap-2">
-            <Zap className="w-6 h-6" /> Monetization Widgets
-          </h1>
-          <p className="text-sm text-white/50 mt-1">Streamer Goals, Sound Alerts &amp; Live Auctions for your stream</p>
+          <h1 className="text-xl font-black text-white leading-none" style={T}>Monetization Widgets</h1>
+          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Streamer Goals, Sound Alerts &amp; Live Auctions</p>
         </div>
+      </div>
 
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 space-y-4">
         {/* Beta notice */}
-        <div className="flex items-start gap-3 p-4 bg-[#00d4ff]/5 border border-[#00d4ff]/20 rounded-xl">
-          <Info className="w-4 h-4 text-[#00d4ff] mt-0.5 shrink-0" />
+        <div className="flex items-start gap-3 p-4 rounded-xl"
+          style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}>
+          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#00d4ff' }} />
           <div>
-            <p className="text-sm font-semibold text-[#00d4ff]">Beta Testing</p>
-            <p className="text-xs text-white/50 mt-0.5">
-              These features are live for Beta Testing. Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
+            <p className="text-sm font-black" style={{ ...T, color: '#00d4ff' }}>Beta Testing</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
               {activeRoom ? (
                 <span> Using room: <strong className="text-white">{activeRoom.title}</strong></span>
               ) : (
-                <span> <Link to={createPageUrl('CreateRoom')} className="underline hover:text-[#00d4ff]">Start a live room</Link> to enable auction bidding.</span>
+                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#00d4ff' }}>Start a live room</Link> to enable auction bidding.</span>
               )}
             </p>
           </div>
@@ -53,80 +63,67 @@ export default function MonetizationWidgets() {
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: 'Active Goals', color: '#d4af37', icon: Target, tab: 'goals' },
-            { label: 'Sound Alerts', color: '#22c55e', icon: Bell, tab: 'alerts' },
-            { label: 'Live Auctions', color: '#a78bfa', icon: Gavel, tab: 'auctions' },
-          ].map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-              <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)] cursor-pointer hover:border-[rgba(212,175,55,0.2)] transition-all">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <s.icon className="w-5 h-5 shrink-0" style={{ color: s.color }} />
-                  <p className="text-xs text-white/60">{s.label}</p>
-                </CardContent>
-              </Card>
+          {TABS.map((s, i) => (
+            <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+              <button onClick={() => setActiveTab(s.id)}
+                className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all"
+                style={{ background: activeTab === s.id ? `${s.color}10` : 'rgba(13,6,24,0.9)', border: `1px solid ${activeTab === s.id ? s.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
+                <s.icon className="w-5 h-5 shrink-0" style={{ color: s.color }} />
+                <p className="text-xs font-black" style={{ ...T, color: activeTab === s.id ? s.color : 'rgba(255,255,255,0.5)' }}>{s.label}</p>
+              </button>
             </motion.div>
           ))}
         </div>
 
-        <Tabs defaultValue="goals">
-          <TabsList className="bg-white/5 border border-white/10 w-full grid grid-cols-3">
-            <TabsTrigger value="goals" className="text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10 gap-1.5">
-              <Target className="w-3.5 h-3.5" /> Goals
-            </TabsTrigger>
-            <TabsTrigger value="alerts" className="text-white/50 data-[state=active]:text-[#22c55e] data-[state=active]:bg-[#22c55e]/10 gap-1.5">
-              <Bell className="w-3.5 h-3.5" /> Sound Alerts
-            </TabsTrigger>
-            <TabsTrigger value="auctions" className="text-white/50 data-[state=active]:text-[#a78bfa] data-[state=active]:bg-[#a78bfa]/10 gap-1.5">
-              <Gavel className="w-3.5 h-3.5" /> Auctions
-            </TabsTrigger>
-          </TabsList>
+        {/* Tab bar */}
+        <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setActiveTab(t.id)}
+              className="px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
+              style={{ ...T, color: activeTab === t.id ? t.color : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === t.id ? t.color : 'transparent', background: 'transparent' }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-          <TabsContent value="goals" className="mt-5">
-            <Card className="bg-[rgba(255,255,255,0.03)] border-white/5">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="text-sm text-[#d4af37]">Streamer Goals — Real-Time</CardTitle>
-                <p className="text-xs text-white/40">Goals update live and celebrate when reached with confetti</p>
-              </CardHeader>
-              <CardContent className="p-4">
-                <StreamerGoalsWidget
-                  creatorId={user?.id}
-                  roomId={activeRoom?.id}
-                  isCreator={true}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Goals */}
+        {activeTab === 'goals' && (
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <p className="font-black text-sm" style={{ ...T, color: GOLD }}>Streamer Goals — Real-Time</p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Goals update live and celebrate when reached with confetti</p>
+            </div>
+            <div className="p-5">
+              <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoom?.id} isCreator={true} />
+            </div>
+          </div>
+        )}
 
-          <TabsContent value="alerts" className="mt-5">
-            <Card className="bg-[rgba(255,255,255,0.03)] border-white/5">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="text-sm text-[#22c55e]">Sound Alert Configuration</CardTitle>
-                <p className="text-xs text-white/40">Alerts trigger automatically when donation thresholds are met during stream</p>
-              </CardHeader>
-              <CardContent className="p-4">
-                <SoundAlertsManager creatorId={user?.id} />
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Sound Alerts */}
+        {activeTab === 'alerts' && (
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(34,197,94,0.1)' }}>
+            <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <p className="font-black text-sm" style={{ ...T, color: '#22c55e' }}>Sound Alert Configuration</p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>
+            </div>
+            <div className="p-5">
+              <SoundAlertsManager creatorId={user?.id} />
+            </div>
+          </div>
+        )}
 
-          <TabsContent value="auctions" className="mt-5">
-            <Card className="bg-[rgba(255,255,255,0.03)] border-white/5">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="text-sm text-[#a78bfa]">Live Auctions</CardTitle>
-                <p className="text-xs text-white/40">Start real-time auctions — viewers bid live during your stream</p>
-              </CardHeader>
-              <CardContent className="p-4">
-                <LiveAuctionWidget
-                  creatorId={user?.id}
-                  roomId={activeRoom?.id}
-                  isCreator={true}
-                  currentUser={user}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Auctions */}
+        {activeTab === 'auctions' && (
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(167,139,250,0.1)' }}>
+            <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+              <p className="font-black text-sm" style={{ ...T, color: '#a78bfa' }}>Live Auctions</p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Start real-time auctions — viewers bid live during your stream</p>
+            </div>
+            <div className="p-5">
+              <LiveAuctionWidget creatorId={user?.id} roomId={activeRoom?.id} isCreator={true} currentUser={user} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

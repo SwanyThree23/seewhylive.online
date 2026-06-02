@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { Bot, Power, Settings2, ChevronDown } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const COMMANDS = [
@@ -111,11 +110,9 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
               {/* Enable toggle */}
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white/60">Enable Chatbot</span>
-                <Switch
-                  checked={enabled}
-                  onCheckedChange={setEnabled}
-                  className="scale-75 data-[state=checked]:bg-[#d4af37]"
-                />
+                <div onClick={() => setEnabled(!enabled)} style={{ width:40, height:22, borderRadius:99, background: enabled ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div style={{ position:'absolute', top:3, left: enabled ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
+                </div>
               </div>
 
               {/* Built-in commands */}

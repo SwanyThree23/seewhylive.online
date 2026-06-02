@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Share2, Youtube, Copy, CheckCircle2, Link as LinkIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function ShareToSocial({ content }) {
   const [copied, setCopied] = useState(false);
@@ -14,7 +13,7 @@ export default function ShareToSocial({ content }) {
       name: 'YouTube',
       icon: Youtube,
       action: () => {
-        window.open(`https://youtube.com/results?search_query=${encodeURIComponent(shareText)}`, '_blank');
+        window.open(`https://youtube.com/results?search_query=${encodeURIComponent(shareText)}`, '_blank', 'noopener,noreferrer');
       },
       color: '#FF0000',
     },
@@ -22,7 +21,7 @@ export default function ShareToSocial({ content }) {
       name: 'Twitter',
       icon: Share2,
       action: () => {
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
       },
       color: '#1DA1F2',
     },
@@ -58,6 +57,7 @@ export default function ShareToSocial({ content }) {
               style={{
                 background: `rgba(${platform.color === '#FF0000' ? '255,0,0' : '29,161,242'},0.1)`,
                 border: `1px solid rgba(${platform.color === '#FF0000' ? '255,0,0' : '29,161,242'},0.3)`,
+                cursor: 'pointer',
               }}
             >
               <Icon className="w-4 h-4" style={{ color: platform.color }} />
@@ -71,7 +71,7 @@ export default function ShareToSocial({ content }) {
         whileHover={{ scale: 1.02 }}
         onClick={handleCopyLink}
         className="w-full flex items-center justify-center gap-2 p-2 rounded-lg transition-all"
-        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)' }}
+        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer' }}
       >
         {copied ? (
           <>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Play, Download, Share2, Trash2, Loader2, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const HighlightCard = ({ highlight, onDelete, onShare }) => (
@@ -186,10 +185,10 @@ export default function AutomatedHighlightReels({ streamSession }) {
       </AnimatePresence>
 
       {/* Generate Button */}
-      <Button
+      <button
         onClick={handleGenerateHighlights}
         disabled={generating}
-        className="w-full bg-[#d4af37] text-black hover:bg-[#e6c158] font-semibold h-9 flex items-center justify-center gap-2"
+        style={{ width:'100%', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, height:36, cursor:generating?'not-allowed':'pointer', opacity:generating?0.6:1, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:'Barlow Condensed, sans-serif', fontSize:13 }}
       >
         {generating ? (
           <>
@@ -202,7 +201,7 @@ export default function AutomatedHighlightReels({ streamSession }) {
             Generate New Highlights
           </>
         )}
-      </Button>
+      </button>
 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-2 text-center">

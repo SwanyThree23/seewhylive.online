@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
 import { Swords, ArrowRight } from 'lucide-react';
 import PKBattleProgress from '@/components/pk/PKBattleProgress';
 import PKBattleVotePanel from '@/components/pk/PKBattleVotePanel';
 import PKInviteModal from '@/components/pk/PKInviteModal';
+
+function Button({children,onClick,disabled,className='',style={},size,variant,type='button'}){return <button type={type} onClick={onClick} disabled={disabled} className={className} style={style}>{children}</button>}
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';

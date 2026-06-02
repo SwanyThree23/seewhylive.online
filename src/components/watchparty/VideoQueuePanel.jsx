@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, ThumbsUp, ThumbsDown, SkipForward, Trash2, CheckCircle, Youtube, Video, ListVideo } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -86,25 +84,22 @@ function AddVideoModal({ partyId, currentUser, nextPosition, requireApproval, on
           style={{ fontFamily: 'Barlow Condensed, sans-serif', color: GOLD }}>
           Add to Queue
         </h3>
-        <Input placeholder="Video URL (YouTube or direct)"
+        <input placeholder="Video URL (YouTube or direct)"
           value={url} onChange={e => setUrl(e.target.value)}
-          className="h-8 text-[11px]"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white' }} />
-        <Input placeholder="Title (optional)"
+          style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }} />
+        <input placeholder="Title (optional)"
           value={title} onChange={e => setTitle(e.target.value)}
-          className="h-8 text-[11px]"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white' }} />
-        <Input placeholder="Notes (optional)"
+          style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }} />
+        <input placeholder="Notes (optional)"
           value={notes} onChange={e => setNotes(e.target.value)}
-          className="h-8 text-[11px]"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white' }} />
+          style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }} />
         <div className="flex gap-2">
-          <Button size="sm" className="flex-1 h-8 font-black uppercase text-[10px]"
-            style={{ background: GOLD, color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}
+          <button
+            style={{ flex: 1, height: 32, fontSize: 10, fontWeight: 900, background: GOLD, color: '#000', border: 'none', borderRadius: 8, cursor: (!url.trim() || mut.isPending) ? 'default' : 'pointer', opacity: (!url.trim() || mut.isPending) ? 0.6 : 1, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase' }}
             disabled={!url.trim() || mut.isPending}
             onClick={() => mut.mutate()}>
             {mut.isPending ? 'Adding…' : 'Add Video'}
-          </Button>
+          </button>
           <button onClick={onClose}
             className="px-3 h-8 rounded-md text-[10px] font-bold"
             style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>

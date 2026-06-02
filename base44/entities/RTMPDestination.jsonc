@@ -1,0 +1,81 @@
+{
+  "name": "RTMPDestination",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "twitch",
+        "youtube",
+        "tiktok",
+        "facebook",
+        "kick",
+        "linkedin",
+        "twitter",
+        "rumble",
+        "custom"
+      ],
+      "default": "custom"
+    },
+    "label": {
+      "type": "string",
+      "description": "Custom destination label"
+    },
+    "server_url": {
+      "type": "string"
+    },
+    "stream_key_encrypted": {
+      "type": "string",
+      "description": "AES-256-GCM encrypted stream key"
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "bitrate_kbps": {
+      "type": "number",
+      "default": 3000
+    },
+    "last_used": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "offline",
+        "connecting",
+        "live",
+        "error"
+      ],
+      "default": "offline"
+    },
+    "total_hours_streamed": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "creator_id",
+    "platform",
+    "label"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "update": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.creator_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, StopCircle, Monitor, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare }) {
   const [showOptions, setShowOptions] = useState(false);
@@ -72,29 +71,29 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
           >
             <div className="px-3 py-3 space-y-2">
               {isSharing ? (
-                <Button
+                <button
                   onClick={handleStopShare}
-                  className="w-full gap-2 bg-red-900/50 hover:bg-red-900/70 text-red-400 border border-red-600/50"
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(239,68,68,0.5)', background:'rgba(127,29,29,0.5)', color:'#f87171', cursor:'pointer', fontSize:13 }}
                 >
                   <StopCircle className="w-4 h-4" />
                   Stop Sharing
-                </Button>
+                </button>
               ) : (
                 <>
-                  <Button
+                  <button
                     onClick={handleStartScreenShare}
-                    className="w-full gap-2 bg-purple-900/50 hover:bg-purple-900/70 text-purple-400 border border-purple-600/50 justify-start"
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(147,51,234,0.5)', background:'rgba(88,28,135,0.5)', color:'#c084fc', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Screen
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={handleStartWindowShare}
-                    className="w-full gap-2 bg-purple-900/30 hover:bg-purple-900/50 text-purple-300 border border-purple-600/30 justify-start"
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(147,51,234,0.3)', background:'rgba(88,28,135,0.3)', color:'#d8b4fe', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Window
-                  </Button>
+                  </button>
                   <p className="text-[9px] text-white/40 px-2 py-1">
                     Share your screen or application window with viewers in real-time
                   </p>

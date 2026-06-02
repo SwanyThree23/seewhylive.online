@@ -1,0 +1,96 @@
+{
+  "name": "RoomAnalytics",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Room ID"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Analytics timestamp"
+    },
+    "viewer_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Current viewers"
+    },
+    "peak_viewers": {
+      "type": "number",
+      "default": 0,
+      "description": "Peak concurrent viewers"
+    },
+    "total_viewers": {
+      "type": "number",
+      "default": 0,
+      "description": "Unique total viewers"
+    },
+    "average_watch_time": {
+      "type": "number",
+      "default": 0,
+      "description": "Avg watch time in minutes"
+    },
+    "chat_messages": {
+      "type": "number",
+      "default": 0,
+      "description": "Total chat messages"
+    },
+    "engagement_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Engagement percentage"
+    },
+    "tips_received": {
+      "type": "number",
+      "default": 0,
+      "description": "Total tips amount"
+    },
+    "new_followers": {
+      "type": "number",
+      "default": 0,
+      "description": "New followers gained"
+    },
+    "viewer_demographics": {
+      "type": "object",
+      "description": "Demographic breakdown"
+    }
+  },
+  "required": [
+    "room_id",
+    "timestamp"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

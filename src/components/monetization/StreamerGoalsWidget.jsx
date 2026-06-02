@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Target, Plus, Check, Trash2, X, Zap, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
+
+const inputStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
+};
 
 const GOAL_ICONS = { tips: '💰', subscribers: '⭐', viewers: '👁', messages: '💬', custom: '🎯' };
 const GOAL_COLORS = ['#d4af37', '#00d4ff', '#a78bfa', '#22c55e', '#f97316', '#f472b6'];
@@ -26,21 +29,25 @@ function GoalBar({ goal, onUpdate, isCreator }) {
   }, [pct]);
 
   return (
-    <motion.div layout className={`rounded-xl border p-4 space-y-3 transition-all ${isComplete ? 'border-[#22c55e]/50 bg-[#22c55e]/5' : 'border-white/10 bg-white/3'}`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">{GOAL_ICONS[goal.goal_type] || '🎯'}</span>
+    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(34,197,94,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(34,197,94,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 20 }}>{GOAL_ICONS[goal.goal_type] || '🎯'}</span>
           <div>
-            <p className="font-semibold text-white text-sm">{goal.title}</p>
-            {goal.reward_text && <p className="text-[10px] text-white/50">{goal.reward_text}</p>}
+            <p style={{ fontWeight: 600, color: '#fff', fontSize: 13, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>{goal.title}</p>
+            {goal.reward_text && <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>{goal.reward_text}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {isComplete && <Badge className="text-[9px] bg-[#22c55e]/20 text-[#22c55e] border-[#22c55e]/30">✓ Complete!</Badge>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {isComplete && (
+            <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              ✓ Complete!
+            </span>
+          )}
           {isCreator && !isComplete && (
             <button
               onClick={() => onUpdate(goal.id, Math.min(goal.target_amount, (goal.current_amount || 0) + 1))}
-              className="w-6 h-6 rounded bg-[#d4af37]/10 hover:bg-[#d4af37]/20 text-[#d4af37] flex items-center justify-center text-xs"
+              style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(212,175,55,0.1)', border: 'none', color: '#d4af37', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}
               title="Manually increment"
             >+</button>
           )}
@@ -49,28 +56,27 @@ function GoalBar({ goal, onUpdate, isCreator }) {
 
       {/* Progress bar */}
       <div>
-        <div className="flex justify-between text-[10px] mb-1.5">
-          <span className="text-white/50">
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 6 }}>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {goal.goal_type === 'tips' ? `$${(goal.current_amount || 0).toLocaleString()}` : (goal.current_amount || 0).toLocaleString()}
             {' / '}
             {goal.goal_type === 'tips' ? `$${goal.target_amount.toLocaleString()}` : goal.target_amount.toLocaleString()}
           </span>
-          <span style={{ color: goal.color || '#d4af37' }} className="font-bold">{pct.toFixed(0)}%</span>
+          <span style={{ color: goal.color || '#d4af37', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif' }}>{pct.toFixed(0)}%</span>
         </div>
-        <div className="h-5 bg-white/5 rounded-full overflow-hidden relative">
+        <div style={{ height: 20, background: 'rgba(255,255,255,0.05)', borderRadius: 99, overflow: 'hidden', position: 'relative' }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            className="h-full rounded-full relative overflow-hidden"
-            style={{ background: isComplete ? '#22c55e' : `linear-gradient(90deg, ${goal.color || '#d4af37'}88, ${goal.color || '#d4af37'})` }}
+            style={{ height: '100%', borderRadius: 99, position: 'relative', overflow: 'hidden', background: isComplete ? '#22c55e' : `linear-gradient(90deg, ${goal.color || '#d4af37'}88, ${goal.color || '#d4af37'})` }}
           >
             {/* Shimmer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)', animation: 'pulse 2s infinite' }} />
           </motion.div>
           {/* Milestone markers at 25/50/75% */}
           {[25, 50, 75].map(m => (
-            <div key={m} className="absolute top-0 bottom-0 w-px bg-white/10" style={{ left: `${m}%` }} />
+            <div key={m} style={{ position: 'absolute', top: 0, bottom: 0, width: 1, background: 'rgba(255,255,255,0.1)', left: `${m}%` }} />
           ))}
         </div>
       </div>
@@ -90,7 +96,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
       'created_date'
     ),
     enabled: !!creatorId,
-    refetchInterval: 5000, // real-time polling
+    refetchInterval: 5000,
   });
 
   // Real-time subscription
@@ -123,27 +129,32 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
     createMutation.mutate({ ...form, creator_id: creatorId, room_id: roomId || null, status: 'active' });
   };
 
-  const containerClass = embedded
-    ? 'space-y-3'
-    : 'min-h-screen bg-[#0d0618] text-white p-4 max-w-2xl mx-auto space-y-5';
+  const containerStyle = embedded
+    ? { display: 'flex', flexDirection: 'column', gap: 12 }
+    : { minHeight: '100vh', background: '#0d0618', color: '#fff', padding: 16, maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, fontFamily: 'Barlow Condensed, sans-serif' };
 
   return (
-    <div className={containerClass}>
+    <div style={containerStyle}>
       {!embedded && (
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[#d4af37] flex items-center gap-2"><Target className="w-5 h-5" /> Streamer Goals</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#d4af37', display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <Target className="w-5 h-5" /> Streamer Goals
+          </h2>
           {isCreator && (
-            <Button onClick={() => setShowForm(!showForm)} size="sm" className="bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3] gap-1.5">
+            <button onClick={() => setShowForm(!showForm)}
+              style={{ background: '#d4af37', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif' }}>
               <Plus className="w-3.5 h-3.5" /> Add Goal
-            </Button>
+            </button>
           )}
         </div>
       )}
 
       {embedded && isCreator && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-[#d4af37] flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> Goals</p>
-          <button onClick={() => setShowForm(!showForm)} className="text-[10px] text-[#d4af37] hover:underline">+ Add</button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#d4af37', display: 'flex', alignItems: 'center', gap: 6, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <Target className="w-3.5 h-3.5" /> Goals
+          </p>
+          <button onClick={() => setShowForm(!showForm)} style={{ fontSize: 10, color: '#d4af37', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Barlow Condensed, sans-serif' }}>+ Add</button>
         </div>
       )}
 
@@ -152,49 +163,48 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
         {showForm && (
           <motion.div
             initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
+            style={{ overflow: 'hidden' }}
           >
-            <div className="bg-white/5 border border-[#d4af37]/20 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-white/60">New Goal</p>
-                <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white"><X className="w-3.5 h-3.5" /></button>
+            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>New Goal</p>
+                <button onClick={() => setShowForm(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}><X className="w-3.5 h-3.5" /></button>
               </div>
 
-              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="Goal title (e.g. 'New Webcam Fund')"
-                className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/25" />
+                style={{ ...inputStyle, height: 32, fontSize: 12 }} />
 
-              <div className="grid grid-cols-2 gap-2">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <select value={form.goal_type} onChange={e => setForm(f => ({ ...f, goal_type: e.target.value }))}
-                  className="bg-white/5 border border-white/20 rounded-lg px-2 py-1.5 text-sm text-white outline-none">
+                  style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
                   {Object.entries(GOAL_ICONS).map(([k, v]) => (
-                    <option key={k} value={k} className="bg-[#0d0618]">{v} {k}</option>
+                    <option key={k} value={k}>{v} {k}</option>
                   ))}
                 </select>
-                <Input type="number" value={form.target_amount}
+                <input type="number" value={form.target_amount}
                   onChange={e => setForm(f => ({ ...f, target_amount: Number(e.target.value) }))}
-                  placeholder="Target" className="bg-white/5 border-white/20 text-white h-8 text-sm" />
+                  placeholder="Target" style={{ ...inputStyle, height: 32, fontSize: 12 }} />
               </div>
 
-              <Input value={form.reward_text} onChange={e => setForm(f => ({ ...f, reward_text: e.target.value }))}
-                placeholder="Reward: 'I'll dance on stream!'" className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/25" />
+              <input value={form.reward_text} onChange={e => setForm(f => ({ ...f, reward_text: e.target.value }))}
+                placeholder="Reward: 'I'll dance on stream!'" style={{ ...inputStyle, height: 32, fontSize: 12 }} />
 
               {/* Color picker */}
-              <div className="flex items-center gap-2">
-                <p className="text-[10px] text-white/40">Color:</p>
-                <div className="flex gap-1.5">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>Color:</p>
+                <div style={{ display: 'flex', gap: 6 }}>
                   {GOAL_COLORS.map(c => (
                     <button key={c} onClick={() => setForm(f => ({ ...f, color: c }))}
-                      className={`w-5 h-5 rounded-full border-2 transition-all ${form.color === c ? 'border-white scale-125' : 'border-transparent'}`}
-                      style={{ background: c }} />
+                      style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${form.color === c ? '#fff' : 'transparent'}`, background: c, cursor: 'pointer', transition: 'all 0.15s', transform: form.color === c ? 'scale(1.25)' : 'scale(1)' }} />
                   ))}
                 </div>
               </div>
 
-              <Button onClick={handleCreate} disabled={createMutation.isPending}
-                className="w-full bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3] h-8 text-sm">
-                <Check className="w-3.5 h-3.5 mr-1.5" /> Create Goal
-              </Button>
+              <button onClick={handleCreate} disabled={createMutation.isPending}
+                style={{ width: '100%', background: '#d4af37', color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 0', cursor: createMutation.isPending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, opacity: createMutation.isPending ? 0.7 : 1 }}>
+                <Check className="w-3.5 h-3.5" /> Create Goal
+              </button>
             </div>
           </motion.div>
         )}
@@ -202,19 +212,19 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
       {/* Goals */}
       {goals.length === 0 && !showForm ? (
-        <div className="text-center py-6 text-white/30">
-          <Target className="w-10 h-10 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">{isCreator ? 'Create your first goal!' : 'No active goals'}</p>
+        <div style={{ textAlign: 'center', padding: '24px 0', color: 'rgba(255,255,255,0.3)' }}>
+          <Target className="w-10 h-10" style={{ display: 'block', margin: '0 auto 8px', opacity: 0.3 }} />
+          <p style={{ fontSize: 13, margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>{isCreator ? 'Create your first goal!' : 'No active goals'}</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {goals.map(goal => (
-            <div key={goal.id} className="relative group">
+            <div key={goal.id} style={{ position: 'relative' }} className="group">
               <GoalBar goal={goal} onUpdate={(id, amount) => updateMutation.mutate({ id, amount })} isCreator={isCreator} />
               {isCreator && (
                 <button
                   onClick={() => deleteMutation.mutate(goal.id)}
-                  className="absolute top-2 right-2 w-6 h-6 rounded opacity-0 group-hover:opacity-100 hover:bg-red-900/30 flex items-center justify-center text-white/30 hover:text-red-400 transition-all"
+                  style={{ position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: 6, background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'all 0.15s' }}
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>

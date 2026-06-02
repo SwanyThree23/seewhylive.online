@@ -1,27 +1,24 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Check, Star, Zap, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const tierConfig = {
   basic: {
     icon: Star,
-    gradient: 'from-blue-600 to-cyan-600',
-    badgeColor: 'bg-blue-100 text-blue-800'
+    gradient: 'linear-gradient(135deg, #2563eb, #0891b2)',
+    badgeColor: '#3b82f6',
   },
   premium: {
     icon: Zap,
-    gradient: 'from-purple-600 to-pink-600',
-    badgeColor: 'bg-purple-100 text-purple-800'
+    gradient: 'linear-gradient(135deg, #9333ea, #ec4899)',
+    badgeColor: '#a855f7',
   },
   elite: {
     icon: Crown,
-    gradient: 'from-amber-600 to-orange-600',
-    badgeColor: 'bg-amber-100 text-amber-800'
+    gradient: 'linear-gradient(135deg, #d97706, #ea580c)',
+    badgeColor: '#f59e0b',
   },
 };
 
@@ -65,95 +62,97 @@ export default function SubscriptionTiers({ communityId, userId }) {
   });
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: 'Barlow Condensed, sans-serif' }}>
       <div>
-        <h2 className="text-2xl font-bold mb-2">Subscription Tiers</h2>
-        <p className="text-muted-foreground">Choose a plan that fits your needs</p>
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Subscription Tiers</h2>
+        <p style={{ color: 'rgba(255,255,255,0.5)' }}>Choose a plan that fits your needs</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
         {tiers.map((tier) => {
           const config = tierConfig[tier.name.toLowerCase()] || tierConfig.basic;
           const Icon = config.icon;
           const isCurrentTier = currentSubscription?.tier === tier.name.toLowerCase();
 
           return (
-            <Card key={tier.id} className={isCurrentTier ? 'border-2 border-primary' : ''}>
-              <CardHeader>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${config.gradient} flex items-center justify-center mb-3`}>
-                  <Icon className="w-6 h-6 text-white" />
+            <div key={tier.id} style={{ border: isCurrentTier ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)', borderRadius: 12, background: 'rgba(13,6,24,0.95)', overflow: 'hidden' }}>
+              <div style={{ padding: 20 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: config.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                  <Icon style={{ width: 24, height: 24, color: '#fff' }} />
                 </div>
-                <CardTitle className="flex items-center justify-between">
-                  {tier.name}
-                  {isCurrentTier && <Badge>Current</Badge>}
-                </CardTitle>
-                <CardDescription>{tier.description}</CardDescription>
-                <div className="pt-3">
-                  <span className="text-3xl font-bold">${tier.price}</span>
-                  <span className="text-muted-foreground">/month</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 18, fontWeight: 900, color: '#fff' }}>{tier.name}</span>
+                  {isCurrentTier && <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>Current</span>}
                 </div>
-              </CardHeader>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>{tier.description}</p>
+                <div>
+                  <span style={{ fontSize: 30, fontWeight: 700, color: '#fff' }}>${tier.price}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>/month</span>
+                </div>
+              </div>
 
-              <CardContent>
-                <div className="space-y-2">
+              <div style={{ padding: '0 20px 16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {tier.benefits?.map((benefit, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{benefit}</span>
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <Check style={{ width: 16, height: 16, color: '#22c55e', marginTop: 2, flexShrink: 0 }} />
+                      <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{benefit}</span>
                     </div>
                   ))}
-                  
+
                   {tier.has_early_access && (
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
-                      <span className="text-sm">Early access to content</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <Check style={{ width: 16, height: 16, color: '#22c55e', marginTop: 2 }} />
+                      <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Early access to content</span>
                     </div>
                   )}
-                  
+
                   {tier.is_ad_free && (
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
-                      <span className="text-sm">Ad-free viewing</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <Check style={{ width: 16, height: 16, color: '#22c55e', marginTop: 2 }} />
+                      <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Ad-free viewing</span>
                     </div>
                   )}
-                  
+
                   {tier.badge_id && (
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
-                      <span className="text-sm">Exclusive badge</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <Check style={{ width: 16, height: 16, color: '#22c55e', marginTop: 2 }} />
+                      <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Exclusive badge</span>
                     </div>
                   )}
-                  
+
                   {tier.custom_emotes?.length > 0 && (
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
-                      <span className="text-sm">{tier.custom_emotes.length} custom emotes</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <Check style={{ width: 16, height: 16, color: '#22c55e', marginTop: 2 }} />
+                      <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{tier.custom_emotes.length} custom emotes</span>
                     </div>
                   )}
-                  
+
                   {tier.priority_support && (
-                    <div className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-600 mt-0.5" />
-                      <span className="text-sm">Priority support</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <Check style={{ width: 16, height: 16, color: '#22c55e', marginTop: 2 }} />
+                      <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Priority support</span>
                     </div>
                   )}
                 </div>
-              </CardContent>
+              </div>
 
-              <CardFooter>
+              <div style={{ padding: '0 20px 20px' }}>
                 {isCurrentTier ? (
-                  <Button disabled className="w-full">Current Plan</Button>
+                  <button disabled style={{ width: '100%', padding: '10px 0', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.5)', fontSize: 14, cursor: 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    Current Plan
+                  </button>
                 ) : (
-                  <Button
+                  <button
                     onClick={() => subscribeMutation.mutate({ tierId: tier.name.toLowerCase(), price: tier.price })}
                     disabled={subscribeMutation.isPending}
-                    className={`w-full bg-gradient-to-r ${config.gradient}`}
+                    style={{ width: '100%', padding: '10px 0', background: config.gradient, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: subscribeMutation.isPending ? 'not-allowed' : 'pointer', opacity: subscribeMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
                   >
                     {subscribeMutation.isPending ? 'Processing...' : 'Subscribe'}
-                  </Button>
+                  </button>
                 )}
-              </CardFooter>
-            </Card>
+              </div>
+            </div>
           );
         })}
       </div>

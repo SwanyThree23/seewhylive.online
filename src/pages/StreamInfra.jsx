@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
 import {
@@ -195,14 +193,12 @@ function StreamTab({ user }) {
           <div className="space-y-3">
             <CopyField label="RTMP Server URL" value={rtmpUrl} mono={true} />
             <CopyField label="Stream Key" value={streamKey} mono={true} />
-            <Button
-              size="sm"
+            <button
               onClick={function() { setStreamKey(genKey('sw', userId)); toast.success('Key regenerated'); }}
-              className="w-full h-8 text-xs gap-1.5"
-              style={{ background: 'rgba(255,21,100,0.12)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.25)' }}
+              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(255,21,100,0.12)', color:'#FF1564', border:'1px solid rgba(255,21,100,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <RefreshCw className="w-3 h-3" /> Regenerate Key
-            </Button>
+            </button>
             <div className="rounded-lg p-2.5 space-y-1" style={{ background: 'rgba(255,21,100,0.04)', border: '1px solid rgba(255,21,100,0.08)' }}>
               <p className="text-[10px] text-white/40 font-bold uppercase">OBS Quick Config</p>
               <p className="text-[10px] text-white/25">Service: Custom RTMP</p>
@@ -243,13 +239,11 @@ function StreamTab({ user }) {
                 </div>
               );
             })}
-            <Button
-              size="sm"
-              className="w-full h-8 text-xs gap-1.5"
-              style={{ background: 'rgba(0,255,136,0.12)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' }}
+            <button
+              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(0,255,136,0.12)', color:'#00FF88', border:'1px solid rgba(0,255,136,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <Zap className="w-3 h-3" /> Start Simulcast to All Active
-            </Button>
+            </button>
           </div>
         </PanelCard>
 
@@ -261,14 +255,14 @@ function StreamTab({ user }) {
             <CopyField label="Director View URL" value={directorUrl} mono={true} />
             <div className="grid grid-cols-2 gap-2">
               <a href={guestUrl} target="_blank" rel="noopener noreferrer">
-                <Button size="sm" className="w-full h-8 text-xs gap-1" style={{ background: 'rgba(255,184,0,0.12)', color: '#FFB800', border: '1px solid rgba(255,184,0,0.25)' }}>
+                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(255,184,0,0.12)', color:'#FFB800', border:'1px solid rgba(255,184,0,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
                   <ExternalLink className="w-3 h-3" /> Guest Link
-                </Button>
+                </button>
               </a>
               <a href={directorUrl} target="_blank" rel="noopener noreferrer">
-                <Button size="sm" className="w-full h-8 text-xs gap-1" style={{ background: 'rgba(255,184,0,0.08)', color: '#FFB80099', border: '1px solid rgba(255,184,0,0.15)' }}>
+                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(255,184,0,0.08)', color:'rgba(255,184,0,0.6)', border:'1px solid rgba(255,184,0,0.15)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
                   <Eye className="w-3 h-3" /> Director
-                </Button>
+                </button>
               </a>
             </div>
             <div className="rounded-lg p-2" style={{ background: 'rgba(255,184,0,0.04)', border: '1px solid rgba(255,184,0,0.08)' }}>
@@ -349,13 +343,11 @@ function SocialAudioRoles() {
           );
         })}
       </div>
-      <Button
-        size="sm"
-        className="w-full h-8 text-xs gap-1.5"
-        style={{ background: selected.color + '1A', color: selected.color, border: '1px solid ' + selected.color + '40' }}
+      <button
+        style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background: selected.color + '1A', color: selected.color, border: '1px solid ' + selected.color + '40', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
       >
         <selected.Icon className="w-3 h-3" /> Join as {selected.label}
-      </Button>
+      </button>
     </div>
   );
 }
@@ -397,23 +389,17 @@ function LiveRoomTab({ user }) {
           ) : (
             <span className="text-sm text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room Offline</span>
           )}
-          <Badge className="text-[10px]" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.5)', border:'1px solid rgba(255,255,255,0.1)' }}>
             {mockParticipants.length} participants
-          </Badge>
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
+          <button
             onClick={function() { setRoomActive(!roomActive); }}
-            className="h-8 text-xs gap-1.5"
-            style={{
-              background: roomActive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)',
-              color: roomActive ? '#FF1564' : '#d4af37',
-              border: '1px solid ' + (roomActive ? 'rgba(255,21,100,0.3)' : 'rgba(212,175,55,0.3)')
-            }}
+            style={{ display:'flex', alignItems:'center', gap:6, height:32, padding:'0 12px', borderRadius:8, background: roomActive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)', color: roomActive ? '#FF1564' : '#d4af37', border: '1px solid ' + (roomActive ? 'rgba(255,21,100,0.3)' : 'rgba(212,175,55,0.3)'), fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
           >
             {roomActive ? <><Square className="w-3 h-3" /> End Room</> : <><Play className="w-3 h-3" /> Start Room</>}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -643,21 +629,17 @@ function StudioTab({ user }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <Button
-                    size="sm"
-                    className="h-7 text-[10px] px-2"
-                    style={{ background: 'rgba(0,245,255,0.08)', color: '#00F5FF80', border: '1px solid rgba(0,245,255,0.15)' }}
+                  <button
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(0,245,255,0.08)', color:'rgba(0,245,255,0.5)', border:'1px solid rgba(0,245,255,0.15)', cursor:'pointer' }}
                   >
                     <Settings className="w-2.5 h-2.5" />
-                  </Button>
-                  <Button
-                    size="sm"
+                  </button>
+                  <button
                     onClick={function() { removeRoom(room.id); }}
-                    className="h-7 text-[10px] px-2"
-                    style={{ background: 'rgba(255,21,100,0.08)', color: '#FF156460', border: '1px solid rgba(255,21,100,0.15)' }}
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(255,21,100,0.08)', color:'rgba(255,21,100,0.38)', border:'1px solid rgba(255,21,100,0.15)', cursor:'pointer' }}
                   >
                     <Trash2 className="w-2.5 h-2.5" />
-                  </Button>
+                  </button>
                 </div>
               </div>
             );
@@ -682,14 +664,12 @@ function StudioTab({ user }) {
               <option value="video">Video</option>
               <option value="audio">Audio</option>
             </select>
-            <Button
-              size="sm"
+            <button
               onClick={addRoom}
-              className="h-9 px-3 gap-1 text-xs"
-              style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)' }}
+              style={{ display:'flex', alignItems:'center', gap:4, height:36, padding:'0 12px', borderRadius:8, background:'rgba(212,175,55,0.15)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <Plus className="w-3 h-3" /> Create
-            </Button>
+            </button>
           </div>
         </div>
       </PanelCard>

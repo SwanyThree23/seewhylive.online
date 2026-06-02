@@ -1,0 +1,97 @@
+{
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "title": "Room ID"
+    },
+    "host_id": {
+      "type": "string",
+      "title": "Host User ID"
+    },
+    "title": {
+      "type": "string",
+      "title": "Stream Title"
+    },
+    "synced": {
+      "type": "boolean",
+      "title": "Viewers Synced",
+      "default": true
+    },
+    "playback_pos": {
+      "type": "number",
+      "title": "Playback Position (seconds)",
+      "default": 0
+    },
+    "playing": {
+      "type": "boolean",
+      "title": "Is Playing",
+      "default": false
+    },
+    "viewer_count": {
+      "type": "number",
+      "title": "Viewer Count",
+      "default": 0
+    },
+    "platform_dest": {
+      "type": "string",
+      "title": "Platform Destination",
+      "enum": [
+        "sw",
+        "yt",
+        "tt",
+        "tw",
+        "fb",
+        "ki"
+      ],
+      "default": "sw"
+    }
+  },
+  "required": [
+    "room_id",
+    "host_id",
+    "title"
+  ],
+  "name": "WatchPartySession",
+  "rls": {
+    "create": {
+      "data.host_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

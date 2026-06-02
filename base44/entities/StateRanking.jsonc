@@ -1,0 +1,93 @@
+{
+  "properties": {
+    "change": {
+      "default": 0,
+      "title": "Rank Change",
+      "type": "number"
+    },
+    "losses": {
+      "default": 0,
+      "title": "Losses",
+      "type": "number"
+    },
+    "points": {
+      "default": 0,
+      "title": "Ranking Points",
+      "type": "number"
+    },
+    "rank": {
+      "title": "Current Rank",
+      "type": "number"
+    },
+    "rank_prev": {
+      "title": "Previous Rank",
+      "type": "number"
+    },
+    "region": {
+      "title": "Region",
+      "type": "string"
+    },
+    "season": {
+      "default": "2026",
+      "title": "Season",
+      "type": "string"
+    },
+    "state_abbr": {
+      "title": "State Abbreviation",
+      "type": "string"
+    },
+    "state_emoji": {
+      "title": "State Emoji",
+      "type": "string"
+    },
+    "state_name": {
+      "title": "State Name",
+      "type": "string"
+    },
+    "streak": {
+      "default": 0,
+      "title": "Win Streak",
+      "type": "number"
+    },
+    "tiles_diff": {
+      "default": 0,
+      "title": "Tile Differential",
+      "type": "number"
+    },
+    "week": {
+      "title": "Ranking Week",
+      "type": "string"
+    },
+    "wins": {
+      "default": 0,
+      "title": "Wins",
+      "type": "number"
+    }
+  },
+  "required": [
+    "state_name",
+    "state_abbr",
+    "rank",
+    "points"
+  ],
+  "type": "object",
+  "name": "StateRanking",
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

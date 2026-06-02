@@ -1,0 +1,92 @@
+{
+  "name": "LoyaltyReward",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "If set, reward is stream-specific"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "points_required": {
+      "type": "number"
+    },
+    "reward_type": {
+      "type": "string",
+      "enum": [
+        "soundboard",
+        "song_request",
+        "pin_message",
+        "shoutout",
+        "badge",
+        "custom_emote",
+        "discount_code",
+        "exclusive_content"
+      ],
+      "default": "badge"
+    },
+    "reward_value": {
+      "type": "string",
+      "description": "Sound URL, song platform, etc."
+    },
+    "icon": {
+      "type": "string",
+      "description": "Emoji icon"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "claimed_count": {
+      "type": "number",
+      "default": 0
+    },
+    "stock": {
+      "type": "number",
+      "description": "Max redemptions, null=unlimited"
+    }
+  },
+  "required": [
+    "creator_id",
+    "name",
+    "points_required",
+    "reward_type"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

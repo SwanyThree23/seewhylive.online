@@ -1,0 +1,50 @@
+{
+  "name": "PayPerViewAccess",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "PPV event ID"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Purchaser user ID"
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Amount paid"
+    },
+    "access_granted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Access grant time"
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "Related transaction ID"
+    }
+  },
+  "required": [
+    "event_id",
+    "user_id",
+    "amount_paid"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

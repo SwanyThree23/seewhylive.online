@@ -1,0 +1,118 @@
+{
+  "name": "TipAlert",
+  "properties": {
+    "alert_color": {
+      "default": "#C9A84C",
+      "description": "Alert accent color",
+      "type": "string"
+    },
+    "alert_sound": {
+      "default": "cash_register",
+      "enum": [
+        "cash_register",
+        "fanfare",
+        "chime",
+        "coin",
+        "level_up",
+        "custom"
+      ],
+      "type": "string"
+    },
+    "amount_usd": {
+      "description": "Tip amount in USD",
+      "type": "number"
+    },
+    "animation_type": {
+      "default": "slide_in",
+      "enum": [
+        "slide_in",
+        "bounce",
+        "pulse",
+        "confetti",
+        "fireworks"
+      ],
+      "type": "string"
+    },
+    "creator_id": {
+      "description": "Creator who received the tip",
+      "type": "string"
+    },
+    "display_duration_ms": {
+      "default": 5000,
+      "type": "number"
+    },
+    "is_displayed": {
+      "default": false,
+      "type": "boolean"
+    },
+    "message": {
+      "description": "Tip message from viewer",
+      "type": "string"
+    },
+    "room_id": {
+      "description": "Room where tip was sent",
+      "type": "string"
+    },
+    "sender_id": {
+      "description": "Tipper user ID",
+      "type": "string"
+    },
+    "sender_name": {
+      "description": "Tipper display name",
+      "type": "string"
+    },
+    "tipper_avatar": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "creator_id",
+    "sender_id",
+    "sender_name",
+    "amount_usd"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

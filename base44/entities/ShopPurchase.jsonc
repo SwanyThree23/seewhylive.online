@@ -1,0 +1,118 @@
+{
+  "properties": {
+    "buyer_user_id": {
+      "title": "Buyer User ID",
+      "type": "string"
+    },
+    "creator_amount": {
+      "title": "Creator Payout (Math.floor, 90%)",
+      "type": "number"
+    },
+    "good_id": {
+      "title": "VirtualGood Base44 ID",
+      "type": "string"
+    },
+    "good_name": {
+      "title": "Good Name",
+      "type": "string"
+    },
+    "good_rarity": {
+      "enum": [
+        "common",
+        "uncommon",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "title": "Rarity",
+      "type": "string"
+    },
+    "good_type": {
+      "enum": [
+        "emoji",
+        "effect",
+        "frame",
+        "badge",
+        "theme"
+      ],
+      "title": "Good Type",
+      "type": "string"
+    },
+    "platform_amount": {
+      "title": "Platform Fee (Math.floor, 10%)",
+      "type": "number"
+    },
+    "price_total": {
+      "title": "Total Price USD",
+      "type": "number"
+    },
+    "purchased_at": {
+      "format": "date-time",
+      "title": "Purchased At",
+      "type": "string"
+    },
+    "room_id": {
+      "title": "Room ID at time of purchase",
+      "type": "string"
+    },
+    "split_verified": {
+      "default": false,
+      "title": "90/10 Split Verified",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "buyer_user_id",
+    "good_id",
+    "good_name",
+    "price_total",
+    "creator_amount",
+    "platform_amount"
+  ],
+  "type": "object",
+  "name": "ShopPurchase",
+  "rls": {
+    "create": {
+      "data.buyer_user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.buyer_user_id": "{{user.id}}"
+        },
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

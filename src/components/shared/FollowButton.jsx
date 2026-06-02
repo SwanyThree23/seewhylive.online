@@ -1,7 +1,6 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
 import { UserPlus, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,18 +52,30 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
   const isPending = followMutation.isPending || unfollowMutation.isPending;
 
   return (
-    <Button
-      size={size}
-      variant={isFollowing ? 'outline' : 'default'}
-      className={`gap-1.5 ${className}`}
+    <button
       disabled={isPending}
       onClick={() => isFollowing ? unfollowMutation.mutate() : followMutation.mutate()}
+      className={className}
+      style={{
+        display:'inline-flex', alignItems:'center', gap:6,
+        padding: size === 'sm' ? '5px 12px' : '8px 18px',
+        fontSize: size === 'sm' ? 12 : 14,
+        fontWeight:700,
+        border: isFollowing ? '1px solid rgba(255,255,255,0.2)' : 'none',
+        background: isFollowing ? 'transparent' : '#D4AF37',
+        color: isFollowing ? '#fff' : '#000',
+        borderRadius:8,
+        cursor: isPending ? 'not-allowed' : 'pointer',
+        opacity: isPending ? 0.6 : 1,
+        fontFamily:'Barlow Condensed, sans-serif',
+        transition:'all 0.15s',
+      }}
     >
       {isFollowing ? (
-        <><UserMinus className="w-3.5 h-3.5" /> Following</>
+        <><UserMinus style={{ width:14, height:14 }} /> Following</>
       ) : (
-        <><UserPlus className="w-3.5 h-3.5" /> Follow</>
+        <><UserPlus style={{ width:14, height:14 }} /> Follow</>
       )}
-    </Button>
+    </button>
   );
 }

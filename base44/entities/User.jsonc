@@ -1,0 +1,103 @@
+{
+  "type": "object",
+  "name": "User",
+  "title": "User",
+  "properties": {
+    "role": {
+      "type": "string",
+      "description": "The role of the user in the app",
+      "enum": [
+        "admin",
+        "user"
+      ]
+    },
+    "email": {
+      "type": "string",
+      "description": "The email of the user"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "The full name of the user"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "User profile picture URL"
+    },
+    "bio": {
+      "type": "string",
+      "description": "User biography"
+    },
+    "points": {
+      "type": "number",
+      "default": 0,
+      "description": "Reward points earned"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Achievement badges"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Personal referral code"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "User who referred them"
+    }
+  },
+  "required": [
+    "bio",
+    "avatar_url",
+    "badges",
+    "referred_by",
+    "referral_code",
+    "email",
+    "full_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
 } from 'lucide-react';
@@ -139,11 +136,15 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                       </select>
                     )}
                   </div>
-                  <Switch checked={slowMode} onCheckedChange={setSlowMode} className="scale-75 data-[state=checked]:bg-[#d4af37]" />
+                  <div onClick={() => setSlowMode(!slowMode)} style={{ width:40, height:22, borderRadius:99, background: slowMode ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                    <div style={{ position:'absolute', top:3, left: slowMode ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Subs Only</span>
-                  <Switch checked={subOnly} onCheckedChange={setSubOnly} className="scale-75 data-[state=checked]:bg-purple-500" />
+                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7c3aed' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                    <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
+                  </div>
                 </div>
                 <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-red-400 flex items-center justify-center gap-1"
                   style={{ border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.05)' }}>

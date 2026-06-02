@@ -1,0 +1,81 @@
+{
+  "name": "PerformanceMetric",
+  "type": "object",
+  "properties": {
+    "metric_type": {
+      "type": "string",
+      "enum": [
+        "room_performance",
+        "user_engagement",
+        "revenue",
+        "system_health"
+      ],
+      "description": "Metric category"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Related entity ID"
+    },
+    "metric_name": {
+      "type": "string",
+      "description": "Specific metric"
+    },
+    "value": {
+      "type": "number",
+      "description": "Metric value"
+    },
+    "unit": {
+      "type": "string",
+      "description": "Unit of measurement"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional data"
+    }
+  },
+  "required": [
+    "metric_type",
+    "metric_name",
+    "value"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.entity_id": "{{user.id}}"
+        },
+        {
+          "data.entity_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

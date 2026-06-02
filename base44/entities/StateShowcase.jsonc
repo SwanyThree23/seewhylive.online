@@ -1,0 +1,119 @@
+{
+  "type": "object",
+  "properties": {
+    "state_name": {
+      "title": "State Name",
+      "type": "string"
+    },
+    "state_abbr": {
+      "title": "State Abbreviation",
+      "type": "string"
+    },
+    "state_emoji": {
+      "title": "State Emoji/Flag",
+      "type": "string"
+    },
+    "region": {
+      "title": "Region",
+      "type": "string",
+      "enum": [
+        "West",
+        "Southwest",
+        "Midwest",
+        "Southeast",
+        "Northeast",
+        "Mid-Atlantic",
+        "Mountain"
+      ]
+    },
+    "captain": {
+      "title": "Team Captain",
+      "type": "string"
+    },
+    "co_captain": {
+      "title": "Co-Captain",
+      "type": "string"
+    },
+    "roster": {
+      "title": "Player Roster",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "wins": {
+      "title": "Wins",
+      "type": "number",
+      "default": 0
+    },
+    "losses": {
+      "title": "Losses",
+      "type": "number",
+      "default": 0
+    },
+    "points": {
+      "title": "Ranking Points",
+      "type": "number",
+      "default": 0
+    },
+    "tiles_won": {
+      "title": "Total Tiles Won",
+      "type": "number",
+      "default": 0
+    },
+    "rank": {
+      "title": "National Rank",
+      "type": "number"
+    },
+    "streak": {
+      "title": "Current Streak",
+      "type": "number",
+      "default": 0
+    },
+    "color_primary": {
+      "title": "Primary Color",
+      "type": "string"
+    },
+    "color_secondary": {
+      "title": "Secondary Color",
+      "type": "string"
+    },
+    "home_city": {
+      "title": "Home City/Venue",
+      "type": "string"
+    },
+    "active": {
+      "title": "Active",
+      "type": "boolean",
+      "default": true
+    },
+    "bio": {
+      "title": "State Team Bio",
+      "type": "string"
+    }
+  },
+  "required": [
+    "state_name",
+    "state_abbr",
+    "captain"
+  ],
+  "name": "StateShowcase",
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

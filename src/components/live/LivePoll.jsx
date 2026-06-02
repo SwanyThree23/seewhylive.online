@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart2, Plus, X, ChevronRight, Check, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,9 +14,9 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-bold text-white">{poll.question}</p>
         {onEnd && (
-          <Button size="sm" variant="ghost" onClick={onEnd} className="h-6 text-[10px] text-red-400 hover:text-red-300 px-1">
+          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#f87171', fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Poll
-          </Button>
+          </button>
         )}
       </div>
       {poll.options?.map((option, i) => {
@@ -152,6 +149,9 @@ export default function LivePoll({ roomId, isHost }) {
 
   if (!activePoll && !isHost) return null;
 
+  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+  const inputSmStyle = { ...inputStyle, height: 28, padding: '0 10px', fontSize: 12 };
+
   return (
     <div className="bg-white/5 border border-[rgba(212,175,55,0.15)] rounded-xl p-3">
       <div className="flex items-center justify-between mb-2">
@@ -160,15 +160,13 @@ export default function LivePoll({ roomId, isHost }) {
           <span className="text-[11px] font-bold text-[#d4af37] uppercase tracking-wide">Live Poll</span>
         </div>
         {isHost && !activePoll && (
-          <Button
-            size="sm"
-            variant="ghost"
+          <button
             onClick={() => setCreating(c => !c)}
-            className="h-6 text-[10px] text-white/50 hover:text-white px-1.5"
+            style={{ height: 24, padding: '0 6px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
-            {creating ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3 mr-1" />}
+            {creating ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
             {creating ? '' : 'New Poll'}
-          </Button>
+          </button>
         )}
       </div>
 
@@ -176,7 +174,7 @@ export default function LivePoll({ roomId, isHost }) {
         {activePoll ? (
           <motion.div key="poll" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center gap-1.5 mb-2">
-              <Badge className="bg-red-600/80 text-white border-0 text-[9px] animate-pulse px-1.5">LIVE</Badge>
+              <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(220,38,38,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
             </div>
             <PollResults
               poll={activePoll}
@@ -193,25 +191,25 @@ export default function LivePoll({ roomId, isHost }) {
           </motion.div>
         ) : creating && isHost ? (
           <motion.div key="create" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-            <Input
+            <input
               value={question}
               onChange={e => setQuestion(e.target.value)}
               placeholder="Ask your audience..."
-              className="h-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              style={inputSmStyle}
             />
             {options.map((opt, i) => (
               <div key={i} className="flex gap-1.5">
-                <Input
+                <input
                   value={opt}
                   onChange={e => setOptions(prev => prev.map((o, j) => j === i ? e.target.value : o))}
                   placeholder={`Option ${i + 1}`}
-                  className="h-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                  style={inputSmStyle}
                 />
                 {options.length > 2 && (
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-white/30 hover:text-red-400 shrink-0"
+                  <button style={{ height: 28, width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}
                     onClick={() => setOptions(prev => prev.filter((_, j) => j !== i))}>
                     <Trash2 className="w-3 h-3" />
-                  </Button>
+                  </button>
                 )}
               </div>
             ))}
@@ -221,14 +219,13 @@ export default function LivePoll({ roomId, isHost }) {
                 <Plus className="w-3 h-3" /> Add option
               </button>
             )}
-            <Button
-              size="sm"
-              className="w-full h-7 text-xs bg-[#d4af37] text-black hover:bg-[#f5e6a3] font-bold mt-1"
+            <button
+              style={{ width: '100%', height: 28, fontSize: 12, background: '#d4af37', color: '#000', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4, opacity: (!question.trim() || options.filter(o => o.trim()).length < 2 || createPollMutation.isPending) ? 0.5 : 1 }}
               disabled={!question.trim() || options.filter(o => o.trim()).length < 2 || createPollMutation.isPending}
               onClick={() => createPollMutation.mutate()}
             >
-              <ChevronRight className="w-3.5 h-3.5 mr-1" /> Launch Poll
-            </Button>
+              <ChevronRight className="w-3.5 h-3.5" /> Launch Poll
+            </button>
           </motion.div>
         ) : isHost ? (
           <p className="text-[10px] text-white/30 text-center py-1">No active poll</p>

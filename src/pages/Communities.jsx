@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Search, TrendingUp, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -11,9 +8,17 @@ import CommunityCard from '../components/communities/CommunityCard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
+const GOLD    = '#D4AF37';
+const CRIMSON = '#800020';
+const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
+const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const CATEGORIES = ['all','music','gaming','tech','education','business','entertainment','sports','lifestyle'];
+
 export default function CommunitiesPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery]           = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [activeTab, setActiveTab]               = useState('discover');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -24,10 +29,8 @@ export default function CommunitiesPage() {
   const { data: allCommunities = [], isLoading } = useQuery({
     queryKey: ['communities', selectedCategory],
     queryFn: async () => {
-      if (selectedCategory === 'all') {
-        return await base44.entities.Community.list('-member_count', 50);
-      }
-      return await base44.entities.Community.filter({ category: selectedCategory }, '-member_count', 50);
+      if (selectedCategory === 'all') return base44.entities.Community.list('-member_count', 50);
+      return base44.entities.Community.filter({ category: selectedCategory }, '-member_count', 50);
     },
   });
 
@@ -35,7 +38,7 @@ export default function CommunitiesPage() {
     queryKey: ['myMemberships'],
     queryFn: async () => {
       if (!user) return [];
-      return await base44.entities.CommunityMember.filter({ user_id: user.id });
+      return base44.entities.CommunityMember.filter({ user_id: user.id });
     },
     enabled: !!user,
   });
@@ -43,24 +46,14 @@ export default function CommunitiesPage() {
   const joinCommunityMutation = useMutation({
     mutationFn: async (communityId) => {
       const existing = myMemberships.find(m => m.community_id === communityId);
-      if (existing) {
-        toast.info('Already a member');
-        return;
-      }
-
+      if (existing) { toast.info('Already a member'); return; }
       await base44.entities.CommunityMember.create({
-        community_id: communityId,
-        user_id: user.id,
-        role: 'member',
-        joined_at: new Date().toISOString(),
+        community_id: communityId, user_id: user.id,
+        role: 'member', joined_at: new Date().toISOString(),
       });
-
-      // Update member count
       const community = allCommunities.find(c => c.id === communityId);
       if (community) {
-        await base44.entities.Community.update(communityId, {
-          member_count: (community.member_count || 0) + 1
-        });
+        await base44.entities.Community.update(communityId, { member_count: (community.member_count || 0) + 1 });
       }
     },
     onSuccess: () => {
@@ -70,165 +63,170 @@ export default function CommunitiesPage() {
     },
   });
 
-  const categories = ['all', 'music', 'gaming', 'tech', 'education', 'business', 'entertainment', 'sports', 'lifestyle'];
-
-  const filteredCommunities = allCommunities.filter(community => {
-    const matchesSearch = !searchQuery || 
-      community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      community.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesSearch;
-  });
-
-  const myCommunities = filteredCommunities.filter(c => 
-    myMemberships.some(m => m.community_id === c.id)
+  const q        = searchQuery.toLowerCase();
+  const filtered = allCommunities.filter(c =>
+    !q || c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
   );
-
-  const trendingCommunities = filteredCommunities.slice(0, 12);
+  const trending = filtered.slice(0, 12);
+  const mine     = filtered.filter(c => myMemberships.some(m => m.community_id === c.id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Communities</h1>
-              <p className="text-lg text-purple-100">
-                Discover and join communities that match your interests
-              </p>
-            </div>
-            <Link to={createPageUrl('CreateCommunity')}>
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-white/90">
-                <Plus className="w-5 h-5 mr-2" />
-                Create Community
-              </Button>
-            </Link>
-          </div>
+    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}>
 
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              placeholder="Search communities..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 py-6 text-lg bg-white/10 backdrop-blur border-white/20 text-white placeholder:text-white/60"
-            />
+      {/* ── Sticky header ─────────────────────────────────────── */}
+      <div className="sticky top-0 z-20"
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+
+        {/* Row 1 – title + Create button */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5" style={{ color: GOLD }} />
+            <h1 className="font-black text-xl text-white leading-none" style={T}>Communities</h1>
           </div>
+          <Link to={createPageUrl('CreateCommunity')}>
+            <button
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all hover:brightness-110"
+              style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', color: GOLD, ...T }}>
+              <Plus className="w-3 h-3" />Create
+            </button>
+          </Link>
+        </div>
+
+        {/* Row 2 – search bar */}
+        <div className="flex items-center gap-2 mx-4 mb-2 px-3 py-2 rounded-2xl"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          <Search className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search communities…"
+            className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25"
+            style={{ ...T }}
+          />
+        </div>
+
+        {/* Row 3 – category pills */}
+        <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+          {CATEGORIES.map(cat => (
+            <button key={cat} onClick={() => setSelectedCategory(cat)}
+              className="px-3 py-1 rounded-full shrink-0 font-black uppercase text-[9px] transition-all capitalize"
+              style={{
+                background:   selectedCategory === cat ? GOLD : 'rgba(255,255,255,0.06)',
+                border:       `1px solid ${selectedCategory === cat ? GOLD : 'rgba(255,255,255,0.1)'}`,
+                color:        selectedCategory === cat ? '#000' : 'rgba(255,255,255,0.45)',
+                ...T,
+              }}>
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Row 4 – Discover / My Communities tabs */}
+        <div className="flex border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          {[
+            { id: 'discover', label: 'Discover',                              icon: TrendingUp },
+            { id: 'mine',     label: `My Communities (${mine.length})`,        icon: Users      },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 font-black uppercase text-[10px] transition-all border-b-2"
+              style={{
+                ...T,
+                color:            activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.35)',
+                borderBottomColor: activeTab === tab.id ? GOLD : 'transparent',
+                background:       activeTab === tab.id ? 'rgba(212,175,55,0.05)' : 'transparent',
+              }}>
+              <tab.icon className="w-3 h-3" />{tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Category Filter */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className="capitalize shrink-0"
-              >
-                {category}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* ── Content ───────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 pt-5">
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs defaultValue="discover" className="space-y-8">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mx-auto">
-            <TabsTrigger value="discover">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Discover
-            </TabsTrigger>
-            <TabsTrigger value="my-communities">
-              <Users className="w-4 h-4 mr-2" />
-              My Communities ({myCommunities.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="discover" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Trending Communities</h2>
-              <p className="text-muted-foreground">
-                Popular communities you might be interested in
-              </p>
-            </div>
+        {/* DISCOVER TAB */}
+        {activeTab === 'discover' && (
+          <>
+            <p className="font-black text-[10px] uppercase mb-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+              Trending Communities
+            </p>
 
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-80 bg-muted animate-pulse rounded-lg" />
+                  <div key={i} className="h-64 rounded-2xl animate-pulse"
+                    style={{ background: 'rgba(255,255,255,0.04)' }} />
                 ))}
               </div>
-            ) : trendingCommunities.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {trendingCommunities.map((community) => (
-                  <motion.div
-                    key={community.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                  >
+            ) : trending.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {trending.map((community, i) => (
+                  <motion.div key={community.id}
+                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}>
                     <CommunityCard
                       community={community}
                       isMember={myMemberships.some(m => m.community_id === community.id)}
-                      onJoin={(community) => joinCommunityMutation.mutate(community.id)}
+                      onJoin={c => joinCommunityMutation.mutate(c.id)}
                     />
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16">
-                <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No communities found</h3>
-                <p className="text-muted-foreground mb-4">
-                  Try adjusting your search or category filter
-                </p>
+              <div className="flex flex-col items-center justify-center py-24">
+                {/* Octagonal placeholder */}
+                <div style={{ width: 72, height: 72, clipPath: OCT, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Users className="w-8 h-8" style={{ color: 'rgba(255,255,255,0.2)' }} />
+                </div>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No communities found</p>
               </div>
             )}
-          </TabsContent>
+          </>
+        )}
 
-          <TabsContent value="my-communities" className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Your Communities</h2>
-              <p className="text-muted-foreground">
-                Communities you're a member of
-              </p>
-            </div>
+        {/* MY COMMUNITIES TAB */}
+        {activeTab === 'mine' && (
+          <>
+            <p className="font-black text-[10px] uppercase mb-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+              Your Communities
+            </p>
 
-            {myCommunities.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {myCommunities.map((community) => (
-                  <motion.div
-                    key={community.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                  >
-                    <CommunityCard
-                      community={community}
-                      isMember={true}
-                    />
+            {mine.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mine.map((community, i) => (
+                  <motion.div key={community.id}
+                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}>
+                    <CommunityCard community={community} isMember={true} />
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16">
-                <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No communities yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Join communities to connect with like-minded people
+              /* Empty state */
+              <div className="flex flex-col items-center justify-center py-24">
+                <div style={{
+                  width: 80, height: 80, clipPath: OCT,
+                  background: 'rgba(212,175,55,0.07)',
+                  border: '2px solid rgba(212,175,55,0.15)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
+                }}>
+                  <Users className="w-9 h-9" style={{ color: 'rgba(212,175,55,0.4)' }} />
+                </div>
+                <p className="font-black text-sm uppercase mb-2" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
+                  You haven't joined any communities yet
                 </p>
-                <Button onClick={() => document.querySelector('[value="discover"]').click()}>
-                  Discover Communities
-                </Button>
+                <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>
+                  Discover communities that match your interests
+                </p>
+                <button onClick={() => setActiveTab('discover')}
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-black uppercase text-[11px] transition-all hover:brightness-110"
+                  style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, ...T }}>
+                  Explore communities →
+                </button>
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </>
+        )}
       </div>
     </div>
   );

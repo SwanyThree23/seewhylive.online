@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ListMusic, Plus, Play, Trash2, ThumbsUp, Youtube, Video } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 function getYouTubeThumbnail(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/);
@@ -67,27 +65,25 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
 
       {/* Add form */}
       <div className="p-2.5 space-y-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <Input
-          className="h-7 text-[11px]"
+        <input
           placeholder="YouTube or video URL..."
           value={inputUrl}
           onChange={e => setInputUrl(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addItem()}
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+          style={{ width: '100%', height: 28, padding: '0 8px', fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
         />
         <div className="flex gap-1.5">
-          <Input
-            className="h-7 text-[11px] flex-1"
+          <input
             placeholder="Title (optional)"
             value={inputTitle}
             onChange={e => setInputTitle(e.target.value)}
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+            style={{ flex: 1, height: 28, padding: '0 8px', fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
           />
-          <Button size="sm" className="h-7 px-2.5 shrink-0"
-            style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37' }}
+          <button
+            style={{ height: 28, padding: '0 10px', background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', borderRadius: 6, cursor: inputUrl.trim() ? 'pointer' : 'default', opacity: inputUrl.trim() ? 1 : 0.5, display: 'flex', alignItems: 'center', flexShrink: 0 }}
             disabled={!inputUrl.trim()} onClick={addItem}>
             <Plus className="w-3.5 h-3.5" />
-          </Button>
+          </button>
         </div>
       </div>
 

@@ -1,0 +1,130 @@
+{
+  "name": "PayPerViewEvent",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Associated community"
+    },
+    "title": {
+      "type": "string",
+      "description": "Event title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Event description"
+    },
+    "price": {
+      "type": "number",
+      "description": "Access price"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Event thumbnail"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event date/time"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Expected duration"
+    },
+    "access_type": {
+      "type": "string",
+      "enum": [
+        "single_event",
+        "early_access",
+        "exclusive_content"
+      ],
+      "default": "single_event",
+      "description": "Access type"
+    },
+    "max_participants": {
+      "type": "number",
+      "description": "Maximum participants"
+    },
+    "current_participants": {
+      "type": "number",
+      "default": 0,
+      "description": "Current participants"
+    },
+    "revenue": {
+      "type": "number",
+      "default": 0,
+      "description": "Total revenue"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "live",
+        "ended"
+      ],
+      "default": "upcoming",
+      "description": "Event status"
+    }
+  },
+  "required": [
+    "room_id",
+    "title",
+    "price",
+    "event_date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

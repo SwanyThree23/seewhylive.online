@@ -1,0 +1,82 @@
+{
+  "name": "VirtualGood",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Item name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Item description"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "badge",
+        "emoji",
+        "theme",
+        "effect",
+        "frame"
+      ],
+      "default": "badge",
+      "description": "Item type"
+    },
+    "price": {
+      "type": "number",
+      "description": "Price in platform currency"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Item image"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "default": "common",
+      "description": "Item rarity"
+    },
+    "is_limited": {
+      "type": "boolean",
+      "default": false,
+      "description": "Limited edition"
+    },
+    "stock": {
+      "type": "number",
+      "description": "Available stock for limited items"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Item available for purchase"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "price"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

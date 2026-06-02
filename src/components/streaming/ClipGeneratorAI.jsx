@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, Download, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { safeSrc } from '@/lib/security';
 
 const G = '#d4af37';
 
@@ -74,7 +75,7 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
                 <p className="text-[10px] text-white/40">{clip.duration}s • {clip.views} views</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
-                <a href={clip.url} target="_blank" rel="noopener noreferrer">
+                <a href={safeSrc(clip.url) || '#'} target="_blank" rel="noopener noreferrer">
                   <Download className="w-3.5 h-3.5 text-white/40 hover:text-white transition-colors" />
                 </a>
                 <button>

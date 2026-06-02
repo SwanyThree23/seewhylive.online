@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Palette, Type, Image as ImageIcon, Settings2, Eye } from 'lucide-react';
 
 export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost }) {
@@ -36,24 +31,23 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
+      <button
         onClick={() => setOpen(true)}
-        className="text-xs h-7 px-2 border border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10"
+        style={{ fontSize:12, padding:'4px 8px', borderRadius:6, border:'1px solid rgba(212,175,55,0.3)', background:'transparent', color:'#d4af37', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4 }}
       >
-        <Palette className="w-3 h-3 mr-1" />
+        <Palette className="w-3 h-3" />
         Customize Room
-      </Button>
+      </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-[#0A0710] border border-[#d4af37]/20 max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <Palette className="w-5 h-5" />
-              Brand Your Room
-            </DialogTitle>
-          </DialogHeader>
+      {open && (
+        <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
+          onClick={e => e.target === e.currentTarget && setOpen(false)}>
+          <div style={{ background:'#0A0710', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:640, maxHeight:'80vh', overflowY:'auto' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+              <Palette className="w-5 h-5" style={{ color:'#d4af37' }} />
+              <span style={{ color:'#fff', fontWeight:700, fontSize:16 }}>Brand Your Room</span>
+            </div>
 
           <div className="space-y-4">
             {/* Color Customization */}
@@ -65,7 +59,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Overlay Base Color</Label>
+                  <label className="text-[10px] text-white/60 mb-1 block">Overlay Base Color</label>
                   <div className="flex gap-2 items-center">
                     <div
                       className="w-10 h-10 rounded border border-[#d4af37]/30 cursor-pointer"
@@ -84,7 +78,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                 </div>
 
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Accent Color (Buttons, Text)</Label>
+                  <label className="text-[10px] text-white/60 mb-1 block">Accent Color (Buttons, Text)</label>
                   <div className="flex gap-2 items-center">
                     <div
                       className="w-10 h-10 rounded border border-white/30 cursor-pointer"
@@ -103,7 +97,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                 </div>
 
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Overlay Opacity</Label>
+                  <label className="text-[10px] text-white/60 mb-1 block">Overlay Opacity</label>
                   <input
                     type="range"
                     min="0"
@@ -127,7 +121,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Font Family</Label>
+                  <label className="text-[10px] text-white/60 mb-1 block">Font Family</label>
                   <select
                     value={branding.fontFamily}
                     onChange={(e) => handleChange('fontFamily', e.target.value)}
@@ -141,22 +135,22 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                 </div>
 
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Custom Title</Label>
-                  <Input
+                  <label className="text-[10px] text-white/60 mb-1 block">Custom Title</label>
+                  <input
                     value={branding.customTitle}
                     onChange={(e) => handleChange('customTitle', e.target.value)}
                     placeholder="Stream title override"
-                    className="bg-white/5 border-white/10 text-white text-xs h-8"
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Custom Subtitle</Label>
-                  <Input
+                  <label className="text-[10px] text-white/60 mb-1 block">Custom Subtitle</label>
+                  <input
                     value={branding.customSubtitle}
                     onChange={(e) => handleChange('customSubtitle', e.target.value)}
                     placeholder="Tagline or description"
-                    className="bg-white/5 border-white/10 text-white text-xs h-8"
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
               </div>
@@ -171,17 +165,17 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Background Image URL</Label>
-                  <Input
+                  <label className="text-[10px] text-white/60 mb-1 block">Background Image URL</label>
+                  <input
                     value={branding.backgroundUrl}
                     onChange={(e) => handleChange('backgroundUrl', e.target.value)}
                     placeholder="https://..."
-                    className="bg-white/5 border-white/10 text-white text-xs h-8"
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 
                 <div>
-                  <Label className="text-[10px] text-white/60 mb-1 block">Lower-Thirds Template</Label>
+                  <label className="text-[10px] text-white/60 mb-1 block">Lower-Thirds Template</label>
                   <select
                     value={branding.lowerthirdsTemplate}
                     onChange={(e) => handleChange('lowerthirdsTemplate', e.target.value)}
@@ -238,15 +232,16 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
           </div>
 
           <div className="flex gap-2 pt-3">
-            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
+            <button onClick={() => setOpen(false)} style={{ flex:1, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.2)', background:'transparent', color:'#fff', cursor:'pointer', fontSize:13 }}>
               Cancel
-            </Button>
-            <Button onClick={handleSave} className="flex-1 bg-[#d4af37] text-black hover:bg-[#e6c158]">
+            </button>
+            <button onClick={handleSave} style={{ flex:1, padding:'10px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13 }}>
               Save Branding
-            </Button>
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
     </>
   );
 }

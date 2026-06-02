@@ -1,0 +1,89 @@
+{
+  "properties": {
+    "from_user": {
+      "title": "Sender User ID",
+      "type": "string"
+    },
+    "is_whisper": {
+      "default": false,
+      "title": "Is Whisper",
+      "type": "boolean"
+    },
+    "message": {
+      "title": "Message Text",
+      "type": "string"
+    },
+    "read": {
+      "default": false,
+      "title": "Read",
+      "type": "boolean"
+    },
+    "room_id": {
+      "title": "Room ID",
+      "type": "string"
+    },
+    "sent_at": {
+      "format": "date-time",
+      "title": "Sent At",
+      "type": "string"
+    },
+    "to_user": {
+      "title": "Recipient User ID",
+      "type": "string"
+    }
+  },
+  "required": [
+    "from_user",
+    "to_user",
+    "message"
+  ],
+  "type": "object",
+  "name": "DMThread",
+  "rls": {
+    "create": {
+      "data.from_user": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.from_user": "{{user.id}}"
+        },
+        {
+          "data.to_user": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.from_user": "{{user.id}}"
+        },
+        {
+          "data.to_user": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.from_user": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "name": "ChatTranslation",
+  "properties": {
+    "compression_ratio": {
+      "description": "LLMLingua compression ratio applied (0.0-1.0)",
+      "type": "number"
+    },
+    "detected_lang": {
+      "description": "Auto-detected source language code",
+      "type": "string"
+    },
+    "message_id": {
+      "description": "Source chat message ID",
+      "type": "string"
+    },
+    "original_text": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "source_lang": {
+      "default": "auto",
+      "description": "Source language (auto=detected)",
+      "type": "string"
+    },
+    "target_lang": {
+      "description": "Target language code",
+      "type": "string"
+    },
+    "translated_text": {
+      "description": "Translated output",
+      "type": "string"
+    },
+    "translation_model": {
+      "default": "claude-haiku-4-5-20251001",
+      "description": "Model used for translation",
+      "type": "string"
+    },
+    "user_id": {
+      "description": "User who sent the original message",
+      "type": "string"
+    }
+  },
+  "required": [
+    "message_id",
+    "original_text",
+    "target_lang",
+    "translated_text"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

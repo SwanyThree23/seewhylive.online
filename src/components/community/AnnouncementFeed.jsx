@@ -1,10 +1,12 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Megaphone, Pin, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+
+const GOLD = '#D4AF37';
+const BG = '#080B18';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function AnnouncementFeed({ communityId }) {
   const { data: announcements = [], isLoading } = useQuery({
@@ -15,88 +17,94 @@ export default function AnnouncementFeed({ communityId }) {
     ),
   });
 
-  const priorityColors = {
-    low: 'bg-gray-100 text-gray-800',
-    normal: 'bg-blue-100 text-blue-800',
-    high: 'bg-orange-100 text-orange-800',
-    urgent: 'bg-red-100 text-red-800',
+  const priorityBadgeColors = {
+    low:    { background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
+    normal: { background: 'rgba(59,130,246,0.2)',  color: '#60a5fa' },
+    high:   { background: 'rgba(249,115,22,0.2)',  color: '#fb923c' },
+    urgent: { background: 'rgba(239,68,68,0.2)',   color: '#f87171' },
   };
 
   const priorityIcons = {
-    urgent: <AlertCircle className="w-4 h-4" />,
+    urgent: <AlertCircle className="w-4 h-4" style={{ display: 'inline', marginRight: 4 }} />,
   };
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">Loading announcements...</div>
-        </CardContent>
-      </Card>
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: 24, textAlign: 'center', color: 'rgba(255,255,255,0.4)', ...T }}>
+        Loading announcements...
+      </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {announcements.map((announcement) => (
-        <Card
+        <div
           key={announcement.id}
-          className={`${
-            announcement.is_pinned ? 'border-purple-200 bg-purple-50/50' : ''
-          }`}
+          style={{
+            background: announcement.is_pinned ? 'rgba(139,92,246,0.07)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${announcement.is_pinned ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            borderRadius: 12,
+            padding: 16,
+          }}
         >
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                announcement.priority === 'urgent' ? 'bg-red-100' : 'bg-purple-100'
-              }`}>
-                {announcement.is_pinned ? (
-                  <Pin className="w-5 h-5 text-purple-600" />
-                ) : (
-                  <Megaphone className={`w-5 h-5 ${
-                    announcement.priority === 'urgent' ? 'text-red-600' : 'text-purple-600'
-                  }`} />
-                )}
-              </div>
-
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h4 className="font-semibold">{announcement.title}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(announcement.sent_at), 'MMM d, yyyy • h:mm a')}
-                    </p>
-                  </div>
-                  <Badge className={priorityColors[announcement.priority]}>
-                    {priorityIcons[announcement.priority]}
-                    {announcement.priority}
-                  </Badge>
-                </div>
-
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {announcement.content}
-                </p>
-
-                {announcement.target_audience !== 'all' && (
-                  <div className="mt-2">
-                    <Badge variant="outline" className="text-xs">
-                      Target: {announcement.target_audience.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                )}
-              </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: announcement.priority === 'urgent' ? 'rgba(239,68,68,0.15)' : 'rgba(139,92,246,0.15)',
+              flexShrink: 0,
+            }}>
+              {announcement.is_pinned ? (
+                <Pin className="w-5 h-5" style={{ color: '#a78bfa' }} />
+              ) : (
+                <Megaphone className="w-5 h-5" style={{ color: announcement.priority === 'urgent' ? '#f87171' : '#a78bfa' }} />
+              )}
             </div>
-          </CardContent>
-        </Card>
+
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div>
+                  <h4 style={{ fontWeight: 700, color: '#fff', margin: 0, ...T }}>{announcement.title}</h4>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0', ...T }}>
+                    {format(new Date(announcement.sent_at), 'MMM d, yyyy • h:mm a')}
+                  </p>
+                </div>
+                <span style={{
+                  fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99,
+                  display: 'inline-flex', alignItems: 'center', gap: 2,
+                  ...priorityBadgeColors[announcement.priority],
+                  ...T,
+                }}>
+                  {priorityIcons[announcement.priority]}
+                  {announcement.priority}
+                </span>
+              </div>
+
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', whiteSpace: 'pre-wrap', margin: 0, ...T }}>
+                {announcement.content}
+              </p>
+
+              {announcement.target_audience !== 'all' && (
+                <div style={{ marginTop: 8 }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99,
+                    background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)',
+                    border: '1px solid rgba(255,255,255,0.1)', ...T,
+                  }}>
+                    Target: {announcement.target_audience.replace('_', ' ')}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       ))}
 
       {announcements.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Megaphone className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">No announcements yet</p>
-          </CardContent>
-        </Card>
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '48px 24px', textAlign: 'center' }}>
+          <Megaphone className="w-12 h-12" style={{ display: 'block', margin: '0 auto 12px', color: 'rgba(255,255,255,0.2)' }} />
+          <p style={{ color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>No announcements yet</p>
+        </div>
       )}
     </div>
   );

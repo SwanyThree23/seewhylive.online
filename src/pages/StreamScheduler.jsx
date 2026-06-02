@@ -2,11 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Plus, ChevronLeft, ChevronRight, Calendar, Clock, Bell,
   Radio, Share2, Pencil, Trash2, X, Check, RefreshCw
@@ -37,6 +32,14 @@ function getDaysInMonth(year, month) {
 }
 function getFirstDayOfMonth(year, month) {
   return new Date(year, month, 1).getDay();
+}
+
+function Toggle({ checked, onChange }) {
+  return (
+    <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+    </div>
+  );
 }
 
 export default function StreamScheduler() {
@@ -155,16 +158,17 @@ export default function StreamScheduler() {
                 </button>
               ))}
             </div>
-            <Button onClick={() => { setEditingStream(null); setForm(blankForm); setShowForm(true); }}
-              className="bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold gap-1.5">
+            <button
+              onClick={() => { setEditingStream(null); setForm(blankForm); setShowForm(true); }}
+              style={{ background: '#D4AF37', color: '#000', fontWeight: 900, padding: '8px 16px', borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, textTransform: 'uppercase' }}>
               <Plus className="w-4 h-4" /> Schedule Stream
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Calendar */}
-        <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.15)]">
-          <CardHeader className="pb-2 pt-4 px-4">
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16 }}>
+          <div style={{ padding: '16px 16px 8px' }}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">{monthName}</h2>
               <div className="flex gap-1">
@@ -180,8 +184,8 @@ export default function StreamScheduler() {
                 </button>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-4">
+          </div>
+          <div style={{ padding: 16 }}>
             <div className="grid grid-cols-7 mb-2">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
                 <div key={d} className="text-center text-[10px] text-white/30 uppercase py-1">{d}</div>
@@ -249,54 +253,66 @@ export default function StreamScheduler() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Upcoming streams list */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-white">Upcoming Streams</h2>
           {upcomingStreams.length === 0 ? (
-            <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)]">
-              <CardContent className="p-12 text-center">
-                <Calendar className="w-12 h-12 mx-auto text-white/20 mb-3" />
-                <p className="text-white/40">No upcoming streams — schedule your first one!</p>
-              </CardContent>
-            </Card>
+            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16 }}>
+              <div style={{ padding: 16 }}>
+                <div style={{ padding: '48px 16px', textAlign: 'center' }}>
+                  <Calendar className="w-12 h-12 mx-auto text-white/20 mb-3" />
+                  <p className="text-white/40">No upcoming streams — schedule your first one!</p>
+                </div>
+              </div>
+            </div>
           ) : (
             upcomingStreams.map(s => (
               <motion.div key={s.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)] hover:border-[rgba(212,175,55,0.2)] transition-all">
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
-                      style={{ background: `${CAT_COLORS[s.category] || '#d4af37'}20`, border: `1px solid ${CAT_COLORS[s.category] || '#d4af37'}40` }}>
-                      {CATEGORIES.find(c => c.id === s.category)?.label?.charAt(0) || '🎬'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-bold text-white truncate">{s.title}</p>
-                        {s.is_recurring && <Badge className="text-[9px] bg-purple-900/40 text-purple-400 border-purple-700/30 px-1.5"><RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}</Badge>}
-                        {!s.is_public && <Badge className="text-[9px] bg-white/10 text-white/40 border-white/10 px-1.5">Private</Badge>}
+                <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16 }}>
+                  <div style={{ padding: 16 }}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+                        style={{ background: `${CAT_COLORS[s.category] || '#d4af37'}20`, border: `1px solid ${CAT_COLORS[s.category] || '#d4af37'}40` }}>
+                        {CATEGORIES.find(c => c.id === s.category)?.label?.charAt(0) || '🎬'}
                       </div>
-                      <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs font-semibold text-[#00d4ff]">⏱ {getCountdown(s.scheduled_start)}</span>
-                        <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-bold text-white truncate">{s.title}</p>
+                          {s.is_recurring && (
+                            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 99, background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
+                              <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
+                            </span>
+                          )}
+                          {!s.is_public && (
+                            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 99, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                              Private
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-xs font-semibold text-[#00d4ff]">⏱ {getCountdown(s.scheduled_start)}</span>
+                          <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
+                          <Share2 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => { if (window.confirm('Cancel this stream?')) deleteMutation.mutate(s.id); }}
+                          className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-900/20 flex items-center justify-center text-white/40 hover:text-red-400">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => { if (window.confirm('Cancel this stream?')) deleteMutation.mutate(s.id); }}
-                        className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-900/20 flex items-center justify-center text-white/40 hover:text-red-400">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             ))
           )}
@@ -328,8 +344,12 @@ export default function StreamScheduler() {
                     <label className="text-xs text-white/50">Stream Title *</label>
                     <span className="text-[10px] text-white/30">{form.title.length}/80</span>
                   </div>
-                  <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value.slice(0, 80) }))}
-                    placeholder="What are you streaming?" className="bg-white/5 border-white/20 text-white placeholder:text-white/25" />
+                  <input
+                    value={form.title}
+                    onChange={e => setForm(f => ({ ...f, title: e.target.value.slice(0, 80) }))}
+                    placeholder="What are you streaming?"
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '8px 12px', color: 'white', fontSize: 14, outline: 'none' }}
+                  />
                 </div>
 
                 {/* Description */}
@@ -395,24 +415,24 @@ export default function StreamScheduler() {
                       <p className="text-sm text-white">Recurring Stream</p>
                       <p className="text-[10px] text-white/40">Repeat on a schedule</p>
                     </div>
-                    <Switch checked={form.is_recurring} onCheckedChange={v => setForm(f => ({ ...f, is_recurring: v }))}
-                      className="data-[state=checked]:bg-[#d4af37]" />
+                    <Toggle checked={form.is_recurring} onChange={v => setForm(f => ({ ...f, is_recurring: v }))} />
                   </div>
                   {form.is_recurring && (
-                    <select value={form.recurrence} onChange={e => setForm(f => ({ ...f, recurrence: e.target.value }))}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none">
-                      <option value="daily" className="bg-[#0d0618]">Daily</option>
-                      <option value="weekly" className="bg-[#0d0618]">Weekly</option>
-                      <option value="biweekly" className="bg-[#0d0618]">Every 2 weeks</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {[{ v: 'daily', l: 'Daily' }, { v: 'weekly', l: 'Weekly' }, { v: 'biweekly', l: 'Every 2 weeks' }].map(opt => (
+                        <button key={opt.v} onClick={() => setForm(f => ({ ...f, recurrence: opt.v }))}
+                          style={{ padding: '6px 14px', borderRadius: 99, fontSize: 11, border: `1px solid ${form.recurrence === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: form.recurrence === opt.v ? 'rgba(212,175,55,0.15)' : 'transparent', color: form.recurrence === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                          {opt.l}
+                        </button>
+                      ))}
+                    </div>
                   )}
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-white">Public Stream</p>
                       <p className="text-[10px] text-white/40">Visible on discover page</p>
                     </div>
-                    <Switch checked={form.is_public} onCheckedChange={v => setForm(f => ({ ...f, is_public: v }))}
-                      className="data-[state=checked]:bg-[#d4af37]" />
+                    <Toggle checked={form.is_public} onChange={v => setForm(f => ({ ...f, is_public: v }))} />
                   </div>
                 </div>
 
@@ -432,14 +452,18 @@ export default function StreamScheduler() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button onClick={handleSave}
+                  <button
+                    onClick={handleSave}
                     disabled={createMutation.isPending || updateMutation.isPending}
-                    className="flex-1 bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold">
-                    <Check className="w-4 h-4 mr-1.5" />
+                    style={{ background: '#D4AF37', color: '#000', fontWeight: 900, padding: '8px 16px', borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, textTransform: 'uppercase', flex: 1, justifyContent: 'center' }}>
+                    <Check className="w-4 h-4" />
                     {editingStream ? 'Save Changes' : 'Schedule Stream'}
-                  </Button>
-                  <Button variant="ghost" onClick={() => { setShowForm(false); setEditingStream(null); }}
-                    className="text-white/50 hover:text-white">Cancel</Button>
+                  </button>
+                  <button
+                    onClick={() => { setShowForm(false); setEditingStream(null); }}
+                    style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', padding: '8px 16px', borderRadius: 12, border: 'none', cursor: 'pointer' }}>
+                    Cancel
+                  </button>
                 </div>
               </div>
             </motion.div>

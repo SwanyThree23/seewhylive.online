@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Users, MessageSquare, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 const COLLAB_OPPORTUNITIES = [
   {
@@ -95,17 +94,20 @@ export default function CollaborationMatcher() {
             </div>
 
             {interested.has(creator.id) && (
-              <Button
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(`https://youtube.com${creator.url}`, '_blank');
+                  window.open(`https://youtube.com${creator.url}`, '_blank', 'noopener,noreferrer');
                 }}
-                className="w-full h-7 text-[10px]"
-                style={{ background: creator.color, color: 'white' }}
+                style={{
+                  width: '100%', height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 4, fontSize: 10, cursor: 'pointer', borderRadius: 6,
+                  background: creator.color, color: 'white', border: 'none',
+                }}
               >
-                <MessageSquare className="w-3 h-3 mr-1" />
+                <MessageSquare className="w-3 h-3" />
                 Send Collab Request
-              </Button>
+              </button>
             )}
           </motion.div>
         ))}

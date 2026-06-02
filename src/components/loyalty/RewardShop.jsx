@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ShoppingBag, Zap, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +16,8 @@ const REWARD_LABELS = {
   shoutout: 'Shoutout', badge: 'Badge', custom_emote: 'Custom Emote',
   discount_code: 'Discount Code', exclusive_content: 'Exclusive Content',
 };
+
+const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 
 export default function RewardShop({ creatorId, roomId, currentUser }) {
   const [redeeming, setRedeeming] = useState(null);
@@ -70,64 +70,68 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
 
   if (rewards.length === 0) {
     return (
-      <div className="text-center py-8 text-white/30">
-        <ShoppingBag className="w-8 h-8 mx-auto mb-2 opacity-30" />
-        <p className="text-xs">No rewards available yet</p>
+      <div style={{ textAlign:'center', padding:'32px 0', color:'rgba(255,255,255,0.3)' }}>
+        <ShoppingBag style={{ width:32, height:32, margin:'0 auto 8px', opacity:0.3 }} />
+        <p style={{ fontSize:12 }}>No rewards available yet</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between px-1">
-        <span className="text-[10px] font-bold uppercase text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 4px' }}>
+        <span style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', color:'rgba(255,255,255,0.4)', fontFamily:'Barlow Condensed, sans-serif', letterSpacing:'0.1em' }}>
           Reward Shop
         </span>
-        <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-          <Zap className="w-3 h-3 text-[#d4af37]" />
-          <span className="text-xs font-black font-mono text-[#d4af37]">{balance.toLocaleString()}</span>
-          <span className="text-[9px] text-white/40">pts</span>
+        <div style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 8px', borderRadius:8, background:'rgba(212,175,55,0.1)', border:'1px solid rgba(212,175,55,0.2)' }}>
+          <Zap style={{ width:12, height:12, color:'#d4af37' }} />
+          <span style={{ fontSize:12, fontWeight:900, fontFamily:'monospace', color:'#d4af37' }}>{balance.toLocaleString()}</span>
+          <span style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>pts</span>
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
         {rewards.map(reward => {
           const canAfford = balance >= reward.points_required;
           const isRedeeming = redeeming === reward.id && redeemMutation.isPending;
           return (
             <motion.div key={reward.id}
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className="rounded-xl p-3 flex items-center gap-3 transition-all"
               style={{
+                borderRadius:12, padding:12, display:'flex', alignItems:'center', gap:12,
                 background: canAfford ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.03)',
                 border: `1px solid ${canAfford ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                transition:'all 0.15s',
               }}>
-              <div className="text-2xl w-9 h-9 flex items-center justify-center rounded-xl shrink-0"
-                style={{ background: 'rgba(0,0,0,0.3)' }}>
+              <div style={{ fontSize:24, width:36, height:36, display:'flex', alignItems:'center', justifyContent:'center', borderRadius:12, background:'rgba(0,0,0,0.3)', flexShrink:0 }}>
                 {reward.icon || REWARD_ICONS[reward.reward_type] || '🎁'}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-white truncate">{reward.name}</p>
-                <p className="text-[10px] text-white/40 truncate">{reward.description || REWARD_LABELS[reward.reward_type]}</p>
+              <div style={{ flex:1, minWidth:0 }}>
+                <p style={{ fontSize:12, fontWeight:700, color:'#fff', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{reward.name}</p>
+                <p style={{ fontSize:10, color:'rgba(255,255,255,0.4)', margin:'2px 0 0', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{reward.description || REWARD_LABELS[reward.reward_type]}</p>
                 {reward.stock != null && (
-                  <p className="text-[9px] text-orange-400/70">{reward.stock - (reward.claimed_count || 0)} left</p>
+                  <p style={{ fontSize:9, color:'rgba(251,146,60,0.7)', margin:'2px 0 0' }}>{reward.stock - (reward.claimed_count || 0)} left</p>
                 )}
               </div>
-              <div className="flex flex-col items-end gap-1 shrink-0">
-                <div className="flex items-center gap-0.5">
-                  <Zap className="w-2.5 h-2.5 text-[#d4af37]" />
-                  <span className="text-[10px] font-black text-[#d4af37] font-mono">{reward.points_required.toLocaleString()}</span>
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4, flexShrink:0 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:2 }}>
+                  <Zap style={{ width:10, height:10, color:'#d4af37' }} />
+                  <span style={{ fontSize:10, fontWeight:900, color:'#d4af37', fontFamily:'monospace' }}>{reward.points_required.toLocaleString()}</span>
                 </div>
                 <button
                   onClick={() => handleRedeem(reward)}
                   disabled={!canAfford || isRedeeming}
-                  className="text-[9px] font-black uppercase px-2.5 py-1 rounded-lg transition-all active:scale-95 disabled:opacity-40"
                   style={{
-                    fontFamily: 'Barlow Condensed, sans-serif',
+                    fontSize:9, fontWeight:900, textTransform:'uppercase', padding:'4px 10px', borderRadius:8,
+                    border:'none', cursor: (!canAfford || isRedeeming) ? 'not-allowed' : 'pointer',
+                    fontFamily:'Barlow Condensed, sans-serif',
                     background: canAfford ? '#d4af37' : 'rgba(255,255,255,0.06)',
                     color: canAfford ? '#000' : 'rgba(255,255,255,0.3)',
+                    opacity: (!canAfford || isRedeeming) ? 0.6 : 1,
+                    transition:'all 0.15s',
+                    display:'flex', alignItems:'center', justifyContent:'center',
                   }}>
-                  {isRedeeming ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Redeem'}
+                  {isRedeeming ? <Loader2 style={{ width:12, height:12 }} className="animate-spin" /> : 'Redeem'}
                 </button>
               </div>
             </motion.div>
@@ -138,32 +142,34 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
       <AnimatePresence>
         {showMessage && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.7)' }}
+            style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'flex-end', justifyContent:'center', padding:16, background:'rgba(0,0,0,0.7)' }}
             onClick={() => setShowMessage(null)}>
             <motion.div initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-              style={{ background: '#0d0618', border: '1px solid rgba(212,175,55,0.2)' }}>
-              <p className="text-sm font-bold text-white">
+              style={{ width:'100%', maxWidth:384, borderRadius:16, padding:20, background:'#0d0618', border:'1px solid rgba(212,175,55,0.2)', display:'flex', flexDirection:'column', gap:16 }}>
+              <p style={{ fontSize:14, fontWeight:700, color:'#fff', margin:0 }}>
                 {showMessage.reward_type === 'song_request' ? '🎵 Request a Song' : '📌 Pin Your Message'}
               </p>
-              <Input
+              <input
+                style={INPUT_STYLE}
                 placeholder={showMessage.reward_type === 'song_request' ? 'Song name + artist...' : 'Message to pin...'}
                 value={messageInput}
                 onChange={e => setMessageInput(e.target.value)}
-                className="text-white bg-white/5 border-white/10"
                 autoFocus
               />
-              <div className="flex gap-2">
-                <Button variant="ghost" className="flex-1 text-white/50" onClick={() => setShowMessage(null)}>Cancel</Button>
-                <Button
-                  className="flex-1 font-bold"
-                  style={{ background: '#d4af37', color: '#000' }}
+              <div style={{ display:'flex', gap:8 }}>
+                <button
+                  onClick={() => setShowMessage(null)}
+                  style={{ flex:1, padding:'10px', background:'transparent', color:'rgba(255,255,255,0.5)', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={{ flex:1, padding:'10px', background:'#d4af37', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: (!messageInput.trim() || redeemMutation.isPending) ? 'not-allowed' : 'pointer', opacity: (!messageInput.trim() || redeemMutation.isPending) ? 0.6 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif', display:'flex', alignItems:'center', justifyContent:'center' }}
                   disabled={!messageInput.trim() || redeemMutation.isPending}
                   onClick={() => confirmWithMessage(showMessage)}>
-                  {redeemMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Redeem'}
-                </Button>
+                  {redeemMutation.isPending ? <Loader2 style={{ width:16, height:16 }} className="animate-spin" /> : 'Redeem'}
+                </button>
               </div>
             </motion.div>
           </motion.div>
