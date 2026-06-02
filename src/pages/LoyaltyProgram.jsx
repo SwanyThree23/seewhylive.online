@@ -2,8 +2,15 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Switch } from '@/components/ui/switch';
 import { Plus, Star, Gift, Trophy, Users, Zap, Download, Trash2, X, Check } from 'lucide-react';
+
+function Toggle({ checked, onChange }) {
+  return (
+    <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+    </div>
+  );
+}
 import { toast } from 'sonner';
 
 const BG = '#080B18';
@@ -237,7 +244,7 @@ export default function LoyaltyProgram() {
                       <div className="shrink-0">
                         {isOwnProgram ? (
                           <div className="flex gap-1.5 items-center">
-                            <Switch checked={r.is_active} onCheckedChange={v => toggleRewardMutation.mutate({ id: r.id, is_active: v })} />
+                            <Toggle checked={r.is_active} onChange={v => toggleRewardMutation.mutate({ id: r.id, is_active: v })} />
                             <button onClick={() => deleteRewardMutation.mutate(r.id)}
                               className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
                               style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer' }}>
@@ -310,14 +317,16 @@ export default function LoyaltyProgram() {
                   placeholder="Reward name" style={inp} />
                 <input value={rewardForm.description} onChange={e => setRewardForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Description" style={inp} />
-                <div className="flex gap-2">
-                  <input type="number" value={rewardForm.points_required}
-                    onChange={e => setRewardForm(f => ({ ...f, points_required: Number(e.target.value) }))}
-                    placeholder="Points required" style={{ ...inp, flex: 1 }} />
-                  <select value={rewardForm.reward_type} onChange={e => setRewardForm(f => ({ ...f, reward_type: e.target.value }))}
-                    style={{ ...inp, flex: 1, width: 'auto' }}>
-                    {REWARD_TYPES.map(rt => <option key={rt.id} value={rt.id}>{rt.label}</option>)}
-                  </select>
+                <input type="number" value={rewardForm.points_required}
+                  onChange={e => setRewardForm(f => ({ ...f, points_required: Number(e.target.value) }))}
+                  placeholder="Points required" style={inp} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {REWARD_TYPES.map(rt => (
+                    <button key={rt.id} onClick={() => setRewardForm(f => ({ ...f, reward_type: rt.id }))}
+                      style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${rewardForm.reward_type === rt.id ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: rewardForm.reward_type === rt.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: rewardForm.reward_type === rt.id ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      {rt.label}
+                    </button>
+                  ))}
                 </div>
                 <input value={rewardForm.reward_value} onChange={e => setRewardForm(f => ({ ...f, reward_value: e.target.value }))}
                   placeholder="Reward value (badge name, code, etc.)" style={inp} />

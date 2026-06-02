@@ -7,8 +7,6 @@ import {
   CheckCircle, ChevronDown, ChevronUp, Settings,
   Eye, EyeOff, Users, ArrowRight, X, Clock, Layers
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 
@@ -366,15 +364,16 @@ export default function GreenroomPage() {
             {destType === 'new_room' ? (
               <div className="space-y-2">
                 <p className="text-[8px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>New Room</p>
-                <Input placeholder="Room title..." value={newRoomTitle} onChange={e => setNewRoomTitle(e.target.value)}
-                  className="h-8 text-[11px]"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
-                <select value={newRoomCategory} onChange={e => setNewRoomCategory(e.target.value)}
-                  className="w-full h-8 px-2 rounded text-[10px]"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}>
-                  {['gaming','music','education','talk','fitness','tech','irl','other'].map(c =>
-                    <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-                </select>
+                <input placeholder="Room title..." value={newRoomTitle} onChange={e => setNewRoomTitle(e.target.value)}
+                  style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {['gaming','music','education','talk','fitness','tech','irl','other'].map(c => (
+                    <button key={c} onClick={() => setNewRoomCategory(c)}
+                      style={{ padding: '3px 8px', borderRadius: 99, fontSize: 10, border: `1px solid ${newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: newRoomCategory === c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', color: newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'capitalize' }}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : room ? (
               <div className="flex items-center gap-3">
@@ -412,9 +411,9 @@ export default function GreenroomPage() {
                 style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Display Name
               </label>
-              <Input value={displayName} onChange={e => setDisplayName(e.target.value)}
-                placeholder="Your name..." className="h-8 text-[11px]"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
+              <input value={displayName} onChange={e => setDisplayName(e.target.value)}
+                placeholder="Your name..."
+                style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             {!isHost && (
               <>

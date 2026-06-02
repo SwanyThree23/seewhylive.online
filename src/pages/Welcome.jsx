@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, ChevronRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -105,25 +104,22 @@ export default function WelcomePage() {
             transition={{ delay: 0.2 }}
             className="flex flex-col md:flex-row gap-4 mb-8"
           >
-            <Button
+            <button
               onClick={() => base44.auth.redirectToLogin()}
-              size="lg"
               className="px-8 py-3 rounded-full font-black text-base md:text-lg flex items-center gap-2"
-              style={{ background: G, color: '#000' }}
+              style={{ background: G, color: '#000', border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               <Radio className="w-5 h-5" />
               Start Broadcasting
               <ChevronRight className="w-5 h-5" />
-            </Button>
+            </button>
             <Link to="/Home" className="w-full md:w-auto">
-              <Button
-                size="lg"
-                variant="outline"
+              <button
                 className="w-full px-8 py-3 rounded-full font-black text-base md:text-lg"
-                style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff' }}
+                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 Watch Streams
-              </Button>
+              </button>
             </Link>
           </motion.div>
 

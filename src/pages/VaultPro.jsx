@@ -416,11 +416,14 @@ export default function VaultPro() {
 
                 {showAddKey && (
                   <Modal title="Add Stream Key" onClose={() => setShowAddKey(false)}>
-                    <select value={newKeyPlatform} onChange={e => setNewKeyPlatform(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none"
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', ...T }}>
-                      {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {PLATFORMS.map(p => (
+                        <button key={p} onClick={() => setNewKeyPlatform(p)}
+                          style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${newKeyPlatform === p ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: newKeyPlatform === p ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', color: newKeyPlatform === p ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                          {p}
+                        </button>
+                      ))}
+                    </div>
                     <InputField placeholder="RTMP stream key…" value={newKeyValue} onChange={e => setNewKeyValue(e.target.value)} type="password" />
                     <GoldBtn onClick={handleAddStreamKey} disabled={isLoading || !newKeyValue.trim()}>
                       {isLoading ? 'Encrypting…' : '🔒 Encrypt & Save'}

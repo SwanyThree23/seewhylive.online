@@ -190,9 +190,14 @@ export default function ContentCalendarPage() {
             </div>
             <div className="p-5 space-y-1">
               <label style={lbl}>Content Type</label>
-              <select style={inp} value={formData.content_type} onChange={e => set('content_type', e.target.value)}>
-                {['room','event','announcement','newsletter','challenge'].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>)}
-              </select>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {['room','event','announcement','newsletter','challenge'].map(t => (
+                  <button key={t} onClick={() => set('content_type', t)}
+                    style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${formData.content_type === t ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: formData.content_type === t ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: formData.content_type === t ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                    {t.charAt(0).toUpperCase()+t.slice(1)}
+                  </button>
+                ))}
+              </div>
 
               <label style={lbl}>Title</label>
               <input style={inp} value={formData.title} onChange={e => set('title', e.target.value)} placeholder="Enter title" />
@@ -206,9 +211,14 @@ export default function ContentCalendarPage() {
                 onChange={e => set('scheduled_for', new Date(e.target.value).toISOString())} />
 
               <label style={lbl}>Recurrence</label>
-              <select style={inp} value={formData.recurrence} onChange={e => set('recurrence', e.target.value)}>
-                {['none','daily','weekly','monthly'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase()+r.slice(1)}</option>)}
-              </select>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {['none','daily','weekly','monthly'].map(r => (
+                  <button key={r} onClick={() => set('recurrence', r)}
+                    style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${formData.recurrence === r ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: formData.recurrence === r ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: formData.recurrence === r ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                    {r.charAt(0).toUpperCase()+r.slice(1)}
+                  </button>
+                ))}
+              </div>
 
               <button onClick={() => createMutation.mutate(formData)} disabled={createMutation.isPending || !formData.title}
                 className="w-full py-3 rounded-xl font-black uppercase text-sm mt-4"

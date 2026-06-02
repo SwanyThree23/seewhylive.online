@@ -245,11 +245,14 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-2">
                           <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: u.role === 'admin' ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${u.role === 'admin' ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`, color: u.role === 'admin' ? GOLD : 'rgba(255,255,255,0.4)' }}>{u.role}</span>
                           {u.id !== user?.id && (
-                            <select style={{ background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: 10, padding: '3px 8px', outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}
-                              value={u.role} onChange={e => changeRoleMutation.mutate({ userId: u.id, role: e.target.value })}>
-                              <option value="user">user</option>
-                              <option value="admin">admin</option>
-                            </select>
+                            <div style={{ display: 'flex', gap: 3 }}>
+                              {['user', 'admin'].map(r => (
+                                <button key={r} onClick={() => changeRoleMutation.mutate({ userId: u.id, role: r })}
+                                  style={{ padding: '3px 8px', borderRadius: 99, fontSize: 10, border: `1px solid ${u.role === r ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: u.role === r ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: u.role === r ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                                  {r}
+                                </button>
+                              ))}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -264,13 +267,14 @@ export default function AdminDashboard() {
         {activeTab === 'rooms' && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <select style={{ padding: '9px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}
-                value={roomFilter} onChange={e => setRoomFilter(e.target.value)}>
-                <option value="all">All Rooms</option>
-                <option value="live">Live</option>
-                <option value="scheduled">Scheduled</option>
-                <option value="ended">Ended</option>
-              </select>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[['all','All'],['live','Live'],['scheduled','Scheduled'],['ended','Ended']].map(([val, label]) => (
+                  <button key={val} onClick={() => setRoomFilter(val)}
+                    style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${roomFilter === val ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: roomFilter === val ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: roomFilter === val ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
               <span className="text-[10px] font-black px-2.5 py-1 rounded-full" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>{filteredRooms.length} rooms</span>
             </div>
             <DarkCard title="">
@@ -389,15 +393,14 @@ export default function AdminDashboard() {
                   placeholder="Username or user ID"
                   className="flex-1 h-9 px-3 rounded-xl text-xs text-white outline-none"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
-                <select value={suspendDuration} onChange={e => setSuspendDuration(e.target.value)}
-                  className="h-9 px-2 rounded-xl text-xs text-white outline-none"
-                  style={{ background: 'rgba(255,136,0,0.1)', border: '1px solid rgba(255,136,0,0.2)', color: '#FF8800' }}>
-                  <option value="1h">1 Hour</option>
-                  <option value="24h">24 Hours</option>
-                  <option value="7d">7 Days</option>
-                  <option value="30d">30 Days</option>
-                  <option value="perm">Permanent</option>
-                </select>
+                <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  {[['1h','1h'],['24h','24h'],['7d','7d'],['30d','30d'],['perm','Perm']].map(([val, label]) => (
+                    <button key={val} onClick={() => setSuspendDuration(val)}
+                      style={{ padding: '4px 8px', borderRadius: 99, fontSize: 10, border: `1px solid ${suspendDuration === val ? '#FF8800' : 'rgba(255,136,0,0.2)'}`, background: suspendDuration === val ? 'rgba(255,136,0,0.2)' : 'rgba(255,136,0,0.06)', color: suspendDuration === val ? '#FF8800' : 'rgba(255,136,0,0.6)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
                 <button onClick={() => { if(suspendUser.trim()) { setSuspensions(p => [...p, { user: suspendUser.trim(), duration: suspendDuration, date: new Date().toISOString() }]); setSuspendUser(''); toast.success('User suspended'); }}}
                   className="h-9 px-3 rounded-xl text-xs font-black"
                   style={{ background: 'rgba(255,136,0,0.12)', color: '#FF8800', border: '1px solid rgba(255,136,0,0.25)', ...T }}>
