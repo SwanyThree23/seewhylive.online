@@ -177,19 +177,26 @@ export default function CreateRoomPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label style={lbl}>Room Type</label>
-                <select style={inp} value={formData.type} onChange={e => set('type', e.target.value)}>
-                  <option value="audio">🎙 Audio Only</option>
-                  <option value="video">📹 Video</option>
-                  <option value="hybrid">📹🎙 Hybrid (Audio &amp; Video)</option>
-                </select>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[{v:'audio',l:'🎙 Audio Only'},{v:'video',l:'📹 Video'},{v:'hybrid',l:'📹🎙 Hybrid'}].map(opt => (
+                    <button key={opt.v} type="button" onClick={() => set('type', opt.v)}
+                      style={{ padding: '8px 14px', borderRadius: 99, fontSize: 12, border: `1px solid ${formData.type === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: formData.type === opt.v ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: formData.type === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      {opt.l}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
                 <label style={lbl}>Start</label>
-                <select style={inp} value={formData.status} onChange={e => set('status', e.target.value)}>
-                  <option value="live">Start Now (Go Live)</option>
-                  <option value="scheduled">Schedule for Later</option>
-                </select>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[{v:'live',l:'🔴 Start Now'},{v:'scheduled',l:'📅 Schedule'}].map(opt => (
+                    <button key={opt.v} type="button" onClick={() => set('status', opt.v)}
+                      style={{ padding: '8px 14px', borderRadius: 99, fontSize: 12, border: `1px solid ${formData.status === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: formData.status === opt.v ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: formData.status === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      {opt.l}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {formData.status === 'scheduled' && (
@@ -209,10 +216,14 @@ export default function CreateRoomPage() {
               {communities.length > 0 && (
                 <div>
                   <label style={lbl}>Community (Optional)</label>
-                  <select style={inp} value={formData.community_id} onChange={e => set('community_id', e.target.value)}>
-                    <option value="">None</option>
-                    {communities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[{id:'',name:'None'}, ...communities].map(c => (
+                      <button key={c.id} type="button" onClick={() => set('community_id', c.id)}
+                        style={{ padding: '8px 14px', borderRadius: 99, fontSize: 12, border: `1px solid ${formData.community_id === c.id ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: formData.community_id === c.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: formData.community_id === c.id ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                        {c.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
