@@ -48,6 +48,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var [selectedDuration, setSelectedDuration] = useState(300);
   var [challengerInput, setChallengerInput]   = useState('');
   var [defenderInput, setDefenderInput]       = useState('');
+  var [cheerA, setCheerA]                     = useState([]);
+  var [cheerB, setCheerB]                     = useState([]);
 
   var countdownRef  = useRef(null);
   var simScoreRef   = useRef(null);
@@ -80,6 +82,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       setCountdown(data.duration || 300);
       setBattleLog([]);
       setWinner(null);
+      setCheerA([]);
+      setCheerB([]);
       if (addToast) addToast('⚔️ PK Battle started!', 'success');
     });
     socket.on('pk-score', function(data) {
@@ -100,12 +104,19 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       if (typeof data.defenderVotes   === 'number') setDefenderScore(data.defenderVotes);
     });
 
+    socket.on('pk-cheer-update', function(data) {
+      if (!data) return;
+      if (data.cheerA) setCheerA(data.cheerA.slice(0, 20));
+      if (data.cheerB) setCheerB(data.cheerB.slice(0, 20));
+    });
+
     return function() {
       socket.off('pk-update');
       socket.off('pk-start');
       socket.off('pk-score');
       socket.off('pk-end');
       socket.off('pk-vote-update');
+      socket.off('pk-cheer-update');
     };
   }, [socket]);
 
@@ -231,11 +242,11 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   var isHost = role === 'host' || role === 'cohost';
 
   var containerStyle = {
-    background: '#0F0C14',
+    background: '#0E0C09',
     minHeight: '100%',
     padding: '16px',
     fontFamily: "'Barlow Condensed',sans-serif",
-    color: '#EDE8F5'
+    color: '#F0E8D4'
   };
 
   var cardStyle = {
@@ -250,7 +261,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     fontFamily: "'Bebas Neue',sans-serif",
     fontSize: 11,
     letterSpacing: 2,
-    color: '#7A6F90',
+    color: '#8A7A62',
     marginBottom: 6,
     display: 'block'
   };
@@ -261,7 +272,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     border: '1px solid rgba(255,255,255,.12)',
     borderRadius: 8,
     padding: '10px 14px',
-    color: '#EDE8F5',
+    color: '#F0E8D4',
     fontFamily: "'Barlow Condensed',sans-serif",
     fontSize: 15,
     outline: 'none',
@@ -277,7 +288,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', letterSpacing: 2, marginBottom: 4 }}>
             ⚡ PK BATTLE
           </div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#7A6F90' }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#8A7A62' }}>
             1v1 live battle — viewers vote for their champion
           </div>
         </div>
@@ -323,7 +334,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                       background: isSelected ? 'rgba(201,168,76,.25)' : 'rgba(255,255,255,.04)',
                       border: isSelected ? '1px solid rgba(201,168,76,.6)' : '1px solid rgba(255,255,255,.1)',
                       borderRadius: 8,
-                      color: isSelected ? '#C9A84C' : '#7A6F90',
+                      color: isSelected ? '#C9A84C' : '#8A7A62',
                       fontFamily: "'Bebas Neue',sans-serif",
                       fontSize: 13,
                       letterSpacing: 1,
@@ -357,7 +368,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         ) : (
           <div style={Object.assign({}, cardStyle, { textAlign: 'center', padding: '32px 20px' })}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>⚡</div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#7A6F90', letterSpacing: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#8A7A62', letterSpacing: 1 }}>
               WAITING FOR HOST TO START A BATTLE
             </div>
           </div>
@@ -369,11 +380,11 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
           {RIVALS_DATA.map(function(r) {
-            var statusColor = r.status === 'LIVE' ? '#FF1564' : (r.status === 'ONLINE' ? '#00C9A7' : (r.status === 'NEW' ? '#C9A84C' : '#3D3450'));
+            var statusColor = r.status === 'LIVE' ? '#800020' : (r.status === 'ONLINE' ? '#C9A84C' : (r.status === 'NEW' ? '#C9A84C' : '#3D3450'));
             return (
               <div key={r.name} style={{
                 background: 'rgba(22,16,32,.8)',
-                border: r.status === 'LIVE' ? '1px solid rgba(255,21,100,.35)' : '1px solid rgba(255,255,255,.06)',
+                border: r.status === 'LIVE' ? '1px solid rgba(128,0,32,.35)' : '1px solid rgba(255,255,255,.06)',
                 borderRadius: 12,
                 padding: '14px 10px',
                 display: 'flex',
@@ -389,15 +400,15 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                 <div style={{ position: 'relative' }}>
                   <AvatarPortrait username={r.name} size={52} />
                   {r.status === 'LIVE' && (
-                    <div style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', background: '#FF1564', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 5.5, color: '#fff', letterSpacing: 1, whiteSpace: 'nowrap' }}>LIVE</div>
+                    <div style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', background: '#800020', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 5.5, color: '#fff', letterSpacing: 1, whiteSpace: 'nowrap' }}>LIVE</div>
                   )}
                 </div>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#EDE8F5', letterSpacing: 1, textAlign: 'center' }}>{r.name}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#F0E8D4', letterSpacing: 1, textAlign: 'center' }}>{r.name}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: statusColor }} />
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: statusColor, letterSpacing: 0.5 }}>{r.status}</span>
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>
                   {r.wins}W-{r.losses}L · {r.elo} ELO
                 </div>
                 <button
@@ -405,10 +416,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                   style={{
                     width: '100%',
                     padding: '7px 0',
-                    background: r.status === 'LIVE' ? 'rgba(255,21,100,.2)' : 'rgba(201,168,76,.1)',
-                    border: '1px solid ' + (r.status === 'LIVE' ? 'rgba(255,21,100,.45)' : 'rgba(201,168,76,.3)'),
+                    background: r.status === 'LIVE' ? 'rgba(128,0,32,.2)' : 'rgba(201,168,76,.1)',
+                    border: '1px solid ' + (r.status === 'LIVE' ? 'rgba(128,0,32,.45)' : 'rgba(201,168,76,.3)'),
                     borderRadius: 6,
-                    color: r.status === 'LIVE' ? '#FF1564' : '#C9A84C',
+                    color: r.status === 'LIVE' ? '#800020' : '#C9A84C',
                     fontFamily: "'Bebas Neue',sans-serif",
                     fontSize: 10,
                     letterSpacing: 1,
@@ -424,10 +435,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
         {/* ── MATCHMAKING ── */}
         <div style={Object.assign({}, cardStyle, { textAlign: 'center' })}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#EDE8F5', letterSpacing: 2, marginBottom: 4 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#F0E8D4', letterSpacing: 2, marginBottom: 4 }}>
             ⚡ QUICK MATCHMAKING
           </div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#7A6F90', marginBottom: 14 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#8A7A62', marginBottom: 14 }}>
             Find a battle partner · matched by ELO rating
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -436,13 +447,13 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                 <button key={m.label} onClick={function() { if (addToast) addToast('Searching for ' + m.label + ' match...', 'info'); }}
                   style={{ flex: 1, padding: '12px 4px', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                   <span style={{ fontSize: 18 }}>{m.icon}</span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{m.label}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{m.label}</span>
                 </button>
               );
             })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>YOUR ELO</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1 }}>YOUR ELO</span>
             <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C' }}>2,840</span>
           </div>
         </div>
@@ -494,7 +505,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
         {/* Hero card — winner */}
         <div style={{
-          background: 'linear-gradient(160deg,rgba(201,168,76,.18),rgba(7,5,10,.95))',
+          background: 'linear-gradient(160deg,rgba(201,168,76,.18),rgba(14,12,9,.95))',
           border: '2px solid rgba(201,168,76,.6)',
           borderRadius: 16,
           padding: '24px 20px',
@@ -514,13 +525,13 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
             <AvatarPortrait username={winner} size={88} rank={1} />
           </div>
 
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#EDE8F5', letterSpacing: 2, lineHeight: 1, marginBottom: 4 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#F0E8D4', letterSpacing: 2, lineHeight: 1, marginBottom: 4 }}>
             {winner}
           </div>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 52, color: '#C9A84C', lineHeight: 1, textShadow: '0 0 24px rgba(201,168,76,.5)' }}>
             {winnerScore}
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4, letterSpacing: 1 }}>FINAL SCORE</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4, letterSpacing: 1 }}>FINAL SCORE</div>
         </div>
 
         {/* Loser recap card */}
@@ -536,10 +547,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         }}>
           <AvatarPortrait username={loserName} size={48} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#7A6F90', letterSpacing: 1 }}>{loserName}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#8A7A62', letterSpacing: 1 }}>{loserName}</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>RUNNER-UP</div>
           </div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 30, color: '#7A6F90' }}>{loserScore}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 30, color: '#8A7A62' }}>{loserScore}</div>
         </div>
 
         {isHost && (
@@ -567,7 +578,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   }
 
   // ── ACTIVE BATTLE ───────────────────────────────────────────────────────────
-  var countdownColor = countdown < 30 ? '#FF1564' : '#EDE8F5';
+  var countdownColor = countdown < 30 ? '#800020' : '#F0E8D4';
   var lastLog = battleLog.slice(-5);
   var totalVotes = (challengerScore || 0) + (defenderScore || 0);
   var challPct = totalVotes > 0 ? Math.floor((challengerScore || 0) / totalVotes * 100) : 50;
@@ -590,7 +601,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: countdownColor, letterSpacing: 4, lineHeight: 1 }}>
           {fmtCountdown(countdown)}
         </div>
-        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#7A6F90', letterSpacing: 1, marginTop: 4 }}>
+        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>
           REMAINING
         </div>
       </div>
@@ -600,8 +611,8 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         {/* Challenger card */}
         <div style={{
           flex: 1,
-          background: 'linear-gradient(160deg,rgba(255,21,100,.2),rgba(7,5,10,.95))',
-          border: myVote === 'challenger' ? '2px solid rgba(255,21,100,.8)' : '1px solid rgba(255,21,100,.35)',
+          background: 'linear-gradient(160deg,rgba(128,0,32,.2),rgba(14,12,9,.95))',
+          border: myVote === 'challenger' ? '2px solid rgba(128,0,32,.8)' : '1px solid rgba(128,0,32,.35)',
           borderRadius: 12,
           padding: '14px 10px',
           display: 'flex',
@@ -614,27 +625,27 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         }}
         onClick={myVote === null ? function() { castVote('challenger'); } : undefined}
         >
-          <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', width: 100, height: 100, background: 'radial-gradient(circle,rgba(255,21,100,.3),transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', width: 100, height: 100, background: 'radial-gradient(circle,rgba(128,0,32,.3),transparent 70%)', pointerEvents: 'none' }} />
           <AvatarPortrait username={challenger} size={60} />
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#EDE8F5', letterSpacing: 1, textAlign: 'center' }}>{challenger}</div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#FF1564', lineHeight: 1, textShadow: '0 0 16px rgba(255,21,100,.6)' }}>{challengerScore}</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{cPct}% VOTES</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#F0E8D4', letterSpacing: 1, textAlign: 'center' }}>{challenger}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#800020', lineHeight: 1, textShadow: '0 0 16px rgba(128,0,32,.6)' }}>{challengerScore}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{cPct}% VOTES</div>
           {myVote === 'challenger' && (
-            <div style={{ background: 'rgba(255,21,100,.25)', border: '1px solid rgba(255,21,100,.5)', borderRadius: 999, padding: '2px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: '#FF1564', letterSpacing: 1 }}>✓ VOTED</div>
+            <div style={{ background: 'rgba(128,0,32,.25)', border: '1px solid rgba(128,0,32,.5)', borderRadius: 999, padding: '2px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: '#800020', letterSpacing: 1 }}>✓ VOTED</div>
           )}
         </div>
 
         {/* VS divider */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, flexShrink: 0, minWidth: 36 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#FF1564', letterSpacing: 2, textShadow: '0 0 12px #FF1564' }}>VS</div>
-          <div style={{ height: 2, width: 2, borderRadius: '50%', background: '#241C34' }} />
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#800020', letterSpacing: 2, textShadow: '0 0 12px #FF1564' }}>VS</div>
+          <div style={{ height: 2, width: 2, borderRadius: '50%', background: '#3D3020' }} />
         </div>
 
         {/* Defender card */}
         <div style={{
           flex: 1,
-          background: 'linear-gradient(160deg,rgba(0,201,167,.2),rgba(7,5,10,.95))',
-          border: myVote === 'defender' ? '2px solid rgba(0,201,167,.8)' : '1px solid rgba(0,201,167,.35)',
+          background: 'linear-gradient(160deg,rgba(201,168,76,.2),rgba(14,12,9,.95))',
+          border: myVote === 'defender' ? '2px solid rgba(201,168,76,.8)' : '1px solid rgba(201,168,76,.35)',
           borderRadius: 12,
           padding: '14px 10px',
           display: 'flex',
@@ -647,13 +658,13 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         }}
         onClick={myVote === null ? function() { castVote('defender'); } : undefined}
         >
-          <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', width: 100, height: 100, background: 'radial-gradient(circle,rgba(0,201,167,.3),transparent 70%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', width: 100, height: 100, background: 'radial-gradient(circle,rgba(201,168,76,.3),transparent 70%)', pointerEvents: 'none' }} />
           <AvatarPortrait username={defender} size={60} />
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#EDE8F5', letterSpacing: 1, textAlign: 'center' }}>{defender}</div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#00C9A7', lineHeight: 1, textShadow: '0 0 16px rgba(0,201,167,.6)' }}>{defenderScore}</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{dPct}% VOTES</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#F0E8D4', letterSpacing: 1, textAlign: 'center' }}>{defender}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#C9A84C', lineHeight: 1, textShadow: '0 0 16px rgba(201,168,76,.6)' }}>{defenderScore}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{dPct}% VOTES</div>
           {myVote === 'defender' && (
-            <div style={{ background: 'rgba(0,201,167,.25)', border: '1px solid rgba(0,201,167,.5)', borderRadius: 999, padding: '2px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: '#00C9A7', letterSpacing: 1 }}>✓ VOTED</div>
+            <div style={{ background: 'rgba(201,168,76,.25)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 999, padding: '2px 10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: '#C9A84C', letterSpacing: 1 }}>✓ VOTED</div>
           )}
         </div>
       </div>
@@ -661,22 +672,82 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       {/* Score bar */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', height: 8, borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,.06)' }}>
-          <div style={{ width: cPct + '%', background: 'linear-gradient(90deg,#FF1564,#FF4D7D)', transition: 'width .4s ease' }} />
-          <div style={{ width: dPct + '%', background: 'linear-gradient(90deg,#00C9A7,#00E5C0)', transition: 'width .4s ease' }} />
+          <div style={{ width: cPct + '%', background: 'linear-gradient(90deg,#800020,#C01838)', transition: 'width .4s ease' }} />
+          <div style={{ width: dPct + '%', background: 'linear-gradient(90deg,#C9A84C,#D4854A)', transition: 'width .4s ease' }} />
         </div>
         {myVote === null && (
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center', marginTop: 6, letterSpacing: 1 }}>TAP A CARD TO VOTE</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', textAlign: 'center', marginTop: 6, letterSpacing: 1 }}>TAP A CARD TO VOTE</div>
         )}
       </div>
 
+      {/* Audience Cheer Tiles */}
+      {(cheerA.length > 0 || cheerB.length > 0) && (
+        <div style={{ marginBottom: 14, display: 'flex', gap: 8 }}>
+          {/* Team A cheers */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginBottom: 5 }}>
+              ⚔ {challenger.toUpperCase() || 'CHALLENGER'} ({cheerA.length})
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {cheerA.slice(0, 20).map(function(u, i) {
+                var initials = u.slice(0, 2).toUpperCase();
+                return (
+                  <div key={i} title={u} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(128,0,32,.7)', border: '1px solid rgba(128,0,32,.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 7, color: '#F0E8D4' }}>
+                    {initials}
+                  </div>
+                );
+              })}
+              {cheerA.length > 20 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', alignSelf: 'center' }}>+{cheerA.length - 20}</div>}
+            </div>
+          </div>
+          {/* Team B cheers */}
+          <div style={{ flex: 1, textAlign: 'right' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginBottom: 5 }}>
+              ({cheerB.length}) {defender.toUpperCase() || 'DEFENDER'} ⚔
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end' }}>
+              {cheerB.slice(0, 20).map(function(u, i) {
+                var initials = u.slice(0, 2).toUpperCase();
+                return (
+                  <div key={i} title={u} style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(201,168,76,.7)', border: '1px solid rgba(201,168,76,.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 7, color: '#0E0C09' }}>
+                    {initials}
+                  </div>
+                );
+              })}
+              {cheerB.length > 20 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', alignSelf: 'center' }}>+{cheerB.length - 20}</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Viewer cheer buttons (shown when battle active) */}
+      {myVote !== null && (
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          <button
+            onClick={function() {
+              if (socket) socket.emit('pk-cheer', { roomId: roomId, side: 'A', username: username || 'Viewer' });
+            }}
+            style={{ flex: 1, background: 'rgba(128,0,32,.2)', border: '1px solid rgba(128,0,32,.5)', borderRadius: 8, padding: '7px 0', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+            🔥 CHEER {challenger || 'A'}
+          </button>
+          <button
+            onClick={function() {
+              if (socket) socket.emit('pk-cheer', { roomId: roomId, side: 'B', username: username || 'Viewer' });
+            }}
+            style={{ flex: 1, background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 8, padding: '7px 0', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+            🔥 CHEER {defender || 'B'}
+          </button>
+        </div>
+      )}
+
       {/* Battle Log */}
       <div style={cardStyle}>
-        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#7A6F90', letterSpacing: 2, marginBottom: 10 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#8A7A62', letterSpacing: 2, marginBottom: 10 }}>
           BATTLE LOG
         </div>
         <div style={{ maxHeight: 120, overflowY: 'auto' }}>
           {lastLog.length === 0 ? (
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90', textAlign: 'center', padding: '12px 0' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', textAlign: 'center', padding: '12px 0' }}>
               No events yet...
             </div>
           ) : (
@@ -692,10 +763,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                     alignItems: 'flex-start'
                   }}
                 >
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', flexShrink: 0, marginTop: 1 }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', flexShrink: 0, marginTop: 1 }}>
                     {entry.time}
                   </span>
-                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#EDE8F5' }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4' }}>
                     {entry.text}
                   </span>
                 </div>
@@ -712,10 +783,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
             onClick={endBattle}
             style={{
               padding: '10px 24px',
-              background: 'rgba(255,21,100,.15)',
-              border: '1px solid rgba(255,21,100,.4)',
+              background: 'rgba(128,0,32,.15)',
+              border: '1px solid rgba(128,0,32,.4)',
               borderRadius: 8,
-              color: '#FF1564',
+              color: '#800020',
               fontFamily: "'Bebas Neue',sans-serif",
               fontSize: 13,
               letterSpacing: 1,
