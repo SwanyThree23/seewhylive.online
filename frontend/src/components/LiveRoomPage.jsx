@@ -277,6 +277,9 @@ export default function LiveRoomPage({
   var [scAmt,              setScAmt]              = useState(100);
   var [giftCount,          setGiftCount]          = useState(0);
   var [superChatCount,     setSuperChatCount]     = useState(0);
+  var [streamStats,        setStreamStats]        = useState(null); // { bitratekbps, rttMs, lossPct }
+  var [theaterMode,        setTheaterMode]        = useState(false);
+  var [theaterChatVisible, setTheaterChatVisible] = useState(true);
 
   var chatEndRef    = useRef(null);
   var gold          = (branding && branding.gold) ? branding.gold : GOLD;
@@ -316,6 +319,8 @@ export default function LiveRoomPage({
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
+        // Wire up stream health stats (only meaningful for hosts/cohosts sending media)
+        rtcManager.on('stats', function(s) { setStreamStats(s); });
       } catch(e) {
         if (addToast) addToast('WebRTC: ' + e.message, 'error');
       }
@@ -702,6 +707,7 @@ export default function LiveRoomPage({
         giftCount={giftCount}
         addToast={addToast}
         isVisible={role === 'host' || role === 'cohost'}
+        streamStats={streamStats}
       />
 
       {/* ════════════════ ROOM HEADER ════════════════ */}
@@ -1306,6 +1312,81 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ THEATER MODE OVERLAY ════════════════ */}
+      {theaterMode && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 2000, background: '#000', display: 'flex' }}>
+          {/* Video fills screen */}
+          <div
+            style={{ flex: 1, position: 'relative', overflow: 'hidden' }}
+            onClick={function() { setTheaterChatVisible(function(v) { return !v; }); }}
+          >
+            {/* Reuse the current stage view inside theater mode */}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: 'rgba(201,168,76,.4)', letterSpacing: 3 }}>
+                {stageLayout === 'featured' ? 'FEATURED VIEW' : 'GRID VIEW'} — THEATER MODE
+              </div>
+            </div>
+            {/* Exit + controls bar (always visible at top) */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(rgba(0,0,0,.7),transparent)', zIndex: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {isLive && <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: RED, borderRadius: 999, padding: '3px 9px' }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', animation: 'livePulse 1.2s infinite' }} />
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#fff', letterSpacing: 2 }}>LIVE</span>
+                </div>}
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: 'rgba(240,232,212,.6)' }}>{viewerCount || 0} viewers</span>
+              </div>
+              <button
+                onClick={function(e) { e.stopPropagation(); setTheaterMode(false); }}
+                style={{ background: 'rgba(14,12,9,.7)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '6px 12px', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}
+              >
+                ⊡ EXIT THEATER
+              </button>
+            </div>
+            {/* Tap hint */}
+            <div style={{ position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)', fontFamily: "'DM Mono',monospace", fontSize: 7, color: 'rgba(240,232,212,.3)', letterSpacing: 1, pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+              TAP TO {theaterChatVisible ? 'HIDE' : 'SHOW'} CHAT
+            </div>
+          </div>
+
+          {/* Floating chat panel */}
+          {theaterChatVisible && (
+            <div style={{ width: 280, flexShrink: 0, background: 'rgba(14,12,9,.88)', borderLeft: '1px solid rgba(201,168,76,.12)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(201,168,76,.1)', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2 }}>
+                💬 LIVE CHAT
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {(chat || []).slice(-80).map(function(msg, i) {
+                  var isSuper = msg.type === 'super';
+                  return (
+                    <div key={msg.id || i} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: isSuper ? '#C9A84C' : '#8A7A62' }}>
+                        {msg.username}
+                        {isSuper && <span style={{ color: '#C9A84C', marginLeft: 4 }}>💛 ${(Math.floor(msg.amountCents || 0) / 100).toFixed(2)}</span>}
+                      </span>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.3 }}>{msg.message}</span>
+                    </div>
+                  );
+                })}
+                <div ref={chatEndRef} />
+              </div>
+              {/* Theater chat input */}
+              <div style={{ padding: '8px 10px', borderTop: '1px solid rgba(201,168,76,.1)', display: 'flex', gap: 6 }}>
+                <input
+                  value={chatInput}
+                  onChange={function(e) { setChatInput(e.target.value); }}
+                  onKeyDown={function(e) { if (e.key === 'Enter') { sendChat(); } }}
+                  placeholder="Say something..."
+                  style={{ flex: 1, background: '#241C12', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }}
+                />
+                <button onClick={sendChat} style={{ background: '#800020', border: 'none', borderRadius: 8, padding: '7px 10px', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                  SEND
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ════════════════ BOTTOM TOOLBAR ════════════════ */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -1361,6 +1442,13 @@ export default function LiveRoomPage({
             label="Camera"
             active={showMediaConf}
             onPress={function() { setShowMediaConf(function(v) { return !v; }); }}
+          />
+          <IconBtn
+            icon={theaterMode ? '⊡' : '⛶'}
+            label={theaterMode ? 'Exit' : 'Theater'}
+            active={theaterMode}
+            activeColor={gold}
+            onPress={function() { setTheaterMode(function(v) { return !v; }); }}
           />
         </div>
       </div>
