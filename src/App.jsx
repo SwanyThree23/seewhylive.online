@@ -31,6 +31,7 @@ import NewsletterHubPage from './pages/NewsletterHub';
 import CreatorPublicProfile from './pages/CreatorPublicProfile';
 import BroadcastStudio from './pages/BroadcastStudio';
 import LiveRoom from './pages/LiveRoom';
+import Login from './pages/Login';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -144,7 +145,10 @@ function App() {
         <BackgroundProvider>
         <Router>
           <NavigationTracker />
-          <AuthenticatedApp />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/*" element={<AuthenticatedApp />} />
+          </Routes>
         </Router>
         <Toaster />
         </BackgroundProvider>
