@@ -312,6 +312,12 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         setFloatReacts(function(prev) { return prev.filter(function(r) { return r.id !== rid; }); });
       }, 3600);
     });
+    socket.on('gift-leaderboard', function(data) {
+      if (!data || !data.leaders) return;
+      setGiftLeaderboard(data.leaders.map(function(e) {
+        return { username: e.username, total: e.totalCents, count: 1 };
+      }));
+    });
     socket.on('gift-received', function(gift) {
       if (!gift || !gift.fromUser) return;
       setGiftLeaderboard(function(prev) {
@@ -1540,6 +1546,17 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               {chat.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center', padding: 12 }}>No messages yet</div>}
               {chat.map(function(msg) {
                 var msgId     = msg.id || (msg.username + msg.ts + msg.message);
+                // Loyalty badge based on gift rank and role
+                var msgBadge = '';
+                if (msg.role === 'host') { msgBadge = '🎙'; }
+                else if (msg.role === 'cohost') { msgBadge = '🎤'; }
+                else {
+                  var lbIdx = giftLeaderboard.findIndex(function(e) { return e.username === msg.username; });
+                  if (lbIdx === 0) { msgBadge = '👑'; }
+                  else if (lbIdx === 1) { msgBadge = '💎'; }
+                  else if (lbIdx === 2) { msgBadge = '⭐'; }
+                  else if (lbIdx >= 3) { msgBadge = '🎁'; }
+                }
                 var msgRxns   = reactions[msgId] || {};
                 var emojiList = ['👍','❤️','🔥','😂','🎯'];
                 var msgLang   = (msg.lang || '').toUpperCase();
@@ -1555,7 +1572,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                         <AvatarPortrait username={msg.username || 'anon'} size={20} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ color: msg.isBot ? '#00DEC0' : '#C9A84C', fontWeight: 700, marginRight: 4 }}>{msg.username || 'anon'}</span>
+                        {msgBadge ? <span style={{ fontSize: 10, marginRight: 2 }} title={'Gifter rank'}>{msgBadge}</span> : null}
+                        <span style={{ color: msg.isBot ? '#D4854A' : '#C9A84C', fontWeight: 700, marginRight: 4 }}>{msg.username || 'anon'}</span>
                         {isNonEn && <span style={{ marginRight: 4, fontSize: 11 }} title={LANG_NAMES[msgLang] || msgLang}>{LANG_FLAGS[msgLang] || '🌐'}</span>}
                         <span style={{ color: msg.isBot ? '#A8F0E8' : '#D0C0E0' }}>{msg.message}</span>
                       </div>
