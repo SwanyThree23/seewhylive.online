@@ -1548,6 +1548,20 @@ io.on('connection', function(socket) {
       }
     } catch(geu) { logger.warn('[send-gift] earnings-update: ' + geu.message); }
 
+    // Gift leaderboard update
+    try {
+      var lb = giftLeaderboards.get(roomId) || [];
+      var existingIdx = lb.findIndex(function(e) { return e.username === fromUser; });
+      if (existingIdx >= 0) {
+        lb[existingIdx].totalCents += valueCents;
+      } else {
+        lb.push({ username: fromUser, totalCents: valueCents });
+      }
+      lb.sort(function(a, b) { return b.totalCents - a.totalCents; });
+      giftLeaderboards.set(roomId, lb);
+      io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10) });
+    } catch(lbErr) { logger.warn('[gift-lb] ' + lbErr.message); }
+
     // Session revenue milestone tracking
     var prevRevenue = sessionRevenue.get(roomId) || 0;
     var newRevenue  = prevRevenue + valueCents;
@@ -2053,6 +2067,17 @@ io.on('connection', function(socket) {
       }
     } catch(eu) { logger.warn('[super-chat] earnings-update: ' + eu.message); }
 
+    // Gift leaderboard — super-chat counts too
+    try {
+      var scLb = giftLeaderboards.get(roomId) || [];
+      var scLbIdx = scLb.findIndex(function(e) { return e.username === username; });
+      if (scLbIdx >= 0) { scLb[scLbIdx].totalCents += amountCents; }
+      else { scLb.push({ username: username, totalCents: amountCents }); }
+      scLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
+      giftLeaderboards.set(roomId, scLb);
+      io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: scLb.slice(0, 10) });
+    } catch(scLbErr) { logger.warn('[gift-lb-sc] ' + scLbErr.message); }
+
     var prevScRev = sessionRevenue.get(roomId) || 0;
     var newScRev  = prevScRev + amountCents;
     sessionRevenue.set(roomId, newScRev);
@@ -2386,6 +2411,24 @@ io.on('connection', function(socket) {
     io.to(sRoomId).emit('watch-sync', { action: data.action, position: data.position, timestamp: Date.now() });
   });
 
+  // ── PK cheer handler ──────────────────────────────────────────────────
+  socket.on('pk-cheer', function(data) {
+    if (!data || !data.roomId) return;
+    var cheerRoomId = String(data.roomId);
+    var battle = vsPolls.get(cheerRoomId);
+    if (!battle || !battle.active) return;
+    var cheerSide = data.side === 'B' ? 'B' : 'A';
+    if (!battle.cheerA) battle.cheerA = [];
+    if (!battle.cheerB) battle.cheerB = [];
+    var list = cheerSide === 'A' ? battle.cheerA : battle.cheerB;
+    var user = data.username || 'Viewer';
+    if (list.indexOf(user) === -1) { list.push(user); }
+    if (battle.cheerA.length > 20) battle.cheerA = battle.cheerA.slice(-20);
+    if (battle.cheerB.length > 20) battle.cheerB = battle.cheerB.slice(-20);
+    vsPolls.set(cheerRoomId, battle);
+    io.to(cheerRoomId).emit('pk-cheer-update', { cheerA: battle.cheerA, cheerB: battle.cheerB });
+  });
+
   // ── Watch stage pin handler ────────────────────────────────────────────
   socket.on('watch-stage-pin', function(data) {
     if (!data || !data.roomId) return;
@@ -2466,6 +2509,7 @@ io.on('connection', function(socket) {
     stageRooms.delete(roomId);
     loveCounts.delete(roomId);
     loveEarnings.delete(roomId);
+    giftLeaderboards.delete(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);

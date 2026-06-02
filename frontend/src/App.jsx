@@ -14,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import WelcomeAudio from './components/WelcomeAudio.jsx';
 import AgeGate from './components/AgeGate.jsx';
 import LoveTap from './components/LoveTap.jsx';
+import GiftLeaderboardOverlay from './components/GiftLeaderboardOverlay.jsx';
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -1308,6 +1309,13 @@ export default function App() {
           userId={userId}
           username={username}
           addToast={addToast}
+        />
+      )}
+      {socketRef.current && (
+        <GiftLeaderboardOverlay
+          socket={socketRef.current}
+          roomId={APP_ID}
+          isLive={isLive}
         />
       )}
       <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />
