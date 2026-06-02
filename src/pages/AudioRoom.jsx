@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import AggregatedChat from '../components/live/AggregatedChat';
+import AudioStageTab from '../components/audio/AudioStageTab';
+import LoveTap from '../components/live/LoveTap';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -317,33 +319,18 @@ export default function AudioRoom() {
           </div>
         )}
 
-        <div className="px-4 pt-4 pb-2">
-          <p className="text-[13px] font-black mb-3" style={{ color: '#111' }}>On Stage</p>
-          {speakerList.length > 0 ? (
-            <div className="grid grid-cols-3 gap-x-4 gap-y-5">
-              {speakerList.map(m => (
-                <div key={m.id} className="flex justify-center">
-                  <SpeakerTile member={m} size={80} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-center py-4" style={{ color: '#aaa' }}>No speakers on stage yet</p>
-          )}
-        </div>
-
-        {audienceList.length > 0 && (
-          <div className="px-4 pt-3 pb-4">
-            <p className="text-[11px] uppercase font-bold mb-2" style={{ color: '#aaa', letterSpacing: '0.05em' }}>
-              Others in the Room
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {audienceList.map(m => (
-                <AudienceTile key={m.id} member={m} />
-              ))}
-            </div>
-          </div>
-        )}
+        <AudioStageTab
+          roomId={roomId}
+          user={user}
+          party={party}
+          members={members.map(m => ({
+            ...m,
+            display_name: m.user_name,
+          }))}
+          localStream={localStream}
+          remoteStreams={remoteStreams}
+          onLeave={leaveRoom}
+        />
       </div>
 
       <div
@@ -453,6 +440,15 @@ export default function AudioRoom() {
           </>
         )}
       </AnimatePresence>
+
+      {roomId && !isHost && (
+        <LoveTap
+          roomId={roomId}
+          user={user}
+          creatorId={party?.host_id}
+          creatorName={hostName}
+        />
+      )}
     </div>
   );
 }
