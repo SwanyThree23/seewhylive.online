@@ -4,7 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import Greenroom from './pages/Greenroom';
 import ControlRoom from './pages/ControlRoom';
@@ -31,20 +31,10 @@ import NewsletterHubPage from './pages/NewsletterHub';
 import CreatorPublicProfile from './pages/CreatorPublicProfile';
 import BroadcastStudio from './pages/BroadcastStudio';
 import LiveRoom from './pages/LiveRoom';
+import Login from './pages/Login';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
-import { base44 } from '@/api/base44Client';
-
-function LoginRedirect() {
-  useEffect(function() { base44.auth.redirectToLogin(window.location.origin); }, []);
-  return (
-    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0E0C09' }}>
-      <div style={{ width: 32, height: 32, border: '3px solid rgba(201,168,76,.2)', borderTopColor: '#C9A84C', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
-    </div>
-  );
-}
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -128,7 +118,7 @@ const AuthenticatedApp = () => {
       <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
       <Route path="/BroadcastStudio" element={<BroadcastStudio />} />
       <Route path="/LiveRoom" element={<LiveRoom />} />
-      <Route path="/login" element={<LoginRedirect />} />
+      <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </Suspense>
@@ -144,7 +134,10 @@ function App() {
         <BackgroundProvider>
         <Router>
           <NavigationTracker />
-          <AuthenticatedApp />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/*" element={<AuthenticatedApp />} />
+          </Routes>
         </Router>
         <Toaster />
         </BackgroundProvider>
