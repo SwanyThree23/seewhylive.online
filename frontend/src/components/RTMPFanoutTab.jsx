@@ -267,9 +267,9 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
         var isTesting = Boolean(testing[cid]);
         var lat     = latency[cid];
         return (
-          <div key={cid} style={{ background: isOn ? 'rgba(90,143,255,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(90,143,255,.4)' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
+          <div key={cid} style={{ background: isOn ? 'rgba(212,133,74,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(212,133,74,.4)' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#C9A84C' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(212,133,74,.15)', border: '1px solid rgba(212,133,74,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#C9A84C' }}>
                 📡
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -338,7 +338,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>{Math.floor(bps / 1000)}kbps</span>
                 </div>
                 <div style={{ height: 4, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: bpsPct + '%', background: 'linear-gradient(90deg,rgba(90,143,255,.6),#C9A84C)', borderRadius: 2, transition: 'width .4s ease' }} />
+                  <div style={{ height: '100%', width: bpsPct + '%', background: 'linear-gradient(90deg,rgba(212,133,74,.6),#C9A84C)', borderRadius: 2, transition: 'width .4s ease' }} />
                 </div>
               </div>
             )}
@@ -350,12 +350,12 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
       <div>
         <button
           onClick={function() { setShowAddCustom(function(v) { return !v; }); }}
-          style={{ width: '100%', padding: '9px', background: showAddCustom ? 'rgba(90,143,255,.12)' : 'rgba(26,21,16,.7)', border: '1px dashed ' + (showAddCustom ? 'rgba(90,143,255,.5)' : 'rgba(90,143,255,.25)'), borderRadius: 8, color: showAddCustom ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+          style={{ width: '100%', padding: '9px', background: showAddCustom ? 'rgba(212,133,74,.12)' : 'rgba(26,21,16,.7)', border: '1px dashed ' + (showAddCustom ? 'rgba(212,133,74,.5)' : 'rgba(212,133,74,.25)'), borderRadius: 8, color: showAddCustom ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
           {showAddCustom ? '✕ CANCEL' : '+ ADD CUSTOM RTMP'}
         </button>
 
         {showAddCustom && (
-          <div style={{ marginTop: 8, background: 'rgba(90,143,255,.05)', border: '1px solid rgba(90,143,255,.2)', borderRadius: 10, padding: '12px' }}>
+          <div style={{ marginTop: 8, background: 'rgba(212,133,74,.05)', border: '1px solid rgba(212,133,74,.2)', borderRadius: 10, padding: '12px' }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 2, marginBottom: 10 }}>CUSTOM RTMP DESTINATION</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div>
@@ -396,7 +396,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                     setShowAddCustom(false);
                     addToast('Custom RTMP destination added', 'success');
                   }}
-                  style={{ flex: 2, padding: '8px', background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.4)', borderRadius: 7, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                  style={{ flex: 2, padding: '8px', background: 'rgba(212,133,74,.15)', border: '1px solid rgba(212,133,74,.4)', borderRadius: 7, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                   ✓ ADD DESTINATION
                 </button>
                 <button

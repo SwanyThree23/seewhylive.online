@@ -380,7 +380,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
           {RIVALS_DATA.map(function(r) {
-            var statusColor = r.status === 'LIVE' ? '#800020' : (r.status === 'ONLINE' ? '#C9A84C' : (r.status === 'NEW' ? '#C9A84C' : '#3D3450'));
+            var statusColor = r.status === 'LIVE' ? '#800020' : (r.status === 'ONLINE' ? '#C9A84C' : (r.status === 'NEW' ? '#C9A84C' : '#3D3020'));
             return (
               <div key={r.name} style={{
                 background: 'rgba(26,21,16,.8)',
@@ -548,7 +548,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           <AvatarPortrait username={loserName} size={48} />
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#8A7A62', letterSpacing: 1 }}>{loserName}</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>RUNNER-UP</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>RUNNER-UP</div>
           </div>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 30, color: '#8A7A62' }}>{loserScore}</div>
         </div>

@@ -2353,7 +2353,7 @@ input, select, textarea {
   border-radius: 8px;
   overflow: hidden;
   background: #000;
-  border: 1px solid rgba(90,143,255,.3);
+  border: 1px solid rgba(212,133,74,.3);
   position: relative;
   min-height: 0;
 }
@@ -2572,7 +2572,7 @@ input, select, textarea {
 /* Role access badges */
 .role-host   { background: rgba(201,168,76,.18); color: #C9A84C; border: 1px solid rgba(201,168,76,.4); }
 .role-cohost { background: rgba(201,168,76,.15);  color: #C9A84C; border: 1px solid rgba(201,168,76,.35); }
-.role-guest  { background: rgba(90,143,255,.15); color: #C9A84C; border: 1px solid rgba(90,143,255,.35); }
+.role-guest  { background: rgba(212,133,74,.15); color: #C9A84C; border: 1px solid rgba(212,133,74,.35); }
 .role-viewer { background: rgba(36,28,52,.6);    color: rgba(176,160,192,.5); border: 1px solid #3D3020; }
 
 .role-pill {
