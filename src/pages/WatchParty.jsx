@@ -24,6 +24,7 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -788,6 +789,7 @@ export default function WatchPartyPage() {
               { id: 'polls',       label: '📊 Polls' },
               ...(isHost ? [{ id: 'analytics', label: '📈 Stats' }] : []),
               { id: 'viewers',     label: '👥 Viewers' },
+              { id: 'screen',      label: '🖥️ Screen' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActivePanel(tab.id)}
                 className="flex-1 py-2 text-[9px] font-black uppercase transition-all"
@@ -876,6 +878,25 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'leaderboard' && (
               <SocialLeaderboard members={members} />
+            )}
+            {activePanel === 'screen' && (
+              <WatchPartyTab
+                roomId={partyId}
+                user={user}
+                party={party}
+                members={members}
+                remoteStreams={remoteStreams}
+                onSyncEvent={(type, payload) => {
+                  if (isHost && party?.id) {
+                    base44.entities.WatchParty.update(party.id, {
+                      playback_state: type === 'play' ? 'playing' : type === 'pause' ? 'paused' : undefined,
+                      current_time: payload?.time,
+                      updated_at_ms: Date.now(),
+                    });
+                  }
+                }}
+                syncEvent={party ? { type: party.playback_state === 'playing' ? 'play' : 'pause', payload: { time: party.current_time }, ts: party.updated_at_ms } : null}
+              />
             )}
           </div>
         </div>
