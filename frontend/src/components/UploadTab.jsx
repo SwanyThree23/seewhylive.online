@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import SelectSheet from './SelectSheet.jsx';
 
 var YT_CATEGORIES = [
   'Entertainment', 'Gaming', 'Music', 'Sports', 'Education',
@@ -255,18 +256,22 @@ export default function UploadTab({ addToast, isLive }) {
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 3 }}>PRIVACY</div>
-                <select value={privacy} onChange={function(e) { setPrivacy(e.target.value); }}
-                  style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '7px 8px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>
-                  {YT_PRIVACY.map(function(p) { return <option key={p} value={p}>{p.toUpperCase()}</option>; })}
-                </select>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 3 }}>PRIVACY</div>
+                <SelectSheet
+                  label="Privacy"
+                  value={privacy}
+                  options={YT_PRIVACY.map(function(p) { return { value: p, label: p.toUpperCase() }; })}
+                  onChange={function(v) { setPrivacy(v); }}
+                />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 3 }}>CATEGORY</div>
-                <select value={category} onChange={function(e) { setCategory(e.target.value); }}
-                  style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '7px 8px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>
-                  {YT_CATEGORIES.map(function(c) { return <option key={c} value={c}>{c}</option>; })}
-                </select>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 3 }}>CATEGORY</div>
+                <SelectSheet
+                  label="Category"
+                  value={category}
+                  options={YT_CATEGORIES}
+                  onChange={function(v) { setCategory(v); }}
+                />
               </div>
             </div>
           </div>

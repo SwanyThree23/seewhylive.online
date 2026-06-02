@@ -360,7 +360,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
   function sendChat() {
     if (!chatInput.trim() || !socket) return;
-    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: chatInput.trim() });
+    var msg = chatInput.trim();
+    var optimisticMsg = { id: 'opt-' + Date.now(), userId: userId, username: username, message: msg, ts: Date.now(), optimistic: true };
+    setChat(function(prev) { return prev.slice(-200).concat([optimisticMsg]); });
+    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg });
     setChatInput('');
   }
 
