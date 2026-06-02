@@ -66,6 +66,7 @@ export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
+  var navigate = useNavigate();
   var { backgroundStyle, backgrounds } = useBackground();
 
   // Pages that own their full viewport — suppress header, bottom nav, and padding
@@ -106,7 +107,6 @@ export default function Layout({ children, currentPageName }) {
 
   var MAIN_PATHS = BOTTOM_NAV.map(function(i) { return i.href.split('?')[0]; });
   var isMainPage = MAIN_PATHS.includes(location.pathname) || location.pathname === '/';
-  var navigate = useNavigate();
 
   function DrawerSection({ label, items, labelColor }) {
     return (
@@ -149,13 +149,15 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {!isFullscreen && <>
-      {/* Brand accent line */}
-      <div className="fixed top-0 left-0 right-0 z-[101] h-[3px]"
-        style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
+      {/* Brand accent line — sits below status bar on notch devices */}
+      <div className="fixed top-0 left-0 right-0 z-[101] pt-safe"
+        style={{ background: 'rgba(7,7,15,0.97)' }}>
+        <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
+      </div>
 
       {/* ── HEADER ── */}
-      <header className="sticky top-[3px] z-50 w-full"
-        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+      <header className="sticky z-50 w-full"
+        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -306,9 +308,21 @@ export default function Layout({ children, currentPageName }) {
         )}
       </AnimatePresence>
 
-      {/* Main */}
+      {/* Main — with slide-in route transitions */}
       <main className={isFullscreen ? '' : 'pb-[96px] md:pb-10'}>
-        <ErrorBoundary>{children}</ErrorBoundary>
+        <ErrorBoundary>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.key}
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </ErrorBoundary>
       </main>
 
       {/* Brand chyron */}
@@ -322,16 +336,25 @@ export default function Layout({ children, currentPageName }) {
 
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (
-        <div className="md:hidden fixed bottom-[34px] left-0 right-0 z-40"
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe"
           style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
-          <nav className="flex items-end justify-around px-2 pt-2 pb-safe" style={{ height: 60 }}>
+          <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;
               var active = isActive(item.href);
 
+              // Tapping an active tab scrolls to top (resets to root)
+              function handleTabPress(e) {
+                if (active) {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  navigate(item.href, { replace: true });
+                }
+              }
+
               if (item.isCenter) {
                 return (
-                  <Link key={item.name} to={item.href} className="flex flex-col items-center" style={{ marginTop: -8 }}>
+                  <Link key={item.name} to={item.href} className="flex flex-col items-center" style={{ marginTop: -8 }} onClick={handleTabPress}>
                     <motion.div
                       whileTap={{ scale: 0.92 }}
                       className="flex items-center justify-center shadow-lg"
@@ -352,6 +375,7 @@ export default function Layout({ children, currentPageName }) {
 
               return (
                 <Link key={item.name} to={item.href}
+                  onClick={handleTabPress}
                   className="flex flex-col items-center gap-1 px-3 pb-1 transition-all active:scale-90"
                   style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', userSelect: 'none', WebkitUserSelect: 'none' }}>
                   <div className="relative">
