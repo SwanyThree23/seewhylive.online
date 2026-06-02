@@ -252,7 +252,9 @@ app.post(
 );
 
 app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
+var _corsOrigins = (process.env.FRONTEND_ORIGIN || '*').split(',').map(function(s) { return s.trim(); });
+var _corsOrigin  = _corsOrigins.length === 1 ? _corsOrigins[0] : _corsOrigins;
+app.use(cors({ origin: _corsOrigin }));
 
 /* Global rate limit — generous for a live streaming app */
 app.use(rateLimit({
@@ -279,7 +281,7 @@ app.use(xssClean());
 // ─── Socket.io ────────────────────────────────────────────────────────────
 var io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_ORIGIN || '*',
+    origin: _corsOrigin,
     methods: ['GET', 'POST']
   },
   pingTimeout:        45000,
