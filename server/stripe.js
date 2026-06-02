@@ -6,16 +6,16 @@
  * Split is immutable: CREATOR 90%, PLATFORM 10%.
  */
 
-const Stripe = require('stripe');
-const jwt = require('jsonwebtoken');
-const Database = require('better-sqlite3');
+var Stripe = require('stripe');
+var jwt = require('jsonwebtoken');
+var Database = require('better-sqlite3');
 
 // ─── Immutable revenue split ──────────────────────────────────────────────
-const CREATOR = 0.90;
-const PLATFORM = 0.10; // eslint-disable-line no-unused-vars
+var CREATOR = 0.90;
+var PLATFORM = 0.10; // eslint-disable-line no-unused-vars
 
 // ─── Stripe client ────────────────────────────────────────────────────────
-let stripeClient = null;
+var stripeClient = null;
 
 function getStripe() {
   if (!stripeClient) {
@@ -30,11 +30,11 @@ function getStripe() {
 }
 
 // ─── DB helper ────────────────────────────────────────────────────────────
-let _db = null;
+var _db = null;
 
 function getDb() {
   if (!_db) {
-    const dbPath = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
+    var dbPath = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
     _db = new Database(dbPath);
     _db.pragma('journal_mode = WAL');
     _db.pragma('foreign_keys = ON');
@@ -56,27 +56,15 @@ function getDb() {
   return _db;
 }
 
-// ─── createPPVPaymentIntent ───────────────────────────────────────────────
-
-/**
- * Create a Stripe PaymentIntent for a pay-per-view room access purchase.
- * Uses Stripe Connect transfer_data so creator receives 90% automatically.
- *
- * @param {string} roomId
- * @param {string} viewerId
- * @param {number} priceUsd - price in USD dollars (e.g. 4.99)
- * @param {string} creatorStripeAccountId - Stripe Connect account ID
- * @returns {Promise<{clientSecret: string, paymentIntentId: string, amountCents: number, creatorCents: number, platformCents: number}>}
- */
 async function createPPVPaymentIntent(roomId, viewerId, priceUsd, creatorStripeAccountId) {
-  const stripe = getStripe();
-  const db = getDb();
+  var stripe = getStripe();
+  var db = getDb();
 
-  const amountCents = Math.floor(priceUsd * 100);
-  const creatorCents = Math.floor(amountCents * CREATOR);
-  const platformCents = amountCents - creatorCents;
+  var amountCents = Math.floor(priceUsd * 100);
+  var creatorCents = Math.floor(amountCents * CREATOR);
+  var platformCents = amountCents - creatorCents;
 
-  let paymentIntent;
+  var paymentIntent;
   try {
     paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
@@ -95,8 +83,8 @@ async function createPPVPaymentIntent(roomId, viewerId, priceUsd, creatorStripeA
     throw new Error('Stripe PaymentIntent creation failed: ' + err.message);
   }
 
-  const id = paymentIntent.id + '_' + Math.floor(Date.now() / 1000);
-  const now = Math.floor(Date.now() / 1000);
+  var id = paymentIntent.id + '_' + Math.floor(Date.now() / 1000);
+  var now = Math.floor(Date.now() / 1000);
 
   try {
     db.prepare(`
@@ -105,7 +93,6 @@ async function createPPVPaymentIntent(roomId, viewerId, priceUsd, creatorStripeA
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
     `).run(id, roomId, viewerId, paymentIntent.id, amountCents, creatorCents, platformCents, now);
   } catch (dbErr) {
-    // DB insert failure should not block the client from completing payment
     console.error('[stripe] Failed to persist PPV unlock record:', dbErr.message);
   }
 
@@ -118,21 +105,11 @@ async function createPPVPaymentIntent(roomId, viewerId, priceUsd, creatorStripeA
   };
 }
 
-// ─── verifyPPVPayment ─────────────────────────────────────────────────────
-
-/**
- * Verify a completed PPV PaymentIntent and issue a JWT access token.
- *
- * @param {string} paymentIntentId
- * @param {string} roomId
- * @param {string} viewerId
- * @returns {Promise<{token: string}>}
- */
 async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
-  const stripe = getStripe();
-  const db = getDb();
+  var stripe = getStripe();
+  var db = getDb();
 
-  let paymentIntent;
+  var paymentIntent;
   try {
     paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
   } catch (err) {
@@ -150,14 +127,14 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
     throw new Error('PaymentIntent viewerId mismatch');
   }
 
-  const now = Math.floor(Date.now() / 1000);
-  const exp = now + 86400;
+  var now = Math.floor(Date.now() / 1000);
+  var exp = now + 86400;
 
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET env var is required');
   }
 
-  const token = jwt.sign(
+  var token = jwt.sign(
     {
       roomId: roomId,
       viewerId: viewerId,
@@ -180,25 +157,15 @@ async function verifyPPVPayment(paymentIntentId, roomId, viewerId) {
   return { token: token };
 }
 
-// ─── handleStripeWebhook ──────────────────────────────────────────────────
-
-/**
- * Verify and process an incoming Stripe webhook event.
- * Handles payment_intent.succeeded to update ppv_unlocks.
- *
- * @param {Buffer} rawBody
- * @param {string} signature
- * @returns {Promise<{received: boolean}>}
- */
 async function handleStripeWebhook(rawBody, signature) {
-  const stripe = getStripe();
-  const db = getDb();
+  var stripe = getStripe();
+  var db = getDb();
 
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     throw new Error('STRIPE_WEBHOOK_SECRET env var is required');
   }
 
-  let event;
+  var event;
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
@@ -206,8 +173,8 @@ async function handleStripeWebhook(rawBody, signature) {
   }
 
   if (event.type === 'payment_intent.succeeded') {
-    const pi = event.data.object;
-    const now = Math.floor(Date.now() / 1000);
+    var pi = event.data.object;
+    var now = Math.floor(Date.now() / 1000);
     try {
       db.prepare(`
         UPDATE ppv_unlocks
@@ -222,18 +189,10 @@ async function handleStripeWebhook(rawBody, signature) {
   return { received: true };
 }
 
-// ─── createConnectAccount ─────────────────────────────────────────────────
-
-/**
- * Create a Stripe Connect Express account and return the onboarding URL.
- *
- * @param {string} email
- * @returns {Promise<{accountId: string, onboardingUrl: string}>}
- */
 async function createConnectAccount(email) {
-  const stripe = getStripe();
+  var stripe = getStripe();
 
-  let account;
+  var account;
   try {
     account = await stripe.accounts.create({
       type: 'express',
@@ -251,9 +210,9 @@ async function createConnectAccount(email) {
     throw new Error('Failed to create Stripe Connect account: ' + err.message);
   }
 
-  const origin = process.env.FRONTEND_ORIGIN || 'https://seewhylive.online';
+  var origin = process.env.FRONTEND_ORIGIN || 'https://seewhylive.online';
 
-  let accountLink;
+  var accountLink;
   try {
     accountLink = await stripe.accountLinks.create({
       account: account.id,
@@ -271,27 +230,14 @@ async function createConnectAccount(email) {
   };
 }
 
-// ─── createGiftCharge ─────────────────────────────────────────────────────
-
-/**
- * Create a Stripe PaymentIntent for a gift/tip during a live stream.
- * Returns params for the frontend to complete payment.
- * Same 90/10 split as PPV.
- *
- * @param {string} fromViewerId
- * @param {string} roomId
- * @param {number} giftValueCents - integer cents
- * @param {string} creatorStripeAccountId
- * @returns {Promise<{clientSecret: string, paymentIntentId: string, amountCents: number, creatorCents: number, platformCents: number}>}
- */
 async function createGiftCharge(fromViewerId, roomId, giftValueCents, creatorStripeAccountId) {
-  const stripe = getStripe();
+  var stripe = getStripe();
 
-  const amountCents = Math.floor(giftValueCents);
-  const creatorCents = Math.floor(amountCents * CREATOR);
-  const platformCents = amountCents - creatorCents;
+  var amountCents = Math.floor(giftValueCents);
+  var creatorCents = Math.floor(amountCents * CREATOR);
+  var platformCents = amountCents - creatorCents;
 
-  let paymentIntent;
+  var paymentIntent;
   try {
     paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
@@ -320,7 +266,6 @@ async function createGiftCharge(fromViewerId, roomId, giftValueCents, creatorStr
   };
 }
 
-// ─── Exports ──────────────────────────────────────────────────────────────
 module.exports = {
   createPPVPaymentIntent: createPPVPaymentIntent,
   verifyPPVPayment: verifyPPVPayment,

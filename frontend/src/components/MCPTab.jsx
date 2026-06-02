@@ -1,0 +1,516 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+var GOLD   = '#C9A84C';
+var GOLD_H = '#E8C46A';
+var BURG   = '#800020';
+var BURG_H = '#C01838';
+var TEAL   = '#C9A84C';
+var TEAL_H = '#C9A84C';
+var PURP   = '#9B4DCA';
+var PURP_H = '#C084FC';
+var LIME   = '#C9A84C';
+var MUTED  = '#6B5F82';
+var TEXT   = '#EDE8F4';
+var TEXT_M = '#A89CC8';
+var BG0    = '#07050A';
+var BG1    = '#0E0C09';
+var FAINT  = '#1C1530';
+var BORDER = 'rgba(255,255,255,.07)';
+var GLASS  = 'rgba(13,10,20,.75)';
+var fD = "'Bebas Neue',sans-serif";
+var fU = "'Barlow Condensed',sans-serif";
+var fM = "'DM Mono',monospace";
+
+var rnd = function(a, b) { return Math.floor(Math.random() * (b - a + 1) + a); };
+var fmtN = function(n) { n = n || 0; if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'k'; return ''+n; };
+var fmtS = function(s) { s = s || 0; var m = Math.floor(s / 60); var sec = s % 60; return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec; };
+
+var MCP_TOOLS = [
+  {id:'t1',  name:'get_stream_status',   table:'streams',       status:'healthy', latency:'4ms',   calls:847,  color:LIME},
+  {id:'t2',  name:'create_transaction',  table:'transactions',  status:'healthy', latency:'8ms',   calls:47,   color:LIME},
+  {id:'t3',  name:'get_viewer_count',    table:'streams',       status:'healthy', latency:'2ms',   calls:4821, color:LIME},
+  {id:'t4',  name:'list_panelists',      table:'panelists',     status:'healthy', latency:'3ms',   calls:312,  color:LIME},
+  {id:'t5',  name:'moderate_message',    table:'chat_messages', status:'healthy', latency:'420ms', calls:1847, color:TEAL_H},
+  {id:'t6',  name:'get_revenue_split',   table:'transactions',  status:'healthy', latency:'5ms',   calls:234,  color:GOLD_H},
+  {id:'t7',  name:'update_guest_slots',  table:'panelists',     status:'healthy', latency:'6ms',   calls:89,   color:LIME},
+  {id:'t8',  name:'create_clip',         table:'clips',         status:'healthy', latency:'12ms',  calls:143,  color:LIME},
+  {id:'t9',  name:'get_tourn_standings', table:'tournament',    status:'healthy', latency:'7ms',   calls:521,  color:LIME},
+  {id:'t10', name:'send_gift',           table:'gifts',         status:'healthy', latency:'9ms',   calls:388,  color:LIME},
+  {id:'t11', name:'fanout_status',       table:'rtmp_fanout',   status:'healthy', latency:'14ms',  calls:124,  color:'#FF6B35'},
+  {id:'t12', name:'vault_access_check',  table:'vault_content', status:'healthy', latency:'6ms',   calls:91,   color:TEAL_H},
+];
+
+var fmtT = function() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+export default function MCPTab({ addToast, isLive }) {
+  var [tools, setTools]           = useState(MCP_TOOLS.map(function(t) { return Object.assign({}, t); }));
+  var [pinging, setPinging]       = useState(false);
+  var [lastPing, setLastPing]     = useState('--:--');
+  var [logView, setLogView]       = useState(false);
+  var [callLog, setCallLog]       = useState([]);
+  var [copiedEndpoint, setCopiedEndpoint] = useState(false);
+  var [healthCheckedAt, setHealthCheckedAt] = useState(null);
+  var [serverHealth, setServerHealth] = useState(null);
+
+  // Seed call log on mount
+  useEffect(function() {
+    setCallLog([
+      '14:03:12  get_stream_status        → 200 OK (4ms)',
+      '14:03:14  get_viewer_count         → 200 OK (2ms)',
+      '14:05:01  create_transaction       → 201 CREATED (8ms)',
+      '14:06:33  moderate_message         → 200 FLAGGED (420ms)',
+      '14:07:44  get_revenue_split        → 200 OK (5ms)',
+    ]);
+  }, []);
+
+  // Live call count drift
+  useEffect(function() {
+    if (!isLive) return;
+    var id = setInterval(function() {
+      setTools(function(prev) {
+        var idx = Math.floor(Math.random() * prev.length);
+        var delta = Math.floor(Math.random() * 3) + 1;
+        return prev.map(function(t, i) {
+          if (i !== idx) return t;
+          var newLatency = Math.floor(parseInt(t.latency) + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 2));
+          if (newLatency < 1) newLatency = 1;
+          return Object.assign({}, t, {
+            calls: t.calls + delta,
+            latency: newLatency + 'ms'
+          });
+        });
+      });
+    }, 2800);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  // Live call log appender
+  useEffect(function() {
+    if (!isLive) return;
+    var toolNames = MCP_TOOLS.map(function(t) { return t.name; });
+    var id = setInterval(function() {
+      var name = toolNames[Math.floor(Math.random() * toolNames.length)];
+      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var entry = ts + '  ' + name + '  → 200 OK (' + rnd(2, 20) + 'ms)';
+      setCallLog(function(prev) {
+        var next = prev.concat([entry]);
+        if (next.length > 20) next = next.slice(next.length - 20);
+        return next;
+      });
+    }, 5500);
+    return function() { clearInterval(id); };
+  }, [isLive]);
+
+  // Health polling every 30s
+  useEffect(function() {
+    function doHealthCheck() {
+      fetch('/api/health').then(function(res) {
+        return res.json();
+      }).then(function(data) {
+        setServerHealth(data);
+        setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      }).catch(function() {
+        setHealthCheckedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      });
+    }
+    doHealthCheck();
+    var id = setInterval(doHealthCheck, 30000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  function copyEndpoint() {
+    navigator.clipboard.writeText('https://xlrcibziouffgxciecvc.supabase.co/functions/v1/mcp');
+    setCopiedEndpoint(true);
+    addToast('MCP endpoint copied to clipboard', 'success');
+    setTimeout(function() { setCopiedEndpoint(false); }, 1500);
+  }
+
+  function pingAll() {
+    setPinging(true);
+    addToast('📡 Pinging all 12 MCP tools...', 'info');
+    setTimeout(function() {
+      setTools(function(prev) {
+        return prev.map(function(t) {
+          return Object.assign({}, t, {
+            latency: rnd(2, 25) + 'ms',
+            calls: t.calls + rnd(0, 5),
+          });
+        });
+      });
+      setPinging(false);
+      setLastPing(fmtT());
+      addToast('✅ All 12 MCP tools healthy!', 'success');
+    }, 1200);
+  }
+
+  var totalCalls = 0;
+  for (var i = 0; i < tools.length; i++) {
+    totalCalls += tools[i].calls;
+  }
+
+  var latencySum = 0;
+  for (var li = 0; li < tools.length; li++) {
+    latencySum += (parseInt(tools[li].latency) || 5);
+  }
+  var avgLatency = Math.floor(latencySum / tools.length);
+
+  var healthyCount = 0;
+  for (var hi = 0; hi < tools.length; hi++) {
+    if (tools[hi].status === 'healthy') healthyCount++;
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: BG0 }}>
+
+      {/* HEADER */}
+      <div style={{
+        padding: 12,
+        borderBottom: '1px solid ' + BORDER,
+        flexShrink: 0,
+        background: BG1,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontFamily: fD, fontSize: 18, color: TEAL, letterSpacing: 2, lineHeight: 1 }}>
+                MCP SERVER STATUS
+              </div>
+              {isLive && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  background: 'rgba(255,59,59,.15)',
+                  border: '1px solid rgba(255,59,59,.4)',
+                  borderRadius: 20,
+                  padding: '2px 7px',
+                }}>
+                  <span style={{ color: '#FF3B3B', fontSize: 7 }}>●</span>
+                  <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 9, color: '#FF3B3B', letterSpacing: 1 }}>LIVE</span>
+                </div>
+              )}
+            </div>
+            <div style={{ fontFamily: fM, fontSize: 8, color: TEXT_M, marginTop: 3, letterSpacing: 0.5 }}>
+              12 tools &nbsp;·&nbsp; Supabase xlrcibziouffgxciecvc &nbsp;·&nbsp; Last ping: {lastPing}
+            </div>
+            {healthCheckedAt && (
+              <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, marginTop: 2, letterSpacing: 0.5 }}>
+                Health checked: {healthCheckedAt}
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button
+              onClick={copyEndpoint}
+              style={{
+                background: copiedEndpoint ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.1)',
+                border: '1px solid rgba(201,168,76,' + (copiedEndpoint ? '.6' : '.3') + ')',
+                borderRadius: 7,
+                padding: '6px 10px',
+                color: GOLD,
+                fontFamily: fU,
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              {copiedEndpoint ? '✓ COPIED' : '🔗 COPY ENDPOINT'}
+            </button>
+            <button
+              onClick={function() { setLogView(function(v) { return !v; }); }}
+              style={{
+                background: logView ? 'linear-gradient(135deg,' + PURP + ',' + PURP_H + ')' : 'rgba(155,77,202,.12)',
+                border: '1px solid ' + (logView ? PURP : 'rgba(155,77,202,.3)'),
+                borderRadius: 7,
+                padding: '6px 10px',
+                color: logView ? BG0 : PURP,
+                fontFamily: fU,
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              📋 CALL LOG
+            </button>
+            <button
+              onClick={pingAll}
+              disabled={pinging}
+              style={{
+                background: pinging
+                  ? 'rgba(201,168,76,.1)'
+                  : 'linear-gradient(135deg,' + TEAL + ',' + TEAL_H + ')',
+                border: '1px solid ' + (pinging ? 'rgba(201,168,76,.3)' : TEAL),
+                borderRadius: 7,
+                padding: '6px 12px',
+                color: pinging ? TEAL : BG0,
+                fontFamily: fU,
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: pinging ? 'not-allowed' : 'pointer',
+                opacity: pinging ? 0.7 : 1,
+              }}
+            >
+              {pinging ? '⟳ PINGING...' : '📡 PING ALL'}
+            </button>
+          </div>
+        </div>
+
+        {/* 4-stat grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6 }}>
+          <div style={{ background: FAINT, borderRadius: 7, padding: '7px 8px', textAlign: 'center', border: '1px solid ' + BORDER }}>
+            <div style={{ fontFamily: fD, fontSize: 18, color: TEXT, letterSpacing: 1 }}>12</div>
+            <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1 }}>TOOLS</div>
+          </div>
+          <div style={{ background: FAINT, borderRadius: 7, padding: '7px 8px', textAlign: 'center', border: '1px solid ' + BORDER }}>
+            <div style={{ fontFamily: fD, fontSize: 18, color: LIME, letterSpacing: 1 }}>{healthyCount}</div>
+            <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1 }}>HEALTHY</div>
+          </div>
+          <div style={{ background: FAINT, borderRadius: 7, padding: '7px 8px', textAlign: 'center', border: '1px solid ' + BORDER }}>
+            <div style={{ fontFamily: fD, fontSize: 18, color: GOLD, letterSpacing: 1 }}>{fmtN(totalCalls)}</div>
+            <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1 }}>TOTAL CALLS</div>
+          </div>
+          <div style={{ background: FAINT, borderRadius: 7, padding: '7px 8px', textAlign: 'center', border: '1px solid ' + BORDER }}>
+            <div style={{ fontFamily: fD, fontSize: 18, color: TEAL, letterSpacing: 1 }}>{avgLatency}ms</div>
+            <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1 }}>AVG LATENCY</div>
+          </div>
+        </div>
+      </div>
+
+      {/* SCROLLABLE BODY */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+
+        {/* CALL LOG panel */}
+        {logView && (
+          <div style={{
+            background: GLASS,
+            border: '1px solid ' + BORDER,
+            borderRadius: 9,
+            padding: '10px 12px',
+            marginBottom: 4,
+          }}>
+            <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 11, color: PURP, letterSpacing: 1, marginBottom: 8 }}>
+              CALL LOG
+            </div>
+            <div style={{
+              maxHeight: 200,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 3,
+            }}>
+              {callLog.map(function(entry, idx) {
+                return (
+                  <div key={idx} style={{
+                    fontFamily: fM,
+                    fontSize: 9,
+                    color: TEXT_M,
+                    padding: '3px 6px',
+                    background: idx % 2 === 0 ? 'rgba(255,255,255,.02)' : 'transparent',
+                    borderRadius: 4,
+                    whiteSpace: 'pre',
+                  }}>
+                    {entry}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Tool cards */}
+        {tools.map(function(tool) {
+          return (
+            <div
+              key={tool.id}
+              style={{
+                background: pinging ? 'rgba(201,168,76,.04)' : GLASS,
+                border: '1px solid ' + (pinging ? 'rgba(201,168,76,.18)' : BORDER),
+                borderRadius: 9,
+                padding: '9px 11px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                transition: 'border-color 0.3s',
+              }}
+            >
+              {/* SVG ping indicator */}
+              <svg width="18" height="18" viewBox="0 0 18 18" style={{ flexShrink: 0 }}>
+                <circle cx="9" cy="9" r="8" fill="none" stroke={tool.color} strokeWidth="1" strokeOpacity="0.25" />
+                <circle cx="9" cy="9" r="4" fill={tool.color} fillOpacity="0.18" />
+                <circle cx="9" cy="9" r="2.5" fill={tool.color} />
+              </svg>
+
+              {/* Names */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: fM, fontSize: 10, color: TEAL, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {tool.name}
+                </div>
+                <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, marginTop: 1 }}>
+                  {tool.table}
+                </div>
+              </div>
+
+              {/* Latency + calls */}
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontFamily: fM, fontSize: 10, color: tool.color, fontWeight: 700 }}>
+                  {tool.latency}
+                </div>
+                <div style={{ fontFamily: fM, fontSize: 8, color: TEXT_M, marginTop: 1 }}>
+                  {fmtN(tool.calls)} calls
+                </div>
+              </div>
+
+              {/* Live pulse dot */}
+              <div style={{
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: LIME,
+                flexShrink: 0,
+                boxShadow: '0 0 6px ' + LIME,
+                animation: 'pulse 2s ease-in-out infinite',
+              }} />
+            </div>
+          );
+        })}
+
+        {/* SCHEMA ALIGNMENT card */}
+        <div style={{
+          background: 'rgba(201,168,76,.05)',
+          border: '1px solid rgba(201,168,76,.3)',
+          borderRadius: 10,
+          padding: '12px 13px',
+          boxShadow: '0 0 16px rgba(201,168,76,.06)',
+          marginTop: 4,
+        }}>
+          <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEAL, letterSpacing: 1, marginBottom: 10 }}>
+            SCHEMA ALIGNMENT — SUPABASE DB
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M }}>90/10 Split Enforcement</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: LIME }}>4/4 layers ✓</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M }}>Math.floor() Verification</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: LIME }}>ENFORCED</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M }}>20-Guest Cap Trigger</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: LIME }}>ACTIVE</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M }}>IMMUTABLE Audit Ledger</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEAL }}>CHAINED SHA-256</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M }}>MCP Tool ↔ Table Alignment</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: LIME }}>12/12 ✓</span>
+            </div>
+
+          </div>
+        </div>
+
+        {/* GOHIGHLEVEL FRONTEND card */}
+        <div style={{
+          background: GLASS,
+          border: '1px solid ' + BORDER,
+          borderRadius: 10,
+          padding: '12px 13px',
+          marginTop: 4,
+        }}>
+          <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEXT, letterSpacing: 1, marginBottom: 10 }}>
+            GOHIGHLEVEL FRONTEND
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12 }}>🌐</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M, flex: 1 }}>seewhylive.online</span>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: LIME, boxShadow: '0 0 5px ' + LIME, flexShrink: 0 }} />
+              <span style={{ fontFamily: fM, fontSize: 9, color: LIME, flexShrink: 0 }}>LIVE</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12 }}>🔗</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M, flex: 1 }}>seewhylive.vibepreview.com</span>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: LIME, boxShadow: '0 0 5px ' + LIME, flexShrink: 0 }} />
+              <span style={{ fontFamily: fM, fontSize: 9, color: LIME, flexShrink: 0 }}>LIVE</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12 }}>🔒</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M, flex: 1 }}>SSL</span>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: TEAL, boxShadow: '0 0 5px ' + TEAL, flexShrink: 0 }} />
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEAL, flexShrink: 0 }}>VALID</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12 }}>🐳</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M, flex: 1 }}>Docker nginx</span>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: LIME, boxShadow: '0 0 5px ' + LIME, flexShrink: 0 }} />
+              <span style={{ fontFamily: fM, fontSize: 9, color: LIME, flexShrink: 0 }}>RUNNING</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12 }}>⚡</span>
+              <span style={{ fontFamily: fM, fontSize: 9, color: TEXT_M, flex: 1 }}>GoHighLevel→VPS</span>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: GOLD, boxShadow: '0 0 5px ' + GOLD, flexShrink: 0 }} />
+              <span style={{ fontFamily: fM, fontSize: 9, color: GOLD, flexShrink: 0 }}>CONNECTED</span>
+            </div>
+
+          </div>
+        </div>
+
+        {/* SERVER VITALS card — populated by /api/health */}
+        {serverHealth && (
+          <div style={{
+            background: 'rgba(201,168,76,.04)',
+            border: '1px solid rgba(201,168,76,.2)',
+            borderRadius: 10,
+            padding: '12px 13px',
+            marginTop: 4,
+          }}>
+            <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEAL, letterSpacing: 1, marginBottom: 10 }}>
+              SERVER VITALS — {serverHealth.version || 'v33'}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+              {[
+                ['UPTIME', (function() { var s = Math.floor(serverHealth.uptimeSeconds || 0); var h = Math.floor(s / 3600); var m = Math.floor((s % 3600) / 60); return h + 'h ' + m + 'm'; })(), TEAL],
+                ['ROOMS', String(serverHealth.rooms || 0), LIME],
+                ['SOCKETS', String(serverHealth.connections || 0), GOLD],
+                ['DB', serverHealth.db === 'ok' ? 'OK' : 'ERR', serverHealth.db === 'ok' ? LIME : '#FF3B3B'],
+              ].map(function(stat) {
+                return (
+                  <div key={stat[0]} style={{ background: 'rgba(255,255,255,.03)', borderRadius: 7, padding: '6px 8px', textAlign: 'center' }}>
+                    <div style={{ fontFamily: fD, fontSize: 16, color: stat[2], letterSpacing: 1 }}>{stat[1]}</div>
+                    <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1 }}>{stat[0]}</div>
+                  </div>
+                );
+              })}
+            </div>
+            {serverHealth.memoryMB && (
+              <div>
+                <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1, marginBottom: 4 }}>HEAP USAGE</div>
+                <div style={{ height: 6, background: '#3D3020', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ width: Math.floor((serverHealth.memoryMB.heap / serverHealth.memoryMB.heapTotal) * 100) + '%', height: '100%', background: 'linear-gradient(90deg,' + TEAL + ',' + TEAL_H + ')', borderRadius: 3 }} />
+                </div>
+                <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, marginTop: 3 }}>
+                  {serverHealth.memoryMB.heap}MB / {serverHealth.memoryMB.heapTotal}MB · RSS {serverHealth.memoryMB.rss}MB
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}

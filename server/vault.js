@@ -6,13 +6,13 @@
  * NEVER exposes raw keys to the frontend.
  */
 
-const crypto = require('crypto');
-const Database = require('better-sqlite3');
+var crypto = require('crypto');
+var Database = require('better-sqlite3');
 
-const DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
-const ALGORITHM = 'aes-256-gcm';
+var DB_PATH = process.env.DB_PATH || '/opt/seewhy/data/seewhy.db';
+var ALGORITHM = 'aes-256-gcm';
 
-let db = null;
+var db = null;
 
 /**
  * Initialize the SQLite database and create stream_keys table if absent.
@@ -41,7 +41,7 @@ function initDb() {
  * Throws hard if the secret is missing or wrong length.
  */
 function getVaultKey() {
-  const hex = process.env.VAULT_SECRET;
+  var hex = process.env.VAULT_SECRET;
   if (!hex || hex.length !== 64) {
     throw new Error('VAULT_SECRET must be a 64-character hex string (32 bytes)');
   }
@@ -56,16 +56,16 @@ function getVaultKey() {
  * @returns {string}
  */
 function encrypt(plaintext) {
-  const key = getVaultKey();
-  const iv = crypto.randomBytes(12); // 96-bit IV for GCM
-  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+  var key = getVaultKey();
+  var iv = crypto.randomBytes(12); // 96-bit IV for GCM
+  var cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
-  const encrypted = Buffer.concat([
+  var encrypted = Buffer.concat([
     cipher.update(plaintext, 'utf8'),
     cipher.final()
   ]);
 
-  const authTag = cipher.getAuthTag();
+  var authTag = cipher.getAuthTag();
 
   return [
     iv.toString('hex'),
@@ -81,20 +81,20 @@ function encrypt(plaintext) {
  * @returns {string}
  */
 function decrypt(stored) {
-  const parts = stored.split(':');
+  var parts = stored.split(':');
   if (parts.length !== 3) {
     throw new Error('Invalid encrypted format: expected iv:authTag:ciphertext');
   }
 
-  const iv = Buffer.from(parts[0], 'hex');
-  const authTag = Buffer.from(parts[1], 'hex');
-  const ciphertext = Buffer.from(parts[2], 'hex');
+  var iv = Buffer.from(parts[0], 'hex');
+  var authTag = Buffer.from(parts[1], 'hex');
+  var ciphertext = Buffer.from(parts[2], 'hex');
 
-  const key = getVaultKey();
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+  var key = getVaultKey();
+  var decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
 
-  const decrypted = Buffer.concat([
+  var decrypted = Buffer.concat([
     decipher.update(ciphertext),
     decipher.final()
   ]);
@@ -110,11 +110,11 @@ function decrypt(stored) {
  * @param {string} plainKey
  */
 function saveKey(guestId, destId, plainKey) {
-  const database = initDb();
-  const encryptedKey = encrypt(plainKey);
-  const createdAt = Math.floor(Date.now() / 1000);
+  var database = initDb();
+  var encryptedKey = encrypt(plainKey);
+  var createdAt = Math.floor(Date.now() / 1000);
 
-  const stmt = database.prepare(`
+  var stmt = database.prepare(`
     INSERT INTO stream_keys (guest_id, dest_id, encrypted_key, created_at)
     VALUES (?, ?, ?, ?)
     ON CONFLICT(guest_id, dest_id) DO UPDATE SET
@@ -132,7 +132,7 @@ function saveKey(guestId, destId, plainKey) {
  * @param {string} destId
  */
 function deleteKey(guestId, destId) {
-  const database = initDb();
+  var database = initDb();
   database.prepare(
     'DELETE FROM stream_keys WHERE guest_id = ? AND dest_id = ?'
   ).run(guestId, destId);
@@ -147,8 +147,8 @@ function deleteKey(guestId, destId) {
  * @returns {string|null}
  */
 function getDecryptedKey(guestId, destId) {
-  const database = initDb();
-  const row = database.prepare(
+  var database = initDb();
+  var row = database.prepare(
     'SELECT encrypted_key FROM stream_keys WHERE guest_id = ? AND dest_id = ?'
   ).get(guestId, destId);
 
@@ -165,8 +165,8 @@ function getDecryptedKey(guestId, destId) {
  * @returns {boolean}
  */
 function hasKey(guestId, destId) {
-  const database = initDb();
-  const row = database.prepare(
+  var database = initDb();
+  var row = database.prepare(
     'SELECT 1 FROM stream_keys WHERE guest_id = ? AND dest_id = ? LIMIT 1'
   ).get(guestId, destId);
 
@@ -180,8 +180,8 @@ function hasKey(guestId, destId) {
  * @returns {Array<{destId: string, createdAt: number}>}
  */
 function listGuestKeyMeta(guestId) {
-  const database = initDb();
-  const rows = database.prepare(
+  var database = initDb();
+  var rows = database.prepare(
     'SELECT dest_id, created_at FROM stream_keys WHERE guest_id = ? ORDER BY created_at DESC'
   ).all(guestId);
 

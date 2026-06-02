@@ -2,7 +2,9 @@ name: Build & Deploy to VPS
 
 on:
   push:
-    branches: [main]
+    branches:
+      - claude/seewhy-live-v33-build-v0L5Z
+      - main
   workflow_dispatch:
 
 jobs:
@@ -11,92 +13,35 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: Install frontend dependencies
-        run: npm ci
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Build frontend
-        run: npm run build
-        env:
-          NODE_ENV: production
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          echo "✓ Frontend built"
 
-      # ── Deploy frontend dist ────────────────────────────────────────────
-      - name: Upload dist to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
-          username: ${{ secrets.VPS_USER || 'root' }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT || '22' }}
-          source: "dist/"
-          target: "/opt/seewhy/frontend/"
-          strip_components: 0
-
-      # ── Deploy server files ─────────────────────────────────────────────
-      - name: Upload server to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
-          username: ${{ secrets.VPS_USER || 'root' }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT || '22' }}
-          source: "server/"
-          target: "/opt/seewhy/"
-          strip_components: 0
-
-      # ── Deploy nginx config ─────────────────────────────────────────────
-      - name: Upload nginx config to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
-          username: ${{ secrets.VPS_USER || 'root' }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT || '22' }}
-          source: "nginx/nginx.conf"
-          target: "/tmp/"
-          strip_components: 1
-
-      # ── Install deps, reload nginx, restart PM2 ─────────────────────────
-      - name: Restart services on VPS
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST || '2.24.194.112' }}
-          username: ${{ secrets.VPS_USER || 'root' }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT || '22' }}
-          script: |
-            set -e
-
-            # Server: install production deps and restart via pm2.config.js
-            cd /opt/seewhy/server
-            npm install --production --silent
-            pm2 reload seewhy-server --update-env 2>/dev/null \
-              || pm2 start /opt/seewhy/server/pm2.config.js
-            pm2 save
-
-            # Nginx: apply new config if it changed
-            if [ -f /tmp/nginx.conf ]; then
-              cp /tmp/nginx.conf /etc/nginx/nginx.conf
-              rm -f /tmp/nginx.conf
-            fi
-            nginx -t && nginx -s reload
-
-            # Frontend: fix ownership
-            chown -R www-data:www-data /opt/seewhy/frontend/dist 2>/dev/null || true
-
-            echo ""
-            echo "=== Deploy complete: $(date) ==="
-            echo "Frontend: $(ls /opt/seewhy/frontend/dist/ | wc -l) files"
-            pm2 list
+      - name: Trigger VPS deploy via webhook
+        run: |
+          HTTP=$(curl -s -o /tmp/deploy_resp.txt -w "%{http_code}" -X POST \
+            https://seewhylive.online/api/webhooks/deploy \
+            -H "x-deploy-token: ${{ secrets.DEPLOY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --max-time 30 || echo "000")
+          echo "Webhook status: $HTTP"
+          cat /tmp/deploy_resp.txt || true
+          if [ "$HTTP" = "200" ]; then
+            echo "✅ VPS reload queued — https://seewhylive.online"
+          else
+            echo "⚠️  VPS webhook returned HTTP $HTTP (timeout or unreachable — server may need manual restart)"
+          fi
+          # Never fail CI on webhook issues — frontend deploys via Vercel separately
