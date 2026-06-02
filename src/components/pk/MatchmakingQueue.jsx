@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Users, Zap, Clock, Swords, LogIn, LogOut, Shield, Trophy, Star } from 'lucide-react';
 
@@ -143,13 +141,18 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
 
         {/* Queue action */}
         {!inQueue && !matchedWith && (
-          <Button
+          <button
             onClick={joinQueue}
-            className="w-full h-10 font-black text-sm gap-2 uppercase tracking-wider"
-            style={{ background: 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.gold + ')', color: '#fff', letterSpacing: '0.07em' }}
+            style={{
+              width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14,
+              textTransform: 'uppercase', letterSpacing: '0.07em', cursor: 'pointer',
+              background: 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.gold + ')',
+              color: '#fff', border: 'none', borderRadius: 8,
+            }}
           >
             <LogIn className="w-4 h-4" /> Join Matchmaking Queue
-          </Button>
+          </button>
         )}
 
         {inQueue && (
@@ -169,13 +172,16 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
                 transition={{ duration: 8, ease: 'easeInOut' }}
               />
             </div>
-            <Button
+            <button
               onClick={leaveQueue}
-              className="w-full h-9 text-xs gap-2"
-              style={{ background: 'rgba(128,0,32,0.2)', color: ET.terracotta, border: '1px solid rgba(128,0,32,0.35)' }}
+              style={{
+                width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: 8, fontSize: 12, cursor: 'pointer', borderRadius: 8,
+                background: 'rgba(128,0,32,0.2)', color: ET.terracotta, border: '1px solid rgba(128,0,32,0.35)',
+              }}
             >
               <LogOut className="w-3 h-3" /> Leave Queue
-            </Button>
+            </button>
           </div>
         )}
 
@@ -193,17 +199,24 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
               {matchedWith.level} · {matchedWith.category} · {matchedWith.viewers.toLocaleString()} viewers
             </p>
             <div className="flex gap-2">
-              <Button size="sm" className="flex-1 font-bold text-xs" style={{ background: ET.rust, color: '#fff' }}>
+              <button
+                style={{
+                  flex: 1, fontSize: 12, fontWeight: 700, padding: '6px 0', borderRadius: 8,
+                  background: ET.rust, color: '#fff', border: 'none', cursor: 'pointer',
+                }}
+              >
                 Accept Match
-              </Button>
-              <Button
-                size="sm"
+              </button>
+              <button
                 onClick={function() { setMatchedWith(null); }}
-                className="flex-1 text-xs"
-                style={{ background: 'rgba(255,255,255,0.06)', color: ET.sand, border: '1px solid rgba(255,255,255,0.1)' }}
+                style={{
+                  flex: 1, fontSize: 12, padding: '6px 0', borderRadius: 8,
+                  background: 'rgba(255,255,255,0.06)', color: ET.sand,
+                  border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer',
+                }}
               >
                 Decline
-              </Button>
+              </button>
             </div>
           </motion.div>
         )}
@@ -218,9 +231,9 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
               Live Queue · {MOCK_QUEUE.length} waiting
             </span>
           </div>
-          <Badge style={{ background: ET.terracotta + '22', color: ET.terracotta, border: '1px solid ' + ET.terracotta + '40', fontSize: '10px' }}>
+          <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: ET.terracotta + '22', color: ET.terracotta, border: '1px solid ' + ET.terracotta + '40' }}>
             OPEN
-          </Badge>
+          </span>
         </div>
         <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
           {MOCK_QUEUE.map(function(p) {
@@ -246,13 +259,14 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
                     <Clock className="w-2.5 h-2.5" />
                     {p.wait}s
                   </div>
-                  <Button
-                    size="sm"
-                    className="mt-1 h-6 text-[10px] px-2"
-                    style={{ background: ET.burgundy + '30', color: ET.terracotta, border: '1px solid ' + ET.burgundy + '50' }}
+                  <button
+                    style={{
+                      marginTop: 4, height: 24, fontSize: 10, padding: '0 8px', borderRadius: 6, cursor: 'pointer',
+                      background: ET.burgundy + '30', color: ET.terracotta, border: '1px solid ' + ET.burgundy + '50',
+                    }}
                   >
                     Challenge
-                  </Button>
+                  </button>
                 </div>
               </div>
             );

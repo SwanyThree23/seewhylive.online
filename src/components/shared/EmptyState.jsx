@@ -1,24 +1,27 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
-export default function EmptyState({ 
-  icon: Icon, 
-  title, 
-  description, 
-  action, 
+export default function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
   actionLabel,
-  className 
+  className
 }) {
   return (
-    <div className={cn('flex flex-col items-center justify-center text-center p-12', className)}>
-      {Icon && <Icon className="w-16 h-16 text-muted-foreground opacity-50 mb-4" />}
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:48 }} className={className}>
+      {Icon && <Icon style={{ width:64, height:64, opacity:0.3, marginBottom:16, color:'rgba(255,255,255,0.4)' }} />}
+      <h3 style={{ fontSize:20, fontWeight:600, marginBottom:8 }}>{title}</h3>
       {description && (
-        <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
+        <p style={{ color:'rgba(255,255,255,0.5)', marginBottom:24, maxWidth:448 }}>{description}</p>
       )}
       {action && actionLabel && (
-        <Button onClick={action}>{actionLabel}</Button>
+        <button
+          onClick={action}
+          style={{ padding:'8px 20px', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:14 }}
+        >
+          {actionLabel}
+        </button>
       )}
     </div>
   );
