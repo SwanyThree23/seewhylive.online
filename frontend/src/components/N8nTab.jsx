@@ -5,7 +5,7 @@ var GOLD_H = '#E8C46A';
 var BURG   = '#800020';
 var BURG_H = '#C01838';
 var TEAL   = '#00C9A7';
-var TEAL_H = '#00DEC0';
+var TEAL_H = '#C9A84C';
 var LIME   = '#B4E628';
 var PURP_H = '#C084FC';
 var AMBER  = '#F59E0B';
@@ -14,7 +14,7 @@ var MUTED  = '#6B5F82';
 var TEXT   = '#EDE8F4';
 var TEXT_M = '#A89CC8';
 var BG0    = '#07050A';
-var BG1    = '#0F0C14';
+var BG1    = '#0E0C09';
 var FAINT  = '#1C1530';
 var BORDER = 'rgba(255,255,255,.07)';
 var GLASS  = 'rgba(13,10,20,.75)';
@@ -328,7 +328,7 @@ export default function N8nTab({ addToast, isLive }) {
               /* Workflow cards */
               workflows.map(function(wf) {
                 var isSelected = selected === wf.id;
-                var dotColor = wf.enabled ? statusColor(wf.status) : '#7A6F90';
+                var dotColor = wf.enabled ? statusColor(wf.status) : '#8A7A62';
                 var cardBorder = wf.enabled
                   ? (isSelected ? wf.color : BORDER)
                   : '#241C34';
@@ -404,9 +404,9 @@ export default function N8nTab({ addToast, isLive }) {
                         React.createElement('button', {
                           onClick: function() { toggleWorkflow(wf.id); },
                           style:{
-                            background: wf.enabled ? LIME+'22' : '#7A6F90'+'22',
-                            border: '1px solid ' + (wf.enabled ? LIME+'66' : '#7A6F9066'),
-                            color: wf.enabled ? LIME : '#7A6F90',
+                            background: wf.enabled ? LIME+'22' : '#8A7A62'+'22',
+                            border: '1px solid ' + (wf.enabled ? LIME+'66' : '#8A7A6266'),
+                            color: wf.enabled ? LIME : '#8A7A62',
                             borderRadius: 5,
                             padding: '3px 8px',
                             fontSize: 10,

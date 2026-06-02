@@ -81,7 +81,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
           fontFamily: "'Bebas Neue',sans-serif",
           fontSize: '22px',
           letterSpacing: '2px',
-          color: '#EDE8F5',
+          color: '#F0E8D4',
           textAlign: 'center'
         }}
       >
@@ -102,7 +102,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
         style={{
           fontFamily: "'Barlow Condensed',sans-serif",
           fontSize: '13px',
-          color: '#7A6F90',
+          color: '#8A7A62',
           textAlign: 'center'
         }}
       >
@@ -141,8 +141,8 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
           fontFamily: "'Bebas Neue',sans-serif",
           fontSize: '17px',
           letterSpacing: '2px',
-          color: '#0F0C14',
-          background: processing || !stripe ? '#7A6F90' : '#E8C46A',
+          color: '#0E0C09',
+          background: processing || !stripe ? '#8A7A62' : '#E8C46A',
           border: 'none',
           borderRadius: '6px',
           padding: '12px 0',
@@ -248,7 +248,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
       style={{
         padding: '20px',
         minHeight: '100%',
-        background: '#0F0C14',
+        background: '#0E0C09',
         boxSizing: 'border-box'
       }}
     >
@@ -266,7 +266,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
             fontFamily: "'Bebas Neue',sans-serif",
             fontSize: '26px',
             letterSpacing: '3px',
-            color: '#EDE8F5',
+            color: '#F0E8D4',
             margin: '0 0 20px 0'
           }}
         >
@@ -300,7 +300,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                   fontFamily: "'Bebas Neue',sans-serif",
                   fontSize: '22px',
                   letterSpacing: '2px',
-                  color: '#EDE8F5'
+                  color: '#F0E8D4'
                 }}
               >
                 Stream Offline
@@ -309,7 +309,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                 style={{
                   fontFamily: "'Barlow Condensed',sans-serif",
                   fontSize: '14px',
-                  color: '#7A6F90'
+                  color: '#8A7A62'
                 }}
               >
                 Go live to begin streaming
@@ -349,7 +349,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
               {hlsError && (
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,12,20,.9)', gap: 10 }}>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2, color: '#FF1A3C' }}>STREAM ERROR</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90' }}>{retrying ? 'Reconnecting...' : 'Connection lost'}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>{retrying ? 'Reconnecting...' : 'Connection lost'}</div>
                   {retrying && <div style={{ width: 40, height: 4, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}><div style={{ height: '100%', background: '#C9A84C', borderRadius: 2, animation: 'none', width: '60%' }} /></div>}
                 </div>
               )}
@@ -386,7 +386,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
               fontFamily: "'Bebas Neue',sans-serif",
               fontSize: '18px',
               letterSpacing: '2px',
-              color: '#EDE8F5',
+              color: '#F0E8D4',
               margin: '0 0 10px 0'
             }}
           >
@@ -401,7 +401,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
               background: 'rgba(0,0,0,.35)',
               border: '1px solid rgba(255,255,255,.07)',
               borderRadius: '6px',
-              color: '#EDE8F5',
+              color: '#F0E8D4',
               fontFamily: "'DM Mono',monospace",
               fontSize: '13px',
               padding: '10px 12px',
@@ -414,7 +414,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={function() { navigator.clipboard.writeText(embedCode).then(function() {}).catch(function() {}); }}
-              style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: '15px', letterSpacing: '2px', color: '#0F0C14', background: '#00DEC0', border: 'none', borderRadius: '6px', padding: '10px 22px', cursor: 'pointer' }}>
+              style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: '15px', letterSpacing: '2px', color: '#0E0C09', background: '#C9A84C', border: 'none', borderRadius: '6px', padding: '10px 22px', cursor: 'pointer' }}>
               COPY EMBED CODE
             </button>
             <button
@@ -438,7 +438,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
               fontFamily: "'Bebas Neue',sans-serif",
               fontSize: '18px',
               letterSpacing: '2px',
-              color: '#EDE8F5',
+              color: '#F0E8D4',
               margin: '0 0 10px 0'
             }}
           >
@@ -448,7 +448,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
             style={{
               fontFamily: "'DM Mono',monospace",
               fontSize: '13px',
-              color: '#00DEC0',
+              color: '#C9A84C',
               background: 'rgba(0,0,0,.35)',
               border: '1px solid rgba(255,255,255,.07)',
               borderRadius: '6px',

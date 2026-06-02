@@ -294,7 +294,7 @@ export default function ShowcaseTab(p) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', background: '#07050A' }}>
 
       {/* Sub-tab bar with LIVE CAPTURE indicator */}
-      <div style={{ display: 'flex', overflowX: 'auto', background: '#0F0C14', borderBottom: '1px solid rgba(201,168,76,.12)', flexShrink: 0, msOverflowStyle: 'none', scrollbarWidth: 'none', alignItems: 'center' }}>
+      <div style={{ display: 'flex', overflowX: 'auto', background: '#0E0C09', borderBottom: '1px solid rgba(201,168,76,.12)', flexShrink: 0, msOverflowStyle: 'none', scrollbarWidth: 'none', alignItems: 'center' }}>
         {SUBS.map(function(t) {
           var on = sub === t[0];
           return (
@@ -354,8 +354,8 @@ export default function ShowcaseTab(p) {
                         <div key={i} style={{ background: 'rgba(255,26,60,.06)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={{ fontSize: 16, flexShrink: 0 }}>📹</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5' }}>Live Clip #{clipNum}</div>
-                            {clipTime && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>Captured at {clipTime}</div>}
+                            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4' }}>Live Clip #{clipNum}</div>
+                            {clipTime && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>Captured at {clipTime}</div>}
                           </div>
                           <span style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#FF6B81', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
                             <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: '#FF1A3C' }} />

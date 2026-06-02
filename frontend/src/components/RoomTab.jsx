@@ -16,8 +16,8 @@ var LAYOUTS = [
 ];
 
 function RolePill({ role }) {
-  var colors = { host: '#C9A84C', cohost: '#00C9A7', guest: '#5A8FFF', viewer: 'rgba(176,160,192,.5)' };
-  var bg     = { host: 'rgba(201,168,76,.18)', cohost: 'rgba(0,201,167,.15)', guest: 'rgba(90,143,255,.15)', viewer: 'rgba(36,28,52,.6)' };
+  var colors = { host: '#C9A84C', cohost: '#D4854A', guest: '#C9A84C', viewer: 'rgba(138,122,98,.5)' };
+  var bg     = { host: 'rgba(201,168,76,.18)', cohost: 'rgba(212,133,74,.15)', guest: 'rgba(201,168,76,.12)', viewer: 'rgba(61,48,32,.6)' };
   var r      = role || 'viewer';
   return (
     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1, textTransform: 'uppercase', padding: '2px 5px', borderRadius: 3, background: bg[r] || bg.viewer, color: colors[r] || colors.viewer, flexShrink: 0 }}>
@@ -28,10 +28,10 @@ function RolePill({ role }) {
 
 function LowerThird({ name, role, isMuted, isCamOff, isLive }) {
   return (
-    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px 10px 8px', background: 'linear-gradient(transparent,rgba(7,5,10,.85))', zIndex: 20, pointerEvents: 'none' }}>
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px 10px 8px', background: 'linear-gradient(transparent,rgba(14,12,9,.85))', zIndex: 20, pointerEvents: 'none' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#EDE8F5', letterSpacing: 1, textShadow: '0 1px 6px rgba(0,0,0,.8)', lineHeight: 1.1 }}>{name}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#F0E8D4', letterSpacing: 1, textShadow: '0 1px 6px rgba(0,0,0,.8)', lineHeight: 1.1 }}>{name}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
             <RolePill role={role} />
             {isMuted   && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', background: 'rgba(255,26,60,.18)', padding: '1px 4px', borderRadius: 3 }}>🔇</span>}
@@ -48,7 +48,7 @@ function OverlayBanner({ banner }) {
   if (!banner || !banner.visible || !banner.text) return null;
   var isTop = banner.position === 'top';
   return (
-    <div style={{ position: 'absolute', [isTop ? 'top' : 'bottom']: 0, left: 0, right: 0, zIndex: 30, pointerEvents: 'none', padding: isTop ? '10px 16px 20px' : '20px 16px 10px', background: isTop ? 'linear-gradient(rgba(7,5,10,.85),transparent)' : 'linear-gradient(transparent,rgba(7,5,10,.85))' }}>
+    <div style={{ position: 'absolute', [isTop ? 'top' : 'bottom']: 0, left: 0, right: 0, zIndex: 30, pointerEvents: 'none', padding: isTop ? '10px 16px 20px' : '20px 16px 10px', background: isTop ? 'linear-gradient(rgba(14,12,9,.85),transparent)' : 'linear-gradient(transparent,rgba(14,12,9,.85))' }}>
       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: banner.color || '#C9A84C', letterSpacing: 4, textShadow: '0 2px 10px rgba(0,0,0,.9)', textAlign: 'center' }}>
         {banner.text}
       </div>
@@ -72,8 +72,8 @@ function OverlayCountdown({ countdown }) {
   var s   = rem % 60;
   var str = (h > 0 ? String(h).padStart(2, '0') + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   return (
-    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'none', textAlign: 'center', background: 'rgba(7,5,10,.75)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 12, padding: '14px 24px', backdropFilter: 'blur(8px)' }}>
-      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 3, marginBottom: 4 }}>{countdown.label || 'STARTING SOON'}</div>
+    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'none', textAlign: 'center', background: 'rgba(14,12,9,.75)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 12, padding: '14px 24px', backdropFilter: 'blur(8px)' }}>
+      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 3, marginBottom: 4 }}>{countdown.label || 'STARTING SOON'}</div>
       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#C9A84C', letterSpacing: 6, lineHeight: 1 }}>{str}</div>
     </div>
   );
@@ -85,15 +85,15 @@ function OverlayScoreBug({ scoreBug }) {
     <div style={{ position: 'absolute', bottom: 12, right: 12, zIndex: 30, pointerEvents: 'none' }}>
       <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(10,7,18,.88)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, overflow: 'hidden', backdropFilter: 'blur(4px)' }}>
         <div style={{ padding: '5px 10px', textAlign: 'center', borderRight: '1px solid rgba(201,168,76,.2)' }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#EDE8F5', letterSpacing: 2 }}>{scoreBug.team1.name || 'TEAM 1'}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#F0E8D4', letterSpacing: 2 }}>{scoreBug.team1.name || 'TEAM 1'}</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: '#C9A84C', lineHeight: 1 }}>{scoreBug.team1.score}</div>
         </div>
         <div style={{ padding: '5px 8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#7A6F90', letterSpacing: 1 }}>{scoreBug.label || ''}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#8A7A62', letterSpacing: 1 }}>{scoreBug.label || ''}</div>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 800, fontSize: 10, color: '#FF6B81' }}>VS</div>
         </div>
         <div style={{ padding: '5px 10px', textAlign: 'center', borderLeft: '1px solid rgba(201,168,76,.2)' }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#EDE8F5', letterSpacing: 2 }}>{scoreBug.team2.name || 'TEAM 2'}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#F0E8D4', letterSpacing: 2 }}>{scoreBug.team2.name || 'TEAM 2'}</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: '#C9A84C', lineHeight: 1 }}>{scoreBug.team2.score}</div>
         </div>
       </div>
@@ -106,9 +106,9 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
   var lt = lowerThirds[guestId];
   if (!lt || !lt.visible) return null;
   return (
-    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 25, pointerEvents: 'none', padding: '24px 10px 8px', background: 'linear-gradient(transparent,rgba(7,5,10,.9))' }}>
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 25, pointerEvents: 'none', padding: '24px 10px 8px', background: 'linear-gradient(transparent,rgba(14,12,9,.9))' }}>
       <div style={{ borderLeft: '3px solid #C9A84C', paddingLeft: 7 }}>
-        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#EDE8F5', letterSpacing: 2, lineHeight: 1, textShadow: '0 2px 8px rgba(0,0,0,.9)' }}>{lt.name}</div>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#F0E8D4', letterSpacing: 2, lineHeight: 1, textShadow: '0 2px 8px rgba(0,0,0,.9)' }}>{lt.name}</div>
         {lt.title && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', marginTop: 2, letterSpacing: 1 }}>{lt.title}</div>}
       </div>
     </div>
@@ -128,8 +128,8 @@ var LANG_NAMES = {
 var PICKER_LANGS = ['EN','ES','PT','FR','DE','JA','ZH','KO','AR','RU','HI','IT'];
 
 var SC_TIERS = [
-  { amount: 100,  label: '$1',  color: '#5A8FFF', bg: 'rgba(90,143,255,.22)'  },
-  { amount: 200,  label: '$2',  color: '#00C96A', bg: 'rgba(0,201,106,.22)'   },
+  { amount: 100,  label: '$1',  color: '#C9A84C', bg: 'rgba(201,168,76,.18)'  },
+  { amount: 200,  label: '$2',  color: '#C9A84C', bg: 'rgba(201,168,76,.18)'   },
   { amount: 500,  label: '$5',  color: '#C9A84C', bg: 'rgba(201,168,76,.22)'  },
   { amount: 1000, label: '$10', color: '#FF8C42', bg: 'rgba(255,140,66,.22)'  },
   { amount: 2000, label: '$20', color: '#FF1A3C', bg: 'rgba(255,26,60,.22)'   },
@@ -601,21 +601,21 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
     }
     if (variant === 'active') {
       return Object.assign({}, base, {
-        background: 'rgba(0,222,192,.1)',
-        borderColor: 'rgba(0,222,192,.35)',
-        color: '#00DEC0',
+        background: 'rgba(201,168,76,.08)',
+        borderColor: 'rgba(201,168,76,.28)',
+        color: '#C9A84C',
       });
     }
     // default / inactive
     return Object.assign({}, base, {
-      background: 'rgba(22,16,32,.7)',
-      borderColor: '#241C34',
-      color: '#7A6F90',
+      background: 'rgba(26,21,16,.7)',
+      borderColor: '#3D3020',
+      color: '#8A7A62',
     });
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0F0C14', overflow: 'hidden', fontFamily: "'Barlow Condensed',sans-serif" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0E0C09', overflow: 'hidden', fontFamily: "'Barlow Condensed',sans-serif" }}>
       {showConfig && <MediaConfigPanel onClose={function() { setShowConfig(false); }} onApply={handleMediaApply} addToast={addToast} />}
 
       {/* Broadcast bar */}
@@ -631,45 +631,45 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
 
         {/* Stage toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', background: 'rgba(10,7,18,.9)', borderBottom: '1px solid #241C34', flexShrink: 0, overflowX: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', background: 'rgba(10,7,18,.9)', borderBottom: '1px solid #3D3020', flexShrink: 0, overflowX: 'auto' }}>
           {LAYOUTS.map(function(l) {
             var isActive = stageLayout === l.id;
             return (
               <button key={l.id}
                 onClick={function() { setStageLayout(l.id); }}
-                style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '4px 8px', background: isActive ? 'rgba(0,222,192,.12)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isActive ? 'rgba(0,222,192,.4)' : '#241C34'), borderRadius: 4, color: isActive ? '#00DEC0' : '#7A6F90', cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+                style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '4px 8px', background: isActive ? 'rgba(201,168,76,.12)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 4, color: isActive ? '#C9A84C' : '#8A7A62', cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
                 {l.label}
               </button>
             );
           })}
           <button
             onClick={function() { setShowGuests(function(v) { return !v; }); }}
-            style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '4px 8px', background: showGuests ? 'rgba(90,143,255,.15)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (showGuests ? 'rgba(90,143,255,.4)' : '#241C34'), borderRadius: 4, color: showGuests ? '#5A8FFF' : '#7A6F90', cursor: 'pointer', flexShrink: 0 }}>
+            style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, padding: '4px 8px', background: showGuests ? 'rgba(201,168,76,.12)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (showGuests ? 'rgba(201,168,76,.35)' : '#3D3020'), borderRadius: 4, color: showGuests ? '#C9A84C' : '#8A7A62', cursor: 'pointer', flexShrink: 0 }}>
             👥 {guests.length}
           </button>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginLeft: 'auto', flexShrink: 0 }}>{allParticipants.length}/{MAX_STAGE} CONNECTED</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginLeft: 'auto', flexShrink: 0 }}>{allParticipants.length}/{MAX_STAGE} CONNECTED</span>
         </div>
 
         {/* GUESTS LIST MODE */}
         {showGuests && (
           <div style={{ flex: 1, overflowY: 'auto', padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {guests.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', textAlign: 'center', padding: 20 }}>No viewers online</div>}
+            {guests.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 20 }}>No viewers online</div>}
             {guests.map(function(g) {
               var gid   = g.guestId ? g.guestId : g.userId;
               var onStage = stageGuests.indexOf(gid) >= 0;
               return (
-                <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'rgba(22,16,32,.7)', border: '1px solid ' + (onStage ? 'rgba(0,201,167,.3)' : '#241C34'), borderRadius: 8 }}>
+                <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'rgba(26,21,16,.7)', border: '1px solid ' + (onStage ? 'rgba(201,168,76,.25)' : '#3D3020'), borderRadius: 8 }}>
                   <div style={{ flexShrink: 0 }}>
                     <AvatarPortrait username={g.username || gid} size={30} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || gid}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || gid}</div>
                     <RolePill role={g.role || 'viewer'} />
                   </div>
-                  {onStage && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7' }}>ON STAGE</span>}
+                  {onStage && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>ON STAGE</span>}
                   {role === 'host' && !onStage && (
                     <button onClick={function() { inviteToStage({ guestId: gid, username: g.username || gid }); }}
-                      style={{ background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 6, padding: '4px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+                      style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.28)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
                       + INVITE
                     </button>
                   )}
@@ -687,7 +687,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* SOLO layout */}
         {!showGuests && stageLayout === 'solo' && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative', background: '#0a0710' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative', background: '#0E0C09' }}>
             {featuredGuest ? (
               <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <OctCell
@@ -714,7 +714,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                       var gid = g.guestId ? g.guestId : g.userId;
                       return (
                         <button key={gid} onClick={function() { setFeaturedId(gid); }}
-                          style={{ background: 'rgba(7,5,10,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '3px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                          style={{ background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '3px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
                           {g.username || gid}
                         </button>
                       );
@@ -723,10 +723,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 )}
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#7A6F90' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#8A7A62' }}>
                 <div style={{ fontSize: 36 }}>🎙</div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: 'rgba(201,168,76,.4)', letterSpacing: 3 }}>NO SIGNAL</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>Waiting for camera...</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>Waiting for camera...</div>
               </div>
             )}
           </div>
@@ -734,7 +734,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* PANEL layout */}
         {!showGuests && stageLayout === 'panel' && (
-          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: allGridCols, gap: 2, padding: 2, overflow: 'hidden', background: '#0a0710', alignContent: 'start' }}>
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: allGridCols, gap: 2, padding: 2, overflow: 'hidden', background: '#0E0C09', alignContent: 'start' }}>
             {allParticipants.map(function(g) {
               var gid  = g.guestId ? g.guestId : (g.userId ? g.userId : 'x');
               var isOwn = gid === userId;
@@ -742,7 +742,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               return (
                 <div key={gid}
                   onClick={function() { setFeaturedId(gid); }}
-                  style={{ position: 'relative', border: '2px solid ' + (isFeatured ? '#00DEC0' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', aspectRatio: '16/9', background: '#0a0710' }}>
+                  style={{ position: 'relative', border: '2px solid ' + (isFeatured ? '#C9A84C' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', aspectRatio: '16/9', background: '#0E0C09' }}>
                   <OctCell
                     guest={g}
                     sz={allTileSize}
@@ -768,7 +768,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                   <button
                     onClick={function(e) { e.stopPropagation(); setExpandedId(gid); setStageLayout('expand'); }}
                     title="Expand panel"
-                    style={{ position: 'absolute', top: 5, right: 5, zIndex: 30, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 4, width: 20, height: 20, color: '#EDE8F5', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⛶</button>
+                    style={{ position: 'absolute', top: 5, right: 5, zIndex: 30, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 4, width: 20, height: 20, color: '#F0E8D4', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⛶</button>
                 </div>
               );
             })}
@@ -777,7 +777,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* EXPAND layout — Bigo-style: one large cell + thumbnail strip */}
         {!showGuests && stageLayout === 'expand' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', gap: 2, padding: 2, overflow: 'hidden', background: '#0a0710' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', gap: 2, padding: 2, overflow: 'hidden', background: '#0E0C09' }}>
             {/* Main large panel */}
             <div style={{ flex: 1, position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#070510' }}>
               {(function() {
@@ -814,11 +814,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     {/* Collapse back to panel */}
                     <button
                       onClick={function() { setStageLayout('panel'); setExpandedId(null); }}
-                      style={{ position: 'absolute', top: 10, right: 10, zIndex: 40, background: 'rgba(0,0,0,.75)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 6, padding: '4px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
+                      style={{ position: 'absolute', top: 10, right: 10, zIndex: 40, background: 'rgba(0,0,0,.75)', border: '1px solid rgba(255,255,255,.25)', borderRadius: 6, padding: '4px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
                       ✕ COLLAPSE
                     </button>
                     {/* Expand badge */}
-                    <div style={{ position: 'absolute', top: 10, left: 10, background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.4)', borderRadius: 4, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7', letterSpacing: 1 }}>
+                    <div style={{ position: 'absolute', top: 10, left: 10, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 4, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>
                       ⛶ EXPANDED
                     </div>
                   </div>
@@ -835,7 +835,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 return (
                   <div key={gid}
                     onClick={function() { setExpandedId(gid); }}
-                    style={{ position: 'relative', flexShrink: 0, height: 78, border: '2px solid ' + (isExpanded ? '#00DEC0' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', background: '#0a0710' }}>
+                    style={{ position: 'relative', flexShrink: 0, height: 78, border: '2px solid ' + (isExpanded ? '#C9A84C' : 'rgba(255,255,255,.07)'), borderRadius: 6, overflow: 'hidden', cursor: 'pointer', background: '#0E0C09' }}>
                     <OctCell
                       guest={g}
                       sz={114}
@@ -854,7 +854,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                       onCamToggle={null}
                     />
                     {isExpanded && (
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,201,167,.3)', padding: '2px 0', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#00C9A7' }}>EXPANDED</div>
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(201,168,76,.25)', padding: '2px 0', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#C9A84C' }}>EXPANDED</div>
                     )}
                   </div>
                 );
@@ -865,8 +865,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* TALK layout */}
         {!showGuests && stageLayout === 'talk' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', background: '#0a0710', gap: 2, padding: 2 }}>
-            <div style={{ flex: 1, position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#0a0710' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', background: '#0E0C09', gap: 2, padding: 2 }}>
+            <div style={{ flex: 1, position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#0E0C09' }}>
               {featuredGuest && (
                 <>
                   <OctCell
@@ -897,7 +897,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 return (
                   <div key={gid}
                     onClick={function() { setFeaturedId(gid); }}
-                    style={{ position: 'relative', borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)', cursor: 'pointer', aspectRatio: '16/9', background: '#0a0710', flexShrink: 0 }}>
+                    style={{ position: 'relative', borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)', cursor: 'pointer', aspectRatio: '16/9', background: '#0E0C09', flexShrink: 0 }}>
                     <OctCell guest={g} sz={90} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null}
                       mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false}
                       onMuteToggle={isOwn ? toggleMute : null} onCamToggle={isOwn ? toggleCam : null} />
@@ -917,22 +917,22 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
         {/* SCREEN layout */}
         {!showGuests && stageLayout === 'screen' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', background: '#0a0710', gap: 2, padding: 2 }}>
-            <div style={{ flex: 1, position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#0a0710' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', background: '#0E0C09', gap: 2, padding: 2 }}>
+            <div style={{ flex: 1, position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#0E0C09' }}>
               {isScreenShare ? (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 40, marginBottom: 8 }}>🖥</div>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#5A8FFF', letterSpacing: 2 }}>SCREEN SHARING</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4 }}>Your screen is broadcasting to viewers</div>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 2 }}>SCREEN SHARING</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>Your screen is broadcasting to viewers</div>
                   </div>
                 </div>
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <div style={{ fontSize: 36 }}>🖥</div>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: 'rgba(90,143,255,.5)', letterSpacing: 2 }}>NO SCREEN SHARE</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: 'rgba(201,168,76,.4)', letterSpacing: 2 }}>NO SCREEN SHARE</div>
                   <button onClick={toggleScreenShare}
-                    style={{ background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.4)', borderRadius: 8, padding: '8px 16px', color: '#5A8FFF', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                    style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '8px 16px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                     🖥 START SCREEN SHARE
                   </button>
                 </div>
@@ -943,7 +943,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 var gid  = g.guestId ? g.guestId : (g.userId ? g.userId : 'x');
                 var isOwn = gid === userId;
                 return (
-                  <div key={gid} style={{ position: 'relative', borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)', background: '#0a0710', aspectRatio: '16/9', flexShrink: 0 }}>
+                  <div key={gid} style={{ position: 'relative', borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.07)', background: '#0E0C09', aspectRatio: '16/9', flexShrink: 0 }}>
                     <OctCell guest={g} sz={80} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null}
                       mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false}
                       onMuteToggle={isOwn ? toggleMute : null} onCamToggle={isOwn ? toggleCam : null} />
@@ -971,24 +971,24 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <div style={{ fontSize: 40 }}>📺</div>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#7A6F90', letterSpacing: 3 }}>NO WATCH PARTY ACTIVE</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#8A7A62', letterSpacing: 3 }}>NO WATCH PARTY ACTIVE</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450' }}>Start one in the 📺 WATCH tab</div>
                 </div>
               )}
-              <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(7,5,10,.8)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 5, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF', letterSpacing: 1 }}>
+              <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 5, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>
                 📺 WATCH PARTY · {allParticipants.length} WATCHING
               </div>
             </div>
             {/* Participant webcam strip */}
             {allParticipants.length > 0 && (
-              <div style={{ height: 90, display: 'flex', gap: 2, padding: '2px 4px', background: '#0a0710', overflowX: 'auto', flexShrink: 0 }}>
+              <div style={{ height: 90, display: 'flex', gap: 2, padding: '2px 4px', background: '#0E0C09', overflowX: 'auto', flexShrink: 0 }}>
                 {allParticipants.map(function(g) {
                   var gid  = g.guestId || g.userId || 'x';
                   var isOwn = gid === userId;
                   return (
-                    <div key={gid} style={{ position: 'relative', flexShrink: 0, width: 120, height: 86, borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.08)', background: '#0a0710' }}>
+                    <div key={gid} style={{ position: 'relative', flexShrink: 0, width: 120, height: 86, borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(255,255,255,.08)', background: '#0E0C09' }}>
                       <OctCell guest={g} sz={80} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
-                      <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)', overflow: 'hidden', maxWidth: 108, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || gid}</div>
+                      <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#F0E8D4', textShadow: '0 1px 4px rgba(0,0,0,.9)', overflow: 'hidden', maxWidth: 108, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || gid}</div>
                     </div>
                   );
                 })}
@@ -1001,7 +1001,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         {!showGuests && stageLayout === 'battle' && (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#070510', overflow: 'hidden' }}>
             {/* Battle score header */}
-            <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.4),rgba(90,143,255,.2))', borderBottom: '1px solid rgba(255,255,255,.08)', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.4),rgba(201,168,76,.15))', borderBottom: '1px solid rgba(255,255,255,.08)', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>⚡ LIVE BATTLE</span>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
                 <div style={{ textAlign: 'right' }}>
@@ -1010,12 +1010,12 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 </div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 2 }}>VS</div>
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#7AAEFF', letterSpacing: 1, lineHeight: 1 }}>{activeBattle ? activeBattle.defender : 'DEFENDER'}</div>
-                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#5A8FFF', lineHeight: 1 }}>{battleScores.b.toLocaleString()}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 1, lineHeight: 1 }}>{activeBattle ? activeBattle.defender : 'DEFENDER'}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{battleScores.b.toLocaleString()}</div>
                 </div>
               </div>
               {role === 'host' && (
-                <button onClick={function() { setStageLayout('panel'); }} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 5, padding: '3px 8px', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>PANEL ▶</button>
+                <button onClick={function() { setStageLayout('panel'); }} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 5, padding: '3px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', letterSpacing: 1 }}>PANEL ▶</button>
               )}
             </div>
             {/* Battle score bar */}
@@ -1034,27 +1034,27 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     var gid  = g.guestId || g.userId || 'x';
                     var isOwn = gid === userId;
                     return (
-                      <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(192,24,56,.25)', aspectRatio: '16/9', background: '#0a0710' }}>
+                      <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(192,24,56,.25)', aspectRatio: '16/9', background: '#0E0C09' }}>
                         <OctCell guest={g} sz={allTileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
-                        <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
+                        <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#F0E8D4', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
                       </div>
                     );
                   })}
                 </div>
               </div>
               {/* Divider */}
-              <div style={{ width: 2, background: 'linear-gradient(#C01838,#5A8FFF)', borderRadius: 999, flexShrink: 0 }} />
+              <div style={{ width: 2, background: 'linear-gradient(#C01838,#C9A84C)', borderRadius: 999, flexShrink: 0 }} />
               {/* Team B */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <div style={{ background: 'rgba(90,143,255,.1)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7AAEFF', textAlign: 'center', letterSpacing: 1, flexShrink: 0 }}>⚡ {activeBattle ? activeBattle.defender : 'TEAM B'}</div>
+                <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', textAlign: 'center', letterSpacing: 1, flexShrink: 0 }}>⚡ {activeBattle ? activeBattle.defender : 'TEAM B'}</div>
                 <div style={{ flex: 1, display: 'grid', gridTemplateColumns: allParticipants.length > 4 ? 'repeat(2,1fr)' : '1fr', gap: 2 }}>
                   {allParticipants.slice(Math.ceil(allParticipants.length / 2)).map(function(g) {
                     var gid  = g.guestId || g.userId || 'x';
                     var isOwn = gid === userId;
                     return (
-                      <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(90,143,255,.25)', aspectRatio: '16/9', background: '#0a0710' }}>
+                      <div key={gid} style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(201,168,76,.2)', aspectRatio: '16/9', background: '#0E0C09' }}>
                         <OctCell guest={g} sz={allTileSize} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={isOwn ? mediaConfig : null} isMuted={isOwn ? isMuted : false} isCamOff={isOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} />
-                        <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#EDE8F5', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
+                        <div style={{ position: 'absolute', bottom: 2, left: 4, fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#F0E8D4', textShadow: '0 1px 4px rgba(0,0,0,.9)' }}>{g.username || gid}</div>
                       </div>
                     );
                   })}
@@ -1104,7 +1104,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
       {/* Hand raise queue (host only) */}
       {role === 'host' && handQueue.length > 0 && (
-        <div style={{ background: 'rgba(22,16,32,.9)', borderTop: '1px solid rgba(201,168,76,.2)', padding: '6px 10px', flexShrink: 0 }}>
+        <div style={{ background: 'rgba(26,21,16,.9)', borderTop: '1px solid rgba(201,168,76,.2)', padding: '6px 10px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1 }}>
             <span>✋ RAISE QUEUE ({handQueue.length})</span>
           </div>
@@ -1115,9 +1115,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                   <AvatarPortrait username={item.username} size={32} />
                   <span style={{ position: 'absolute', top: -2, right: -2, fontSize: 10 }}>✋</span>
                 </div>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.username}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.username}</span>
                 <button onClick={function() { inviteToStage(item); }}
-                  style={{ background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 5, padding: '3px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.28)', borderRadius: 5, padding: '3px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
                   INVITE
                 </button>
                 <button onClick={function() { denyHand(item.guestId); }}
@@ -1132,29 +1132,29 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
       {/* Live stats strip */}
       {isLive && (
-        <div style={{ display: 'flex', gap: 6, padding: '5px 12px', background: 'rgba(7,5,10,.8)', borderTop: '1px solid rgba(255,26,60,.15)', flexShrink: 0, overflowX: 'auto' }}>
+        <div style={{ display: 'flex', gap: 6, padding: '5px 12px', background: 'rgba(14,12,9,.8)', borderTop: '1px solid rgba(255,26,60,.15)', flexShrink: 0, overflowX: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 5px #FF1A3C' }} />
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>LIVE</span>
           </div>
-          <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+          <div style={{ width: 1, background: '#3D3020', flexShrink: 0 }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>⏱</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>⏱</span>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtUptime(uptime)}</span>
           </div>
-          <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+          <div style={{ width: 1, background: '#3D3020', flexShrink: 0 }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>👁</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#EDE8F5' }}>{viewerCount || 0}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>👁</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#F0E8D4' }}>{viewerCount || 0}</span>
           </div>
-          <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+          <div style={{ width: 1, background: '#3D3020', flexShrink: 0 }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>🎙</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: stageGuests.length > 0 ? '#00C9A7' : '#7A6F90' }}>{stageGuests.length} on stage</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>🎙</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: stageGuests.length > 0 ? '#C9A84C' : '#8A7A62' }}>{stageGuests.length} on stage</span>
           </div>
           {isMuted && (
             <>
-              <div style={{ width: 1, background: '#241C34', flexShrink: 0 }} />
+              <div style={{ width: 1, background: '#3D3020', flexShrink: 0 }} />
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF1A3C' }}>⚠ MUTED</span>
             </>
           )}
@@ -1164,23 +1164,23 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       {/* Go Live modal */}
       {showGoLiveModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(4px)', padding: 16 }}>
-          <div style={{ background: '#0F0C14', border: '1px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '20px', maxWidth: 380, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div style={{ background: '#0E0C09', border: '1px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '20px', maxWidth: 380, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', letterSpacing: 4, marginBottom: 4 }}>🔴 GO LIVE</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 16 }}>Select destinations · SeeWhy is always included</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 16 }}>Select destinations · SeeWhy is always included</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
               {GO_LIVE_PLATFORMS.map(function(p) {
                 var isOn = Boolean(glDests[p.id]);
                 return (
-                  <div key={p.id} style={{ background: isOn ? p.color + '0d' : 'rgba(22,16,32,.5)', border: '1px solid ' + (isOn ? p.color + '55' : '#241C34'), borderRadius: 8, padding: '10px 12px' }}>
+                  <div key={p.id} style={{ background: isOn ? p.color + '0d' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? p.color + '55' : '#3D3020'), borderRadius: 8, padding: '10px 12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 26, height: 26, borderRadius: 6, background: p.color + '22', border: '1px solid ' + p.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: p.color, flexShrink: 0 }}>{p.icon}</div>
-                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isOn ? '#EDE8F5' : '#7A6F90', flex: 1 }}>{p.name}</span>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isOn ? '#F0E8D4' : '#8A7A62', flex: 1 }}>{p.name}</span>
                       {p.locked ? (
                         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>ALWAYS ON</span>
                       ) : (
                         <button
                           onClick={function() { setGlDests(function(d) { return Object.assign({}, d, { [p.id]: !d[p.id] }); }); }}
-                          style={{ width: 38, height: 20, borderRadius: 10, background: isOn ? p.color : '#241C34', border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+                          style={{ width: 38, height: 20, borderRadius: 10, background: isOn ? p.color : '#3D3020', border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
                           <div style={{ position: 'absolute', top: 2, left: isOn ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }} />
                         </button>
                       )}
@@ -1192,7 +1192,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                         placeholder={'Stream key for ' + p.name + '...'}
                         type="password"
                         autoComplete="off"
-                        style={{ marginTop: 8, width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 10, boxSizing: 'border-box' }}
+                        style={{ marginTop: 8, width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '6px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10, boxSizing: 'border-box' }}
                       />
                     )}
                   </div>
@@ -1201,7 +1201,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={function() { setShowGoLiveModal(false); }}
-                style={{ flex: 1, padding: '11px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '11px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 CANCEL
               </button>
               <button onClick={confirmGoLive}
@@ -1209,7 +1209,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 🔴 GO LIVE NOW
               </button>
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', textAlign: 'center', marginTop: 10 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', textAlign: 'center', marginTop: 10 }}>
               Destinations with no key will use your saved vault key.
             </div>
           </div>
@@ -1217,7 +1217,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       )}
 
       {/* Media controls bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: 'rgba(10,7,18,.95)', borderTop: '1px solid #241C34', flexShrink: 0, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: 'rgba(10,7,18,.95)', borderTop: '1px solid #3D3020', flexShrink: 0, overflowX: 'auto' }}>
         <button onClick={toggleMute} style={mcBtnStyle(isMuted ? 'danger' : 'active')}>
           <span style={{ fontSize: 14 }}>{isMuted ? '🔇' : '🎙'}</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>{isMuted ? 'MUTED' : 'MIC'}</span>
@@ -1248,7 +1248,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, letterSpacing: 1 }}>CLIP</span>
           </button>
         )}
-        <div style={{ width: 1, background: '#241C34', alignSelf: 'stretch', flexShrink: 0, margin: '2px 4px' }} />
+        <div style={{ width: 1, background: '#3D3020', alignSelf: 'stretch', flexShrink: 0, margin: '2px 4px' }} />
         {role === 'host' && !isLive && (
           <button onClick={openGoLive} style={Object.assign({}, mcBtnStyle('live'), { minWidth: 56 })}>
             <span style={{ fontSize: 14 }}>🔴</span>
@@ -1275,7 +1275,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
             <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#C9A84C', letterSpacing: 2 }}>📊 {activePoll.question}</span>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{activePoll.totalVotes} votes</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{activePoll.totalVotes} votes</span>
               {!activePoll.active && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', letterSpacing: 1 }}>ENDED</span>}
               {role === 'host' && activePoll.active && (
                 <button onClick={function() { if (socket) socket.emit('poll-end', { roomId: roomId }); }}
@@ -1296,11 +1296,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     setMyVote(idx);
                     if (socket) socket.emit('poll-vote', { roomId: roomId, optionIdx: idx });
                   }}
-                  style={{ position: 'relative', background: isMyVote ? 'rgba(0,201,167,.1)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isMyVote ? 'rgba(0,201,167,.45)' : '#241C34'), borderRadius: 6, padding: '5px 8px', cursor: activePoll.active ? 'pointer' : 'default', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: pct + '%', background: isMyVote ? 'rgba(0,201,167,.15)' : 'rgba(201,168,76,.08)', transition: 'width .4s ease', zIndex: 0 }} />
+                  style={{ position: 'relative', background: isMyVote ? 'rgba(201,168,76,.08)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (isMyVote ? 'rgba(201,168,76,.38)' : '#3D3020'), borderRadius: 6, padding: '5px 8px', cursor: activePoll.active ? 'pointer' : 'default', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: pct + '%', background: isMyVote ? 'rgba(201,168,76,.12)' : 'rgba(201,168,76,.08)', transition: 'width .4s ease', zIndex: 0 }} />
                   <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: isMyVote ? '#00DEC0' : '#EDE8F5' }}>{opt.text}</span>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isMyVote ? '#00DEC0' : '#7A6F90' }}>{pct}%</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: isMyVote ? '#C9A84C' : '#F0E8D4' }}>{opt.text}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isMyVote ? '#C9A84C' : '#8A7A62' }}>{pct}%</span>
                   </div>
                 </div>
               );
@@ -1312,14 +1312,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       {/* Poll creation modal */}
       {showPollModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 110, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.7)', backdropFilter: 'blur(4px)', padding: 12 }}>
-          <div style={{ background: '#0F0C14', border: '1px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
+          <div style={{ background: '#0E0C09', border: '1px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', letterSpacing: 3, marginBottom: 12 }}>📊 LAUNCH POLL</div>
             <input
               value={pollQuestion}
               onChange={function(e) { setPollQuestion(e.target.value); }}
               placeholder="What's your question?"
               maxLength={200}
-              style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }}
+              style={{ width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }}
             />
             {pollOpts.map(function(opt, idx) {
               return (
@@ -1329,7 +1329,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     onChange={function(e) { var v = e.target.value; setPollOpts(function(os) { var n = os.slice(); n[idx] = v; return n; }); }}
                     placeholder={'Option ' + (idx + 1)}
                     maxLength={80}
-                    style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
+                    style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
                   />
                   {idx >= 2 && (
                     <button onClick={function() { setPollOpts(function(os) { return os.filter(function(_, i) { return i !== idx; }); }); }}
@@ -1346,7 +1346,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             )}
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
               <button onClick={function() { setShowPollModal(false); setPollQuestion(''); setPollOpts(['', '']); }}
-                style={{ flex: 1, padding: '9px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '9px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                 CANCEL
               </button>
               <button onClick={function() {
@@ -1359,7 +1359,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 setPollOpts(['', '']);
                 addToast('📊 Poll launched!', 'success');
               }}
-                style={{ flex: 2, padding: '9px', background: 'linear-gradient(135deg,rgba(0,201,167,.2),rgba(0,222,192,.3))', border: '1px solid rgba(0,201,167,.5)', borderRadius: 8, color: '#00DEC0', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                style={{ flex: 2, padding: '9px', background: 'linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.25))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 🗳 LAUNCH POLL
               </button>
             </div>
@@ -1370,7 +1370,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       {/* SuperChat modal */}
       {showScModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 115, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.72)', backdropFilter: 'blur(4px)', padding: 12 }}>
-          <div style={{ background: '#0F0C14', border: '1px solid rgba(155,89,182,.45)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
+          <div style={{ background: '#0E0C09', border: '1px solid rgba(155,89,182,.45)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#9B59B6', letterSpacing: 3, marginBottom: 10 }}>💎 SUPERCHAT</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 12 }}>
               {SC_TIERS.map(function(tier) {
@@ -1378,9 +1378,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 return (
                   <button key={tier.amount}
                     onClick={function() { setScAmount(tier.amount); }}
-                    style={{ background: isSel ? tier.bg : 'rgba(22,16,32,.7)', border: '2px solid ' + (isSel ? tier.color : '#241C34'), borderRadius: 8, padding: '8px 4px', cursor: 'pointer', textAlign: 'center' }}>
+                    style={{ background: isSel ? tier.bg : 'rgba(26,21,16,.7)', border: '2px solid ' + (isSel ? tier.color : '#3D3020'), borderRadius: 8, padding: '8px 4px', cursor: 'pointer', textAlign: 'center' }}>
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: tier.color, lineHeight: 1 }}>{tier.label}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: isSel ? tier.color : '#7A6F90', letterSpacing: 1 }}>SUPER</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: isSel ? tier.color : '#8A7A62', letterSpacing: 1 }}>SUPER</div>
                   </button>
                 );
               })}
@@ -1391,11 +1391,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               placeholder="Your highlighted message..."
               maxLength={200}
               rows={3}
-              style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box', resize: 'none' }}
+              style={{ width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, marginBottom: 10, boxSizing: 'border-box', resize: 'none' }}
             />
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={function() { setShowScModal(false); setScMsg(''); setScAmount(100); }}
-                style={{ flex: 1, padding: '9px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '9px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                 CANCEL
               </button>
               <button onClick={sendSuperChat}
@@ -1409,19 +1409,19 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
 
       {/* Stream Goal bar */}
       {streamGoal.enabled && (
-        <div style={{ background: 'rgba(0,201,106,.07)', borderTop: '1px solid rgba(0,201,106,.2)', padding: '7px 12px', flexShrink: 0 }}>
+        <div style={{ background: 'rgba(201,168,76,.05)', borderTop: '1px solid rgba(201,168,76,.18)', padding: '7px 12px', flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#00C96A', letterSpacing: 1 }}>🎯 {streamGoal.label}</span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00C96A' }}>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#C9A84C', letterSpacing: 1 }}>🎯 {streamGoal.label}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' }}>
               ${(Math.floor(streamGoal.currentCents) / 100).toFixed(0)} / ${(Math.floor(streamGoal.targetCents) / 100).toFixed(0)}
             </span>
           </div>
           <div style={{ background: '#1A1428', borderRadius: 999, height: 6, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: 'linear-gradient(90deg,#00C96A,#00DEC0)', borderRadius: 999, width: Math.floor(Math.min(streamGoal.currentCents / streamGoal.targetCents * 100, 100)) + '%', transition: 'width .6s ease' }} />
+            <div style={{ height: '100%', background: 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 999, width: Math.floor(Math.min(streamGoal.currentCents / streamGoal.targetCents * 100, 100)) + '%', transition: 'width .6s ease' }} />
           </div>
           {isLive && role === 'host' && (
             <button onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: false }); }); }}
-              style={{ background: 'none', border: 'none', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', padding: 0, marginTop: 3 }}>
+              style={{ background: 'none', border: 'none', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', padding: 0, marginTop: 3 }}>
               ✕ hide goal
             </button>
           )}
@@ -1429,12 +1429,12 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       )}
 
       {/* Collapsible chat */}
-      <div style={{ borderTop: '1px solid #241C34', background: 'rgba(10,7,18,.9)', flexShrink: 0 }}>
+      <div style={{ borderTop: '1px solid #3D3020', background: 'rgba(10,7,18,.9)', flexShrink: 0 }}>
 
         {/* Chat header */}
         <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
           <button onClick={function() { setChatOpen(function(v) { return !v; }); }}
-            style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#EDE8F5' }}>
+            style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#F0E8D4' }}>
             <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1 }}>💬 LIVE CHAT {chat.length > 0 ? '(' + chat.length + ')' : ''}</span>
             {/* Active language flags */}
             {(function() {
@@ -1454,36 +1454,36 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
           {/* Language picker button */}
           <button onClick={function() { setShowLangPicker(function(v) { return !v; }); }}
             title={'Chat language: ' + (LANG_NAMES[chatLang] || chatLang)}
-            style={{ background: showLangPicker ? 'rgba(90,143,255,.15)' : 'none', border: showLangPicker ? '1px solid rgba(90,143,255,.35)' : '1px solid transparent', borderRadius: 5, padding: '4px 8px', color: '#EDE8F5', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}>
+            style={{ background: showLangPicker ? 'rgba(201,168,76,.12)' : 'none', border: showLangPicker ? '1px solid rgba(201,168,76,.28)' : '1px solid transparent', borderRadius: 5, padding: '4px 8px', color: '#F0E8D4', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}>
             {LANG_FLAGS[chatLang] || '🌐'}
           </button>
           {isLive && role === 'host' && !streamGoal.enabled && (
             <button onClick={function() { setStreamGoal(function(p) { return Object.assign({}, p, { enabled: true, currentCents: 0 }); }); }}
               title="Set stream goal"
-              style={{ background: 'none', border: 'none', padding: '0 8px', color: '#7A6F90', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🎯</button>
+              style={{ background: 'none', border: 'none', padding: '0 8px', color: '#8A7A62', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🎯</button>
           )}
           {giftLeaderboard.length > 0 && (
             <button onClick={function() { setShowLeaderboard(function(v) { return !v; }); }}
               title="Gift leaderboard"
-              style={{ background: showLeaderboard ? 'rgba(201,168,76,.15)' : 'none', border: showLeaderboard ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 5, padding: '3px 7px', color: showLeaderboard ? '#C9A84C' : '#7A6F90', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🏆</button>
+              style={{ background: showLeaderboard ? 'rgba(201,168,76,.15)' : 'none', border: showLeaderboard ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 5, padding: '3px 7px', color: showLeaderboard ? '#C9A84C' : '#8A7A62', cursor: 'pointer', fontSize: 13, flexShrink: 0 }}>🏆</button>
           )}
           {/* Language picker popover */}
           {showLangPicker && (
-            <div style={{ position: 'absolute', bottom: '100%', right: 8, zIndex: 60, background: '#0F0C14', border: '1px solid rgba(90,143,255,.35)', borderRadius: 10, padding: 8, width: 216 }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, marginBottom: 6, textAlign: 'center' }}>SHOW CHAT IN</div>
+            <div style={{ position: 'absolute', bottom: '100%', right: 8, zIndex: 60, background: '#0E0C09', border: '1px solid rgba(201,168,76,.28)', borderRadius: 10, padding: 8, width: 216 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginBottom: 6, textAlign: 'center' }}>SHOW CHAT IN</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 4 }}>
                 {PICKER_LANGS.map(function(lc) {
                   return (
                     <button key={lc} onClick={function() { setChatLang(lc); try { localStorage.setItem('sw_chat_lang', lc); } catch(e) {} setShowLangPicker(false); }}
                       title={LANG_NAMES[lc] || lc}
-                      style={{ background: chatLang === lc ? 'rgba(90,143,255,.2)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (chatLang === lc ? 'rgba(90,143,255,.5)' : '#241C34'), borderRadius: 6, padding: '5px 2px', cursor: 'pointer', textAlign: 'center', fontSize: 16, lineHeight: 1 }}>
+                      style={{ background: chatLang === lc ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (chatLang === lc ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 6, padding: '5px 2px', cursor: 'pointer', textAlign: 'center', fontSize: 16, lineHeight: 1 }}>
                       {LANG_FLAGS[lc] || lc}
                     </button>
                   );
                 })}
               </div>
               {chatLang !== 'EN' && (
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF', marginTop: 6, textAlign: 'center', letterSpacing: 0.5 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', marginTop: 6, textAlign: 'center', letterSpacing: 0.5 }}>
                   {LANG_FLAGS[chatLang]} Translating on demand · powered by DeepL
                 </div>
               )}
@@ -1501,9 +1501,9 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 return (
                   <div key={entry.username} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 11, flexShrink: 0, width: 18, textAlign: 'center' }}>{medals[idx] || (idx + 1 + '.')}</span>
-                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.username}</span>
+                    <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.username}</span>
                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', flexShrink: 0 }}>{'$' + (Math.floor(entry.total) / 100).toFixed(0)}</span>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', flexShrink: 0 }}>{'×' + entry.count}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', flexShrink: 0 }}>{'×' + entry.count}</span>
                   </div>
                 );
               })}
@@ -1517,13 +1517,13 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             <span style={{ fontSize: 10, flexShrink: 0, marginTop: 1 }}>📌</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1, marginBottom: 2 }}>PINNED</div>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <span style={{ color: '#C9A84C', fontWeight: 700, marginRight: 4 }}>{pinnedMsg.username}</span>
                 {pinnedMsg.message}
               </div>
             </div>
             {role === 'host' && (
-              <button onClick={unpinMessage} style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 10, flexShrink: 0, padding: 0 }}>✕</button>
+              <button onClick={unpinMessage} style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 10, flexShrink: 0, padding: 0 }}>✕</button>
             )}
           </div>
         )}
@@ -1531,13 +1531,13 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         {chatOpen && (
           <div style={{ display: 'flex', flexDirection: 'column', height: 220 }}>
             {superChats.length > 0 && (
-              <div style={{ display: 'flex', gap: 5, padding: '4px 8px', overflowX: 'auto', flexShrink: 0, borderBottom: '1px solid rgba(36,28,52,.6)' }}>
+              <div style={{ display: 'flex', gap: 5, padding: '4px 8px', overflowX: 'auto', flexShrink: 0, borderBottom: '1px solid rgba(61,48,32,.5)' }}>
                 {superChats.slice(-6).map(function(sc) {
                   return (
                     <div key={sc.id} style={{ flexShrink: 0, background: sc.tierColor + '22', border: '1px solid ' + sc.tierColor + '55', borderRadius: 8, padding: '4px 8px', minWidth: 110, maxWidth: 160 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 1 }}>
                         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: sc.tierColor, fontWeight: 700, flexShrink: 0 }}>{'💎 $' + Math.floor(sc.amountCents / 100)}</span>
-                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.username}</span>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.username}</span>
                       </div>
                       <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#D0C0E0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.message}</div>
                     </div>
@@ -1546,7 +1546,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               </div>
             )}
             <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {chat.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center', padding: 12 }}>No messages yet</div>}
+              {chat.length === 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', textAlign: 'center', padding: 12 }}>No messages yet</div>}
               {chat.map(function(msg) {
                 var msgId     = msg.id || (msg.username + msg.ts + msg.message);
                 // Loyalty badge based on gift rank and role
@@ -1582,7 +1582,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                       </div>
                       {role === 'host' && !msg.isBot && (
                         <button onClick={function() { pinMessage(msg); }} title="Pin"
-                          style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 9, padding: '0 2px', flexShrink: 0, opacity: 0.5 }}>📌</button>
+                          style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 9, padding: '0 2px', flexShrink: 0, opacity: 0.5 }}>📌</button>
                       )}
                     </div>
 
@@ -1596,11 +1596,11 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                               <span style={{ fontSize: 10 }}>🇺🇸</span>
                               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{msg.translated}</span>
                               <button onClick={function() { setShowTx(function(p) { var n = Object.assign({}, p); delete n[msgId + ':EN']; return n; }); }}
-                                style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
+                                style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
                             </div>
                           ) : (
                             <button onClick={function() { setShowTx(function(p) { return Object.assign({}, p, {[msgId + ':EN']: true}); }); }}
-                              style={{ background: 'none', border: 'none', color: 'rgba(90,143,255,.7)', cursor: 'pointer', fontSize: 9, padding: 0, textAlign: 'left', letterSpacing: 0.5, textDecoration: 'underline', width: 'fit-content' }}>
+                              style={{ background: 'none', border: 'none', color: 'rgba(201,168,76,.55)', cursor: 'pointer', fontSize: 9, padding: 0, textAlign: 'left', letterSpacing: 0.5, textDecoration: 'underline', width: 'fit-content' }}>
                               🌐 view in EN
                             </button>
                           )
@@ -1612,14 +1612,14 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                               <span style={{ fontSize: 10 }}>{LANG_FLAGS[chatLang] || '🌐'}</span>
                               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{txTexts[userTxKey]}</span>
                               <button onClick={function() { setTxTexts(function(p) { var n = Object.assign({}, p); delete n[userTxKey]; return n; }); }}
-                                style={{ background: 'none', border: 'none', color: '#7A6F90', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
+                                style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
                             </div>
                           ) : (
                             <button onClick={function() {
                               var src = (hasTxEn && chatLang === 'EN') ? msg.translated : msg.message;
                               translateMessage(msgId, src, chatLang);
                             }}
-                              style={{ background: 'none', border: 'none', color: 'rgba(90,143,255,.7)', cursor: 'pointer', fontSize: 9, padding: 0, textAlign: 'left', letterSpacing: 0.5, textDecoration: 'underline', width: 'fit-content' }}>
+                              style={{ background: 'none', border: 'none', color: 'rgba(201,168,76,.55)', cursor: 'pointer', fontSize: 9, padding: 0, textAlign: 'left', letterSpacing: 0.5, textDecoration: 'underline', width: 'fit-content' }}>
                               {txLoading[userTxKey] ? '...' : (LANG_FLAGS[chatLang] || '🌐') + ' translate'}
                             </button>
                           )
@@ -1645,12 +1645,12 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               })}
               <div ref={chatEndRef} />
             </div>
-            <div style={{ display: 'flex', gap: 6, padding: '6px 10px', borderTop: '1px solid rgba(36,28,52,.6)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 6, padding: '6px 10px', borderTop: '1px solid rgba(61,48,32,.5)', flexShrink: 0 }}>
               <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }}
                 onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }}
                 placeholder={'Say something… ' + (chatLang !== 'EN' ? (LANG_FLAGS[chatLang] || '') : '')}
                 maxLength={200}
-                style={{ flex: 1, background: '#0F0C14', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#D0C0E0', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
+                style={{ flex: 1, background: '#0E0C09', border: '1px solid #3D3020', borderRadius: 6, padding: '6px 10px', color: '#D0C0E0', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
               <button onClick={function() { setShowScModal(true); }}
                 title="SuperChat"
                 style={{ background: 'rgba(155,89,182,.15)', border: '1px solid rgba(155,89,182,.35)', borderRadius: 6, padding: '6px 10px', color: '#9B59B6', cursor: 'pointer', flexShrink: 0, fontSize: 14 }}>

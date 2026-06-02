@@ -15,11 +15,11 @@ var CATS = ['Domino', 'Tournament', 'Podcast', 'Music', 'Education', 'Sports', '
 
 var CAT_COLORS = {
   Domino: '#C9A84C', Tournament: '#FF1A3C', Podcast: '#9B4DCA',
-  Music: '#00DEC0', Education: '#5A8FFF', Sports: '#FF6B35',
+  Music: '#C9A84C', Education: '#5A8FFF', Sports: '#FF6B35',
   Tech: '#00C9A7', Gaming: '#C8FF00',
 };
 
-var STATUS_COLORS = { LIVE: '#FF1A3C', NEXT: '#00DEC0', SCHED: '#7A6F90', ENDED: '#444050' };
+var STATUS_COLORS = { LIVE: '#FF1A3C', NEXT: '#C9A84C', SCHED: '#8A7A62', ENDED: '#444050' };
 
 function pad2(n) {
   return n < 10 ? '0' + n : '' + n;
@@ -87,7 +87,7 @@ function formatLiveDuration(secs) {
 }
 
 var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' };
-var RECUR_COLORS = { none: '#7A6F90', weekly: '#00C9A7', biweekly: '#C084FC' };
+var RECUR_COLORS = { none: '#8A7A62', weekly: '#00C9A7', biweekly: '#C084FC' };
 
 function rowToEvent(row) {
   return {
@@ -286,7 +286,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
             &#x1F534; LIVE NOW
           </div>
           {streamInfo && streamInfo.title ? (
-            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#EDE8F5', marginBottom: 3, letterSpacing: 0.5 }}>{streamInfo.title}</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#F0E8D4', marginBottom: 3, letterSpacing: 0.5 }}>{streamInfo.title}</div>
           ) : null}
           {streamInfo && streamInfo.category ? (
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 4 }}>{streamInfo.category.toUpperCase()}</div>
@@ -294,7 +294,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: '#C8FF00', letterSpacing: 4 }}>
             {formatLiveDuration(countdown)}
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4 }}>STREAM DURATION</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>STREAM DURATION</div>
         </div>
       )}
 
@@ -305,7 +305,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           {nextTime ? countdownDisplay : '--:--:--'}
         </div>
         {nextTime && (
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>
             {formatDt(nextTime)}
           </div>
         )}
@@ -315,7 +315,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       <div style={{ background: 'rgba(155,77,202,.08)', border: '1px solid rgba(155,77,202,.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 13, color: '#C084FC', letterSpacing: 3 }}>SCHEDULE MANAGER</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{schedule.length} events \xB7 {liveCount} live \xB7 {recurCount} recurring</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{schedule.length} events \xB7 {liveCount} live \xB7 {recurCount} recurring</div>
         </div>
         {liveCount > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '3px 10px' }}>
@@ -329,10 +329,10 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
         {['all'].concat(CATS).map(function(c) {
           var isActive = filterCat === c;
-          var cc = c === 'all' ? '#EDE8F5' : (CAT_COLORS[c] || '#C9A84C');
+          var cc = c === 'all' ? '#F0E8D4' : (CAT_COLORS[c] || '#C9A84C');
           return (
             <button key={c} onClick={function() { setFilterCat(c); }}
-              style={{ background: isActive ? cc + '22' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isActive ? cc + '55' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: isActive ? cc : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+              style={{ background: isActive ? cc + '22' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isActive ? cc + '55' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: isActive ? cc : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
               {c === 'all' ? 'ALL' : c.toUpperCase()}
             </button>
           );
@@ -342,7 +342,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       {/* Event list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {visibleSchedule.map(function(ev) {
-          var sc = STATUS_COLORS[ev.status] || '#7A6F90';
+          var sc = STATUS_COLORS[ev.status] || '#8A7A62';
           var cc = CAT_COLORS[ev.category] || '#C9A84C';
           var isUpcoming = ev.status !== 'LIVE' && ev.status !== 'ENDED' && new Date(ev.time).getTime() > Date.now();
           var badge = isUpcoming ? diffBadge(ev.time) : null;
@@ -353,7 +353,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 4, boxShadow: ev.status === 'LIVE' ? '0 0 6px ' + sc : 'none' }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: ev.status === 'LIVE' ? '#C8FF00' : ev.status === 'ENDED' ? '#555060' : '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: ev.status === 'LIVE' ? '#C8FF00' : ev.status === 'ENDED' ? '#555060' : '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {ev.title}
                     </div>
                     {isLiveNowEvent && (
@@ -367,7 +367,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                     <span style={{ background: cc + '18', border: '1px solid ' + cc + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: cc }}>
                       {ev.category}
                     </span>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>
                       {formatDt(ev.time)}
                     </span>
                     {badge && (
@@ -421,7 +421,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
 
                 <button
                   onClick={function() { removeEvent(ev.id); }}
-                  style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 6px', color: '#7A6F90', fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 6px', color: '#8A7A62', fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
                   &#x2715;
                 </button>
               </div>
@@ -439,14 +439,14 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
             onChange={function(e) { setNewTitle(e.target.value); }}
             onKeyDown={function(e) { if (e.key === 'Enter' && newTitle && newTime) addEvent(); }}
             placeholder="Stream title..."
-            style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+            style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
           />
           <div style={{ display: 'flex', gap: 8 }}>
             <input
               type="datetime-local"
               value={newTime}
               onChange={function(e) { setNewTime(e.target.value); }}
-              style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, colorScheme: 'dark' }}
+              style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, colorScheme: 'dark' }}
             />
             <SelectSheet
               label="Category"

@@ -240,7 +240,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
       onClick={onTap ? function() { onTap(guest); } : undefined}
     >
       {/* Octagonal clip container */}
-      <div style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0F0C14', boxShadow: ringGlow }}>
+      <div style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(7,5,10,.8)', zIndex: 2 }}>
             <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + color, borderTopColor: 'transparent' }} />
@@ -259,7 +259,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
         {online && isCamOff && isOwnCell && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#07050A', gap: 4 }}>
             <div style={{ fontSize: 28 }}>🚫</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>CAM OFF</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>CAM OFF</div>
           </div>
         )}
 
@@ -280,7 +280,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
                 </button>
               </div>
             ) : (
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: Math.max(8, Math.round(size * 0.07)), color: '#7A6F90', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: Math.max(8, Math.round(size * 0.07)), color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
             )}
           </div>
         )}
@@ -304,7 +304,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
       {/* Name bar */}
       <div style={{ textAlign: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: speaking && !isMuted ? color : '#B0A0C0', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {guestName}
-        {isOwnCell && <span style={{ color: '#7A6F90', fontStyle: 'italic' }}> (YOU)</span>}
+        {isOwnCell && <span style={{ color: '#8A7A62', fontStyle: 'italic' }}> (YOU)</span>}
       </div>
 
       {/* EQ bars */}

@@ -198,7 +198,7 @@ export default function WelcomeAudio(props) {
 
       <div style={{
         width: '100%', maxWidth: 460,
-        background: 'linear-gradient(160deg,#130F1D,#0F0C14)',
+        background: 'linear-gradient(160deg,#130F1D,#0E0C09)',
         border: '1px solid rgba(201,168,76,.3)',
         borderRadius: 18,
         overflow: 'hidden',
@@ -233,7 +233,7 @@ export default function WelcomeAudio(props) {
           {!started && (
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 50, marginBottom: 10 }}>🎙</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#EDE8F5', letterSpacing: 2, lineHeight: 1, marginBottom: 8 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#F0E8D4', letterSpacing: 2, lineHeight: 1, marginBottom: 8 }}>
                 WELCOME, CREATOR
               </div>
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#9A8FAC', lineHeight: 1.6, marginBottom: 14 }}>
@@ -253,7 +253,7 @@ export default function WelcomeAudio(props) {
                       <span style={{ fontSize: 16, lineHeight: 1, marginTop: 1 }}>{item[0]}</span>
                       <div>
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#C9A84C', letterSpacing: 1 }}>{item[1]}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', marginTop: 2 }}>{item[2]}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62', marginTop: 2 }}>{item[2]}</div>
                       </div>
                     </div>
                   );
@@ -268,7 +268,7 @@ export default function WelcomeAudio(props) {
                 </button>
                 <button
                   onClick={handleClose}
-                  style={{ flex: 1, padding: '13px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1, cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '13px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1, cursor: 'pointer' }}>
                   SKIP
                 </button>
               </div>
@@ -310,7 +310,7 @@ export default function WelcomeAudio(props) {
                     </div>
                   )}
                 </div>
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#EDE8F5', lineHeight: 1.55 }}>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#F0E8D4', lineHeight: 1.55 }}>
                   {current.text}
                 </div>
               </div>
@@ -328,7 +328,7 @@ export default function WelcomeAudio(props) {
                                   active ? 'rgba(201,168,76,.12)' : 'rgba(22,16,32,.6)',
                       border: '1px solid ' + (done   ? 'rgba(0,201,167,.3)' :
                                               active ? 'rgba(201,168,76,.45)' : '#241C34'),
-                      color: done ? '#00C9A7' : '#EDE8F5',
+                      color: done ? '#00C9A7' : '#F0E8D4',
                       transform: active ? 'scale(1.12)' : 'scale(1)',
                       transition: 'all .2s'
                     }}>
@@ -344,8 +344,8 @@ export default function WelcomeAudio(props) {
                   <div style={{ height: '100%', width: progress + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)', borderRadius: 999, transition: 'width .45s ease' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{currentIdx + 1} of {SECTIONS.length}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{progress}%</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{currentIdx + 1} of {SECTIONS.length}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{progress}%</div>
                 </div>
               </div>
 
@@ -354,7 +354,7 @@ export default function WelcomeAudio(props) {
                 <button
                   onClick={handlePrev}
                   disabled={currentIdx === 0}
-                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: currentIdx === 0 ? '#3D3450' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', letterSpacing: 1 }}>
+                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: currentIdx === 0 ? '#3D3450' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', letterSpacing: 1 }}>
                   ◀ PREV
                 </button>
                 {hasAudio && (
@@ -371,7 +371,7 @@ export default function WelcomeAudio(props) {
                 </button>
                 <button
                   onClick={handleClose}
-                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
                   ✕ EXIT
                 </button>
               </div>
@@ -393,7 +393,7 @@ export default function WelcomeAudio(props) {
                   return (
                     <div key={stat[0]} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
                       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#C9A84C', lineHeight: 1 }}>{stat[0]}</div>
-                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', letterSpacing: 1, marginTop: 2 }}>{stat[1]}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>{stat[1]}</div>
                     </div>
                   );
                 })}

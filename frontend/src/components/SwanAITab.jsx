@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
-var BG    = '#0F0C14';
-var SURF  = '#130F1C';
-var CARD  = '#1A1526';
+var BG    = '#0E0C09';
+var SURF  = '#0E0C09';
+var CARD  = '#1A1510';
 var CARD2 = '#211A30';
 var GOLD  = '#C9A84C';
 var BURG  = '#800020';
-var TEAL  = '#00DEC0';
+var TEAL  = '#C9A84C';
 var RED   = '#FF1A3C';
-var TEXT  = '#EDE8F5';
-var MUTED = '#7A6F90';
-var DIM   = '#2E2545';
+var TEXT  = '#F0E8D4';
+var MUTED = '#8A7A62';
+var DIM   = '#2E2318';
 var BORD  = 'rgba(255,255,255,.06)';
 var ORG   = '#FF6B35';
 

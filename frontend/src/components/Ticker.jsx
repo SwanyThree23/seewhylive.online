@@ -74,7 +74,7 @@ export default function Ticker(props) {
         <span style={{
           flexShrink: 0,
           background: '#800020',
-          color: '#EDE8F5',
+          color: '#F0E8D4',
           padding: '2px 8px',
           fontSize: 10,
           fontFamily: "'Bebas Neue',sans-serif",
@@ -105,7 +105,7 @@ export default function Ticker(props) {
             transform: 'translateY(-50%)',
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 11,
-            color: '#7A6F90',
+            color: '#8A7A62',
             letterSpacing: '0.08em',
             willChange: 'transform',
           }}

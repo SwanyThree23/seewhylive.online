@@ -6,7 +6,7 @@ var CREATORS = [
   { id: 'c1', name: 'CaliBonesOG',  handle: 'calibonesog',  flag: '🇺🇸', category: 'Domino',  followers: 12400, live: true,  viewers: 892,  color: '#C01838' },
   { id: 'c2', name: 'VibeNBones',   handle: 'vibenbones',   flag: '🇺🇸', category: 'Music',   followers: 8200,  live: false, viewers: 0,    color: '#5A8FFF' },
   { id: 'c3', name: 'LyricQueen',   handle: 'lyricqueen',   flag: '🇳🇬', category: 'Music',   followers: 6700,  live: true,  viewers: 1203, color: '#C084FC' },
-  { id: 'c4', name: 'TechNerd42',   handle: 'technerd42',   flag: '🇺🇸', category: 'Tech',    followers: 4500,  live: true,  viewers: 4213, color: '#00DEC0' },
+  { id: 'c4', name: 'TechNerd42',   handle: 'technerd42',   flag: '🇺🇸', category: 'Tech',    followers: 4500,  live: true,  viewers: 4213, color: '#C9A84C' },
   { id: 'c5', name: 'DJ_Cipher',    handle: 'djcipher',     flag: '🇯🇲', category: 'Music',   followers: 3900,  live: false, viewers: 0,    color: '#00C9A7' },
   { id: 'c6', name: 'ZenFitPro',    handle: 'zenfitpro',    flag: '🇨🇦', category: 'Fitness', followers: 2800,  live: false, viewers: 0,    color: '#00C96A' },
   { id: 'c7', name: 'BeatKing_X',   handle: 'beatkingx',    flag: '🇬🇧', category: 'Music',   followers: 2300,  live: true,  viewers: 387,  color: '#C8FF00' },
@@ -15,7 +15,7 @@ var CREATORS = [
 
 var CATS = ['All', 'Domino', 'Music', 'Tech', 'Fitness'];
 
-var CAT_COLORS = { Domino: '#C9A84C', Music: '#C084FC', Tech: '#00C9A7', Fitness: '#00C96A', All: '#7A6F90' };
+var CAT_COLORS = { Domino: '#C9A84C', Music: '#C084FC', Tech: '#00C9A7', Fitness: '#00C96A', All: '#8A7A62' };
 
 function fmtFollowers(n) {
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
@@ -122,15 +122,15 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
         <div style={{ background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={liveDotStyle} />
           <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#FF6B81', letterSpacing: 2 }}>YOU'RE LIVE</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', marginLeft: 4 }}>Your stream is active · viewer counts updating live</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginLeft: 4 }}>Your stream is active · viewer counts updating live</span>
         </div>
       )}
 
       {/* Header */}
       <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.22)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#00DEC0', letterSpacing: 3 }}>🔭 CREATOR DISCOVERY</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{CREATORS.length} creators · {liveCount} live now</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3 }}>🔭 CREATOR DISCOVERY</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{CREATORS.length} creators · {liveCount} live now</div>
         </div>
         <SelectSheet
           label="Sort By"
@@ -150,23 +150,23 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
         value={search}
         onChange={function(e) { setSearch(e.target.value); }}
         placeholder="Search creators..."
-        style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, outline: 'none' }}
+        style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, outline: 'none' }}
       />
 
       {/* Category filter + LIVE NOW chip */}
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
         {/* LIVE NOW filter chip */}
         <button onClick={function() { setFilterLive(function(v) { return !v; }); }}
-          style={{ background: filterLive ? 'rgba(255,26,60,.18)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (filterLive ? 'rgba(255,26,60,.55)' : '#241C34'), borderRadius: 999, padding: '3px 12px', color: filterLive ? '#FF6B81' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+          style={{ background: filterLive ? 'rgba(255,26,60,.18)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (filterLive ? 'rgba(255,26,60,.55)' : '#241C34'), borderRadius: 999, padding: '3px 12px', color: filterLive ? '#FF6B81' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
           {filterLive && <span style={liveDotStyle} />}
           LIVE NOW
         </button>
         {CATS.map(function(c) {
           var active = filter === c;
-          var color  = CAT_COLORS[c] || '#7A6F90';
+          var color  = CAT_COLORS[c] || '#8A7A62';
           return (
             <button key={c} onClick={function() { setFilter(c); }}
-              style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 12px', color: active ? color : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+              style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 12px', color: active ? color : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
               {c.toUpperCase()}
             </button>
           );
@@ -180,11 +180,11 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 52, height: 52, borderRadius: 12, background: profile.color + '18', border: '2px solid ' + profile.color + 'aa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>{profile.flag}</div>
               <div>
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 16, color: '#EDE8F5' }}>{profile.name}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>@{profile.handle}</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 16, color: '#F0E8D4' }}>{profile.name}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>@{profile.handle}</div>
               </div>
             </div>
-            <button onClick={function() { setProfile(null); }} style={{ background: 'none', border: '1px solid #241C34', borderRadius: 6, padding: '3px 8px', color: '#7A6F90', fontSize: 10, cursor: 'pointer' }}>✕</button>
+            <button onClick={function() { setProfile(null); }} style={{ background: 'none', border: '1px solid #241C34', borderRadius: 6, padding: '3px 8px', color: '#8A7A62', fontSize: 10, cursor: 'pointer' }}>✕</button>
           </div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: '#B0A0C0', lineHeight: 1.6, marginBottom: 10 }}>{(CREATOR_BIO[profile.id] || {bio:''}).bio}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
@@ -196,7 +196,7 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
               return (
                 <div key={stat[0]} style={{ background: stat[2] + '0E', border: '1px solid ' + stat[2] + '25', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: stat[2], lineHeight: 1 }}>{stat[1]}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', letterSpacing: 1 }}>{stat[0]}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62', letterSpacing: 1 }}>{stat[0]}</div>
                 </div>
               );
             })}
@@ -246,7 +246,7 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
               {/* Info */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
-                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: c.live ? '#EDE8F5' : '#7A6F90', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: c.live ? '#F0E8D4' : '#8A7A62', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.name}
                   </span>
                   {c.live && (
@@ -257,10 +257,10 @@ export default function CreatorDiscoveryTab({ addToast, isLive, socket, roomId, 
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ background: (CAT_COLORS[c.category] || '#7A6F90') + '18', border: '1px solid ' + (CAT_COLORS[c.category] || '#7A6F90') + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, color: CAT_COLORS[c.category] || '#7A6F90' }}>
+                  <span style={{ background: (CAT_COLORS[c.category] || '#8A7A62') + '18', border: '1px solid ' + (CAT_COLORS[c.category] || '#8A7A62') + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, color: CAT_COLORS[c.category] || '#8A7A62' }}>
                     {c.category}
                   </span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>
                     {fmtFollowers(c.followers)} followers
                   </span>
                   {c.live && displayViewers > 0 && (

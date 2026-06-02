@@ -12,7 +12,7 @@
 :root {
   /* Background scale */
   --bg0: #07050A;
-  --bg1: #0F0C14;
+  --bg1: #0E0C09;
   --bg2: #161020;
   --bg3: #1E1828;
 
@@ -2231,7 +2231,7 @@ input, select, textarea {
 .lower-third-name {
   font-family: var(--font-display);
   font-size: 18px;
-  color: #EDE8F5;
+  color: #F0E8D4;
   letter-spacing: 1px;
   line-height: 1.1;
   text-shadow: 0 1px 6px rgba(0,0,0,.8);
@@ -2287,7 +2287,7 @@ input, select, textarea {
   aspect-ratio: 16/9;
   border-radius: 8px;
   overflow: hidden;
-  background: #0F0C14;
+  background: #0E0C09;
   border: 1px solid #241C34;
   position: relative;
 }
@@ -2332,7 +2332,7 @@ input, select, textarea {
   flex-shrink: 0;
   border-radius: 6px;
   overflow: hidden;
-  background: #0F0C14;
+  background: #0E0C09;
   border: 1px solid #241C34;
   aspect-ratio: 16/9;
   position: relative;
@@ -2373,7 +2373,7 @@ input, select, textarea {
   height: 80px;
   border-radius: 6px;
   overflow: hidden;
-  background: #0F0C14;
+  background: #0E0C09;
   border: 1px solid #241C34;
   position: relative;
 }
@@ -2414,7 +2414,7 @@ input, select, textarea {
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 600;
-  color: #EDE8F5;
+  color: #F0E8D4;
   flex: 1;
 }
 
@@ -2462,7 +2462,7 @@ input, select, textarea {
 
 .mc-btn:hover {
   border-color: rgba(201,168,76,.35);
-  color: #EDE8F5;
+  color: #F0E8D4;
 }
 
 .mc-btn--active {

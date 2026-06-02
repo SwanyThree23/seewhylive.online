@@ -54,7 +54,7 @@ class ErrorBoundary extends React.Component {
           style: {
             fontFamily: "'DM Mono',monospace",
             fontSize:   10,
-            color:      '#7A6F90',
+            color:      '#8A7A62',
             maxWidth:   280,
             lineHeight: 1.6,
           }

@@ -9,7 +9,7 @@ var BAR_DELAYS = ['0ms', '100ms', '200ms', '100ms', '0ms'];
 export default function SignalBars(props) {
   var isActive = props.isActive;
   var count = props.count || 5;
-  var color = props.color || (isActive ? '#FF1564' : '#7A6F90');
+  var color = props.color || (isActive ? '#FF1564' : '#8A7A62');
 
   if (!_signalStyleInjected) {
     _signalStyleInjected = true;

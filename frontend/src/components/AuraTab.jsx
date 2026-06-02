@@ -198,7 +198,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#FF1564' }}>
             &#x26A0; AURA AI requires Pro or Studio tier
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 4 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>
             Upgrade in Settings to unlock AI-powered co-hosting
           </div>
         </div>
@@ -220,10 +220,10 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
                 cursor: 'pointer',
                 textAlign: 'left'
               }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: isActive ? mode.color : '#EDE8F5', letterSpacing: 1.5, marginBottom: 2 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: isActive ? mode.color : '#F0E8D4', letterSpacing: 1.5, marginBottom: 2 }}>
                 {mode.emoji + ' ' + mode.label}
               </div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', lineHeight: 1.3 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', lineHeight: 1.3 }}>
                 {mode.desc}
               </div>
             </button>
@@ -233,7 +233,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
 
       {/* TRIGGER BUTTONS */}
       <div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 6 }}>TRIGGER EVENTS</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 6 }}>TRIGGER EVENTS</div>
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
           {TRIGGERS.map(function(trigger) {
             var isFiring = triggerLoading === trigger.type;
@@ -260,7 +260,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
         </div>
 
         {/* USAGE COUNTER */}
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: usageCount >= 18 ? '#FF1564' : '#7A6F90', marginBottom: 6 }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: usageCount >= 18 ? '#FF1564' : '#8A7A62', marginBottom: 6 }}>
           {'AURA CALLS THIS HOUR: ' + usageCount + ' / 60'}
         </div>
       </div>
@@ -274,10 +274,10 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', letterSpacing: 1, marginBottom: 3 }}>
                   {msg.mode.toUpperCase()}
                 </div>
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', lineHeight: 1.4 }}>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.4 }}>
                   {msg.text}
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 3 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 3 }}>
                   {msg.ts}
                 </div>
               </div>
@@ -290,11 +290,11 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
         <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'radial-gradient(circle,rgba(192,132,252,.35),rgba(155,77,202,.15))', border: '2px solid rgba(155,77,202,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🤖</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C084FC', letterSpacing: 2 }}>AURA AI CO-HOST</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>claude-sonnet-4 · v33 · Washington Classic</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>claude-sonnet-4 · v33 · Washington Classic</div>
         </div>
         <button
           onClick={function() { setAutoHype(function(v) { return !v; }); }}
-          style={{ background: autoHype && isLive ? 'rgba(192,132,252,.25)' : 'rgba(155,77,202,.08)', border: '1px solid ' + (autoHype && isLive ? 'rgba(192,132,252,.6)' : 'rgba(155,77,202,.25)'), borderRadius: 6, padding: '4px 9px', color: autoHype && isLive ? '#C084FC' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+          style={{ background: autoHype && isLive ? 'rgba(192,132,252,.25)' : 'rgba(155,77,202,.08)', border: '1px solid ' + (autoHype && isLive ? 'rgba(192,132,252,.6)' : 'rgba(155,77,202,.25)'), borderRadius: 6, padding: '4px 9px', color: autoHype && isLive ? '#C084FC' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
           {autoHype ? 'AUTO ON' : 'AUTO'}
         </button>
         {loading && (
@@ -329,7 +329,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>CHAT LOG</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1 }}>CHAT LOG</span>
           <div style={{ background: 'rgba(155,77,202,.18)', border: '1px solid rgba(155,77,202,.3)', borderRadius: 10, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC' }}>
             {msgs.length}
           </div>
@@ -360,7 +360,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
             value={customPrompt}
             onChange={function(e) { setCustomPrompt(e.target.value); }}
             rows={4}
-            style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, resize: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
+            style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, resize: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
           />
           <button
             onClick={function() { setPromptOpen(false); }}
@@ -398,7 +398,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
                     {m.auto && <span style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 3, padding: '0px 4px', color: '#00C9A7', fontSize: 6, letterSpacing: 0.5 }}>AUTO</span>}
                   </div>
                 )}
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', lineHeight: 1.4 }}>{m.text}</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.4 }}>{m.text}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#483D60', marginTop: 3, textAlign: isUser ? 'right' : 'left' }}>{m.time}</div>
               </div>
             </div>
@@ -419,7 +419,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
           onChange={function(e) { setInput(e.target.value); }}
           onKeyDown={function(e) { if (e.key === 'Enter') send(); }}
           placeholder="Ask AURA anything..."
-          style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+          style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
         />
         <button
           onClick={send}
