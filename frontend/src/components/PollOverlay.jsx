@@ -1,6 +1,7 @@
 'use strict';
 import React, { useState, useEffect, useRef } from 'react';
 import UpgradeGate from './UpgradeGate.jsx';
+import SelectSheet from './SelectSheet.jsx';
 
 var GOLD   = '#C9A84C';
 var BURG   = '#800020';
@@ -218,25 +219,17 @@ export default function PollOverlay({ socket, roomId, role, isLive, addToast }) 
                   })}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0 }}>DURATION</span>
-                    <select
-                      value={hostDraft.duration}
-                      onChange={function(e) { setHostDraft(function(d) { return Object.assign({}, d, { duration: parseInt(e.target.value, 10) }); }); }}
-                      style={{
-                        background: CARD2,
-                        border: '1px solid ' + DIM,
-                        borderRadius: 6,
-                        padding: '5px 8px',
-                        color: TEXT,
-                        fontFamily: "'DM Mono',monospace",
-                        fontSize: 9,
-                        outline: 'none',
-                        flex: 1,
-                      }}
-                    >
-                      <option value="30">30 seconds</option>
-                      <option value="60">60 seconds</option>
-                      <option value="120">120 seconds</option>
-                    </select>
+                    <SelectSheet
+                      label="Duration"
+                      value={String(hostDraft.duration)}
+                      options={[
+                        { value: '30',  label: '30 seconds' },
+                        { value: '60',  label: '60 seconds' },
+                        { value: '120', label: '120 seconds' },
+                      ]}
+                      onChange={function(v) { setHostDraft(function(d) { return Object.assign({}, d, { duration: parseInt(v, 10) }); }); }}
+                      style={{ flex: 1 }}
+                    />
                   </div>
                   <button
                     onClick={handleCreatePoll}
