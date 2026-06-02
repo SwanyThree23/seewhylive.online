@@ -266,9 +266,14 @@ function Step5({ user, onDone }) {
       <label style={lbl}>Description</label>
       <textarea style={{...inp, height:70, resize:'none'}} value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} placeholder="What is your community about?" />
       <label style={lbl}>Category</label>
-      <select style={{...inp, cursor:'pointer'}} value={form.category} onChange={e => setForm(f => ({...f, category: e.target.value}))}>
-        {['music','gaming','tech','education','entertainment','sports','lifestyle','other'].map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
-      </select>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+        {['music','gaming','tech','education','entertainment','sports','lifestyle','other'].map(c => (
+          <button key={c} type="button" onClick={() => setForm(f => ({...f, category: c}))}
+            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 11, border: `1px solid ${form.category === c ? C.gold : '#333'}`, background: form.category === c ? 'rgba(212,175,55,0.15)' : 'transparent', color: form.category === c ? C.gold : C.gray, cursor: 'pointer', fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>
+            {c.charAt(0).toUpperCase()+c.slice(1)}
+          </button>
+        ))}
+      </div>
       <label style={lbl}>Welcome Message</label>
       <textarea style={{...inp, height:56, resize:'none'}} value={form.welcome_message} onChange={e => setForm(f => ({...f, welcome_message: e.target.value}))} placeholder="Message shown to new members…" />
       <NavButtons step={5} setStep={() => {}} onSave={save} saving={saving} canNext={!!form.name} onSkip={() => onDone({ step_5_community: true, current_step: 6 })} />
