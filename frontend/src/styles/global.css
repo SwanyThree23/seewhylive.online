@@ -2708,6 +2708,32 @@ select:focus { border-color: rgba(201,168,76,.5); }
 }
 
 /* ============================================================
+   NATIVE-LIKE TOUCH BEHAVIOUR
+   ============================================================ */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+button, a, [role="button"] {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Prevent pull-to-refresh on chrome when we handle it ourselves */
+html {
+  overscroll-behavior-y: none;
+}
+
+/* Smooth momentum scrolling on iOS */
+.scroll-momentum {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ============================================================
    ANDROID DARK MODE — force dark even when system is light
    ============================================================ */
 
