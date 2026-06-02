@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { Scissors, Loader2, Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -110,23 +109,23 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
         </div>
 
         {/* Generate Button */}
-        <Button
+        <button
           onClick={handleGenerateClip}
           disabled={generating || !isLive}
-          className="w-full bg-[#d4af37] text-black hover:bg-[#e6c158] font-semibold h-9"
+          style={{ width:'100%', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, height:36, cursor:(generating||!isLive)?'not-allowed':'pointer', opacity:(generating||!isLive)?0.6:1, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:'Barlow Condensed, sans-serif', fontSize:13 }}
         >
           {generating ? (
             <>
-              <Loader2 className="w-3 h-3 animate-spin mr-2" />
+              <Loader2 className="w-3 h-3 animate-spin" />
               Generating...
             </>
           ) : (
             <>
-              <Scissors className="w-3 h-3 mr-2" />
+              <Scissors className="w-3 h-3" />
               Create Clip Now
             </>
           )}
-        </Button>
+        </button>
 
         {/* Recent Clips */}
         {clips.length > 0 && (

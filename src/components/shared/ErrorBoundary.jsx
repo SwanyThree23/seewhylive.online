@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default class ErrorBoundary extends React.Component {
@@ -19,15 +18,18 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-[200px] p-8 text-center">
-          <AlertTriangle className="w-10 h-10 text-amber-500 mb-3" />
-          <p className="font-semibold text-sm mb-1">Something went wrong</p>
-          <p className="text-xs text-muted-foreground mb-4 max-w-xs">
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:200, padding:32, textAlign:'center' }}>
+          <AlertTriangle style={{ width:40, height:40, color:'#f59e0b', marginBottom:12 }} />
+          <p style={{ fontWeight:600, fontSize:14, marginBottom:4 }}>Something went wrong</p>
+          <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginBottom:16, maxWidth:280 }}>
             An unexpected error occurred in this section. Please try again.
           </p>
-          <Button size="sm" variant="outline" onClick={() => this.setState({ hasError: false, error: null })}>
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Try Again
-          </Button>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 14px', background:'transparent', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:12, cursor:'pointer' }}
+          >
+            <RefreshCw style={{ width:14, height:14 }} /> Try Again
+          </button>
         </div>
       );
     }
