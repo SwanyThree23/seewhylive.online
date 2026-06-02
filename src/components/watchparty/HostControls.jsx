@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, Lock, Unlock, Users, Palette, MessageSquare, Mic, Video, Volume2, VolumeX, ChevronDown, ChevronUp } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
 
 export default function HostControls({ isHost, party, onUpdate }) {
   const [open, setOpen] = useState(false);
@@ -71,11 +70,9 @@ export default function HostControls({ isHost, party, onUpdate }) {
                         {label}
                       </span>
                     </div>
-                    <Switch
-                      checked={settings[key]}
-                      onCheckedChange={() => toggle(key)}
-                      className="scale-75"
-                    />
+                    <div onClick={() => toggle(key)} style={{ width:40, height:22, borderRadius:99, background:settings[key]?'#800020':'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                      <div style={{ position:'absolute', top:3, left:settings[key]?21:3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
+                    </div>
                   </div>
                 ))}
               </div>

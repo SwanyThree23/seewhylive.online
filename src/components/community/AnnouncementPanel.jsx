@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Megaphone, Send, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const inputStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box', ...T,
+};
 
 export default function AnnouncementPanel({ communityId, userId }) {
   const [title, setTitle] = useState('');
@@ -61,22 +62,31 @@ export default function AnnouncementPanel({ communityId, userId }) {
     },
   });
 
+  const btnBase = {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+    padding: '10px 18px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer',
+    border: 'none', ...T,
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Megaphone className="w-5 h-5 text-purple-600" />
+    <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }}>
+      {/* Header */}
+      <div style={{ padding: '20px 20px 0' }}>
+        <h3 style={{ fontWeight: 700, fontSize: 16, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px', ...T }}>
+          <Megaphone className="w-5 h-5" style={{ color: '#a78bfa' }} />
           Create Announcement
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>
           Send targeted messages to your community members
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Title */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Title</label>
-          <Input
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', ...T }}>Title</label>
+          <input
+            style={inputStyle}
             placeholder="Announcement title..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -84,9 +94,10 @@ export default function AnnouncementPanel({ communityId, userId }) {
         </div>
 
         {/* Content */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Message</label>
-          <Textarea
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', ...T }}>Message</label>
+          <textarea
+            style={{ ...inputStyle, resize: 'none', minHeight: 80 }}
             placeholder="Write your announcement here..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -95,85 +106,85 @@ export default function AnnouncementPanel({ communityId, userId }) {
         </div>
 
         {/* Settings Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {/* Priority */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Priority</label>
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', ...T }}>Priority</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+            >
+              <option value="low">Low</option>
+              <option value="normal">Normal</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
           </div>
 
           {/* Target Audience */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Target</label>
-            <Select value={targetAudience} onValueChange={setTargetAudience}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Members</SelectItem>
-                <SelectItem value="admins">Admins Only</SelectItem>
-                <SelectItem value="moderators">Moderators</SelectItem>
-                <SelectItem value="subscribers">Subscribers</SelectItem>
-                <SelectItem value="new_members">New Members</SelectItem>
-              </SelectContent>
-            </Select>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', ...T }}>Target</label>
+            <select
+              value={targetAudience}
+              onChange={(e) => setTargetAudience(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+            >
+              <option value="all">All Members</option>
+              <option value="admins">Admins Only</option>
+              <option value="moderators">Moderators</option>
+              <option value="subscribers">Subscribers</option>
+              <option value="new_members">New Members</option>
+            </select>
           </div>
         </div>
 
         {/* Preview */}
         {(title || content) && (
-          <div className="bg-slate-50 rounded-lg p-4 border">
-            <Badge className="mb-2">{priority.toUpperCase()}</Badge>
-            <h4 className="font-semibold mb-1">{title || 'Untitled'}</h4>
-            <p className="text-sm text-muted-foreground">{content || 'No content'}</p>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: 16, border: '1px solid rgba(255,255,255,0.1)' }}>
+            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#D4AF37', display: 'inline-block', marginBottom: 8, ...T }}>
+              {priority.toUpperCase()}
+            </span>
+            <h4 style={{ fontWeight: 700, color: '#fff', margin: '0 0 4px', ...T }}>{title || 'Untitled'}</h4>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>{content || 'No content'}</p>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex gap-2">
-          <Button
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
             onClick={() => createAnnouncementMutation.mutate()}
             disabled={!title || !content}
-            className="flex-1"
+            style={{ ...btnBase, flex: 1, background: !title || !content ? 'rgba(128,0,32,0.4)' : '#800020', color: '#fff', opacity: !title || !content ? 0.5 : 1 }}
           >
-            <Send className="w-4 h-4 mr-2" />
+            <Send className="w-4 h-4" />
             Send Now
-          </Button>
-          <Button
-            variant="outline"
+          </button>
+          <button
             disabled={!title || !content}
             onClick={() => {
               const tomorrow = new Date();
               tomorrow.setDate(tomorrow.getDate() + 1);
               scheduleAnnouncementMutation.mutate(tomorrow.toISOString());
             }}
+            style={{ ...btnBase, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', opacity: !title || !content ? 0.5 : 1 }}
           >
-            <Clock className="w-4 h-4 mr-2" />
+            <Clock className="w-4 h-4" />
             Schedule
-          </Button>
+          </button>
         </div>
 
         {/* Info */}
-        <div className="flex items-start gap-2 bg-blue-50 rounded-lg p-3 text-sm">
-          <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
-          <div className="text-blue-900">
-            <p className="font-medium mb-1">Targeting: {targetAudience.replace('_', ' ')}</p>
-            <p className="text-xs text-blue-700">
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(59,130,246,0.1)', borderRadius: 8, padding: 12, fontSize: 13 }}>
+          <AlertCircle className="w-4 h-4" style={{ color: '#60a5fa', marginTop: 2, flexShrink: 0 }} />
+          <div style={{ color: 'rgba(147,197,253,0.9)' }}>
+            <p style={{ fontWeight: 600, margin: '0 0 2px', ...T }}>Targeting: {targetAudience.replace('_', ' ')}</p>
+            <p style={{ fontSize: 11, color: 'rgba(147,197,253,0.6)', margin: 0, ...T }}>
               This will notify members via in-app notifications
             </p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,16 +1,32 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Megaphone, Calendar, Send, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+
+const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
+const CARD_HEADER = { padding:'16px 20px 12px' };
+const CARD_CONTENT = { padding:'0 20px 20px' };
+const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const TEXTAREA_STYLE = { ...INPUT_STYLE, resize:'none', minHeight:80 };
+const SELECT_STYLE = { ...INPUT_STYLE };
+const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom:6, color:'rgba(255,255,255,0.8)' };
+
+const priorityBadgeColors = {
+  low:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
+  normal: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
+  high:   { background:'rgba(249,115,22,0.15)',  color:'#fb923c' },
+  urgent: { background:'rgba(239,68,68,0.15)',   color:'#f87171' },
+};
+
+function Badge({ label, style }) {
+  return (
+    <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif', ...style }}>
+      {label}
+    </span>
+  );
+}
 
 export default function AnnouncementScheduler({ communityId, userId }) {
   const [title, setTitle] = useState('');
@@ -82,169 +98,166 @@ export default function AnnouncementScheduler({ communityId, userId }) {
   const scheduledAnnouncements = announcements.filter(a => a.status === 'scheduled');
   const sentAnnouncements = announcements.filter(a => a.status === 'sent');
 
-  const priorityColors = {
-    low: 'bg-gray-100 text-gray-800',
-    normal: 'bg-blue-100 text-blue-800',
-    high: 'bg-orange-100 text-orange-800',
-    urgent: 'bg-red-100 text-red-800',
-  };
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24 }}>
       {/* Create Form */}
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Megaphone className="w-5 h-5" />
+      <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
+        <div style={CARD}>
+          <div style={CARD_HEADER}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:16, fontWeight:700, color:'#fff', marginBottom:4 }}>
+              <Megaphone style={{ width:20, height:20 }} />
               Create Announcement
-            </CardTitle>
-            <CardDescription>Communicate with your community members</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Title *</label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Announcement title"
-              />
             </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Content *</label>
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="What do you want to announce?"
-                rows={5}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', margin:0 }}>Communicate with your community members</p>
+          </div>
+          <div style={CARD_CONTENT}>
+            <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
               <div>
-                <label className="text-sm font-medium mb-2 block">Priority</label>
-                <Select value={priority} onValueChange={setPriority}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label style={LABEL_STYLE}>Title *</label>
+                <input
+                  style={INPUT_STYLE}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Announcement title"
+                />
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">Target Audience</label>
-                <Select value={targetAudience} onValueChange={setTargetAudience}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Members</SelectItem>
-                    <SelectItem value="admins">Admins</SelectItem>
-                    <SelectItem value="moderators">Moderators</SelectItem>
-                    <SelectItem value="subscribers">Subscribers</SelectItem>
-                    <SelectItem value="new_members">New Members</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-              <label className="text-sm font-medium">Pin to Top</label>
-              <Switch checked={isPinned} onCheckedChange={setIsPinned} />
-            </div>
-
-            <div className="border-t pt-4">
-              <label className="text-sm font-medium mb-2 block">Schedule (Optional)</label>
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  type="date"
-                  value={scheduleDate}
-                  onChange={(e) => setScheduleDate(e.target.value)}
-                />
-                <Input
-                  type="time"
-                  value={scheduleTime}
-                  onChange={(e) => setScheduleTime(e.target.value)}
+                <label style={LABEL_STYLE}>Content *</label>
+                <textarea
+                  style={{ ...TEXTAREA_STYLE, minHeight:100 }}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="What do you want to announce?"
+                  rows={5}
                 />
               </div>
-            </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button onClick={() => handleSubmit(true)} className="flex-1">
-                <Send className="w-4 h-4 mr-2" />
-                Send Now
-              </Button>
-              <Button onClick={() => handleSubmit(false)} variant="outline" className="flex-1">
-                <Clock className="w-4 h-4 mr-2" />
-                Save Draft
-              </Button>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                <div>
+                  <label style={LABEL_STYLE}>Priority</label>
+                  <select style={SELECT_STYLE} value={priority} onChange={e => setPriority(e.target.value)}>
+                    <option value="low">Low</option>
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={LABEL_STYLE}>Target Audience</label>
+                  <select style={SELECT_STYLE} value={targetAudience} onChange={e => setTargetAudience(e.target.value)}>
+                    <option value="all">All Members</option>
+                    <option value="admins">Admins</option>
+                    <option value="moderators">Moderators</option>
+                    <option value="subscribers">Subscribers</option>
+                    <option value="new_members">New Members</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px', background:'rgba(255,255,255,0.03)', borderRadius:8 }}>
+                <label style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.8)' }}>Pin to Top</label>
+                <div onClick={() => setIsPinned(v => !v)} style={{ width:40, height:22, borderRadius:99, background: isPinned ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div style={{ position:'absolute', top:3, left: isPinned ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
+                </div>
+              </div>
+
+              <div style={{ borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:16 }}>
+                <label style={LABEL_STYLE}>Schedule (Optional)</label>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  <input
+                    type="date"
+                    style={INPUT_STYLE}
+                    value={scheduleDate}
+                    onChange={(e) => setScheduleDate(e.target.value)}
+                  />
+                  <input
+                    type="time"
+                    style={INPUT_STYLE}
+                    value={scheduleTime}
+                    onChange={(e) => setScheduleTime(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display:'flex', gap:8, paddingTop:8 }}>
+                <button
+                  onClick={() => handleSubmit(true)}
+                  style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
+                >
+                  <Send style={{ width:16, height:16 }} />
+                  Send Now
+                </button>
+                <button
+                  onClick={() => handleSubmit(false)}
+                  style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', color:'rgba(255,255,255,0.7)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
+                >
+                  <Clock style={{ width:16, height:16 }} />
+                  Save Draft
+                </button>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Announcements List */}
-      <div className="space-y-6">
+      <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
         {/* Scheduled */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
+        <div style={CARD}>
+          <div style={CARD_HEADER}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:16, fontWeight:700, color:'#fff' }}>
+              <Calendar style={{ width:20, height:20 }} />
               Scheduled ({scheduledAnnouncements.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </div>
+          </div>
+          <div style={CARD_CONTENT}>
             {scheduledAnnouncements.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No scheduled announcements</p>
+              <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', textAlign:'center', padding:'16px 0' }}>No scheduled announcements</p>
             ) : (
-              <div className="space-y-3">
+              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                 {scheduledAnnouncements.map((ann) => (
-                  <div key={ann.id} className="border rounded-lg p-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="font-medium">{ann.title}</p>
-                      <Badge className={priorityColors[ann.priority]}>{ann.priority}</Badge>
+                  <div key={ann.id} style={{ border:'1px solid rgba(255,255,255,0.08)', borderRadius:8, padding:12 }}>
+                    <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:8 }}>
+                      <p style={{ fontWeight:600, color:'#fff', margin:0 }}>{ann.title}</p>
+                      <Badge label={ann.priority} style={priorityBadgeColors[ann.priority] || {}} />
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', margin:0 }}>
                       Scheduled: {ann.scheduled_for ? format(new Date(ann.scheduled_for), 'PPp') : 'N/A'}
                     </p>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Recent Sent */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Recent Sent ({sentAnnouncements.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div style={CARD}>
+          <div style={CARD_HEADER}>
+            <div style={{ fontSize:16, fontWeight:700, color:'#fff' }}>Recent Sent ({sentAnnouncements.length})</div>
+          </div>
+          <div style={CARD_CONTENT}>
             {sentAnnouncements.slice(0, 5).length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No sent announcements</p>
+              <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', textAlign:'center', padding:'16px 0' }}>No sent announcements</p>
             ) : (
-              <div className="space-y-3">
+              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                 {sentAnnouncements.slice(0, 5).map((ann) => (
-                  <div key={ann.id} className="border rounded-lg p-3 opacity-75">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="font-medium">{ann.title}</p>
-                      <Badge variant="outline">sent</Badge>
+                  <div key={ann.id} style={{ border:'1px solid rgba(255,255,255,0.08)', borderRadius:8, padding:12, opacity:0.75 }}>
+                    <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:8 }}>
+                      <p style={{ fontWeight:600, color:'#fff', margin:0 }}>{ann.title}</p>
+                      <Badge label="sent" style={{ background:'rgba(255,255,255,0.08)', color:'rgba(255,255,255,0.6)' }} />
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', margin:0 }}>
                       Sent: {ann.sent_at ? format(new Date(ann.sent_at), 'PPp') : 'N/A'}
                     </p>
                   </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

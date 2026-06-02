@@ -92,7 +92,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
   return (
     <div className="rounded-xl p-4 space-y-3"
       style={{
-        background: '#1A1A1A',
+        background: 'rgba(13,6,24,0.9)',
         border: dest.status === 'live' ? `1px solid rgba(212,175,55,0.3)` : '1px solid rgba(255,255,255,0.08)',
         boxShadow: dest.status === 'live' ? `0 0 20px rgba(212,175,55,0.08)` : 'none',
       }}>
@@ -169,7 +169,7 @@ function EndStreamModal({ onConfirm, onCancel }) {
       style={{ background: 'rgba(0,0,0,0.8)' }}>
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-        style={{ background: '#1A1A1A', border: `1px solid rgba(128,0,32,0.4)` }}>
+        style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
         <div className="flex items-center gap-3">
           <StopCircle className="w-8 h-8 text-red-400" />
           <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
@@ -281,14 +281,14 @@ export default function ControlRoomPage() {
   const isLive = room?.status === 'live';
 
   return (
-    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen" style={{ background: '#080B18' }}>
       <AnimatePresence>
         {showEndModal && <EndStreamModal onConfirm={() => endStreamMut.mutate()} onCancel={() => setShowEndModal(false)} />}
       </AnimatePresence>
 
       {/* Header */}
       <div className="px-4 md:px-8 py-4 flex items-center justify-between"
-        style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2.5">
           <Monitor className="w-5 h-5" style={{ color: GOLD }} />
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>

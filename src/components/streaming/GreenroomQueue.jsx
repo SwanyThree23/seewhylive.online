@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { CheckCircle, XCircle, Clock, Radio, Users, Copy, AlertCircle, Wifi } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -87,19 +83,17 @@ export default function GreenroomQueue({ roomId, isHost }) {
           <Users className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Greenroom</span>
           {waitingGuests.length > 0 && (
-            <Badge className="bg-red-600 text-white text-[9px] animate-pulse border-0">
+            <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff' }}>
               {waitingGuests.length} waiting
-            </Badge>
+            </span>
           )}
         </div>
-        <Button
-          size="sm"
-          variant="outline"
+        <button
           onClick={copyJoinLink}
-          className="h-6 text-[9px] border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10 px-2"
+          style={{ height:24, fontSize:9, background:'transparent', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
         >
-          <Copy className="w-2.5 h-2.5 mr-1" /> Invite Link
-        </Button>
+          <Copy className="w-2.5 h-2.5" /> Invite Link
+        </button>
       </div>
 
       {/* Live guests */}
@@ -113,11 +107,11 @@ export default function GreenroomQueue({ roomId, isHost }) {
       )}
 
       {/* Search */}
-      <Input
+      <input
         placeholder="Search guests…"
         value={guestSearch}
         onChange={e => setGuestSearch(e.target.value)}
-        className="h-7 text-[10px] bg-white/5 border-white/10 text-white placeholder:text-white/30"
+        style={{ width:'100%', padding:'6px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:10, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
       />
 
       {/* Waiting queue */}
@@ -189,9 +183,9 @@ function GuestRow({ participant, status }) {
         {participant.user_name?.charAt(0)?.toUpperCase()}
       </div>
       <p className="text-[10px] font-semibold text-white truncate flex-1">{participant.user_name}</p>
-      <Badge className="bg-green-700 text-white text-[8px] border-0 animate-pulse px-1">
-        <Radio className="w-2 h-2 mr-0.5" /> LIVE
-      </Badge>
+      <span style={{ fontSize:8, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'#15803d', color:'#fff', display:'inline-flex', alignItems:'center', gap:2 }}>
+        <Radio className="w-2 h-2" /> LIVE
+      </span>
     </div>
   );
 }

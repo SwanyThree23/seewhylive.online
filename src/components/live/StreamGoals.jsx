@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Plus, Target, X, Check, TrendingUp } from 'lucide-react';
 import { fireAlert } from './HostAlertCenter';
 import confetti from 'canvas-confetti';
@@ -78,20 +75,23 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
                   </button>
                 ))}
               </div>
-              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                placeholder="Goal title (e.g. New Mic Fund!)" className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/25" />
+              <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                placeholder="Goal title (e.g. New Mic Fund!)"
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
-                <Input type="number" value={form.target} onChange={e => setForm(f => ({ ...f, target: Number(e.target.value) }))}
-                  placeholder="Target" className="bg-white/5 border-white/20 text-white h-8 text-sm flex-1" />
+                <input type="number" value={form.target} onChange={e => setForm(f => ({ ...f, target: Number(e.target.value) }))}
+                  placeholder="Target"
+                  style={{ flex:1, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
                 <span className="text-sm text-white/40 flex items-center">{GOAL_TYPES.find(g => g.id === form.type)?.unit}</span>
               </div>
-              <Input value={form.reward_text} onChange={e => setForm(f => ({ ...f, reward_text: e.target.value }))}
-                placeholder="Reward: I'll dance at goal! 🎉" className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/25" />
+              <input value={form.reward_text} onChange={e => setForm(f => ({ ...f, reward_text: e.target.value }))}
+                placeholder="Reward: I'll dance at goal! 🎉"
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
-                <Button onClick={addGoal} size="sm" className="flex-1 bg-[#22c55e] hover:bg-green-400 text-black font-bold">
-                  <Check className="w-3.5 h-3.5 mr-1" /> Add Goal
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} className="text-white/40">Cancel</Button>
+                <button onClick={addGoal} style={{ flex:1, padding:'6px 14px', borderRadius:8, border:'none', background:'#22c55e', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+                  <Check className="w-3.5 h-3.5" /> Add Goal
+                </button>
+                <button onClick={() => setShowForm(false)} style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'transparent', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:13 }}>Cancel</button>
               </div>
             </div>
           </motion.div>
@@ -120,7 +120,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
                 {goal.reward_text && <p className="text-[10px] text-white/40 mt-0.5">{goal.reward_text}</p>}
               </div>
               <div className="flex items-center gap-2">
-                {goal.completed && <Badge className="text-[9px] bg-[#22c55e]/20 text-[#22c55e] border-[#22c55e]/30">✓ REACHED</Badge>}
+                {goal.completed && <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(34,197,94,0.2)', color:'#22c55e', border:'1px solid rgba(34,197,94,0.3)' }}>✓ REACHED</span>}
                 {isHost && (
                   <button onClick={() => setGoals(prev => prev.filter(g => g.id !== goal.id))}
                     className="text-white/20 hover:text-red-400">

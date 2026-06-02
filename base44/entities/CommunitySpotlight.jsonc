@@ -1,0 +1,123 @@
+{
+  "name": "CommunitySpotlight",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "Associated community"
+    },
+    "spotlight_type": {
+      "type": "string",
+      "enum": [
+        "member",
+        "content",
+        "achievement"
+      ],
+      "description": "Type of spotlight"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Spotlighted user"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "User name"
+    },
+    "user_avatar": {
+      "type": "string",
+      "description": "User avatar"
+    },
+    "title": {
+      "type": "string",
+      "description": "Spotlight title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Spotlight description"
+    },
+    "content_id": {
+      "type": "string",
+      "description": "Related content ID (room, discussion, etc)"
+    },
+    "content_type": {
+      "type": "string",
+      "description": "Content type"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Spotlight image"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Spotlight start"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Spotlight end"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Currently featured"
+    }
+  },
+  "required": [
+    "community_id",
+    "spotlight_type",
+    "user_id",
+    "title"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

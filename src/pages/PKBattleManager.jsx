@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -20,6 +18,24 @@ import BattleOverlay from '../components/pk/BattleOverlay';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
 
+function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
+  return (
+    <button onClick={onClick} disabled={disabled} {...rest}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`}
+      style={{ padding: size === 'sm' ? '6px 12px' : size === 'icon' ? '6px' : '8px 16px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : '1px solid rgba(255,255,255,0.12)', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>
+      {children}
+    </button>
+  );
+}
+function Badge({ children, className = '', style = {} }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
+      style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', ...style }}>
+      {children}
+    </span>
+  );
+}
+
 /* ─── Earth Tone Palette (No Pink) ─── */
 var ET = {
   rust: '#6B4423',
@@ -29,9 +45,9 @@ var ET = {
   clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
-  darkEarth: '#2C1810',
-  midEarth: '#3D2B1F',
-  bg: '#1A0F0A',
+  darkEarth: 'rgba(13,6,24,0.95)',
+  midEarth: 'rgba(17,8,34,0.9)',
+  bg: '#080B18',
 };
 
 /* ─── Constants ─── */
@@ -405,29 +421,34 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
             <p className="text-sm text-white/30">No battles yet. Send an invitation to start!</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/5">
+          <div className="p-3 space-y-2">
             {battles.map(function(b) {
               var st = statusStyle[b.status] || statusStyle.ended;
+              var isLive = b.status === 'active' || b.status === 'live';
               return (
                 <button
                   key={b.id}
                   onClick={function() { onBattleSelect(b); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/2 transition-all text-left"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: isLive ? '1px solid rgba(255,21,100,0.25)' : '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,21,100,0.1)', border: '1px solid rgba(255,21,100,0.2)' }}>
-                    <Swords className="w-4 h-4 text-red-400" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.08)', border: isLive ? '1px solid rgba(255,21,100,0.3)' : '1px solid rgba(212,175,55,0.15)' }}>
+                    <Swords className="w-4 h-4" style={{ color: isLive ? '#FF1564' : '#D4AF37' }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white truncate">{b.title || b.creator_name + ' vs ' + (b.challenger_name || '?')}</p>
-                    <p className="text-[10px] text-white/35 mt-0.5">
-                      {Math.floor(b.duration_seconds / 60)}min · {b.creator_score || 0} vs {b.challenger_score || 0} pts
+                    <p className="text-sm font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.02em' }}>
+                      {b.title || (b.creator_name || 'Creator') + ' vs ' + (b.challenger_name || '?')}
+                    </p>
+                    <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {Math.floor((b.duration_seconds || 0) / 60)}min · {b.creator_score || 0} – {b.challenger_score || 0} pts
                     </p>
                   </div>
                   <div className="shrink-0 flex flex-col items-end gap-1">
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: st.bg, color: st.color, border: '1px solid ' + st.border }}>
+                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full" style={{ background: st.bg, color: st.color, border: '1px solid ' + st.border, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {b.status}
                     </span>
-                    {b.winner_name && <span className="text-[9px] text-yellow-500">🏆 {b.winner_name}</span>}
+                    {b.winner_name && <span className="text-[9px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>🏆 {b.winner_name}</span>}
                   </div>
                 </button>
               );

@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 
 const GOLD = '#D4AF37';
@@ -96,20 +94,18 @@ function SuperChatModal({ emoji, currentUser, partyId, onClose, onSent }) {
           <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
         </div>
         <p className="text-4xl text-center">{emoji}</p>
-        <Input placeholder="Message (optional)" value={msg} onChange={e => setMsg(e.target.value)}
-          className="h-8 text-[11px]"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white' }} />
+        <input placeholder="Message (optional)" value={msg} onChange={e => setMsg(e.target.value)}
+          style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }} />
         <div className="flex items-center gap-1">
           <span className="text-white/50 text-sm">$</span>
-          <Input placeholder="Tip amount (optional)" type="number" value={amount} onChange={e => setAmount(e.target.value)}
-            className="h-8 text-[11px] flex-1"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white' }} />
+          <input placeholder="Tip amount (optional)" type="number" value={amount} onChange={e => setAmount(e.target.value)}
+            style={{ flex: 1, height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }} />
         </div>
-        <Button size="sm" className="w-full h-9 font-black uppercase text-[11px]"
-          style={{ background: GOLD, color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}
+        <button
+          style={{ width: '100%', height: 36, fontSize: 11, fontWeight: 900, background: GOLD, color: '#000', border: 'none', borderRadius: 6, cursor: mut.isPending ? 'default' : 'pointer', opacity: mut.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase' }}
           onClick={() => mut.mutate()} disabled={mut.isPending}>
           {mut.isPending ? 'Sending…' : '💎 Send Super Reaction'}
-        </Button>
+        </button>
       </motion.div>
     </motion.div>
   );

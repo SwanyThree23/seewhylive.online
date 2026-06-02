@@ -2,9 +2,17 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clampStr, LIMITS } from '@/lib/security';
-import { Button } from '@/components/ui/button';
-import { Languages, ShieldAlert, ShieldCheck, Send, AlertTriangle } from 'lucide-react';
+import { Languages, ShieldAlert, Send, Rocket, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+
+const LANG_OPTIONS = [
+  { value: 'en', label: 'English',    flag: '🇺🇸' },
+  { value: 'es', label: 'Español',    flag: '🇪🇸' },
+  { value: 'fr', label: 'Français',   flag: '🇫🇷' },
+  { value: 'de', label: 'Deutsch',    flag: '🇩🇪' },
+  { value: 'pt', label: 'Português',  flag: '🇧🇷' },
+  { value: 'ja', label: '日本語',      flag: '🇯🇵' },
+];
 
 const PLATFORM_ICONS = {
   twitch:   { label: 'Twitch',  color: '#9146ff', icon: '🟣' },
@@ -38,10 +46,14 @@ export default function AggregatedChat({ roomId, currentUser, isHost, onMessages
   const [input, setInput] = useState('');
   const [translateEnabled, setTranslateEnabled] = useState(false);
   const [targetLang, setTargetLang] = useState('en');
+  const [langSheetOpen, setLangSheetOpen] = useState(false);
   const [modMap, setModMap] = useState({});       // msgId → status string
   const [translationMap, setTranslationMap] = useState({});
   const [isTranslating, setIsTranslating] = useState(false);
   const [appealingId, setAppealingId] = useState(null);
+  const [boostMode, setBoostMode] = useState(false);
+  const [pinnedMsg, setPinnedMsg] = useState(null);
+  const [pinCountdown, setPinCountdown] = useState(0);
   const bottomRef = useRef(null);
   const translateTimerRef = useRef(null);
 
@@ -194,20 +206,74 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
     return () => clearTimeout(translateTimerRef.current);
   }, [translateEnabled, messages.length, targetLang]);
 
-  // ── SEND ─────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!pinnedMsg) return;
+    const iv = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((pinnedMsg.expiresAt - Date.now()) / 1000));
+      setPinCountdown(remaining);
+      if (remaining === 0) {
+        setPinnedMsg(null);
+        clearInterval(iv);
+      }
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [pinnedMsg]);
+
+  // ── SEND (with optimistic update) ────────────────────────────────────────────
   const sendMessage = async () => {
     if (!input.trim() || !currentUser) return;
     const content = clampStr(input.trim(), LIMITS.CHAT_MESSAGE);
+    const isRocket = boostMode;
     setInput('');
-    const msg = await base44.entities.Message.create({
+    setBoostMode(false);
+
+    // Optimistic: show the message instantly with a temp ID
+    const tempId = `opt-${Date.now()}`;
+    const optimisticMsg = {
+      id: tempId,
       room_id: roomId,
       user_id: currentUser.id,
       user_name: currentUser.full_name || currentUser.email,
       content,
-      type: 'text',
+      platform: 'platform',
+      created_date: new Date().toISOString(),
+      _optimistic: true,
+    };
+    setMessages(prev => {
+      const next = [...prev, optimisticMsg];
+      onMessagesChange?.(next);
+      return next;
     });
-    // Screen our own outgoing message too
-    if (msg) autoModerateSingle({ ...msg, id: msg.id });
+
+    if (isRocket) {
+      setPinnedMsg({
+        text: content,
+        sender: currentUser?.full_name || currentUser?.email,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + 30000,
+      });
+      setPinCountdown(30);
+      toast.success('🚀 RocketChat launched! Message pinned for 30s');
+    }
+
+    try {
+      const msg = await base44.entities.Message.create({
+        room_id: roomId,
+        user_id: currentUser.id,
+        user_name: currentUser.full_name || currentUser.email,
+        content,
+        type: 'text',
+      });
+      // Replace the optimistic entry with the real one
+      if (msg) {
+        setMessages(prev => prev.map(m => m.id === tempId ? { ...msg, platform: 'platform' } : m));
+        autoModerateSingle({ ...msg, id: msg.id });
+      }
+    } catch {
+      // Roll back optimistic message on failure
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      toast.error('Message failed to send');
+    }
   };
 
   // ── RENDER ────────────────────────────────────────────────────────────────────
@@ -223,28 +289,47 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           ))}
           <span className="text-[10px] text-white/30 ml-1">Aggregated</span>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={targetLang}
-            onChange={e => setTargetLang(e.target.value)}
-            className="text-[10px] bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-white/60"
+        <div className="flex items-center gap-1.5">
+          {/* Language picker — BottomSheet instead of <select> */}
+          <button
+            onClick={() => setLangSheetOpen(true)}
+            className="flex items-center gap-1 h-6 px-2 rounded text-[10px] font-bold"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
-            {[['en','EN'],['es','ES'],['fr','FR'],['de','DE'],['pt','PT'],['ja','JA']].map(([v,l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
-          <Button
-            size="sm"
-            variant="ghost"
+            {LANG_OPTIONS.find(l => l.value === targetLang)?.flag}{' '}
+            {targetLang.toUpperCase()}
+            <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
+          </button>
+          <button
             onClick={() => { setTranslateEnabled(t => !t); if (!translateEnabled) translateAll(); }}
-            className={`h-6 text-[10px] gap-1 px-2 ${translateEnabled ? 'text-[#00d4ff]' : 'text-white/40'}`}
             disabled={isTranslating}
+            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#00d4ff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             <Languages className="w-3 h-3" />
-            {isTranslating ? '...' : translateEnabled ? 'On' : 'Translate All'}
-          </Button>
+            {isTranslating ? '…' : translateEnabled ? 'On' : 'Translate'}
+          </button>
         </div>
       </div>
+
+      {pinnedMsg && Date.now() < pinnedMsg.expiresAt && (
+        <div style={{
+          margin: '4px 8px',
+          background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(255,21,100,0.1))',
+          border: '1px solid rgba(212,175,55,0.4)',
+          borderRadius: 12,
+          padding: '8px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <span style={{ fontSize: 16 }}>🚀</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ color: '#D4AF37', fontWeight: 700, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMsg.sender} </span>
+            <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12 }}>{pinnedMsg.text}</span>
+          </div>
+          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0 }}>{pinCountdown}s</span>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 min-h-0">
@@ -298,19 +383,77 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          placeholder="Send a message..."
+          placeholder={boostMode ? 'RocketChat — pinned 30s (50 Love)…' : 'Send a message...'}
           maxLength={LIMITS.CHAT_MESSAGE}
-          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#d4af37]/50"
+          className="flex-1 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none"
+          style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: boostMode ? '1px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)',
+            boxShadow: boostMode ? '0 0 12px rgba(212,175,55,0.5)' : 'none',
+            transition: 'all 0.2s',
+          }}
         />
-        <Button
-          size="sm"
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setBoostMode(v => !v)}
+            title="RocketChat — pin your message for 30s (costs 50 Love)"
+            style={{
+              width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer',
+              background: boostMode ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.06)',
+              border: boostMode ? '1px solid rgba(212,175,55,0.6)' : '1px solid rgba(255,255,255,0.1)',
+              color: boostMode ? '#D4AF37' : 'rgba(255,255,255,0.4)',
+            }}
+          >
+            <Rocket className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <button
           onClick={sendMessage}
           disabled={!input.trim()}
-          className="h-8 w-8 p-0 bg-[#d4af37]/80 hover:bg-[#d4af37] text-black"
+          style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: 'rgba(212,175,55,0.8)', color: '#000', border: 'none' }}
         >
           <Send className="w-3.5 h-3.5" />
-        </Button>
+        </button>
       </div>
+
+      {/* Language picker modal */}
+      {langSheetOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0 }}
+          onClick={() => setLangSheetOpen(false)}
+        >
+          <div
+            style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Translate to…</p>
+            </div>
+            <div style={{ padding: '8px 0' }}>
+              {LANG_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setTargetLang(opt.value);
+                    setLangSheetOpen(false);
+                    if (translateEnabled) setTimeout(translateAll, 100);
+                  }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
+                    background: targetLang === opt.value ? 'rgba(212,175,55,0.12)' : 'transparent',
+                    border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#D4AF37' : '#fff',
+                    fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: targetLang === opt.value ? 700 : 400,
+                  }}
+                >
+                  <span style={{ fontSize: 18 }}>{opt.flag}</span>
+                  <span>{opt.label}</span>
+                  {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#D4AF37' }}>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

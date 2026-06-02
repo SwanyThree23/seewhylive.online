@@ -1,0 +1,87 @@
+{
+  "name": "AnimatedGift",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Gift name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Gift description"
+    },
+    "animation_url": {
+      "type": "string",
+      "description": "Animation file URL (GIF/Lottie)"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Static thumbnail"
+    },
+    "price": {
+      "type": "number",
+      "description": "Gift price"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "hearts",
+        "celebration",
+        "appreciation",
+        "humor",
+        "special"
+      ],
+      "default": "appreciation",
+      "description": "Gift category"
+    },
+    "rarity": {
+      "type": "string",
+      "enum": [
+        "common",
+        "rare",
+        "epic",
+        "legendary"
+      ],
+      "default": "common",
+      "description": "Gift rarity"
+    },
+    "is_limited": {
+      "type": "boolean",
+      "default": false,
+      "description": "Limited edition"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Available for purchase"
+    },
+    "times_sent": {
+      "type": "number",
+      "default": 0,
+      "description": "Popularity counter"
+    }
+  },
+  "required": [
+    "name",
+    "price",
+    "thumbnail_url"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -196,30 +196,32 @@ export default function OverlayBuilderPage() {
   const obsUrl = `https://seewhylive.online/overlay/live?creator_id=${user?.id}&layout_id=${selectedLayout || 'NEW'}`;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#080B18' }}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4" style={{ color: GOLD }} />
           <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Preset selector */}
-          <select onChange={e => { if (e.target.value) applyPreset(e.target.value); e.target.value = ''; }}
-            className="text-[10px] px-2 py-1.5 rounded-lg outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
-            <option value="">Load Preset…</option>
-            {Object.keys(PRESETS).map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <select onChange={e => { if (e.target.value) applyPreset(e.target.value); e.target.value = ''; }}
+              style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <option value="">Load Preset…</option>
+              {Object.keys(PRESETS).map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
           {/* Load layout */}
           {layouts.length > 0 && (
-            <select value={selectedLayout || ''} onChange={e => setSelectedLayout(e.target.value || null)}
-              className="text-[10px] px-2 py-1.5 rounded-lg outline-none"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
-              <option value="">New Layout</option>
-              {layouts.map(l => <option key={l.id} value={l.id}>{l.name}{l.is_active ? ' ●' : ''}</option>)}
-            </select>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <select value={selectedLayout || ''} onChange={e => setSelectedLayout(e.target.value || null)}
+                style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <option value="">New Layout</option>
+                {layouts.map(l => <option key={l.id} value={l.id}>{l.name}{l.is_active ? ' ●' : ''}</option>)}
+              </select>
+            </div>
           )}
           <input value={layoutName} onChange={e => setLayoutName(e.target.value)}
             className="px-2 py-1.5 rounded-lg text-[10px] outline-none w-32"
@@ -266,7 +268,7 @@ export default function OverlayBuilderPage() {
         {/* Center: Canvas */}
         <div className="flex-1 flex items-center justify-center p-6 overflow-auto" style={{ background: '#111' }}>
           <div className="relative w-full max-w-3xl"
-            style={{ aspectRatio: '16/9', background: '#0D0D0D', border: `1px solid rgba(212,175,55,0.2)`, borderRadius: 8 }}>
+            style={{ aspectRatio: '16/9', background: '#080B18', border: `1px solid rgba(212,175,55,0.2)`, borderRadius: 8 }}>
             {/* Grid overlay */}
             <div className="absolute inset-0 opacity-10"
               style={{

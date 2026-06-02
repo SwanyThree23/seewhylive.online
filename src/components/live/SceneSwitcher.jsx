@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Camera, Monitor, Layout, Pause, Play, Sunrise, Sunset, ChevronDown, ChevronUp } from 'lucide-react';
 
 const SCENES = [
@@ -65,11 +63,11 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
                 className="space-y-1"
               >
                 <p className="text-[10px] text-white/50">BRB Message</p>
-                <Input
+                <input
                   value={brbMessage}
                   onChange={(e) => setBrbMessage(e.target.value)}
-                  className="h-7 text-xs bg-white/5 border-white/20 text-white"
                   placeholder="Be Right Back!"
+                  style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                 />
               </motion.div>
             )}

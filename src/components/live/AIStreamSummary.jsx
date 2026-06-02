@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
 import { Sparkles, RefreshCw, Copy, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -56,15 +55,13 @@ Write an engaging summary that captures the energy of the stream. Include highli
             AI Stream Summary
           </span>
         </div>
-        <Button
-          size="sm"
+        <button
           onClick={generateSummary}
           disabled={loading}
-          className="h-6 px-2 text-[10px] font-bold"
-          style={{ background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
-          <RefreshCw className={`w-3 h-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
+          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} style={{ marginRight: 2 }} />
           {loading ? 'Writing...' : summary ? 'Refresh' : 'Generate'}
-        </Button>
+        </button>
       </div>
 
       <AnimatePresence>

@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
 
@@ -42,7 +39,7 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
       >
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Audio Mixer</span>
-          {micMuted && <Badge className="text-[9px] bg-red-900/60 text-red-400 border-red-700/40 px-1">MUTED</Badge>}
+          {micMuted && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#f87171', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>
@@ -97,24 +94,18 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
               <p className="text-[10px] text-white/40">Input Gain</p>
               <p className="text-[10px] font-mono text-[#d4af37]">{gain[0]}%</p>
             </div>
-            <Slider
-              value={gain} onValueChange={setGain}
-              min={0} max={200} step={5}
-              className="[&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-[#d4af37]"
-            />
+            <input type="range" value={gain[0]} onChange={e => setGain([+e.target.value])} min={0} max={200} step={5} style={{ width: '100%', accentColor: '#D4AF37' }} />
           </div>
 
           {/* Smart Toggles */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Smart Noise Filter</span>
-              <Switch checked={noiseSuppression} onCheckedChange={setNoiseSuppression}
-                className="scale-75 data-[state=checked]:bg-[#d4af37]" />
+              <div onClick={() => setNoiseSuppression(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: noiseSuppression ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: noiseSuppression ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Echo Cancellation</span>
-              <Switch checked={echoCancellation} onCheckedChange={setEchoCancellation}
-                className="scale-75 data-[state=checked]:bg-[#d4af37]" />
+              <div onClick={() => setEchoCancellation(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: echoCancellation ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: echoCancellation ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
             </div>
           </div>
 

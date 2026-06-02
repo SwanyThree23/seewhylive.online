@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, ChevronDown, ChevronUp, ExternalLink, Mic, Video } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 /**
  * Shown when media permissions are denied or unavailable.
@@ -23,9 +21,9 @@ export default function WebRTCSetupBanner({ error, audioEnabled, videoEnabled, o
           {error && <p className="text-amber-400 text-[10px] mt-0.5 truncate">{error}</p>}
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <Button size="sm" variant="ghost" className="h-6 text-[10px] text-amber-300 hover:text-amber-100 px-2" onClick={onRetry}>
+          <button onClick={onRetry} style={{ height:24, padding:'0 8px', borderRadius:6, border:'none', background:'transparent', color:'#fcd34d', cursor:'pointer', fontSize:10 }}>
             Retry
-          </Button>
+          </button>
           <button onClick={() => setExpanded(v => !v)} className="text-amber-400">
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
@@ -38,15 +36,15 @@ export default function WebRTCSetupBanner({ error, audioEnabled, videoEnabled, o
             <Mic className="w-3 h-3" />
             <span>Microphone:</span>
             {audioEnabled
-              ? <Badge className="bg-green-800 text-green-200 text-[9px]"><CheckCircle className="w-2.5 h-2.5 mr-1" />Active</Badge>
-              : <Badge className="bg-red-900 text-red-300 text-[9px]">Blocked</Badge>}
+              ? <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#166534', color:'#bbf7d0', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" />Active</span>
+              : <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#7f1d1d', color:'#fca5a5' }}>Blocked</span>}
           </div>
           <div className="flex items-center gap-2">
             <Video className="w-3 h-3" />
             <span>Camera:</span>
             {videoEnabled
-              ? <Badge className="bg-green-800 text-green-200 text-[9px]"><CheckCircle className="w-2.5 h-2.5 mr-1" />Active</Badge>
-              : <Badge className="bg-red-900 text-red-300 text-[9px]">Blocked</Badge>}
+              ? <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#166534', color:'#bbf7d0', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" />Active</span>
+              : <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#7f1d1d', color:'#fca5a5' }}>Blocked</span>}
           </div>
           <p className="text-amber-400/70 mt-1">
             Click the 🔒 lock icon in your browser address bar → allow Camera &amp; Microphone, then click Retry.

@@ -72,6 +72,8 @@
     font-family: var(--font-body);
     background-color: #0B0B18;
     color: rgba(255,255,255,0.85);
+    overscroll-behavior-y: none;
+    touch-action: pan-y;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
@@ -79,6 +81,22 @@
   }
   code, pre, .mono {
     font-family: var(--font-mono);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+    --card: 240 20% 8%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 20% 6%;
+    --popover-foreground: 0 0% 96%;
+    --border: 240 10% 14%;
+    --input: 240 10% 12%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 0 0% 50%;
   }
 }
 
@@ -119,6 +137,40 @@
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Safe-area inset helpers (notch / home bar support) */
+  .pt-safe  { padding-top:    env(safe-area-inset-top, 0px); }
+  .pb-safe  { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .mt-safe  { margin-top:     env(safe-area-inset-top, 0px); }
+  .mb-safe  { margin-bottom:  env(safe-area-inset-bottom, 0px); }
+  .top-safe { top: env(safe-area-inset-top, 0px); }
+
+  button, [role="button"], nav a, .bottom-nav-item {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,175,55,0.2);
+    color: rgba(255,255,255,0.85);
+    border-radius: 12px;
+    padding: 10px 36px 10px 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    width: 100%;
+    outline: none;
+  }
+  select option {
+    background: #080B18;
+    color: rgba(255,255,255,0.85);
+  }
 
   /* Earth Tone palette — PK Battle & tournament pages */
   .text-terracotta { color: #CC7755; }

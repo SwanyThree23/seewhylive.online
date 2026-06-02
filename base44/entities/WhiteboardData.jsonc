@@ -1,0 +1,104 @@
+{
+  "name": "WhiteboardData",
+  "type": "object",
+  "properties": {
+    "room_id": {
+      "type": "string",
+      "description": "Associated room"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who created element"
+    },
+    "element_type": {
+      "type": "string",
+      "enum": [
+        "path",
+        "text",
+        "shape",
+        "image"
+      ],
+      "description": "Type of element"
+    },
+    "data": {
+      "type": "object",
+      "description": "Element data (coordinates, color, etc)"
+    },
+    "order": {
+      "type": "number",
+      "description": "Z-index order"
+    }
+  },
+  "required": [
+    "room_id",
+    "user_id",
+    "element_type",
+    "data"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_member}}"
+            ]
+          }
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.room_id": {
+            "$in": [
+              "{{user.rooms_as_host}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

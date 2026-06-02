@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -82,7 +80,7 @@ function YouTubeEmbed({ videoId, title }) {
           </div>
         </div>
         <div className="absolute bottom-3 left-3">
-          <Badge className="bg-black/70 text-white border-0 text-xs">▶ Click to Play</Badge>
+          <span style={{ background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, border: 'none' }}>▶ Click to Play</span>
         </div>
       </div>
     );
@@ -125,7 +123,7 @@ export default function FeaturedContent() {
         {FEATURED_VIDEOS.map(video => (
           <div key={video.id} className="space-y-3">
             <div className="flex items-center gap-2">
-              <Badge className="bg-[#d4af37] text-black font-bold border-0">⭐ Featured</Badge>
+              <span style={{ background: '#D4AF37', color: '#000', fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, border: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>⭐ Featured</span>
               <span className="text-white font-bold text-lg">{video.title}</span>
             </div>
             <YouTubeEmbed videoId={video.embedId} title={video.title} />
@@ -206,17 +204,17 @@ export default function FeaturedContent() {
               <p className="text-[11px] text-pink-300/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
             </div>
           </div>
-          <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noreferrer">
-            <Button className="bg-pink-600 hover:bg-pink-500 text-white shrink-0">
-              <ExternalLink className="w-4 h-4 mr-2" />
+          <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noopener noreferrer">
+            <button style={{ background: '#FF1564', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <ExternalLink className="w-4 h-4" />
               Visit Studio Pro
-            </Button>
+            </button>
           </a>
         </div>
 
         <div className="text-center">
           <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" className="text-white/40 hover:text-white">← Back to Home</Button>
+            <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>← Back to Home</button>
           </Link>
         </div>
       </div>

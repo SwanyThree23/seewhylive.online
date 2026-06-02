@@ -1,0 +1,93 @@
+{
+  "name": "RaidEvent",
+  "type": "object",
+  "properties": {
+    "from_creator_id": {
+      "type": "string"
+    },
+    "from_creator_username": {
+      "type": "string"
+    },
+    "from_room_id": {
+      "type": "string"
+    },
+    "to_creator_id": {
+      "type": "string"
+    },
+    "to_creator_username": {
+      "type": "string"
+    },
+    "to_room_id": {
+      "type": "string"
+    },
+    "viewer_count_sent": {
+      "type": "number",
+      "default": 0
+    },
+    "message": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "completed"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "from_creator_id",
+    "to_creator_id",
+    "from_room_id",
+    "to_room_id"
+  ],
+  "rls": {
+    "create": {
+      "data.from_creator_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.from_creator_id": "{{user.id}}"
+        },
+        {
+          "data.to_creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.from_creator_id": "{{user.id}}"
+        },
+        {
+          "data.to_creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.from_creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

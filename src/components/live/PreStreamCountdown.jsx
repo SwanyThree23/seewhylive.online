@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Bell, Radio } from 'lucide-react';
 
 function FlipUnit({ value, label }) {
@@ -89,9 +87,9 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
         className="relative z-10 flex flex-col items-center gap-6 px-6 text-center"
       >
         {/* Pulsing badge */}
-        <Badge className="bg-[#d4af37]/20 text-[#d4af37] border-[#d4af37]/40 text-xs px-4 py-1.5 animate-pulse">
-          <Radio className="w-3 h-3 mr-1.5" /> Going Live Soon
-        </Badge>
+        <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.4)', display:'inline-flex', alignItems:'center', gap:6, animation:'pulse 2s infinite' }}>
+          <Radio className="w-3 h-3" /> Going Live Soon
+        </span>
 
         {/* Creator info */}
         <div>
@@ -114,14 +112,14 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
 
         {/* CTA */}
         {currentUser && (
-          <Button
+          <button
             onClick={() => !reminderSet && reminderMutation.mutate()}
             disabled={reminderSet}
-            className={`gap-2 ${reminderSet ? 'bg-green-700 text-white' : 'bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3]'}`}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'none', background: reminderSet ? '#15803d' : '#d4af37', color: reminderSet ? '#fff' : '#000', fontWeight:700, cursor: reminderSet ? 'default' : 'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
           >
             <Bell className="w-4 h-4" />
             {reminderSet ? 'Reminder Set ✓' : 'Set Reminder'}
-          </Button>
+          </button>
         )}
 
         <p className="text-xs text-white/30">Chat is active while you wait 👇</p>

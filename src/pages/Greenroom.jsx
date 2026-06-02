@@ -7,8 +7,6 @@ import {
   CheckCircle, ChevronDown, ChevronUp, Settings,
   Eye, EyeOff, Users, ArrowRight, X, Clock, Layers
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 
@@ -323,26 +321,30 @@ export default function GreenroomPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
-        <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5" style={{ color: GOLD }} />
-          <span className="font-black uppercase tracking-widest text-sm"
-            style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            Greenroom
-          </span>
-          <span className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase"
-            style={{ background: destCfg.bg, color: destCfg.color, border: `1px solid ${destCfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {destCfg.label}
-          </span>
+    <div className="min-h-screen" style={{ background: '#080B18' }}>
+      {/* ── FANBASE-STYLE HEADER ── */}
+      <div className="sticky top-0 z-30" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
+        <div className="flex items-center gap-2 px-3 h-12">
+          <Link to={roomId ? `/Room?id=${roomId}` : '/Discover'}>
+            <button className="w-8 h-8 flex items-center justify-center rounded-xl shrink-0 transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+              <X className="w-4 h-4" />
+            </button>
+          </Link>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Layers className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
+            <span className="font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.04em' }}>Greenroom</span>
+            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase shrink-0"
+              style={{ background: destCfg.bg, color: destCfg.color, border: `1px solid ${destCfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {destCfg.label}
+            </span>
+          </div>
+          {/* Live permission pills in header */}
+          <div className="hidden sm:flex items-center gap-1 shrink-0">
+            <PermissionPill label="Cam" status={permissions.camera} />
+            <PermissionPill label="Mic" status={permissions.mic} />
+          </div>
         </div>
-        <Link to={roomId ? `/Room?id=${roomId}` : '/Discover'}>
-          <button className="text-[10px] font-bold uppercase flex items-center gap-1"
-            style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <X className="w-3.5 h-3.5" /> Exit
-          </button>
-        </Link>
       </div>
 
       {/* Two-column layout */}
@@ -362,15 +364,16 @@ export default function GreenroomPage() {
             {destType === 'new_room' ? (
               <div className="space-y-2">
                 <p className="text-[8px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>New Room</p>
-                <Input placeholder="Room title..." value={newRoomTitle} onChange={e => setNewRoomTitle(e.target.value)}
-                  className="h-8 text-[11px]"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
-                <select value={newRoomCategory} onChange={e => setNewRoomCategory(e.target.value)}
-                  className="w-full h-8 px-2 rounded text-[10px]"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}>
-                  {['gaming','music','education','talk','fitness','tech','irl','other'].map(c =>
-                    <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-                </select>
+                <input placeholder="Room title..." value={newRoomTitle} onChange={e => setNewRoomTitle(e.target.value)}
+                  style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {['gaming','music','education','talk','fitness','tech','irl','other'].map(c => (
+                    <button key={c} onClick={() => setNewRoomCategory(c)}
+                      style={{ padding: '3px 8px', borderRadius: 99, fontSize: 10, border: `1px solid ${newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: newRoomCategory === c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', color: newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'capitalize' }}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : room ? (
               <div className="flex items-center gap-3">
@@ -408,9 +411,9 @@ export default function GreenroomPage() {
                 style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Display Name
               </label>
-              <Input value={displayName} onChange={e => setDisplayName(e.target.value)}
-                placeholder="Your name..." className="h-8 text-[11px]"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
+              <input value={displayName} onChange={e => setDisplayName(e.target.value)}
+                placeholder="Your name..."
+                style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box' }} />
             </div>
             {!isHost && (
               <>
@@ -559,13 +562,13 @@ export default function GreenroomPage() {
               className="w-full py-4 rounded-xl font-black uppercase text-base flex items-center justify-center gap-2 transition-all"
               style={{
                 background: deviceCheckPassed
-                  ? `linear-gradient(135deg, ${BURGUNDY}, #A0003A)`
+                  ? `linear-gradient(135deg, ${BURGUNDY}, #D4AF37)`
                   : 'rgba(255,255,255,0.06)',
-                border: deviceCheckPassed ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.1)',
-                color: deviceCheckPassed ? GOLD : 'rgba(255,255,255,0.25)',
+                border: deviceCheckPassed ? `1px solid rgba(212,175,55,0.5)` : '1px solid rgba(255,255,255,0.1)',
+                color: deviceCheckPassed ? '#000' : 'rgba(255,255,255,0.25)',
                 fontFamily: 'Barlow Condensed, sans-serif',
-                letterSpacing: '0.1em',
-                boxShadow: deviceCheckPassed ? `0 0 24px rgba(128,0,32,0.4)` : 'none',
+                letterSpacing: '0.12em',
+                boxShadow: deviceCheckPassed ? `0 0 40px rgba(128,0,32,0.6), 0 0 80px rgba(128,0,32,0.25)` : 'none',
               }}>
               {readyMut.isPending || hostReadyMut.isPending
                 ? 'Preparing…'

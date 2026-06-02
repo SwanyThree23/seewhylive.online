@@ -1,0 +1,118 @@
+{
+  "name": "ViewerLoyalty",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Creator they're loyal to"
+    },
+    "loyalty_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Total loyalty points"
+    },
+    "loyalty_tier": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum",
+        "diamond"
+      ],
+      "default": "bronze",
+      "description": "Current tier"
+    },
+    "total_tips_sent": {
+      "type": "number",
+      "default": 0,
+      "description": "Total amount tipped"
+    },
+    "total_watch_time": {
+      "type": "number",
+      "default": 0,
+      "description": "Watch time in minutes"
+    },
+    "rooms_attended": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of rooms attended"
+    },
+    "messages_sent": {
+      "type": "number",
+      "default": 0,
+      "description": "Chat messages sent"
+    },
+    "streak_days": {
+      "type": "number",
+      "default": 0,
+      "description": "Consecutive days active"
+    },
+    "last_active": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last activity date"
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Earned badges"
+    }
+  },
+  "required": [
+    "user_id",
+    "creator_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

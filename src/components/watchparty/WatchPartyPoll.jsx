@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { BarChart3, Plus, X, Send, CheckCircle2, StopCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 // ── Compact result bar ──────────────────────────────────────────────────────
@@ -83,11 +81,11 @@ function ActivePoll({ poll, currentUser, onVote }) {
           )
         ))}
         {!hasVoted && (
-          <Button size="sm" className="w-full mt-1 h-7 text-[10px] font-black uppercase"
-            style={{ background: chosen ? '#d4af37' : 'rgba(255,255,255,0.06)', color: chosen ? '#000' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}
+          <button
+            style={{ width: '100%', marginTop: 4, height: 28, fontSize: 10, fontWeight: 900, background: chosen ? '#d4af37' : 'rgba(255,255,255,0.06)', color: chosen ? '#000' : 'rgba(255,255,255,0.3)', border: 'none', borderRadius: 6, cursor: chosen ? 'pointer' : 'default', fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase' }}
             disabled={!chosen} onClick={submit}>
             Submit Vote
-          </Button>
+          </button>
         )}
       </div>
     </motion.div>
@@ -149,22 +147,20 @@ function PollCreator({ partyId, roomId, currentUser, onPollCreated }) {
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="p-3 space-y-2.5">
-              <Input
+              <input
                 placeholder="Ask the viewers something..."
                 value={question}
                 onChange={e => setQuestion(e.target.value)}
-                className="h-8 text-[11px]"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}
+                style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
               />
               <div className="space-y-1.5">
                 {options.map((opt, i) => (
                   <div key={i} className="flex gap-1.5">
-                    <Input
+                    <input
                       placeholder={`Option ${i + 1}`}
                       value={opt}
                       onChange={e => updateOption(i, e.target.value)}
-                      className="h-7 text-[11px] flex-1"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                      style={{ flex: 1, height: 28, padding: '0 8px', fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
                     />
                     {options.length > 2 && (
                       <button onClick={() => removeOption(i)}
@@ -183,12 +179,12 @@ function PollCreator({ partyId, roomId, currentUser, onPollCreated }) {
                   </button>
                 )}
               </div>
-              <Button size="sm" className="w-full h-8 font-black uppercase text-[10px] gap-1.5"
-                style={{ background: '#d4af37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}
+              <button
+                style={{ width: '100%', height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, fontWeight: 900, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', opacity: (!question.trim() || options.filter(o => o.trim()).length < 2) ? 0.5 : 1 }}
                 disabled={!question.trim() || options.filter(o => o.trim()).length < 2}
                 onClick={launch}>
                 <Send className="w-3 h-3" /> Launch Poll
-              </Button>
+              </button>
             </div>
           </motion.div>
         )}

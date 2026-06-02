@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Copy, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -55,6 +54,13 @@ const PLATFORMS = [
   },
 ];
 
+const btnStyle = {
+  display:'inline-flex', alignItems:'center', gap:6,
+  padding:'5px 8px', background:'transparent', border:'none',
+  cursor:'pointer', color:'inherit', borderRadius:8, fontSize:12, fontWeight:600,
+  transition:'background 0.15s',
+};
+
 export default function ShareButtons({ url, title, className = '' }) {
   const [open, setOpen] = useState(false);
   const shareUrl = url || window.location.href;
@@ -69,45 +75,52 @@ export default function ShareButtons({ url, title, className = '' }) {
     if (platform.action) {
       platform.action(shareUrl, shareTitle);
     } else if (platform.getUrl) {
-      window.open(platform.getUrl(shareUrl, shareTitle), '_blank');
+      window.open(platform.getUrl(shareUrl, shareTitle), '_blank', 'noopener,noreferrer');
     }
     setOpen(false);
   };
 
   return (
-    <div className={`relative flex items-center gap-1.5 ${className}`}>
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setOpen(o => !o)}
-        title="Share"
-        className="gap-1.5 text-xs px-2"
-      >
-        <Share2 className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">Share</span>
-      </Button>
-      <Button size="sm" variant="ghost" onClick={copyLink} title="Copy link" className="gap-1.5 text-xs px-2">
-        <Copy className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">Copy Link</span>
-      </Button>
+    <div style={{ position:'relative', display:'flex', alignItems:'center', gap:6 }} className={className}>
+      <button style={btnStyle} onClick={() => setOpen(o => !o)} title="Share">
+        <Share2 style={{ width:14, height:14 }} />
+        <span>Share</span>
+      </button>
+      <button style={btnStyle} onClick={copyLink} title="Copy link">
+        <Copy style={{ width:14, height:14 }} />
+        <span>Copy Link</span>
+      </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-1 z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl p-3 w-52">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 font-semibold px-1">Share to</p>
-          <div className="space-y-1">
+        <div style={{
+          position:'absolute', top:'100%', right:0, marginTop:4, zIndex:50,
+          background:'rgba(13,6,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
+          borderRadius:12, boxShadow:'0 8px 32px rgba(0,0,0,0.6)', padding:12, width:208,
+        }}>
+          <p style={{ fontSize:10, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8, fontWeight:700, paddingLeft:4 }}>Share to</p>
+          <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
             {PLATFORMS.map(p => (
               <button
                 key={p.key}
                 onClick={() => handlePlatform(p)}
-                className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-left"
+                style={{
+                  width:'100%', display:'flex', alignItems:'center', gap:10,
+                  padding:'6px 8px', borderRadius:8, background:'transparent', border:'none',
+                  cursor:'pointer', color:'#fff', textAlign:'left', transition:'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.07)'}
+                onMouseLeave={e => e.currentTarget.style.background='transparent'}
               >
                 <span
-                  className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold shrink-0"
-                  style={{ background: p.color, color: p.textColor || '#fff' }}
+                  style={{
+                    width:24, height:24, borderRadius:6, display:'flex', alignItems:'center',
+                    justifyContent:'center', fontSize:12, fontWeight:700, flexShrink:0,
+                    background: p.color, color: p.textColor || '#fff',
+                  }}
                 >
                   {p.icon}
                 </span>
-                <span className="text-sm font-medium">{p.label}</span>
+                <span style={{ fontSize:14, fontWeight:500 }}>{p.label}</span>
               </button>
             ))}
           </div>
@@ -115,7 +128,7 @@ export default function ShareButtons({ url, title, className = '' }) {
       )}
 
       {open && (
-        <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+        <div style={{ position:'fixed', inset:0, zIndex:40 }} onClick={() => setOpen(false)} />
       )}
     </div>
   );

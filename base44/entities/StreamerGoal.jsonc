@@ -1,0 +1,103 @@
+{
+  "name": "StreamerGoal",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Associated room (optional for global goals)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Goal title"
+    },
+    "description": {
+      "type": "string",
+      "description": "What happens when goal is reached"
+    },
+    "goal_type": {
+      "type": "string",
+      "enum": [
+        "tips",
+        "subscribers",
+        "viewers",
+        "messages",
+        "custom"
+      ],
+      "default": "tips"
+    },
+    "target_amount": {
+      "type": "number",
+      "description": "Target value"
+    },
+    "current_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Current progress"
+    },
+    "reward_text": {
+      "type": "string",
+      "description": "What the creator will do on completion"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "default": "active"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "color": {
+      "type": "string",
+      "default": "#d4af37"
+    }
+  },
+  "required": [
+    "creator_id",
+    "title",
+    "goal_type",
+    "target_amount"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Lock, Users, Plus, X, Eye, EyeOff, MessageSquare, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -54,7 +51,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
           <Lock className="w-4 h-4 text-[#d4af37]" />
           <span className="text-sm font-semibold text-white">Private Panels</span>
           {activePanels.length > 0 && (
-            <Badge className="text-[9px] bg-[#d4af37]/20 text-[#d4af37] border-[#d4af37]/30">{activePanels.length}</Badge>
+            <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)' }}>{activePanels.length}</span>
           )}
         </div>
         {isHost && (
@@ -97,25 +94,24 @@ export default function PrivatePanel({ isHost, currentUser }) {
                 ))}
               </div>
 
-              <Input
+              <input
                 value={panelName}
                 onChange={e => setPanelName(e.target.value)}
                 placeholder="Panel name..."
-                className="h-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
               />
 
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  className="flex-1 h-7 text-xs bg-[#d4af37] text-black hover:bg-[#f5e6a3]"
+                <button
+                  style={{ flex:1, padding:'6px 12px', borderRadius:8, border:'none', background: (!selectedType || !panelName.trim()) ? 'rgba(212,175,55,0.4)' : '#d4af37', color:'#000', fontWeight:700, cursor: (!selectedType || !panelName.trim()) ? 'not-allowed' : 'pointer', fontSize:12 }}
                   onClick={createPanel}
                   disabled={!selectedType || !panelName.trim()}
                 >
                   Create Panel
-                </Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-white/40" onClick={() => setShowCreate(false)}>
+                </button>
+                <button style={{ padding:'6px 12px', borderRadius:8, border:'none', background:'transparent', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:12 }} onClick={() => setShowCreate(false)}>
                   Cancel
-                </Button>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -125,15 +121,15 @@ export default function PrivatePanel({ isHost, currentUser }) {
       {/* Join with code */}
       {!isHost && (
         <div className="flex gap-2">
-          <Input
+          <input
             value={inviteCode}
             onChange={e => setInviteCode(e.target.value)}
             placeholder="Enter invite code..."
-            className="h-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/30 flex-1"
+            style={{ flex:1, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
           />
-          <Button size="sm" className="h-7 text-xs bg-[#d4af37] text-black" onClick={joinPanel}>
+          <button style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontWeight:700, cursor:'pointer', fontSize:12 }} onClick={joinPanel}>
             Join
-          </Button>
+          </button>
         </div>
       )}
 

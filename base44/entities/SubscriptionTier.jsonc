@@ -1,0 +1,135 @@
+{
+  "name": "SubscriptionTier",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string",
+      "description": "Creator who owns this tier"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Associated community (optional)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Tier name e.g. Bronze, Silver, Gold"
+    },
+    "description": {
+      "type": "string",
+      "description": "Tier description"
+    },
+    "price": {
+      "type": "number",
+      "description": "Monthly price in USD"
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color for badge e.g. #cd7f32",
+      "default": "#cd7f32"
+    },
+    "icon": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "diamond",
+        "star",
+        "crown",
+        "flame",
+        "heart",
+        "zap"
+      ],
+      "default": "star"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order (lower = first)"
+    },
+    "benefits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of custom benefit strings"
+    },
+    "has_early_access": {
+      "type": "boolean",
+      "default": false,
+      "description": "Early access to streams/content"
+    },
+    "has_exclusive_rooms": {
+      "type": "boolean",
+      "default": false,
+      "description": "Can enter subscriber-only rooms"
+    },
+    "has_custom_badge": {
+      "type": "boolean",
+      "default": true,
+      "description": "Displays a tier badge in chat/profile"
+    },
+    "has_custom_emotes": {
+      "type": "boolean",
+      "default": false,
+      "description": "Access to exclusive emotes"
+    },
+    "is_ad_free": {
+      "type": "boolean",
+      "default": false,
+      "description": "Ad-free viewing"
+    },
+    "priority_support": {
+      "type": "boolean",
+      "default": false,
+      "description": "Priority support access"
+    },
+    "max_subscribers": {
+      "type": "number",
+      "description": "Optional cap on subscribers (null = unlimited)"
+    },
+    "subscriber_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "creator_id",
+    "name",
+    "price"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

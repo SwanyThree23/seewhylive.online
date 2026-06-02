@@ -5,10 +5,13 @@ on:
     branches:
       - claude/seewhy-live-v33-build-v0L5Z
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4

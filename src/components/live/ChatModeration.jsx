@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Shield, X, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 
 const TIMEOUT_OPTIONS = [
@@ -40,9 +36,9 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
         <div className="flex items-center gap-2">
           <Shield className="w-3 h-3 text-[#00d4ff]" />
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Auto-Moderation</span>
-          <Badge className="text-[9px] bg-[#00d4ff]/10 text-[#00d4ff] border-[#00d4ff]/30 px-1">
+          <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
             {stats.blocks + stats.timeouts + stats.deletes} today
-          </Badge>
+          </span>
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>
@@ -69,11 +65,11 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
           <div className="space-y-1.5">
             <p className="text-[10px] text-white/40 uppercase">Banned Words</p>
             <div className="flex gap-1">
-              <Input
+              <input
                 value={wordInput} onChange={(e) => setWordInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addWord()}
-                className="h-6 text-[10px] bg-white/5 border-white/20 text-white flex-1"
                 placeholder="Add word..."
+                style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 24, flex: 1 }}
               />
               <button onClick={addWord} className="w-6 h-6 rounded bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/20">
                 <Plus className="w-3 h-3 text-[#d4af37]" />
@@ -81,12 +77,12 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
             </div>
             <div className="flex flex-wrap gap-1">
               {blockedWords.map(w => (
-                <Badge key={w} className="text-[9px] bg-red-900/30 border-red-700/30 text-red-300 pr-1 flex items-center gap-1">
+                <span key={w} style={{ fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(185,28,28,0.3)', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: 4 }}>
                   {w}
-                  <button onClick={() => setBlockedWords(prev => prev.filter(x => x !== w))}>
+                  <button onClick={() => setBlockedWords(prev => prev.filter(x => x !== w))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit', display: 'flex', alignItems: 'center' }}>
                     <X className="w-2 h-2" />
                   </button>
-                </Badge>
+                </span>
               ))}
             </div>
           </div>
@@ -100,22 +96,20 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
             ].map(item => (
               <div key={item.label} className="flex items-center justify-between">
                 <span className="text-[10px] text-white/60">{item.label}</span>
-                <Switch checked={item.state} onCheckedChange={item.set}
-                  className="scale-75 data-[state=checked]:bg-[#00d4ff]" />
+                <div onClick={() => item.set(!item.state)} style={{ width: 40, height: 22, borderRadius: 99, background: item.state ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: item.state ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
               </div>
             ))}
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-white/60">Account age gate</span>
               <div className="flex items-center gap-1">
                 {newAccountGate && (
-                  <Input
+                  <input
                     type="number" value={accountAge}
                     onChange={(e) => setAccountAge(Number(e.target.value))}
-                    className="h-5 w-10 text-[9px] bg-white/5 border-white/20 text-white text-center p-0"
+                    style={{ width: 40, height: 20, fontSize: 9, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 4, color: '#fff', textAlign: 'center', padding: 0, outline: 'none', boxSizing: 'border-box' }}
                   />
                 )}
-                <Switch checked={newAccountGate} onCheckedChange={setNewAccountGate}
-                  className="scale-75 data-[state=checked]:bg-[#00d4ff]" />
+                <div onClick={() => setNewAccountGate(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: newAccountGate ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: newAccountGate ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
               </div>
             </div>
           </div>

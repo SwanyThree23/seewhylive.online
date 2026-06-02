@@ -1,0 +1,161 @@
+{
+  "name": "Challenge",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string",
+      "description": "Associated community"
+    },
+    "title": {
+      "type": "string",
+      "description": "Challenge title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Challenge description"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "attendance",
+        "engagement",
+        "content",
+        "referral",
+        "custom"
+      ],
+      "description": "Challenge type"
+    },
+    "goal_type": {
+      "type": "string",
+      "enum": [
+        "count",
+        "duration",
+        "score"
+      ],
+      "default": "count",
+      "description": "Type of goal measurement"
+    },
+    "goal_value": {
+      "type": "number",
+      "description": "Target value to achieve"
+    },
+    "reward_type": {
+      "type": "string",
+      "enum": [
+        "points",
+        "badge",
+        "virtual_good",
+        "subscription"
+      ],
+      "description": "Reward type"
+    },
+    "reward_value": {
+      "type": "string",
+      "description": "Reward details"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Challenge start"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Challenge end"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "active",
+        "completed"
+      ],
+      "default": "upcoming",
+      "description": "Challenge status"
+    },
+    "participant_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total participants"
+    },
+    "leaderboard_visible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show leaderboard publicly"
+    }
+  },
+  "required": [
+    "community_id",
+    "title",
+    "type",
+    "goal_value",
+    "start_date",
+    "end_date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_member}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.community_id": {
+            "$in": [
+              "{{user.communities_as_admin}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

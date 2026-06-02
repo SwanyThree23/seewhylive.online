@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://seewhy.live/</loc><priority>1.0</priority><changefreq>daily</changefreq></url>
-  <url><loc>https://seewhy.live/Discover</loc><priority>0.9</priority><changefreq>hourly</changefreq></url>
-  <url><loc>https://seewhy.live/Communities</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
-  <url><loc>https://seewhy.live/FeaturedContent</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
-  <url><loc>https://seewhy.live/StreamScheduler</loc><priority>0.7</priority><changefreq>daily</changefreq></url>
-  <url><loc>https://seewhy.live/TermsOfService</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://seewhy.live/PrivacyPolicy</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://seewhylive.online/</loc><priority>1.0</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhylive.online/Discover</loc><priority>0.9</priority><changefreq>hourly</changefreq></url>
+  <url><loc>https://seewhylive.online/Communities</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhylive.online/Leaderboard</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhylive.online/FeaturedContent</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhylive.online/WatchParty</loc><priority>0.7</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhylive.online/StreamScheduler</loc><priority>0.7</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://seewhylive.online/LiveBattles</loc><priority>0.7</priority><changefreq>hourly</changefreq></url>
+  <url><loc>https://seewhylive.online/AIMusic</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://seewhylive.online/LoyaltyHub</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://seewhylive.online/ChallengesHub</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://seewhylive.online/Onboarding</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://seewhylive.online/TermsOfService</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://seewhylive.online/PrivacyPolicy</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://seewhylive.online/BetaStatus</loc><priority>0.4</priority><changefreq>weekly</changefreq></url>
 </urlset>

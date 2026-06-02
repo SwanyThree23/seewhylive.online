@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Users, Share2, Volume2, X, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { safeSrc } from '@/lib/security';
 
 const G = '#d4af37';
 const BG = 'rgba(7,7,15,0.95)';
@@ -130,7 +131,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
               {/* Quick Actions */}
               <div className="flex gap-1.5 pt-1 border-t border-white/10">
                 <a
-                  href={guestLinks[0].url}
+                  href={safeSrc(guestLinks[0].url) || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 px-2 py-1.5 rounded text-[10px] font-bold uppercase transition-all"

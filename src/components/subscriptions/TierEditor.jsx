@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Plus, Trash2, X } from 'lucide-react';
 
@@ -39,6 +32,19 @@ const defaultForm = {
   priority_support: false,
   max_subscribers: '',
   is_active: true,
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px 14px',
+  background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 8,
+  color: '#fff',
+  fontSize: 13,
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'Barlow Condensed, sans-serif',
 };
 
 export default function TierEditor({ open, onClose, creatorId, existing }) {
@@ -90,124 +96,149 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
 
   const removeBenefit = (i) => set('benefits', form.benefits.filter((_, idx) => idx !== i));
 
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{existing ? 'Edit Tier' : 'Create Membership Tier'}</DialogTitle>
-        </DialogHeader>
+  if (!open) return null;
 
-        <div className="space-y-5 pt-2">
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{existing ? 'Edit Tier' : 'Create Membership Tier'}</p>
+        </div>
+
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto', maxHeight: 'calc(90vh - 60px)' }}>
           {/* Name & Price */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label>Tier Name *</Label>
-              <Input placeholder="e.g. Gold" value={form.name} onChange={e => set('name', e.target.value)} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Tier Name *</label>
+              <input placeholder="e.g. Gold" value={form.name} onChange={e => set('name', e.target.value)} style={inputStyle} />
             </div>
-            <div className="space-y-1">
-              <Label>Price ($/month) *</Label>
-              <Input type="number" min="0" step="0.01" placeholder="9.99" value={form.price} onChange={e => set('price', e.target.value)} />
+            <div>
+              <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Price ($/month) *</label>
+              <input type="number" min="0" step="0.01" placeholder="9.99" value={form.price} onChange={e => set('price', e.target.value)} style={inputStyle} />
             </div>
           </div>
 
           {/* Description */}
-          <div className="space-y-1">
-            <Label>Description</Label>
-            <Textarea placeholder="What makes this tier special?" value={form.description} onChange={e => set('description', e.target.value)} rows={2} />
+          <div>
+            <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Description</label>
+            <textarea placeholder="What makes this tier special?" value={form.description} onChange={e => set('description', e.target.value)} rows={2} style={{ ...inputStyle, resize: 'none', minHeight: 60 }} />
           </div>
 
           {/* Icon & Color */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label>Icon</Label>
-              <Select value={form.icon} onValueChange={v => set('icon', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {ICON_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                </SelectContent>
-              </Select>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Icon</label>
+              <select value={form.icon} onChange={e => set('icon', e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                {ICON_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
             </div>
-            <div className="space-y-1">
-              <Label>Badge Color</Label>
-              <div className="flex gap-2 flex-wrap">
+            <div>
+              <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Badge Color</label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                 {PRESET_COLORS.map(c => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => set('color', c)}
-                    className={`w-6 h-6 rounded-full border-2 transition-transform ${form.color === c ? 'border-black scale-110' : 'border-transparent'}`}
-                    style={{ background: c }}
+                    style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: form.color === c ? '2px solid #fff' : '2px solid transparent', cursor: 'pointer', transform: form.color === c ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.1s' }}
                   />
                 ))}
-                <input type="color" value={form.color} onChange={e => set('color', e.target.value)} className="w-6 h-6 rounded cursor-pointer border-0" />
+                <input type="color" value={form.color} onChange={e => set('color', e.target.value)} style={{ width: 24, height: 24, borderRadius: 4, cursor: 'pointer', border: 0, background: 'transparent' }} />
               </div>
             </div>
           </div>
 
           {/* Display order & max subs */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label>Display Order</Label>
-              <Input type="number" min="0" value={form.sort_order} onChange={e => set('sort_order', e.target.value)} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Display Order</label>
+              <input type="number" min="0" value={form.sort_order} onChange={e => set('sort_order', e.target.value)} style={inputStyle} />
             </div>
-            <div className="space-y-1">
-              <Label>Max Subscribers (blank = ∞)</Label>
-              <Input type="number" min="1" placeholder="Unlimited" value={form.max_subscribers} onChange={e => set('max_subscribers', e.target.value)} />
+            <div>
+              <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Max Subscribers (blank = ∞)</label>
+              <input type="number" min="1" placeholder="Unlimited" value={form.max_subscribers} onChange={e => set('max_subscribers', e.target.value)} style={inputStyle} />
             </div>
           </div>
 
           {/* Feature toggles */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">Included Benefits</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ fontSize: 14, fontWeight: 600, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Included Benefits</label>
             {TOGGLE_BENEFITS.map(({ key, label }) => (
-              <div key={key} className="flex items-center justify-between py-1">
-                <span className="text-sm">{label}</span>
-                <Switch checked={!!form[key]} onCheckedChange={v => set(key, v)} />
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+                <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{label}</span>
+                <div
+                  onClick={() => set(key, !form[key])}
+                  style={{ width: 40, height: 22, borderRadius: 99, background: form[key] ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+                >
+                  <div style={{ position: 'absolute', top: 3, left: form[key] ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                </div>
               </div>
             ))}
           </div>
 
           {/* Custom benefit list */}
-          <div className="space-y-2">
-            <Label>Custom Benefit Lines</Label>
-            <div className="flex gap-2">
-              <Input
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>Custom Benefit Lines</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
                 placeholder="e.g. Monthly 1-on-1 call"
                 value={newBenefit}
                 onChange={e => setNewBenefit(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
+                style={{ ...inputStyle, flex: 1 }}
               />
-              <Button type="button" size="icon" onClick={addBenefit} variant="outline"><Plus className="w-4 h-4" /></Button>
+              <button
+                type="button"
+                onClick={addBenefit}
+                style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', cursor: 'pointer' }}
+              >
+                <Plus style={{ width: 16, height: 16 }} />
+              </button>
             </div>
-            <div className="space-y-1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {form.benefits.map((b, i) => (
-                <div key={i} className="flex items-center gap-2 bg-muted rounded px-3 py-1.5 text-sm">
-                  <span className="flex-1">{b}</span>
-                  <button type="button" onClick={() => removeBenefit(i)} className="text-muted-foreground hover:text-destructive"><X className="w-3.5 h-3.5" /></button>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', borderRadius: 6, padding: '6px 12px', fontSize: 14 }}>
+                  <span style={{ flex: 1, color: '#fff' }}>{b}</span>
+                  <button type="button" onClick={() => removeBenefit(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 0 }}>
+                    <X style={{ width: 14, height: 14 }} />
+                  </button>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-2">
-              <Switch checked={form.is_active} onCheckedChange={v => set('is_active', v)} />
-              <Label>Active (visible to subscribers)</Label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                onClick={() => set('is_active', !form.is_active)}
+                style={{ width: 40, height: 22, borderRadius: 99, background: form.is_active ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+              >
+                <div style={{ position: 'absolute', top: 3, left: form.is_active ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </div>
+              <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>Active (visible to subscribers)</label>
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
-            <Button
+          <div style={{ display: 'flex', gap: 12, paddingTop: 8 }}>
+            <button
+              onClick={onClose}
+              style={{ flex: 1, padding: '10px 0', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: 14, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
+            >
+              Cancel
+            </button>
+            <button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || !form.name || !form.price}
-              className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold"
+              style={{ flex: 1, padding: '10px 0', background: '#f59e0b', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (saveMutation.isPending || !form.name || !form.price) ? 'not-allowed' : 'pointer', opacity: (saveMutation.isPending || !form.name || !form.price) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {saveMutation.isPending ? 'Saving...' : existing ? 'Save Changes' : 'Create Tier'}
-            </Button>
+            </button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
