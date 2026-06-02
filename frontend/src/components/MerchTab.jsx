@@ -5,7 +5,7 @@ var GOLD_H = '#E8C46A';
 var BURG   = '#800020';
 var BURG_H = '#C01838';
 var TEAL   = '#00C9A7';
-var TEAL_H = '#00DEC0';
+var TEAL_H = '#C9A84C';
 var LIME   = '#B4E628';
 var PURP_H = '#C084FC';
 var AMBER  = '#F59E0B';
@@ -14,7 +14,7 @@ var MUTED  = '#6B5F82';
 var TEXT   = '#EDE8F4';
 var TEXT_M = '#A89CC8';
 var BG0    = '#07050A';
-var BG1    = '#0F0C14';
+var BG1    = '#0E0C09';
 var FAINT  = '#1C1530';
 var BORDER = 'rgba(255,255,255,.07)';
 var GLASS  = 'rgba(13,10,20,.75)';
@@ -31,7 +31,7 @@ var MERCH_ITEMS = [
   {id:'m1', name:'Washington Classic Hoodie', price:65, stock:12, emoji:'🧥', color:'#C01838', limited:true, sold:38, cat:'apparel'},
   {id:'m2', name:'Domino OG Snapback', price:45, stock:24, emoji:'🧢', color:'#E8C46A', limited:false, sold:71, cat:'apparel'},
   {id:'m3', name:'SeeWhy LIVE Creator Mug', price:25, stock:50, emoji:'☕', color:'#9B4DCA', limited:false, sold:134, cat:'accessories'},
-  {id:'m4', name:'Techmunity Tee — Black', price:35, stock:6, emoji:'👕', color:'#00DEC0', limited:true, sold:94, cat:'apparel'},
+  {id:'m4', name:'Techmunity Tee — Black', price:35, stock:6, emoji:'👕', color:'#C9A84C', limited:true, sold:94, cat:'apparel'},
   {id:'m5', name:'Washington Classic 2026 Tee', price:40, stock:20, emoji:'🏆', color:'#FFD700', limited:true, sold:52, cat:'apparel'},
   {id:'m6', name:'Cali Bones Domino Set (Premium)', price:120, stock:5, emoji:'🎲', color:'#E8C46A', limited:true, sold:19, cat:'collectibles'},
   {id:'m7', name:"VibeN'Bones Phone Case", price:30, stock:35, emoji:'📱', color:'#B4E628', limited:false, sold:87, cat:'accessories'},

@@ -4,7 +4,7 @@ import { getPlatformHandles, setPlatformHandle } from '../platformConfig.js';
 import { usePushNotifications } from '../usePushNotifications.js';
 
 var PLATFORM_TIERS = [
-  { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#7A6F90', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
+  { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#8A7A62', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
   { id: 'creator', label: 'CREATOR', priceCents: 1900,  color: '#00C9A7', perks: ['All Free', 'Up to 4 panels', 'Analytics', 'Gift receipts', '$19/mo'] },
   { id: 'pro',     label: 'PRO',     priceCents: 4900,  color: '#C084FC', perks: ['All Creator', 'Up to 9 panels', 'AURA AI', 'Paywall', 'Priority support', '$49/mo'] },
   { id: 'studio',  label: 'STUDIO',  priceCents: 14900, color: '#C9A84C', perks: ['All Pro', 'White-label embed', 'Watch Party sync', 'Custom AURA', 'Dedicated support', '$149/mo'] },
@@ -229,7 +229,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           width: 16,
           height: 16,
           borderRadius: '50%',
-          background: '#EDE8F5',
+          background: '#F0E8D4',
           transition: 'left 0.2s'
         }} />
       </button>
@@ -242,7 +242,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 18 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <AvatarPortrait username={username || 'creator'} size={64} />
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>YOUR AVATAR</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>YOUR AVATAR</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <div
@@ -250,7 +250,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(201,168,76,.15)', border: '2px solid rgba(201,168,76,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, cursor: 'pointer' }}>
               {avatarEmoji}
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>Click to change</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>Click to change</div>
           </div>
         </div>
 
@@ -303,7 +303,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
         <div>
           <span style={labelStyle}>USERNAME</span>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#7A6F90', padding: '8px 12px', background: 'rgba(7,5,10,.5)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', padding: '8px 12px', background: 'rgba(7,5,10,.5)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 8 }}>
             {'@' + (username || 'creator')}
           </div>
         </div>
@@ -317,7 +317,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
             border: '1px solid #C9A84C',
             borderRadius: 8,
             padding: '10px 0',
-            color: '#0F0C14',
+            color: '#0E0C09',
             fontFamily: "'Bebas Neue',sans-serif",
             fontSize: 14,
             letterSpacing: 2,
@@ -333,7 +333,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
   function renderPayoutsTab() {
     if (stripeChecking) {
       return (
-        <div style={Object.assign({}, cardStyle, { color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 9 })}>
+        <div style={Object.assign({}, cardStyle, { color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9 })}>
           Checking Stripe status...
         </div>
       );
@@ -346,12 +346,12 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', letterSpacing: 2, marginBottom: 6 }}>
               &#x26A0; STRIPE NOT CONNECTED
             </div>
-            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', marginBottom: 10 }}>
               Connect Stripe to receive tips, subscriptions, and payouts
             </div>
             <button
               onClick={connectStripe}
-              style={{ background: '#C9A84C', border: '1px solid #C9A84C', borderRadius: 8, padding: '8px 16px', color: '#0F0C14', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
+              style={{ background: '#C9A84C', border: '1px solid #C9A84C', borderRadius: 8, padding: '8px 16px', color: '#0E0C09', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
               CONNECT STRIPE
             </button>
           </div>
@@ -376,7 +376,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
                   border: '1px solid rgba(201,168,76,.5)',
                   borderRadius: 8,
                   padding: '8px 16px',
-                  color: availableCents < 1000 || payoutLoading ? '#7A6F90' : '#0F0C14',
+                  color: availableCents < 1000 || payoutLoading ? '#8A7A62' : '#0E0C09',
                   fontFamily: "'Bebas Neue',sans-serif",
                   fontSize: 13,
                   letterSpacing: 2,
@@ -384,13 +384,13 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
                 }}>
                 {payoutLoading ? 'PROCESSING...' : 'REQUEST PAYOUT'}
               </button>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>$10.00 minimum</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>$10.00 minimum</div>
             </div>
           </div>
         )}
 
         <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 10 }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', lineHeight: 1.6 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', lineHeight: 1.6 }}>
             90% creator / 10% platform &mdash; this is immutable
           </div>
         </div>
@@ -398,7 +398,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
         {/* Platform Fee Accounts */}
         <div style={Object.assign({}, cardStyle, { border: '1px solid rgba(201,168,76,.2)' })}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1.5, marginBottom: 10 }}>SEEWHY PLATFORM ACCOUNTS (10% FEE)</div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#7A6F90', marginBottom: 12, lineHeight: 1.4 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', marginBottom: 12, lineHeight: 1.4 }}>
             Viewers sending DirectPay will be shown these handles for the platform&rsquo;s 10% cut.
           </div>
           {[
@@ -445,10 +445,10 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
             <div key={i} style={Object.assign({}, cardStyle, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10 })}>
               <div>
                 <div
-                  style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', fontWeight: 600 }}
+                  style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', fontWeight: 600 }}
                   dangerouslySetInnerHTML={{ __html: row.label }}
                 />
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 2 }}>
                   {row.desc}
                 </div>
               </div>
@@ -459,7 +459,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
         <button
           onClick={saveNotifications}
-          style={{ width: '100%', background: '#00C9A7', border: '1px solid #00C9A7', borderRadius: 8, padding: '10px 0', color: '#0F0C14', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer', marginTop: 4 }}>
+          style={{ width: '100%', background: '#00C9A7', border: '1px solid #00C9A7', borderRadius: 8, padding: '10px 0', color: '#0E0C09', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer', marginTop: 4 }}>
           SAVE PREFERENCES
         </button>
 
@@ -498,7 +498,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 4 }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 4 }}>
           YOUR PLATFORM PLAN
         </div>
 
@@ -517,13 +517,13 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: tier.color, letterSpacing: 2, marginBottom: 2 }}>
                 {tier.label}
               </div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', marginBottom: 8 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', marginBottom: 8 }}>
                 {tier.priceCents === 0 ? 'FREE' : ('$' + (Math.floor(tier.priceCents) / 100).toFixed(2) + '/mo')}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 8 }}>
                 {tier.perks.map(function(perk) {
                   return (
-                    <div key={perk} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#EDE8F5', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div key={perk} style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#F0E8D4', display: 'flex', alignItems: 'center', gap: 5 }}>
                       <span style={{ color: tier.color, fontSize: 10 }}>&#x2713;</span>
                       {perk}
                     </div>
@@ -542,7 +542,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
         })}
 
         <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 10 }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', textAlign: 'center' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', textAlign: 'center' }}>
             90% of all payments go directly to creators
           </div>
         </div>
@@ -571,10 +571,10 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           return (
             <div key={i} style={Object.assign({}, cardStyle, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 10 })}>
               <div>
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', fontWeight: 600 }}>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', fontWeight: 600 }}>
                   {row.label}
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 2 }}>
                   {row.desc}
                 </div>
               </div>
@@ -587,14 +587,14 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#FF1564', letterSpacing: 2, marginBottom: 6 }}>
             &#x26A0; DELETE ACCOUNT
           </div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#EDE8F5', marginBottom: 10 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', marginBottom: 10 }}>
             This cannot be undone. Type DELETE to confirm.
           </div>
           <input
             value={deleteConfirm}
             onChange={function(e) { setDeleteConfirm(e.target.value); }}
             placeholder="Type DELETE"
-            style={{ width: '100%', background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '7px 12px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 10, boxSizing: 'border-box', marginBottom: 8 }}
+            style={{ width: '100%', background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '7px 12px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10, boxSizing: 'border-box', marginBottom: 8 }}
           />
           <button
             onClick={function() { if (deleteConfirm === 'DELETE') handleDeleteAccount(); }}
@@ -604,7 +604,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               border: '1px solid rgba(255,26,60,.4)',
               borderRadius: 8,
               padding: '8px 16px',
-              color: deleteConfirm === 'DELETE' ? '#FF1564' : '#7A6F90',
+              color: deleteConfirm === 'DELETE' ? '#FF1564' : '#8A7A62',
               fontFamily: "'Bebas Neue',sans-serif",
               fontSize: 13,
               letterSpacing: 2,
@@ -624,7 +624,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', letterSpacing: 3 }}>
           &#x2699; SETTINGS
         </div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>
           {'@' + (username || 'creator')}
         </div>
       </div>
@@ -641,7 +641,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
                 border: isActive ? '1px solid #C9A84C' : '1px solid rgba(122,111,144,.3)',
                 borderRadius: 999,
                 padding: '4px 10px',
-                color: isActive ? '#0F0C14' : '#7A6F90',
+                color: isActive ? '#0E0C09' : '#8A7A62',
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 8,
                 letterSpacing: 1,

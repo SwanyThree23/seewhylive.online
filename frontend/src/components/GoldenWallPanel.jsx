@@ -24,7 +24,7 @@ function typeBadgeColor(type) {
   if (type === 'TIP') return '#FF1564';
   if (type === 'GIFT') return '#C9A84C';
   if (type === 'SUB') return '#00C9A7';
-  return '#7A6F90';
+  return '#8A7A62';
 }
 
 export default function GoldenWallPanel(props) {
@@ -75,7 +75,7 @@ export default function GoldenWallPanel(props) {
           'div',
           {
             style: {
-              color: '#7A6F90',
+              color: '#8A7A62',
               fontFamily: "'Barlow Condensed',sans-serif",
               fontSize: 12,
               textAlign: 'center',
@@ -116,7 +116,7 @@ export default function GoldenWallPanel(props) {
                     fontFamily: "'Barlow Condensed',sans-serif",
                     fontWeight: 700,
                     fontSize: 13,
-                    color: '#EDE8F5',
+                    color: '#F0E8D4',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
@@ -161,7 +161,7 @@ export default function GoldenWallPanel(props) {
                 style: {
                   fontFamily: "'DM Mono',monospace",
                   fontSize: 9,
-                  color: '#7A6F90',
+                  color: '#8A7A62',
                   whiteSpace: 'nowrap',
                 }
               },

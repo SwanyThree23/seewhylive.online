@@ -131,7 +131,7 @@ export default function GiftLayer(props) {
             }}
           >
             <span style={{ fontSize: isLegendary ? 38 : 28, lineHeight: 1 }}>{g.emoji || '🎁'}</span>
-            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: isLegendary ? 14 : 11, color: '#EDE8F5' }}>{g.name || 'Gift'}</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: isLegendary ? 14 : 11, color: '#F0E8D4' }}>{g.name || 'Gift'}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
               <AvatarPortrait username={sender} size={16} />
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#A89CC8', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sender}</span>

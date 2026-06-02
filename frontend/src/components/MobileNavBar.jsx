@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-var BG     = 'rgba(7,5,10,.97)';
+var BG     = 'rgba(14,12,9,.97)';
 var GOLD   = '#C9A84C';
 var BURG   = '#800020';
-var TEAL   = '#00DEC0';
 var RED    = '#FF1A3C';
-var TEXT   = '#EDE8F5';
-var MUTED  = '#7A6F90';
-var DIM    = '#241C34';
-var CARD   = '#1A1526';
+var TEXT   = '#F0E8D4';
+var MUTED  = '#8A7A62';
+var DIM    = '#3D3020';
+var CARD   = '#241C12';
 
 var ANIM = '@keyframes navPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}} @keyframes drawerIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}';
 
@@ -80,7 +79,7 @@ export default function MobileNavBar(props) {
       {showMore && (
         <div style={{
           position: 'fixed', bottom: 60, left: 0, right: 0, zIndex: 490,
-          background: 'rgba(7,5,10,.98)', borderTop: '1px solid rgba(255,255,255,.08)',
+          background: 'rgba(14,12,9,.98)', borderTop: '1px solid rgba(201,168,76,.15)',
           padding: '16px 16px 8px',
           animation: 'drawerIn .22s ease',
           maxHeight: '60vh', overflowY: 'auto',
@@ -120,7 +119,7 @@ export default function MobileNavBar(props) {
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500,
         background: BG,
-        borderTop: '1px solid rgba(255,255,255,.08)',
+        borderTop: '1px solid rgba(201,168,76,.15)',
         display: 'flex', height: 58,
         paddingBottom: 'env(safe-area-inset-bottom,0px)',
         boxSizing: 'content-box',

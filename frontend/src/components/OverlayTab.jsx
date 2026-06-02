@@ -143,7 +143,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
       <div style={{ background: 'rgba(128,0,32,.12)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: gold, letterSpacing: 3 }}>🎬 BROADCAST GRAPHICS</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>Live overlay controls · host only</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>Live overlay controls · host only</div>
         </div>
         <div style={{ display: 'flex', gap: 5 }}>
           {isLive && (
@@ -166,7 +166,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
           var active = section === t.id;
           return (
             <button key={t.id} onClick={function() { setSection(t.id); }}
-              style={{ background: active ? 'rgba(128,0,32,.3)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? '#C01838' : '#241C34'), borderRadius: 6, padding: '7px 2px', color: active ? gold : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', whiteSpace: 'pre-line', lineHeight: 1.3, textAlign: 'center' }}>
+              style={{ background: active ? 'rgba(128,0,32,.3)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? '#C01838' : '#241C34'), borderRadius: 6, padding: '7px 2px', color: active ? gold : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', whiteSpace: 'pre-line', lineHeight: 1.3, textAlign: 'center' }}>
               {t.label}
             </button>
           );
@@ -182,10 +182,10 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
               <div key={g.guestId} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (lt.visible ? 'rgba(201,168,76,.35)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <AvatarPortrait username={g.username} size={28} isHost={g.role === 'host'} />
-                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', flex: 1 }}>{g.username}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', flex: 1 }}>{g.username}</span>
                   <button
                     onClick={function() { toggleLT(g.guestId); }}
-                    style={{ padding: '3px 10px', background: lt.visible ? 'rgba(201,168,76,.2)' : 'rgba(36,28,52,.6)', border: '1px solid ' + (lt.visible ? gold + '55' : '#241C34'), borderRadius: 5, color: lt.visible ? gold : '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                    style={{ padding: '3px 10px', background: lt.visible ? 'rgba(201,168,76,.2)' : 'rgba(36,28,52,.6)', border: '1px solid ' + (lt.visible ? gold + '55' : '#241C34'), borderRadius: 5, color: lt.visible ? gold : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
                     {lt.visible ? 'SHOWN' : 'HIDDEN'}
                   </button>
                 </div>
@@ -197,7 +197,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
                       setDraftLT(function(d) { return Object.assign({}, d, { [g.guestId]: Object.assign({}, d[g.guestId] || {}, { name: v }) }); });
                     }}
                     placeholder="Display name..."
-                    style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+                    style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
                   />
                   <input
                     value={lt.title || ''}
@@ -206,7 +206,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
                       setDraftLT(function(d) { return Object.assign({}, d, { [g.guestId]: Object.assign({}, d[g.guestId] || {}, { title: v }) }); });
                     }}
                     placeholder="Title / role..."
-                    style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
+                    style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
                   />
                 </div>
               </div>
@@ -241,30 +241,30 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
                 {draftBanner.text}
               </div>
             ) : (
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>Banner preview</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>Banner preview</div>
             )}
           </div>
 
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>BANNER TEXT</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>BANNER TEXT</div>
               <input
                 value={draftBanner.text || ''}
                 onChange={function(e) { setDraftBanner(function(d) { return Object.assign({}, d, { text: e.target.value }); }); }}
                 placeholder="Enter banner message..."
-                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
               />
             </div>
 
             <div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>POSITION</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>POSITION</div>
               <div style={{ display: 'flex', gap: 6 }}>
                 {BANNER_POSITIONS.map(function(pos) {
                   var active = (draftBanner.position || 'bottom') === pos;
                   return (
                     <button key={pos}
                       onClick={function() { setDraftBanner(function(d) { return Object.assign({}, d, { position: pos }); }); }}
-                      style={{ flex: 1, padding: '6px', background: active ? 'rgba(90,143,255,.2)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (active ? 'rgba(90,143,255,.5)' : '#241C34'), borderRadius: 5, color: active ? '#5A8FFF' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                      style={{ flex: 1, padding: '6px', background: active ? 'rgba(90,143,255,.2)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (active ? 'rgba(90,143,255,.5)' : '#241C34'), borderRadius: 5, color: active ? '#5A8FFF' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                       {pos.toUpperCase()}
                     </button>
                   );
@@ -273,14 +273,14 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
             </div>
 
             <div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>COLOR</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>COLOR</div>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                 {BANNER_COLORS.map(function(c) {
                   var active = (draftBanner.color || gold) === c;
                   return (
                     <button key={c}
                       onClick={function() { setDraftBanner(function(d) { return Object.assign({}, d, { color: c }); }); }}
-                      style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: '2px solid ' + (active ? '#EDE8F5' : 'transparent'), cursor: 'pointer', flexShrink: 0 }} />
+                      style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: '2px solid ' + (active ? '#F0E8D4' : 'transparent'), cursor: 'pointer', flexShrink: 0 }} />
                   );
                 })}
               </div>
@@ -309,23 +309,23 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>COUNTDOWN LABEL</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>COUNTDOWN LABEL</div>
               <input
                 value={cdLabel}
                 onChange={function(e) { setCdLabel(e.target.value); }}
                 placeholder="e.g. SHOW STARTS IN"
-                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
               />
             </div>
 
             <div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>MODE</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>MODE</div>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[['duration', 'DURATION'], ['target', 'TARGET TIME']].map(function(m) {
                   var active = cdMode === m[0];
                   return (
                     <button key={m[0]} onClick={function() { setCdMode(m[0]); }}
-                      style={{ flex: 1, padding: '6px', background: active ? 'rgba(0,201,167,.15)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (active ? 'rgba(0,201,167,.4)' : '#241C34'), borderRadius: 5, color: active ? '#00C9A7' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                      style={{ flex: 1, padding: '6px', background: active ? 'rgba(0,201,167,.15)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (active ? 'rgba(0,201,167,.4)' : '#241C34'), borderRadius: 5, color: active ? '#00C9A7' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                       {m[1]}
                     </button>
                   );
@@ -335,28 +335,28 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
 
             {cdMode === 'duration' && (
               <div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>DURATION</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>DURATION</div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <input type="number" value={cdMinutes} onChange={function(e) { setCdMinutes(e.target.value); }}
                     min="0" max="99"
-                    style={{ width: 60, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 16, textAlign: 'center' }} />
-                  <span style={{ color: '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 14 }}>:</span>
+                    style={{ width: 60, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 16, textAlign: 'center' }} />
+                  <span style={{ color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 14 }}>:</span>
                   <input type="number" value={cdSeconds} onChange={function(e) { setCdSeconds(e.target.value); }}
                     min="0" max="59"
-                    style={{ width: 60, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 16, textAlign: 'center' }} />
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90' }}>MIN : SEC</span>
+                    style={{ width: 60, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 16, textAlign: 'center' }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>MIN : SEC</span>
                 </div>
               </div>
             )}
 
             {cdMode === 'target' && (
               <div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>TARGET DATE / TIME</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>TARGET DATE / TIME</div>
                 <input
                   type="datetime-local"
                   value={cdTarget}
                   onChange={function(e) { setCdTarget(e.target.value); }}
-                  style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 11, boxSizing: 'border-box', colorScheme: 'dark' }}
+                  style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 11, boxSizing: 'border-box', colorScheme: 'dark' }}
                 />
               </div>
             )}
@@ -390,15 +390,15 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
           <div style={{ background: 'rgba(7,5,10,.9)', border: '1px solid #241C34', borderRadius: 8, padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(128,0,32,.9)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, overflow: 'hidden' }}>
               <div style={{ padding: '6px 12px', borderRight: '1px solid rgba(201,168,76,.2)' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#EDE8F5', letterSpacing: 2 }}>{draftScore.team1.name || 'TEAM 1'}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#F0E8D4', letterSpacing: 2 }}>{draftScore.team1.name || 'TEAM 1'}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 22, color: gold, lineHeight: 1, textAlign: 'center' }}>{draftScore.team1.score}</div>
               </div>
               <div style={{ padding: '4px 8px', textAlign: 'center' }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{draftScore.label || 'LIVE'}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{draftScore.label || 'LIVE'}</div>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 800, fontSize: 12, color: '#FF6B81' }}>VS</div>
               </div>
               <div style={{ padding: '6px 12px', borderLeft: '1px solid rgba(201,168,76,.2)' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#EDE8F5', letterSpacing: 2 }}>{draftScore.team2.name || 'TEAM 2'}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#F0E8D4', letterSpacing: 2 }}>{draftScore.team2.name || 'TEAM 2'}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 22, color: gold, lineHeight: 1, textAlign: 'center' }}>{draftScore.team2.score}</div>
               </div>
             </div>
@@ -406,12 +406,12 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
 
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>EVENT LABEL</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>EVENT LABEL</div>
               <input
                 value={draftScore.label || ''}
                 onChange={function(e) { setDraftScore(function(d) { return Object.assign({}, d, { label: e.target.value }); }); }}
                 placeholder="e.g. DOMINO CLASSIC"
-                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box' }}
               />
             </div>
 
@@ -420,7 +420,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
               var team = draftScore[key] || { name: '', score: 0 };
               return (
                 <div key={key}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 5 }}>{row[1]}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 5 }}>{row[1]}</div>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input
                       value={team.name || ''}
@@ -433,7 +433,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
                         });
                       }}
                       placeholder="Team name..."
-                      style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}
+                      style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}
                     />
                     <button onClick={function() { changeScore(key, -1); }}
                       style={{ width: 30, height: 30, borderRadius: 5, background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', color: '#FF6B81', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>
@@ -468,7 +468,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
       )}
 
       {!isHost && (
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', textAlign: 'center', padding: 8, background: 'rgba(36,28,52,.4)', borderRadius: 8 }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 8, background: 'rgba(36,28,52,.4)', borderRadius: 8 }}>
           Overlay controls are host-only. Graphics will appear on your stage view.
         </div>
       )}

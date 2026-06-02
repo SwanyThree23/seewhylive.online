@@ -19,7 +19,7 @@ var SHARE_PLATFORMS = [
   { id: 'tt',  label: 'TikTok',          icon: '♪',  color: '#69C9D0' },
   { id: 'tw',  label: 'Twitter / X',     icon: '✕',  color: '#1DA1F2' },
   { id: 'fb',  label: 'Facebook',        icon: 'f',  color: '#1877F2' },
-  { id: 'dl',  label: 'Download',        icon: '⬇',  color: '#7A6F90' },
+  { id: 'dl',  label: 'Download',        icon: '⬇',  color: '#8A7A62' },
 ];
 
 function pad2(n) { return n < 10 ? '0' + n : String(n); }
@@ -149,7 +149,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
             <button
               key={t[0]}
               onClick={function() { setTab(t[0]); }}
-              style={{ flex: 1, padding: '9px 0', background: active ? 'rgba(128,0,32,.35)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              style={{ flex: 1, padding: '9px 0', background: active ? 'rgba(128,0,32,.35)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
               {t[1]}
             </button>
           );
@@ -161,7 +161,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
         <div>
           {/* Header with clips count badge */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#7A6F90', letterSpacing: 1 }}>SAVED CLIPS</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#8A7A62', letterSpacing: 1 }}>SAVED CLIPS</div>
             <div style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 5, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', letterSpacing: 1 }}>
               {clips.length} CLIPS
             </div>
@@ -170,11 +170,11 @@ export default function ClipEngineTab({ isLive, addToast }) {
           {/* Record controls */}
           <div style={{ background: 'rgba(128,0,32,.12)', border: '1px solid ' + (recording ? '#FF1A3C66' : '#241C34'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: recording ? '#FF1A3C' : '#7A6F90' }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: recording ? '#FF1A3C' : '#8A7A62' }}>
                 {recording ? (liveClipping ? '⚡ LIVE CLIP' : '🔴 RECORDING') : 'RECORD CLIP'}
               </div>
               {recording && (
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#EDE8F5', marginTop: 2 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#F0E8D4', marginTop: 2 }}>
                   {fmtDur(recSecs)}
                 </div>
               )}
@@ -206,7 +206,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
           {/* Clip list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {clips.length === 0 && (
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', textAlign: 'center', padding: 16 }}>No clips yet — hit REC to capture a moment.</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 16 }}>No clips yet — hit REC to capture a moment.</div>
             )}
             {clips.map(function(clip) {
               return (
@@ -215,13 +215,13 @@ export default function ClipEngineTab({ isLive, addToast }) {
                     {clip.thumbnail}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {clip.title}
                     </div>
                     <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtDur(clip.duration)}</span>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{clip.size}</span>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{fmtAgo(clip.ts)}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{clip.size}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{fmtAgo(clip.ts)}</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
@@ -247,7 +247,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
       {tab === 'edit' && (
         <div>
           {!editClip ? (
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', textAlign: 'center', padding: 16 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 16 }}>
               Select a clip from the Clips tab to edit.
             </div>
           ) : (
@@ -255,7 +255,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
               {/* Preview area */}
               <div style={{ background: '#07050A', border: '1px solid #241C34', borderRadius: 10, padding: 16, textAlign: 'center', minHeight: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
                 <div style={{ fontSize: 40 }}>{editClip.thumbnail}</div>
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5' }}>{editClip.title}</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4' }}>{editClip.title}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' }}>
                   {fmtDur(trimIn)} → {fmtDur(trimOut)}  ({fmtDur(trimOut - trimIn)} selected)
                 </div>
@@ -263,7 +263,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
 
               {/* Trim sliders */}
               <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', marginBottom: 12 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginBottom: 10 }}>TRIM HANDLES</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginBottom: 10 }}>TRIM HANDLES</div>
 
                 {/* Timeline bar */}
                 <div style={{ position: 'relative', height: 28, marginBottom: 14 }}>
@@ -271,7 +271,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
                   <div style={{ position: 'absolute', top: 10, left: (trimIn / editClip.duration * 100) + '%', right: (100 - trimOut / editClip.duration * 100) + '%', height: 8, background: 'linear-gradient(90deg,#800020,#C9A84C)', borderRadius: 4 }} />
                   {/* In handle */}
                   <div
-                    style={{ position: 'absolute', top: 5, left: 'calc(' + (trimIn / editClip.duration * 100) + '% - 9px)', width: 18, height: 18, background: '#C9A84C', borderRadius: 4, cursor: 'ew-resize', border: '2px solid #EDE8F5', zIndex: 2 }}
+                    style={{ position: 'absolute', top: 5, left: 'calc(' + (trimIn / editClip.duration * 100) + '% - 9px)', width: 18, height: 18, background: '#C9A84C', borderRadius: 4, cursor: 'ew-resize', border: '2px solid #F0E8D4', zIndex: 2 }}
                     onMouseDown={function(e) {
                       var bar = e.currentTarget.parentNode.getBoundingClientRect();
                       function move(ev) {
@@ -286,7 +286,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
                   />
                   {/* Out handle */}
                   <div
-                    style={{ position: 'absolute', top: 5, left: 'calc(' + (trimOut / editClip.duration * 100) + '% - 9px)', width: 18, height: 18, background: '#C9A84C', borderRadius: 4, cursor: 'ew-resize', border: '2px solid #EDE8F5', zIndex: 2 }}
+                    style={{ position: 'absolute', top: 5, left: 'calc(' + (trimOut / editClip.duration * 100) + '% - 9px)', width: 18, height: 18, background: '#C9A84C', borderRadius: 4, cursor: 'ew-resize', border: '2px solid #F0E8D4', zIndex: 2 }}
                     onMouseDown={function(e) {
                       var bar = e.currentTarget.parentNode.getBoundingClientRect();
                       function move(ev) {
@@ -303,23 +303,23 @@ export default function ClipEngineTab({ isLive, addToast }) {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>IN</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#EDE8F5' }}>{fmtDur(trimIn)}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>IN</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#F0E8D4' }}>{fmtDur(trimIn)}</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>DURATION</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>DURATION</div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#C9A84C' }}>{fmtDur(trimOut - trimIn)}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>OUT</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#EDE8F5' }}>{fmtDur(trimOut)}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>OUT</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#F0E8D4' }}>{fmtDur(trimOut)}</div>
                   </div>
                 </div>
               </div>
 
               {/* Export format */}
               <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginBottom: 8 }}>EXPORT FORMAT</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginBottom: 8 }}>EXPORT FORMAT</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
                   {EXPORT_FORMATS.map(function(fmt) {
                     var active = selectedFormat === fmt.id;
@@ -327,9 +327,9 @@ export default function ClipEngineTab({ isLive, addToast }) {
                       <button
                         key={fmt.id}
                         onClick={function() { setFormat(fmt.id); }}
-                        style={{ background: active ? 'rgba(128,0,32,.3)' : 'rgba(7,5,10,.6)', border: '1px solid ' + (active ? '#C9A84C55' : '#241C34'), borderRadius: 6, padding: '7px 10px', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                        style={{ background: active ? 'rgba(128,0,32,.3)' : 'rgba(7,5,10,.6)', border: '1px solid ' + (active ? '#C9A84C55' : '#241C34'), borderRadius: 6, padding: '7px 10px', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                         <span>{fmt.icon} {fmt.label}</span>
-                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: active ? '#C9A84C99' : '#7A6F9066' }}>{fmt.size}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: active ? '#C9A84C99' : '#8A7A6266' }}>{fmt.size}</span>
                       </button>
                     );
                   })}
@@ -350,7 +350,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
       {tab === 'share' && (
         <div>
           {!exported ? (
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#7A6F90', textAlign: 'center', padding: 16 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 16 }}>
               Export a clip first — go to Edit tab, trim, and hit Export.
             </div>
           ) : (
@@ -359,7 +359,7 @@ export default function ClipEngineTab({ isLive, addToast }) {
                 <div style={{ fontSize: 18 }}>{exportThumb ? exportThumb : '✅'}</div>
                 <div>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#00C9A7' }}>Clip ready to share</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>
                     {(EXPORT_FORMATS.find(function(f) { return f.id === exported; }) || {}).label || exported} · {editClip ? fmtDur(trimOut - trimIn) : '—'}
                   </div>
                 </div>
@@ -377,9 +377,9 @@ export default function ClipEngineTab({ isLive, addToast }) {
                         {plat.icon}
                       </div>
                       <div style={{ flex: 1, textAlign: 'left' }}>
-                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isSh ? plat.color : '#EDE8F5' }}>{plat.label}</div>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isSh ? plat.color : '#F0E8D4' }}>{plat.label}</div>
                       </div>
-                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: isSh ? plat.color : '#7A6F90' }}>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: isSh ? plat.color : '#8A7A62' }}>
                         {isSh ? '...' : plat.id === 'dl' ? '⬇ SAVE' : '→ SHARE'}
                       </div>
                     </button>

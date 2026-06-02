@@ -13,7 +13,7 @@ var AVATAR_ITEMS = [
 ];
 
 var RARITY_COLORS = {
-  common:    '#7A6F90',
+  common:    '#8A7A62',
   rare:      '#00C9A7',
   epic:      '#C084FC',
   legendary: '#C9A84C',
@@ -23,14 +23,14 @@ var RARITY_COLORS = {
 var FRAMES = [
   { id: 'f1', name: 'Gold Classic',  style: '3px solid #C9A84C', price: 50,  owned: true  },
   { id: 'f2', name: 'Blood Ring',    style: '3px solid #C01838', price: 75,  owned: false },
-  { id: 'f3', name: 'Teal Pulse',    style: '3px solid #00DEC0', price: 100, owned: false },
+  { id: 'f3', name: 'Teal Pulse',    style: '3px solid #C9A84C', price: 100, owned: false },
   { id: 'f4', name: 'Mythic Flame',  style: '4px solid #FF1A3C', price: 200, owned: false },
 ];
 
 var FRAME_ACCENT_COLORS = {
   f1: '#C9A84C',
   f2: '#C01838',
-  f3: '#00DEC0',
+  f3: '#C9A84C',
   f4: '#FF1A3C',
 };
 
@@ -189,19 +189,19 @@ export default function AvatarHubTab({ addToast, isLive }) {
             {equipped ? equipped.name : 'NO AVATAR'}
           </div>
           {equipped && (
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: RARITY_COLORS[equipped.rarity] || '#7A6F90', textTransform: 'uppercase', letterSpacing: 1 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: RARITY_COLORS[equipped.rarity] || '#8A7A62', textTransform: 'uppercase', letterSpacing: 1 }}>
               {equipped.rarity} · equipped
             </div>
           )}
           {activeFrame && (
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: FRAME_ACCENT_COLORS[activeFrame.id] || '#7A6F90', textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: FRAME_ACCENT_COLORS[activeFrame.id] || '#8A7A62', textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>
               {activeFrame.name} frame
             </div>
           )}
         </div>
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C' }}>{gemBal}</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>💎 GEMS</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>💎 GEMS</div>
           {isLive && (
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#00C9A7', marginTop: 2, letterSpacing: 0.5 }}>+1/30s ▲</div>
           )}
@@ -212,7 +212,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
         <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div>
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#C9A84C' }}>🎁 DAILY BONUS · +50 💎 GEMS</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 2 }}>Claim once per day</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 2 }}>Claim once per day</div>
           </div>
           <button
             onClick={function() { claimDailyBonus(); }}
@@ -240,12 +240,12 @@ export default function AvatarHubTab({ addToast, isLive }) {
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
         {filters.map(function(f) {
           var active = filter === f;
-          var color = f === 'all' || f === 'owned' ? '#C9A84C' : (RARITY_COLORS[f] || '#7A6F90');
+          var color = f === 'all' || f === 'owned' ? '#C9A84C' : (RARITY_COLORS[f] || '#8A7A62');
           return (
             <button
               key={f}
               onClick={function() { setFilter(f); }}
-              style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
+              style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
               {f}
             </button>
           );
@@ -254,7 +254,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
         {visible.map(function(a) {
-          var rc = RARITY_COLORS[a.rarity] || '#7A6F90';
+          var rc = RARITY_COLORS[a.rarity] || '#8A7A62';
           var cardShadow = (a.equipped && isLive) ? liveShadow : 'none';
           return (
             <div
@@ -267,9 +267,9 @@ export default function AvatarHubTab({ addToast, isLive }) {
                 <div style={{ position: 'absolute', top: 7, left: 7, background: '#FF1A3C', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#fff', letterSpacing: 1 }}>🔴 LIVE</div>
               )}
               <div style={{ fontSize: 34, filter: a.owned ? 'none' : 'grayscale(80%) opacity(0.5)' }}>{a.emoji}</div>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: a.owned ? '#EDE8F5' : '#7A6F90', textAlign: 'center' }}>{a.name}</div>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: a.owned ? '#F0E8D4' : '#8A7A62', textAlign: 'center' }}>{a.name}</div>
               <div style={{ background: rc + '18', border: '1px solid ' + rc + '44', borderRadius: 999, padding: '1px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: rc, textTransform: 'uppercase', letterSpacing: 1 }}>{a.rarity}</div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', textAlign: 'center' }}>{a.desc}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', textAlign: 'center' }}>{a.desc}</div>
               {a.owned ? (
                 <button
                   onClick={function() { if (!a.equipped) equip(a.id); }}
@@ -293,7 +293,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 3, marginBottom: 8 }}>AVATAR FRAMES</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {frames.map(function(f) {
-            var accentColor = FRAME_ACCENT_COLORS[f.id] || '#7A6F90';
+            var accentColor = FRAME_ACCENT_COLORS[f.id] || '#8A7A62';
             var isEquipped = equippedFrame === f.id;
             return (
               <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: isEquipped ? accentColor + '12' : 'rgba(7,5,10,.5)', border: '1px solid ' + (isEquipped ? accentColor + '44' : '#241C34'), borderRadius: 8, padding: '8px 10px' }}>
@@ -301,7 +301,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
                   {equipped ? equipped.emoji : '?'}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: isEquipped ? accentColor : '#EDE8F5' }}>{f.name}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: isEquipped ? accentColor : '#F0E8D4' }}>{f.name}</div>
                   {isEquipped && (
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: accentColor, letterSpacing: 1 }}>EQUIPPED</div>
                   )}
@@ -334,7 +334,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
             return (
               <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, background: b.unlocked ? 'rgba(201,168,76,.1)' : 'rgba(7,5,10,.6)', border: '1px solid ' + (b.unlocked ? 'rgba(201,168,76,.35)' : '#241C34'), borderRadius: 8, padding: '8px 10px', minWidth: 72 }}>
                 <span style={{ fontSize: 20, filter: b.unlocked ? 'none' : 'grayscale(100%) opacity(0.4)' }}>{b.icon}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: b.unlocked ? '#C9A84C' : '#7A6F90', textAlign: 'center', lineHeight: 1.3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{b.label}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: b.unlocked ? '#C9A84C' : '#8A7A62', textAlign: 'center', lineHeight: 1.3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{b.label}</span>
                 {!b.unlocked && b.progress !== null && (
                   <div style={{ width: '100%' }}>
                     <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden', width: '100%' }}>

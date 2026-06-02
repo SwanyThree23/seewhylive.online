@@ -167,13 +167,13 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(7,5,10,.92)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ width: '100%', maxWidth: 420, background: '#0F0C14', border: '1px solid rgba(201,168,76,.3)', borderRadius: 14, overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100%', maxWidth: 420, background: '#0E0C09', border: '1px solid rgba(201,168,76,.3)', borderRadius: 14, overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
         <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.12),rgba(128,0,32,.15))', padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
           <div>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 3 }}>⚙ MEDIA CONFIG</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>Camera · Microphone · Quality</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>Camera · Microphone · Quality</div>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 8, width: 32, height: 32, color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 14, cursor: 'pointer' }}>✕</button>
         </div>
@@ -184,7 +184,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
             var active = tab === t[0];
             return (
               <button key={t[0]} onClick={function() { setTab(t[0]); }}
-                style={{ flex: 1, padding: '10px 0', background: active ? 'rgba(201,168,76,.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '10px 0', background: active ? 'rgba(201,168,76,.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                 {t[1]}
               </button>
             );
@@ -218,19 +218,19 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                 )}
                 {/* Flip button */}
                 <button onClick={function() { setFacingFront(function(f) { return !f; }); }}
-                  style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '4px 8px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                  style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '4px 8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                   🔄 FLIP
                 </button>
               </div>
 
               {/* Camera selector */}
               <div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 4 }}>CAMERA</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 4 }}>CAMERA</div>
                 {cameras.length === 0 ? (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>No cameras detected</div>
                 ) : (
                   <select value={camId} onChange={function(e) { setCamId(e.target.value); }}
-                    style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                    style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                     {cameras.map(function(c, i) {
                       return <option key={c.deviceId} value={c.deviceId}>{c.label || 'Camera ' + (i + 1)}</option>;
                     })}
@@ -244,7 +244,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                   var active = (fm[0] === 'user') === facingFront;
                   return (
                     <button key={fm[0]} onClick={function() { setFacingFront(fm[0] === 'user'); setCamId(''); }}
-                      style={{ flex: 1, padding: '7px', background: active ? 'rgba(201,168,76,.15)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.5)' : '#241C34'), borderRadius: 7, color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                      style={{ flex: 1, padding: '7px', background: active ? 'rgba(201,168,76,.15)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.5)' : '#241C34'), borderRadius: 7, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
                       {fm[1]}
                     </button>
                   );
@@ -258,12 +258,12 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
             <>
               {/* Mic selector */}
               <div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 4 }}>MICROPHONE</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 4 }}>MICROPHONE</div>
                 {microphones.length === 0 ? (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>No microphones detected</div>
                 ) : (
                   <select value={micId} onChange={function(e) { setMicId(e.target.value); }}
-                    style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                    style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                     {microphones.map(function(m, i) {
                       return <option key={m.deviceId} value={m.deviceId}>{m.label || 'Microphone ' + (i + 1)}</option>;
                     })}
@@ -273,10 +273,10 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
 
               {/* Mic level meter */}
               <div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 6 }}>MIC LEVEL</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 6 }}>MIC LEVEL</div>
                 <div style={{ background: '#07050A', border: '1px solid #241C34', borderRadius: 6, height: 20, overflow: 'hidden', position: 'relative' }}>
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: micLevel + '%', background: 'linear-gradient(90deg,' + levelColor + '88,' + levelColor + ')', borderRadius: 6, transition: 'width 60ms' }} />
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#EDE8F5' }}>{micLevel}%</div>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#F0E8D4' }}>{micLevel}%</div>
                 </div>
                 {micLevel > 70 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF1A3C', marginTop: 3 }}>⚠ Clipping — lower your mic gain</div>}
               </div>
@@ -284,8 +284,8 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
               {/* Speaker selector */}
               {speakers.length > 0 && (
                 <div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginBottom: 4 }}>SPEAKER OUTPUT</div>
-                  <select style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 4 }}>SPEAKER OUTPUT</div>
+                  <select style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                     {speakers.map(function(s, i) {
                       return <option key={s.deviceId} value={s.deviceId}>{s.label || 'Speaker ' + (i + 1)}</option>;
                     })}
@@ -295,7 +295,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
 
               {/* Audio processing toggles */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>AUDIO PROCESSING</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>AUDIO PROCESSING</div>
                 {[
                   ['Noise Suppression', noiseSup, setNoiseSup, '#00C9A7'],
                   ['Echo Cancellation', echoCan, setEchoCan, '#5A8FFF'],
@@ -303,9 +303,9 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                 ].map(function(item) {
                   return (
                     <div key={item[0]} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px' }}>
-                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5' }}>{item[0]}</span>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4' }}>{item[0]}</span>
                       <button onClick={function() { item[2](function(v) { return !v; }); }}
-                        style={{ background: item[1] ? item[3] + '22' : 'rgba(22,16,32,.5)', border: '1px solid ' + (item[1] ? item[3] + '66' : '#241C34'), borderRadius: 20, padding: '4px 12px', color: item[1] ? item[3] : '#7A6F90', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', minWidth: 48 }}>
+                        style={{ background: item[1] ? item[3] + '22' : 'rgba(22,16,32,.5)', border: '1px solid ' + (item[1] ? item[3] + '66' : '#241C34'), borderRadius: 20, padding: '4px 12px', color: item[1] ? item[3] : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', minWidth: 48 }}>
                         {item[1] ? 'ON' : 'OFF'}
                       </button>
                     </div>
@@ -318,7 +318,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
           {/* QUALITY TAB */}
           {tab === 'quality' && (
             <>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>VIDEO QUALITY PRESET</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>VIDEO QUALITY PRESET</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {QUALITY_PRESETS.map(function(p) {
                   var active = quality === p.id;
@@ -327,11 +327,11 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                     <button key={p.id} onClick={function() { setQuality(p.id); }}
                       style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: active ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.45)' : '#241C34'), borderRadius: 9, padding: '10px 14px', cursor: 'pointer', textAlign: 'left' }}>
                       <div>
-                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: active ? '#C9A84C' : '#EDE8F5' }}>{p.label}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>{p.width}×{p.height} · {p.frameRate}fps</div>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: active ? '#C9A84C' : '#F0E8D4' }}>{p.label}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>{p.width}×{p.height} · {p.frameRate}fps</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: active ? '#00C9A7' : '#7A6F90' }}>{mbps} Mbps</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: active ? '#00C9A7' : '#8A7A62' }}>{mbps} Mbps</div>
                         {active && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>✓ SELECTED</div>}
                       </div>
                     </button>
@@ -342,7 +342,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
               {/* Bandwidth advisory */}
               <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 8, padding: '8px 12px' }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', marginBottom: 4 }}>BANDWIDTH GUIDE</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', lineHeight: 1.6 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', lineHeight: 1.6 }}>
                   360p → 1 Mbps upload<br />
                   480p → 2 Mbps upload<br />
                   720p → 5 Mbps upload<br />
