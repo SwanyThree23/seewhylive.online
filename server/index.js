@@ -351,6 +351,8 @@ var activePolls         = new Map();  // roomId → { id, question, options, vot
 var stageRooms          = new Map();  // roomId → { speakers:[], listeners:[] }
 var loveCounts          = new Map();  // roomId → total love count
 var loveEarnings        = new Map();  // roomId → { creator: microcents, platform: microcents }
+var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top 10
+var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -359,6 +361,35 @@ function getAnalytics(roomId) {
     roomAnalytics.set(roomId, { viewerHistory: [], msgCounts: {}, sessionEarnings: 0, peak: 0 });
   }
   return roomAnalytics.get(roomId);
+}
+
+function endTrivia(roomId) {
+  var trivia = triviaRooms.get(roomId);
+  if (!trivia) return;
+  if (trivia.timer) { clearTimeout(trivia.timer); trivia.timer = null; }
+  trivia.active = false;
+  var tally = trivia.options.map(function(_, i) { return 0; });
+  var correct = [];
+  var wrong   = [];
+  trivia.answers.forEach(function(entry) {
+    if (entry.idx >= 0 && entry.idx < tally.length) tally[entry.idx]++;
+    if (entry.idx === trivia.correctIdx) {
+      correct.push(entry.username);
+    } else {
+      wrong.push(entry.username);
+    }
+  });
+  var results = {
+    roomId:     roomId,
+    question:   trivia.question,
+    options:    trivia.options.map(function(o, i) { return { text: o.text, votes: tally[i] }; }),
+    correctIdx: trivia.correctIdx,
+    correct:    correct.slice(0, 20),
+    wrong:      wrong.slice(0, 20),
+    total:      trivia.answers.size
+  };
+  io.to(roomId).emit('trivia-results', results);
+  triviaRooms.delete(roomId);
 }
 
 // Helper: serialize a poll (Set<socketId> votes → plain counts)
@@ -2483,6 +2514,39 @@ io.on('connection', function(socket) {
     io.to(sfxRoomId).emit('sound-fx', { sfxId: data.sfxId, sfxLabel: data.sfxLabel || '' });
   });
 
+  // ── trivia ─────────────────────────────────────────────────────────────
+  socket.on('trivia-start', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var tRoomId = String(data.roomId);
+    var question = (data.question || '').trim().slice(0, 200);
+    var options  = Array.isArray(data.options) ? data.options.slice(0, 4).map(function(o) { return { text: String(o.text || o).slice(0, 80) }; }) : [];
+    var correctIdx = typeof data.correctIdx === 'number' ? data.correctIdx : 0;
+    var durationMs = Math.min(Math.max(data.durationMs || 20000, 5000), 60000);
+    if (!question || options.length < 2) return;
+    var trivia = { question: question, options: options, answers: new Map(), correctIdx: correctIdx, active: true, startTs: Date.now(), durationMs: durationMs };
+    triviaRooms.set(tRoomId, trivia);
+    io.to(tRoomId).emit('trivia-question', { roomId: tRoomId, question: question, options: options.map(function(o) { return { text: o.text }; }), durationMs: durationMs });
+    trivia.timer = setTimeout(function() { endTrivia(tRoomId); }, durationMs);
+  });
+
+  socket.on('trivia-answer', function(data) {
+    if (!data || !data.roomId) return;
+    var tRoomId = String(data.roomId);
+    var trivia = triviaRooms.get(tRoomId);
+    if (!trivia || !trivia.active) return;
+    var idx = parseInt(data.answerIdx, 10);
+    if (isNaN(idx) || idx < 0 || idx >= trivia.options.length) return;
+    trivia.answers.set(socket.id, { idx: idx, username: data.username || socket.data.username || 'Anonymous', ts: Date.now() });
+    socket.emit('trivia-answer-ack', { answerIdx: idx });
+  });
+
+  socket.on('trivia-end', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    endTrivia(String(data.roomId));
+  });
+
   // ── end-broadcast ──────────────────────────────────────────────────────
   socket.on('end-broadcast', function(data, ack) {
     var roomId = data.roomId || socket.data.roomId;
@@ -2538,6 +2602,7 @@ io.on('connection', function(socket) {
     loveCounts.delete(roomId);
     loveEarnings.delete(roomId);
     giftLeaderboards.delete(roomId);
+    if (triviaRooms.has(roomId)) { endTrivia(roomId); triviaRooms.delete(roomId); }
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);

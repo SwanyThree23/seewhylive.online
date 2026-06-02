@@ -16,6 +16,7 @@ import AgeGate from './components/AgeGate.jsx';
 import LoveTap from './components/LoveTap.jsx';
 import GiftLeaderboardOverlay from './components/GiftLeaderboardOverlay.jsx';
 import StreamGoalBar from './components/StreamGoalBar.jsx';
+import DonationAlert from './components/DonationAlert.jsx';
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -60,6 +61,7 @@ var CreatorTipsTab      = React.lazy(function() { return import('./components/Cr
 var LiveStreamHubTab    = React.lazy(function() { return import('./components/LiveStreamHubTab.jsx'); });
 var AudioStageTab       = React.lazy(function() { return import('./components/AudioStageTab.jsx'); });
 var SoundBoardTab       = React.lazy(function() { return import('./components/SoundBoardTab.jsx'); });
+var TriviaTab           = React.lazy(function() { return import('./components/TriviaTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -77,6 +79,7 @@ var TABS = [
   { id: 'watch',    label: '📺 WATCH' },
   { id: 'stage',    label: '🎙 STAGE' },
   { id: 'sfx',      label: '🎚 SFX' },
+  { id: 'trivia',   label: '🎯 TRIVIA' },
   { id: 'green',    label: '🟢 GREEN' },
   { id: 'forge',    label: '⚙️ FORGE' },
   { id: 'deepdata', label: '📊 DEEP' },
@@ -1076,6 +1079,16 @@ export default function App() {
             addToast={addToast}
           />
         )}
+        {activeTab === 'trivia' && (
+          <TriviaTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            username={username}
+            addToast={addToast}
+            isLive={isLive}
+          />
+        )}
         {activeTab === 'green' && (
           <GreenRoomTab
             guests={guests}
@@ -1352,6 +1365,12 @@ export default function App() {
           viewerCount={viewerCount}
           earningsCents={sessionEarningsCents}
           loveTotal={loveTotal}
+        />
+      )}
+      {socketRef.current && (
+        <DonationAlert
+          socket={socketRef.current}
+          roomId={APP_ID}
         />
       )}
       <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />
