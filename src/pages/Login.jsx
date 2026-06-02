@@ -4,8 +4,8 @@ import { appParams } from '@/lib/app-params';
 import { Radio } from 'lucide-react';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const GOLD = '#D4AF37';
-const BG = '#080B18';
+const GOLD = '#C9A84C';
+const BG = '#0E0C09';
 const CRIMSON = '#800020';
 
 export default function Login() {
@@ -60,13 +60,13 @@ export default function Login() {
         <span style={{ fontSize: 28, fontWeight: 900, color: GOLD, letterSpacing: '0.04em', ...T }}>SeeWhy LIVE</span>
       </div>
 
-      <div style={{ width: '100%', maxWidth: 380, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.18)', padding: 28 }}>
+      <div style={{ width: '100%', maxWidth: 380, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.18)', padding: 28 }}>
 
         {/* Mode toggle */}
         <div style={{ display: 'flex', gap: 0, marginBottom: 24, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
           {['login', 'register'].map(m => (
             <button key={m} onClick={() => { setMode(m); setError(''); }}
-              style={{ flex: 1, padding: '9px 0', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', background: mode === m ? 'rgba(212,175,55,0.15)' : 'transparent', color: mode === m ? GOLD : 'rgba(255,255,255,0.35)', border: 'none', cursor: 'pointer', ...T }}>
+              style={{ flex: 1, padding: '9px 0', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em', background: mode === m ? 'rgba(201,168,76,0.15)' : 'transparent', color: mode === m ? GOLD : 'rgba(255,255,255,0.35)', border: 'none', cursor: 'pointer', ...T }}>
               {m === 'login' ? 'Sign In' : 'Create Account'}
             </button>
           ))}
@@ -97,7 +97,7 @@ export default function Login() {
           )}
 
           <button type="submit" disabled={loading}
-            style={{ height: 46, borderRadius: 10, background: loading ? 'rgba(128,0,32,0.5)' : `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontSize: 14, fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', ...T }}>
+            style={{ height: 46, borderRadius: 10, background: loading ? 'rgba(128,0,32,0.5)' : `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: '1px solid rgba(201,168,76,0.35)', color: GOLD, fontSize: 14, fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', ...T }}>
             {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
