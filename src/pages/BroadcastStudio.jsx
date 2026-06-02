@@ -29,6 +29,7 @@ import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import LoveHearts from '../components/live/LoveHearts';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
+import ClipMarker from '../components/live/ClipMarker';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -304,6 +305,12 @@ export default function BroadcastStudio() {
   const [isExclusive, setIsExclusive] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent] = useState(null);
+  const [guardianWords, setGuardianWords] = useState([]);
+  const [guardianWordInput, setGuardianWordInput] = useState('');
+  const [ariaSuggestions] = useState(['What do you think about this topic?', 'Drop a ❤️ if you agree!', 'Questions? Type them below!']);
+  const [ariaTopicIdx, setAriaTopicIdx] = useState(0);
+  const [musicVolume, setMusicVolume] = useState(70);
+  const streamStartRef = useRef(Date.now());
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -622,6 +629,9 @@ export default function BroadcastStudio() {
                 } : undefined}
                 isHost={isHost}
               />
+            )}
+            {isHost && (
+              <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} />
             )}
             {isHost && (
               <button onClick={() => endMut.mutate()}
@@ -1069,8 +1079,16 @@ export default function BroadcastStudio() {
                       onClick={() => setAiMusicPlaying(v => !v)}
                       className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
                       style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      {aiMusicPlaying ? '⏸ Pause Music' : '▶ Play Music'}
+                      {aiMusicPlaying ? '⏸ Pause' : '▶ Play'}
                     </button>
+                    {aiMusicPlaying && (
+                      <button onClick={() => setAiMusicGenre(null)}
+                        className="px-3 py-2 rounded-xl text-[11px] font-black"
+                        style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                        title="Skip track">
+                        ⏭
+                      </button>
+                    )}
                     <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
                       className="px-3 py-2 rounded-xl text-[11px] font-black"
                       style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -1078,13 +1096,24 @@ export default function BroadcastStudio() {
                     </a>
                   </div>
                   {aiMusicPlaying && (
-                    <div className="mt-2 flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.08)' }}>
-                      <div className="flex items-end gap-[2px]">
-                        {[3,6,4,7,3,5].map((h,i) => (
-                          <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
-                        ))}
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.08)' }}>
+                        <div className="flex items-end gap-[2px]">
+                          {[3,6,4,7,3,5].map((h,i) => (
+                            <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
+                          ))}
+                        </div>
+                        <span className="text-[9px] flex-1" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
+                        <span className="text-[9px]" style={{ color: 'rgba(167,139,250,0.5)' }}>{musicVolume}%</span>
                       </div>
-                      <span className="text-[9px]" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
+                      <div className="flex items-center gap-2 px-1">
+                        <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
+                        <input type="range" min={0} max={100} value={musicVolume}
+                          onChange={e => setMusicVolume(+e.target.value)}
+                          className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
+                          style={{ accentColor: '#a78bfa' }} />
+                        <span className="text-[8px]" style={{ color: '#a78bfa' }}>🔊</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1107,13 +1136,55 @@ export default function BroadcastStudio() {
                     {guardianEnabled ? '✓ Auto-removing hate speech, spam, and toxic messages' : 'Enable to auto-moderate chat in real time'}
                   </p>
                   {guardianEnabled && (
-                    <div className="mt-2 flex gap-3 text-center">
-                      {[['Blocked', guardianStats.blocked], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
-                        <div key={l} className="flex-1">
-                          <div className="text-sm font-black" style={{ color: '#22c55e' }}>{v}</div>
-                          <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
+                    <div className="mt-2 space-y-2">
+                      <div className="flex gap-3 text-center">
+                        {[['Blocked', guardianStats.blocked + guardianWords.length], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
+                          <div key={l} className="flex-1">
+                            <div className="text-sm font-black" style={{ color: '#22c55e' }}>{v}</div>
+                            <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Blocked words</div>
+                        <div className="flex flex-wrap gap-1 mb-1.5">
+                          {guardianWords.map(w => (
+                            <span key={w} className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              {w}
+                              <button onClick={() => setGuardianWords(ws => ws.filter(x => x !== w))} style={{ lineHeight: 1 }}>×</button>
+                            </span>
+                          ))}
+                          {guardianWords.length === 0 && (
+                            <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None added yet</span>
+                          )}
                         </div>
-                      ))}
+                        <div className="flex gap-1">
+                          <input
+                            value={guardianWordInput}
+                            onChange={e => setGuardianWordInput(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && guardianWordInput.trim()) {
+                                setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
+                                setGuardianWordInput('');
+                              }
+                            }}
+                            placeholder="Add word…"
+                            maxLength={30}
+                            style={{ flex: 1, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
+                          />
+                          <button
+                            onClick={() => {
+                              if (guardianWordInput.trim()) {
+                                setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
+                                setGuardianWordInput('');
+                              }
+                            }}
+                            style={{ padding: '4px 10px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 6, color: '#22c55e', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
+                            +
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1133,8 +1204,42 @@ export default function BroadcastStudio() {
                     </button>
                   </div>
                   <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    {ariaEnabled ? '✓ ARIA is answering audience questions and keeping chat active' : 'Enable ARIA to engage your audience automatically'}
+                    {ariaEnabled ? '✓ ARIA is answering questions and keeping chat active' : 'Enable ARIA to engage your audience automatically'}
                   </p>
+                  {ariaEnabled && (
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending topics</div>
+                        <div className="flex flex-wrap gap-1">
+                          {['🎵 Music', '💬 Q&A', '🔥 Hype', '🎁 Gifts'].map((t, i) => (
+                            <button key={t} onClick={() => setAriaTopicIdx(i)}
+                              className="text-[9px] px-2 py-0.5 rounded-full font-bold"
+                              style={{
+                                background: ariaTopicIdx === i ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
+                                color: ariaTopicIdx === i ? GOLD : 'rgba(255,255,255,0.35)',
+                                border: ariaTopicIdx === i ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
+                                fontFamily: 'Barlow Condensed, sans-serif',
+                              }}>
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Suggested responses</div>
+                        <div className="space-y-1">
+                          {ariaSuggestions.map((s, i) => (
+                            <button key={i}
+                              className="w-full text-left text-[9px] px-2 py-1.5 rounded-lg transition-all hover:opacity-80"
+                              style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                              onClick={() => toast.success('ARIA sent: ' + s)}>
+                              💬 {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick link to full AI Hub */}
