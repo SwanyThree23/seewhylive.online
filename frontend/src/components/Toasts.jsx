@@ -6,7 +6,7 @@ var _toastStyleInjected = false;
 var TYPE_MAP = {
   success: { bg: 'rgba(201,168,76,.16)',   border: 'rgba(201,168,76,.45)',   color: '#C9A84C' },
   error:   { bg: 'rgba(255,26,60,.16)',   border: 'rgba(255,26,60,.5)',    color: '#FF6B81' },
-  info:    { bg: 'rgba(90,143,255,.13)',  border: 'rgba(90,143,255,.35)',  color: '#7AAEFF' },
+  info:    { bg: 'rgba(212,133,74,.13)',  border: 'rgba(212,133,74,.35)',  color: '#D4854A' },
   warn:    { bg: 'rgba(201,168,76,.15)',  border: 'rgba(201,168,76,.4)',   color: '#C9A84C' },
   gift:    { bg: 'rgba(201,168,76,.18)',  border: 'rgba(232,196,106,.5)',  color: '#E8C46A' },
   sub:     { bg: 'rgba(192,132,252,.14)', border: 'rgba(192,132,252,.4)', color: '#C084FC' },

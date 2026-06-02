@@ -972,7 +972,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <div style={{ fontSize: 40 }}>📺</div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#8A7A62', letterSpacing: 3 }}>NO WATCH PARTY ACTIVE</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450' }}>Start one in the 📺 WATCH tab</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020' }}>Start one in the 📺 WATCH tab</div>
                 </div>
               )}
               <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 5, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>
@@ -1020,7 +1020,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             </div>
             {/* Battle score bar */}
             {(battleScores.a + battleScores.b) > 0 && (
-              <div style={{ height: 5, background: '#1A1428', flexShrink: 0 }}>
+              <div style={{ height: 5, background: '#1A1510', flexShrink: 0 }}>
                 <div style={{ height: '100%', width: Math.round((battleScores.a / (battleScores.a + battleScores.b)) * 100) + '%', background: 'linear-gradient(90deg,#C01838,#FF6B81)', transition: 'width .4s ease' }} />
               </div>
             )}
@@ -1416,7 +1416,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               ${(Math.floor(streamGoal.currentCents) / 100).toFixed(0)} / ${(Math.floor(streamGoal.targetCents) / 100).toFixed(0)}
             </span>
           </div>
-          <div style={{ background: '#1A1428', borderRadius: 999, height: 6, overflow: 'hidden' }}>
+          <div style={{ background: '#1A1510', borderRadius: 999, height: 6, overflow: 'hidden' }}>
             <div style={{ height: '100%', background: 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 999, width: Math.floor(Math.min(streamGoal.currentCents / streamGoal.targetCents * 100, 100)) + '%', transition: 'width .6s ease' }} />
           </div>
           {isLive && role === 'host' && (

@@ -1078,7 +1078,7 @@ export default function MusicStudioTab(props) {
                   var active = vocalFX.indexOf(fx) >= 0;
                   return (
                     <button key={fx} onClick={function() { toggleTag(vocalFX, setVocalFX, fx); }}
-                      style={{ padding: '5px 12px', background: active ? 'rgba(90,143,255,.18)' : CARD2, border: '1px solid ' + (active ? 'rgba(90,143,255,.5)' : DIM), borderRadius: 999, color: active ? BLUE : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 10, cursor: 'pointer', transition: 'all .15s' }}>
+                      style={{ padding: '5px 12px', background: active ? 'rgba(212,133,74,.18)' : CARD2, border: '1px solid ' + (active ? 'rgba(212,133,74,.5)' : DIM), borderRadius: 999, color: active ? BLUE : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 10, cursor: 'pointer', transition: 'all .15s' }}>
                       {fx}
                     </button>
                   );

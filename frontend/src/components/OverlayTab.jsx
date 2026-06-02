@@ -264,7 +264,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
                   return (
                     <button key={pos}
                       onClick={function() { setDraftBanner(function(d) { return Object.assign({}, d, { position: pos }); }); }}
-                      style={{ flex: 1, padding: '6px', background: active ? 'rgba(90,143,255,.2)' : 'rgba(26,21,16,.4)', border: '1px solid ' + (active ? 'rgba(90,143,255,.5)' : '#3D3020'), borderRadius: 5, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                      style={{ flex: 1, padding: '6px', background: active ? 'rgba(212,133,74,.2)' : 'rgba(26,21,16,.4)', border: '1px solid ' + (active ? 'rgba(212,133,74,.5)' : '#3D3020'), borderRadius: 5, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                       {pos.toUpperCase()}
                     </button>
                   );
