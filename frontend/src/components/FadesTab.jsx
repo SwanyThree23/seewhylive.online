@@ -159,7 +159,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
         {/* FADES header */}
         <div style={{ background: 'linear-gradient(135deg,rgba(0,255,255,.06),rgba(255,0,64,.06))', border: '1px solid rgba(0,255,255,.2)', borderRadius: 12, padding: '14px', textAlign: 'center' }}>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: 10, background: 'linear-gradient(90deg,#00FFFF,#FF0040)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1 }}>⚡ FADES</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 3, marginTop: 2 }}>ONLINE CORRUPTION BATTLE SYSTEM · v33</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 3, marginTop: 2 }}>ONLINE CORRUPTION BATTLE SYSTEM · v33</div>
           {fadesActive && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF0040', boxShadow: '0 0 10px #FF0040' }} />
@@ -179,7 +179,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
             var done   = roundHistory.some(function(h) { return h.round === r; });
             return (
               <button key={r} onClick={function() { setActiveRound(i); }}
-                style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(0,255,255,.12)' : done ? 'rgba(255,0,64,.06)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(0,255,255,.45)' : done ? 'rgba(255,0,64,.3)' : '#241C34'), borderRadius: 6, color: active ? '#00FFFF' : done ? '#FF6B81' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(0,255,255,.12)' : done ? 'rgba(255,0,64,.06)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(0,255,255,.45)' : done ? 'rgba(255,0,64,.3)' : '#241C34'), borderRadius: 6, color: active ? '#00FFFF' : done ? '#FF6B81' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
                 {i === 3 ? 'S/D' : 'R' + (i + 1)}{done ? '✓' : ''}
               </button>
             );
@@ -192,7 +192,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
             var active = view === v[0];
             return (
               <button key={v[0]} onClick={function() { setView(v[0]); }}
-                style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(255,0,64,.12)' : 'transparent', border: 'none', borderRadius: 6, color: active ? '#FF6B81' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(255,0,64,.12)' : 'transparent', border: 'none', borderRadius: 6, color: active ? '#FF6B81' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
                 {v[1]}
               </button>
             );
@@ -210,21 +210,21 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                 <div style={{ flex: 1, textAlign: 'center' }}>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00FFFF', letterSpacing: 4, marginBottom: 6 }}>◈ ALPHA</div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 72, color: '#00FFFF', lineHeight: 0.85, textShadow: '0 0 30px rgba(0,255,255,.45)' }}>{t1Score}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 6 }}>{team1.length} players</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 6 }}>{team1.length} players</div>
                 </div>
 
                 {/* VS */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '0 14px' }}>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#3D3450', letterSpacing: 3 }}>VS</div>
                   <div style={{ width: 1, height: 50, background: 'linear-gradient(180deg,transparent,#241C34,transparent)' }} />
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{ROUNDS[activeRound]}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{ROUNDS[activeRound]}</div>
                 </div>
 
                 {/* Omega */}
                 <div style={{ flex: 1, textAlign: 'center' }}>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF0040', letterSpacing: 4, marginBottom: 6 }}>◈ OMEGA</div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 72, color: '#FF0040', lineHeight: 0.85, textShadow: '0 0 30px rgba(255,0,64,.45)' }}>{t2Score}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 6 }}>{team2.length} players</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 6 }}>{team2.length} players</div>
                 </div>
               </div>
 
@@ -332,7 +332,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
         {/* ── ROSTER VIEW ── */}
         {view === 'roster' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 1, marginBottom: 2 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1, marginBottom: 2 }}>
               {isHost ? 'Tap α / ω to assign guests to teams' : 'Current team assignments'}
             </div>
 
@@ -350,8 +350,8 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                 <div key={gid} style={{ background: bgCol, border: '1px solid ' + borderCol, borderRadius: 9, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 30, height: 30, borderRadius: 7, background: inAlpha ? 'rgba(0,255,255,.15)' : inOmega ? 'rgba(255,0,64,.15)' : 'rgba(22,16,32,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎲</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: inAlpha ? '#00FFFF' : inOmega ? '#FF0040' : '#EDE8F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || 'Guest'}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: inAlpha ? '#00FFFF' : inOmega ? '#FF0040' : '#7A6F90', letterSpacing: 1 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: inAlpha ? '#00FFFF' : inOmega ? '#FF0040' : '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || 'Guest'}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: inAlpha ? '#00FFFF' : inOmega ? '#FF0040' : '#8A7A62', letterSpacing: 1 }}>
                       {inAlpha ? '◈ ALPHA' : inOmega ? '◈ OMEGA' : 'UNASSIGNED'}
                     </div>
                   </div>
@@ -402,7 +402,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
 
             {/* Odds header */}
             <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #241C34', borderRadius: 14, padding: '14px' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 3, textAlign: 'center', marginBottom: 12 }}>LIVE WAGER ODDS</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 3, textAlign: 'center', marginBottom: 12 }}>LIVE WAGER ODDS</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 {(function() {
                   var totalW = allWagers.team1Gems + allWagers.team2Gems;
@@ -455,7 +455,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
             {/* My wager status */}
             {myWager && !wagerResult && (
               <div style={{ background: myWager.team === 'team1' ? 'rgba(0,255,255,.07)' : 'rgba(255,0,64,.07)', border: '1px solid ' + (myWager.team === 'team1' ? 'rgba(0,255,255,.3)' : 'rgba(255,0,64,.3)'), borderRadius: 10, padding: '12px', textAlign: 'center' }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 4 }}>YOUR ACTIVE WAGER</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 4 }}>YOUR ACTIVE WAGER</div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: myWager.team === 'team1' ? '#00FFFF' : '#FF0040', letterSpacing: 3 }}>
                   💎 {myWager.gems} ON {myWager.team === 'team1' ? 'ALPHA' : 'OMEGA'}
                 </div>
@@ -475,7 +475,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
             {/* Gem balance & amount selector */}
             <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #241C34', borderRadius: 12, padding: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2 }}>WAGER AMOUNT</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2 }}>WAGER AMOUNT</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>💎 {gemBalance} balance</div>
               </div>
               <div style={{ display: 'flex', gap: 5 }}>
@@ -485,7 +485,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                   return (
                     <button key={amt} onClick={function() { if (!myWager) setWagerGems(amt); }}
                       disabled={!!myWager || !canAfford}
-                      style={{ flex: 1, padding: '8px 0', background: isSelected ? 'rgba(201,168,76,.2)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isSelected ? 'rgba(201,168,76,.6)' : '#241C34'), borderRadius: 7, color: isSelected ? '#C9A84C' : canAfford ? '#7A6F90' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: myWager || !canAfford ? 'not-allowed' : 'pointer', opacity: canAfford ? 1 : 0.4 }}>
+                      style={{ flex: 1, padding: '8px 0', background: isSelected ? 'rgba(201,168,76,.2)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isSelected ? 'rgba(201,168,76,.6)' : '#241C34'), borderRadius: 7, color: isSelected ? '#C9A84C' : canAfford ? '#8A7A62' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: myWager || !canAfford ? 'not-allowed' : 'pointer', opacity: canAfford ? 1 : 0.4 }}>
                       {amt}
                     </button>
                   );

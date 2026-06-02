@@ -303,16 +303,16 @@ export default function InsForgeTab({ addToast, isLive }) {
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#00C9A7', letterSpacing: 3 }}>⚙️ INSFORGE STATUS</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00C96A', boxShadow: '0 0 6px #00C96A' }} />
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>AUTO {countdown}s</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>AUTO {countdown}s</span>
           </div>
         </div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginBottom: 8 }}>VPS: {VPS_IP} · App: {APP_ID.substring(0, 12)}...</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 8 }}>VPS: {VPS_IP} · App: {APP_ID.substring(0, 12)}...</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
           {[[healthy, 'HEALTHY', '#00C96A'], [warning, 'WARN', '#C9A84C'], [errors, 'ERROR', '#FF1A3C']].map(function(s) {
             return (
               <div key={s[1]} style={{ flex: 1, background: s[2] + '12', border: '1px solid ' + s[2] + '33', borderRadius: 8, padding: '5px 6px', textAlign: 'center' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: s[2], lineHeight: 1 }}>{s[0]}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', letterSpacing: 1 }}>{s[1]}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62', letterSpacing: 1 }}>{s[1]}</div>
               </div>
             );
           })}
@@ -330,7 +330,7 @@ export default function InsForgeTab({ addToast, isLive }) {
           var isActive = tab === t[0];
           return (
             <button key={t[0]} onClick={function() { setTab(t[0]); }}
-              style={{ flex: 1, padding: '7px 0', background: isActive ? 'rgba(0,201,167,.1)' : 'transparent', border: 'none', borderRadius: 6, color: isActive ? '#00C9A7' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+              style={{ flex: 1, padding: '7px 0', background: isActive ? 'rgba(0,201,167,.1)' : 'transparent', border: 'none', borderRadius: 6, color: isActive ? '#00C9A7' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
               {t[1]}
             </button>
           );
@@ -341,14 +341,14 @@ export default function InsForgeTab({ addToast, isLive }) {
       {tab === 'status' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {services.map(function(s) {
-            var sc = statusColors[s.status] || '#7A6F90';
+            var sc = statusColors[s.status] || '#8A7A62';
             return (
               <div key={s.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: sc + '12', border: '1px solid ' + sc + '30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
                   {s.icon}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#EDE8F5' }}>{s.name}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4' }}>{s.name}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: sc }}>{s.val}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
@@ -360,9 +360,9 @@ export default function InsForgeTab({ addToast, isLive }) {
           })}
 
           <div style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, marginBottom: 6 }}>RTMP INGEST</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: 6 }}>RTMP INGEST</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00C9A7', wordBreak: 'break-all' }}>rtmp://{VPS_IP}:1935/live</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 4 }}>seewhylive.online · Port 443 nginx TLS</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 4 }}>seewhylive.online · Port 443 nginx TLS</div>
           </div>
         </div>
       )}
@@ -371,19 +371,19 @@ export default function InsForgeTab({ addToast, isLive }) {
       {tab === 'logs' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2 }}>LIVE LOG STREAM</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2 }}>LIVE LOG STREAM</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#00C96A', boxShadow: '0 0 4px #00C96A' }} />
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>LIVE · {liveLogs.length} entries</span>
             </div>
           </div>
           {liveLogs.map(function(log, i) {
-            var lc = levelColors[log.level] || '#7A6F90';
+            var lc = levelColors[log.level] || '#8A7A62';
             return (
               <div key={i} style={{ background: i === 0 ? 'rgba(0,201,167,.05)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (i === 0 ? 'rgba(0,201,167,.2)' : '#241C34'), borderRadius: 8, padding: '7px 10px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <span style={{ background: lc + '18', border: '1px solid ' + lc + '33', borderRadius: 4, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: lc, letterSpacing: 1, flexShrink: 0, marginTop: 1 }}>{log.level}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: i === 0 ? '#EDE8F5' : '#A899BE', lineHeight: 1.4, wordBreak: 'break-word' }}>{log.msg}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: i === 0 ? '#F0E8D4' : '#A899BE', lineHeight: 1.4, wordBreak: 'break-word' }}>{log.msg}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', marginTop: 2 }}>{fmtTs(log.ts)}</div>
                 </div>
               </div>
@@ -396,11 +396,11 @@ export default function InsForgeTab({ addToast, isLive }) {
       {tab === 'system' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>VPS IDENTITY</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>VPS IDENTITY</div>
             {VPS_INFO.map(function(row) {
               return (
                 <div key={row[0]} style={{ display: 'flex', gap: 8, marginBottom: 5 }}>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1, width: 74, flexShrink: 0 }}>{row[0]}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, width: 74, flexShrink: 0 }}>{row[0]}</span>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', flex: 1, wordBreak: 'break-all' }}>{row[1]}</span>
                 </div>
               );
@@ -408,12 +408,12 @@ export default function InsForgeTab({ addToast, isLive }) {
           </div>
 
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>RESOURCE USAGE</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>RESOURCE USAGE</div>
             {SYSTEM_STATS.map(function(stat) {
               return (
                 <div key={stat.label} style={{ marginBottom: 8 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{stat.label}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{stat.label}</span>
                     <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: stat.color }}>{stat.val}</span>
                   </div>
                   <div style={{ height: 4, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
@@ -425,13 +425,13 @@ export default function InsForgeTab({ addToast, isLive }) {
           </div>
 
           <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>PORT MAP</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>PORT MAP</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
               {PORT_MAP.map(function(p) {
                 return (
                   <div key={p[0]} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#00C9A7', width: 44, flexShrink: 0 }}>{p[0]}</span>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{p[1]}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{p[1]}</span>
                   </div>
                 );
               })}
@@ -443,7 +443,7 @@ export default function InsForgeTab({ addToast, isLive }) {
       {/* ── ACTIONS ── */}
       {tab === 'actions' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, padding: '0 2px' }}>VPS QUICK ACTIONS</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, padding: '0 2px' }}>VPS QUICK ACTIONS</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
             {VPS_ACTIONS.map(function(a) {
               var isRunning = running === a.id;
@@ -451,7 +451,7 @@ export default function InsForgeTab({ addToast, isLive }) {
                 <button key={a.id} onClick={function() { runAction(a); }} disabled={running !== null}
                   style={{ background: isRunning ? a.color + '18' : 'rgba(22,16,32,.8)', border: '1px solid ' + (isRunning ? a.color + '55' : '#241C34'), borderRadius: 10, padding: '10px 8px', cursor: running !== null ? 'not-allowed' : 'pointer', opacity: running && !isRunning ? 0.5 : 1, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div style={{ fontSize: 18 }}>{a.icon}</div>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: isRunning ? a.color : '#EDE8F5', letterSpacing: 1 }}>{isRunning ? '...' : a.label}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: isRunning ? a.color : '#F0E8D4', letterSpacing: 1 }}>{isRunning ? '...' : a.label}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', wordBreak: 'break-all' }}>{a.cmd}</div>
                 </button>
               );
@@ -460,12 +460,12 @@ export default function InsForgeTab({ addToast, isLive }) {
 
           {actionLog.length > 0 && (
             <div style={{ background: 'rgba(7,5,10,.9)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 2, marginBottom: 6 }}>ACTION LOG</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: 6 }}>ACTION LOG</div>
               {actionLog.map(function(entry, i) {
                 return (
                   <div key={i} style={{ marginBottom: 8, borderBottom: i < actionLog.length - 1 ? '1px solid #1A1428' : 'none', paddingBottom: i < actionLog.length - 1 ? 8 : 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#EDE8F5' }}>{entry.label}</span>
+                      <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4' }}>{entry.label}</span>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: entry.status === 'done' ? '#00C96A' : '#C9A84C' }}>{entry.status === 'done' ? 'DONE' : 'RUNNING...'}</span>
                     </div>
                     {entry.output && (

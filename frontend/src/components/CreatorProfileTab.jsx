@@ -118,7 +118,7 @@ export default function CreatorProfileTab(props) {
           fontFamily: "'Barlow Condensed',sans-serif",
           fontWeight: 700,
           fontSize: 12,
-          color: active ? '#C9A84C' : '#7A6F90',
+          color: active ? '#C9A84C' : '#8A7A62',
           cursor: 'pointer',
           letterSpacing: 1,
         }
@@ -175,7 +175,7 @@ export default function CreatorProfileTab(props) {
               style: {
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 9,
-                color: '#7A6F90',
+                color: '#8A7A62',
                 letterSpacing: 1,
               }
             },
@@ -209,7 +209,7 @@ export default function CreatorProfileTab(props) {
               style: {
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 9,
-                color: '#7A6F90',
+                color: '#8A7A62',
                 letterSpacing: 1,
               }
             },
@@ -242,7 +242,7 @@ export default function CreatorProfileTab(props) {
               style: {
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 9,
-                color: '#7A6F90',
+                color: '#8A7A62',
                 letterSpacing: 1,
               }
             },
@@ -256,7 +256,7 @@ export default function CreatorProfileTab(props) {
           style: {
             fontFamily: "'Barlow Condensed',sans-serif",
             fontSize: 14,
-            color: '#EDE8F5',
+            color: '#F0E8D4',
             lineHeight: 1.5,
           }
         },
@@ -299,7 +299,7 @@ export default function CreatorProfileTab(props) {
                   fontFamily: "'Barlow Condensed',sans-serif",
                   fontWeight: 700,
                   fontSize: 14,
-                  color: '#EDE8F5',
+                  color: '#F0E8D4',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -314,7 +314,7 @@ export default function CreatorProfileTab(props) {
                 style: {
                   fontFamily: "'DM Mono',monospace",
                   fontSize: 9,
-                  color: '#7A6F90',
+                  color: '#8A7A62',
                 }
               },
               stream.date
@@ -400,7 +400,7 @@ export default function CreatorProfileTab(props) {
                     gap: 6,
                     fontFamily: "'Barlow Condensed',sans-serif",
                     fontSize: 13,
-                    color: '#EDE8F5',
+                    color: '#F0E8D4',
                     marginBottom: 3,
                   }
                 },
@@ -438,7 +438,7 @@ export default function CreatorProfileTab(props) {
     'div',
     {
       style: {
-        background: '#0F0C14',
+        background: '#0E0C09',
         minHeight: '100vh',
         padding: '12px 10px 50px',
       }
@@ -467,7 +467,7 @@ export default function CreatorProfileTab(props) {
               style: {
                 fontFamily: "'Bebas Neue',sans-serif",
                 fontSize: 22,
-                color: '#EDE8F5',
+                color: '#F0E8D4',
                 letterSpacing: 1,
                 marginBottom: 2,
               }
@@ -480,7 +480,7 @@ export default function CreatorProfileTab(props) {
               style: {
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 11,
-                color: '#7A6F90',
+                color: '#8A7A62',
                 marginBottom: 6,
               }
             },
@@ -512,7 +512,7 @@ export default function CreatorProfileTab(props) {
                 style: {
                   fontFamily: "'DM Mono',monospace",
                   fontSize: 10,
-                  color: '#7A6F90',
+                  color: '#8A7A62',
                 }
               },
               formatFollowersLarge(profile.followerCount) + ' followers'
@@ -524,7 +524,7 @@ export default function CreatorProfileTab(props) {
               style: {
                 fontFamily: "'Barlow Condensed',sans-serif",
                 fontSize: 13,
-                color: '#7A6F90',
+                color: '#8A7A62',
                 lineHeight: 1.4,
               }
             },
@@ -568,7 +568,7 @@ export default function CreatorProfileTab(props) {
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 13,
-              color: copiedProfile ? '#00C9A7' : '#7A6F90',
+              color: copiedProfile ? '#00C9A7' : '#8A7A62',
               cursor: 'pointer',
               letterSpacing: 1,
             }
@@ -615,7 +615,7 @@ export default function CreatorProfileTab(props) {
                   fontFamily: "'Barlow Condensed',sans-serif",
                   fontWeight: 700,
                   fontSize: 14,
-                  color: '#EDE8F5',
+                  color: '#F0E8D4',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',

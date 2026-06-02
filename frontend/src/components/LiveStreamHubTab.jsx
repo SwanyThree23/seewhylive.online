@@ -80,12 +80,12 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
   /* ── styles ── */
   var card = { background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '12px 14px', marginBottom: 8 };
   var liveChip = { background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 20, padding: '2px 9px', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#FF1A3C', letterSpacing: 1 };
-  var staleChip = { background: 'rgba(122,111,144,.1)', border: '1px solid rgba(122,111,144,.25)', borderRadius: 20, padding: '2px 9px', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 1 };
-  var label = { fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 1 };
-  var value = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#EDE8F5', lineHeight: 1 };
+  var staleChip = { background: 'rgba(122,111,144,.1)', border: '1px solid rgba(122,111,144,.25)', borderRadius: 20, padding: '2px 9px', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1 };
+  var label = { fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1 };
+  var value = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#F0E8D4', lineHeight: 1 };
   var tabBtn = function(id, color) {
     var isA = tab === id;
-    return { padding: '6px 16px', background: isA ? color + '22' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isA ? color : 'rgba(255,255,255,.07)'), borderRadius: 8, color: isA ? color : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1, transition: 'all .12s' };
+    return { padding: '6px 16px', background: isA ? color + '22' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isA ? color : 'rgba(255,255,255,.07)'), borderRadius: 8, color: isA ? color : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1, transition: 'all .12s' };
   };
 
   return (
@@ -95,8 +95,8 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
       <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.25),rgba(0,201,167,.08))', border: '1px solid rgba(201,168,76,.15)', borderRadius: 12, padding: '14px 16px', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#EDE8F5', letterSpacing: 3, lineHeight: 1 }}>LIVE STREAM HUB</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', marginTop: 2, letterSpacing: 1 }}>Streams In · Streams Out · Active Rooms</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#F0E8D4', letterSpacing: 3, lineHeight: 1 }}>LIVE STREAM HUB</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 2, letterSpacing: 1 }}>Streams In · Streams Out · Active Rooms</div>
           </div>
           <button onClick={fetchData} style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 8, padding: '6px 12px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>↻ REFRESH</button>
         </div>
@@ -109,7 +109,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
           ].map(function(row) {
             return (
               <div key={row[1]} style={{ background: 'rgba(7,5,10,.5)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90', letterSpacing: 1, marginBottom: 2 }}>{row[1]}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62', letterSpacing: 1, marginBottom: 2 }}>{row[1]}</div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: row[2], lineHeight: 1 }}>{row[0]}</div>
               </div>
             );
@@ -143,8 +143,8 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
           {/* RTMP ingest info card */}
           <div style={{ background: 'rgba(255,26,60,.06)', border: '1px solid rgba(255,26,60,.15)', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#FF6B81', letterSpacing: 2, marginBottom: 4 }}>RTMP INGEST ENDPOINT</div>
-            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5', letterSpacing: 0.5 }}>rtmp://2.24.194.112:1935/live/&lt;stream-key&gt;</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 3 }}>OBS → Settings → Stream → Custom RTMP → paste above</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', letterSpacing: 0.5 }}>rtmp://2.24.194.112:1935/live/&lt;stream-key&gt;</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 3 }}>OBS → Settings → Stream → Custom RTMP → paste above</div>
           </div>
 
           {activeIn.length === 0 && staleIn.length === 0 && (
@@ -165,16 +165,16 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
                       <AvatarPortrait username={s.roomId} size={38} isLive={true} />
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
-                          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#EDE8F5' }}>{maskKey(s.roomId)}</div>
+                          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#F0E8D4' }}>{maskKey(s.roomId)}</div>
                           <span style={liveChip}>● LIVE</span>
                         </div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90' }}>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>
                           {'Updated ' + fmtAge(s.ageMs) + ' · Running ' + fmtDuration(s.startedAt)}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#FF1A3C', lineHeight: 1 }}>{s.viewers}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90' }}>VIEWERS</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62' }}>VIEWERS</div>
                       </div>
                     </div>
                     <div style={{ background: 'rgba(7,5,10,.6)', borderRadius: 6, padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -198,14 +198,14 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
 
           {staleIn.length > 0 && (
             <div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#7A6F90', letterSpacing: 2, marginBottom: 6 }}>◌ RECENTLY ENDED ({staleIn.length})</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 6 }}>◌ RECENTLY ENDED ({staleIn.length})</div>
               {staleIn.map(function(s) {
                 return (
                   <div key={s.roomId} style={card}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <AvatarPortrait username={s.roomId} size={32} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#7A6F90' }}>{maskKey(s.roomId)}</div>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#8A7A62' }}>{maskKey(s.roomId)}</div>
                         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#4A4060' }}>{'Last seen ' + fmtAge(s.ageMs)}</div>
                       </div>
                       <span style={staleChip}>ENDED</span>
@@ -224,8 +224,8 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
           {/* HLS output info */}
           <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.15)', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', letterSpacing: 2, marginBottom: 4 }}>HLS OUTPUT</div>
-            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#EDE8F5' }}>https://2.24.194.112/hls/&lt;stream-key&gt;/index.m3u8</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', marginTop: 3 }}>2s fragments · 10 segment playlist · compatible with any HLS player</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4' }}>https://2.24.194.112/hls/&lt;stream-key&gt;/index.m3u8</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 3 }}>2s fragments · 10 segment playlist · compatible with any HLS player</div>
           </div>
 
           {activeOut.length === 0 && (
@@ -243,7 +243,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
                   <AvatarPortrait username={s.roomId} size={36} isLive={s.alive} />
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
-                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#EDE8F5' }}>{maskKey(s.roomId)}</div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#F0E8D4' }}>{maskKey(s.roomId)}</div>
                       <span style={{ background: s.alive ? 'rgba(0,201,167,.12)' : 'rgba(255,26,60,.1)', border: '1px solid ' + (s.alive ? 'rgba(0,201,167,.35)' : 'rgba(255,26,60,.3)'), borderRadius: 20, padding: '2px 9px', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: s.alive ? '#00C9A7' : '#FF6B81', letterSpacing: 1 }}>
                         {s.alive ? '● RELAYING' : '◌ STOPPED'}
                       </span>
@@ -256,7 +256,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
                 {/* Destination badges */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {s.destinations.map(function(d, i) {
-                    var col = PLATFORM_COLORS[d.platform] || '#7A6F90';
+                    var col = PLATFORM_COLORS[d.platform] || '#8A7A62';
                     var icon = PLATFORM_ICONS[d.platform] || '→';
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, background: col + '12', border: '1px solid ' + col + '35', borderRadius: 6, padding: '4px 9px' }}>
@@ -290,15 +290,15 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <AvatarPortrait username={r.roomId} size={36} isLive={r.hasHost} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#EDE8F5', marginBottom: 2 }}>{maskKey(r.roomId)}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#F0E8D4', marginBottom: 2 }}>{maskKey(r.roomId)}</div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {r.hasHost && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '1px 6px' }}>HOST ONLINE</span>}
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{r.guests + ' guest' + (r.guests !== 1 ? 's' : '')}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{r.guests + ' guest' + (r.guests !== 1 ? 's' : '')}</span>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', lineHeight: 1 }}>{r.viewers}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#7A6F90' }}>VIEWERS</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62' }}>VIEWERS</div>
                   </div>
                 </div>
               </div>

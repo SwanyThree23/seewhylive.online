@@ -156,7 +156,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
             return (
               <div key={item[1]} style={{ textAlign: 'center', background: 'rgba(22,16,32,.6)', borderRadius: 6, padding: '6px 4px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C' }}>{item[0]}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1 }}>{item[1]}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{item[1]}</div>
               </div>
             );
           })}
@@ -169,13 +169,13 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           [viewers.toLocaleString(), 'VIEWERS',  '#C8FF00'],
           [fmtC(totalCreator),       'EARNED',   '#C9A84C'],
           [(gifts || []).length + '🎁','GIFTS',   '#C8FF00'],
-          ['48',                     'COUNTRIES','#00DEC0'],
+          ['48',                     'COUNTRIES','#C9A84C'],
           ['94/100',                 'ENG SCORE','#00C96A'],
           ['12.4m',                  'AVG WATCH','#5A8FFF'],
         ].map(function(row) {
           return (
             <div key={row[1]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90', letterSpacing: 1.5, marginBottom: 3 }}>{row[1]}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1.5, marginBottom: 3 }}>{row[1]}</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: row[2], lineHeight: 1.1 }}>{row[0]}</div>
             </div>
           );
@@ -184,7 +184,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
 
       {/* Engagement chart */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center' }}>
           ENGAGEMENT — LAST 12 MIN
           {isLive && (
             <span style={{ background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B81', marginLeft: 6 }}>● LIVE</span>
@@ -198,9 +198,9 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           })}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>12m ago</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>12m ago</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF' }}>PEAK: {peakEng}</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>now</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>now</span>
         </div>
       </div>
 
@@ -219,16 +219,16 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
 
       {/* Countries */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2, marginBottom: 8 }}>TOP VIEWER COUNTRIES</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>TOP VIEWER COUNTRIES</div>
         {TOP_COUNTRIES.map(function(row) {
           return (
             <div key={row[1]} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: 14, flexShrink: 0 }}>{row[0]}</span>
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', width: 56, flexShrink: 0 }}>{row[1]}</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', width: 56, flexShrink: 0 }}>{row[1]}</span>
               <div style={{ flex: 1, height: 5, background: '#241C34', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: row[2] + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)', borderRadius: 3 }} />
               </div>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', flexShrink: 0 }}>{row[2]}%</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', flexShrink: 0 }}>{row[2]}%</span>
             </div>
           );
         })}
@@ -248,29 +248,29 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           })}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>0:00</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>0:00</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC' }}>AVG HOLD: {RETENTION[Math.floor(RETENTION.length / 2)]}%</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>+20m</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>+20m</span>
         </div>
       </div>
 
       {/* Hourly viewers */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00DEC0', letterSpacing: 2, marginBottom: 8 }}>HOURLY VIEWERS — TODAY</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>HOURLY VIEWERS — TODAY</div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 50 }}>
           {HOURLY.map(function(v, i) {
             var peak = Math.max.apply(null, HOURLY);
             var h = Math.floor((v / peak) * 100);
             var isPeak = v === peak;
             return (
-              <div key={i} style={{ flex: 1, height: h + '%', background: isPeak ? 'linear-gradient(180deg,#C8FF00,#00DEC0)' : 'linear-gradient(180deg,#00DEC055,#00DEC022)', borderRadius: '2px 2px 0 0', minHeight: 3 }} />
+              <div key={i} style={{ flex: 1, height: h + '%', background: isPeak ? 'linear-gradient(180deg,#C8FF00,#C9A84C)' : 'linear-gradient(180deg,#C9A84C55,#C9A84C22)', borderRadius: '2px 2px 0 0', minHeight: 3 }} />
             );
           })}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>12AM</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>12AM</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C8FF00' }}>PEAK: {Math.max.apply(null, HOURLY).toLocaleString()} @ 6PM</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>11PM</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>11PM</span>
         </div>
       </div>
 
@@ -283,7 +283,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>CREATOR 90% — {fmtC(totalCreator)}</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>PLATFORM 10% — {fmtC(totalPlatform)}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>PLATFORM 10% — {fmtC(totalPlatform)}</span>
         </div>
       </div>
 
@@ -302,9 +302,9 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
                 <div style={{ flexShrink: 0 }}>
                   <AvatarPortrait username={row.from_user} size={28} rank={i < 3 ? i + 1 : undefined} />
                 </div>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', flex: 1 }}>{row.from_user}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{row.from_user}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(row.creator_cents)}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{row.gift_count} TXN</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{row.gift_count} TXN</span>
               </div>
               <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
@@ -319,9 +319,9 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
                 <div style={{ flexShrink: 0 }}>
                   <AvatarPortrait username={item[0]} size={28} rank={i < 3 ? i + 1 : undefined} />
                 </div>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', flex: 1 }}>{item[0]}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{item[0]}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(Math.floor(item[1] * CREATOR))}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{item[2]} TXN</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{item[2]} TXN</span>
               </div>
               <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
@@ -334,23 +334,23 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       {/* Ledger */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 2 }}>TRANSACTION LEDGER</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{visibleTxns.length} shown</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2 }}>TRANSACTION LEDGER</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{visibleTxns.length} shown</div>
         </div>
         <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, paddingBottom: 2 }}>
           {TX_TYPES.map(function(t) {
             var active = typeFilter === t;
-            var c = TYPE_COLORS[t] || '#7A6F90';
+            var c = TYPE_COLORS[t] || '#8A7A62';
             return (
               <button key={t} onClick={function() { setTypeFilter(t); }}
-                style={{ background: active ? (c + '22') : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? (c + '66') : '#241C34'), borderRadius: 999, padding: '2px 10px', color: active ? c : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
+                style={{ background: active ? (c + '22') : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? (c + '66') : '#241C34'), borderRadius: 999, padding: '2px 10px', color: active ? c : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
                 {t}
               </button>
             );
           })}
         </div>
         {visibleTxns.map(function(tx) {
-          var c = TYPE_COLORS[tx.type] || '#7A6F90';
+          var c = TYPE_COLORS[tx.type] || '#8A7A62';
           var creatorAmt = Math.floor(tx.amount * CREATOR);
           return (
             <div key={tx.id} style={{ background: 'rgba(7,5,10,.6)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', marginBottom: 6 }}>
@@ -358,11 +358,11 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
                 <span style={{ background: c + '18', border: '1px solid ' + c + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: c }}>
                   {tx.type.replace('_', ' ').toUpperCase()}
                 </span>
-                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#EDE8F5', flex: 1 }}>{tx.creator}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{tx.creator}</span>
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C' }}>{fmtC(tx.amount)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{tx.stream || tx.tier || '—'}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{tx.stream || tx.tier || '—'}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7' }}>→ {fmtC(creatorAmt)} creator</span>
               </div>
             </div>

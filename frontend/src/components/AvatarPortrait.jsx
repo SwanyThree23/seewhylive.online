@@ -89,7 +89,7 @@ export default function AvatarPortrait({ username, size, isLive, isHost, rank, s
           width: Math.floor(sz * 0.3),
           height: Math.floor(sz * 0.3),
           borderRadius: '50%',
-          background: RANK_COLORS[rank] || '#7A6F90',
+          background: RANK_COLORS[rank] || '#8A7A62',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -99,7 +99,7 @@ export default function AvatarPortrait({ username, size, isLive, isHost, rank, s
           fontWeight: 700,
           zIndex: 2,
           border: '1px solid rgba(0,0,0,.5)',
-          boxShadow: '0 0 6px ' + (RANK_COLORS[rank] || '#7A6F90'),
+          boxShadow: '0 0 6px ' + (RANK_COLORS[rank] || '#8A7A62'),
         }}>{'#' + rank}</div>
       )}
 

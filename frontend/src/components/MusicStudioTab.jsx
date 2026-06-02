@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 // ─── Palette ───────────────────────────────────────────────────────────────
-var BG    = '#0F0C14';
-var SURF  = '#130F1C';
-var CARD  = '#1A1526';
+var BG    = '#0E0C09';
+var SURF  = '#0E0C09';
+var CARD  = '#1A1510';
 var CARD2 = '#211A30';
 var GOLD  = '#C9A84C';
 var BURG  = '#800020';
-var TEAL  = '#00DEC0';
+var TEAL  = '#C9A84C';
 var RED   = '#FF1A3C';
-var TEXT  = '#EDE8F5';
-var MUTED = '#7A6F90';
-var DIM   = '#2E2545';
+var TEXT  = '#F0E8D4';
+var MUTED = '#8A7A62';
+var DIM   = '#2E2318';
 var BORD  = 'rgba(255,255,255,.06)';
 var BLUE  = '#5A8FFF';
 var PURP  = '#C084FC';
@@ -46,7 +46,7 @@ var GEN_STEPS = [
 var COVER_GRADIENTS = [
   'linear-gradient(135deg,#800020,#C01838)',
   'linear-gradient(135deg,#1a0533,#7928CA)',
-  'linear-gradient(135deg,#003d4d,#00DEC0)',
+  'linear-gradient(135deg,#003d4d,#C9A84C)',
   'linear-gradient(135deg,#1a2a00,#7CB518)',
   'linear-gradient(135deg,#2d1b00,#C9A84C)',
   'linear-gradient(135deg,#00104d,#5A8FFF)',

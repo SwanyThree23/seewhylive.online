@@ -81,18 +81,18 @@ export default function PushStreamTab({ isLive, addToast }) {
 
       {/* Status banner */}
       <div style={{ background: isLive ? 'rgba(128,0,32,.18)' : 'rgba(36,28,52,.7)', border: '1px solid ' + (isLive ? '#FF1A3C44' : '#241C34'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 10, height: 10, borderRadius: '50%', background: isLive ? '#FF1A3C' : '#7A6F90', boxShadow: isLive ? '0 0 8px #FF1A3C' : 'none', flexShrink: 0 }} />
+        <div style={{ width: 10, height: 10, borderRadius: '50%', background: isLive ? '#FF1A3C' : '#8A7A62', boxShadow: isLive ? '0 0 8px #FF1A3C' : 'none', flexShrink: 0 }} />
         <div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isLive ? '#EDE8F5' : '#7A6F90' }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isLive ? '#F0E8D4' : '#8A7A62' }}>
             {isLive ? '🔴 INGEST ACTIVE' : 'INGEST READY'}
           </div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90' }}>{RTMP_URL}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{RTMP_URL}</div>
         </div>
       </div>
 
       {/* RTMP endpoint card */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1 }}>SERVER / RTMP URL</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1 }}>SERVER / RTMP URL</div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <div style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 8px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C', wordBreak: 'break-all' }}>
             {RTMP_URL}
@@ -104,14 +104,14 @@ export default function PushStreamTab({ isLive, addToast }) {
           </button>
         </div>
 
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginTop: 4 }}>STREAM KEY</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginTop: 4 }}>STREAM KEY</div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <div style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 8px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#EDE8F5' }}>
+          <div style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 8px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#F0E8D4' }}>
             {keyVisible ? STREAM_KEY_PLACEHOLDER : '••••••••••••••••••••'}
           </div>
           <button
             onClick={function() { setKeyVisible(function(v) { return !v; }); }}
-            style={{ background: 'rgba(255,255,255,.05)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 8px', color: '#7A6F90', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>
+            style={{ background: 'rgba(255,255,255,.05)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 8px', color: '#8A7A62', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>
             {keyVisible ? '🙈' : '👁'}
           </button>
           <button
@@ -120,14 +120,14 @@ export default function PushStreamTab({ isLive, addToast }) {
             {copied === 'Stream Key' ? '✓' : 'COPY'}
           </button>
         </div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>
           Save key to KEYS tab for auto-inject on fanout.
         </div>
       </div>
 
       {/* Quality presets */}
       <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#7A6F90', letterSpacing: 1, marginBottom: 8 }}>QUALITY PRESET</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1, marginBottom: 8 }}>QUALITY PRESET</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
           {QUALITY_PRESETS.map(function(pr) {
             var active = selectedPreset === pr.id;
@@ -135,7 +135,7 @@ export default function PushStreamTab({ isLive, addToast }) {
               <button
                 key={pr.id}
                 onClick={function() { setSelectedPreset(pr.id); }}
-                style={{ flex: 1, padding: '6px 0', background: active ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (active ? '#C9A84C55' : '#241C34'), borderRadius: 6, color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '6px 0', background: active ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (active ? '#C9A84C55' : '#241C34'), borderRadius: 6, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                 {pr.label}
               </button>
             );
@@ -150,7 +150,7 @@ export default function PushStreamTab({ isLive, addToast }) {
           ].map(function(row) {
             return (
               <div key={row[0]}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7A6F90' }}>{row[0]}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{row[0]}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' }}>{row[1]}</div>
               </div>
             );
@@ -167,7 +167,7 @@ export default function PushStreamTab({ isLive, addToast }) {
               <button
                 key={t.id}
                 onClick={function() { setActiveSetup(t.id); }}
-                style={{ flex: 1, padding: '8px 0', background: active ? 'rgba(128,0,32,.25)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#7A6F90', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '8px 0', background: active ? 'rgba(128,0,32,.25)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #C9A84C' : '2px solid transparent', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
                 {t.label}
               </button>
             );

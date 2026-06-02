@@ -4,10 +4,10 @@ import AvatarPortrait from './AvatarPortrait.jsx';
 var GOLD_H  = '#E8C46A';
 var BURG    = '#800020';
 var BURG_H  = '#C01838';
-var TEAL_H  = '#00DEC0';
+var TEAL_H  = '#C9A84C';
 var MUTED   = '#6B5F82';
 var TEXT    = '#EDE8F4';
-var BG1     = '#0F0C14';
+var BG1     = '#0E0C09';
 var FAINT   = '#1C1530';
 var BORDER  = 'rgba(255,255,255,.07)';
 var GLASS   = 'rgba(13,10,20,.75)';
@@ -28,7 +28,7 @@ var COLLAB_REQUESTS = [
 
 var COLLAB_CREATORS = [
   { id: 'cc1', n: 'CaliBonesOG',    f: '🇺🇸', c: '#C01838', cat: 'Gaming',  followers: '48.2K', live: true,  v: 2847 },
-  { id: 'cc2', n: 'DJ_Cipher',      f: '🇯🇲', c: '#00DEC0', cat: 'Music',   followers: '24.1K', live: true,  v: 924  },
+  { id: 'cc2', n: 'DJ_Cipher',      f: '🇯🇲', c: '#C9A84C', cat: 'Music',   followers: '24.1K', live: true,  v: 924  },
   { id: 'cc3', n: 'JoyceMoore',     f: '🇺🇸', c: '#C084FC', cat: 'Talk',    followers: '31.5K', live: false, v: 0    },
   { id: 'cc4', n: 'AIverse_Pod',    f: '🇺🇸', c: '#9B4DCA', cat: 'Tech',    followers: '19.3K', live: false, v: 0    },
   { id: 'cc5', n: 'DrMuk_HH',       f: '🇺🇸', c: '#F59E0B', cat: 'STEM',    followers: '8.9K',  live: false, v: 0    },
