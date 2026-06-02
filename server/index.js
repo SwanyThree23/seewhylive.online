@@ -30,7 +30,7 @@ try {
     webpush = null;
   }
 } catch(wpErr) {
-  logger.warn('[push] web-push not loaded: ' + wpErr.message);
+  console.warn('[push] web-push not loaded: ' + wpErr.message);
 }
 
 var mediasoup    = require('./mediasoup');
