@@ -3,8 +3,18 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clampStr, LIMITS } from '@/lib/security';
 import { Button } from '@/components/ui/button';
-import { Languages, ShieldAlert, ShieldCheck, Send, AlertTriangle, Rocket } from 'lucide-react';
+import BottomSheet, { BottomSheetOption } from '@/components/ui/BottomSheet';
+import { Languages, ShieldAlert, Send, Rocket, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+
+const LANG_OPTIONS = [
+  { value: 'en', label: 'English',    flag: '🇺🇸' },
+  { value: 'es', label: 'Español',    flag: '🇪🇸' },
+  { value: 'fr', label: 'Français',   flag: '🇫🇷' },
+  { value: 'de', label: 'Deutsch',    flag: '🇩🇪' },
+  { value: 'pt', label: 'Português',  flag: '🇧🇷' },
+  { value: 'ja', label: '日本語',      flag: '🇯🇵' },
+];
 
 const PLATFORM_ICONS = {
   twitch:   { label: 'Twitch',  color: '#9146ff', icon: '🟣' },
@@ -38,6 +48,7 @@ export default function AggregatedChat({ roomId, currentUser, isHost, onMessages
   const [input, setInput] = useState('');
   const [translateEnabled, setTranslateEnabled] = useState(false);
   const [targetLang, setTargetLang] = useState('en');
+  const [langSheetOpen, setLangSheetOpen] = useState(false);
   const [modMap, setModMap] = useState({});       // msgId → status string
   const [translationMap, setTranslationMap] = useState({});
   const [isTranslating, setIsTranslating] = useState(false);
@@ -210,13 +221,32 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
     return () => clearInterval(iv);
   }, [pinnedMsg]);
 
-  // ── SEND ─────────────────────────────────────────────────────────────────────
+  // ── SEND (with optimistic update) ────────────────────────────────────────────
   const sendMessage = async () => {
     if (!input.trim() || !currentUser) return;
     const content = clampStr(input.trim(), LIMITS.CHAT_MESSAGE);
     const isRocket = boostMode;
     setInput('');
     setBoostMode(false);
+
+    // Optimistic: show the message instantly with a temp ID
+    const tempId = `opt-${Date.now()}`;
+    const optimisticMsg = {
+      id: tempId,
+      room_id: roomId,
+      user_id: currentUser.id,
+      user_name: currentUser.full_name || currentUser.email,
+      content,
+      platform: 'platform',
+      created_date: new Date().toISOString(),
+      _optimistic: true,
+    };
+    setMessages(prev => {
+      const next = [...prev, optimisticMsg];
+      onMessagesChange?.(next);
+      return next;
+    });
+
     if (isRocket) {
       setPinnedMsg({
         text: content,
@@ -227,14 +257,25 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
       setPinCountdown(30);
       toast.success('🚀 RocketChat launched! Message pinned for 30s');
     }
-    const msg = await base44.entities.Message.create({
-      room_id: roomId,
-      user_id: currentUser.id,
-      user_name: currentUser.full_name || currentUser.email,
-      content,
-      type: 'text',
-    });
-    if (msg) autoModerateSingle({ ...msg, id: msg.id });
+
+    try {
+      const msg = await base44.entities.Message.create({
+        room_id: roomId,
+        user_id: currentUser.id,
+        user_name: currentUser.full_name || currentUser.email,
+        content,
+        type: 'text',
+      });
+      // Replace the optimistic entry with the real one
+      if (msg) {
+        setMessages(prev => prev.map(m => m.id === tempId ? { ...msg, platform: 'platform' } : m));
+        autoModerateSingle({ ...msg, id: msg.id });
+      }
+    } catch {
+      // Roll back optimistic message on failure
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      toast.error('Message failed to send');
+    }
   };
 
   // ── RENDER ────────────────────────────────────────────────────────────────────
@@ -250,16 +291,17 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           ))}
           <span className="text-[10px] text-white/30 ml-1">Aggregated</span>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={targetLang}
-            onChange={e => setTargetLang(e.target.value)}
-            className="text-[10px] bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-white/60"
+        <div className="flex items-center gap-1.5">
+          {/* Language picker — BottomSheet instead of <select> */}
+          <button
+            onClick={() => setLangSheetOpen(true)}
+            className="flex items-center gap-1 h-6 px-2 rounded text-[10px] font-bold"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
-            {[['en','EN'],['es','ES'],['fr','FR'],['de','DE'],['pt','PT'],['ja','JA']].map(([v,l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
+            {LANG_OPTIONS.find(l => l.value === targetLang)?.flag}{' '}
+            {targetLang.toUpperCase()}
+            <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
+          </button>
           <Button
             size="sm"
             variant="ghost"
@@ -268,7 +310,7 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
             disabled={isTranslating}
           >
             <Languages className="w-3 h-3" />
-            {isTranslating ? '...' : translateEnabled ? 'On' : 'Translate All'}
+            {isTranslating ? '…' : translateEnabled ? 'On' : 'Translate'}
           </Button>
         </div>
       </div>
@@ -379,6 +421,23 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           <Send className="w-3.5 h-3.5" />
         </Button>
       </div>
+
+      {/* Language picker BottomSheet */}
+      <BottomSheet isOpen={langSheetOpen} onClose={() => setLangSheetOpen(false)} title="Translate to…">
+        {LANG_OPTIONS.map(opt => (
+          <BottomSheetOption
+            key={opt.value}
+            label={opt.label}
+            icon={opt.flag}
+            selected={targetLang === opt.value}
+            onSelect={() => {
+              setTargetLang(opt.value);
+              setLangSheetOpen(false);
+              if (translateEnabled) setTimeout(translateAll, 100);
+            }}
+          />
+        ))}
+      </BottomSheet>
     </div>
   );
 }
