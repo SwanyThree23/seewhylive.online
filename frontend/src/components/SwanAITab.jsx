@@ -295,7 +295,7 @@ export default function SwanAITab(props) {
             {/* Chat log */}
             <div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 6 }}>DIRECTOR CHAT</div>
-              <div ref={chatRef} style={{ background: 'rgba(7,5,10,.8)', border: '1px solid rgba(255,107,53,.12)', borderRadius: 12, padding: '10px', height: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7, scrollbarWidth: 'none' }}>
+              <div ref={chatRef} style={{ background: 'rgba(14,12,9,.8)', border: '1px solid rgba(255,107,53,.12)', borderRadius: 12, padding: '10px', height: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 7, scrollbarWidth: 'none' }}>
                 {msgs.map(function(m, i) {
                   var isUser = m.role === 'user';
                   return (
@@ -314,7 +314,7 @@ export default function SwanAITab(props) {
                             📌 PIN
                           </button>
                           <button onClick={function() { sendToRoom(m.text, i); }}
-                            style={{ background: sendingToRoom === i ? 'rgba(0,222,192,.18)' : 'rgba(0,222,192,.07)', border: '1px solid rgba(0,222,192,.2)', borderRadius: 5, padding: '2px 7px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 6.5, cursor: 'pointer', transition: 'background .2s' }}>
+                            style={{ background: sendingToRoom === i ? 'rgba(201,168,76,.18)' : 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 5, padding: '2px 7px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 6.5, cursor: 'pointer', transition: 'background .2s' }}>
                             {sendingToRoom === i ? '✓ SENT' : '📡 ROOM'}
                           </button>
                         </div>
@@ -467,7 +467,7 @@ export default function SwanAITab(props) {
                   navigator.clipboard && navigator.clipboard.writeText(notes).then(function() {
                     if (addToast) addToast('Notes copied!', 'success');
                   });
-                }} style={{ background: 'rgba(0,222,192,.08)', border: '1px solid rgba(0,222,192,.2)', borderRadius: 8, padding: '5px 10px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer' }}>
+                }} style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '5px 10px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer' }}>
                   📋 COPY
                 </button>
               )}

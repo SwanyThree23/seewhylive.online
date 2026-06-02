@@ -250,7 +250,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
   };
 
   var cardStyle = {
-    background: 'rgba(22,16,32,.8)',
+    background: 'rgba(26,21,16,.8)',
     border: '1px solid rgba(255,255,255,.07)',
     borderRadius: 12,
     padding: '20px',
@@ -383,7 +383,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
             var statusColor = r.status === 'LIVE' ? '#800020' : (r.status === 'ONLINE' ? '#C9A84C' : (r.status === 'NEW' ? '#C9A84C' : '#3D3450'));
             return (
               <div key={r.name} style={{
-                background: 'rgba(22,16,32,.8)',
+                background: 'rgba(26,21,16,.8)',
                 border: r.status === 'LIVE' ? '1px solid rgba(128,0,32,.35)' : '1px solid rgba(255,255,255,.06)',
                 borderRadius: 12,
                 padding: '14px 10px',
@@ -536,7 +536,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
         {/* Loser recap card */}
         <div style={{
-          background: 'rgba(22,16,32,.7)',
+          background: 'rgba(26,21,16,.7)',
           border: '1px solid rgba(255,255,255,.08)',
           borderRadius: 10,
           padding: '14px 16px',

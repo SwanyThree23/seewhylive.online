@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 var PRESETS = [
   { name: 'Washington Classic', gold: '#C9A84C', burg: '#800020', desc: 'Official tournament palette' },
   { name: 'Midnight Domino',    gold: '#E8C46A', burg: '#C01838', desc: 'Deep red night mode' },
-  { name: 'Cyber Teal',         gold: '#00C9A7', burg: '#00FFFF', desc: 'Electric neon finish' },
+  { name: 'Cyber Teal',         gold: '#C9A84C', burg: '#00FFFF', desc: 'Electric neon finish' },
   { name: 'Glitch Lime',        gold: '#E8FF47', burg: '#FF0040', desc: 'Fades battle mode' },
   { name: 'Royal Purple',       gold: '#C084FC', burg: '#5B2D8E', desc: 'Premium prestige' },
   { name: 'Monochrome',         gold: '#F0E8D4', burg: '#3D3450', desc: 'Clean minimal' },
@@ -39,7 +39,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
   function copyCssVars() {
     var g = branding.gold || '#C9A84C';
     var b = branding.burg || '#800020';
-    var css = ':root {\n  --sw-gold: ' + g + ';\n  --sw-burg: ' + b + ';\n  --sw-bg: #0E0C09;\n  --sw-text: #F0E8D4;\n  --sw-teal: #00C9A7;\n  --sw-muted: #8A7A62;\n}';
+    var css = ':root {\n  --sw-gold: ' + g + ';\n  --sw-burg: ' + b + ';\n  --sw-bg: #0E0C09;\n  --sw-text: #F0E8D4;\n  --sw-teal: #C9A84C;\n  --sw-muted: #8A7A62;\n}';
     if (navigator.clipboard) {
       navigator.clipboard.writeText(css).then(function() {
         setCssCopied(true);
@@ -95,7 +95,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
       </div>
 
       {/* Sub-tabs */}
-      <div style={{ display: 'flex', gap: 4, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3 }}>
+      <div style={{ display: 'flex', gap: 4, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: 3 }}>
         {TABS.map(function(t) {
           var active = tab === t[0];
           return (
@@ -111,14 +111,14 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
       {tab === 'theme' && (
         <>
           {/* Color presets */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+          <div style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>PRESETS</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {PRESETS.map(function(p) {
                 var isActive = gold === p.gold && burg === p.burg;
                 return (
                   <button key={p.name} onClick={function() { applyPreset(p); }}
-                    style={{ background: isActive ? 'rgba(201,168,76,.1)' : 'rgba(7,5,10,.7)', border: '1px solid ' + (isActive ? p.gold + '88' : '#241C34'), borderRadius: 8, padding: '8px 10px', cursor: 'pointer', textAlign: 'left', display: 'flex', gap: 8, alignItems: 'center' }}>
+                    style={{ background: isActive ? 'rgba(201,168,76,.1)' : 'rgba(14,12,9,.7)', border: '1px solid ' + (isActive ? p.gold + '88' : '#3D3020'), borderRadius: 8, padding: '8px 10px', cursor: 'pointer', textAlign: 'left', display: 'flex', gap: 8, alignItems: 'center' }}>
                     <div style={{ width: 28, height: 28, borderRadius: 6, background: 'linear-gradient(135deg,' + p.gold + ',' + p.burg + ')', flexShrink: 0 }} />
                     <div>
                       <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: isActive ? p.gold : '#F0E8D4', lineHeight: 1.2 }}>{p.name}</div>
@@ -131,7 +131,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
           </div>
 
           {/* Custom color pickers */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+          <div style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 10 }}>CUSTOM COLORS</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[['gold', 'Primary Gold', gold], ['burg', 'Accent Burgundy', burg]].map(function(row) {
@@ -144,7 +144,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
                     </div>
                     <input type="color" value={row[2]}
                       onChange={function(e) { update(row[0], e.target.value); }}
-                      style={{ width: 36, height: 36, padding: 2, background: 'none', border: '1px solid #241C34', borderRadius: 7, cursor: 'pointer' }}
+                      style={{ width: 36, height: 36, padding: 2, background: 'none', border: '1px solid #3D3020', borderRadius: 7, cursor: 'pointer' }}
                     />
                   </div>
                 );
@@ -153,14 +153,14 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
           </div>
 
           {/* Font selection */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+          <div style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>DISPLAY FONT</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {FONT_OPTIONS.map(function(fo) {
                 var active = font === fo.id;
                 return (
                   <button key={fo.id} onClick={function() { update('font', fo.id); }}
-                    style={{ background: active ? 'rgba(201,168,76,.1)' : 'rgba(7,5,10,.6)', border: '1px solid ' + (active ? gold + '66' : '#241C34'), borderRadius: 7, padding: '8px 12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    style={{ background: active ? 'rgba(201,168,76,.1)' : 'rgba(14,12,9,.6)', border: '1px solid ' + (active ? gold + '66' : '#3D3020'), borderRadius: 7, padding: '8px 12px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontFamily: FONT_FAMILIES[fo.id], fontSize: 15, color: active ? gold : '#F0E8D4', letterSpacing: active ? 3 : 1 }}>{fo.sample}</span>
                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: active ? gold : '#8A7A62' }}>{fo.label}</span>
                   </button>
@@ -170,10 +170,10 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
           </div>
 
           {/* Brand logo upload */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+          <div style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>BRAND LOGO</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 64, height: 64, borderRadius: 12, border: '2px dashed ' + (logoUrl ? gold : '#241C34'), background: 'rgba(7,5,10,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 12, border: '2px dashed ' + (logoUrl ? gold : '#3D3020'), background: 'rgba(14,12,9,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                 {logoUrl ? (
                   <img src={logoUrl} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : (
@@ -199,13 +199,13 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
           {OVERLAY_OPTS.map(function(opt) {
             var on = getToggle(opt.key);
             return (
-              <div key={opt.key} style={{ background: on ? 'rgba(201,168,76,.04)' : 'rgba(22,16,32,.5)', border: '1px solid ' + (on ? gold + '25' : '#241C34'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div key={opt.key} style={{ background: on ? 'rgba(201,168,76,.04)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (on ? gold + '25' : '#3D3020'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: on ? '#F0E8D4' : '#8A7A62' }}>{opt.label}</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: on ? gold : '#3D3450', letterSpacing: 1 }}>{on ? 'ENABLED' : 'HIDDEN'}</div>
                 </div>
                 <div onClick={function() { update(opt.key, !on); }}
-                  style={{ width: 36, height: 20, borderRadius: 999, background: on ? gold + 'cc' : '#241C34', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
+                  style={{ width: 36, height: 20, borderRadius: 999, background: on ? gold + 'cc' : '#3D3020', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
                   <div style={{ position: 'absolute', top: 3, left: on ? 18 : 3, width: 14, height: 14, borderRadius: '50%', background: on ? '#07050A' : '#8A7A62', transition: 'left .18s' }} />
                 </div>
               </div>
@@ -213,7 +213,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
           })}
 
           {/* Overlay opacity */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+          <div style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1 }}>OVERLAY OPACITY</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: gold }}>{Math.floor((branding.overlayOpacity || 0.85) * 100)}%</div>
@@ -271,7 +271,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
             {getToggle('showScoreBar') && (
               <div style={{ background: 'rgba(0,0,0,.5)', padding: '5px 14px', display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid ' + gold + '22' }}>
                 <span style={{ fontFamily: ff, fontSize: 13, color: '#00FFFF' }}>ALPHA 3</span>
-                <div style={{ flex: 1, height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
+                <div style={{ flex: 1, height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
                   <div style={{ width: '60%', background: gold }} />
                   <div style={{ flex: 1, background: '#FF0040' }} />
                 </div>
@@ -287,11 +287,11 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
           </div>
 
           {/* Color swatch strip */}
-          <div style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+          <div style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2 }}>ACTIVE PALETTE</div>
               <button onClick={copyCssVars}
-                style={{ background: cssCopied ? 'rgba(0,201,106,.15)' : 'rgba(90,143,255,.1)', border: '1px solid ' + (cssCopied ? 'rgba(0,201,106,.4)' : 'rgba(90,143,255,.3)'), borderRadius: 6, padding: '3px 10px', color: cssCopied ? '#00C96A' : '#5A8FFF', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ background: cssCopied ? 'rgba(201,168,76,.15)' : 'rgba(90,143,255,.1)', border: '1px solid ' + (cssCopied ? 'rgba(201,168,76,.4)' : 'rgba(90,143,255,.3)'), borderRadius: 6, padding: '3px 10px', color: cssCopied ? '#C9A84C' : '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
                 {cssCopied ? '✓ COPIED' : '&#x7B;&#x7D; CSS VARS'}
               </button>
             </div>

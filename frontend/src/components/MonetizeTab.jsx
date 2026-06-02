@@ -21,7 +21,7 @@ var CREATOR_SHARE = 0.90;
 var PLATFORM_SHARE = 0.10;
 
 var EARN_STREAMS = [
-  { id: 'superchat',    label: 'Super Chat',     icon: '💬', desc: 'Highlighted messages · 6 tiers $1–$50',        color: '#5A8FFF', action: 'SC in Quick Actions' },
+  { id: 'superchat',    label: 'Super Chat',     icon: '💬', desc: 'Highlighted messages · 6 tiers $1–$50',        color: '#C9A84C', action: 'SC in Quick Actions' },
   { id: 'subscription', label: 'Subscriptions',  icon: '⭐', desc: 'Monthly recurring · Fan/Supporter/RideOrDie',   color: GOLD,     action: 'Share your sub link' },
   { id: 'directpay',    label: 'Direct Pay',      icon: '💸', desc: 'PayPal/CashApp/Venmo/Zelle/Chime · instant',   color: AMBER,    action: 'Set handles in Direct Pay tab' },
   { id: 'tips',         label: 'Tips',            icon: '🎁', desc: 'One-tap micro-payments from viewers',           color: '#6B8F5E', action: 'Visible in Monetize tab' },

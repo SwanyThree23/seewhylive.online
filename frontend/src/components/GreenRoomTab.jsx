@@ -6,15 +6,15 @@ var PLATFORM = 0.10;
 
 var ROLE_COLORS = {
   host:    '#C9A84C',
-  cohost:  '#00C9A7',
-  'co-host': '#00C9A7',
-  guest:   '#5A8FFF',
+  cohost:  '#C9A84C',
+  'co-host': '#C9A84C',
+  guest:   '#C9A84C',
   viewer:  'rgba(176,160,192,.5)'
 };
 var ROLE_BG = {
   host:    'rgba(201,168,76,.18)',
-  cohost:  'rgba(0,201,167,.15)',
-  'co-host': 'rgba(0,201,167,.15)',
+  cohost:  'rgba(201,168,76,.15)',
+  'co-host': 'rgba(201,168,76,.15)',
   guest:   'rgba(90,143,255,.15)',
   viewer:  'rgba(36,28,52,.6)'
 };
@@ -275,7 +275,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           {audioOnly && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.3)', borderRadius: 999, padding: '3px 10px' }}>
               <span style={{ fontSize: 10 }}>🎙️</span>
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#5A8FFF', letterSpacing: 1 }}>AUDIO ONLY</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#C9A84C', letterSpacing: 1 }}>AUDIO ONLY</span>
             </div>
           )}
           {privateRoom && (
@@ -285,9 +285,9 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             </div>
           )}
           {paywallOn && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,201,106,.1)', border: '1px solid rgba(0,201,106,.3)', borderRadius: 999, padding: '3px 10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '3px 10px' }}>
               <span style={{ fontSize: 10 }}>💰</span>
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#00C96A', letterSpacing: 1 }}>${(Math.floor(paywallCents) / 100).toFixed(2)} ENTRY</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(paywallCents) / 100).toFixed(2)} ENTRY</span>
             </div>
           )}
         </div>
@@ -303,7 +303,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             <button
               key={t.id}
               onClick={function() { setSection(t.id); }}
-              style={{ flex: 1, minWidth: 0, position: 'relative', background: active ? 'rgba(128,0,32,.3)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? '#C01838' : '#241C34'), borderRadius: 6, padding: '7px 0', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+              style={{ flex: 1, minWidth: 0, position: 'relative', background: active ? 'rgba(128,0,32,.3)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? '#C01838' : '#3D3020'), borderRadius: 6, padding: '7px 0', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
               {t.label}
               {badge && (
                 <span style={{ position: 'absolute', top: -5, right: -5, width: 15, height: 15, borderRadius: '50%', background: '#FF1A3C', color: '#fff', fontFamily: "'DM Mono',monospace", fontSize: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #07050A' }}>
@@ -325,7 +325,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           {/* Stats bar */}
           <div style={{ display: 'flex', gap: 6 }}>
             {[
-              [roster.length,    'ONLINE',    '#00C9A7', 'rgba(0,201,167,.08)', 'rgba(0,201,167,.25)'],
+              [roster.length,    'ONLINE',    '#C9A84C', 'rgba(201,168,76,.08)', 'rgba(201,168,76,.25)'],
               [stageList.length, 'ON STAGE',  '#C9A84C', 'rgba(201,168,76,.08)', 'rgba(201,168,76,.25)'],
               [handQueue.length, 'HANDS UP',  '#FF6B81', 'rgba(255,26,60,.08)', 'rgba(255,26,60,.25)'],
             ].map(function(row) {
@@ -346,9 +346,9 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             var gRole     = g.role || 'viewer';
             var isSelf    = id === userId;
             return (
-              <div key={id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (isOnStage ? 'rgba(201,168,76,.3)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
+              <div key={id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (isOnStage ? 'rgba(201,168,76,.3)' : '#3D3020'), borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00C96A', boxShadow: '0 0 5px #00C96A88', flexShrink: 0 }} />
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 5px #C9A84C88', flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>
@@ -373,13 +373,13 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                       <button
                         onClick={function() { isMuted ? unmuteGuest(id) : muteGuest(id); }}
                         title={isMuted ? 'Unmute' : 'Mute'}
-                        style={{ width: 26, height: 26, borderRadius: 5, background: isMuted ? 'rgba(0,201,167,.2)' : 'rgba(255,26,60,.12)', border: '1px solid ' + (isMuted ? 'rgba(0,201,167,.4)' : 'rgba(255,26,60,.3)'), color: isMuted ? '#00C9A7' : '#FF6B81', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        style={{ width: 26, height: 26, borderRadius: 5, background: isMuted ? 'rgba(201,168,76,.2)' : 'rgba(255,26,60,.12)', border: '1px solid ' + (isMuted ? 'rgba(201,168,76,.4)' : 'rgba(255,26,60,.3)'), color: isMuted ? '#C9A84C' : '#FF6B81', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {isMuted ? '🔊' : '🔇'}
                       </button>
                       <button
                         onClick={function() { isOnStage ? removeFromStage(id) : inviteToStage(id); }}
                         title={isOnStage ? 'Remove from stage' : 'Add to stage'}
-                        style={{ width: 26, height: 26, borderRadius: 5, background: isOnStage ? 'rgba(255,107,53,.15)' : 'rgba(90,143,255,.15)', border: '1px solid ' + (isOnStage ? 'rgba(255,107,53,.4)' : 'rgba(90,143,255,.4)'), color: isOnStage ? '#FF6B35' : '#5A8FFF', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
+                        style={{ width: 26, height: 26, borderRadius: 5, background: isOnStage ? 'rgba(255,107,53,.15)' : 'rgba(90,143,255,.15)', border: '1px solid ' + (isOnStage ? 'rgba(255,107,53,.4)' : 'rgba(90,143,255,.4)'), color: isOnStage ? '#FF6B35' : '#C9A84C', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
                         {isOnStage ? '↓' : '↑'}
                       </button>
                       <button
@@ -394,7 +394,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
                 {/* Host: promote dropdown */}
                 {isHost && !isSelf && gRole !== 'host' && (
-                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #241C34', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #3D3020', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', flexShrink: 0 }}>PROMOTE TO:</span>
                     {['cohost', 'guest', 'viewer'].map(function(r) {
                       var active = gRole === r;
@@ -403,7 +403,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                           key={r}
                           onClick={function() { if (!active) promoteGuest(id, r); }}
                           disabled={active}
-                          style={{ padding: '3px 8px', background: active ? (ROLE_BG[r] || 'rgba(36,28,52,.6)') : 'rgba(22,16,32,.4)', border: '1px solid ' + (active ? (ROLE_COLORS[r] || '#8A7A62') + '55' : '#241C34'), borderRadius: 4, color: active ? (ROLE_COLORS[r] || '#8A7A62') : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: active ? 'default' : 'pointer', opacity: active ? 1 : 0.7 }}>
+                          style={{ padding: '3px 8px', background: active ? (ROLE_BG[r] || 'rgba(36,28,52,.6)') : 'rgba(26,21,16,.4)', border: '1px solid ' + (active ? (ROLE_COLORS[r] || '#8A7A62') + '55' : '#3D3020'), borderRadius: 4, color: active ? (ROLE_COLORS[r] || '#8A7A62') : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: active ? 'default' : 'pointer', opacity: active ? 1 : 0.7 }}>
                           {r.toUpperCase()}
                         </button>
                       );
@@ -421,7 +421,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
           {/* Current stage occupants */}
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>STAGE ROSTER</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>{stageList.length} / 6</div>
@@ -434,7 +434,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               var name = g ? (g.username || gid) : gid;
               var isSelf = gid === userId;
               return (
-                <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid #241C34' }}>
+                <div key={gid} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid #3D3020' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 5px #C9A84C88', flexShrink: 0 }} />
                   <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', flex: 1 }}>{name}</span>
                   {g && <RoleBadge role={g.role || 'guest'} />}
@@ -451,7 +451,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           </div>
 
           {/* Hand raise queue */}
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (handQueue.length > 0 ? 'rgba(255,26,60,.3)' : '#241C34'), borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (handQueue.length > 0 ? 'rgba(255,26,60,.3)' : '#3D3020'), borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81', letterSpacing: 2 }}>✋ HAND RAISE QUEUE</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: handQueue.length > 0 ? '#FF1A3C' : '#8A7A62' }}>{handQueue.length}</div>
@@ -460,7 +460,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 8 }}>No one waiting.</div>
             ) : handQueue.map(function(hq) {
               return (
-                <div key={hq.guestId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid #241C34' }}>
+                <div key={hq.guestId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid #3D3020' }}>
                   <div style={{ flexShrink: 0, position: 'relative' }}>
                     <AvatarPortrait username={hq.username} size={36} />
                     <span style={{ position: 'absolute', top: -2, right: -2, fontSize: 10 }}>✋</span>
@@ -477,12 +477,12 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                     <div style={{ display: 'flex', gap: 4 }}>
                       <button
                         onClick={function() { inviteToStage(hq.guestId); }}
-                        style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.4)', borderRadius: 6, padding: '4px 10px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                        style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, padding: '4px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
                         INVITE
                       </button>
                       <button
                         onClick={function() { setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== hq.guestId; }); }); }}
-                        style={{ background: 'none', border: '1px solid #241C34', borderRadius: 6, padding: '4px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                        style={{ background: 'none', border: '1px solid #3D3020', borderRadius: 6, padding: '4px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                         DENY
                       </button>
                     </div>
@@ -494,7 +494,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
           {/* Quick-invite from roster (host only) */}
           {isHost && roster.length > 0 && (
-            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>QUICK INVITE</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {roster.filter(function(g) {
@@ -510,7 +510,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', flex: 1 }}>{g.username || id}</span>
                       <button
                         onClick={function() { inviteToStage(id); }}
-                        style={{ background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.4)', borderRadius: 5, padding: '3px 10px', color: '#5A8FFF', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
+                        style={{ background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.4)', borderRadius: 5, padding: '3px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
                         + STAGE
                       </button>
                     </div>
@@ -531,8 +531,8 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
       {/* ── GUARD ──────────────────────────────────────────────────────────── */}
       {section === 'guard' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.25)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7', letterSpacing: 2, marginBottom: 12 }}>GUARDIAN AI THRESHOLDS</div>
+          <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 12 }}>GUARDIAN AI THRESHOLDS</div>
             {[
               ['FLAG (review)',  50, '#C9A84C'],
               ['MUTE (enforce)', 75, '#FF6B35'],
@@ -544,14 +544,14 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                     <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4' }}>{row[0]}</span>
                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: row[2] }}>{row[1]}%</span>
                   </div>
-                  <div style={{ background: '#241C34', borderRadius: 3, height: 6, overflow: 'hidden' }}>
-                    <div style={{ width: row[1] + '%', height: '100%', background: 'linear-gradient(90deg,#00C9A7,' + row[2] + ')', borderRadius: 3 }} />
+                  <div style={{ background: '#3D3020', borderRadius: 3, height: 6, overflow: 'hidden' }}>
+                    <div style={{ width: row[1] + '%', height: '100%', background: 'linear-gradient(90deg,#C9A84C,' + row[2] + ')', borderRadius: 3 }} />
                   </div>
                 </div>
               );
             })}
             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-              {[['12 LANGS', '#2A6BFF'], ['ACTIVE', '#C8FF00'], ['claude-haiku', '#9B4DCA']].map(function(s) {
+              {[['12 LANGS', '#C9A84C'], ['ACTIVE', '#C9A84C'], ['claude-haiku', '#9B4DCA']].map(function(s) {
                 return (
                   <span key={s[0]} style={{ background: s[1] + '18', border: '1px solid ' + s[1] + '44', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: s[1] }}>
                     {s[0]}
@@ -561,7 +561,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             </div>
           </div>
 
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 10 }}>AUTO-MODERATION RULES</div>
             {[
               { key: 'spamBurst',    label: 'Spam burst (5 msg / 3s)' },
@@ -571,12 +571,12 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             ].map(function(row) {
               var on = Boolean(modRules[row.key]);
               return (
-                <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid #241C34' }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: on ? '#00C9A7' : '#8A7A62', flexShrink: 0 }} />
+                <div key={row.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid #3D3020' }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: on ? '#C9A84C' : '#8A7A62', flexShrink: 0 }} />
                   <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, color: '#F0E8D4', flex: 1 }}>{row.label}</span>
                   <button
                     onClick={function() { toggleModRule(row.key); }}
-                    style={{ background: on ? 'rgba(0,201,167,.15)' : 'rgba(22,16,32,.5)', border: '1px solid ' + (on ? 'rgba(0,201,167,.4)' : '#241C34'), borderRadius: 5, padding: '3px 10px', color: on ? '#00C9A7' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontWeight: 700, fontSize: 8, cursor: 'pointer', minWidth: 36 }}>
+                    style={{ background: on ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (on ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 5, padding: '3px 10px', color: on ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontWeight: 700, fontSize: 8, cursor: 'pointer', minWidth: 36 }}>
                     {on ? 'ON' : 'OFF'}
                   </button>
                 </div>
@@ -595,7 +595,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               onChange={function(e) { setNewBan(e.target.value); }}
               onKeyDown={function(e) { if (e.key === 'Enter') addBan(); }}
               placeholder="Username to ban..."
-              style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+              style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
             />
             <button
               onClick={addBan}
@@ -608,12 +608,12 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           )}
           {banned.map(function(u) {
             return (
-              <div key={u} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '10px 12px' }}>
+              <div key={u} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '10px 12px' }}>
                 <span style={{ fontSize: 12, color: '#FF1A3C' }}>🚫</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#A09AB8', flex: 1 }}>{u}</span>
                 <button
                   onClick={function() { removeBan(u); }}
-                  style={{ background: 'none', border: '1px solid #241C34', borderRadius: 6, padding: '3px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
+                  style={{ background: 'none', border: '1px solid #3D3020', borderRadius: 6, padding: '3px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
                   UNBAN
                 </button>
               </div>
@@ -627,7 +627,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
           {/* Run of show segments */}
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>RUN OF SHOW</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>
@@ -639,7 +639,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               return (
                 <div key={seg.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid #1A1428' }}>
                   <button onClick={function() { toggleSegDone(seg.id); }}
-                    style={{ width: 18, height: 18, borderRadius: 4, background: seg.done ? 'rgba(0,201,167,.2)' : 'rgba(22,16,32,.8)', border: '2px solid ' + (seg.done ? '#00C9A7' : '#241C34'), flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00C9A7', fontSize: 10 }}>
+                    style={{ width: 18, height: 18, borderRadius: 4, background: seg.done ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.8)', border: '2px solid ' + (seg.done ? '#C9A84C' : '#3D3020'), flexShrink: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C9A84C', fontSize: 10 }}>
                     {seg.done ? '✓' : ''}
                   </button>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', width: 36, flexShrink: 0 }}>{seg.time}</span>
@@ -654,24 +654,24 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
             <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
               <input value={newSegTime} onChange={function(e) { setNewSegTime(e.target.value); }} placeholder="0:00"
-                style={{ width: 52, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9, flexShrink: 0 }} />
+                style={{ width: 52, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '6px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9, flexShrink: 0 }} />
               <input value={newSegTitle} onChange={function(e) { setNewSegTitle(e.target.value); }}
                 onKeyDown={function(e) { if (e.key === 'Enter') addSegment(); }}
                 placeholder="Segment title..."
-                style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '6px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11 }} />
+                style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '6px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11 }} />
               <button onClick={addSegment} style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '6px 12px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>+</button>
             </div>
           </div>
 
           {/* Freeform show notes */}
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2 }}>SHOW NOTES</div>
               <button onClick={function() {
                 if (navigator.clipboard) { navigator.clipboard.writeText(showNotes).catch(function() {}); }
                 if (addToast) addToast('Notes copied', 'info');
               }}
-                style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer' }}>
+                style={{ background: 'none', border: '1px solid #3D3020', borderRadius: 5, padding: '2px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer' }}>
                 📋 COPY
               </button>
             </div>
@@ -679,7 +679,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               value={showNotes}
               onChange={function(e) { setShowNotes(e.target.value); }}
               rows={8}
-              style={{ width: '100%', background: 'rgba(7,5,10,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box' }}
+              style={{ width: '100%', background: 'rgba(14,12,9,.7)', border: '1px solid #3D3020', borderRadius: 8, padding: '10px 12px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box' }}
             />
           </div>
         </div>
@@ -690,7 +690,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
           {/* Stream metadata card */}
-          <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 10 }}>STREAM INFO</div>
 
             <div style={{ marginBottom: 10 }}>
@@ -701,7 +701,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                 onKeyDown={function(e) { if (e.key === 'Enter') saveStreamInfo(); }}
                 disabled={!isHost}
                 placeholder="Stream title..."
-                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 7, padding: '8px 11px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box', opacity: isHost ? 1 : 0.5 }}
+                style={{ width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 11px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, boxSizing: 'border-box', opacity: isHost ? 1 : 0.5 }}
               />
             </div>
 
@@ -715,7 +715,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                       key={cat}
                       onClick={function() { if (isHost) setStreamCategory(cat); }}
                       disabled={!isHost}
-                      style={{ background: active ? 'rgba(192,24,56,.3)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (active ? '#C01838' : '#241C34'), borderRadius: 6, padding: '5px 11px', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: isHost ? 'pointer' : 'default', opacity: isHost ? 1 : 0.5 }}>
+                      style={{ background: active ? 'rgba(192,24,56,.3)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (active ? '#C01838' : '#3D3020'), borderRadius: 6, padding: '5px 11px', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: isHost ? 'pointer' : 'default', opacity: isHost ? 1 : 0.5 }}>
                       {cat}
                     </button>
                   );
@@ -731,7 +731,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                 disabled={!isHost}
                 rows={3}
                 placeholder="Describe this stream for your audience..."
-                style={{ width: '100%', background: 'rgba(7,5,10,.7)', border: '1px solid #241C34', borderRadius: 7, padding: '8px 11px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box', opacity: isHost ? 1 : 0.5 }}
+                style={{ width: '100%', background: 'rgba(14,12,9,.7)', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 11px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box', opacity: isHost ? 1 : 0.5 }}
               />
             </div>
 
@@ -746,15 +746,15 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
           {/* Co-host invite link — host only */}
           {isHost && (
-            <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.25)', borderRadius: 10, padding: '12px 14px' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7', letterSpacing: 2, marginBottom: 6 }}>CO-HOST INVITE LINK</div>
+            <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '12px 14px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 6 }}>CO-HOST INVITE LINK</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', lineHeight: 1.5, marginBottom: 10 }}>
                 One-time link granting co-host privileges. Share privately.
               </div>
               {cohostToken ? (
                 <div style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', background: 'rgba(7,5,10,.8)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 6, padding: '7px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '7px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {'seewhylive.online/join/' + (roomId || 'live') + '?role=cohost&token=' + cohostToken}
                     </div>
                     <button
@@ -763,7 +763,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                         if (navigator.clipboard) { navigator.clipboard.writeText(link).catch(function() {}); }
                         if (addToast) addToast('Co-host link copied', 'success');
                       }}
-                      style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 6, padding: '6px 12px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
+                      style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 6, padding: '6px 12px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
                       📋 COPY
                     </button>
                   </div>
@@ -775,14 +775,14 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               ) : null}
               <button
                 onClick={genCohostLink}
-                style={{ width: '100%', background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 8, padding: '9px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '9px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
                 {cohostToken ? '🔄 REGENERATE LINK' : '🔗 GENERATE CO-HOST LINK'}
               </button>
             </div>
           )}
 
           {/* Live preview card */}
-          <div style={{ background: 'rgba(22,16,32,.5)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.5)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>LIVE PREVIEW</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
               {isLive && (
@@ -808,12 +808,12 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: -4 }}>ROOM MODE CONTROLS</div>
 
           {/* Audio-Only Toggle */}
-          <div style={{ background: audioOnly ? 'rgba(90,143,255,.08)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (audioOnly ? 'rgba(90,143,255,.4)' : '#241C34'), borderRadius: 12, padding: '14px 16px', transition: 'border-color .2s' }}>
+          <div style={{ background: audioOnly ? 'rgba(90,143,255,.08)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (audioOnly ? 'rgba(90,143,255,.4)' : '#3D3020'), borderRadius: 12, padding: '14px 16px', transition: 'border-color .2s' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 16 }}>🎙️</span>
-                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: audioOnly ? '#5A8FFF' : '#F0E8D4' }}>Audio-Only Mode</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: audioOnly ? '#C9A84C' : '#F0E8D4' }}>Audio-Only Mode</span>
                 </div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', lineHeight: 1.5 }}>
                   {audioOnly
@@ -823,7 +823,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               </div>
               <button
                 onClick={toggleAudioOnly}
-                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: audioOnly ? '#5A8FFF' : '#241C34', border: '2px solid ' + (audioOnly ? '#5A8FFF' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
+                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: audioOnly ? '#C9A84C' : '#3D3020', border: '2px solid ' + (audioOnly ? '#C9A84C' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
                 <div style={{ position: 'absolute', top: 3, left: audioOnly ? 26 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
               </button>
             </div>
@@ -831,7 +831,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(90,143,255,.2)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {['🎵 Chill stream', '🎙️ Talk show', '📻 Radio vibe', '🎧 DJ session'].map(function(tag) {
                   return (
-                    <span key={tag} style={{ background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.25)', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 9, color: '#5A8FFF' }}>
+                    <span key={tag} style={{ background: 'rgba(90,143,255,.12)', border: '1px solid rgba(90,143,255,.25)', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 9, color: '#C9A84C' }}>
                       {tag}
                     </span>
                   );
@@ -841,7 +841,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           </div>
 
           {/* Private Room Toggle */}
-          <div style={{ background: privateRoom ? 'rgba(201,168,76,.06)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (privateRoom ? 'rgba(201,168,76,.4)' : '#241C34'), borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ background: privateRoom ? 'rgba(201,168,76,.06)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (privateRoom ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -856,7 +856,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               </div>
               <button
                 onClick={togglePrivateRoom}
-                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: privateRoom ? '#C9A84C' : '#241C34', border: '2px solid ' + (privateRoom ? '#C9A84C' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
+                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: privateRoom ? '#C9A84C' : '#3D3020', border: '2px solid ' + (privateRoom ? '#C9A84C' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
                 <div style={{ position: 'absolute', top: 3, left: privateRoom ? 26 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
               </button>
             </div>
@@ -864,7 +864,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(201,168,76,.2)' }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', marginBottom: 6 }}>INVITE LINK</div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', background: 'rgba(7,5,10,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '7px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ flex: 1, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '7px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {'https://seewhylive.online/join/' + (roomId || 'live') + '?private=1'}
                   </div>
                   <button
@@ -882,12 +882,12 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
           </div>
 
           {/* Paywall Toggle */}
-          <div style={{ background: paywallOn ? 'rgba(0,201,106,.06)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (paywallOn ? 'rgba(0,201,106,.4)' : '#241C34'), borderRadius: 12, padding: '14px 16px' }}>
+          <div style={{ background: paywallOn ? 'rgba(201,168,76,.06)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (paywallOn ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 16 }}>💰</span>
-                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: paywallOn ? '#00C96A' : '#F0E8D4' }}>Paid Entry (Paywall)</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: paywallOn ? '#C9A84C' : '#F0E8D4' }}>Paid Entry (Paywall)</span>
                 </div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', lineHeight: 1.5 }}>
                   {paywallOn
@@ -897,15 +897,15 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               </div>
               <button
                 onClick={togglePaywall}
-                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: paywallOn ? '#00C96A' : '#241C34', border: '2px solid ' + (paywallOn ? '#00C96A' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
+                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: paywallOn ? '#C9A84C' : '#3D3020', border: '2px solid ' + (paywallOn ? '#C9A84C' : '#3D3450'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
                 <div style={{ position: 'absolute', top: 3, left: paywallOn ? 26 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
               </button>
             </div>
-            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid ' + (paywallOn ? 'rgba(0,201,106,.2)' : '#1A1428') }}>
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid ' + (paywallOn ? 'rgba(201,168,76,.2)' : '#1A1428') }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 6 }}>ENTRY PRICE</div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(7,5,10,.8)', border: '1px solid ' + (paywallOn ? 'rgba(0,201,106,.3)' : '#241C34'), borderRadius: 8, padding: '0 10px', flex: 1 }}>
-                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: paywallOn ? '#00C96A' : '#8A7A62', marginRight: 4 }}>$</span>
+                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(14,12,9,.8)', border: '1px solid ' + (paywallOn ? 'rgba(201,168,76,.3)' : '#3D3020'), borderRadius: 8, padding: '0 10px', flex: 1 }}>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: paywallOn ? '#C9A84C' : '#8A7A62', marginRight: 4 }}>$</span>
                   <input
                     value={paywallInput}
                     onChange={function(e) { setPaywallInput(e.target.value); }}
@@ -925,7 +925,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                           setPaywallInput(amt.toFixed(2));
                           if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: true, amountCents: amt * 100 });
                         }}
-                        style={{ background: active ? 'rgba(0,201,106,.2)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (active ? 'rgba(0,201,106,.4)' : '#241C34'), borderRadius: 6, padding: '5px 8px', color: active ? '#00C96A' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                        style={{ background: active ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (active ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 6, padding: '5px 8px', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
                         ${amt}
                       </button>
                     );
@@ -934,7 +934,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               </div>
               {paywallOn && (
                 <div style={{ marginTop: 8, display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>
-                  <span>You receive: <span style={{ color: '#00C96A' }}>${(Math.floor(paywallCents * CREATOR) / 100).toFixed(2)}</span></span>
+                  <span>You receive: <span style={{ color: '#C9A84C' }}>${(Math.floor(paywallCents * CREATOR) / 100).toFixed(2)}</span></span>
                   <span>Platform: <span style={{ color: '#8A7A62' }}>${(Math.floor(paywallCents * PLATFORM) / 100).toFixed(2)}</span></span>
                 </div>
               )}

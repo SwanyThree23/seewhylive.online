@@ -73,12 +73,12 @@ export default function GiftLayer(props) {
         <div style={{
           position: 'absolute', top: '18%', left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(7,5,10,.96)',
+          background: 'rgba(14,12,9,.96)',
           border: '1.5px solid ' + (combo >= 5 ? GOLD : TEAL),
           borderRadius: 999, padding: '7px 22px',
           display: 'flex', alignItems: 'center', gap: 10,
           animation: 'comboPop .35s ease',
-          boxShadow: combo >= 5 ? '0 0 24px rgba(201,168,76,.35)' : '0 0 14px rgba(0,222,192,.25)',
+          boxShadow: combo >= 5 ? '0 0 24px rgba(201,168,76,.35)' : '0 0 14px rgba(201,168,76,.25)',
           whiteSpace: 'nowrap',
         }}>
           <span style={{ fontSize: 20 }}>{combo >= 10 ? '🔥' : combo >= 5 ? '💎' : '⚡'}</span>
@@ -106,8 +106,8 @@ export default function GiftLayer(props) {
         var valueCents  = Math.floor(g.value_cents || g.valueCents || 0);
         var isLegendary = valueCents >= 500;
         var isLarge     = valueCents >= 100;
-        var borderColor = isLegendary ? 'rgba(201,168,76,.85)' : isLarge ? 'rgba(0,222,192,.65)' : 'rgba(255,255,255,.14)';
-        var glowColor   = isLegendary ? 'rgba(201,168,76,.3)'  : isLarge ? 'rgba(0,222,192,.18)' : 'transparent';
+        var borderColor = isLegendary ? 'rgba(201,168,76,.85)' : isLarge ? 'rgba(201,168,76,.65)' : 'rgba(255,255,255,.14)';
+        var glowColor   = isLegendary ? 'rgba(201,168,76,.3)'  : isLarge ? 'rgba(201,168,76,.18)' : 'transparent';
         var sender      = g.from_user || g.fromUser || 'anon';
         var amtColor    = isLegendary ? GOLD : isLarge ? TEAL : '#A89CC8';
         var animDur     = isLegendary ? '4.2s' : '3.5s';

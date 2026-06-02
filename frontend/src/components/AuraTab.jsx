@@ -20,7 +20,7 @@ var INITIAL_MSG = { role: 'aura', text: '🤖 AURA ONLINE — SeeWhy LIVE v33 su
 var AURA_MODES = [
   { id: 'hype',  label: 'HYPE',  emoji: '🔥', desc: 'MAX energy. CAPS. Stadium vibes.', color: '#FF1564' },
   { id: 'sassy', label: 'SASSY', emoji: '💅', desc: 'Sharp & witty with light shade.',  color: '#C084FC' },
-  { id: 'calm',  label: 'CALM',  emoji: '🧊', desc: 'Analytical. Data-driven.',          color: '#00C9A7' },
+  { id: 'calm',  label: 'CALM',  emoji: '🧊', desc: 'Analytical. Data-driven.',          color: '#C9A84C' },
   { id: 'kind',  label: 'KIND',  emoji: '💛', desc: 'Warm. Inclusive. Community-first.', color: '#C9A84C' },
 ];
 
@@ -213,7 +213,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
               key={mode.id}
               onClick={function() { selectMode(mode); }}
               style={{
-                background: isActive ? (mode.color + '22') : 'rgba(22,16,32,.5)',
+                background: isActive ? (mode.color + '22') : 'rgba(26,21,16,.5)',
                 border: isActive ? ('1px solid ' + mode.color) : '1px solid rgba(255,255,255,.07)',
                 borderRadius: 8,
                 padding: '8px 10px',
@@ -342,7 +342,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
           </button>
           <button
             onClick={copyHistory}
-            style={{ background: 'rgba(0,201,167,.07)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 5, padding: '3px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+            style={{ background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 5, padding: '3px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
             &#x1F4CB; COPY
           </button>
           <button
@@ -360,7 +360,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
             value={customPrompt}
             onChange={function(e) { setCustomPrompt(e.target.value); }}
             rows={4}
-            style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, resize: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
+            style={{ width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, resize: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
           />
           <button
             onClick={function() { setPromptOpen(false); }}
@@ -395,7 +395,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
                 {m.role === 'aura' && (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC', letterSpacing: 1, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
                     {'🤖 AURA · ' + activeModeObj.emoji + ' ' + activeModeObj.label}
-                    {m.auto && <span style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 3, padding: '0px 4px', color: '#00C9A7', fontSize: 6, letterSpacing: 0.5 }}>AUTO</span>}
+                    {m.auto && <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 3, padding: '0px 4px', color: '#C9A84C', fontSize: 6, letterSpacing: 0.5 }}>AUTO</span>}
                   </div>
                 )}
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.4 }}>{m.text}</div>
@@ -419,7 +419,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
           onChange={function(e) { setInput(e.target.value); }}
           onKeyDown={function(e) { if (e.key === 'Enter') send(); }}
           placeholder="Ask AURA anything..."
-          style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+          style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
         />
         <button
           onClick={send}

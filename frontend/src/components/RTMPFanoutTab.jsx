@@ -168,11 +168,11 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
         <button
           onClick={pingServer}
           disabled={pingingServer}
-          style={{ background: pingingServer ? 'rgba(0,201,167,.1)' : 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,' + (pingingServer ? '.25' : '.45') + ')', borderRadius: 8, padding: '7px 12px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: pingingServer ? 'not-allowed' : 'pointer', opacity: pingingServer ? 0.7 : 1, flexShrink: 0 }}>
+          style={{ background: pingingServer ? 'rgba(201,168,76,.1)' : 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,' + (pingingServer ? '.25' : '.45') + ')', borderRadius: 8, padding: '7px 12px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: pingingServer ? 'not-allowed' : 'pointer', opacity: pingingServer ? 0.7 : 1, flexShrink: 0 }}>
           {pingingServer ? '⟳ PINGING...' : '📡 PING SERVER'}
         </button>
         {pingMs !== null && (
-          <div style={{ background: pingMs < 150 ? 'rgba(0,201,167,.12)' : 'rgba(255,107,0,.12)', border: '1px solid ' + (pingMs < 150 ? 'rgba(0,201,167,.4)' : 'rgba(255,107,0,.4)'), borderRadius: 6, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: pingMs < 150 ? '#00C9A7' : '#FF6B35', flexShrink: 0 }}>
+          <div style={{ background: pingMs < 150 ? 'rgba(201,168,76,.12)' : 'rgba(255,107,0,.12)', border: '1px solid ' + (pingMs < 150 ? 'rgba(201,168,76,.4)' : 'rgba(255,107,0,.4)'), borderRadius: 6, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: pingMs < 150 ? '#C9A84C' : '#FF6B35', flexShrink: 0 }}>
             {'● ' + pingMs + 'ms'}
           </div>
         )}
@@ -197,7 +197,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
         var isTesting = Boolean(testing[p.id]);
 
         return (
-          <div key={p.id} style={{ background: isOn ? p.color + '0a' : 'rgba(22,16,32,.5)', border: '1px solid ' + (isOn ? p.color + '44' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
+          <div key={p.id} style={{ background: isOn ? p.color + '0a' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? p.color + '44' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
             {/* Top row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: 6, background: p.color + '22', border: '1px solid ' + p.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0, color: p.color }}>
@@ -208,12 +208,12 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   {p.name}
                   {p.locked && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', marginLeft: 4 }}>PRIMARY</span>}
                 </div>
-                {lat && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: lat < 100 ? '#00C9A7' : lat < 150 ? '#C9A84C' : '#FF1A3C' }}>{lat}ms</div>}
+                {lat && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: lat < 100 ? '#C9A84C' : lat < 150 ? '#C9A84C' : '#FF1A3C' }}>{lat}ms</div>}
               </div>
               {/* Toggle */}
               <div
                 onClick={function() { toggle(p.id); }}
-                style={{ width: 32, height: 18, borderRadius: 999, background: isOn ? '#800020' : '#241C34', position: 'relative', cursor: p.locked ? 'not-allowed' : 'pointer', transition: 'background .2s', flexShrink: 0, boxShadow: isOn ? '0 0 10px #FF1A3C44' : 'none' }}>
+                style={{ width: 32, height: 18, borderRadius: 999, background: isOn ? '#800020' : '#3D3020', position: 'relative', cursor: p.locked ? 'not-allowed' : 'pointer', transition: 'background .2s', flexShrink: 0, boxShadow: isOn ? '0 0 10px #FF1A3C44' : 'none' }}>
                 <div style={{ position: 'absolute', top: 3, left: isOn ? 16 : 3, width: 12, height: 12, borderRadius: '50%', background: isOn ? '#C9A84C' : '#8A7A62', transition: 'left .18s' }} />
               </div>
             </div>
@@ -226,17 +226,17 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   value={keys[p.id] || ''}
                   onChange={function(e) { setKeys(function(prev) { return Object.assign({}, prev, { [p.id]: e.target.value }); }); }}
                   placeholder="Stream key..."
-                  style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '5px 8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
+                  style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '5px 8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
                 />
                 <button
                   onClick={function() { setRevealed(function(prev) { return Object.assign({}, prev, { [p.id]: !prev[p.id] }); }); }}
-                  style={{ background: 'rgba(255,255,255,.05)', border: '1px solid #241C34', borderRadius: 6, padding: '4px 8px', color: '#8A7A62', fontSize: 10, cursor: 'pointer' }}>
+                  style={{ background: 'rgba(255,255,255,.05)', border: '1px solid #3D3020', borderRadius: 6, padding: '4px 8px', color: '#8A7A62', fontSize: 10, cursor: 'pointer' }}>
                   {revealed[p.id] ? '🙈' : '👁'}
                 </button>
                 <button
                   onClick={function() { testConnection(p); }}
                   disabled={isTesting}
-                  style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 6, padding: '4px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isTesting ? 'not-allowed' : 'pointer', opacity: isTesting ? 0.6 : 1 }}>
+                  style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isTesting ? 'not-allowed' : 'pointer', opacity: isTesting ? 0.6 : 1 }}>
                   {isTesting ? '...' : 'TEST'}
                 </button>
               </div>
@@ -249,7 +249,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>BITRATE</span>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: p.color }}>{Math.floor(bps / 1000)}kbps</span>
                 </div>
-                <div style={{ height: 4, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: 4, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: bpsPct + '%', background: 'linear-gradient(90deg,' + p.color + '88,' + p.color + ')', borderRadius: 2, transition: 'width .4s ease' }} />
                 </div>
               </div>
@@ -267,15 +267,15 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
         var isTesting = Boolean(testing[cid]);
         var lat     = latency[cid];
         return (
-          <div key={cid} style={{ background: isOn ? 'rgba(90,143,255,.06)' : 'rgba(22,16,32,.5)', border: '1px solid ' + (isOn ? 'rgba(90,143,255,.4)' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
+          <div key={cid} style={{ background: isOn ? 'rgba(90,143,255,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(90,143,255,.4)' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#5A8FFF' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#C9A84C' }}>
                 📡
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isOn ? '#F0E8D4' : '#8A7A62', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{dest.name}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{dest.url}</div>
-                {lat && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: lat < 100 ? '#00C9A7' : lat < 150 ? '#C9A84C' : '#FF1A3C' }}>{lat}ms</div>}
+                {lat && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: lat < 100 ? '#C9A84C' : lat < 150 ? '#C9A84C' : '#FF1A3C' }}>{lat}ms</div>}
               </div>
               <div
                 onClick={function() {
@@ -285,7 +285,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                     return next;
                   });
                 }}
-                style={{ width: 32, height: 18, borderRadius: 999, background: isOn ? '#800020' : '#241C34', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0, boxShadow: isOn ? '0 0 10px #FF1A3C44' : 'none' }}>
+                style={{ width: 32, height: 18, borderRadius: 999, background: isOn ? '#800020' : '#3D3020', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0, boxShadow: isOn ? '0 0 10px #FF1A3C44' : 'none' }}>
                 <div style={{ position: 'absolute', top: 3, left: isOn ? 16 : 3, width: 12, height: 12, borderRadius: '50%', background: isOn ? '#C9A84C' : '#8A7A62', transition: 'left .18s' }} />
               </div>
               <button
@@ -308,11 +308,11 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   });
                 }}
                 placeholder="Stream key..."
-                style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '5px 8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
+                style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '5px 8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
               />
               <button
                 onClick={function() { setCustomRevealed(function(prev) { return Object.assign({}, prev, { [cid]: !prev[cid] }); }); }}
-                style={{ background: 'rgba(255,255,255,.05)', border: '1px solid #241C34', borderRadius: 6, padding: '4px 8px', color: '#8A7A62', fontSize: 10, cursor: 'pointer' }}>
+                style={{ background: 'rgba(255,255,255,.05)', border: '1px solid #3D3020', borderRadius: 6, padding: '4px 8px', color: '#8A7A62', fontSize: 10, cursor: 'pointer' }}>
                 {customRevealed[cid] ? '🙈' : '👁'}
               </button>
               <button
@@ -327,7 +327,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   }, 1200 + Math.floor(Math.random() * 800));
                 }}
                 disabled={isTesting}
-                style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 6, padding: '4px 8px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isTesting ? 'not-allowed' : 'pointer', opacity: isTesting ? 0.6 : 1 }}>
+                style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isTesting ? 'not-allowed' : 'pointer', opacity: isTesting ? 0.6 : 1 }}>
                 {isTesting ? '...' : 'TEST'}
               </button>
             </div>
@@ -335,10 +335,10 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>BITRATE</span>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF' }}>{Math.floor(bps / 1000)}kbps</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>{Math.floor(bps / 1000)}kbps</span>
                 </div>
-                <div style={{ height: 4, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: bpsPct + '%', background: 'linear-gradient(90deg,rgba(90,143,255,.6),#5A8FFF)', borderRadius: 2, transition: 'width .4s ease' }} />
+                <div style={{ height: 4, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: bpsPct + '%', background: 'linear-gradient(90deg,rgba(90,143,255,.6),#C9A84C)', borderRadius: 2, transition: 'width .4s ease' }} />
                 </div>
               </div>
             )}
@@ -350,13 +350,13 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
       <div>
         <button
           onClick={function() { setShowAddCustom(function(v) { return !v; }); }}
-          style={{ width: '100%', padding: '9px', background: showAddCustom ? 'rgba(90,143,255,.12)' : 'rgba(22,16,32,.7)', border: '1px dashed ' + (showAddCustom ? 'rgba(90,143,255,.5)' : 'rgba(90,143,255,.25)'), borderRadius: 8, color: showAddCustom ? '#5A8FFF' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+          style={{ width: '100%', padding: '9px', background: showAddCustom ? 'rgba(90,143,255,.12)' : 'rgba(26,21,16,.7)', border: '1px dashed ' + (showAddCustom ? 'rgba(90,143,255,.5)' : 'rgba(90,143,255,.25)'), borderRadius: 8, color: showAddCustom ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
           {showAddCustom ? '✕ CANCEL' : '+ ADD CUSTOM RTMP'}
         </button>
 
         {showAddCustom && (
           <div style={{ marginTop: 8, background: 'rgba(90,143,255,.05)', border: '1px solid rgba(90,143,255,.2)', borderRadius: 10, padding: '12px' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#5A8FFF', letterSpacing: 2, marginBottom: 10 }}>CUSTOM RTMP DESTINATION</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 2, marginBottom: 10 }}>CUSTOM RTMP DESTINATION</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginBottom: 3 }}>NAME</div>
@@ -364,7 +364,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   value={newCustom.name}
                   onChange={function(e) { setNewCustom(function(prev) { return Object.assign({}, prev, { name: e.target.value }); }); }}
                   placeholder="My RTMP Server"
-                  style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}
+                  style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}
                 />
               </div>
               <div>
@@ -373,7 +373,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   value={newCustom.url}
                   onChange={function(e) { setNewCustom(function(prev) { return Object.assign({}, prev, { url: e.target.value }); }); }}
                   placeholder="rtmp://your-server.com/live"
-                  style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
+                  style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
                 />
               </div>
               <div>
@@ -383,7 +383,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                   value={newCustom.key}
                   onChange={function(e) { setNewCustom(function(prev) { return Object.assign({}, prev, { key: e.target.value }); }); }}
                   placeholder="your-stream-key"
-                  style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
+                  style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
                 />
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -396,12 +396,12 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
                     setShowAddCustom(false);
                     addToast('Custom RTMP destination added', 'success');
                   }}
-                  style={{ flex: 2, padding: '8px', background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.4)', borderRadius: 7, color: '#5A8FFF', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                  style={{ flex: 2, padding: '8px', background: 'rgba(90,143,255,.15)', border: '1px solid rgba(90,143,255,.4)', borderRadius: 7, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                   ✓ ADD DESTINATION
                 </button>
                 <button
                   onClick={function() { setShowAddCustom(false); setNewCustom({ name: '', url: '', key: '' }); }}
-                  style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid #241C34', borderRadius: 7, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid #3D3020', borderRadius: 7, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                   CANCEL
                 </button>
               </div>

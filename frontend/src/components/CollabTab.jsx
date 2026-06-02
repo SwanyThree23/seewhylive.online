@@ -250,7 +250,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
               return (
                 <div
                   key={req.id}
-                  style={{ background: FAINT, border: '1px solid ' + (isPending ? req.color + '44' : 'rgba(0,222,192,.2)'), borderRadius: 12, overflow: 'hidden' }}>
+                  style={{ background: FAINT, border: '1px solid ' + (isPending ? req.color + '44' : 'rgba(201,168,76,.2)'), borderRadius: 12, overflow: 'hidden' }}>
 
                   {/* Top accent bar */}
                   <div style={{ height: 3, background: 'linear-gradient(90deg,' + req.color + ',' + req.color + '44)' }} />
@@ -286,7 +286,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button
                           onClick={function() { acceptRequest(req.id); }}
-                          style={{ flex: 1, background: 'linear-gradient(135deg,rgba(0,222,192,.18),rgba(0,222,192,.08))', border: '1px solid rgba(0,222,192,.4)', borderRadius: 8, padding: '9px 0', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                          style={{ flex: 1, background: 'linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.08))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, padding: '9px 0', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
                           ✓ ACCEPT
                         </button>
                         <button
@@ -296,7 +296,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                         </button>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,222,192,.08)', border: '1px solid rgba(0,222,192,.25)', borderRadius: 8, padding: '9px 14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 8, padding: '9px 14px' }}>
                         <div style={{ width: 7, height: 7, borderRadius: '50%', background: TEAL_H, boxShadow: '0 0 6px ' + TEAL_H }} />
                         <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 12, color: TEAL_H, letterSpacing: 1 }}>
                           COLLAB ACTIVE — {req.split} SPLIT
@@ -339,7 +339,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                     <button
                       key={s}
                       onClick={function() { setInviteSplit(s); }}
-                      style={{ background: isActive ? 'rgba(0,222,192,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isActive ? 'rgba(0,222,192,.4)' : BORDER), borderRadius: 7, padding: '6px 12px', color: isActive ? TEAL_H : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                      style={{ background: isActive ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isActive ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 7, padding: '6px 12px', color: isActive ? TEAL_H : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
                       {s}
                     </button>
                   );
@@ -412,9 +412,9 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
               return (
                 <div
                   key={req.id}
-                  style={{ background: FAINT, border: '1px solid rgba(0,222,192,.2)', borderRadius: 12, overflow: 'hidden' }}>
+                  style={{ background: FAINT, border: '1px solid rgba(201,168,76,.2)', borderRadius: 12, overflow: 'hidden' }}>
 
-                  <div style={{ height: 3, background: 'linear-gradient(90deg,' + TEAL_H + ',rgba(0,222,192,.2))' }} />
+                  <div style={{ height: 3, background: 'linear-gradient(90deg,' + TEAL_H + ',rgba(201,168,76,.2))' }} />
 
                   <div style={{ padding: '14px 16px' }}>
                     {/* Header row */}
@@ -426,7 +426,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                         <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 14, color: TEXT }}>{req.from}</div>
                         <div style={{ fontFamily: fM, fontSize: 8, color: req.color, letterSpacing: 1 }}>{req.type}</div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(0,222,192,.08)', border: '1px solid rgba(0,222,192,.25)', borderRadius: 999, padding: '3px 10px', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 999, padding: '3px 10px', flexShrink: 0 }}>
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: TEAL_H, boxShadow: '0 0 6px ' + TEAL_H }} />
                         <span style={{ fontFamily: fU, fontWeight: 700, fontSize: 9, color: TEAL_H, letterSpacing: 1 }}>ACTIVE</span>
                       </div>
@@ -449,7 +449,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                     <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                       <button
                         onClick={function() { addToast('📡 Collab stream shared to all platforms!', 'info'); }}
-                        style={{ flex: 1, background: 'linear-gradient(135deg,rgba(0,222,192,.16),rgba(0,222,192,.07))', border: '1px solid rgba(0,222,192,.35)', borderRadius: 8, padding: '9px 0', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                        style={{ flex: 1, background: 'linear-gradient(135deg,rgba(201,168,76,.16),rgba(201,168,76,.07))', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '9px 0', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
                         📡 SHARE STREAM
                       </button>
                       <button
@@ -462,7 +462,7 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                     {/* Mini chat panel */}
                     <div
                       ref={function(el) { chatBoxRefs.current[req.id] = el; }}
-                      style={{ maxHeight: 120, overflowY: 'auto', background: 'rgba(7,5,10,.7)', border: '1px solid rgba(0,222,192,.12)', borderRadius: 8, padding: 8, marginBottom: 8 }}>
+                      style={{ maxHeight: 120, overflowY: 'auto', background: 'rgba(14,12,9,.7)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 8, padding: 8, marginBottom: 8 }}>
                       {msgs.length === 0 && (
                         <div style={{ fontFamily: fM, fontSize: 9, color: MUTED, textAlign: 'center', padding: '8px 0' }}>
                           No messages yet — say hi!
@@ -497,11 +497,11 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
                           if (e.key === 'Enter') { sendChat(req.id, req.from); }
                         }}
                         placeholder={'Message ' + req.from + '…'}
-                        style={{ flex: 1, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(0,222,192,.18)', borderRadius: 7, padding: '7px 10px', color: TEXT, fontFamily: fM, fontSize: 10, outline: 'none' }}
+                        style={{ flex: 1, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 7, padding: '7px 10px', color: TEXT, fontFamily: fM, fontSize: 10, outline: 'none' }}
                       />
                       <button
                         onClick={function() { sendChat(req.id, req.from); }}
-                        style={{ background: 'linear-gradient(135deg,rgba(0,222,192,.22),rgba(0,222,192,.10))', border: '1px solid rgba(0,222,192,.4)', borderRadius: 7, padding: '7px 13px', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                        style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.22),rgba(201,168,76,.10))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 7, padding: '7px 13px', color: TEAL_H, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
                         SEND
                       </button>
                     </div>

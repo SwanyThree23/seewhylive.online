@@ -31,7 +31,7 @@ var GUARDIAN_LOG = [
   '14:23:44  PASSED  domino_fan3 — clean message',
 ];
 
-var ACTION_COLORS = { blocked: '#FF1A3C', stripped: '#C9A84C', held: '#C084FC', passed: '#00C9A7' };
+var ACTION_COLORS = { blocked: '#FF1A3C', stripped: '#C9A84C', held: '#C084FC', passed: '#C9A84C' };
 
 var VIEWS = [
   { id: 'rules',   label: 'RULES'   },
@@ -305,14 +305,14 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
 
       {/* MODERATION STATS PANEL */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '10px 14px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '10px 14px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>MODERATION STATS</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
           {[
             ['MESSAGES SCANNED', String(allowed + blocked), '#F0E8D4'],
             ['BLOCKED',          String(blocked),           '#FF1A3C'],
             ['BLOCK RATE',       blockRate + '%',           '#C9A84C'],
-            ['WORD FILTERS',     String(banned.length),     '#00C9A7'],
+            ['WORD FILTERS',     String(banned.length),     '#C9A84C'],
           ].map(function(row) {
             return (
               <div key={row[0]} style={{ background: 'rgba(15,12,20,.6)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 6, padding: '6px 10px' }}>
@@ -325,22 +325,22 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       </div>
 
       {/* SUBSCRIBER-ONLY MODE */}
-      <div style={{ background: subscriberOnly ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (subscriberOnly ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ background: subscriberOnly ? 'rgba(201,168,76,.1)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (subscriberOnly ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: subscriberOnly ? '#C9A84C' : '#F0E8D4' }}>SUBSCRIBER-ONLY CHAT</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginTop: 2 }}>Only active subscribers can chat</div>
         </div>
         <button
           onClick={toggleSubscriberOnly}
-          style={{ background: subscriberOnly ? 'rgba(201,168,76,.25)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (subscriberOnly ? '#C9A84C' : '#241C34'), borderRadius: 20, padding: '5px 14px', color: subscriberOnly ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+          style={{ background: subscriberOnly ? 'rgba(201,168,76,.25)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (subscriberOnly ? '#C9A84C' : '#3D3020'), borderRadius: 20, padding: '5px 14px', color: subscriberOnly ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
           {subscriberOnly ? 'ON' : 'OFF'}
         </button>
       </div>
 
       {/* Header */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: guardOn ? '#00C9A7' : '#8A7A62', boxShadow: guardOn ? '0 0 8px #00C9A7' : 'none' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: guardOn ? '#C9A84C' : '#8A7A62', boxShadow: guardOn ? '0 0 8px #C9A84C' : 'none' }} />
           <div>
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#F0E8D4' }}>GUARDIAN AI</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{guardOn ? 'ACTIVE — monitoring chat' : 'PAUSED'}</div>
@@ -348,7 +348,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
         </div>
         <button
           onClick={function() { setGuardOn(function(v) { return !v; }); addToast('Guardian ' + (guardOn ? 'paused' : 'activated'), guardOn ? 'error' : 'success'); }}
-          style={{ background: guardOn ? 'rgba(0,201,167,.15)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (guardOn ? '#00C9A744' : '#C9A84C44'), borderRadius: 6, padding: '5px 12px', color: guardOn ? '#00C9A7' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+          style={{ background: guardOn ? 'rgba(201,168,76,.15)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (guardOn ? '#C9A84C44' : '#C9A84C44'), borderRadius: 6, padding: '5px 12px', color: guardOn ? '#C9A84C' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
           {guardOn ? 'PAUSE' : 'ACTIVATE'}
         </button>
       </div>
@@ -364,12 +364,12 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         {[
-          ['ALLOWED',   String(allowed),    '#00C9A7'],
+          ['ALLOWED',   String(allowed),    '#C9A84C'],
           ['BLOCKED',   String(blocked),    '#FF1A3C'],
           ['BLOCK RATE', blockRate + '%',   '#C9A84C'],
         ].map(function(row) {
           return (
-            <div key={row[0]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+            <div key={row[0]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 3 }}>{row[0]}</div>
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: row[2] }}>{row[1]}</div>
             </div>
@@ -378,7 +378,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       </div>
 
       {/* View tabs */}
-      <div style={{ display: 'flex', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, overflow: 'hidden' }}>
         {VIEWS.map(function(v) {
           var active = view === v.id;
           return (
@@ -400,7 +400,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {rules.map(function(r) {
             return (
-              <div key={r.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (r.enabled ? '#00C9A722' : '#241C34'), borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div key={r.id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (r.enabled ? '#C9A84C22' : '#3D3020'), borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: r.enabled ? '#F0E8D4' : '#8A7A62' }}>{r.label}</div>
@@ -410,7 +410,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
                 </div>
                 <button
                   onClick={function() { toggleRule(r.id); }}
-                  style={{ background: r.enabled ? 'rgba(0,201,167,.2)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (r.enabled ? '#00C9A7' : '#241C34'), borderRadius: 20, padding: '4px 10px', color: r.enabled ? '#00C9A7' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ background: r.enabled ? 'rgba(201,168,76,.2)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (r.enabled ? '#C9A84C' : '#3D3020'), borderRadius: 20, padding: '4px 10px', color: r.enabled ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
                   {r.enabled ? 'ON' : 'OFF'}
                 </button>
               </div>
@@ -423,11 +423,11 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       {view === 'flags' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {flags.length === 0 && (
-            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '16px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No flagged messages</div>
+            <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '16px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No flagged messages</div>
           )}
           {flags.map(function(f) {
             return (
-              <div key={f.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + ((ACTION_COLORS[f.action] || '#241C34') + '33'), borderRadius: 8, padding: '8px 12px' }}>
+              <div key={f.id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + ((ACTION_COLORS[f.action] || '#3D3020') + '33'), borderRadius: 8, padding: '8px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <AvatarPortrait username={f.user} size={30} />
@@ -439,7 +439,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{(f.rule || f.reason || '') + ' · ' + f.ts}</div>
                   <div style={{ display: 'flex', gap: 5 }}>
-                    <button onClick={function() { dismissFlag(f.id); }} style={{ background: 'rgba(0,201,167,.1)', border: '1px solid #00C9A744', borderRadius: 4, padding: '3px 8px', color: '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>DISMISS</button>
+                    <button onClick={function() { dismissFlag(f.id); }} style={{ background: 'rgba(201,168,76,.1)', border: '1px solid #C9A84C44', borderRadius: 4, padding: '3px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>DISMISS</button>
                     <button onClick={function() { banUserFromFlag(f); }} style={{ background: 'rgba(255,26,60,.1)', border: '1px solid #FF1A3C44', borderRadius: 4, padding: '3px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>BAN USER</button>
                   </div>
                 </div>
@@ -458,7 +458,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
               onChange={function(e) { setNewWord(e.target.value); }}
               onKeyDown={function(e) { if (e.key === 'Enter') addWord(); }}
               placeholder="add banned word..."
-              style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#F0E8D4', outline: 'none' }}
+              style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#F0E8D4', outline: 'none' }}
             />
             <button
               onClick={addWord}
@@ -484,12 +484,12 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
       {view === 'banned' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {bannedUsers.length === 0 && (
-            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '16px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No banned users</div>
+            <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '16px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>No banned users</div>
           )}
           {bannedUsers.map(function(u, i) {
             var isShadow = shadowBanned[u.userId];
             return (
-              <div key={i} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div key={i} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
                   <AvatarPortrait username={u.username} size={34} />
                   <div>
@@ -526,7 +526,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
         </div>
       )}
       {view === 'log' && (
-        <div style={{ background: 'rgba(7,5,10,.9)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto' }} ref={logRef}>
+        <div style={{ background: 'rgba(14,12,9,.9)', border: '1px solid #3D3020', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto' }} ref={logRef}>
           {guardLog.map(function(entry, i) {
             var action = entry.indexOf('BLOCKED') !== -1 ? 'BLOCKED' : entry.indexOf('STRIPPED') !== -1 ? 'STRIPPED' : entry.indexOf('HELD') !== -1 ? 'HELD' : 'PASSED';
             var color = ACTION_COLORS[action.toLowerCase()] || '#8A7A62';

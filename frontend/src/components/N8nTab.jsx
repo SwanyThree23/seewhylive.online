@@ -4,7 +4,7 @@ var GOLD   = '#C9A84C';
 var GOLD_H = '#E8C46A';
 var BURG   = '#800020';
 var BURG_H = '#C01838';
-var TEAL   = '#00C9A7';
+var TEAL   = '#C9A84C';
 var TEAL_H = '#C9A84C';
 var LIME   = '#B4E628';
 var PURP_H = '#C084FC';
@@ -78,7 +78,7 @@ function makeLogLine() {
 }
 
 function logLineColor(line) {
-  if (line.indexOf('✓') !== -1) return '#00C9A7';
+  if (line.indexOf('✓') !== -1) return '#C9A84C';
   if (line.indexOf('✗') !== -1) return '#FF1A3C';
   if (line.indexOf('↺') !== -1) return '#C9A84C';
   return TEXT_M;
@@ -331,7 +331,7 @@ export default function N8nTab({ addToast, isLive }) {
                 var dotColor = wf.enabled ? statusColor(wf.status) : '#8A7A62';
                 var cardBorder = wf.enabled
                   ? (isSelected ? wf.color : BORDER)
-                  : '#241C34';
+                  : '#3D3020';
                 return (
                   React.createElement('div', {
                     key: wf.id,
