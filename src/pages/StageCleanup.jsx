@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2, RefreshCw, AlertTriangle, CheckCircle, Layers, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -85,117 +81,108 @@ export default function StageCleanupPage() {
               <p className="text-sm text-muted-foreground">Remove ghost/ended stages to keep the platform tidy</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+          <button onClick={() => refetch()} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', borderRadius:8, background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'#fff', fontSize:13, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
             <RefreshCw className="w-4 h-4" /> Refresh
-          </Button>
+          </button>
         </div>
 
         {/* Controls */}
-        <Card>
-          <CardContent className="pt-6 pb-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Older than</span>
-                <Select value={String(ageDays)} onValueChange={v => setAgeDays(Number(v))}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AGE_OPTIONS.map(o => (
-                      <SelectItem key={o.days} value={String(o.days)}>{o.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2 ml-auto flex-wrap">
-                <Badge variant="outline" className="text-orange-600 border-orange-300">
-                  {ghostStages.length} ghost stage{ghostStages.length !== 1 ? 's' : ''} found
-                </Badge>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  disabled={ghostStages.length === 0 || deleteMutation.isPending}
-                  onClick={handleDeleteAll}
-                  className="gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete All ({ghostStages.length})
-                </Button>
-              </div>
+        <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Older than</span>
+              <select
+                value={String(ageDays)}
+                onChange={e => setAgeDays(Number(e.target.value))}
+                style={{ width:128, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box' }}
+              >
+                {AGE_OPTIONS.map(o => (
+                  <option key={o.days} value={String(o.days)}>{o.label}</option>
+                ))}
+              </select>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="flex items-center gap-2 ml-auto flex-wrap">
+              <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'transparent', color:'#ea580c', border:'1px solid #fdba74' }}>
+                {ghostStages.length} ghost stage{ghostStages.length !== 1 ? 's' : ''} found
+              </span>
+              <button
+                disabled={ghostStages.length === 0 || deleteMutation.isPending}
+                onClick={handleDeleteAll}
+                style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', borderRadius:8, background:'#dc2626', color:'#fff', border:'none', fontSize:13, cursor: ghostStages.length === 0 || deleteMutation.isPending ? 'not-allowed' : 'pointer', opacity: ghostStages.length === 0 || deleteMutation.isPending ? 0.5 : 1, fontFamily:'Barlow Condensed, sans-serif' }}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete All ({ghostStages.length})
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Stages', value: stages.length, icon: Layers, color: 'text-blue-600' },
-            { label: 'Ghost / Orphaned', value: ghostStages.length, icon: AlertTriangle, color: 'text-orange-600' },
-            { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, color: 'text-green-600' },
-            { label: 'Cleaned Up', value: deletedCount, icon: Trash2, color: 'text-slate-500' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <Card key={label}>
-              <CardHeader className="pb-3">
-                <CardDescription>{label}</CardDescription>
-                <CardTitle className="text-3xl flex items-center gap-2">
-                  <Icon className={`w-6 h-6 ${color}`} />
-                  {value}
-                </CardTitle>
-              </CardHeader>
-            </Card>
+            { label: 'Total Stages', value: stages.length, icon: Layers, iconColor: '#2563eb' },
+            { label: 'Ghost / Orphaned', value: ghostStages.length, icon: AlertTriangle, iconColor: '#ea580c' },
+            { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, iconColor: '#16a34a' },
+            { label: 'Cleaned Up', value: deletedCount, icon: Trash2, iconColor: '#64748b' },
+          ].map(({ label, value, icon: Icon, iconColor }) => (
+            <div key={label} style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+              <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginBottom:6 }}>{label}</div>
+              <div style={{ fontSize:30, fontWeight:700, display:'flex', alignItems:'center', gap:8, color:'#fff' }}>
+                <Icon style={{ width:24, height:24, color: iconColor }} />
+                {value}
+              </div>
+            </div>
           ))}
         </div>
 
         {/* Ghost Stage List */}
         {isLoading ? (
-          <Card><CardContent className="py-12 text-center text-muted-foreground">Loading stages...</CardContent></Card>
+          <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+            <div style={{ padding:'48px 0', textAlign:'center', color:'rgba(255,255,255,0.5)' }}>Loading stages...</div>
+          </div>
         ) : ghostStages.length === 0 ? (
-          <Card>
-            <CardContent className="py-16 text-center space-y-3">
+          <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+            <div style={{ padding:'64px 0', textAlign:'center' }} className="space-y-3">
               <CheckCircle className="w-14 h-14 mx-auto text-green-500" />
               <p className="text-lg font-semibold">All clean!</p>
               <p className="text-sm text-muted-foreground">No ghost stages older than {ageDays} day{ageDays !== 1 ? 's' : ''} found.</p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             {ghostStages.map(stage => {
               const { label, color } = getRoomStatus(stage.room_id);
               const room = roomMap[stage.room_id];
               return (
-                <Card key={stage.id} className="border-orange-100">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-medium truncate">{stage.name}</span>
-                          <Badge variant="outline" className="capitalize text-xs">{stage.type}</Badge>
-                          <Badge className={`text-xs ${color}`}>{label}</Badge>
-                          {!stage.is_active && (
-                            <Badge className="text-xs bg-slate-100 text-slate-600">Inactive</Badge>
-                          )}
-                        </div>
-                        <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
-                          <span>Room: {room?.title || 'Deleted'}</span>
-                          <span>Created: {new Date(stage.created_date).toLocaleDateString()}</span>
-                          <span>Age: {Math.floor((Date.now() - new Date(stage.created_date)) / 86400000)}d</span>
-                        </div>
+                <div key={stage.id} style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(255,165,0,0.15)', borderRadius:16, padding:16 }}>
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="font-medium truncate">{stage.name}</span>
+                        <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'transparent', color:'rgba(255,255,255,0.7)', border:'1px solid rgba(255,255,255,0.3)', textTransform:'capitalize' }}>{stage.type}</span>
+                        <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'transparent', color: color.includes('red') ? '#dc2626' : color.includes('orange') ? '#ea580c' : '#64748b', border: color.includes('red') ? '1px solid #dc2626' : color.includes('orange') ? '1px solid #ea580c' : '1px solid #64748b' }}>{label}</span>
+                        {!stage.is_active && (
+                          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(100,116,139,0.15)', color:'#64748b', border:'1px solid rgba(100,116,139,0.3)' }}>Inactive</span>
+                        )}
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600 border-red-200 hover:bg-red-50 gap-1 shrink-0"
-                        onClick={() => handleDeleteOne(stage.id)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Delete
-                      </Button>
+                      <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
+                        <span>Room: {room?.title || 'Deleted'}</span>
+                        <span>Created: {new Date(stage.created_date).toLocaleDateString()}</span>
+                        <span>Age: {Math.floor((Date.now() - new Date(stage.created_date)) / 86400000)}d</span>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <button
+                      style={{ display:'flex', alignItems:'center', gap:4, padding:'6px 12px', borderRadius:8, background:'transparent', color:'#dc2626', border:'1px solid #fca5a5', fontSize:13, cursor: deleteMutation.isPending ? 'not-allowed' : 'pointer', opacity: deleteMutation.isPending ? 0.5 : 1, fontFamily:'Barlow Condensed, sans-serif', flexShrink:0 }}
+                      onClick={() => handleDeleteOne(stage.id)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>

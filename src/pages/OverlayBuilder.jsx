@@ -206,20 +206,22 @@ export default function OverlayBuilderPage() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Preset selector */}
-          <select onChange={e => { if (e.target.value) applyPreset(e.target.value); e.target.value = ''; }}
-            className="text-[10px] px-2 py-1.5 rounded-lg outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
-            <option value="">Load Preset…</option>
-            {Object.keys(PRESETS).map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <select onChange={e => { if (e.target.value) applyPreset(e.target.value); e.target.value = ''; }}
+              style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <option value="">Load Preset…</option>
+              {Object.keys(PRESETS).map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
           {/* Load layout */}
           {layouts.length > 0 && (
-            <select value={selectedLayout || ''} onChange={e => setSelectedLayout(e.target.value || null)}
-              className="text-[10px] px-2 py-1.5 rounded-lg outline-none"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
-              <option value="">New Layout</option>
-              {layouts.map(l => <option key={l.id} value={l.id}>{l.name}{l.is_active ? ' ●' : ''}</option>)}
-            </select>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <select value={selectedLayout || ''} onChange={e => setSelectedLayout(e.target.value || null)}
+                style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <option value="">New Layout</option>
+                {layouts.map(l => <option key={l.id} value={l.id}>{l.name}{l.is_active ? ' ●' : ''}</option>)}
+              </select>
+            </div>
           )}
           <input value={layoutName} onChange={e => setLayoutName(e.target.value)}
             className="px-2 py-1.5 rounded-lg text-[10px] outline-none w-32"

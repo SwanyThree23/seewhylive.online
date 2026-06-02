@@ -116,10 +116,18 @@ export default function NewsletterPage() {
           <div className="lg:col-span-2 space-y-4">
             <DarkCard title="Create Newsletter" desc="Engage your community with email updates">
               <label style={lbl}>Community</label>
-              <select style={inp} value={selectedCommunity} onChange={e => setSelectedCommunity(e.target.value)}>
-                <option value="">Select community…</option>
-                {communities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                <button onClick={() => setSelectedCommunity('')}
+                  style={{ padding: '6px 14px', borderRadius: 99, fontSize: 11, border: `1px solid ${!selectedCommunity ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: !selectedCommunity ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: !selectedCommunity ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                  None
+                </button>
+                {communities.map(c => (
+                  <button key={c.id} onClick={() => setSelectedCommunity(c.id)}
+                    style={{ padding: '6px 14px', borderRadius: 99, fontSize: 11, border: `1px solid ${selectedCommunity === c.id ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: selectedCommunity === c.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: selectedCommunity === c.id ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                    {c.name}
+                  </button>
+                ))}
+              </div>
 
               <label style={lbl}>Subject Line</label>
               <input style={inp} value={title} onChange={e => setTitle(e.target.value)} placeholder="Your weekly community update…" />

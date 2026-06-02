@@ -1,9 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Upload, Video, Clock, Lock, Globe, Tag, Play, Share2, X, CheckCircle } from 'lucide-react';
@@ -12,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import ShareButtons from '../components/shared/ShareButtons';
+
+const GOLD = '#D4AF37';
 
 const MAX_DURATION_SECONDS = 600; // 10 minutes
 
@@ -127,7 +124,7 @@ export default function VideoPost() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">← Back</Button>
+            <button style={{ padding:'6px 12px', borderRadius:8, background:'transparent', border:'none', color:'rgba(255,255,255,0.6)', fontSize:13, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>← Back</button>
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -149,9 +146,9 @@ export default function VideoPost() {
                 <Upload className="w-12 h-12 mx-auto mb-4 text-[#d4af37]/50" />
                 <p className="text-white font-semibold mb-1">Click to select video</p>
                 <p className="text-white/40 text-sm">MP4, MOV, WebM • Max 10 min • Max 500MB</p>
-                <Badge className="mt-3 bg-[#d4af37]/10 text-[#d4af37] border-[#d4af37]/30">
-                  <Clock className="w-3 h-3 mr-1" /> 10 min max
-                </Badge>
+                <span style={{ display:'inline-flex', alignItems:'center', gap:4, marginTop:12, fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.1)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)' }}>
+                  <Clock className="w-3 h-3" /> 10 min max
+                </span>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -178,41 +175,40 @@ export default function VideoPost() {
                     <X className="w-4 h-4 text-white" />
                   </button>
                   {videoDuration > 0 && (
-                    <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-0">
-                      <Clock className="w-3 h-3 mr-1" />
+                    <span style={{ position:'absolute', bottom:8, right:8, display:'inline-flex', alignItems:'center', gap:4, fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(0,0,0,0.7)', color:'#fff', border:'none' }}>
+                      <Clock className="w-3 h-3" />
                       {formatDuration(videoDuration)} / {formatDuration(MAX_DURATION_SECONDS)}
-                    </Badge>
+                    </span>
                   )}
                 </div>
 
                 {/* Duration warning */}
                 {videoDuration > 0 && (
-                  <Progress
-                    value={(videoDuration / MAX_DURATION_SECONDS) * 100}
-                    className={`h-1.5 ${videoDuration > MAX_DURATION_SECONDS ? 'bg-red-900' : 'bg-white/10'}`}
-                  />
+                  <div style={{ height:6, borderRadius:4, background: videoDuration > MAX_DURATION_SECONDS ? 'rgba(127,29,29,0.5)' : 'rgba(255,255,255,0.08)' }}>
+                    <div style={{ height:'100%', width:`${Math.min((videoDuration / MAX_DURATION_SECONDS) * 100, 100)}%`, background:'#D4AF37', borderRadius:4 }} />
+                  </div>
                 )}
 
                 {/* Form */}
                 <div className="space-y-3 bg-[rgba(255,255,255,0.04)] border border-[rgba(212,175,55,0.1)] rounded-xl p-5">
-                  <Input
+                  <input
                     value={form.title}
                     onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Video title *"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
-                  <Textarea
+                  <textarea
                     value={form.description}
                     onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Description (optional)"
                     rows={3}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', height:80 }}
                   />
-                  <Input
+                  <input
                     value={form.tags}
                     onChange={e => setForm(prev => ({ ...prev, tags: e.target.value }))}
                     placeholder="Tags (comma-separated)"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
 
                   {/* Privacy & Paywall */}
@@ -247,14 +243,14 @@ export default function VideoPost() {
                   {form.isPaywalled && (
                     <div className="flex items-center gap-2">
                       <span className="text-white/60 text-sm">$</span>
-                      <Input
+                      <input
                         value={form.paywallPrice}
                         onChange={e => setForm(prev => ({ ...prev, paywallPrice: e.target.value }))}
                         placeholder="Price"
                         type="number"
                         min="0.99"
                         step="0.50"
-                        className="bg-white/5 border-white/10 text-white w-28"
+                        style={{ width:112, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                       />
                       <span className="text-white/40 text-xs">per view</span>
                     </div>
@@ -264,18 +260,20 @@ export default function VideoPost() {
                 {uploading && (
                   <div className="space-y-2">
                     <p className="text-xs text-white/50 text-center">Uploading... {uploadProgress}%</p>
-                    <Progress value={uploadProgress} className="h-2" />
+                    <div style={{ height:8, borderRadius:4, background:'rgba(255,255,255,0.08)' }}>
+                      <div style={{ height:'100%', width:`${uploadProgress}%`, background:GOLD, borderRadius:4 }} />
+                    </div>
                   </div>
                 )}
 
-                <Button
-                  className="w-full bg-[#d4af37] text-black hover:bg-[#f5e6a3] font-bold py-5"
+                <button
+                  style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'14px 20px', borderRadius:8, background:GOLD, color:'#000', border:'none', fontSize:15, fontWeight:900, cursor: (uploading || videoDuration > MAX_DURATION_SECONDS || !form.title.trim()) ? 'not-allowed' : 'pointer', opacity: (uploading || videoDuration > MAX_DURATION_SECONDS || !form.title.trim()) ? 0.5 : 1, fontFamily:'Barlow Condensed, sans-serif' }}
                   onClick={handleUpload}
                   disabled={uploading || videoDuration > MAX_DURATION_SECONDS || !form.title.trim()}
                 >
-                  <Video className="w-4 h-4 mr-2" />
+                  <Video className="w-4 h-4" />
                   {uploading ? 'Uploading...' : 'Post Video'}
-                </Button>
+                </button>
               </div>
             )}
           </div>
@@ -291,20 +289,20 @@ export default function VideoPost() {
               <p className="text-white/40">Your video is now live</p>
             </div>
             <div className="flex flex-col gap-3 max-w-xs mx-auto">
-              <Button
-                className="bg-[#d4af37] text-black hover:bg-[#f5e6a3]"
+              <button
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'10px 16px', borderRadius:8, background:GOLD, color:'#000', border:'none', fontSize:14, fontWeight:900, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
                 onClick={() => setShareOpen(true)}
               >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share to Instagram, TikTok & more
-              </Button>
+                <Share2 className="w-4 h-4" />
+                Share to Instagram, TikTok &amp; more
+              </button>
               <div className="flex justify-center">
                 <ShareButtons url={publishedUrl} title={`Watch my video: ${form.title}`} />
               </div>
               <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" className="w-full text-white/60 hover:text-white">
+                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', width:'100%', padding:'10px 16px', borderRadius:8, background:'transparent', color:'rgba(255,255,255,0.6)', border:'1px solid rgba(255,255,255,0.15)', fontSize:14, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
                   Back to Home
-                </Button>
+                </button>
               </Link>
             </div>
           </div>

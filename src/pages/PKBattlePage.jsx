@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { isSafeUrl } from '@/lib/security';
-import { Badge } from '@/components/ui/badge';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -235,9 +233,9 @@ function WinnerOverlay({ winner, onClose }) {
         <Crown className="w-10 h-10 text-[#d4af37] mx-auto mb-3" />
         <p className="text-white/60 text-lg uppercase tracking-widest mb-2">Winner</p>
         <h2 className="text-5xl font-black text-[#d4af37] mb-6">{winner}</h2>
-        <Button onClick={onClose} className="bg-[#d4af37] text-black font-bold px-8">
+        <button onClick={onClose} style={{ background: '#D4AF37', color: '#000', fontWeight: 700, padding: '10px 32px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>
           Close
-        </Button>
+        </button>
       </motion.div>
     </motion.div>
   );
@@ -432,9 +430,9 @@ export default function PKBattlePage() {
       <div className="min-h-screen bg-gradient-to-br from-[#0d0618] via-[#1a0030] to-[#0d0618] flex items-center justify-center px-4">
         <div className="w-full max-w-lg">
           <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" size="sm" className="text-white/40 hover:text-white gap-1.5 mb-6">
+            <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 24, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>
               <ArrowLeft className="w-4 h-4" /> Back
-            </Button>
+            </button>
           </Link>
           <div className="bg-white/5 border border-[#d4af37]/20 rounded-2xl p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -496,13 +494,13 @@ export default function PKBattlePage() {
                 ))}
               </div>
             </div>
-            <Button
-              className="w-full bg-gradient-to-r from-blue-600 to-red-600 text-white font-bold py-3 text-base hover:opacity-90"
+            <button
+              style={{ width: '100%', background: !leftName || !rightName || createBattle.isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(90deg, #1d4ed8, #dc2626)', color: '#fff', fontWeight: 700, padding: '12px', borderRadius: 8, border: 'none', cursor: !leftName || !rightName || createBattle.isPending ? 'default' : 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', opacity: !leftName || !rightName || createBattle.isPending ? 0.5 : 1 }}
               disabled={!leftName || !rightName || createBattle.isPending}
               onClick={() => createBattle.mutate()}
             >
-              <Swords className="w-4 h-4 mr-2" /> Start Battle
-            </Button>
+              <Swords className="w-4 h-4" /> Start Battle
+            </button>
           </div>
         </div>
       </div>
@@ -560,18 +558,18 @@ export default function PKBattlePage() {
 
       <div className="flex items-center gap-3 px-4 py-3 bg-black/60 border-b border-white/10 z-10 shrink-0">
         <Link to={createPageUrl('Home')}>
-          <Button variant="ghost" size="icon" className="w-8 h-8 text-white/40 hover:text-white">
+          <button style={{ width: 32, height: 32, background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
             <ArrowLeft className="w-4 h-4" />
-          </Button>
+          </button>
         </Link>
         <div className="flex items-center gap-2 flex-1">
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="font-bold text-sm text-white truncate">{battle?.title || 'PK Battle'}</span>
           {battle?.status === 'active' && (
-            <Badge className="bg-red-600 text-white border-0 text-[10px] animate-pulse">LIVE</Badge>
+            <span style={{ background: '#dc2626', color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
           )}
           {battle?.status === 'ended' && (
-            <Badge className="bg-gray-600 text-white border-0 text-[10px]">ENDED</Badge>
+            <span style={{ background: '#4b5563', color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>ENDED</span>
           )}
         </div>
         <CircularTimer timeLeft={timeLeft} totalTime={battleDurationRef.current} />
@@ -606,7 +604,7 @@ export default function PKBattlePage() {
                   {bLeftName?.charAt(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bLeftName}</p>
-                <Badge className="bg-blue-700/50 text-blue-200 border-blue-600/40">Left Creator</Badge>
+                <span style={{ background: 'rgba(29,78,216,0.5)', color: '#bfdbfe', border: '1px solid rgba(37,99,235,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Left Creator</span>
               </div>
             )}
             <div className="absolute top-3 left-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
@@ -653,7 +651,7 @@ export default function PKBattlePage() {
                   {bRightName?.charAt(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bRightName}</p>
-                <Badge className="bg-red-700/50 text-red-200 border-red-600/40">Right Creator</Badge>
+                <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(220,38,38,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
               </div>
             )}
             <div className="absolute top-3 right-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 export default function TermsOfService() {
@@ -9,9 +8,9 @@ export default function TermsOfService() {
     <div className="min-h-screen bg-slate-50 py-10">
       <div className="max-w-3xl mx-auto px-6">
         <Link to={createPageUrl('Home')}>
-          <Button variant="ghost" className="mb-6 gap-2">
+          <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
             <ArrowLeft className="w-4 h-4" /> Back to Home
-          </Button>
+          </button>
         </Link>
 
         <h1 className="text-3xl font-bold mb-2">Terms of Service</h1>
@@ -86,10 +85,10 @@ export default function TermsOfService() {
 
         <div className="mt-10 pt-6 border-t flex gap-4">
           <Link to={createPageUrl('PrivacyPolicy')}>
-            <Button variant="outline">Privacy Policy</Button>
+            <button style={{ padding: '8px 16px', borderRadius: 6, border: '1px solid #ccc', background: 'transparent', cursor: 'pointer' }}>Privacy Policy</button>
           </Link>
           <Link to={createPageUrl('Home')}>
-            <Button>Back to SeeWhy LIVE</Button>
+            <button style={{ padding: '8px 16px', borderRadius: 6, border: 'none', background: '#1a1a2e', color: '#fff', cursor: 'pointer' }}>Back to SeeWhy LIVE</button>
           </Link>
         </div>
       </div>

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, Users, PhoneOff, Settings, Share2, Radio } from 'lucide-react';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
@@ -164,26 +161,34 @@ export default function HybridStreamRoom() {
 
         {/* Right: Chat & Participants */}
         <div className="w-80 flex flex-col" style={{ borderLeft: '1px solid rgba(212,175,55,0.08)', background: 'rgba(13,6,24,0.7)' }}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-2 shrink-0" style={{ background: 'rgba(8,11,24,0.8)', borderBottom: '1px solid rgba(212,175,55,0.08)', borderRadius: 0, height: 40 }}>
-              <TabsTrigger value="chat"
-                style={{ color: activeTab === 'chat' ? '#D4AF37' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none">
-                <MessageSquare className="w-3.5 h-3.5 mr-1.5" />Chat
-              </TabsTrigger>
-              <TabsTrigger value="participants"
-                style={{ color: activeTab === 'participants' ? '#D4AF37' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' }}
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none">
-                <Users className="w-3.5 h-3.5 mr-1.5" />People
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
-              <ChatPanel roomId={roomId} currentUser={user} />
-            </TabsContent>
-            <TabsContent value="participants" className="flex-1 overflow-hidden mt-0">
-              <ParticipantsList participants={participants} currentUser={user} roomId={roomId} communityId={room.community_id} />
-            </TabsContent>
-          </Tabs>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            {/* Tab bar */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', flexShrink: 0, background: 'rgba(8,11,24,0.8)', borderBottom: '1px solid rgba(212,175,55,0.08)', height: 40 }}>
+              <button
+                onClick={() => setActiveTab('chat')}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'transparent', border: 'none', borderBottom: activeTab === 'chat' ? '2px solid #D4AF37' : '2px solid transparent', color: activeTab === 'chat' ? '#D4AF37' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer', padding: '0 8px' }}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />Chat
+              </button>
+              <button
+                onClick={() => setActiveTab('participants')}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'transparent', border: 'none', borderBottom: activeTab === 'participants' ? '2px solid #D4AF37' : '2px solid transparent', color: activeTab === 'participants' ? '#D4AF37' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer', padding: '0 8px' }}
+              >
+                <Users className="w-3.5 h-3.5" />People
+              </button>
+            </div>
+            {/* Tab content */}
+            {activeTab === 'chat' && (
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <ChatPanel roomId={roomId} currentUser={user} />
+              </div>
+            )}
+            {activeTab === 'participants' && (
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <ParticipantsList participants={participants} currentUser={user} roomId={roomId} communityId={room.community_id} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

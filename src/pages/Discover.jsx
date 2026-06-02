@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
   Zap, Eye, Clock, ChevronRight, Filter
@@ -372,9 +369,9 @@ function TrendingCard({ room, rank }) {
         )}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           <span className="text-xs font-black font-mono" style={{ color: rankColors[rank - 1] }}>#{rank}</span>
-          <Badge className="bg-[#FF1564] text-white text-[9px] border-0 flex items-center gap-1">
+          <span style={{ background: '#FF1564', color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
-          </Badge>
+          </span>
         </div>
         <div className="p-3">
           <p className="text-sm font-bold text-white truncate">{room.title}</p>

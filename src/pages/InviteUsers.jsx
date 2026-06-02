@@ -103,10 +103,14 @@ export default function InviteUsersPage() {
               style={{ ...inp, flex: 1 }}
             />
             {isAdmin && (
-              <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 120, flex: 'none' }}>
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {['user', 'admin'].map(r => (
+                  <button key={r} onClick={() => setRole(r)}
+                    style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${role === r ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: role === r ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: role === r ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'capitalize' }}>
+                    {r}
+                  </button>
+                ))}
+              </div>
             )}
             <button onClick={handleInvite} disabled={inviting}
               className="px-4 py-2 rounded-lg font-black uppercase text-xs"
