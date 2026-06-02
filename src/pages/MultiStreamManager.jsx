@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Switch } from '@/components/ui/switch';
 import {
   Plus, Eye, EyeOff, RefreshCw, Wifi, WifiOff, AlertTriangle,
   Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle, PlayCircle, StopCircle
@@ -354,11 +353,9 @@ export default function MultiStreamManager() {
 
                         {/* Controls */}
                         <div className="flex flex-col items-end gap-2 shrink-0">
-                          <Switch
-                            checked={dest.is_enabled}
-                            onCheckedChange={() => toggleEnabled(dest)}
-                            className="data-[state=checked]:bg-[#d4af37]"
-                          />
+                          <div onClick={() => toggleEnabled(dest)} style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#D4AF37' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+                            <div style={{ position: 'absolute', top: 3, left: dest.is_enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                          </div>
                           <div className="flex gap-1">
                             <button
                               onClick={() => testConnection(dest)}

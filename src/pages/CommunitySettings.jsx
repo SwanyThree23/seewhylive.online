@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Switch } from '@/components/ui/switch';
 import { Settings } from 'lucide-react';
+
+function Toggle({ checked, onChange }) {
+  return (
+    <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+    </div>
+  );
+}
 import { toast } from 'sonner';
 
 const BG = '#080B18';
@@ -72,7 +79,7 @@ export default function CommunitySettingsPage() {
               <p className="font-black text-sm text-white" style={T}>Public Community</p>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Anyone can join</p>
             </div>
-            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+            <Toggle checked={isPublic} onChange={setIsPublic} />
           </div>
         </Section>
 

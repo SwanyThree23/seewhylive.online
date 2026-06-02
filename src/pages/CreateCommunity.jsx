@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Switch } from '@/components/ui/switch';
 import { Users, Globe, Lock, Plus, X } from 'lucide-react';
+
+function Toggle({ checked, onChange }) {
+  return (
+    <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+      <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+    </div>
+  );
+}
 import { toast } from 'sonner';
 
 const BG = '#080B18';
@@ -69,10 +76,14 @@ export default function CreateCommunityPage() {
             <textarea style={{ ...inp, height: 90, resize: 'none' }} placeholder="What's your community about?" value={description} onChange={e => setDescription(e.target.value)} />
 
             <label style={lbl}>Category *</label>
-            <select style={inp} value={category} onChange={e => setCategory(e.target.value)} required>
-              <option value="">Select category…</option>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-            </select>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {CATEGORIES.map(c => (
+                <button key={c} onClick={() => setCategory(c)}
+                  style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${category === c ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: category === c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: category === c ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'capitalize' }}>
+                  {c}
+                </button>
+              ))}
+            </div>
 
             <label style={lbl}>Tags (up to 5)</label>
             <div className="flex gap-2">
@@ -109,7 +120,7 @@ export default function CreateCommunityPage() {
                   <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{isPublic ? 'Anyone can join' : 'Invite-only access'}</p>
                 </div>
               </div>
-              <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+              <Toggle checked={isPublic} onChange={setIsPublic} />
             </div>
 
             <div className="flex gap-3 mt-6">

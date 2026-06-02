@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap, Terminal, Globe, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -72,9 +70,9 @@ export default function RTMPServer() {
       <div className="border-b border-white/10 bg-black/40 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
           <Link to={createPageUrl('CreatorDashboard')}>
-            <Button variant="ghost" size="sm" className="text-white/50 hover:text-white gap-1.5">
+            <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>
               <ArrowLeft className="w-4 h-4" /> Dashboard
-            </Button>
+            </button>
           </Link>
           <div className="flex items-center gap-2 flex-1">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-orange-600 flex items-center justify-center">
@@ -128,7 +126,7 @@ export default function RTMPServer() {
                 <div className="flex items-center gap-2 mb-1">
                   <Radio className="w-4 h-4 text-[#d4af37]" />
                   <h2 className="font-bold text-sm">RTMP Ingest</h2>
-                  <Badge className="bg-green-700/50 text-green-300 border-0 text-[9px]">RECOMMENDED</Badge>
+                  <span style={{ background: 'rgba(21,128,61,0.5)', color: '#86efac', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>RECOMMENDED</span>
                 </div>
                 <CopyField label="Server URL" value={RTMP_SERVER} />
                 <div className="space-y-1">
@@ -159,7 +157,7 @@ export default function RTMPServer() {
                   <div className="flex items-center gap-2 mb-1">
                     <Wifi className="w-4 h-4 text-blue-400" />
                     <h2 className="font-bold text-sm">SRT Ingest</h2>
-                    <Badge className="bg-blue-800/50 text-blue-300 border-0 text-[9px]">LOW LATENCY</Badge>
+                    <span style={{ background: 'rgba(30,58,138,0.5)', color: '#93c5fd', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
                   </div>
                   <CopyField label="SRT URL" value={SRT_SERVER} />
                   <CopyField label="Stream ID (passphrase)" value={streamKey} secret />

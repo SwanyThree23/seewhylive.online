@@ -106,9 +106,14 @@ export default function PollManager() {
               </div>
               <div>
                 <label style={lbl}>Category</label>
-                <select value={formData.category} onChange={e => setFormData(p => ({ ...p, category: e.target.value }))} style={inp}>
-                  {Object.entries(categories).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-                </select>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {Object.entries(categories).map(([key, label]) => (
+                    <button key={key} onClick={() => setFormData(p => ({ ...p, category: key }))}
+                      style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${formData.category === key ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: formData.category === key ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: formData.category === key ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer mt-3">
