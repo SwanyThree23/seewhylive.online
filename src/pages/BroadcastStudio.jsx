@@ -27,6 +27,8 @@ import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import LoveHearts from '../components/live/LoveHearts';
+import GiftShop from '../components/live/GiftShop';
+import GiftAnimation from '../components/live/GiftAnimation';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -300,6 +302,8 @@ export default function BroadcastStudio() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [isExclusive, setIsExclusive] = useState(false);
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [giftEvent, setGiftEvent] = useState(null);
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -882,7 +886,7 @@ export default function BroadcastStudio() {
           <div className="shrink-0 flex items-center gap-2 px-3 py-2 overflow-x-auto"
             style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
             {[
-              { icon: '🎁', label: 'Gifts',  action: () => { window.location.href = '/PKBattlePage'; } },
+              { icon: '🎁', label: 'Gifts',  action: () => setGiftOpen(true) },
               { icon: '📊', label: 'Poll',   action: () => { window.location.href = '/PollManager'; } },
               { icon: '🔔', label: 'Alert',  action: () => toast.info('Alert sent to audience!') },
               { icon: '📱', label: 'QR',     action: () => toast.info(window.location.href) },
@@ -1306,6 +1310,21 @@ export default function BroadcastStudio() {
       {partyId && (
         <LoveHearts roomId={partyId} currentUser={user} creatorId={party?.host_id} />
       )}
+
+      <GiftShop
+        isOpen={giftOpen}
+        onClose={() => setGiftOpen(false)}
+        roomId={partyId}
+        user={user}
+        creatorId={party?.host_id}
+        creatorName={party?.host_name || 'Creator'}
+        onGiftSent={(gift, sender) => {
+          setGiftEvent({ id: Date.now(), gift, senderName: sender?.full_name || sender?.email || 'You' });
+          setGiftOpen(false);
+        }}
+      />
+
+      <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
     </div>
   );
 }
