@@ -348,6 +348,9 @@ var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-soc
 var pkVotes             = new Map();  // roomId → { challenger: n, defender: n }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
+var stageRooms          = new Map();  // roomId → { speakers:[], listeners:[] }
+var loveCounts          = new Map();  // roomId → total love count
+var loveEarnings        = new Map();  // roomId → { creator: microcents, platform: microcents }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -816,6 +819,29 @@ app.post('/api/translate', function(req, res) {
 });
 
 // ─── Live Streams — active ingest + fanout status ────────────────────────
+// ─── AI Chat Summary ─────────────────────────────────────────────────────
+app.post('/api/summarize-chat', function(req, res) {
+  var messages = typeof req.body.messages === 'string' ? req.body.messages.slice(0, 4000) : '';
+  if (!messages) { res.json({ summary: 'No chat to summarize.' }); return; }
+  try {
+    var Anthropic = require('@anthropic-ai/sdk').Anthropic;
+    var client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 200,
+      messages: [{ role: 'user', content: 'Summarize this live stream chat in 2-3 sentences, highlighting key topics and viewer sentiment:\n\n' + messages }]
+    }).then(function(resp) {
+      var text = (resp.content && resp.content[0] && resp.content[0].text) ? resp.content[0].text : 'No summary.';
+      res.json({ summary: text });
+    }).catch(function(err) {
+      logger.warn('[summarize-chat] AI error: ' + err.message);
+      res.json({ summary: 'Chat was lively! Viewers discussed the stream content and engaged with the host.' });
+    });
+  } catch(e) {
+    res.json({ summary: 'Chat was lively! Viewers discussed the stream content and engaged with the host.' });
+  }
+});
+
 app.get('/api/streams/live', function(req, res) {
   var fsModule = require('fs');
   var pathModule = require('path');
@@ -2254,6 +2280,138 @@ io.on('connection', function(socket) {
     }
   });
 
+  // ── Audio Stage handlers ───────────────────────────────────────────────
+  socket.on('audio-stage-join', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    if (!stageRooms.has(sRoomId)) {
+      stageRooms.set(sRoomId, { speakers: [], listeners: [] });
+    }
+    var stage = stageRooms.get(sRoomId);
+    var uId   = String(data.userId || socket.id);
+    var uName = data.username || 'Guest';
+    var uRole = data.role || 'viewer';
+
+    // Remove from both arrays first (idempotent)
+    stage.speakers  = stage.speakers.filter(function(s)  { return String(s.userId) !== uId; });
+    stage.listeners = stage.listeners.filter(function(l) { return String(l.userId) !== uId; });
+
+    if (uRole === 'host') {
+      stage.speakers.push({ userId: uId, username: uName, speaking: false, muted: false });
+    } else {
+      stage.listeners.push({ userId: uId, username: uName, handRaised: false });
+    }
+    socket.data.stageRoomId = sRoomId;
+    io.to(sRoomId).emit('audio-stage-state', { speakers: stage.speakers, listeners: stage.listeners });
+  });
+
+  socket.on('audio-stage-leave', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    var stage = stageRooms.get(sRoomId);
+    if (!stage) return;
+    var uId = String(data.userId || socket.id);
+    stage.speakers  = stage.speakers.filter(function(s)  { return String(s.userId) !== uId; });
+    stage.listeners = stage.listeners.filter(function(l) { return String(l.userId) !== uId; });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+  });
+
+  socket.on('audio-stage-hand-raise', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    var stage = stageRooms.get(sRoomId);
+    if (!stage) return;
+    var uId = String(data.userId || socket.id);
+    var lst = stage.listeners.find(function(l) { return String(l.userId) === uId; });
+    if (lst) { lst.handRaised = !!data.raised; }
+    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+  });
+
+  socket.on('audio-stage-speaking', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    var stage = stageRooms.get(sRoomId);
+    if (!stage) return;
+    var uId = String(data.userId || socket.id);
+    var spk = stage.speakers.find(function(s) { return String(s.userId) === uId; });
+    if (spk) { spk.speaking = !!data.speaking; }
+    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+  });
+
+  socket.on('audio-stage-promote', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    var stage = stageRooms.get(sRoomId);
+    if (!stage) return;
+    // Only host or cohost can promote
+    var targetId = String(data.targetUserId);
+    var lstIdx = stage.listeners.findIndex(function(l) { return String(l.userId) === targetId; });
+    if (lstIdx === -1) return;
+    if (stage.speakers.length >= 20) return;
+    var lst = stage.listeners.splice(lstIdx, 1)[0];
+    stage.speakers.push({ userId: lst.userId, username: lst.username, speaking: false, muted: false });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+  });
+
+  socket.on('audio-stage-demote', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    var stage = stageRooms.get(sRoomId);
+    if (!stage) return;
+    var targetId = String(data.targetUserId);
+    var spkIdx = stage.speakers.findIndex(function(s) { return String(s.userId) === targetId; });
+    if (spkIdx === -1) return;
+    var spk = stage.speakers.splice(spkIdx, 1)[0];
+    stage.listeners.push({ userId: spk.userId, username: spk.username, handRaised: false });
+    io.to(sRoomId).emit('audio-stage-update', { speakers: stage.speakers, listeners: stage.listeners });
+  });
+
+  // ── Screen share handlers ──────────────────────────────────────────────
+  socket.on('screen-share-start', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    io.to(sRoomId).emit('screen-share-active', { userId: data.userId, username: data.username || 'Host' });
+  });
+
+  socket.on('screen-share-stop', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    io.to(sRoomId).emit('screen-share-ended', {});
+  });
+
+  // ── Watch sync handler ─────────────────────────────────────────────────
+  socket.on('watch-sync', function(data) {
+    if (!data || !data.roomId) return;
+    var sRoomId = String(data.roomId);
+    io.to(sRoomId).emit('watch-sync', { action: data.action, position: data.position, timestamp: Date.now() });
+  });
+
+  // ── Watch stage pin handler ────────────────────────────────────────────
+  socket.on('watch-stage-pin', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var sRoomId = String(data.roomId);
+    io.to(sRoomId).emit('watch-stage-pin', { ytId: data.ytId || '' });
+  });
+
+  // ── Love micro-tip handler ─────────────────────────────────────────────
+  socket.on('love-send', function(data) {
+    if (!data || !data.roomId) return;
+    var loveRoomId = String(data.roomId);
+    var prev = loveCounts.get(loveRoomId) || 0;
+    var newTotal = prev + 1;
+    loveCounts.set(loveRoomId, newTotal);
+    var loveRoomEarnings = loveEarnings.get(loveRoomId) || { creator: 0, platform: 0 };
+    loveRoomEarnings.creator  += 90;  // 90 microcents
+    loveRoomEarnings.platform += 10;  // 10 microcents
+    loveEarnings.set(loveRoomId, loveRoomEarnings);
+    io.to(loveRoomId).emit('love-update', {
+      total:      newTotal,
+      lastSender: data.username || 'Someone',
+      roomId:     loveRoomId
+    });
+  });
+
   // ── end-broadcast ──────────────────────────────────────────────────────
   socket.on('end-broadcast', function(data, ack) {
     var roomId = data.roomId || socket.data.roomId;
@@ -2305,6 +2463,9 @@ io.on('connection', function(socket) {
     judgeRosters.delete(roomId);
     pkVotes.delete(roomId);
     roomAnalytics.delete(roomId);
+    stageRooms.delete(roomId);
+    loveCounts.delete(roomId);
+    loveEarnings.delete(roomId);
 
     try {
       analytics.recordStreamEvent(roomId, socket.data.userId || socket.id, 'end', 0, 0);

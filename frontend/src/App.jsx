@@ -13,6 +13,7 @@ import MobileNavBar from './components/MobileNavBar.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import WelcomeAudio from './components/WelcomeAudio.jsx';
 import AgeGate from './components/AgeGate.jsx';
+import LoveTap from './components/LoveTap.jsx';
 
 /* Lazy-loaded tabs — each splits into its own chunk */
 var FadesTab            = React.lazy(function() { return import('./components/FadesTab.jsx'); });
@@ -55,6 +56,7 @@ var PKBattleTab         = React.lazy(function() { return import('./components/PK
 var VODLibraryTab       = React.lazy(function() { return import('./components/VODLibraryTab.jsx'); });
 var CreatorTipsTab      = React.lazy(function() { return import('./components/CreatorTipsTab.jsx'); });
 var LiveStreamHubTab    = React.lazy(function() { return import('./components/LiveStreamHubTab.jsx'); });
+var AudioStageTab       = React.lazy(function() { return import('./components/AudioStageTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -70,6 +72,7 @@ var TABS = [
   { id: 'push',     label: '📺 PUSH' },
   { id: 'clips',    label: '🎞 CLIPS' },
   { id: 'watch',    label: '📺 WATCH' },
+  { id: 'stage',    label: '🎙 STAGE' },
   { id: 'green',    label: '🟢 GREEN' },
   { id: 'forge',    label: '⚙️ FORGE' },
   { id: 'deepdata', label: '📊 DEEP' },
@@ -1037,6 +1040,16 @@ export default function App() {
             chat={chat}
           />
         )}
+        {activeTab === 'stage' && (
+          <AudioStageTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            userId={userId}
+            username={username}
+            role={role}
+            addToast={addToast}
+          />
+        )}
         {activeTab === 'green' && (
           <GreenRoomTab
             guests={guests}
@@ -1288,6 +1301,15 @@ export default function App() {
       {/* Overlays */}
       <Toasts toasts={toasts} />
       <Ticker chat={chat} isLive={isLive} />
+      {socketRef.current && (
+        <LoveTap
+          socket={socketRef.current}
+          roomId={APP_ID}
+          userId={userId}
+          username={username}
+          addToast={addToast}
+        />
+      )}
       <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />
       <WelcomeAudio socket={socketRef.current} />
     </div>
