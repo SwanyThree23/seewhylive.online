@@ -206,7 +206,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 2 }}>INVITE TO YOUR STREAM</div>
           {COMMUNITY_MEMBERS.map(function(m) {
-            var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#C9A84C' : '#3D3450';
+            var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#C9A84C' : '#3D3020';
             var wasInvited = Boolean(invitedIds[m.id]);
             return (
               <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: wasInvited ? 'rgba(201,168,76,.06)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (wasInvited ? 'rgba(201,168,76,.25)' : BORDER), borderRadius: 10, padding: '10px 12px' }}>

@@ -92,7 +92,7 @@ function RolePill({ role }) {
   var cfg = {
     host:   { bg: 'rgba(201,168,76,.18)',  color: GOLD,    label: 'HOST'    },
     cohost: { bg: 'rgba(201,168,76,.12)',   color: TEAL,    label: 'CO-HOST' },
-    guest:  { bg: 'rgba(90,143,255,.14)',  color: '#7AABFF', label: 'GUEST'  },
+    guest:  { bg: 'rgba(212,133,74,.14)',  color: '#D4854A', label: 'GUEST'  },
     viewer: { bg: 'rgba(46,37,69,.7)',     color: MUTED,   label: 'VIEWER'  },
   };
   var s = cfg[role] || cfg.viewer;
@@ -1631,8 +1631,8 @@ export default function LiveRoomPage({
               socket.emit('vs-vote', { roomId: roomId, side: 'A' });
               setVsVoted('A');
             }} style={{
-              flex: 1, background: vsVoted === 'A' ? 'rgba(90,143,255,.22)' : 'rgba(90,143,255,.07)',
-              border: '1.5px solid ' + (vsVoted === 'A' ? '#C9A84C' : 'rgba(90,143,255,.28)'),
+              flex: 1, background: vsVoted === 'A' ? 'rgba(212,133,74,.22)' : 'rgba(212,133,74,.07)',
+              border: '1.5px solid ' + (vsVoted === 'A' ? '#C9A84C' : 'rgba(212,133,74,.28)'),
               borderRadius: 10, padding: '8px 6px',
               cursor: (vsPoll.active && !vsVoted) ? 'pointer' : 'default',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'background .2s, border-color .2s',
@@ -1777,7 +1777,7 @@ export default function LiveRoomPage({
                 <input value={vsDraft.sideA}
                   onChange={function(e) { var v = e.target.value; setVsDraft(function(d) { return { sideA: v, sideB: d.sideB, duration: d.duration }; }); }}
                   placeholder="Side A (e.g. Player 1)"
-                  style={{ flex: 1, background: 'rgba(90,143,255,.08)', border: '1px solid rgba(90,143,255,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+                  style={{ flex: 1, background: 'rgba(212,133,74,.08)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
                 <div style={{ display: 'flex', alignItems: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, padding: '0 2px' }}>VS</div>
                 <input value={vsDraft.sideB}
                   onChange={function(e) { var v = e.target.value; setVsDraft(function(d) { return { sideA: d.sideA, sideB: v, duration: d.duration }; }); }}
@@ -1791,7 +1791,7 @@ export default function LiveRoomPage({
                   style={{ width: 70, background: CARD2, border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 12, outline: 'none', textAlign: 'center' }} />
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>10–300s</span>
               </div>
-              <button onClick={startVs} style={{ width: '100%', background: 'linear-gradient(90deg,rgba(90,143,255,.8),rgba(255,26,60,.8))', border: 'none', borderRadius: 8, padding: '9px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>LAUNCH VS POLL</button>
+              <button onClick={startVs} style={{ width: '100%', background: 'linear-gradient(90deg,rgba(212,133,74,.8),rgba(255,26,60,.8))', border: 'none', borderRadius: 8, padding: '9px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>LAUNCH VS POLL</button>
             </div>
           )}
 

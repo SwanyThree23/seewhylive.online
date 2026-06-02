@@ -151,7 +151,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
             <div style={{ textAlign: 'center', padding: '32px 20px' }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>📡</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#4A4060', letterSpacing: 2 }}>NO ACTIVE STREAMS</div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450', marginTop: 4 }}>Streams appear here once a creator starts broadcasting</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Streams appear here once a creator starts broadcasting</div>
             </div>
           )}
 
@@ -232,7 +232,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
             <div style={{ textAlign: 'center', padding: '32px 20px' }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>📤</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#4A4060', letterSpacing: 2 }}>NO ACTIVE FANOUTS</div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450', marginTop: 4 }}>Start a fanout from the FANOUT tab to relay your stream to YouTube, TikTok, and more</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Start a fanout from the FANOUT tab to relay your stream to YouTube, TikTok, and more</div>
             </div>
           )}
 
@@ -281,7 +281,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
             <div style={{ textAlign: 'center', padding: '32px 20px' }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>◈</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#4A4060', letterSpacing: 2 }}>NO ACTIVE ROOMS</div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450', marginTop: 4 }}>Rooms with at least one viewer appear here</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Rooms with at least one viewer appear here</div>
             </div>
           )}
           {rooms.map(function(r) {

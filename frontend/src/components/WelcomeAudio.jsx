@@ -198,7 +198,7 @@ export default function WelcomeAudio(props) {
 
       <div style={{
         width: '100%', maxWidth: 460,
-        background: 'linear-gradient(160deg,#130F1D,#0E0C09)',
+        background: 'linear-gradient(160deg,#1A1510,#0E0C09)',
         border: '1px solid rgba(201,168,76,.3)',
         borderRadius: 18,
         overflow: 'hidden',
@@ -236,7 +236,7 @@ export default function WelcomeAudio(props) {
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#F0E8D4', letterSpacing: 2, lineHeight: 1, marginBottom: 8 }}>
                 WELCOME, CREATOR
               </div>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#9A8FAC', lineHeight: 1.6, marginBottom: 14 }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#8A7A62', lineHeight: 1.6, marginBottom: 14 }}>
                 Let SwanyBot walk you through everything SeeWhy LIVE can do — features, revenue tools, A.I. automation, global reach, and creator-first power.
               </div>
 
@@ -274,7 +274,7 @@ export default function WelcomeAudio(props) {
               </div>
 
               {hasAudio && (
-                <div style={{ marginTop: 8, fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', letterSpacing: 1 }}>
+                <div style={{ marginTop: 8, fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', letterSpacing: 1 }}>
                   🔊 AUDIO NARRATION VIA BROWSER SPEECH SYNTHESIS
                 </div>
               )}
@@ -340,7 +340,7 @@ export default function WelcomeAudio(props) {
 
               {/* Progress */}
               <div>
-                <div style={{ height: 5, background: '#1A1428', borderRadius: 999, overflow: 'hidden', marginBottom: 5 }}>
+                <div style={{ height: 5, background: '#1A1510', borderRadius: 999, overflow: 'hidden', marginBottom: 5 }}>
                   <div style={{ height: '100%', width: progress + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)', borderRadius: 999, transition: 'width .45s ease' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -354,13 +354,13 @@ export default function WelcomeAudio(props) {
                 <button
                   onClick={handlePrev}
                   disabled={currentIdx === 0}
-                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, color: currentIdx === 0 ? '#3D3450' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', letterSpacing: 1 }}>
+                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, color: currentIdx === 0 ? '#3D3020' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', letterSpacing: 1 }}>
                   ◀ PREV
                 </button>
                 {hasAudio && (
                   <button
                     onClick={handleTogglePause}
-                    style={{ flex: 1, padding: '9px 4px', background: 'rgba(90,143,255,.1)', border: '1px solid rgba(90,143,255,.25)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+                    style={{ flex: 1, padding: '9px 4px', background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.25)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
                     {playing ? '⏸ PAUSE' : '▶ RESUME'}
                   </button>
                 )}
@@ -385,7 +385,7 @@ export default function WelcomeAudio(props) {
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 30, color: '#C9A84C', letterSpacing: 3, marginBottom: 8 }}>
                 YOU'RE READY
               </div>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#9A8FAC', lineHeight: 1.6, marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: '#8A7A62', lineHeight: 1.6, marginBottom: 16 }}>
                 SeeWhy LIVE is yours. Go live, grow your audience, earn your ninety percent, and build what's next.
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 16 }}>
@@ -410,8 +410,8 @@ export default function WelcomeAudio(props) {
 
         {/* Footer */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,.04)', padding: '7px 18px', display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', letterSpacing: 1 }}>POWERED BY SWANYBOT</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', letterSpacing: 1 }}>SWANYTHREE ENTTECH · v33</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', letterSpacing: 1 }}>POWERED BY SWANYBOT</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', letterSpacing: 1 }}>SWANYTHREE ENTTECH · v33</div>
         </div>
 
       </div>
