@@ -27,6 +27,7 @@ import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import LoveHearts from '../components/live/LoveHearts';
+import GuestQueue from '../components/live/GuestQueue';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -538,6 +539,7 @@ export default function BroadcastStudio() {
     { id: 'polls',   label: '📊 Polls',  desc: 'Live polls' },
     { id: 'viewers', label: '👥 Panel',  desc: 'Manage' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
+    ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
     { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
@@ -1036,6 +1038,13 @@ export default function BroadcastStudio() {
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* 🎙 GUEST QUEUE */}
+            {activeTab === 'queue' && canManage && (
+              <div className="p-2">
+                <GuestQueue roomId={partyId} isHost={canManage} />
               </div>
             )}
 
