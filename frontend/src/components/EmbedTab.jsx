@@ -66,7 +66,7 @@ function PaywallForm({ onUnlock, roomId, addToast }) {
         flexDirection: 'column',
         gap: '14px',
         padding: '28px 24px',
-        background: 'rgba(22,16,32,.95)',
+        background: 'rgba(26,21,16,.95)',
         border: '1px solid rgba(255,255,255,.07)',
         borderRadius: '10px',
         width: '100%',
@@ -254,7 +254,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
     >
       <div
         style={{
-          background: 'rgba(22,16,32,.8)',
+          background: 'rgba(26,21,16,.8)',
           border: '1px solid rgba(255,255,255,.07)',
           borderRadius: '12px',
           padding: '24px',
@@ -350,7 +350,7 @@ export default function EmbedTab({ roomId, ppvToken, setPpvToken, isLive }) {
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,12,20,.9)', gap: 10 }}>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2, color: '#FF1A3C' }}>STREAM ERROR</div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>{retrying ? 'Reconnecting...' : 'Connection lost'}</div>
-                  {retrying && <div style={{ width: 40, height: 4, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}><div style={{ height: '100%', background: '#C9A84C', borderRadius: 2, animation: 'none', width: '60%' }} /></div>}
+                  {retrying && <div style={{ width: 40, height: 4, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}><div style={{ height: '100%', background: '#C9A84C', borderRadius: 2, animation: 'none', width: '60%' }} /></div>}
                 </div>
               )}
 

@@ -13,7 +13,7 @@ var TEXT  = '#F0E8D4';
 var MUTED = '#8A7A62';
 var DIM   = '#2E2318';
 var BORD  = 'rgba(255,255,255,.06)';
-var BLUE  = '#5A8FFF';
+var BLUE  = '#C9A84C';
 var PURP  = '#C084FC';
 
 // ─── Animations ────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ var COVER_GRADIENTS = [
   'linear-gradient(135deg,#003d4d,#C9A84C)',
   'linear-gradient(135deg,#1a2a00,#7CB518)',
   'linear-gradient(135deg,#2d1b00,#C9A84C)',
-  'linear-gradient(135deg,#00104d,#5A8FFF)',
+  'linear-gradient(135deg,#00104d,#C9A84C)',
   'linear-gradient(135deg,#2d0033,#FF1A3C)',
   'linear-gradient(135deg,#001a33,#00A2E8)',
   'linear-gradient(135deg,#1a1000,#FF6B35)',
@@ -67,7 +67,7 @@ var PADS = [
   { id: 'hihat', label: '🔔 Hi-Hat',color: BLUE      },
   { id: 'bass',  label: '🎸 Bass',  color: PURP      },
   { id: 'chord', label: '🎹 Chord', color: '#FF6B35' },
-  { id: 'lead',  label: '🎺 Lead',  color: '#C8FF00' },
+  { id: 'lead',  label: '🎺 Lead',  color: '#C9A84C' },
   { id: 'fx',    label: '✨ FX',    color: '#FF1493' },
 ];
 var GRID_STEPS = 16;
@@ -203,7 +203,7 @@ function TrackCard(props) {
       <div style={{ padding: '8px 10px' }}>
         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: TEXT, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, background: 'rgba(0,222,192,.1)', borderRadius: 4, padding: '1px 5px' }}>{t.style}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, background: 'rgba(201,168,76,.1)', borderRadius: 4, padding: '1px 5px' }}>{t.style}</span>
           {t.mood && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, background: 'rgba(255,255,255,.06)', borderRadius: 4, padding: '1px 5px' }}>{t.mood}</span>}
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginLeft: 'auto' }}>{t.dur || '--:--'}</span>
         </div>
@@ -582,11 +582,11 @@ export default function MusicStudioTab(props) {
 
       {/* Live waveform banner */}
       {isLive && waveform.length > 0 && (
-        <div style={{ background: 'rgba(7,5,10,.7)', borderBottom: '1px solid rgba(0,222,192,.15)', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <div style={{ background: 'rgba(14,12,9,.7)', borderBottom: '1px solid rgba(201,168,76,.15)', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 2, flexShrink: 0 }}>● LIVE</div>
           <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 26, flex: 1, overflow: 'hidden' }}>
             {waveform.map(function(h, wi) {
-              return <div key={wi} style={{ flex: 1, height: Math.floor(h * .26) + 'px', background: 'rgba(0,222,192,' + (0.4 + h * .005) + ')', borderRadius: 2, transition: 'height 120ms', minWidth: 0 }} />;
+              return <div key={wi} style={{ flex: 1, height: Math.floor(h * .26) + 'px', background: 'rgba(201,168,76,' + (0.4 + h * .005) + ')', borderRadius: 2, transition: 'height 120ms', minWidth: 0 }} />;
             })}
           </div>
         </div>
@@ -678,7 +678,7 @@ export default function MusicStudioTab(props) {
                   var active = selMoods.indexOf(m) >= 0;
                   return (
                     <button key={m} onClick={function() { toggleTag(selMoods, setSelMoods, m); }}
-                      style={{ padding: '5px 11px', background: active ? 'rgba(0,222,192,.15)' : CARD2, border: '1px solid ' + (active ? 'rgba(0,222,192,.45)' : DIM), borderRadius: 999, color: active ? TEAL : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 10, cursor: 'pointer', transition: 'all .15s' }}>
+                      style={{ padding: '5px 11px', background: active ? 'rgba(201,168,76,.15)' : CARD2, border: '1px solid ' + (active ? 'rgba(201,168,76,.45)' : DIM), borderRadius: 999, color: active ? TEAL : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 10, cursor: 'pointer', transition: 'all .15s' }}>
                       {m}
                     </button>
                   );
@@ -702,7 +702,7 @@ export default function MusicStudioTab(props) {
                 </div>
               </div>
               <button onClick={function() { setInstr(function(v) { return !v; }); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, background: instrumental ? 'rgba(0,222,192,.12)' : CARD2, border: '1px solid ' + (instrumental ? 'rgba(0,222,192,.4)' : DIM), borderRadius: 10, padding: '8px 11px', cursor: 'pointer', flexShrink: 0 }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: instrumental ? 'rgba(201,168,76,.12)' : CARD2, border: '1px solid ' + (instrumental ? 'rgba(201,168,76,.4)' : DIM), borderRadius: 10, padding: '8px 11px', cursor: 'pointer', flexShrink: 0 }}>
                 <div style={{ width: 18, height: 10, borderRadius: 999, background: instrumental ? TEAL : DIM, position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
                   <div style={{ position: 'absolute', top: 1, left: instrumental ? 9 : 1, width: 8, height: 8, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
                 </div>
@@ -746,7 +746,7 @@ export default function MusicStudioTab(props) {
                   var active = beatPreset === p.label;
                   return (
                     <button key={p.label} onClick={function() { setBpm(p.bpm); setBeatPreset(p.label); }}
-                      style={{ padding: '5px 11px', background: active ? 'rgba(0,222,192,.18)' : CARD2, border: '1px solid ' + (active ? 'rgba(0,222,192,.5)' : DIM), borderRadius: 999, color: active ? TEAL : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                      style={{ padding: '5px 11px', background: active ? 'rgba(201,168,76,.18)' : CARD2, border: '1px solid ' + (active ? 'rgba(201,168,76,.5)' : DIM), borderRadius: 999, color: active ? TEAL : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
                       {p.label} {p.bpm}
                     </button>
                   );
@@ -897,7 +897,7 @@ export default function MusicStudioTab(props) {
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: p.color, letterSpacing: 1 }}>{p.icon} {p.platform}</span>
                                   <button onClick={function() { copyPlatformText(txt, p.platform); }}
-                                    style={{ background: copied ? 'rgba(0,222,192,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copied ? TEAL : BORD), borderRadius: 6, padding: '3px 8px', color: copied ? TEAL : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', animation: copied ? 'copyBlink .4s ease' : 'none' }}>
+                                    style={{ background: copied ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copied ? TEAL : BORD), borderRadius: 6, padding: '3px 8px', color: copied ? TEAL : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer', animation: copied ? 'copyBlink .4s ease' : 'none' }}>
                                     {copied ? '✓ COPIED' : 'COPY'}
                                   </button>
                                 </div>
@@ -937,7 +937,7 @@ export default function MusicStudioTab(props) {
           <div style={{ padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>AI Lyrics</div>
-              <div style={{ background: 'rgba(0,222,192,.1)', border: '1px solid rgba(0,222,192,.25)', borderRadius: 8, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 8, padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: TEAL }} />
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>AI POWERED</span>
               </div>
@@ -1183,7 +1183,7 @@ export default function MusicStudioTab(props) {
                         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1 }}>OUTPUT</div>
                         <div style={{ display: 'flex', gap: 6 }}>
                           <button onClick={copyCreatorOutput}
-                            style={{ background: copiedCreator ? 'rgba(0,222,192,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copiedCreator ? TEAL : BORD), borderRadius: 6, padding: '4px 10px', color: copiedCreator ? TEAL : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>
+                            style={{ background: copiedCreator ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copiedCreator ? TEAL : BORD), borderRadius: 6, padding: '4px 10px', color: copiedCreator ? TEAL : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>
                             {copiedCreator ? '✓ COPIED' : '📋 COPY'}
                           </button>
                           <button onClick={function() { setCreatorOutput(''); }}

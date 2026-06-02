@@ -62,7 +62,7 @@ export default function Ticker(props) {
       left: 0,
       right: 0,
       height: 28,
-      background: 'rgba(7,5,10,.96)',
+      background: 'rgba(14,12,9,.96)',
       borderTop: '1px solid rgba(201,168,76,.2)',
       zIndex: 300,
       overflow: 'hidden',

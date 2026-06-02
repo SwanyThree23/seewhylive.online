@@ -242,31 +242,31 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: 430 }}>
 
       {/* Header */}
-      <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 38, height: 38, borderRadius: 8, background: 'rgba(0,201,167,.12)', border: '1px solid rgba(0,201,167,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🤖</div>
+      <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ width: 38, height: 38, borderRadius: 8, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🤖</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#00C9A7', letterSpacing: 3 }}>SWANYBOT ENGINE</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 3 }}>SWANYBOT ENGINE</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>Real-time event automation · SeeWhy LIVE v33</div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00C9A7', lineHeight: 1 }}>{activeCount}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', lineHeight: 1 }}>{activeCount}</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>ACTIVE</div>
         </div>
         {isLive && (
           <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C8FF00', lineHeight: 1 }}>{eventsPerMin}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', lineHeight: 1 }}>{eventsPerMin}</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>EVT/MIN</div>
           </div>
         )}
       </div>
 
       {/* Section tabs */}
-      <div style={{ display: 'flex', gap: 4, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3 }}>
+      <div style={{ display: 'flex', gap: 4, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: 3 }}>
         {SECTIONS.map(function(s) {
           var active = section === s[0];
           return (
             <button key={s[0]} onClick={function() { setSection(s[0]); }}
-              style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(0,201,167,.12)' : 'transparent', border: 'none', borderRadius: 6, color: active ? '#00C9A7' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+              style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(201,168,76,.12)' : 'transparent', border: 'none', borderRadius: 6, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
               {s[1]}
             </button>
           );
@@ -278,17 +278,17 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {rules.map(function(r) {
             return (
-              <div key={r.id} style={{ background: r.enabled ? 'rgba(0,201,167,.04)' : 'rgba(22,16,32,.5)', border: '1px solid ' + (r.enabled ? 'rgba(0,201,167,.2)' : '#241C34'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 7, background: r.enabled ? 'rgba(0,201,167,.1)' : 'rgba(22,16,32,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
+              <div key={r.id} style={{ background: r.enabled ? 'rgba(201,168,76,.04)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (r.enabled ? 'rgba(201,168,76,.2)' : '#3D3020'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 7, background: r.enabled ? 'rgba(201,168,76,.1)' : 'rgba(26,21,16,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>
                   {r.icon}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: r.enabled ? '#F0E8D4' : '#8A7A62' }}>{r.label}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: r.enabled ? '#00C9A7' : '#3D3450', letterSpacing: 1 }}>{r.enabled ? 'ACTIVE' : 'DISABLED'}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: r.enabled ? '#C9A84C' : '#3D3450', letterSpacing: 1 }}>{r.enabled ? 'ACTIVE' : 'DISABLED'}</div>
                 </div>
                 <div
                   onClick={function() { toggleRule(r.id); }}
-                  style={{ width: 36, height: 20, borderRadius: 999, background: r.enabled ? 'rgba(0,201,167,.7)' : '#241C34', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
+                  style={{ width: 36, height: 20, borderRadius: 999, background: r.enabled ? 'rgba(201,168,76,.7)' : '#3D3020', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
                   <div style={{ position: 'absolute', top: 3, left: r.enabled ? 18 : 3, width: 14, height: 14, borderRadius: '50%', background: r.enabled ? '#07050A' : '#8A7A62', transition: 'left .18s' }} />
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
           })}
 
           {/* Manual message sender */}
-          <div style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px', marginTop: 4 }}>
+          <div style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px', marginTop: 4 }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginBottom: 7, letterSpacing: 2 }}>MANUAL BOT MESSAGE</div>
             <div style={{ display: 'flex', gap: 6 }}>
               <input
@@ -304,12 +304,12 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 onChange={function(e) { setManualMsg(e.target.value); }}
                 onKeyDown={function(e) { if (e.key === 'Enter') sendManual(); }}
                 placeholder="Broadcast a bot message to chat..."
-                style={{ flex: 1, background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+                style={{ flex: 1, background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
               />
               <button
                 onClick={sendManual}
                 disabled={sending || !manualMsg.trim()}
-                style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.35)', borderRadius: 7, padding: '7px 14px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: sending || !manualMsg.trim() ? 'not-allowed' : 'pointer', opacity: sending || !manualMsg.trim() ? 0.5 : 1, letterSpacing: 1 }}>
+                style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 7, padding: '7px 14px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: sending || !manualMsg.trim() ? 'not-allowed' : 'pointer', opacity: sending || !manualMsg.trim() ? 0.5 : 1, letterSpacing: 1 }}>
                 SEND
               </button>
             </div>
@@ -326,9 +326,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
           {triggers.map(function(t) {
             return (
-              <div key={t.id} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+              <div key={t.id} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-                  <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C8FF00', flexShrink: 0 }}>{t.keyword}</div>
+                  <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', flexShrink: 0 }}>{t.keyword}</div>
                   <div style={{ flex: 1 }} />
                   <button
                     onClick={function() { removeTrigger(t.id); }}
@@ -347,13 +347,13 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
           <button
             onClick={function() { setShowAddTrig(function(v) { return !v; }); }}
-            style={{ padding: '9px', background: showAddTrig ? 'rgba(200,255,0,.1)' : 'rgba(22,16,32,.7)', border: '1px dashed ' + (showAddTrig ? 'rgba(200,255,0,.4)' : 'rgba(200,255,0,.2)'), borderRadius: 8, color: showAddTrig ? '#C8FF00' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+            style={{ padding: '9px', background: showAddTrig ? 'rgba(200,255,0,.1)' : 'rgba(26,21,16,.7)', border: '1px dashed ' + (showAddTrig ? 'rgba(200,255,0,.4)' : 'rgba(200,255,0,.2)'), borderRadius: 8, color: showAddTrig ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
             {showAddTrig ? '✕ CANCEL' : '+ ADD TRIGGER'}
           </button>
 
           {showAddTrig && (
             <div style={{ background: 'rgba(200,255,0,.04)', border: '1px solid rgba(200,255,0,.15)', borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#C8FF00', letterSpacing: 2, marginBottom: 2 }}>NEW KEYWORD TRIGGER</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#C9A84C', letterSpacing: 2, marginBottom: 2 }}>NEW KEYWORD TRIGGER</div>
               <div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginBottom: 3 }}>KEYWORD (starts with !)</div>
                 <input
@@ -361,7 +361,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                   onChange={function(e) { setNewKw(e.target.value); }}
                   onKeyDown={function(e) { if (e.key === 'Enter') document.getElementById('sw-new-resp').focus(); }}
                   placeholder="!command"
-                  style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
+                  style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 10 }}
                 />
               </div>
               <div>
@@ -372,12 +372,12 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                   onChange={function(e) { setNewResp(e.target.value); }}
                   placeholder="Bot response text..."
                   rows={2}
-                  style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, resize: 'vertical' }}
+                  style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, resize: 'vertical' }}
                 />
               </div>
               <button
                 onClick={addTrigger}
-                style={{ padding: '8px', background: 'rgba(200,255,0,.12)', border: '1px solid rgba(200,255,0,.3)', borderRadius: 7, color: '#C8FF00', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ padding: '8px', background: 'rgba(200,255,0,.12)', border: '1px solid rgba(200,255,0,.3)', borderRadius: 7, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
                 ✓ SAVE TRIGGER
               </button>
             </div>
@@ -429,8 +429,8 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
           {/* Poll results after ended */}
           {activePoll && pollEnded && (
-            <div style={{ background: 'rgba(0,201,167,.05)', border: '1px solid rgba(0,201,167,.25)', borderRadius: 12, padding: '12px 14px' }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7', letterSpacing: 2, marginBottom: 8 }}>POLL RESULTS</div>
+            <div style={{ background: 'rgba(201,168,76,.05)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 12, padding: '12px 14px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>POLL RESULTS</div>
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: '#F0E8D4', marginBottom: 10 }}>{activePoll.question}</div>
               {(function() {
                 var total = Object.values(pollVotes).reduce(function(s, v) { return s + v; }, 0);
@@ -442,18 +442,18 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                   return (
                     <div key={i} style={{ marginBottom: 6 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3, alignItems: 'center' }}>
-                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: isWinner ? '#00C9A7' : '#A89CC8', fontWeight: isWinner ? 700 : 400 }}>{isWinner ? '🏆 ' : ''}{opt}</span>
-                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isWinner ? '#00C9A7' : '#8A7A62' }}>{pct}%</span>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: isWinner ? '#C9A84C' : '#A89CC8', fontWeight: isWinner ? 700 : 400 }}>{isWinner ? '🏆 ' : ''}{opt}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isWinner ? '#C9A84C' : '#8A7A62' }}>{pct}%</span>
                       </div>
                       <div style={{ height: 7, borderRadius: 4, background: '#1A1428', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: pct + '%', background: isWinner ? 'linear-gradient(90deg,#00C9A7,#C9A84C)' : 'rgba(201,168,76,.35)', borderRadius: 4 }} />
+                        <div style={{ height: '100%', width: pct + '%', background: isWinner ? 'linear-gradient(90deg,#C9A84C,#C9A84C)' : 'rgba(201,168,76,.35)', borderRadius: 4 }} />
                       </div>
                     </div>
                   );
                 });
               })()}
               <button onClick={function() { setActivePoll(null); setPollEnded(false); setPollQuestion(''); setPollOptions(['', '']); }}
-                style={{ marginTop: 8, background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 6, padding: '5px 12px', color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                style={{ marginTop: 8, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 12px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
                 + NEW POLL
               </button>
             </div>
@@ -461,13 +461,13 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
           {/* Poll creator */}
           {!activePoll && (
-            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2 }}>CREATE POLL</div>
               <input
                 value={pollQuestion}
                 onChange={function(e) { setPollQuestion(e.target.value); }}
                 placeholder="Poll question..."
-                style={{ background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}
+                style={{ background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }}
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {pollOptions.map(function(opt, i) {
@@ -478,7 +478,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                         value={opt}
                         onChange={function(e) { updateOption(i, e.target.value); }}
                         placeholder={'Option ' + (i + 1) + '...'}
-                        style={{ flex: 1, background: '#07050A', border: '1px solid #241C34', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+                        style={{ flex: 1, background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, padding: '7px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
                       />
                       {pollOptions.length > 2 && (
                         <button onClick={function() { removeOption(i); }} style={{ background: 'none', border: 'none', color: '#8A7A62', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✕</button>
@@ -489,7 +489,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={addOption} disabled={pollOptions.length >= 4}
-                  style={{ flex: 1, padding: '7px', background: 'rgba(22,16,32,.8)', border: '1px dashed #241C34', borderRadius: 7, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: pollOptions.length >= 4 ? 'not-allowed' : 'pointer', opacity: pollOptions.length >= 4 ? 0.4 : 1 }}>
+                  style={{ flex: 1, padding: '7px', background: 'rgba(26,21,16,.8)', border: '1px dashed #3D3020', borderRadius: 7, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: pollOptions.length >= 4 ? 'not-allowed' : 'pointer', opacity: pollOptions.length >= 4 ? 0.4 : 1 }}>
                   + OPTION
                 </button>
                 <button onClick={launchPoll}
@@ -508,7 +508,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 var total = Object.values(p.votes).reduce(function(s, v) { return s + v; }, 0);
                 var maxVotes = Math.max.apply(null, Object.values(p.votes).concat([0]));
                 return (
-                  <div key={pi} style={{ background: 'rgba(22,16,32,.6)', border: '1px solid #241C34', borderRadius: 9, padding: '9px 12px' }}>
+                  <div key={pi} style={{ background: 'rgba(26,21,16,.6)', border: '1px solid #3D3020', borderRadius: 9, padding: '9px 12px' }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#A89CC8', marginBottom: 6 }}>{p.question}</div>
                     {p.options.map(function(opt, oi) {
                       var v = p.votes[oi] || 0;
@@ -516,9 +516,9 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                       var isW = v === maxVotes && v > 0;
                       return (
                         <div key={oi} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: isW ? '#00C9A7' : '#8A7A62', minWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{isW ? '🏆 ' : ''}{opt}</span>
+                          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: isW ? '#C9A84C' : '#8A7A62', minWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{isW ? '🏆 ' : ''}{opt}</span>
                           <div style={{ flex: 1, height: 4, borderRadius: 2, background: '#1A1428', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: pct + '%', background: isW ? '#00C9A7' : '#3D3450', borderRadius: 2 }} />
+                            <div style={{ height: '100%', width: pct + '%', background: isW ? '#C9A84C' : '#3D3450', borderRadius: 2 }} />
                           </div>
                           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', minWidth: 26, textAlign: 'right' }}>{pct}%</span>
                         </div>
@@ -541,10 +541,10 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
           {BUILT_IN_COMMANDS.map(function(c) {
             return (
-              <div key={c.cmd} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div key={c.cmd} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'center' }}>
                 <div style={{ width: 32, height: 32, borderRadius: 7, background: 'rgba(200,255,0,.06)', border: '1px solid rgba(200,255,0,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{c.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C8FF00', display: 'inline-block', marginBottom: 4 }}>{c.cmd}</div>
+                  <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', display: 'inline-block', marginBottom: 4 }}>{c.cmd}</div>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', lineHeight: 1.35 }}>{c.desc}</div>
                 </div>
               </div>
@@ -554,7 +554,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
           <div style={{ background: 'rgba(128,0,32,.06)', border: '1px solid rgba(128,0,32,.2)', borderRadius: 10, padding: '10px 12px', marginTop: 4 }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 5 }}>CUSTOM TRIGGERS</div>
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', lineHeight: 1.5 }}>
-              Add your own keyword → response pairs in the <span style={{ color: '#C8FF00' }}>⚡ TRIGGERS</span> tab. Custom triggers are managed in SwanyBot and fire alongside these built-ins.
+              Add your own keyword → response pairs in the <span style={{ color: '#C9A84C' }}>⚡ TRIGGERS</span> tab. Custom triggers are managed in SwanyBot and fire alongside these built-ins.
             </div>
           </div>
         </div>
@@ -566,10 +566,10 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2 }}>EVENT LOG</div>
             {isLive && botLogs.length === 0 && (
-              <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C8FF00', letterSpacing: 1 }}>● SIM</div>
+              <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>● SIM</div>
             )}
           </div>
-          <div style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '8px', height: 300, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '8px', height: 300, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
             {isLive && botLogs.length === 0 && simLog.length === 0 && (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>
                 Waiting for events...
@@ -581,17 +581,17 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
               </div>
             )}
             {isLive && botLogs.length === 0 && simLog.length > 0 && (
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C8FF00', letterSpacing: 1, padding: '3px 7px', marginBottom: 2 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', letterSpacing: 1, padding: '3px 7px', marginBottom: 2 }}>
                 ● SIM MODE — no live socket events
               </div>
             )}
             {displayLogs.map(function(log) {
               return (
-                <div key={log.id || Math.random()} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', background: 'rgba(22,16,32,.5)', borderRadius: 6, borderLeft: '2px solid rgba(0,201,167,.25)' }}>
+                <div key={log.id || Math.random()} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', background: 'rgba(26,21,16,.5)', borderRadius: 6, borderLeft: '2px solid rgba(201,168,76,.25)' }}>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', flexShrink: 0, marginTop: 2 }}>{formatTime(log.ts)}</span>
                   <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1.1 }}>{getLogIcon(log.event)}</span>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7', textTransform: 'uppercase', letterSpacing: 1 }}>{log.event || 'event'}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: 1 }}>{log.event || 'event'}</div>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', wordBreak: 'break-word' }}>{log.message || ''}</div>
                   </div>
                 </div>
@@ -601,7 +601,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
           </div>
 
           {/* Aura AI stat strip */}
-          <div style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '10px 12px' }}>
+          <div style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>AURA AI STATUS</div>
             <div style={{ display: 'flex', gap: 6 }}>
               {[
@@ -612,7 +612,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 }).length)]
               ].map(function(item) {
                 return (
-                  <div key={item[0]} style={{ flex: 1, background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 7, padding: '6px 8px', textAlign: 'center' }}>
+                  <div key={item[0]} style={{ flex: 1, background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 7, padding: '6px 8px', textAlign: 'center' }}>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginBottom: 2 }}>{item[0]}</div>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4' }}>{item[1]}</div>
                   </div>

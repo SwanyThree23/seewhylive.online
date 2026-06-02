@@ -91,7 +91,7 @@ function SpeakBars({ color, small }) {
 function RolePill({ role }) {
   var cfg = {
     host:   { bg: 'rgba(201,168,76,.18)',  color: GOLD,    label: 'HOST'    },
-    cohost: { bg: 'rgba(0,222,192,.12)',   color: TEAL,    label: 'CO-HOST' },
+    cohost: { bg: 'rgba(201,168,76,.12)',   color: TEAL,    label: 'CO-HOST' },
     guest:  { bg: 'rgba(90,143,255,.14)',  color: '#7AABFF', label: 'GUEST'  },
     viewer: { bg: 'rgba(46,37,69,.7)',     color: MUTED,   label: 'VIEWER'  },
   };
@@ -147,10 +147,10 @@ function AudienceCircle({ g, speaking }) {
 function IconBtn({ icon, label, active, danger, badge, onPress, size }) {
   var sz  = size || 42;
   var bg  = active && danger  ? 'rgba(255,26,60,.25)'
-          : active            ? 'rgba(0,222,192,.18)'
+          : active            ? 'rgba(201,168,76,.18)'
           :                     'rgba(255,255,255,.06)';
   var bc  = active && danger  ? 'rgba(255,26,60,.5)'
-          : active            ? 'rgba(0,222,192,.4)'
+          : active            ? 'rgba(201,168,76,.4)'
           :                     'rgba(255,255,255,.1)';
   var ic  = active && danger  ? RED
           : active            ? TEAL
@@ -727,7 +727,7 @@ export default function LiveRoomPage({
               </div>
             )}
             {audioOnly && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(0,222,192,.1)', border: '1px solid rgba(0,222,192,.35)', borderRadius: 999, padding: '3px 8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 999, padding: '3px 8px' }}>
                 <span style={{ fontSize: 9 }}>🎤</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>AUDIO</span>
               </div>
@@ -790,9 +790,9 @@ export default function LiveRoomPage({
         var earned = Math.floor(sessionEarningsCents || 0);
         var target = Math.floor(streamGoal.goalCents || 1);
         var pct    = Math.min(100, Math.floor(earned / target * 100));
-        var bar    = pct >= 100 ? GOLD : pct >= 75 ? TEAL : '#5A8FFF';
+        var bar    = pct >= 100 ? GOLD : pct >= 75 ? TEAL : '#C9A84C';
         return (
-          <div style={{ background: 'rgba(7,5,10,.9)', borderBottom: '1px solid ' + BORDER, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div style={{ background: 'rgba(14,12,9,.9)', borderBottom: '1px solid ' + BORDER, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, flexShrink: 0 }}>GOAL</span>
             <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, flexShrink: 0, maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamGoal.label || 'Stream Goal'}</span>
             <div style={{ flex: 1, background: 'rgba(255,255,255,.07)', borderRadius: 999, height: 6, overflow: 'hidden' }}>
@@ -805,7 +805,7 @@ export default function LiveRoomPage({
         );
       })()}
       {!streamGoal && role === 'host' && isLive && (
-        <div style={{ background: 'rgba(7,5,10,.7)', borderBottom: '1px solid ' + BORDER, padding: '4px 14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 }}>
+        <div style={{ background: 'rgba(14,12,9,.7)', borderBottom: '1px solid ' + BORDER, padding: '4px 14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 }}>
           <button onClick={function() { setShowGoalSet(true); }} style={{ background: 'none', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '3px 10px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer', letterSpacing: 1 }}>
             + SET STREAM GOAL
           </button>
@@ -1099,7 +1099,7 @@ export default function LiveRoomPage({
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', background: tool.active ? 'rgba(0,222,192,.18)' : CARD2, border: '1px solid ' + (tool.active ? 'rgba(0,222,192,.4)' : BORDER), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, transition: 'background .15s' }}>
+                <div style={{ width: 46, height: 46, borderRadius: '50%', background: tool.active ? 'rgba(201,168,76,.18)' : CARD2, border: '1px solid ' + (tool.active ? 'rgba(201,168,76,.4)' : BORDER), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, transition: 'background .15s' }}>
                   {tool.emoji}
                 </div>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: tool.active ? TEAL : MUTED, letterSpacing: .5 }}>{tool.label}</span>
@@ -1127,7 +1127,7 @@ export default function LiveRoomPage({
 
       {/* ════════════════ AUDIO-ONLY BANNER ════════════════ */}
       {audioOnly && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,222,192,.12)', borderBottom: '1px solid rgba(0,222,192,.3)', padding: '5px 14px', display: 'flex', alignItems: 'center', gap: 8, zIndex: 35, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(201,168,76,.12)', borderBottom: '1px solid rgba(201,168,76,.3)', padding: '5px 14px', display: 'flex', alignItems: 'center', gap: 8, zIndex: 35, pointerEvents: 'none' }}>
           <WaveBars color={TEAL} />
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 2 }}>AUDIO-ONLY MODE</span>
         </div>
@@ -1174,7 +1174,7 @@ export default function LiveRoomPage({
             )}
             {chat && chat.map(function(m, i) {
               if (m.type === 'super') {
-                var scColor = m.tierColor || '#5A8FFF';
+                var scColor = m.tierColor || '#C9A84C';
                 var scDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
                 return (
                   <div key={m.id || i} style={{ marginBottom: 12, background: scColor + '18', border: '1.5px solid ' + scColor + '66', borderRadius: 12, padding: '10px 12px', animation: 'fadeSlideIn .2s ease' }}>
@@ -1287,12 +1287,12 @@ export default function LiveRoomPage({
         <div style={{
           position: 'absolute', bottom: 68, left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(7,5,10,.96)',
-          border: '1.5px solid rgba(0,222,192,.5)',
+          background: 'rgba(14,12,9,.96)',
+          border: '1.5px solid rgba(201,168,76,.5)',
           borderRadius: 999, padding: '8px 18px',
           display: 'flex', alignItems: 'center', gap: 10,
           animation: 'musicIn .35s ease',
-          boxShadow: '0 0 18px rgba(0,222,192,.2)',
+          boxShadow: '0 0 18px rgba(201,168,76,.2)',
           whiteSpace: 'nowrap', zIndex: 42, pointerEvents: 'none',
         }}>
           <span style={{ fontSize: 18 }}>{musicBanner.emoji}</span>
@@ -1309,7 +1309,7 @@ export default function LiveRoomPage({
       {/* ════════════════ BOTTOM TOOLBAR ════════════════ */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: 'rgba(7,5,10,.97)',
+        background: 'rgba(14,12,9,.97)',
         borderTop: '1px solid ' + BORDER,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '6px 10px',
@@ -1371,11 +1371,11 @@ export default function LiveRoomPage({
           {tipFeed.slice(0, 5).map(function(tip, i) {
             var isLarge = tip.amount >= 10000;
             var isMed   = tip.amount >= 500;
-            var border  = isLarge ? 'rgba(201,168,76,.7)' : isMed ? 'rgba(0,222,192,.5)' : 'rgba(255,255,255,.12)';
+            var border  = isLarge ? 'rgba(201,168,76,.7)' : isMed ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.12)';
             var amtColor = isLarge ? GOLD : isMed ? TEAL : TEXT;
             return (
               <div key={tip.id} style={{
-                background: 'rgba(7,5,10,.92)', border: '1px solid ' + border,
+                background: 'rgba(14,12,9,.92)', border: '1px solid ' + border,
                 borderRadius: 10, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 7,
                 animation: 'tipSlide .3s ease ' + (i * .05) + 's both',
                 boxShadow: isLarge ? ('0 0 12px rgba(201,168,76,.25)') : 'none',
@@ -1454,7 +1454,7 @@ export default function LiveRoomPage({
           </div>
           {/* Animated split bar */}
           <div style={{ margin: '0 14px 6px', height: 7, background: 'rgba(255,255,255,.07)', borderRadius: 999, overflow: 'hidden', position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, background: 'linear-gradient(90deg,#5A8FFF,#2A6FFF)', width: (vsPoll.pctA || 50) + '%', transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, background: 'linear-gradient(90deg,#C9A84C,#2A6FFF)', width: (vsPoll.pctA || 50) + '%', transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
             <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, borderRadius: 999, background: 'linear-gradient(270deg,' + RED + ',#C01230)', width: (vsPoll.pctB || 50) + '%', transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
           </div>
           {/* Side cards */}
@@ -1465,15 +1465,15 @@ export default function LiveRoomPage({
               setVsVoted('A');
             }} style={{
               flex: 1, background: vsVoted === 'A' ? 'rgba(90,143,255,.22)' : 'rgba(90,143,255,.07)',
-              border: '1.5px solid ' + (vsVoted === 'A' ? '#5A8FFF' : 'rgba(90,143,255,.28)'),
+              border: '1.5px solid ' + (vsVoted === 'A' ? '#C9A84C' : 'rgba(90,143,255,.28)'),
               borderRadius: 10, padding: '8px 6px',
               cursor: (vsPoll.active && !vsVoted) ? 'pointer' : 'default',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'background .2s, border-color .2s',
             }}>
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, textAlign: 'center', lineHeight: 1.2 }}>{vsPoll.sideA}</span>
-              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#5A8FFF', letterSpacing: 1, lineHeight: 1 }}>{vsPoll.pctA}%</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', letterSpacing: 1, lineHeight: 1 }}>{vsPoll.pctA}%</span>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{vsPoll.votesA} vote{vsPoll.votesA !== 1 ? 's' : ''}</span>
-              {vsVoted === 'A' && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF', marginTop: 1 }}>✓ YOUR PICK</span>}
+              {vsVoted === 'A' && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', marginTop: 1 }}>✓ YOUR PICK</span>}
             </button>
             <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, letterSpacing: 3 }}>VS</span>
@@ -1533,7 +1533,7 @@ export default function LiveRoomPage({
                     {pollVoted && (
                       <div style={{
                         height: '100%', borderRadius: 999,
-                        background: isWin ? GOLD : 'rgba(0,222,192,.6)',
+                        background: isWin ? GOLD : 'rgba(201,168,76,.6)',
                         width: pct + '%', transition: 'width .5s ease',
                       }} />
                     )}
@@ -1574,7 +1574,7 @@ export default function LiveRoomPage({
               )}
               {(role === 'host' || judges.some(function(j) { return j.userId === userId; })) && (
                 <button onClick={function() { setShowJudges(function(v) { var next = !v; if (next) { setShowPollCreate(false); setShowVsCreate(false); } return next; }); }}
-                  style={{ background: showJudges ? 'rgba(0,222,192,.2)' : 'rgba(0,222,192,.08)', border: '1px solid rgba(0,222,192,.3)', borderRadius: 8, padding: '5px 8px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                  style={{ background: showJudges ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '5px 8px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
                   ⚖{judges.length > 0 ? (' ' + judges.length) : ''}
                 </button>
               )}
@@ -1837,8 +1837,8 @@ export default function LiveRoomPage({
       {/* ════════════════ SUPER CHAT SHEET ════════════════ */}
       {showSuperChatSheet && (function() {
         var SC_TIERS = [
-          { cents: 100,  label: '$1',  color: '#5A8FFF' },
-          { cents: 200,  label: '$2',  color: '#00C96A' },
+          { cents: 100,  label: '$1',  color: '#C9A84C' },
+          { cents: 200,  label: '$2',  color: '#C9A84C' },
           { cents: 500,  label: '$5',  color: '#C9A84C' },
           { cents: 1000, label: '$10', color: '#FF8C42' },
           { cents: 2000, label: '$20', color: '#FF1A3C' },
@@ -1933,7 +1933,7 @@ export default function LiveRoomPage({
               <div style={{ background: CARD, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px 12px', marginTop: 14, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEAL, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{roomUrl}</span>
                 <button onClick={function() { navigator.clipboard.writeText(roomUrl).then(function() { if (addToast) addToast('Link copied!', 'success'); }); }}
-                  style={{ background: 'rgba(0,222,192,.15)', border: '1px solid rgba(0,222,192,.35)', borderRadius: 8, padding: '5px 10px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '5px 10px', color: TEAL, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
                   COPY
                 </button>
               </div>

@@ -18,7 +18,7 @@ var CATS = ['ALL', 'START', 'GO LIVE', 'MONEY', 'ENGAGE', 'COMMUNITY', 'ANALYTIC
 
 var CAT_COLORS = {
   'ALL':       '#8A7A62',
-  'START':     '#00C9A7',
+  'START':     '#C9A84C',
   'GO LIVE':   '#FF1A3C',
   'MONEY':     '#C9A84C',
   'ENGAGE':    '#C084FC',
@@ -615,9 +615,9 @@ export default function CreatorTipsTab({ addToast, username }) {
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#9A90AA', marginTop: 2 }}>{'37 features · ' + TIPS.length + ' tips · ' + doneCount + '/' + CREATOR_CHECKLIST.length + ' launch checklist'}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <button onClick={function() { setActiveView('tips'); }} style={{ padding: '5px 12px', background: activeView === 'tips' ? 'rgba(201,168,76,.2)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (activeView === 'tips' ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'tips' ? '#E8C46A' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>TIPS</button>
-            <button onClick={function() { setActiveView('checklist'); }} style={{ padding: '5px 12px', background: activeView === 'checklist' ? 'rgba(0,201,167,.15)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (activeView === 'checklist' ? 'rgba(0,201,167,.4)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'checklist' ? '#00C9A7' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>CHECKLIST</button>
-            <button onClick={function() { setActiveView('guide'); }} style={{ padding: '5px 12px', background: activeView === 'guide' ? 'rgba(192,132,252,.2)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (activeView === 'guide' ? 'rgba(192,132,252,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'guide' ? '#C084FC' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>AI GUIDE</button>
+            <button onClick={function() { setActiveView('tips'); }} style={{ padding: '5px 12px', background: activeView === 'tips' ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (activeView === 'tips' ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'tips' ? '#E8C46A' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>TIPS</button>
+            <button onClick={function() { setActiveView('checklist'); }} style={{ padding: '5px 12px', background: activeView === 'checklist' ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (activeView === 'checklist' ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'checklist' ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>CHECKLIST</button>
+            <button onClick={function() { setActiveView('guide'); }} style={{ padding: '5px 12px', background: activeView === 'guide' ? 'rgba(192,132,252,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (activeView === 'guide' ? 'rgba(192,132,252,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'guide' ? '#C084FC' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>AI GUIDE</button>
           </div>
         </div>
 
@@ -628,7 +628,7 @@ export default function CreatorTipsTab({ addToast, username }) {
               value={search}
               onChange={function(e) { setSearch(e.target.value); }}
               placeholder="Search tips, features, tabs..."
-              style={{ width: '100%', background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, padding: '9px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }}
+              style={{ width: '100%', background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, padding: '9px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }}
             />
             {/* Category pills */}
             <div style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingBottom: 10, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
@@ -637,7 +637,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                 var col = CAT_COLORS[cat] || '#8A7A62';
                 return (
                   <button key={cat} onClick={function() { setActiveCat(cat); }}
-                    style={{ flexShrink: 0, padding: '4px 10px', background: isA ? col + '22' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isA ? col : 'rgba(255,255,255,.07)'), borderRadius: 20, color: isA ? col : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1, transition: 'all .12s' }}>
+                    style={{ flexShrink: 0, padding: '4px 10px', background: isA ? col + '22' : 'rgba(26,21,16,.6)', border: '1px solid ' + (isA ? col : 'rgba(255,255,255,.07)'), borderRadius: 20, color: isA ? col : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1, transition: 'all .12s' }}>
                     {cat}
                   </button>
                 );
@@ -654,27 +654,27 @@ export default function CreatorTipsTab({ addToast, username }) {
         {/* ── CHECKLIST VIEW ── */}
         {activeView === 'checklist' && (
           <div>
-            <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#00C9A7', letterSpacing: 2 }}>LAUNCH CHECKLIST</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 2 }}>LAUNCH CHECKLIST</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginTop: 2 }}>Complete these before your first major stream</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#00C9A7', lineHeight: 1 }}>{doneCount}/{CREATOR_CHECKLIST.length}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#C9A84C', lineHeight: 1 }}>{doneCount}/{CREATOR_CHECKLIST.length}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>DONE</div>
               </div>
             </div>
             {/* Progress bar */}
-            <div style={{ height: 5, background: 'rgba(22,16,32,.8)', borderRadius: 3, overflow: 'hidden', marginBottom: 14 }}>
-              <div style={{ width: (doneCount / CREATOR_CHECKLIST.length * 100) + '%', height: '100%', background: 'linear-gradient(90deg,#00C9A7,#C9A84C)', borderRadius: 3, transition: 'width .4s ease' }} />
+            <div style={{ height: 5, background: 'rgba(26,21,16,.8)', borderRadius: 3, overflow: 'hidden', marginBottom: 14 }}>
+              <div style={{ width: (doneCount / CREATOR_CHECKLIST.length * 100) + '%', height: '100%', background: 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 3, transition: 'width .4s ease' }} />
             </div>
             {CREATOR_CHECKLIST.map(function(item) {
               var isDone = checked[item.id];
               return (
                 <div key={item.id}
                   onClick={function() { toggleCheck(item.id); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, background: isDone ? 'rgba(0,201,167,.06)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isDone ? 'rgba(0,201,167,.25)' : 'rgba(255,255,255,.06)'), borderRadius: 10, padding: '12px 14px', marginBottom: 7, cursor: 'pointer', transition: 'all .15s' }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: isDone ? '#00C9A7' : 'rgba(22,16,32,.8)', border: '1.5px solid ' + (isDone ? '#00C9A7' : 'rgba(255,255,255,.15)'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, background: isDone ? 'rgba(201,168,76,.06)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (isDone ? 'rgba(201,168,76,.25)' : 'rgba(255,255,255,.06)'), borderRadius: 10, padding: '12px 14px', marginBottom: 7, cursor: 'pointer', transition: 'all .15s' }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: isDone ? '#C9A84C' : 'rgba(26,21,16,.8)', border: '1.5px solid ' + (isDone ? '#C9A84C' : 'rgba(255,255,255,.15)'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all .15s' }}>
                     {isDone && <span style={{ color: '#07050A', fontSize: 12, fontWeight: 700 }}>✓</span>}
                   </div>
                   <div style={{ flex: 1 }}>
@@ -699,7 +699,7 @@ export default function CreatorTipsTab({ addToast, username }) {
           var isOpen = expanded[tip.id];
           var col    = CAT_COLORS[tip.cat] || '#8A7A62';
           return (
-            <div key={tip.id} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid ' + (isOpen ? col + '44' : 'rgba(255,255,255,.06)'), borderRadius: 10, marginBottom: 8, overflow: 'hidden', transition: 'border .15s' }}>
+            <div key={tip.id} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid ' + (isOpen ? col + '44' : 'rgba(255,255,255,.06)'), borderRadius: 10, marginBottom: 8, overflow: 'hidden', transition: 'border .15s' }}>
               {/* Card header */}
               <div
                 onClick={function() { toggleExpand(tip.id); }}
@@ -736,7 +736,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#4A4060' }}>TAB:</span>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', background: 'rgba(0,201,167,.08)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 4, padding: '2px 7px' }}>{tip.tab}</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '2px 7px' }}>{tip.tab}</span>
                     </div>
                   </div>
                 </div>
@@ -762,7 +762,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C084FC', letterSpacing: 2, lineHeight: 1 }}>SWANY GUIDE · AI ASSISTANT</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginTop: 1 }}>Powered by Claude · Knows every SeeWhy LIVE v33 feature</div>
               </div>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00C9A7', boxShadow: '0 0 6px #00C9A7' }} />
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 6px #C9A84C' }} />
             </div>
 
             {/* Quick prompt chips */}
@@ -791,7 +791,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                       <AvatarPortrait username={username || 'creator'} size={28} />
                     )}
                     <div style={{ maxWidth: '78%' }}>
-                      <div style={{ background: isGuide ? 'rgba(22,16,32,.9)' : 'rgba(128,0,32,.25)', border: '1px solid ' + (isGuide ? 'rgba(192,132,252,.15)' : 'rgba(128,0,32,.4)'), borderRadius: isGuide ? '4px 10px 10px 10px' : '10px 4px 10px 10px', padding: '9px 12px' }}>
+                      <div style={{ background: isGuide ? 'rgba(26,21,16,.9)' : 'rgba(128,0,32,.25)', border: '1px solid ' + (isGuide ? 'rgba(192,132,252,.15)' : 'rgba(128,0,32,.4)'), borderRadius: isGuide ? '4px 10px 10px 10px' : '10px 4px 10px 10px', padding: '9px 12px' }}>
                         {isGuide && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C084FC', letterSpacing: 1, marginBottom: 4 }}>✦ SWANY GUIDE</div>}
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.5 }}>{msg.text}</div>
                       </div>
@@ -803,7 +803,7 @@ export default function CreatorTipsTab({ addToast, username }) {
               {aiLoading && (
                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                   <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(192,132,252,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎙</div>
-                  <div style={{ background: 'rgba(22,16,32,.9)', border: '1px solid rgba(192,132,252,.15)', borderRadius: '4px 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
+                  <div style={{ background: 'rgba(26,21,16,.9)', border: '1px solid rgba(192,132,252,.15)', borderRadius: '4px 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', animation: 'pulse 1s infinite' }} />
                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', opacity: 0.6 }} />
                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', opacity: 0.3 }} />
@@ -821,12 +821,12 @@ export default function CreatorTipsTab({ addToast, username }) {
                 onKeyDown={function(e) { if (e.key === 'Enter' && !aiLoading) callGuide(aiInput); }}
                 placeholder="Ask about any feature, workflow, or how to get started..."
                 disabled={aiLoading}
-                style={{ flex: 1, background: 'rgba(22,16,32,.8)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 10, padding: '10px 14px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', opacity: aiLoading ? 0.6 : 1 }}
+                style={{ flex: 1, background: 'rgba(26,21,16,.8)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 10, padding: '10px 14px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', opacity: aiLoading ? 0.6 : 1 }}
               />
               <button
                 onClick={function() { if (!aiLoading) callGuide(aiInput); }}
                 disabled={aiLoading || !aiInput.trim()}
-                style={{ width: 42, height: 42, borderRadius: 10, background: aiInput.trim() && !aiLoading ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(22,16,32,.6)', border: '1px solid ' + (aiInput.trim() && !aiLoading ? 'rgba(128,0,32,.6)' : 'rgba(255,255,255,.07)'), color: '#C9A84C', fontSize: 18, cursor: aiInput.trim() && !aiLoading ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                style={{ width: 42, height: 42, borderRadius: 10, background: aiInput.trim() && !aiLoading ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (aiInput.trim() && !aiLoading ? 'rgba(128,0,32,.6)' : 'rgba(255,255,255,.07)'), color: '#C9A84C', fontSize: 18, cursor: aiInput.trim() && !aiLoading ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 ›
               </button>
             </div>

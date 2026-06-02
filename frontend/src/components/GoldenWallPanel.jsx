@@ -23,7 +23,7 @@ function formatTime(ts) {
 function typeBadgeColor(type) {
   if (type === 'TIP') return '#FF1564';
   if (type === 'GIFT') return '#C9A84C';
-  if (type === 'SUB') return '#00C9A7';
+  if (type === 'SUB') return '#C9A84C';
   return '#8A7A62';
 }
 
@@ -50,7 +50,7 @@ export default function GoldenWallPanel(props) {
     'div',
     {
       style: {
-        background: 'rgba(7,5,10,.95)',
+        background: 'rgba(14,12,9,.95)',
         border: '1px solid rgba(255,255,255,.07)',
         borderRadius: 10,
         padding: '12px 10px',
@@ -95,7 +95,7 @@ export default function GoldenWallPanel(props) {
               style: {
                 borderLeft: '3px solid',
                 borderImage: 'linear-gradient(180deg, #C9A84C, #FF1564) 1',
-                background: 'rgba(22,16,32,.8)',
+                background: 'rgba(26,21,16,.8)',
                 borderRadius: '0 6px 6px 0',
                 padding: '7px 9px',
                 marginBottom: 6,

@@ -16,7 +16,7 @@ var RANKINGS = [
 ];
 
 var REGION_COLORS = {
-  West:      '#5A8FFF',
+  West:      '#C9A84C',
   Southwest: '#FF6B35',
   Southeast: '#C084FC',
   Northeast: '#C9A84C',
@@ -165,7 +165,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
 
       {/* Tab switcher — appears at very top */}
-      <div style={{ display: 'flex', gap: 4, background: 'rgba(22,16,32,.9)', border: '1px solid #241C34', borderRadius: 10, padding: 4 }}>
+      <div style={{ display: 'flex', gap: 4, background: 'rgba(26,21,16,.9)', border: '1px solid #3D3020', borderRadius: 10, padding: 4 }}>
         {VIEWS.map(function(v) {
           var active = view === v;
           return (
@@ -204,7 +204,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 2 }}>Season {SEASON} · Week {WEEK} · National Domino Federation</div>
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                <button onClick={shareRankings} style={{ background: shareCopied ? 'rgba(0,201,167,.18)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (shareCopied ? 'rgba(0,201,167,.4)' : 'rgba(201,168,76,.3)'), borderRadius: 6, padding: '4px 10px', color: shareCopied ? '#00C9A7' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+                <button onClick={shareRankings} style={{ background: shareCopied ? 'rgba(201,168,76,.18)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (shareCopied ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.3)'), borderRadius: 6, padding: '4px 10px', color: shareCopied ? '#C9A84C' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
                   {shareCopied ? '✓ COPIED' : '📤 SHARE'}
                 </button>
                 <div style={{ textAlign: 'right' }}>
@@ -219,7 +219,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
               <div>
                 {/* #1 Hero Card */}
                 <div style={{
-                  background: 'linear-gradient(160deg,rgba(201,168,76,.18),rgba(7,5,10,.97))',
+                  background: 'linear-gradient(160deg,rgba(201,168,76,.18),rgba(14,12,9,.97))',
                   border: '2px solid rgba(201,168,76,.55)',
                   borderRadius: 12,
                   padding: '16px 14px',
@@ -247,7 +247,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
                       return (
                         <div key={r.rank} style={{
                           flex: 1,
-                          background: 'rgba(22,16,32,.8)',
+                          background: 'rgba(26,21,16,.8)',
                           border: '1px solid rgba(201,168,76,.2)',
                           borderRadius: 10,
                           padding: '12px 8px',
@@ -279,7 +279,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
               var color  = reg === 'All' ? '#C9A84C' : (REGION_COLORS[reg] || '#8A7A62');
               return (
                 <button key={reg} onClick={function() { setRegion(reg); }}
-                  style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+                  style={{ background: active ? color + '22' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? color + '66' : '#3D3020'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
                   {reg.toUpperCase()}
                 </button>
               );
@@ -308,7 +308,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
                 <div key={r.state_abbr}>
                   <div
                     onClick={function() { setExpanded(isExp ? null : r.rank); }}
-                    style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, alignItems: 'center', background: isMine ? 'rgba(0,201,167,.07)' : isTop ? 'rgba(201,168,76,.07)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isMine ? 'rgba(0,201,167,.35)' : isTop ? 'rgba(201,168,76,.25)' : '#241C34'), borderRadius: isExp ? '8px 8px 0 0' : 8, padding: '8px', cursor: 'pointer' }}>
+                    style={{ display: 'grid', gridTemplateColumns: '28px 36px 1fr 48px 44px 36px 32px', gap: 4, alignItems: 'center', background: isMine ? 'rgba(201,168,76,.07)' : isTop ? 'rgba(201,168,76,.07)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (isMine ? 'rgba(201,168,76,.35)' : isTop ? 'rgba(201,168,76,.25)' : '#3D3020'), borderRadius: isExp ? '8px 8px 0 0' : 8, padding: '8px', cursor: 'pointer' }}>
 
                     {/* Rank */}
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: isTop ? 16 : 13, color: isTop ? '#C9A84C' : '#8A7A62', textAlign: 'center', lineHeight: 1 }}>
@@ -317,7 +317,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
 
                     {/* Change */}
                     <div style={{ textAlign: 'center' }}>
-                      {r.change > 0 && <span style={{ color: '#00C96A', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>▲{r.change}</span>}
+                      {r.change > 0 && <span style={{ color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>▲{r.change}</span>}
                       {r.change < 0 && <span style={{ color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>▼{Math.abs(r.change)}</span>}
                       {r.change === 0 && <span style={{ color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>—</span>}
                     </div>
@@ -336,25 +336,25 @@ export default function StateRankingsTab({ isLive, addToast }) {
 
                     {/* W-L */}
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, textAlign: 'center' }}>
-                      <span style={{ color: '#00C96A' }}>{wins}</span>
+                      <span style={{ color: '#C9A84C' }}>{wins}</span>
                       <span style={{ color: '#8A7A62' }}>-</span>
                       <span style={{ color: r.losses > 0 ? '#FF6B81' : '#8A7A62' }}>{r.losses}</span>
                     </div>
 
                     {/* Tiles diff */}
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.tiles_diff > 0 ? '#00C96A' : r.tiles_diff < 0 ? '#FF1A3C' : '#8A7A62', textAlign: 'center', fontWeight: 700 }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.tiles_diff > 0 ? '#C9A84C' : r.tiles_diff < 0 ? '#FF1A3C' : '#8A7A62', textAlign: 'center', fontWeight: 700 }}>
                       {r.tiles_diff > 0 ? '+' : ''}{r.tiles_diff}
                     </div>
 
                     {/* Streak */}
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.streak > 0 ? '#C8FF00' : '#8A7A62', textAlign: 'center', fontWeight: r.streak > 0 ? 700 : 400 }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: r.streak > 0 ? '#C9A84C' : '#8A7A62', textAlign: 'center', fontWeight: r.streak > 0 ? 700 : 400 }}>
                       {r.streak > 0 ? 'W' + r.streak : '—'}
                     </div>
                   </div>
 
                   {/* Expanded detail */}
                   {isExp && (
-                    <div style={{ background: 'rgba(7,5,10,.95)', border: '1px solid rgba(201,168,76,.2)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '10px 14px' }}>
+                    <div style={{ background: 'rgba(14,12,9,.95)', border: '1px solid rgba(201,168,76,.2)', borderTop: 'none', borderRadius: '0 0 8px 8px', padding: '10px 14px' }}>
                       <div style={{ display: 'flex', gap: 20, marginBottom: 10 }}>
                         <div>
                           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 2 }}>PREV RANK</div>
@@ -362,7 +362,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
                         </div>
                         <div>
                           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 2 }}>WIN RATE</div>
-                          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00C9A7' }}>{Math.floor(wins / WEEK * 100)}%</div>
+                          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C' }}>{Math.floor(wins / WEEK * 100)}%</div>
                         </div>
                         <div>
                           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 2 }}>SEASON</div>
@@ -375,7 +375,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
                       </div>
                       <button
                         onClick={function() { setMyState(isMine ? null : r.state_abbr); }}
-                        style={{ background: isMine ? 'rgba(0,201,167,.15)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isMine ? 'rgba(0,201,167,.4)' : '#241C34'), borderRadius: 6, padding: '4px 12px', color: isMine ? '#00C9A7' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                        style={{ background: isMine ? 'rgba(201,168,76,.15)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (isMine ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 6, padding: '4px 12px', color: isMine ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
                         {isMine ? '✓ MY STATE' : '📍 SET AS MY STATE'}
                       </button>
                     </div>
@@ -386,8 +386,8 @@ export default function StateRankingsTab({ isLive, addToast }) {
           </div>
 
           {/* Legend */}
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', padding: '4px 2px', borderTop: '1px solid #241C34', paddingTop: 8 }}>
-            {[['▲ moved up','#00C96A'],['▼ moved down','#FF1A3C'],['— no change','#8A7A62'],['TILES = tile differential','#C9A84C'],['STK = win streak','#C8FF00']].map(function(item) {
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', padding: '4px 2px', borderTop: '1px solid #3D3020', paddingTop: 8 }}>
+            {[['▲ moved up','#C9A84C'],['▼ moved down','#FF1A3C'],['— no change','#8A7A62'],['TILES = tile differential','#C9A84C'],['STK = win streak','#C9A84C']].map(function(item) {
               return <span key={item[0]} style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: item[1] }}>{item[0]}</span>;
             })}
           </div>
@@ -407,7 +407,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
             return (
               <div
                 key={idx}
-                style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}
+                style={{ background: 'rgba(26,21,16,.85)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}
               >
                 {/* Teams */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -431,7 +431,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
                 </div>
 
                 {/* Date / time / venue */}
-                <div style={{ borderTop: '1px solid #241C34', paddingTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ borderTop: '1px solid #3D3020', paddingTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                   <div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', fontWeight: 700 }}>{match.date} · {match.time}</div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginTop: 2 }}>{match.venue}</div>
@@ -458,22 +458,22 @@ export default function StateRankingsTab({ isLive, addToast }) {
           {/* Summary grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
 
-            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+            <div style={{ background: 'rgba(26,21,16,.85)', border: '1px solid #3D3020', borderRadius: 9, padding: '10px 12px' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 3 }}>TOTAL STATES</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', lineHeight: 1 }}>8</div>
             </div>
 
-            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+            <div style={{ background: 'rgba(26,21,16,.85)', border: '1px solid #3D3020', borderRadius: 9, padding: '10px 12px' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 3 }}>MATCHES PLAYED</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#F0E8D4', lineHeight: 1 }}>{totalMatches}</div>
             </div>
 
-            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+            <div style={{ background: 'rgba(26,21,16,.85)', border: '1px solid #3D3020', borderRadius: 9, padding: '10px 12px' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 3 }}>AVG POINTS</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', lineHeight: 1 }}>{avgPoints}</div>
             </div>
 
-            <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px' }}>
+            <div style={{ background: 'rgba(26,21,16,.85)', border: '1px solid #3D3020', borderRadius: 9, padding: '10px 12px' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginBottom: 3 }}>POINTS LEADER</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', lineHeight: 1.1, marginTop: 2 }}>{pointsLeader}</div>
             </div>
@@ -481,7 +481,7 @@ export default function StateRankingsTab({ isLive, addToast }) {
           </div>
 
           {/* Mini bar chart */}
-          <div style={{ background: 'rgba(22,16,32,.85)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.85)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 12, letterSpacing: 1 }}>POINTS BY STATE</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
               {rankings.map(function(r) {

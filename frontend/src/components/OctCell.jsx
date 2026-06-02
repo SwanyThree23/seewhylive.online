@@ -230,9 +230,9 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
   var ringGlow = fadesMode
     ? '0 0 0 3px #FF1A3C, 0 0 14px rgba(255,26,60,.6)'
-    : (speaking && !isMuted ? '0 0 0 3px ' + color + ', 0 0 12px ' + color + '88' : (online ? '0 0 0 2px rgba(0,201,167,.5)' : 'none'));
+    : (speaking && !isMuted ? '0 0 0 3px ' + color + ', 0 0 12px ' + color + '88' : (online ? '0 0 0 2px rgba(201,168,76,.5)' : 'none'));
 
-  var connDotColor = connQuality === 'green' ? '#00C96A' : (connQuality === 'yellow' ? '#C9A84C' : '#FF1A3C');
+  var connDotColor = connQuality === 'green' ? '#C9A84C' : (connQuality === 'yellow' ? '#C9A84C' : '#FF1A3C');
 
   return (
     <div
@@ -242,7 +242,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
       {/* Octagonal clip container */}
       <div style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
         {loading && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(7,5,10,.8)', zIndex: 2 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,12,9,.8)', zIndex: 2 }}>
             <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + color, borderTopColor: 'transparent' }} />
           </div>
         )}
@@ -275,7 +275,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#FF6B81', textAlign: 'center', padding: '0 6px', lineHeight: 1.3 }}>{camError}</span>
                 <button onClick={function(e) { e.stopPropagation(); setCamError(''); setOnline(false); setStreamReady(false); setRetryCount(function(n) { return n + 1; }); }}
-                  style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.4)', borderRadius: 4, padding: '2px 6px', color: '#00C9A7', cursor: 'pointer' }}>
+                  style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 4, padding: '2px 6px', color: '#C9A84C', cursor: 'pointer' }}>
                   RETRY
                 </button>
               </div>
@@ -310,7 +310,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
       {/* EQ bars */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1, height: 12, marginTop: 2 }}>
         {eqBars.map(function(h, i) {
-          return <div key={i} style={{ width: 3, height: Math.max(3, h * 0.2) + 'px', backgroundColor: isMuted ? '#241C34' : color, borderRadius: 1 }} />;
+          return <div key={i} style={{ width: 3, height: Math.max(3, h * 0.2) + 'px', backgroundColor: isMuted ? '#3D3020' : color, borderRadius: 1 }} />;
         })}
       </div>
 
@@ -320,7 +320,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
           {onMuteToggle && (
             <button
               onClick={function(e) { e.stopPropagation(); onMuteToggle(); }}
-              style={{ width: 26, height: 26, borderRadius: '50%', background: isMuted ? 'rgba(255,26,60,.8)' : 'rgba(0,201,167,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 26, height: 26, borderRadius: '50%', background: isMuted ? 'rgba(255,26,60,.8)' : 'rgba(201,168,76,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               title={isMuted ? 'Unmute' : 'Mute'}>
               {isMuted ? '🔇' : '🎙'}
             </button>
@@ -328,7 +328,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
           {onCamToggle && (
             <button
               onClick={function(e) { e.stopPropagation(); onCamToggle(); }}
-              style={{ width: 26, height: 26, borderRadius: '50%', background: isCamOff ? 'rgba(255,26,60,.8)' : 'rgba(0,201,167,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 26, height: 26, borderRadius: '50%', background: isCamOff ? 'rgba(255,26,60,.8)' : 'rgba(201,168,76,.5)', border: 'none', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               title={isCamOff ? 'Turn camera on' : 'Turn camera off'}>
               {isCamOff ? '📵' : '📷'}
             </button>

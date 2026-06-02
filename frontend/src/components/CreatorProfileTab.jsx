@@ -132,7 +132,7 @@ export default function CreatorProfileTab(props) {
       'div',
       {
         style: {
-          background: 'rgba(7,5,10,.95)',
+          background: 'rgba(14,12,9,.95)',
           border: '1px solid rgba(255,255,255,.07)',
           borderRadius: 10,
           padding: '14px 14px',
@@ -279,7 +279,7 @@ export default function CreatorProfileTab(props) {
           {
             key: stream.id,
             style: {
-              background: 'rgba(7,5,10,.95)',
+              background: 'rgba(14,12,9,.95)',
               border: '1px solid rgba(255,255,255,.07)',
               borderRadius: 8,
               padding: '10px 12px',
@@ -346,13 +346,13 @@ export default function CreatorProfileTab(props) {
       'div',
       { style: { marginTop: 10 } },
       profile.subscriberTiers.map(function(tier, idx) {
-        var accentColor = idx === 0 ? '#00C9A7' : idx === 1 ? '#C9A84C' : '#FF1564';
+        var accentColor = idx === 0 ? '#C9A84C' : idx === 1 ? '#C9A84C' : '#FF1564';
         return React.createElement(
           'div',
           {
             key: tier.name,
             style: {
-              background: 'rgba(7,5,10,.95)',
+              background: 'rgba(14,12,9,.95)',
               border: '1px solid ' + accentColor + '33',
               borderRadius: 10,
               padding: '14px 14px',
@@ -447,7 +447,7 @@ export default function CreatorProfileTab(props) {
       'div',
       {
         style: {
-          background: 'rgba(7,5,10,.95)',
+          background: 'rgba(14,12,9,.95)',
           border: '1px solid rgba(255,255,255,.07)',
           borderRadius: 10,
           padding: '16px 14px',
@@ -561,14 +561,14 @@ export default function CreatorProfileTab(props) {
             onClick: handleShareProfile,
             style: {
               flex: 1,
-              background: copiedProfile ? 'rgba(0,201,167,.12)' : 'rgba(22,16,32,.8)',
-              border: '1px solid ' + (copiedProfile ? 'rgba(0,201,167,.4)' : 'rgba(255,255,255,.07)'),
+              background: copiedProfile ? 'rgba(201,168,76,.12)' : 'rgba(26,21,16,.8)',
+              border: '1px solid ' + (copiedProfile ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.07)'),
               borderRadius: 6,
               padding: '8px 0',
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 13,
-              color: copiedProfile ? '#00C9A7' : '#8A7A62',
+              color: copiedProfile ? '#C9A84C' : '#8A7A62',
               cursor: 'pointer',
               letterSpacing: 1,
             }

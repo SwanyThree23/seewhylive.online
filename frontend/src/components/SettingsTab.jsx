@@ -5,7 +5,7 @@ import { usePushNotifications } from '../usePushNotifications.js';
 
 var PLATFORM_TIERS = [
   { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#8A7A62', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
-  { id: 'creator', label: 'CREATOR', priceCents: 1900,  color: '#00C9A7', perks: ['All Free', 'Up to 4 panels', 'Analytics', 'Gift receipts', '$19/mo'] },
+  { id: 'creator', label: 'CREATOR', priceCents: 1900,  color: '#C9A84C', perks: ['All Free', 'Up to 4 panels', 'Analytics', 'Gift receipts', '$19/mo'] },
   { id: 'pro',     label: 'PRO',     priceCents: 4900,  color: '#C084FC', perks: ['All Creator', 'Up to 9 panels', 'AURA AI', 'Paywall', 'Priority support', '$49/mo'] },
   { id: 'studio',  label: 'STUDIO',  priceCents: 14900, color: '#C9A84C', perks: ['All Pro', 'White-label embed', 'Watch Party sync', 'Custom AURA', 'Dedicated support', '$149/mo'] },
 ];
@@ -215,8 +215,8 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           width: 40,
           height: 22,
           borderRadius: 999,
-          background: value ? '#00C9A7' : 'rgba(122,111,144,.25)',
-          border: value ? '1px solid #00C9A7' : '1px solid rgba(122,111,144,.4)',
+          background: value ? '#C9A84C' : 'rgba(122,111,144,.25)',
+          border: value ? '1px solid #C9A84C' : '1px solid rgba(122,111,144,.4)',
           cursor: 'pointer',
           position: 'relative',
           flexShrink: 0,
@@ -265,7 +265,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
                   width: 26,
                   height: 26,
                   borderRadius: '50%',
-                  background: isActive ? 'rgba(201,168,76,.2)' : 'rgba(22,16,32,.5)',
+                  background: isActive ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.5)',
                   border: isActive ? '2px solid #C9A84C' : '1px solid rgba(255,255,255,.07)',
                   cursor: 'pointer',
                   fontSize: 14,
@@ -303,7 +303,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
         <div>
           <span style={labelStyle}>USERNAME</span>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', padding: '8px 12px', background: 'rgba(7,5,10,.5)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', padding: '8px 12px', background: 'rgba(14,12,9,.5)', border: '1px solid rgba(255,255,255,.05)', borderRadius: 8 }}>
             {'@' + (username || 'creator')}
           </div>
         </div>
@@ -357,8 +357,8 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           </div>
         ) : (
           <div>
-            <div style={{ background: 'rgba(0,201,167,.08)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
-              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#00C9A7', fontWeight: 700 }}>
+            <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 14px', marginBottom: 10 }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#C9A84C', fontWeight: 700 }}>
                 &#x2705; STRIPE CONNECTED
               </div>
             </div>
@@ -459,7 +459,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
 
         <button
           onClick={saveNotifications}
-          style={{ width: '100%', background: '#00C9A7', border: '1px solid #00C9A7', borderRadius: 8, padding: '10px 0', color: '#0E0C09', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer', marginTop: 4 }}>
+          style={{ width: '100%', background: '#C9A84C', border: '1px solid #C9A84C', borderRadius: 8, padding: '10px 0', color: '#0E0C09', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer', marginTop: 4 }}>
           SAVE PREFERENCES
         </button>
 
@@ -508,7 +508,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           var isUpgrade = tierIdx > currentIdx;
 
           return (
-            <div key={tier.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (isActive ? tier.color : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '12px 14px', position: 'relative' }}>
+            <div key={tier.id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (isActive ? tier.color : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '12px 14px', position: 'relative' }}>
               {isActive && (
                 <div style={{ position: 'absolute', top: 10, right: 10, fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 1 }}>
                   CURRENT PLAN

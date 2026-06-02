@@ -179,7 +179,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
             var done   = roundHistory.some(function(h) { return h.round === r; });
             return (
               <button key={r} onClick={function() { setActiveRound(i); }}
-                style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(0,255,255,.12)' : done ? 'rgba(255,0,64,.06)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(0,255,255,.45)' : done ? 'rgba(255,0,64,.3)' : '#241C34'), borderRadius: 6, color: active ? '#00FFFF' : done ? '#FF6B81' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ flex: 1, padding: '7px 0', background: active ? 'rgba(0,255,255,.12)' : done ? 'rgba(255,0,64,.06)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? 'rgba(0,255,255,.45)' : done ? 'rgba(255,0,64,.3)' : '#3D3020'), borderRadius: 6, color: active ? '#00FFFF' : done ? '#FF6B81' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
                 {i === 3 ? 'S/D' : 'R' + (i + 1)}{done ? '✓' : ''}
               </button>
             );
@@ -187,7 +187,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
         </div>
 
         {/* View switcher */}
-        <div style={{ display: 'flex', gap: 4, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3 }}>
+        <div style={{ display: 'flex', gap: 4, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: 3 }}>
           {VIEWS.map(function(v) {
             var active = view === v[0];
             return (
@@ -203,7 +203,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
         {view === 'board' && (
           <>
             {/* Score card */}
-            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #241C34', borderRadius: 14, padding: '16px 14px' }}>
+            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #3D3020', borderRadius: 14, padding: '16px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
 
                 {/* Alpha */}
@@ -216,7 +216,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                 {/* VS */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '0 14px' }}>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#3D3450', letterSpacing: 3 }}>VS</div>
-                  <div style={{ width: 1, height: 50, background: 'linear-gradient(180deg,transparent,#241C34,transparent)' }} />
+                  <div style={{ width: 1, height: 50, background: 'linear-gradient(180deg,transparent,#3D3020,transparent)' }} />
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{ROUNDS[activeRound]}</div>
                 </div>
 
@@ -244,21 +244,21 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <button onClick={function() { scorePoint('team1'); }} disabled={!fadesActive}
-                    style={{ padding: '13px', background: fadesActive ? 'rgba(0,255,255,.14)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (fadesActive ? 'rgba(0,255,255,.4)' : '#241C34'), borderRadius: 9, color: fadesActive ? '#00FFFF' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: fadesActive ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: fadesActive ? '0 0 14px rgba(0,255,255,.6)' : 'none' }}>
+                    style={{ padding: '13px', background: fadesActive ? 'rgba(0,255,255,.14)' : 'rgba(26,21,16,.4)', border: '1px solid ' + (fadesActive ? 'rgba(0,255,255,.4)' : '#3D3020'), borderRadius: 9, color: fadesActive ? '#00FFFF' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: fadesActive ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: fadesActive ? '0 0 14px rgba(0,255,255,.6)' : 'none' }}>
                     +1 ALPHA
                   </button>
                   <button onClick={function() { deductPoint('team1'); }} disabled={!fadesActive || t1Score === 0}
-                    style={{ padding: '5px', background: 'transparent', border: '1px solid #241C34', borderRadius: 6, color: '#3D3450', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: fadesActive && t1Score > 0 ? 'pointer' : 'not-allowed', opacity: fadesActive && t1Score > 0 ? 0.7 : 0.2 }}>
+                    style={{ padding: '5px', background: 'transparent', border: '1px solid #3D3020', borderRadius: 6, color: '#3D3450', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: fadesActive && t1Score > 0 ? 'pointer' : 'not-allowed', opacity: fadesActive && t1Score > 0 ? 0.7 : 0.2 }}>
                     −1
                   </button>
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <button onClick={function() { scorePoint('team2'); }} disabled={!fadesActive}
-                    style={{ padding: '13px', background: fadesActive ? 'rgba(255,0,64,.14)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (fadesActive ? 'rgba(255,0,64,.4)' : '#241C34'), borderRadius: 9, color: fadesActive ? '#FF0040' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: fadesActive ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: fadesActive ? '0 0 14px rgba(255,0,64,.6)' : 'none' }}>
+                    style={{ padding: '13px', background: fadesActive ? 'rgba(255,0,64,.14)' : 'rgba(26,21,16,.4)', border: '1px solid ' + (fadesActive ? 'rgba(255,0,64,.4)' : '#3D3020'), borderRadius: 9, color: fadesActive ? '#FF0040' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: fadesActive ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: fadesActive ? '0 0 14px rgba(255,0,64,.6)' : 'none' }}>
                     +1 OMEGA
                   </button>
                   <button onClick={function() { deductPoint('team2'); }} disabled={!fadesActive || t2Score === 0}
-                    style={{ padding: '5px', background: 'transparent', border: '1px solid #241C34', borderRadius: 6, color: '#3D3450', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: fadesActive && t2Score > 0 ? 'pointer' : 'not-allowed', opacity: fadesActive && t2Score > 0 ? 0.7 : 0.2 }}>
+                    style={{ padding: '5px', background: 'transparent', border: '1px solid #3D3020', borderRadius: 6, color: '#3D3450', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: fadesActive && t2Score > 0 ? 'pointer' : 'not-allowed', opacity: fadesActive && t2Score > 0 ? 0.7 : 0.2 }}>
                     −1
                   </button>
                 </div>
@@ -344,11 +344,11 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
               var gid = g.guestId || g.userId;
               var inAlpha = team1.some(function(t) { return (t.guestId || t.userId) === gid; });
               var inOmega = team2.some(function(t) { return (t.guestId || t.userId) === gid; });
-              var borderCol = inAlpha ? 'rgba(0,255,255,.3)' : inOmega ? 'rgba(255,0,64,.3)' : '#241C34';
-              var bgCol     = inAlpha ? 'rgba(0,255,255,.05)' : inOmega ? 'rgba(255,0,64,.05)' : 'rgba(22,16,32,.7)';
+              var borderCol = inAlpha ? 'rgba(0,255,255,.3)' : inOmega ? 'rgba(255,0,64,.3)' : '#3D3020';
+              var bgCol     = inAlpha ? 'rgba(0,255,255,.05)' : inOmega ? 'rgba(255,0,64,.05)' : 'rgba(26,21,16,.7)';
               return (
                 <div key={gid} style={{ background: bgCol, border: '1px solid ' + borderCol, borderRadius: 9, padding: '9px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 7, background: inAlpha ? 'rgba(0,255,255,.15)' : inOmega ? 'rgba(255,0,64,.15)' : 'rgba(22,16,32,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎲</div>
+                  <div style={{ width: 30, height: 30, borderRadius: 7, background: inAlpha ? 'rgba(0,255,255,.15)' : inOmega ? 'rgba(255,0,64,.15)' : 'rgba(26,21,16,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎲</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: inAlpha ? '#00FFFF' : inOmega ? '#FF0040' : '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.username || 'Guest'}</div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: inAlpha ? '#00FFFF' : inOmega ? '#FF0040' : '#8A7A62', letterSpacing: 1 }}>
@@ -381,7 +381,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
             ) : (
               roundHistory.map(function(h, i) {
                 return (
-                  <div key={i} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 9, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div key={i} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 9, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 5, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', flexShrink: 0 }}>{h.round}</div>
                     <div style={{ flex: 1, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: h.winner === 'ALPHA' ? '#00FFFF' : h.winner === 'OMEGA' ? '#FF0040' : '#C9A84C' }}>🏆 {h.winner}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -401,7 +401,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
             {/* Odds header */}
-            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #241C34', borderRadius: 14, padding: '14px' }}>
+            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #3D3020', borderRadius: 14, padding: '14px' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 3, textAlign: 'center', marginBottom: 12 }}>LIVE WAGER ODDS</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 {(function() {
@@ -440,9 +440,9 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
 
             {/* Win/loss result banner */}
             {wagerResult === 'won' && (
-              <div style={{ background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.5)', borderRadius: 10, padding: '14px', textAlign: 'center' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#00C9A7', letterSpacing: 6, textShadow: '0 0 20px rgba(0,201,167,.6)' }}>🏆 YOU WON!</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00C9A7', marginTop: 4 }}>Gems added to your balance</div>
+              <div style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 10, padding: '14px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#C9A84C', letterSpacing: 6, textShadow: '0 0 20px rgba(201,168,76,.6)' }}>🏆 YOU WON!</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', marginTop: 4 }}>Gems added to your balance</div>
               </div>
             )}
             {wagerResult === 'lost' && (
@@ -473,7 +473,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
             )}
 
             {/* Gem balance & amount selector */}
-            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #241C34', borderRadius: 12, padding: '14px' }}>
+            <div style={{ background: 'rgba(15,12,20,.95)', border: '1px solid #3D3020', borderRadius: 12, padding: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2 }}>WAGER AMOUNT</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>💎 {gemBalance} balance</div>
@@ -485,7 +485,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                   return (
                     <button key={amt} onClick={function() { if (!myWager) setWagerGems(amt); }}
                       disabled={!!myWager || !canAfford}
-                      style={{ flex: 1, padding: '8px 0', background: isSelected ? 'rgba(201,168,76,.2)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (isSelected ? 'rgba(201,168,76,.6)' : '#241C34'), borderRadius: 7, color: isSelected ? '#C9A84C' : canAfford ? '#8A7A62' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: myWager || !canAfford ? 'not-allowed' : 'pointer', opacity: canAfford ? 1 : 0.4 }}>
+                      style={{ flex: 1, padding: '8px 0', background: isSelected ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (isSelected ? 'rgba(201,168,76,.6)' : '#3D3020'), borderRadius: 7, color: isSelected ? '#C9A84C' : canAfford ? '#8A7A62' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: myWager || !canAfford ? 'not-allowed' : 'pointer', opacity: canAfford ? 1 : 0.4 }}>
                       {amt}
                     </button>
                   );
@@ -510,7 +510,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                         return next;
                       });
                     }}
-                    style={{ flex: 1, padding: '13px 8px', background: canWager ? 'rgba(0,255,255,.14)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (canWager ? 'rgba(0,255,255,.45)' : '#241C34'), borderRadius: 10, color: canWager ? '#00FFFF' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: canWager ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: canWager ? '0 0 14px rgba(0,255,255,.5)' : 'none' }}>
+                    style={{ flex: 1, padding: '13px 8px', background: canWager ? 'rgba(0,255,255,.14)' : 'rgba(26,21,16,.4)', border: '1px solid ' + (canWager ? 'rgba(0,255,255,.45)' : '#3D3020'), borderRadius: 10, color: canWager ? '#00FFFF' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: canWager ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: canWager ? '0 0 14px rgba(0,255,255,.5)' : 'none' }}>
                     💎 BACK ALPHA
                   </button>
                   <button
@@ -525,7 +525,7 @@ export default function FadesTab({ socket, scores, guests, roomId, isLive, role,
                         return next;
                       });
                     }}
-                    style={{ flex: 1, padding: '13px 8px', background: canWager ? 'rgba(255,0,64,.14)' : 'rgba(22,16,32,.4)', border: '1px solid ' + (canWager ? 'rgba(255,0,64,.45)' : '#241C34'), borderRadius: 10, color: canWager ? '#FF0040' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: canWager ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: canWager ? '0 0 14px rgba(255,0,64,.5)' : 'none' }}>
+                    style={{ flex: 1, padding: '13px 8px', background: canWager ? 'rgba(255,0,64,.14)' : 'rgba(26,21,16,.4)', border: '1px solid ' + (canWager ? 'rgba(255,0,64,.45)' : '#3D3020'), borderRadius: 10, color: canWager ? '#FF0040' : '#3D3450', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: canWager ? 'pointer' : 'not-allowed', letterSpacing: 2, textShadow: canWager ? '0 0 14px rgba(255,0,64,.5)' : 'none' }}>
                     💎 BACK OMEGA
                   </button>
                 </div>

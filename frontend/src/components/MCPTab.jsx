@@ -4,11 +4,11 @@ var GOLD   = '#C9A84C';
 var GOLD_H = '#E8C46A';
 var BURG   = '#800020';
 var BURG_H = '#C01838';
-var TEAL   = '#00C9A7';
+var TEAL   = '#C9A84C';
 var TEAL_H = '#C9A84C';
 var PURP   = '#9B4DCA';
 var PURP_H = '#C084FC';
-var LIME   = '#00C96A';
+var LIME   = '#C9A84C';
 var MUTED  = '#6B5F82';
 var TEXT   = '#EDE8F4';
 var TEXT_M = '#A89CC8';
@@ -239,9 +239,9 @@ export default function MCPTab({ addToast, isLive }) {
               disabled={pinging}
               style={{
                 background: pinging
-                  ? 'rgba(0,201,167,.1)'
+                  ? 'rgba(201,168,76,.1)'
                   : 'linear-gradient(135deg,' + TEAL + ',' + TEAL_H + ')',
-                border: '1px solid ' + (pinging ? 'rgba(0,201,167,.3)' : TEAL),
+                border: '1px solid ' + (pinging ? 'rgba(201,168,76,.3)' : TEAL),
                 borderRadius: 7,
                 padding: '6px 12px',
                 color: pinging ? TEAL : BG0,
@@ -325,8 +325,8 @@ export default function MCPTab({ addToast, isLive }) {
             <div
               key={tool.id}
               style={{
-                background: pinging ? 'rgba(0,201,167,.04)' : GLASS,
-                border: '1px solid ' + (pinging ? 'rgba(0,201,167,.18)' : BORDER),
+                background: pinging ? 'rgba(201,168,76,.04)' : GLASS,
+                border: '1px solid ' + (pinging ? 'rgba(201,168,76,.18)' : BORDER),
                 borderRadius: 9,
                 padding: '9px 11px',
                 display: 'flex',
@@ -378,11 +378,11 @@ export default function MCPTab({ addToast, isLive }) {
 
         {/* SCHEMA ALIGNMENT card */}
         <div style={{
-          background: 'rgba(0,201,167,.05)',
-          border: '1px solid rgba(0,201,167,.3)',
+          background: 'rgba(201,168,76,.05)',
+          border: '1px solid rgba(201,168,76,.3)',
           borderRadius: 10,
           padding: '12px 13px',
-          boxShadow: '0 0 16px rgba(0,201,167,.06)',
+          boxShadow: '0 0 16px rgba(201,168,76,.06)',
           marginTop: 4,
         }}>
           <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 13, color: TEAL, letterSpacing: 1, marginBottom: 10 }}>
@@ -472,8 +472,8 @@ export default function MCPTab({ addToast, isLive }) {
         {/* SERVER VITALS card — populated by /api/health */}
         {serverHealth && (
           <div style={{
-            background: 'rgba(0,201,167,.04)',
-            border: '1px solid rgba(0,201,167,.2)',
+            background: 'rgba(201,168,76,.04)',
+            border: '1px solid rgba(201,168,76,.2)',
             borderRadius: 10,
             padding: '12px 13px',
             marginTop: 4,
@@ -499,7 +499,7 @@ export default function MCPTab({ addToast, isLive }) {
             {serverHealth.memoryMB && (
               <div>
                 <div style={{ fontFamily: fM, fontSize: 7, color: TEXT_M, letterSpacing: 1, marginBottom: 4 }}>HEAP USAGE</div>
-                <div style={{ height: 6, background: '#241C34', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: 6, background: '#3D3020', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ width: Math.floor((serverHealth.memoryMB.heap / serverHealth.memoryMB.heapTotal) * 100) + '%', height: '100%', background: 'linear-gradient(90deg,' + TEAL + ',' + TEAL_H + ')', borderRadius: 3 }} />
                 </div>
                 <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, marginTop: 3 }}>

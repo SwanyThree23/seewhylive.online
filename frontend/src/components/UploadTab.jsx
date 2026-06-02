@@ -155,8 +155,8 @@ export default function UploadTab({ addToast, isLive }) {
     handleDeviceFiles(e.dataTransfer.files);
   }
 
-  var progColor = progress < 40 ? '#5A8FFF' : progress < 80 ? '#C9A84C' : '#00C9A7';
-  var uploadProgColor = uploadProgress < 40 ? '#5A8FFF' : uploadProgress < 80 ? '#C9A84C' : '#00C9A7';
+  var progColor = progress < 40 ? '#C9A84C' : progress < 80 ? '#C9A84C' : '#C9A84C';
+  var uploadProgColor = uploadProgress < 40 ? '#C9A84C' : uploadProgress < 80 ? '#C9A84C' : '#C9A84C';
 
   var durationDisplay = '';
   if (duration !== null) {
@@ -177,9 +177,9 @@ export default function UploadTab({ addToast, isLive }) {
 
       {/* isLive tip card */}
       {isLive && (
-        <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+        <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
           <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7', lineHeight: 1.5 }}>Tip: you can clip your current live stream instead of uploading</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', lineHeight: 1.5 }}>Tip: you can clip your current live stream instead of uploading</span>
         </div>
       )}
 
@@ -189,7 +189,7 @@ export default function UploadTab({ addToast, isLive }) {
           var active = tab === t[0];
           return (
             <button key={t[0]} onClick={function() { setTab(t[0]); }}
-              style={{ flex: 1, padding: '8px 0', background: active ? 'rgba(255,68,68,.12)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(255,68,68,.4)' : '#241C34'), borderRadius: 8, color: active ? '#FF6B6B' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              style={{ flex: 1, padding: '8px 0', background: active ? 'rgba(255,68,68,.12)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? 'rgba(255,68,68,.4)' : '#3D3020'), borderRadius: 8, color: active ? '#FF6B6B' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
               {t[1]}
             </button>
           );
@@ -201,7 +201,7 @@ export default function UploadTab({ addToast, isLive }) {
         <>
           {/* File pick */}
           <div onClick={function() { if (!uploading) ytInputRef.current && ytInputRef.current.click(); }}
-            style={{ border: '2px dashed ' + (durationError ? 'rgba(255,26,60,.7)' : 'rgba(255,68,68,.3)'), borderRadius: 10, padding: '20px', textAlign: 'center', background: durationError ? 'rgba(255,26,60,.07)' : (ytFile ? 'rgba(255,68,68,.05)' : 'rgba(22,16,32,.5)'), cursor: uploading ? 'not-allowed' : 'pointer' }}>
+            style={{ border: '2px dashed ' + (durationError ? 'rgba(255,26,60,.7)' : 'rgba(255,68,68,.3)'), borderRadius: 10, padding: '20px', textAlign: 'center', background: durationError ? 'rgba(255,26,60,.07)' : (ytFile ? 'rgba(255,68,68,.05)' : 'rgba(26,21,16,.5)'), cursor: uploading ? 'not-allowed' : 'pointer' }}>
             <input ref={ytInputRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleYtFilePick} />
             {ytFile ? (
               <>
@@ -209,7 +209,7 @@ export default function UploadTab({ addToast, isLive }) {
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4' }}>{ytFile.name}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 2 }}>{fmtBytes(ytFile.size)}</div>
                 {duration !== null && (
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: durationError ? '#FF6B81' : '#00C9A7', marginTop: 4 }}>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: durationError ? '#FF6B81' : '#C9A84C', marginTop: 4 }}>
                     Duration: {durationDisplay}{durationError ? ' — TOO LONG' : ' ✓'}
                   </div>
                 )}
@@ -231,7 +231,7 @@ export default function UploadTab({ addToast, isLive }) {
 
           {/* Upload progress bar */}
           {uploading && (
-            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px' }}>
+            <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '10px 12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#F0E8D4' }}>UPLOAD PROGRESS</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: uploadProgColor }}>{uploadProgress}%</span>
@@ -247,12 +247,12 @@ export default function UploadTab({ addToast, isLive }) {
             <div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 3 }}>TITLE *</div>
               <input value={title} onChange={function(e) { setTitle(e.target.value); }} placeholder="Video title..."
-                style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
+                style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
             </div>
             <div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 3 }}>DESCRIPTION</div>
               <textarea value={desc} onChange={function(e) { setDesc(e.target.value); }} placeholder="What's this video about?" rows={3}
-                style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, resize: 'vertical' }} />
+                style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, resize: 'vertical' }} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ flex: 1 }}>
@@ -278,7 +278,7 @@ export default function UploadTab({ addToast, isLive }) {
 
           {/* Progress (YouTube-side) */}
           {uploading && (
-            <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '10px 12px' }}>
+            <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '10px 12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#F0E8D4' }}>UPLOADING TO YOUTUBE</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: progColor }}>{progress}%</span>
@@ -303,7 +303,7 @@ export default function UploadTab({ addToast, isLive }) {
               </button>
             )}
             <button onClick={function() { setShowApiCfg(function(v) { return !v; }); }}
-              style={{ flex: 1, padding: '10px', background: showApiCfg ? 'rgba(201,168,76,.15)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (showApiCfg ? 'rgba(201,168,76,.4)' : '#241C34'), borderRadius: 8, color: showApiCfg ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+              style={{ flex: 1, padding: '10px', background: showApiCfg ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (showApiCfg ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 8, color: showApiCfg ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
               ⚙ API
             </button>
           </div>
@@ -332,13 +332,13 @@ export default function UploadTab({ addToast, isLive }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {history.map(function(h) {
                   return (
-                    <div key={h.id} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div key={h.id} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ fontSize: 22, flexShrink: 0 }}>{h.thumb}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</div>
                         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{h.duration} · {h.views.toLocaleString()} views · {h.date}</div>
                       </div>
-                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: h.privacy === 'public' ? '#00C9A7' : h.privacy === 'unlisted' ? '#C9A84C' : '#8A7A62', flexShrink: 0 }}>{h.privacy.toUpperCase()}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: h.privacy === 'public' ? '#C9A84C' : h.privacy === 'unlisted' ? '#C9A84C' : '#8A7A62', flexShrink: 0 }}>{h.privacy.toUpperCase()}</div>
                       <button onClick={function() { removeHistory(h.id); }}
                         style={{ background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 5, padding: '3px 7px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0 }}>✕</button>
                     </div>
@@ -359,7 +359,7 @@ export default function UploadTab({ addToast, isLive }) {
             onDragLeave={function() { setIsDragging(false); }}
             onDrop={handleDrop}
             onClick={function() { deviceInputRef.current && deviceInputRef.current.click(); }}
-            style={{ border: '2px dashed rgba(201,168,76,' + (isDragging ? '.7' : '.3') + ')', borderRadius: 12, padding: '28px 16px', textAlign: 'center', background: isDragging ? 'rgba(201,168,76,.07)' : 'rgba(22,16,32,.5)', cursor: 'pointer', transition: 'all .2s', boxShadow: isDragging ? '0 0 20px rgba(201,168,76,.12)' : 'none' }}>
+            style={{ border: '2px dashed rgba(201,168,76,' + (isDragging ? '.7' : '.3') + ')', borderRadius: 12, padding: '28px 16px', textAlign: 'center', background: isDragging ? 'rgba(201,168,76,.07)' : 'rgba(26,21,16,.5)', cursor: 'pointer', transition: 'all .2s', boxShadow: isDragging ? '0 0 20px rgba(201,168,76,.12)' : 'none' }}>
             <input ref={deviceInputRef} type="file" accept="video/*,image/*" multiple style={{ display: 'none' }} onChange={function(e) { handleDeviceFiles(e.target.files); }} />
             <div style={{ fontSize: 32, marginBottom: 8 }}>{isDragging ? '📂' : '💾'}</div>
             <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: isDragging ? '#C9A84C' : '#8A7A62' }}>{isDragging ? 'DROP FILES HERE' : 'TAP OR DROP FILES'}</div>
@@ -386,7 +386,7 @@ export default function UploadTab({ addToast, isLive }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {deviceFiles.map(function(f, i) {
                   return (
-                    <div key={i} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div key={i} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ fontSize: 18, flexShrink: 0 }}>{f.type.startsWith('video/') ? '🎬' : '🖼'}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>

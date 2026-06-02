@@ -163,10 +163,10 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
     if (onClose) onClose();
   }
 
-  var levelColor = micLevel > 70 ? '#FF1A3C' : micLevel > 40 ? '#C8FF00' : '#00C9A7';
+  var levelColor = micLevel > 70 ? '#FF1A3C' : micLevel > 40 ? '#C9A84C' : '#C9A84C';
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(7,5,10,.92)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(14,12,9,.92)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div style={{ width: '100%', maxWidth: 420, background: '#0E0C09', border: '1px solid rgba(201,168,76,.3)', borderRadius: 14, overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
@@ -179,7 +179,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
         </div>
 
         {/* Sub-tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #241C34', flexShrink: 0 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid #3D3020', flexShrink: 0 }}>
           {[['camera','📷 CAMERA'],['audio','🎙 AUDIO'],['quality','📶 QUALITY']].map(function(t) {
             var active = tab === t[0];
             return (
@@ -197,7 +197,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
           {tab === 'camera' && (
             <>
               {/* Preview */}
-              <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', background: '#07050A', aspectRatio: '16/9', border: '1px solid #241C34' }}>
+              <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', background: '#07050A', aspectRatio: '16/9', border: '1px solid #3D3020' }}>
                 {loading && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: 32, height: 32, border: '3px solid #C9A84C33', borderTopColor: '#C9A84C', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
@@ -212,13 +212,13 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                 <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: previewStream && !previewError ? 'block' : 'none' }} />
                 {/* Resolution badge */}
                 {previewStream && (
-                  <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>
+                  <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 4, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>
                     {quality.toUpperCase()}
                   </div>
                 )}
                 {/* Flip button */}
                 <button onClick={function() { setFacingFront(function(f) { return !f; }); }}
-                  style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 6, padding: '4px 8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                  style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '4px 8px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                   🔄 FLIP
                 </button>
               </div>
@@ -230,7 +230,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>No cameras detected</div>
                 ) : (
                   <select value={camId} onChange={function(e) { setCamId(e.target.value); }}
-                    style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                    style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                     {cameras.map(function(c, i) {
                       return <option key={c.deviceId} value={c.deviceId}>{c.label || 'Camera ' + (i + 1)}</option>;
                     })}
@@ -244,7 +244,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                   var active = (fm[0] === 'user') === facingFront;
                   return (
                     <button key={fm[0]} onClick={function() { setFacingFront(fm[0] === 'user'); setCamId(''); }}
-                      style={{ flex: 1, padding: '7px', background: active ? 'rgba(201,168,76,.15)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.5)' : '#241C34'), borderRadius: 7, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                      style={{ flex: 1, padding: '7px', background: active ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.5)' : '#3D3020'), borderRadius: 7, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
                       {fm[1]}
                     </button>
                   );
@@ -263,7 +263,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF6B81' }}>No microphones detected</div>
                 ) : (
                   <select value={micId} onChange={function(e) { setMicId(e.target.value); }}
-                    style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                    style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                     {microphones.map(function(m, i) {
                       return <option key={m.deviceId} value={m.deviceId}>{m.label || 'Microphone ' + (i + 1)}</option>;
                     })}
@@ -274,7 +274,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
               {/* Mic level meter */}
               <div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 6 }}>MIC LEVEL</div>
-                <div style={{ background: '#07050A', border: '1px solid #241C34', borderRadius: 6, height: 20, overflow: 'hidden', position: 'relative' }}>
+                <div style={{ background: '#07050A', border: '1px solid #3D3020', borderRadius: 6, height: 20, overflow: 'hidden', position: 'relative' }}>
                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: micLevel + '%', background: 'linear-gradient(90deg,' + levelColor + '88,' + levelColor + ')', borderRadius: 6, transition: 'width 60ms' }} />
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#F0E8D4' }}>{micLevel}%</div>
                 </div>
@@ -285,7 +285,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
               {speakers.length > 0 && (
                 <div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 4 }}>SPEAKER OUTPUT</div>
-                  <select style={{ width: '100%', background: '#07050A', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                  <select style={{ width: '100%', background: '#07050A', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', color: '#F0E8D4', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
                     {speakers.map(function(s, i) {
                       return <option key={s.deviceId} value={s.deviceId}>{s.label || 'Speaker ' + (i + 1)}</option>;
                     })}
@@ -297,15 +297,15 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>AUDIO PROCESSING</div>
                 {[
-                  ['Noise Suppression', noiseSup, setNoiseSup, '#00C9A7'],
-                  ['Echo Cancellation', echoCan, setEchoCan, '#5A8FFF'],
+                  ['Noise Suppression', noiseSup, setNoiseSup, '#C9A84C'],
+                  ['Echo Cancellation', echoCan, setEchoCan, '#C9A84C'],
                   ['Auto Gain Control', autoGain, setAutoGain, '#C084FC'],
                 ].map(function(item) {
                   return (
-                    <div key={item[0]} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(22,16,32,.7)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px' }}>
+                    <div key={item[0]} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px' }}>
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4' }}>{item[0]}</span>
                       <button onClick={function() { item[2](function(v) { return !v; }); }}
-                        style={{ background: item[1] ? item[3] + '22' : 'rgba(22,16,32,.5)', border: '1px solid ' + (item[1] ? item[3] + '66' : '#241C34'), borderRadius: 20, padding: '4px 12px', color: item[1] ? item[3] : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', minWidth: 48 }}>
+                        style={{ background: item[1] ? item[3] + '22' : 'rgba(26,21,16,.5)', border: '1px solid ' + (item[1] ? item[3] + '66' : '#3D3020'), borderRadius: 20, padding: '4px 12px', color: item[1] ? item[3] : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', minWidth: 48 }}>
                         {item[1] ? 'ON' : 'OFF'}
                       </button>
                     </div>
@@ -325,13 +325,13 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                   var mbps   = Math.floor(p.bitrate / 1000000 * 10) / 10;
                   return (
                     <button key={p.id} onClick={function() { setQuality(p.id); }}
-                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: active ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.45)' : '#241C34'), borderRadius: 9, padding: '10px 14px', cursor: 'pointer', textAlign: 'left' }}>
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: active ? 'rgba(201,168,76,.1)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? 'rgba(201,168,76,.45)' : '#3D3020'), borderRadius: 9, padding: '10px 14px', cursor: 'pointer', textAlign: 'left' }}>
                       <div>
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: active ? '#C9A84C' : '#F0E8D4' }}>{p.label}</div>
                         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62' }}>{p.width}×{p.height} · {p.frameRate}fps</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: active ? '#00C9A7' : '#8A7A62' }}>{mbps} Mbps</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: active ? '#C9A84C' : '#8A7A62' }}>{mbps} Mbps</div>
                         {active && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>✓ SELECTED</div>}
                       </div>
                     </button>
@@ -340,8 +340,8 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
               </div>
 
               {/* Bandwidth advisory */}
-              <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 8, padding: '8px 12px' }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', marginBottom: 4 }}>BANDWIDTH GUIDE</div>
+              <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '8px 12px' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', marginBottom: 4 }}>BANDWIDTH GUIDE</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', lineHeight: 1.6 }}>
                   360p → 1 Mbps upload<br />
                   480p → 2 Mbps upload<br />
@@ -355,9 +355,9 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
         </div>
 
         {/* Footer buttons */}
-        <div style={{ padding: '12px 14px', borderTop: '1px solid #241C34', display: 'flex', gap: 8, flexShrink: 0 }}>
+        <div style={{ padding: '12px 14px', borderTop: '1px solid #3D3020', display: 'flex', gap: 8, flexShrink: 0 }}>
           <button onClick={startPreview}
-            style={{ flex: 1, padding: '9px', background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 8, color: '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+            style={{ flex: 1, padding: '9px', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
             🔄 TEST
           </button>
           <button onClick={handleApply}

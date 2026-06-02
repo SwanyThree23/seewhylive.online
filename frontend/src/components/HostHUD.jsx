@@ -97,7 +97,7 @@ export default function HostHUD(props) {
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED }}>VIEWERS</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: RED, lineHeight: 1 }}>{viewerCount || 0}</div>
-                <span style={{ fontSize: 9, color: trendUp ? '#00C96A' : RED }}>{trendUp ? '▲' : '▼'}</span>
+                <span style={{ fontSize: 9, color: trendUp ? '#C9A84C' : RED }}>{trendUp ? '▲' : '▼'}</span>
               </div>
             </div>
             <div style={{ flex: 1, background: CARD, borderRadius: 7, padding: '6px 8px', border: '1px solid rgba(212,133,74,.12)' }}>

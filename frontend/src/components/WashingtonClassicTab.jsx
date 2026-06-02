@@ -31,7 +31,7 @@ var LEADERBOARD = [
   { name: 'SwanyThree',  flag: '&#x1F1FA;&#x1F1F8;', w: 7, l: 1, pts: 210, streak: 5, color: '#C01838' },
   { name: 'VibeNBones',  flag: '&#x1F1FA;&#x1F1F8;', w: 6, l: 2, pts: 180, streak: 3, color: '#D4854A' },
   { name: 'BeatKing_X',  flag: '&#x1F1EC;&#x1F1E7;', w: 5, l: 3, pts: 150, streak: 2, color: '#D4854A' },
-  { name: 'NeonBeats',   flag: '&#x1F1F0;&#x1F1F7;', w: 4, l: 4, pts: 120, streak: 0, color: '#5A8FFF' },
+  { name: 'NeonBeats',   flag: '&#x1F1F0;&#x1F1F7;', w: 4, l: 4, pts: 120, streak: 0, color: '#C9A84C' },
   { name: 'LyricQueen',  flag: '&#x1F1FA;&#x1F1F8;', w: 3, l: 5, pts: 90,  streak: 0, color: '#FF8C5A' },
   { name: 'DJ_Phantom',  flag: '&#x1F1FA;&#x1F1F8;', w: 2, l: 6, pts: 60,  streak: 0, color: '#8A7A62' },
   { name: 'VibeStar',    flag: '&#x1F1EF;&#x1F1F5;', w: 1, l: 7, pts: 30,  streak: 0, color: '#F0E8D4' },
@@ -42,7 +42,7 @@ var PLAYER_STATS = [
   { name: 'SwanyThree',  avgScore: 26.1, highGame: 33, winPct: 87,  dominoes: 130, pts: 210, color: '#C01838' },
   { name: 'VibeNBones',  avgScore: 23.8, highGame: 31, winPct: 75,  dominoes: 119, pts: 180, color: '#D4854A' },
   { name: 'BeatKing_X',  avgScore: 21.5, highGame: 30, winPct: 63,  dominoes: 107, pts: 150, color: '#D4854A' },
-  { name: 'NeonBeats',   avgScore: 19.2, highGame: 27, winPct: 50,  dominoes: 96,  pts: 120, color: '#5A8FFF' },
+  { name: 'NeonBeats',   avgScore: 19.2, highGame: 27, winPct: 50,  dominoes: 96,  pts: 120, color: '#C9A84C' },
 ];
 
 var STATUS_COLORS = { LIVE: '#FF1A3C', NEXT: '#D4854A', DONE: '#8A7A62' };
@@ -315,7 +315,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
             <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <AvatarPortrait username={liveMatchForOverlay.p1} size={44} isLive={true} />
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4' }}>{liveMatchForOverlay.p1}</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C8FF00', lineHeight: 1 }}>{liveScores.p1score}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C9A84C', lineHeight: 1 }}>{liveScores.p1score}</div>
               {possession === 0 && (
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#D4854A' }}>&#x25B6; POSSESSION</div>
               )}
@@ -324,7 +324,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
             <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <AvatarPortrait username={liveMatchForOverlay.p2} size={44} isLive={true} />
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4' }}>{liveMatchForOverlay.p2}</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C8FF00', lineHeight: 1 }}>{liveScores.p2score}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: '#C9A84C', lineHeight: 1 }}>{liveScores.p2score}</div>
               {possession === 1 && (
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#D4854A' }}>&#x25B6; POSSESSION</div>
               )}
@@ -334,10 +334,10 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
       )}
 
       {/* Auto-score toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(26,21,16,.6)', border: '1px solid #241C34', borderRadius: 8, padding: '7px 12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(26,21,16,.6)', border: '1px solid #3D3020', borderRadius: 8, padding: '7px 12px' }}>
         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 1 }}>&#x26A1; LIVE AUTO-SCORING</span>
         <button onClick={function() { setAutoScore(function(v) { return !v; }); }}
-          style={{ background: autoScore ? 'rgba(255,26,60,.2)' : 'rgba(0,201,167,.1)', border: '1px solid ' + (autoScore ? 'rgba(255,26,60,.5)' : 'rgba(0,201,167,.3)'), borderRadius: 999, padding: '3px 14px', color: autoScore ? '#FF6B81' : '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
+          style={{ background: autoScore ? 'rgba(255,26,60,.2)' : 'rgba(201,168,76,.1)', border: '1px solid ' + (autoScore ? 'rgba(255,26,60,.5)' : 'rgba(201,168,76,.3)'), borderRadius: 999, padding: '3px 14px', color: autoScore ? '#FF6B81' : '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
           {autoScore ? '&#x23F9; STOP' : '&#x25B6; START'}
         </button>
       </div>
@@ -359,7 +359,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
       {view === 'brackets' && (
         <div>
           {/* Round selector */}
-          <div style={{ display: 'flex', gap: 3, background: 'rgba(14,12,9,.8)', border: '1px solid #241C34', borderRadius: 8, padding: 3, marginBottom: 8 }}>
+          <div style={{ display: 'flex', gap: 3, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: 3, marginBottom: 8 }}>
             {ROUND_KEYS.map(function(rk) {
               var isActive = round === rk;
               var matches  = getRound(rk);
@@ -375,7 +375,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
           </div>
 
           {/* List / Tree mode toggle */}
-          <div style={{ display: 'flex', gap: 3, marginBottom: 8, background: 'rgba(14,12,9,.8)', border: '1px solid #241C34', borderRadius: 7, padding: 3 }}>
+          <div style={{ display: 'flex', gap: 3, marginBottom: 8, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 7, padding: 3 }}>
             {[['list', '&#x2630; LIST'], ['tree', '&#x1F333; FULL BRACKET']].map(function(m) {
               var active = bracketMode === m[0];
               return (
@@ -457,7 +457,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: b.winner === b.p1 ? '#C9A84C' : isTbd ? '#3D3020' : '#F0E8D4' }}>{b.p1}</span>
                         {showLiveOverlay ? (
-                          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C8FF00', letterSpacing: 2, minWidth: 50, textAlign: 'center' }}>
+                          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 2, minWidth: 50, textAlign: 'center' }}>
                             {displayP1Score} - {displayP2Score}
                           </span>
                         ) : (
@@ -575,7 +575,7 @@ export default function WashingtonClassicTab({ addToast, isLive, socket, roomId,
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: p.color, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                   {p.streak > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C' }}>{p.streak}&#x1F525; streak</div>}
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#00C96A', width: 24, textAlign: 'center', flexShrink: 0 }}>{p.w}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C', width: 24, textAlign: 'center', flexShrink: 0 }}>{p.w}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#FF4060', width: 24, textAlign: 'center', flexShrink: 0 }}>{p.l}</div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#F0E8D4', width: 30, textAlign: 'right', flexShrink: 0 }}>{p.pts}</div>
               </div>

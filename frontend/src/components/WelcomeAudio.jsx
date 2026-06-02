@@ -190,7 +190,7 @@ export default function WelcomeAudio(props) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'rgba(7,5,10,.96)',
+      background: 'rgba(14,12,9,.96)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '0 16px'
     }}>
@@ -249,7 +249,7 @@ export default function WelcomeAudio(props) {
                   ['🌍', '11 FEATURES', 'Full platform audio tour']
                 ].map(function(item) {
                   return (
-                    <div key={item[1]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 8, padding: '9px 10px', textAlign: 'left', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <div key={item[1]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 8, padding: '9px 10px', textAlign: 'left', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                       <span style={{ fontSize: 16, lineHeight: 1, marginTop: 1 }}>{item[0]}</span>
                       <div>
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#C9A84C', letterSpacing: 1 }}>{item[1]}</div>
@@ -268,7 +268,7 @@ export default function WelcomeAudio(props) {
                 </button>
                 <button
                   onClick={handleClose}
-                  style={{ flex: 1, padding: '13px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1, cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '13px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 1, cursor: 'pointer' }}>
                   SKIP
                 </button>
               </div>
@@ -324,11 +324,11 @@ export default function WelcomeAudio(props) {
                     <div key={i} title={s.label} style={{
                       width: 30, height: 30, borderRadius: 7, fontSize: 13,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: done   ? 'rgba(0,201,167,.08)' :
-                                  active ? 'rgba(201,168,76,.12)' : 'rgba(22,16,32,.6)',
-                      border: '1px solid ' + (done   ? 'rgba(0,201,167,.3)' :
-                                              active ? 'rgba(201,168,76,.45)' : '#241C34'),
-                      color: done ? '#00C9A7' : '#F0E8D4',
+                      background: done   ? 'rgba(201,168,76,.08)' :
+                                  active ? 'rgba(201,168,76,.12)' : 'rgba(26,21,16,.6)',
+                      border: '1px solid ' + (done   ? 'rgba(201,168,76,.3)' :
+                                              active ? 'rgba(201,168,76,.45)' : '#3D3020'),
+                      color: done ? '#C9A84C' : '#F0E8D4',
                       transform: active ? 'scale(1.12)' : 'scale(1)',
                       transition: 'all .2s'
                     }}>
@@ -354,13 +354,13 @@ export default function WelcomeAudio(props) {
                 <button
                   onClick={handlePrev}
                   disabled={currentIdx === 0}
-                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: currentIdx === 0 ? '#3D3450' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', letterSpacing: 1 }}>
+                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, color: currentIdx === 0 ? '#3D3450' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: currentIdx === 0 ? 'not-allowed' : 'pointer', letterSpacing: 1 }}>
                   ◀ PREV
                 </button>
                 {hasAudio && (
                   <button
                     onClick={handleTogglePause}
-                    style={{ flex: 1, padding: '9px 4px', background: 'rgba(90,143,255,.1)', border: '1px solid rgba(90,143,255,.25)', borderRadius: 8, color: '#5A8FFF', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+                    style={{ flex: 1, padding: '9px 4px', background: 'rgba(90,143,255,.1)', border: '1px solid rgba(90,143,255,.25)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
                     {playing ? '⏸ PAUSE' : '▶ RESUME'}
                   </button>
                 )}
@@ -371,7 +371,7 @@ export default function WelcomeAudio(props) {
                 </button>
                 <button
                   onClick={handleClose}
-                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
+                  style={{ flex: 1, padding: '9px 4px', background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, cursor: 'pointer', letterSpacing: 1 }}>
                   ✕ EXIT
                 </button>
               </div>
@@ -391,7 +391,7 @@ export default function WelcomeAudio(props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 16 }}>
                 {[['90%', 'YOUR CUT'], ['11', 'FEATURES'], ['∞', 'POTENTIAL']].map(function(stat) {
                   return (
-                    <div key={stat[0]} style={{ background: 'rgba(22,16,32,.7)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
+                    <div key={stat[0]} style={{ background: 'rgba(26,21,16,.7)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
                       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: '#C9A84C', lineHeight: 1 }}>{stat[0]}</div>
                       <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>{stat[1]}</div>
                     </div>
