@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Bell, CheckCircle2, AlertCircle, Zap, Users, Target, Trophy } from 'lucide-react';
+import { X, Bell, CheckCircle2, Zap, Users, Target, Trophy, Gift, Heart, Star, Radio, Check } from 'lucide-react';
 import { isSafeUrl } from '@/lib/security';
 
 const G = '#D4AF37';
@@ -11,13 +11,24 @@ const PANEL = '#0F0B1A';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const ICON_MAP = {
-  poll_created: <Target className="w-4 h-4" />,
-  poll_closed: <CheckCircle2 className="w-4 h-4" />,
-  raid_incoming: <Users className="w-4 h-4" />,
-  raid_outgoing: <Zap className="w-4 h-4" />,
-  engagement_milestone: <Trophy className="w-4 h-4" />,
-  tip: <Zap className="w-4 h-4" />,
-  subscription: <Trophy className="w-4 h-4" />,
+  poll_created:          <Target className="w-4 h-4" />,
+  poll_closed:           <CheckCircle2 className="w-4 h-4" />,
+  raid_incoming:         <Users className="w-4 h-4" />,
+  raid_outgoing:         <Zap className="w-4 h-4" />,
+  engagement_milestone:  <Trophy className="w-4 h-4" />,
+  tip:                   <Heart className="w-4 h-4" style={{ color: '#FF1564' }} />,
+  love_tap:              <Heart className="w-4 h-4" style={{ color: '#FF1564' }} />,
+  gift:                  <Gift className="w-4 h-4" style={{ color: '#D4AF37' }} />,
+  subscription:          <Star className="w-4 h-4" style={{ color: '#D4AF37' }} />,
+  live_started:          <Radio className="w-4 h-4" style={{ color: '#FF1564' }} />,
+  system:                <Bell className="w-4 h-4" />,
+};
+
+const CATEGORY_TYPES = {
+  tips:   ['tip', 'love_tap', 'gift'],
+  subs:   ['subscription'],
+  live:   ['live_started', 'raid_incoming', 'raid_outgoing'],
+  system: ['poll_created', 'poll_closed', 'engagement_milestone', 'system'],
 };
 
 const PRIORITY_COLORS = {
@@ -36,6 +47,7 @@ const PRIORITY_BORDERS = {
 
 export default function NotificationHub() {
   const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState('all');
   const queryClient = useQueryClient();
 
   // Fetch current user
@@ -75,7 +87,22 @@ export default function NotificationHub() {
     },
   });
 
+  // Mark all read
+  const markAllMutation = useMutation({
+    mutationFn: async () => {
+      const unread = notifications?.filter(n => !n.is_read) || [];
+      await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
+      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+    },
+  });
+
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
+
+  const filtered = notifications?.filter(n => {
+    if (category === 'all') return true;
+    const types = CATEGORY_TYPES[category] || [];
+    return types.includes(n.type);
+  }) || [];
 
   const handleNotificationClick = (notif) => {
     if (!notif.is_read) {
@@ -125,20 +152,46 @@ export default function NotificationHub() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
               <h3 className="text-sm font-bold uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Notifications
+                Notifications {unreadCount > 0 && <span style={{ color: '#FF8C00' }}>({unreadCount})</span>}
               </h3>
-              <button
-                onClick={() => setOpen(false)}
-                className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10"
-              >
-                <X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
-              </button>
+              <div className="flex items-center gap-1">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => markAllMutation.mutate()}
+                    disabled={markAllMutation.isPending}
+                    className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg font-bold"
+                    style={{ background: 'rgba(212,175,55,0.1)', color: G, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    title="Mark all read"
+                  >
+                    <Check className="w-3 h-3" /> All
+                  </button>
+                )}
+                <button onClick={() => setOpen(false)} className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10">
+                  <X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
+                </button>
+              </div>
+            </div>
+
+            {/* Category filter tabs */}
+            <div className="flex border-b" style={{ borderColor: BORDER, background: '#08080F' }}>
+              {[['all','All'], ['tips','Tips'], ['subs','Subs'], ['live','Live'], ['system','System']].map(([id, label]) => (
+                <button key={id} onClick={() => setCategory(id)}
+                  className="flex-1 py-1.5 text-[9px] font-black uppercase transition-all"
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    color: category === id ? G : 'rgba(255,255,255,0.3)',
+                    borderBottom: category === id ? `2px solid ${G}` : '2px solid transparent',
+                    background: category === id ? 'rgba(212,175,55,0.05)' : 'transparent',
+                  }}>
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* Notifications List */}
-            <div className="max-h-96 overflow-y-auto px-2 py-2 space-y-1.5">
-              {notifications && notifications.length > 0 ? (
-                notifications.map((notif) => (
+            <div className="max-h-80 overflow-y-auto px-2 py-2 space-y-1.5">
+              {filtered.length > 0 ? (
+                filtered.map((notif) => (
                   <motion.div
                     key={notif.id}
                     layout
@@ -183,7 +236,7 @@ export default function NotificationHub() {
                 ))
               ) : (
                 <div className="py-6 text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                  🔔 No notifications yet
+                  {category === 'all' ? '🔔 No notifications yet' : `No ${category} notifications`}
                 </div>
               )}
             </div>
