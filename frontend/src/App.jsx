@@ -198,6 +198,7 @@ export default function App() {
   var liveStartRef = useRef(null);
   var peakViewerRef = useRef(0);
   var sessionEarningsRef = useRef(0);
+  var popstateNavRef = useRef(false);
   var prevEarningsRef = useRef(0);
   var prevGuestIdsRef = useRef(null);
 
@@ -211,6 +212,24 @@ export default function App() {
     var t = setTimeout(function() { setSplash(false); }, 2200);
     return function() { clearTimeout(t); };
   }, []);
+
+  // History API — wire Android back button to tab navigation
+  useEffect(function() {
+    window.history.replaceState({ swTab: 'room' }, '');
+    function onPop(e) {
+      if (e.state && e.state.swTab) {
+        popstateNavRef.current = true;
+        setActiveTab(e.state.swTab);
+      }
+    }
+    window.addEventListener('popstate', onPop);
+    return function() { window.removeEventListener('popstate', onPop); };
+  }, []);
+
+  useEffect(function() {
+    if (popstateNavRef.current) { popstateNavRef.current = false; return; }
+    window.history.pushState({ swTab: activeTab }, '');
+  }, [activeTab]);
 
   useEffect(function() {
     setCanGoBack(window.history.length > 1);
