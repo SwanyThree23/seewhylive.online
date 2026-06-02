@@ -22,7 +22,7 @@ var HOURLY    = [142, 287, 612, 934, 1408, 2102, 2847, 2694, 2211, 1837, 1402, 9
 
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
-var TYPE_COLORS = { tip: '#00C9A7', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
+var TYPE_COLORS = { tip: '#C9A84C', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
 
 export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addToast }) {
   var [engData, setEngData] = useState(ENG_DATA.slice());
@@ -143,7 +143,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>SESSION SUMMARY</span>
           <button
             onClick={exportCSV}
-            style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 4, padding: '3px 10px', color: '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+            style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '3px 10px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
             &#x2193; CSV
           </button>
         </div>
@@ -154,7 +154,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
             [fmtC(topTxn), 'TOP TXN'],
           ].map(function(item) {
             return (
-              <div key={item[1]} style={{ textAlign: 'center', background: 'rgba(22,16,32,.6)', borderRadius: 6, padding: '6px 4px' }}>
+              <div key={item[1]} style={{ textAlign: 'center', background: 'rgba(26,21,16,.6)', borderRadius: 6, padding: '6px 4px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C' }}>{item[0]}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1 }}>{item[1]}</div>
               </div>
@@ -166,15 +166,15 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       {/* KPI grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         {[
-          [viewers.toLocaleString(), 'VIEWERS',  '#C8FF00'],
+          [viewers.toLocaleString(), 'VIEWERS',  '#C9A84C'],
           [fmtC(totalCreator),       'EARNED',   '#C9A84C'],
-          [(gifts || []).length + '🎁','GIFTS',   '#C8FF00'],
+          [(gifts || []).length + '🎁','GIFTS',   '#C9A84C'],
           ['48',                     'COUNTRIES','#C9A84C'],
-          ['94/100',                 'ENG SCORE','#00C96A'],
-          ['12.4m',                  'AVG WATCH','#5A8FFF'],
+          ['94/100',                 'ENG SCORE','#C9A84C'],
+          ['12.4m',                  'AVG WATCH','#C9A84C'],
         ].map(function(row) {
           return (
-            <div key={row[1]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
+            <div key={row[1]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1.5, marginBottom: 3 }}>{row[1]}</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: row[2], lineHeight: 1.1 }}>{row[0]}</div>
             </div>
@@ -183,7 +183,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       </div>
 
       {/* Engagement chart */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center' }}>
           ENGAGEMENT — LAST 12 MIN
           {isLive && (
@@ -193,19 +193,19 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 50 }}>
           {engData.map(function(v, i) {
             return (
-              <div key={i} style={{ flex: 1, background: 'linear-gradient(180deg,#5A8FFF,#2A6BFF88)', borderRadius: '3px 3px 0 0', height: (v / peakEng * 100) + '%', minHeight: 4 }} />
+              <div key={i} style={{ flex: 1, background: 'linear-gradient(180deg,#C9A84C,#C9A84C44)', borderRadius: '3px 3px 0 0', height: (v / peakEng * 100) + '%', minHeight: 4 }} />
             );
           })}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>12m ago</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#5A8FFF' }}>PEAK: {peakEng}</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>PEAK: {peakEng}</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>now</span>
         </div>
       </div>
 
       {/* Revenue trend */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>REVENUE TREND</div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 44 }}>
           {revData.map(function(v, i) {
@@ -218,14 +218,14 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       </div>
 
       {/* Countries */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 8 }}>TOP VIEWER COUNTRIES</div>
         {TOP_COUNTRIES.map(function(row) {
           return (
             <div key={row[1]} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: 14, flexShrink: 0 }}>{row[0]}</span>
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', width: 56, flexShrink: 0 }}>{row[1]}</span>
-              <div style={{ flex: 1, height: 5, background: '#241C34', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ flex: 1, height: 5, background: '#3D3020', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: row[2] + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)', borderRadius: 3 }} />
               </div>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', flexShrink: 0 }}>{row[2]}%</span>
@@ -235,7 +235,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       </div>
 
       {/* Retention curve */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC', letterSpacing: 2, marginBottom: 8 }}>VIEWER RETENTION CURVE</div>
         <div style={{ position: 'relative', height: 50, display: 'flex', alignItems: 'flex-end', gap: 1 }}>
           {RETENTION.map(function(v, i) {
@@ -255,7 +255,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       </div>
 
       {/* Hourly viewers */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>HOURLY VIEWERS — TODAY</div>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 50 }}>
           {HOURLY.map(function(v, i) {
@@ -263,13 +263,13 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
             var h = Math.floor((v / peak) * 100);
             var isPeak = v === peak;
             return (
-              <div key={i} style={{ flex: 1, height: h + '%', background: isPeak ? 'linear-gradient(180deg,#C8FF00,#C9A84C)' : 'linear-gradient(180deg,#C9A84C55,#C9A84C22)', borderRadius: '2px 2px 0 0', minHeight: 3 }} />
+              <div key={i} style={{ flex: 1, height: h + '%', background: isPeak ? 'linear-gradient(180deg,#C9A84C,#C9A84C)' : 'linear-gradient(180deg,#C9A84C55,#C9A84C22)', borderRadius: '2px 2px 0 0', minHeight: 3 }} />
             );
           })}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>12AM</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C8FF00' }}>PEAK: {Math.max.apply(null, HOURLY).toLocaleString()} @ 6PM</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>PEAK: {Math.max.apply(null, HOURLY).toLocaleString()} @ 6PM</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>11PM</span>
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>90/10 SPLIT HEALTH</div>
         <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 6 }}>
           <div style={{ width: '90%', background: 'linear-gradient(90deg,#800020,#C9A84C)' }} />
-          <div style={{ flex: 1, background: '#241C34' }} />
+          <div style={{ flex: 1, background: '#3D3020' }} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>CREATOR 90% — {fmtC(totalCreator)}</span>
@@ -288,10 +288,10 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       </div>
 
       {/* Top Creators leaderboard */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>TOP CREATORS BY REVENUE</div>
-          {leaderboard.length > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7', letterSpacing: 1 }}>● LIVE DB</div>}
+          {leaderboard.length > 0 && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>● LIVE DB</div>}
         </div>
         {(leaderboard.length > 0 ? leaderboard.map(function(row, i) {
           var topTotal = leaderboard[0].total_cents || 1;
@@ -303,11 +303,11 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
                   <AvatarPortrait username={row.from_user} size={28} rank={i < 3 ? i + 1 : undefined} />
                 </div>
                 <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{row.from_user}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(row.creator_cents)}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtC(row.creator_cents)}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{row.gift_count} TXN</span>
               </div>
-              <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
+              <div style={{ height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 2 }} />
               </div>
             </div>
           );
@@ -320,11 +320,11 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
                   <AvatarPortrait username={item[0]} size={28} rank={i < 3 ? i + 1 : undefined} />
                 </div>
                 <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flex: 1 }}>{item[0]}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7' }}>{fmtC(Math.floor(item[1] * CREATOR))}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>{fmtC(Math.floor(item[1] * CREATOR))}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{item[2]} TXN</span>
               </div>
-              <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
+              <div style={{ height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: pct + '%', background: i === 0 ? 'linear-gradient(90deg,#800020,#C9A84C)' : 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 2 }} />
               </div>
             </div>
           );
@@ -332,7 +332,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
       </div>
 
       {/* Ledger */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2 }}>TRANSACTION LEDGER</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{visibleTxns.length} shown</div>
@@ -343,7 +343,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
             var c = TYPE_COLORS[t] || '#8A7A62';
             return (
               <button key={t} onClick={function() { setTypeFilter(t); }}
-                style={{ background: active ? (c + '22') : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? (c + '66') : '#241C34'), borderRadius: 999, padding: '2px 10px', color: active ? c : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
+                style={{ background: active ? (c + '22') : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? (c + '66') : '#3D3020'), borderRadius: 999, padding: '2px 10px', color: active ? c : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
                 {t}
               </button>
             );
@@ -353,7 +353,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
           var c = TYPE_COLORS[tx.type] || '#8A7A62';
           var creatorAmt = Math.floor(tx.amount * CREATOR);
           return (
-            <div key={tx.id} style={{ background: 'rgba(7,5,10,.6)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 10px', marginBottom: 6 }}>
+            <div key={tx.id} style={{ background: 'rgba(14,12,9,.6)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 10px', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                 <span style={{ background: c + '18', border: '1px solid ' + c + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: c }}>
                   {tx.type.replace('_', ' ').toUpperCase()}
@@ -363,7 +363,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{tx.stream || tx.tier || '—'}</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7' }}>→ {fmtC(creatorAmt)} creator</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>→ {fmtC(creatorAmt)} creator</span>
               </div>
             </div>
           );

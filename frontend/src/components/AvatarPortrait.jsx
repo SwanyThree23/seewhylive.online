@@ -5,13 +5,13 @@ var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%
 var COLOR_PAIRS = [
   ['#FF1564', '#800020'],
   ['#C9A84C', '#7A4800'],
-  ['#00C9A7', '#005048'],
+  ['#C9A84C', '#005048'],
   ['#C084FC', '#5B0099'],
-  ['#5A8FFF', '#0033AA'],
+  ['#C9A84C', '#0033AA'],
   ['#FF6B35', '#AA3300'],
   ['#00D4FF', '#005566'],
   ['#FF1493', '#880055'],
-  ['#C8FF00', '#335500'],
+  ['#C9A84C', '#335500'],
   ['#FF8C00', '#663300'],
 ];
 
@@ -35,7 +35,7 @@ export default function AvatarPortrait({ username, size, isLive, isHost, rank, s
   var pair = COLOR_PAIRS[h % COLOR_PAIRS.length];
   var accentColor = pair[0];
   var darkColor   = pair[1];
-  var bg = 'radial-gradient(ellipse at 35% 25%, ' + accentColor + '88, ' + darkColor + '66, rgba(7,5,10,.95))';
+  var bg = 'radial-gradient(ellipse at 35% 25%, ' + accentColor + '88, ' + darkColor + '66, rgba(14,12,9,.95))';
 
   var ringColor = rank === 1 ? '#C9A84C' : (isHost ? '#FF1564' : accentColor + '88');
   var ringW     = (rank === 1 || isHost) ? 3 : 2;

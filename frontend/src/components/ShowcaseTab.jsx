@@ -272,7 +272,7 @@ export default function ShowcaseTab(p) {
 
   // ── SUB-TAB STYLE HELPERS ──────────────────────────────────
   var card = {
-    background: 'rgba(22,16,32,.8)',
+    background: 'rgba(26,21,16,.8)',
     border: '1px solid rgba(255,255,255,.07)',
     borderRadius: 10,
     padding: '10px 12px',
@@ -325,7 +325,7 @@ export default function ShowcaseTab(p) {
               <div style={hSub}>2026 SEASON · WEEK 8</div>
               <div style={hTitle}>STATE RANKINGS</div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 8 }}>
-                {[['8','STATES','#E8C46A'],['26','MATCHES','#00C9A7'],['4','QF LIVE','#E8FF47']].map(function(s) {
+                {[['8','STATES','#E8C46A'],['26','MATCHES','#C9A84C'],['4','QF LIVE','#E8FF47']].map(function(s) {
                   return (
                     <div key={s[1]} style={{ textAlign: 'center' }}>
                       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: s[2], lineHeight: 1 }}>{s[0]}</div>
@@ -375,7 +375,7 @@ export default function ShowcaseTab(p) {
                 var isA = sortBy === pair[0];
                 return (
                   <button key={pair[0]} onClick={function() { setSortBy(pair[0]); }}
-                    style={{ flex: 1, padding: '5px 0', borderRadius: 6, border: '1px solid ' + (isA ? '#C01838' : 'rgba(201,168,76,.1)'), background: isA ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(22,16,32,.5)', color: isA ? '#E8C46A' : '#9A90AA', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+                    style={{ flex: 1, padding: '5px 0', borderRadius: 6, border: '1px solid ' + (isA ? '#C01838' : 'rgba(201,168,76,.1)'), background: isA ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(26,21,16,.5)', color: isA ? '#E8C46A' : '#9A90AA', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
                     {pair[1]}
                   </button>
                 );
@@ -397,7 +397,7 @@ export default function ShowcaseTab(p) {
                     </div>
                   )}
                   <div onClick={function() { setDetail(st); }}
-                    style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (isFeatured ? '#C9A84C55' : st.rank <= 3 ? st.cp + '44' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '10px 12px', marginBottom: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, marginTop: isFeatured ? 6 : 0 }}>
+                    style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (isFeatured ? '#C9A84C55' : st.rank <= 3 ? st.cp + '44' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '10px 12px', marginBottom: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, marginTop: isFeatured ? 6 : 0 }}>
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: st.rank <= 3 ? 20 : 15, color: st.rank === 1 ? '#E8C46A' : st.rank === 2 ? '#C0C0C0' : st.rank === 3 ? '#cd7f32' : '#9A90AA', width: 22, textAlign: 'center', flexShrink: 0, lineHeight: 1 }}>#{st.rank}</div>
                     <StateBadge state={st} sz={46} />
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -412,14 +412,14 @@ export default function ShowcaseTab(p) {
                         )}
                       </div>
                       <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#9A90AA', marginBottom: 4 }}>{st.captain} · {st.region}</div>
-                      <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ width: winPct + '%', height: '100%', background: 'linear-gradient(90deg,' + st.cp + ',' + st.cs + ')' }} />
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#EDE8F4', lineHeight: 1 }}>{st.pts}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#00C9A7' }}>{st.w}W-{st.l}L</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>{st.w}W-{st.l}L</div>
                       </div>
                       <button
                         onClick={function(e) { e.stopPropagation(); copyProfileLink(st); }}
@@ -439,7 +439,7 @@ export default function ShowcaseTab(p) {
         {sub === 'ranks' && detail && (
           <div>
             <button onClick={function() { setDetail(null); }}
-              style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 6, padding: '5px 12px', color: '#9A90AA', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', marginBottom: 10 }}>
+              style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.12)', borderRadius: 6, padding: '5px 12px', color: '#9A90AA', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', marginBottom: 10 }}>
               ‹ BACK
             </button>
             <div style={{ background: 'rgba(201,168,76,.055)', border: '1px solid rgba(201,168,76,.22)', borderRadius: 10, overflow: 'hidden', marginBottom: 10 }}>
@@ -454,9 +454,9 @@ export default function ShowcaseTab(p) {
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 10 }}>
-              {[['WINS', String(detail.w), '#E8FF47'],['LOSSES', String(detail.l), '#FF6B81'],['POINTS', String(detail.pts), '#E8C46A'],['TILES', (Math.floor(detail.tiles / 100) / 10) + 'k', '#00C9A7']].map(function(s) {
+              {[['WINS', String(detail.w), '#E8FF47'],['LOSSES', String(detail.l), '#FF6B81'],['POINTS', String(detail.pts), '#E8C46A'],['TILES', (Math.floor(detail.tiles / 100) / 10) + 'k', '#C9A84C']].map(function(s) {
                 return (
-                  <div key={s[0]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8, padding: '8px 4px', textAlign: 'center' }}>
+                  <div key={s[0]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8, padding: '8px 4px', textAlign: 'center' }}>
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: s[2], lineHeight: 1 }}>{s[1]}</div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#4A4060', marginTop: 2 }}>{s[0]}</div>
                   </div>
@@ -468,7 +468,7 @@ export default function ShowcaseTab(p) {
                 <span style={mono7}>WIN RATE</span>
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#E8FF47' }}>{Math.floor((detail.w / ((detail.w + detail.l) || 1)) * 100)}%</span>
               </div>
-              <div style={{ height: 6, background: '#241C34', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: 6, background: '#3D3020', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ width: Math.floor((detail.w / ((detail.w + detail.l) || 1)) * 100) + '%', height: '100%', background: 'linear-gradient(90deg,' + detail.cp + ',' + detail.cs + ')' }} />
               </div>
             </div>
@@ -483,7 +483,7 @@ export default function ShowcaseTab(p) {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isCap ? '#E8C46A' : '#EDE8F4' }}>{player}</div>
                       {isCap && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C' }}>CAPTAIN</div>}
-                      {isCo  && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#00C9A7' }}>CO-CAPTAIN</div>}
+                      {isCo  && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C' }}>CO-CAPTAIN</div>}
                     </div>
                     {isCap && <span style={{ fontSize: 14 }}>👑</span>}
                   </div>
@@ -512,7 +512,7 @@ export default function ShowcaseTab(p) {
             <div style={headerCard}>
               <div style={hSub}>2026 STATE SHOWCASE</div>
               <div style={hTitle}>QUARTERFINALS</div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#00C9A7', marginTop: 3, letterSpacing: 2 }}>JUNE 7–8 · BEST OF 7</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', marginTop: 3, letterSpacing: 2 }}>JUNE 7–8 · BEST OF 7</div>
             </div>
             {QF.map(function(match) {
               var stA   = getState(match.a);
@@ -525,7 +525,7 @@ export default function ShowcaseTab(p) {
               var myV   = myVotes[match.id];
               if (!stA || !stB) return null;
               return (
-                <div key={match.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (isL ? 'rgba(255,26,60,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '12px', marginBottom: 10 }}>
+                <div key={match.id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (isL ? 'rgba(255,26,60,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '12px', marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <div style={{ background: isL ? 'rgba(192,24,56,.22)' : 'transparent', border: '1px solid ' + (isL ? '#C01838' : 'rgba(255,255,255,.07)'), borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: isL ? '#FF6B81' : '#9A90AA', letterSpacing: 1 }}>{isL ? '🔴 LIVE' : match.date}</div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#4A4060' }}>PPV ${price.toFixed(2)}</div>
@@ -629,7 +629,7 @@ export default function ShowcaseTab(p) {
                       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF6B81', lineHeight: 1 }}>{r.sb}</div>
                     </div>
                   </div>
-                  <div style={{ marginTop: 8, height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
+                  <div style={{ marginTop: 8, height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
                     <div style={{ width: Math.floor((r.ta / totalTiles) * 100) + '%', height: '100%', background: 'linear-gradient(90deg,' + stA.cp + ',' + stA.cs + ')' }} />
                     <div style={{ flex: 1, background: 'linear-gradient(90deg,' + stB.cp + ',' + stB.cs + ')' }} />
                   </div>
@@ -714,7 +714,7 @@ export default function ShowcaseTab(p) {
                 {!battleOn && (
                   <button onClick={function() { if (battleSt) { setBattleOn(true); setBlue(0); setRed(0); setTimer(300); if (addToast) addToast('State Battle LIVE! ⚡', 'success'); } }}
                     disabled={!battleSt}
-                    style={{ padding: '9px 20px', background: battleSt ? 'rgba(0,255,255,.08)' : 'rgba(22,16,32,.5)', border: '1px solid ' + (battleSt ? 'rgba(0,255,255,.3)' : 'rgba(255,255,255,.07)'), borderRadius: 8, color: battleSt ? '#00FFFF' : '#4A4060', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3, cursor: battleSt ? 'pointer' : 'not-allowed' }}>
+                    style={{ padding: '9px 20px', background: battleSt ? 'rgba(0,255,255,.08)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (battleSt ? 'rgba(0,255,255,.3)' : 'rgba(255,255,255,.07)'), borderRadius: 8, color: battleSt ? '#00FFFF' : '#4A4060', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3, cursor: battleSt ? 'pointer' : 'not-allowed' }}>
                     ▶ START BATTLE
                   </button>
                 )}
@@ -740,7 +740,7 @@ export default function ShowcaseTab(p) {
               {['blue', 'red'].map(function(team) {
                 var tc = team === 'blue' ? '#00FFFF' : '#FF0040';
                 return (
-                  <div key={team} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + tc + '33', borderRadius: 10, padding: '10px' }}>
+                  <div key={team} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + tc + '33', borderRadius: 10, padding: '10px' }}>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: tc, letterSpacing: 2, marginBottom: 7, textAlign: 'center' }}>⚡ {team.toUpperCase()}</div>
                     {BATTLE_GIFTS.map(function(g) {
                       return (
@@ -780,9 +780,9 @@ export default function ShowcaseTab(p) {
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A90AA', marginTop: 5 }}>Season 1 has 8 states. Apply to represent yours in Season 2.</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 12 }}>
-              {[['50','TOTAL STATES','🗺️','#E8FF47'],['8','SEASON 1','⚡','#E8C46A'],['42','QUALIFYING','⏳','#00C9A7']].map(function(k) {
+              {[['50','TOTAL STATES','🗺️','#E8FF47'],['8','SEASON 1','⚡','#E8C46A'],['42','QUALIFYING','⏳','#C9A84C']].map(function(k) {
                 return (
-                  <div key={k[1]} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 9, padding: '8px 6px', textAlign: 'center' }}>
+                  <div key={k[1]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 9, padding: '8px 6px', textAlign: 'center' }}>
                     <div style={{ fontSize: 14, marginBottom: 2 }}>{k[2]}</div>
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: k[3], lineHeight: 1 }}>{k[0]}</div>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#4A4060', marginTop: 2 }}>{k[1]}</div>
@@ -790,7 +790,7 @@ export default function ShowcaseTab(p) {
                 );
               })}
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#00C9A7', letterSpacing: 2, marginBottom: 8 }}>SEASON 1 ACTIVE ({STATES.length} States)</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>SEASON 1 ACTIVE ({STATES.length} States)</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 14 }}>
               {STATES.map(function(st) {
                 return (
@@ -805,7 +805,7 @@ export default function ShowcaseTab(p) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: 14 }}>
               {FUTURE.map(function(fs) {
                 return (
-                  <div key={fs.id} style={{ background: 'rgba(22,16,32,.5)', border: '1px dashed ' + fs.cp + '44', borderRadius: 10, padding: '10px 12px', opacity: .7 }}>
+                  <div key={fs.id} style={{ background: 'rgba(26,21,16,.5)', border: '1px dashed ' + fs.cp + '44', borderRadius: 10, padding: '10px 12px', opacity: .7 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ width: 34, height: 34, position: 'relative', flexShrink: 0 }}>
                         <div style={{ position: 'absolute', inset: 0, clipPath: OCT_CLIP, background: fs.cp + '22' }} />
@@ -820,11 +820,11 @@ export default function ShowcaseTab(p) {
                 );
               })}
             </div>
-            <div style={{ background: 'rgba(0,201,167,.06)', border: '1px solid rgba(0,201,167,.28)', borderRadius: 10, padding: '14px' }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#00C9A7', letterSpacing: 2, marginBottom: 5 }}>🌎 APPLY FOR YOUR STATE</div>
+            <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.28)', borderRadius: 10, padding: '14px' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C', letterSpacing: 2, marginBottom: 5 }}>🌎 APPLY FOR YOUR STATE</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#9A90AA', marginBottom: 10, lineHeight: 1.5 }}>Min. 5 players · Regional qualifying · Live stream required on SeeWhy LIVE</div>
               <button onClick={function() { if (addToast) addToast('Application opened! 🌎', 'success'); }}
-                style={{ width: '100%', padding: '11px', background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.4)', borderRadius: 8, color: '#00C9A7', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
+                style={{ width: '100%', padding: '11px', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 2, cursor: 'pointer' }}>
                 APPLY NOW →
               </button>
             </div>

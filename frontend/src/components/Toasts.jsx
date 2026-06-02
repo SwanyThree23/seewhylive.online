@@ -4,13 +4,13 @@ import React, { useEffect, useRef } from 'react';
 var _toastStyleInjected = false;
 
 var TYPE_MAP = {
-  success: { bg: 'rgba(0,201,106,.16)',   border: 'rgba(0,201,106,.45)',   color: '#00C96A' },
+  success: { bg: 'rgba(201,168,76,.16)',   border: 'rgba(201,168,76,.45)',   color: '#C9A84C' },
   error:   { bg: 'rgba(255,26,60,.16)',   border: 'rgba(255,26,60,.5)',    color: '#FF6B81' },
   info:    { bg: 'rgba(90,143,255,.13)',  border: 'rgba(90,143,255,.35)',  color: '#7AAEFF' },
   warn:    { bg: 'rgba(201,168,76,.15)',  border: 'rgba(201,168,76,.4)',   color: '#C9A84C' },
   gift:    { bg: 'rgba(201,168,76,.18)',  border: 'rgba(232,196,106,.5)',  color: '#E8C46A' },
   sub:     { bg: 'rgba(192,132,252,.14)', border: 'rgba(192,132,252,.4)', color: '#C084FC' },
-  teal:    { bg: 'rgba(0,201,167,.14)',   border: 'rgba(0,201,167,.4)',   color: '#00C9A7' },
+  teal:    { bg: 'rgba(201,168,76,.14)',   border: 'rgba(201,168,76,.4)',   color: '#C9A84C' },
   burg:    { bg: 'rgba(128,0,32,.22)',    border: 'rgba(192,24,56,.5)',    color: '#FF8C9A' },
   volt:    { bg: 'rgba(170,255,0,.12)',   border: 'rgba(170,255,0,.35)',  color: '#AAFF00' },
 };

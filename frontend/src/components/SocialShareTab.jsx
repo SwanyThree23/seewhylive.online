@@ -188,7 +188,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
           Share your stream to external platforms · bring viewers in
         </div>
         {/* Main view toggle */}
-        <div style={{ display: 'flex', gap: 4, marginTop: 10, background: 'rgba(7,5,10,.8)', border: '1px solid ' + BORDER, borderRadius: 8, padding: 3 }}>
+        <div style={{ display: 'flex', gap: 4, marginTop: 10, background: 'rgba(14,12,9,.8)', border: '1px solid ' + BORDER, borderRadius: 8, padding: 3 }}>
           {[['share', '📡 SHARE'], ['community', '👥 COMMUNITY']].map(function(t) {
             var active = mainView === t[0];
             return (
@@ -206,10 +206,10 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 2 }}>INVITE TO YOUR STREAM</div>
           {COMMUNITY_MEMBERS.map(function(m) {
-            var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#00C96A' : '#3D3450';
+            var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#C9A84C' : '#3D3450';
             var wasInvited = Boolean(invitedIds[m.id]);
             return (
-              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: wasInvited ? 'rgba(0,201,106,.06)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (wasInvited ? 'rgba(0,201,106,.25)' : BORDER), borderRadius: 10, padding: '10px 12px' }}>
+              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: wasInvited ? 'rgba(201,168,76,.06)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (wasInvited ? 'rgba(201,168,76,.25)' : BORDER), borderRadius: 10, padding: '10px 12px' }}>
                 <div style={{ flexShrink: 0 }}>
                   <AvatarPortrait username={m.name} size={44} isLive={m.status === 'LIVE'} />
                 </div>
@@ -223,7 +223,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
                 </div>
                 <button
                   onClick={function() { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); if (addToast) addToast('📨 Invite sent to ' + m.name, 'success'); }}
-                  style={{ background: wasInvited ? 'rgba(0,201,106,.15)' : 'rgba(192,132,252,.12)', border: '1px solid ' + (wasInvited ? 'rgba(0,201,106,.4)' : 'rgba(192,132,252,.35)'), borderRadius: 7, padding: '6px 12px', color: wasInvited ? '#00C96A' : '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: wasInvited ? 'default' : 'pointer', flexShrink: 0, minWidth: 66, textAlign: 'center', letterSpacing: 1 }}>
+                  style={{ background: wasInvited ? 'rgba(201,168,76,.15)' : 'rgba(192,132,252,.12)', border: '1px solid ' + (wasInvited ? 'rgba(201,168,76,.4)' : 'rgba(192,132,252,.35)'), borderRadius: 7, padding: '6px 12px', color: wasInvited ? '#C9A84C' : '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: wasInvited ? 'default' : 'pointer', flexShrink: 0, minWidth: 66, textAlign: 'center', letterSpacing: 1 }}>
                   {wasInvited ? '✓ SENT' : 'INVITE'}
                 </button>
               </div>
@@ -245,12 +245,12 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         <div style={{ background: 'rgba(192,132,252,.06)', border: '1px solid rgba(192,132,252,.25)', borderRadius: 12, padding: '12px 14px' }}>
           <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 6 }}>YOUR STREAM LINK</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ flex: 1, fontFamily: fM, fontSize: 9, color: '#C084FC', background: 'rgba(7,5,10,.8)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 7, padding: '8px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ flex: 1, fontFamily: fM, fontSize: 9, color: '#C084FC', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 7, padding: '8px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {streamUrl}
             </div>
             <button
               onClick={function() { copyToClipboard(streamUrl, 'Stream link'); }}
-              style={{ background: copied === 'Stream link' ? 'rgba(0,201,106,.2)' : 'rgba(192,132,252,.12)', border: '1px solid ' + (copied === 'Stream link' ? 'rgba(0,201,106,.4)' : 'rgba(192,132,252,.35)'), borderRadius: 8, padding: '8px 14px', color: copied === 'Stream link' ? '#00C96A' : '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+              style={{ background: copied === 'Stream link' ? 'rgba(201,168,76,.2)' : 'rgba(192,132,252,.12)', border: '1px solid ' + (copied === 'Stream link' ? 'rgba(201,168,76,.4)' : 'rgba(192,132,252,.35)'), borderRadius: 8, padding: '8px 14px', color: copied === 'Stream link' ? '#C9A84C' : '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
               {copied === 'Stream link' ? '✓ COPIED' : '📋 COPY'}
             </button>
           </div>
@@ -264,7 +264,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
             onChange={function(e) { setCustomMsg(e.target.value); }}
             placeholder={defaultMsg}
             rows={2}
-            style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fU, fontSize: 12, resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
+            style={{ width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fU, fontSize: 12, resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
           />
           {customMsg && (
             <button
@@ -298,7 +298,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 12, color: TEXT }}>{platform.name}</div>
-                  <div style={{ fontFamily: fM, fontSize: 7, color: platform.copyOnly ? '#C8FF00' : TEAL_H, letterSpacing: 0.5 }}>
+                  <div style={{ fontFamily: fM, fontSize: 7, color: platform.copyOnly ? '#C9A84C' : TEAL_H, letterSpacing: 0.5 }}>
                     {platform.copyOnly ? '📋 COPY LINK' : '🔗 OPEN & SHARE'}
                   </div>
                 </div>
@@ -316,11 +316,11 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
                 var code = '<iframe src="' + streamUrl + '/embed" width="560" height="315" frameborder="0" allowfullscreen></iframe>';
                 copyToClipboard(code, 'Embed code');
               }}
-              style={{ background: copied === 'Embed code' ? 'rgba(0,201,106,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copied === 'Embed code' ? 'rgba(0,201,106,.4)' : BORDER), borderRadius: 7, padding: '4px 10px', color: copied === 'Embed code' ? '#00C96A' : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+              style={{ background: copied === 'Embed code' ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.06)', border: '1px solid ' + (copied === 'Embed code' ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 7, padding: '4px 10px', color: copied === 'Embed code' ? '#C9A84C' : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
               {copied === 'Embed code' ? '✓ COPIED' : '📋 COPY'}
             </button>
           </div>
-          <div style={{ fontFamily: fM, fontSize: 8, color: '#5A8FFF', background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 7, padding: '8px 10px', wordBreak: 'break-all', lineHeight: 1.6 }}>
+          <div style={{ fontFamily: fM, fontSize: 8, color: '#C9A84C', background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 7, padding: '8px 10px', wordBreak: 'break-all', lineHeight: 1.6 }}>
             {'<iframe src="' + streamUrl + '/embed" width="560" height="315" frameborder="0" allowfullscreen></iframe>'}
           </div>
           <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, marginTop: 6 }}>
@@ -329,7 +329,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         </div>
 
         {/* External viewer note */}
-        <div style={{ background: 'rgba(0,222,192,.04)', border: '1px solid rgba(0,222,192,.15)', borderRadius: 8, padding: '10px 12px' }}>
+        <div style={{ background: 'rgba(201,168,76,.04)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 8, padding: '10px 12px' }}>
           <div style={{ fontFamily: fU, fontWeight: 700, fontSize: 12, color: TEAL_H, marginBottom: 4 }}>🌐 EXTERNAL VIEWERS</div>
           <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, lineHeight: 1.6 }}>
             Anyone who follows your shared link can watch your live stream directly in their browser — no SeeWhy account required. They&apos;ll see your stream, chat, and a prompt to join the app.

@@ -26,7 +26,7 @@
   --g1: #00FFFF;
   --g2: #FF0040;
   --lime: #E8FF47;
-  --teal: #00C9A7;
+  --teal: #C9A84C;
 
   /* Octagonal clip-path */
   --oct-clip: polygon(29% 0%, 71% 0%, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0% 71%, 0% 29%);
@@ -2165,8 +2165,8 @@ input, select, textarea {
   font-weight: 700;
   letter-spacing: 1px;
   padding: 4px 10px;
-  background: rgba(22,16,32,.8);
-  border: 1px solid #241C34;
+  background: rgba(26,21,16,.8);
+  border: 1px solid #3D3020;
   color: rgba(176,160,192,.5);
   border-radius: 4px;
   cursor: pointer;
@@ -2220,7 +2220,7 @@ input, select, textarea {
   left: 0;
   right: 0;
   padding: 8px 12px 10px;
-  background: linear-gradient(transparent, rgba(7,5,10,.85) 40%);
+  background: linear-gradient(transparent, rgba(14,12,9,.85) 40%);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -2288,7 +2288,7 @@ input, select, textarea {
   border-radius: 8px;
   overflow: hidden;
   background: #0E0C09;
-  border: 1px solid #241C34;
+  border: 1px solid #3D3020;
   position: relative;
 }
 
@@ -2333,7 +2333,7 @@ input, select, textarea {
   border-radius: 6px;
   overflow: hidden;
   background: #0E0C09;
-  border: 1px solid #241C34;
+  border: 1px solid #3D3020;
   aspect-ratio: 16/9;
   position: relative;
 }
@@ -2374,7 +2374,7 @@ input, select, textarea {
   border-radius: 6px;
   overflow: hidden;
   background: #0E0C09;
-  border: 1px solid #241C34;
+  border: 1px solid #3D3020;
   position: relative;
 }
 
@@ -2431,7 +2431,7 @@ input, select, textarea {
   align-items: center;
   gap: 4px;
   padding: 6px 8px;
-  background: rgba(7,5,10,.95);
+  background: rgba(14,12,9,.95);
   border-top: 1px solid rgba(36,28,52,.8);
   flex-shrink: 0;
   flex-wrap: nowrap;
@@ -2446,8 +2446,8 @@ input, select, textarea {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  background: rgba(22,16,32,.8);
-  border: 1px solid #241C34;
+  background: rgba(26,21,16,.8);
+  border: 1px solid #3D3020;
   border-radius: 8px;
   padding: 6px 10px;
   color: rgba(176,160,192,.6);
@@ -2466,9 +2466,9 @@ input, select, textarea {
 }
 
 .mc-btn--active {
-  background: rgba(0,201,167,.12);
-  border-color: rgba(0,201,167,.4);
-  color: #00C9A7;
+  background: rgba(201,168,76,.12);
+  border-color: rgba(201,168,76,.4);
+  color: #C9A84C;
 }
 
 .mc-btn--danger {
@@ -2544,7 +2544,7 @@ input, select, textarea {
   border-radius: 12px;
   padding: 32px 16px;
   text-align: center;
-  background: rgba(22,16,32,.5);
+  background: rgba(26,21,16,.5);
   cursor: pointer;
   transition: all .2s;
 }
@@ -2571,9 +2571,9 @@ input, select, textarea {
 
 /* Role access badges */
 .role-host   { background: rgba(201,168,76,.18); color: #C9A84C; border: 1px solid rgba(201,168,76,.4); }
-.role-cohost { background: rgba(0,201,167,.15);  color: #00C9A7; border: 1px solid rgba(0,201,167,.35); }
-.role-guest  { background: rgba(90,143,255,.15); color: #5A8FFF; border: 1px solid rgba(90,143,255,.35); }
-.role-viewer { background: rgba(36,28,52,.6);    color: rgba(176,160,192,.5); border: 1px solid #241C34; }
+.role-cohost { background: rgba(201,168,76,.15);  color: #C9A84C; border: 1px solid rgba(201,168,76,.35); }
+.role-guest  { background: rgba(90,143,255,.15); color: #C9A84C; border: 1px solid rgba(90,143,255,.35); }
+.role-viewer { background: rgba(36,28,52,.6);    color: rgba(176,160,192,.5); border: 1px solid #3D3020; }
 
 .role-pill {
   font-family: var(--font-mono);
@@ -2590,20 +2590,20 @@ input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0,201,167,.12);
-  border: 1px solid rgba(0,201,167,.35);
+  background: rgba(201,168,76,.12);
+  border: 1px solid rgba(201,168,76,.35);
   border-radius: 6px;
   padding: 4px 8px;
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 700;
-  color: #00C9A7;
+  color: #C9A84C;
   cursor: pointer;
   transition: all .15s;
 }
 
 .invite-chip:hover {
-  background: rgba(0,201,167,.22);
+  background: rgba(201,168,76,.22);
 }
 
 /* Responsive stage */

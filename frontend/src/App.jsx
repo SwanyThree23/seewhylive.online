@@ -810,7 +810,7 @@ export default function App() {
           {!connected && <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>OFFLINE</span>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 1 }}>
-          {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#00C9A7' }}>{formatUptime(uptime)}</span>}
+          {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#C9A84C' }}>{formatUptime(uptime)}</span>}
           {isLive && !editingTitle && streamInfo.title ? (
             <span
               title="Click to edit title"
@@ -858,8 +858,8 @@ export default function App() {
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>👁 {viewerCount}</span>
           )}
           {isLive && sessionEarningsCents > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 999, padding: '3px 7px' }}>
-              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#00C9A7', letterSpacing: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '3px 7px' }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 1 }}>
                 ${(Math.floor(sessionEarningsCents) / 100).toFixed(2)}
               </span>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>SESSION</span>
@@ -887,10 +887,10 @@ export default function App() {
           )}
           {/* Share / Invite button */}
           <button onClick={shareRoom} title="Share room link"
-            style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 6, padding: '4px 8px', color: '#00C9A7', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+            style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
             🔗
           </button>
-          <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#00C9A7' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
+          <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#C9A84C' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
             {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
           </span>
           {showInstallBanner && installPrompt && (
@@ -915,7 +915,7 @@ export default function App() {
 
       {/* Secondary tab bar — hidden on room tab, shown when More drawer is open */}
       {activeTab !== 'room' && (
-      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(7,5,10,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none' }}>
+      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(14,12,9,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none' }}>
         {TABS.filter(function(t) {
           if (t.id === 'room' || t.id === 'discover' || t.id === 'profile' || t.id === 'settings') return false;
           if (t.roles && t.roles.indexOf(role) === -1) return false;
@@ -941,9 +941,9 @@ export default function App() {
       {streamGoal && isLive && (
         (function() {
           var pct = Math.min(100, Math.floor((sessionEarningsCents / Math.max(1, streamGoal.goalCents)) * 100));
-          var barColor = pct >= 100 ? '#C9A84C' : pct >= 75 ? '#00C9A7' : '#5A8FFF';
+          var barColor = pct >= 100 ? '#C9A84C' : pct >= 75 ? '#C9A84C' : '#C9A84C';
           return (
-            <div style={{ background: 'rgba(7,5,10,.95)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ background: 'rgba(14,12,9,.95)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1, flexShrink: 0 }}>GOAL</span>
               <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamGoal.label || 'Stream Goal'}</span>
               <div style={{ flex: 1, background: 'rgba(255,255,255,.06)', borderRadius: 999, height: 6, overflow: 'hidden' }}>
@@ -1323,7 +1323,7 @@ export default function App() {
 
       {/* Stream Recap Modal */}
       {streamRecap && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(7,5,10,.88)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(14,12,9,.88)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ background: 'linear-gradient(160deg,#1A1510,#0E0C09)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 16, padding: '28px 24px', maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 0 60px rgba(201,168,76,.15), 0 4px 30px rgba(0,0,0,.7)' }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: '#C9A84C', letterSpacing: 4, marginBottom: 4 }}>STREAM RECAP</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 20 }}>SeeWhy LIVE · Washington Classic</div>
@@ -1332,8 +1332,8 @@ export default function App() {
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF6B81', letterSpacing: 1 }}>{streamRecap.peakViewers >= 1000 ? (Math.floor(streamRecap.peakViewers / 100) / 10).toFixed(1) + 'K' : streamRecap.peakViewers}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
               </div>
-              <div style={{ background: 'rgba(0,201,167,.08)', border: '1px solid rgba(0,201,167,.2)', borderRadius: 10, padding: '12px 8px' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#00C9A7', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
+              <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
@@ -1504,7 +1504,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
         </div>
 
         {/* Enter button */}
-        <button onClick={onUnlock} style={{ width: '100%', background: 'rgba(0,222,192,.15)', border: '1.5px solid rgba(0,222,192,.4)', borderRadius: 14, padding: '16px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
+        <button onClick={onUnlock} style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1.5px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '16px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
           ✓ I'VE PAID — ENTER LIVE
         </button>
         <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: .5 }}>
@@ -1590,12 +1590,12 @@ function StreamKeysTab(props) {
   var panelTitle = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#F0E8D4', letterSpacing: 2, margin: '0 0 4px 0' };
   var panelSub = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', margin: '0 0 12px 0' };
   var formRow = { marginBottom: 10 };
-  var inputStyle = { background: 'rgba(7,5,10,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, width: '100%', boxSizing: 'border-box' };
+  var inputStyle = { background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, width: '100%', boxSizing: 'border-box' };
   var btnGold = { background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, padding: '9px 18px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, cursor: 'pointer' };
   var btnDelete = { background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '4px 10px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' };
   var keyRow = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.04)' };
   var keyPlatform = { fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', flex: 1 };
-  var keyStatus = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#00C9A7' };
+  var keyStatus = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' };
   var keyDate = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' };
   var mutedText = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' };
 

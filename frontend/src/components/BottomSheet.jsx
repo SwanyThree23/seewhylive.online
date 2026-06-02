@@ -26,7 +26,7 @@ export default function BottomSheet(props) {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(7,5,10,.72)',
+          background: 'rgba(14,12,9,.72)',
         }}
       />
       {/* Sheet */}

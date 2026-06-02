@@ -14,7 +14,7 @@ var AVATAR_ITEMS = [
 
 var RARITY_COLORS = {
   common:    '#8A7A62',
-  rare:      '#00C9A7',
+  rare:      '#C9A84C',
   epic:      '#C084FC',
   legendary: '#C9A84C',
   mythic:    '#FF1A3C',
@@ -43,7 +43,7 @@ var BADGES = [
 ];
 
 var VIEWER_NAMES = ['King D', 'Cali J', 'Volt V', 'Teal B', 'Gold G', 'Purp R', 'Dia H', 'Dom N'];
-var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#00C9A7','#C084FC','#5A8FFF','#FF6B35','#C8FF00','#FF1493'];
+var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#C9A84C','#C084FC','#C9A84C','#FF6B35','#C9A84C','#FF1493'];
 
 export default function AvatarHubTab({ addToast, isLive }) {
   var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
@@ -203,7 +203,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C' }}>{gemBal}</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>💎 GEMS</div>
           {isLive && (
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#00C9A7', marginTop: 2, letterSpacing: 0.5 }}>+1/30s ▲</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#C9A84C', marginTop: 2, letterSpacing: 0.5 }}>+1/30s ▲</div>
           )}
         </div>
       </div>
@@ -245,7 +245,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
             <button
               key={f}
               onClick={function() { setFilter(f); }}
-              style={{ background: active ? color + '22' : 'rgba(22,16,32,.7)', border: '1px solid ' + (active ? color + '66' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
+              style={{ background: active ? color + '22' : 'rgba(26,21,16,.7)', border: '1px solid ' + (active ? color + '66' : '#3D3020'), borderRadius: 999, padding: '3px 10px', color: active ? color : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', flexShrink: 0, textTransform: 'uppercase', letterSpacing: 1 }}>
               {f}
             </button>
           );
@@ -259,7 +259,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
           return (
             <div
               key={a.id}
-              style={{ background: a.equipped ? 'rgba(201,168,76,.1)' : 'rgba(22,16,32,.8)', border: '1px solid ' + (a.equipped ? '#C9A84C55' : a.owned ? rc + '33' : '#241C34'), borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative', boxShadow: cardShadow }}>
+              style={{ background: a.equipped ? 'rgba(201,168,76,.1)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (a.equipped ? '#C9A84C55' : a.owned ? rc + '33' : '#3D3020'), borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, position: 'relative', boxShadow: cardShadow }}>
               {a.equipped && (
                 <div style={{ position: 'absolute', top: 7, right: 7, background: '#C9A84C', borderRadius: 3, padding: '1px 5px', fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#07050A', letterSpacing: 1 }}>ON</div>
               )}
@@ -274,7 +274,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
                 <button
                   onClick={function() { if (!a.equipped) equip(a.id); }}
                   disabled={a.equipped}
-                  style={{ width: '100%', padding: '6px 0', background: a.equipped ? 'rgba(201,168,76,.1)' : 'rgba(0,201,167,.12)', border: '1px solid ' + (a.equipped ? '#C9A84C44' : 'rgba(0,201,167,.35)'), borderRadius: 6, color: a.equipped ? '#C9A84C' : '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: a.equipped ? 'not-allowed' : 'pointer' }}>
+                  style={{ width: '100%', padding: '6px 0', background: a.equipped ? 'rgba(201,168,76,.1)' : 'rgba(201,168,76,.12)', border: '1px solid ' + (a.equipped ? '#C9A84C44' : 'rgba(201,168,76,.35)'), borderRadius: 6, color: a.equipped ? '#C9A84C' : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: a.equipped ? 'not-allowed' : 'pointer' }}>
                   {a.equipped ? '✓ EQUIPPED' : 'EQUIP'}
                 </button>
               ) : (
@@ -289,15 +289,15 @@ export default function AvatarHubTab({ addToast, isLive }) {
         })}
       </div>
 
-      <div style={{ background: 'rgba(22,16,32,.6)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.6)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 3, marginBottom: 8 }}>AVATAR FRAMES</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {frames.map(function(f) {
             var accentColor = FRAME_ACCENT_COLORS[f.id] || '#8A7A62';
             var isEquipped = equippedFrame === f.id;
             return (
-              <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: isEquipped ? accentColor + '12' : 'rgba(7,5,10,.5)', border: '1px solid ' + (isEquipped ? accentColor + '44' : '#241C34'), borderRadius: 8, padding: '8px 10px' }}>
-                <div style={{ width: 28, height: 28, borderRadius: 6, border: f.style, background: 'rgba(22,16,32,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14 }}>
+              <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: isEquipped ? accentColor + '12' : 'rgba(14,12,9,.5)', border: '1px solid ' + (isEquipped ? accentColor + '44' : '#3D3020'), borderRadius: 8, padding: '8px 10px' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 6, border: f.style, background: 'rgba(26,21,16,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 14 }}>
                   {equipped ? equipped.emoji : '?'}
                 </div>
                 <div style={{ flex: 1 }}>
@@ -310,7 +310,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
                   <button
                     onClick={function() { if (!isEquipped) equipFrame(f.id); }}
                     disabled={isEquipped}
-                    style={{ padding: '4px 10px', background: isEquipped ? accentColor + '20' : 'rgba(0,201,167,.12)', border: '1px solid ' + (isEquipped ? accentColor + '44' : 'rgba(0,201,167,.35)'), borderRadius: 6, color: isEquipped ? accentColor : '#00C9A7', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isEquipped ? 'not-allowed' : 'pointer' }}>
+                    style={{ padding: '4px 10px', background: isEquipped ? accentColor + '20' : 'rgba(201,168,76,.12)', border: '1px solid ' + (isEquipped ? accentColor + '44' : 'rgba(201,168,76,.35)'), borderRadius: 6, color: isEquipped ? accentColor : '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: isEquipped ? 'not-allowed' : 'pointer' }}>
                     {isEquipped ? '✓ ON' : 'EQUIP'}
                   </button>
                 ) : (
@@ -326,21 +326,21 @@ export default function AvatarHubTab({ addToast, isLive }) {
         </div>
       </div>
 
-      <div style={{ background: 'rgba(22,16,32,.6)', border: '1px solid #241C34', borderRadius: 10, padding: '12px' }}>
+      <div style={{ background: 'rgba(26,21,16,.6)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 3, marginBottom: 8 }}>ACHIEVEMENT BADGES</div>
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
           {BADGES.map(function(b) {
             var pct = (b.progress !== null && b.total) ? Math.floor((b.progress / b.total) * 100) : 0;
             return (
-              <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, background: b.unlocked ? 'rgba(201,168,76,.1)' : 'rgba(7,5,10,.6)', border: '1px solid ' + (b.unlocked ? 'rgba(201,168,76,.35)' : '#241C34'), borderRadius: 8, padding: '8px 10px', minWidth: 72 }}>
+              <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, background: b.unlocked ? 'rgba(201,168,76,.1)' : 'rgba(14,12,9,.6)', border: '1px solid ' + (b.unlocked ? 'rgba(201,168,76,.35)' : '#3D3020'), borderRadius: 8, padding: '8px 10px', minWidth: 72 }}>
                 <span style={{ fontSize: 20, filter: b.unlocked ? 'none' : 'grayscale(100%) opacity(0.4)' }}>{b.icon}</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: b.unlocked ? '#C9A84C' : '#8A7A62', textAlign: 'center', lineHeight: 1.3, textTransform: 'uppercase', letterSpacing: 0.5 }}>{b.label}</span>
                 {!b.unlocked && b.progress !== null && (
                   <div style={{ width: '100%' }}>
-                    <div style={{ height: 3, background: '#241C34', borderRadius: 2, overflow: 'hidden', width: '100%' }}>
-                      <div style={{ width: pct + '%', height: '100%', background: 'linear-gradient(90deg,#5A8FFF,#00C9A7)', borderRadius: 2 }} />
+                    <div style={{ height: 3, background: '#3D3020', borderRadius: 2, overflow: 'hidden', width: '100%' }}>
+                      <div style={{ width: pct + '%', height: '100%', background: 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 2 }} />
                     </div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 5.5, color: '#5A8FFF', textAlign: 'center', marginTop: 2 }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 5.5, color: '#C9A84C', textAlign: 'center', marginTop: 2 }}>
                       {b.progress}/{b.total} {b.how}
                     </div>
                   </div>

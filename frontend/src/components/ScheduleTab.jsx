@@ -15,8 +15,8 @@ var CATS = ['Domino', 'Tournament', 'Podcast', 'Music', 'Education', 'Sports', '
 
 var CAT_COLORS = {
   Domino: '#C9A84C', Tournament: '#FF1A3C', Podcast: '#9B4DCA',
-  Music: '#C9A84C', Education: '#5A8FFF', Sports: '#FF6B35',
-  Tech: '#00C9A7', Gaming: '#C8FF00',
+  Music: '#C9A84C', Education: '#C9A84C', Sports: '#FF6B35',
+  Tech: '#C9A84C', Gaming: '#C9A84C',
 };
 
 var STATUS_COLORS = { LIVE: '#FF1A3C', NEXT: '#C9A84C', SCHED: '#8A7A62', ENDED: '#444050' };
@@ -87,7 +87,7 @@ function formatLiveDuration(secs) {
 }
 
 var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' };
-var RECUR_COLORS = { none: '#8A7A62', weekly: '#00C9A7', biweekly: '#C084FC' };
+var RECUR_COLORS = { none: '#8A7A62', weekly: '#C9A84C', biweekly: '#C084FC' };
 
 function rowToEvent(row) {
   return {
@@ -291,7 +291,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           {streamInfo && streamInfo.category ? (
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 4 }}>{streamInfo.category.toUpperCase()}</div>
           ) : null}
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: '#C8FF00', letterSpacing: 4 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: '#C9A84C', letterSpacing: 4 }}>
             {formatLiveDuration(countdown)}
           </div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>STREAM DURATION</div>
@@ -301,7 +301,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       {/* Countdown banner */}
       <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(155,77,202,.1))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '12px 16px', textAlign: 'center' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 3, marginBottom: 4 }}>NEXT EVENT IN</div>
-        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 32, color: nextTime ? '#C8FF00' : '#444050', letterSpacing: 4, lineHeight: 1 }}>
+        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 32, color: nextTime ? '#C9A84C' : '#444050', letterSpacing: 4, lineHeight: 1 }}>
           {nextTime ? countdownDisplay : '--:--:--'}
         </div>
         {nextTime && (
@@ -332,7 +332,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           var cc = c === 'all' ? '#F0E8D4' : (CAT_COLORS[c] || '#C9A84C');
           return (
             <button key={c} onClick={function() { setFilterCat(c); }}
-              style={{ background: isActive ? cc + '22' : 'rgba(22,16,32,.6)', border: '1px solid ' + (isActive ? cc + '55' : '#241C34'), borderRadius: 999, padding: '3px 10px', color: isActive ? cc : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
+              style={{ background: isActive ? cc + '22' : 'rgba(26,21,16,.6)', border: '1px solid ' + (isActive ? cc + '55' : '#3D3020'), borderRadius: 999, padding: '3px 10px', color: isActive ? cc : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: 1 }}>
               {c === 'all' ? 'ALL' : c.toUpperCase()}
             </button>
           );
@@ -348,12 +348,12 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           var badge = isUpcoming ? diffBadge(ev.time) : null;
           var isLiveNowEvent = isLive && isUpcoming && ev.id === firstUpcomingId;
           return (
-            <div key={ev.id} style={{ background: 'rgba(22,16,32,.8)', border: '1px solid ' + (ev.status === 'LIVE' || isLiveNowEvent ? 'rgba(255,26,60,.4)' : '#241C34'), borderRadius: 10, padding: '10px 12px' }}>
+            <div key={ev.id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (ev.status === 'LIVE' || isLiveNowEvent ? 'rgba(255,26,60,.4)' : '#3D3020'), borderRadius: 10, padding: '10px 12px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: sc, flexShrink: 0, marginTop: 4, boxShadow: ev.status === 'LIVE' ? '0 0 6px ' + sc : 'none' }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: ev.status === 'LIVE' ? '#C8FF00' : ev.status === 'ENDED' ? '#555060' : '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: ev.status === 'LIVE' ? '#C9A84C' : ev.status === 'ENDED' ? '#555060' : '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {ev.title}
                     </div>
                     {isLiveNowEvent && (
@@ -371,7 +371,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                       {formatDt(ev.time)}
                     </span>
                     {badge && (
-                      <span style={{ background: 'rgba(200,255,0,.1)', border: '1px solid rgba(200,255,0,.25)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C8FF00' }}>
+                      <span style={{ background: 'rgba(200,255,0,.1)', border: '1px solid rgba(200,255,0,.25)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>
                         {badge}
                       </span>
                     )}
@@ -381,7 +381,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                       </span>
                     )}
                     {ev.status === 'LIVE' && ev.viewers && (
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C8FF00' }}>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C' }}>
                         {'&#x1F441;'} {ev.viewers.toLocaleString()}
                       </span>
                     )}
@@ -421,7 +421,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
 
                 <button
                   onClick={function() { removeEvent(ev.id); }}
-                  style={{ background: 'none', border: '1px solid #241C34', borderRadius: 5, padding: '2px 6px', color: '#8A7A62', fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ background: 'none', border: '1px solid #3D3020', borderRadius: 5, padding: '2px 6px', color: '#8A7A62', fontSize: 10, cursor: 'pointer', flexShrink: 0 }}>
                   &#x2715;
                 </button>
               </div>
@@ -431,7 +431,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       </div>
 
       {/* Add new */}
-      <div style={{ background: 'rgba(22,16,32,.8)', border: '1px solid #241C34', borderRadius: 10, padding: '12px 14px' }}>
+      <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC', letterSpacing: 2, marginBottom: 10 }}>ADD STREAM</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <input
@@ -439,14 +439,14 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
             onChange={function(e) { setNewTitle(e.target.value); }}
             onKeyDown={function(e) { if (e.key === 'Enter' && newTitle && newTime) addEvent(); }}
             placeholder="Stream title..."
-            style={{ background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
+            style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12 }}
           />
           <div style={{ display: 'flex', gap: 8 }}>
             <input
               type="datetime-local"
               value={newTime}
               onChange={function(e) { setNewTime(e.target.value); }}
-              style={{ flex: 1, background: 'rgba(7,5,10,.8)', border: '1px solid #241C34', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, colorScheme: 'dark' }}
+              style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, colorScheme: 'dark' }}
             />
             <SelectSheet
               label="Category"

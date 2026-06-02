@@ -5,11 +5,11 @@ var GOLD   = '#C9A84C';
 var GOLD_H = '#E8C46A';
 var BURG   = '#800020';
 var BURG_H = '#C01838';
-var TEAL   = '#00C9A7';
+var TEAL   = '#C9A84C';
 var TEAL_H = '#C9A84C';
 var PURP   = '#9B4DCA';
 var PURP_H = '#C084FC';
-var LIME   = '#00C96A';
+var LIME   = '#C9A84C';
 var MUTED  = '#6B5F82';
 var TEXT   = '#EDE8F4';
 var TEXT_M = '#A89CC8';
@@ -231,7 +231,7 @@ export default function ReplayTab({ addToast, isLive }) {
               <span style={{ fontFamily: fM, fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 3, padding: '1px 5px', letterSpacing: 1 }}>HIGHLIGHT</span>
             )}
             {currentClip && currentClip.chapter && (
-              <span style={{ fontFamily: fM, fontSize: 7, color: TEAL, background: 'rgba(0,201,167,.15)', border: '1px solid rgba(0,201,167,.4)', borderRadius: 3, padding: '1px 5px', letterSpacing: 1 }}>CHAPTER</span>
+              <span style={{ fontFamily: fM, fontSize: 7, color: TEAL, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 3, padding: '1px 5px', letterSpacing: 1 }}>CHAPTER</span>
             )}
             {playing && (
               <span style={{ fontFamily: fM, fontSize: 7, color: BURG_H, background: 'rgba(192,24,56,.15)', border: '1px solid rgba(192,24,56,.4)', borderRadius: 3, padding: '1px 5px', letterSpacing: 1 }}>PLAYING</span>
@@ -405,7 +405,7 @@ export default function ReplayTab({ addToast, isLive }) {
                   <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span style={{ fontFamily: fM, fontSize: 8, color: GOLD }}>{fmtS(clipDuration)}</span>
                     {clip.chapter && (
-                      <span style={{ fontFamily: fM, fontSize: 7, color: TEAL, background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 2, padding: '0 4px' }}>CHAPTER</span>
+                      <span style={{ fontFamily: fM, fontSize: 7, color: TEAL, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 2, padding: '0 4px' }}>CHAPTER</span>
                     )}
                     {clip.highlight && (
                       <span style={{ fontFamily: fM, fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 2, padding: '0 4px' }}>HIGHLIGHT</span>
@@ -452,7 +452,7 @@ export default function ReplayTab({ addToast, isLive }) {
                   )}
                   <button
                     onClick={function() { addToast('Clip exported: ' + clip.title.slice(0, 20), 'info'); }}
-                    style={{ background: 'rgba(0,201,167,.1)', border: '1px solid rgba(0,201,167,.3)', borderRadius: 6, padding: '5px 10px', color: TEAL, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
+                    style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '5px 10px', color: TEAL, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
                   >📤 EXPORT CLIP</button>
                   <button
                     onClick={function() { shareReplay(clip); }}

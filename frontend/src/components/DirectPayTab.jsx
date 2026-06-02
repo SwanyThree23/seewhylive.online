@@ -5,7 +5,7 @@ var GOLD_H  = '#E8C46A';
 var BURG    = '#800020';
 var BURG_H  = '#C01838';
 var TEAL_H  = '#C9A84C';
-var LIME    = '#00C96A';
+var LIME    = '#C9A84C';
 var MUTED   = '#6B5F82';
 var TEXT    = '#EDE8F4';
 var BG1     = '#0E0C09';
@@ -195,7 +195,7 @@ export default function DirectPayTab({ addToast, username }) {
                 <button
                   key={v}
                   onClick={function() { setView(v); }}
-                  style={{ background: active ? 'rgba(0,201,106,.14)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (active ? 'rgba(0,201,106,.4)' : BORDER), borderRadius: 7, padding: '5px 12px', color: active ? LIME : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                  style={{ background: active ? 'rgba(201,168,76,.14)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (active ? 'rgba(201,168,76,.4)' : BORDER), borderRadius: 7, padding: '5px 12px', color: active ? LIME : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
                   {v === 'pay' ? '💸 PAY' : '⚙ SETUP'}
                 </button>
               );
@@ -234,7 +234,7 @@ export default function DirectPayTab({ addToast, username }) {
                 onChange={function(e) { setCustomAmt(e.target.value); setSelectedAmt(null); }}
                 placeholder="Custom amount..."
                 type="number"
-                style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '7px 12px', color: TEXT, fontFamily: fU, fontSize: 12, boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid ' + BORDER, borderRadius: 8, padding: '7px 12px', color: TEXT, fontFamily: fU, fontSize: 12, boxSizing: 'border-box' }}
               />
             </div>
 
@@ -246,7 +246,7 @@ export default function DirectPayTab({ addToast, username }) {
                 <div style={{ fontFamily: fM, fontSize: 9, color: MUTED, marginBottom: 14 }}>Go to SETUP to add your PayPal, Cash App, Venmo, Zelle, or Chime handles</div>
                 <button
                   onClick={function() { setView('setup'); }}
-                  style={{ background: 'rgba(0,201,106,.12)', border: '1px solid rgba(0,201,106,.35)', borderRadius: 8, padding: '9px 20px', color: LIME, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                  style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '9px 20px', color: LIME, fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
                   ⚙ SETUP PAYMENTS
                 </button>
               </div>
@@ -288,7 +288,7 @@ export default function DirectPayTab({ addToast, username }) {
                   </div>
                   <div style={{ padding: '0 14px 10px 14px', fontFamily: fM, fontSize: 8, color: MUTED }}>{platform.note}</div>
                   {qrPlatform === platform.id && (
-                    <div style={{ margin: '0 14px 12px 14px', background: 'rgba(7,5,10,.6)', border: '1px dashed ' + platform.color + '44', borderRadius: 8, padding: '16px', textAlign: 'center' }}>
+                    <div style={{ margin: '0 14px 12px 14px', background: 'rgba(14,12,9,.6)', border: '1px dashed ' + platform.color + '44', borderRadius: 8, padding: '16px', textAlign: 'center' }}>
                       <div style={{ width: 90, height: 90, margin: '0 auto 8px auto', background: '#fff', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <div style={{ fontFamily: fM, fontSize: 7, color: '#222', lineHeight: 1.3, textAlign: 'center', padding: 4 }}>QR · {handle.slice(0, 12)}</div>
                       </div>
@@ -302,7 +302,7 @@ export default function DirectPayTab({ addToast, username }) {
 
             {/* Disclaimer */}
             {configuredCount > 0 && (
-              <div style={{ background: 'rgba(0,201,106,.04)', border: '1px solid rgba(0,201,106,.15)', borderRadius: 8, padding: '8px 12px', fontFamily: fM, fontSize: 8, color: MUTED, lineHeight: 1.5 }}>
+              <div style={{ background: 'rgba(201,168,76,.04)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 8, padding: '8px 12px', fontFamily: fM, fontSize: 8, color: MUTED, lineHeight: 1.5 }}>
                 90% goes directly to the creator · 10% platform fee.<br />
                 Viewers are shown both payment destinations automatically.
               </div>
@@ -324,7 +324,7 @@ export default function DirectPayTab({ addToast, username }) {
               return (
                 <div
                   key={platform.id}
-                  style={{ background: current ? 'rgba(0,201,106,.04)' : FAINT, border: '1px solid ' + (current ? 'rgba(0,201,106,.2)' : BORDER), borderRadius: 11, overflow: 'hidden' }}>
+                  style={{ background: current ? 'rgba(201,168,76,.04)' : FAINT, border: '1px solid ' + (current ? 'rgba(201,168,76,.2)' : BORDER), borderRadius: 11, overflow: 'hidden' }}>
                   <div style={{ height: 2, background: 'linear-gradient(90deg,' + platform.color + ',' + platform.accent + ')' }} />
                   <div style={{ padding: '11px 14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isEditing ? 10 : 0 }}>
@@ -343,7 +343,7 @@ export default function DirectPayTab({ addToast, username }) {
                       {!isEditing && (
                         <button
                           onClick={function() { setEditing(platform.id); setDraftHandle(current || ''); }}
-                          style={{ background: current ? 'rgba(0,201,106,.12)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (current ? 'rgba(0,201,106,.3)' : BORDER), borderRadius: 7, padding: '5px 12px', color: current ? LIME : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
+                          style={{ background: current ? 'rgba(201,168,76,.12)' : 'rgba(255,255,255,.05)', border: '1px solid ' + (current ? 'rgba(201,168,76,.3)' : BORDER), borderRadius: 7, padding: '5px 12px', color: current ? LIME : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>
                           {current ? '✏ EDIT' : '+ ADD'}
                         </button>
                       )}
@@ -357,7 +357,7 @@ export default function DirectPayTab({ addToast, username }) {
                           onKeyDown={function(e) { if (e.key === 'Enter') saveHandle(platform.id); }}
                           placeholder={platform.placeholder}
                           autoFocus
-                          style={{ width: '100%', background: 'rgba(7,5,10,.8)', border: '1px solid ' + (draftError ? '#FF1A3C' : platform.color + '55'), borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fU, fontSize: 13, boxSizing: 'border-box' }}
+                          style={{ width: '100%', background: 'rgba(14,12,9,.8)', border: '1px solid ' + (draftError ? '#FF1A3C' : platform.color + '55'), borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: fU, fontSize: 13, boxSizing: 'border-box' }}
                         />
                         {draftError ? <div style={{ fontFamily: fM, fontSize: 8, color: '#FF6B81', lineHeight: 1.4 }}>&#x26A0; {draftError}</div> : null}
                         <div style={{ display: 'flex', gap: 6 }}>

@@ -25,10 +25,10 @@ var MOCK_CREATORS = [
 var GENRE_COLORS = {
   Tournament: '#FF1564',
   Domino: '#C9A84C',
-  Music: '#00C9A7',
+  Music: '#C9A84C',
   Podcast: '#8B5CF6',
   Lifestyle: '#00F5FF',
-  Tech: '#00C9A7',
+  Tech: '#C9A84C',
   Talk: '#FF8C00',
 };
 
@@ -42,7 +42,7 @@ var TRENDING_CHANNELS = [
 
 var QUICK_ACTIONS = [
   { id: 'golive',  label: 'Go Live',      icon: '📡', color: '#FF1564' },
-  { id: 'watch',   label: 'Watch Party',  icon: '📺', color: '#00C9A7' },
+  { id: 'watch',   label: 'Watch Party',  icon: '📺', color: '#C9A84C' },
   { id: 'battles', label: 'PK Battles',   icon: '⚡', color: '#C9A84C' },
   { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C084FC' },
   { id: 'create',  label: 'Create Room',  icon: '➕', color: '#8A7A62' },
@@ -878,13 +878,13 @@ export default function DiscoverTab(props) {
           'span',
           {
             style: {
-              background: 'rgba(0,201,167,.15)',
-              border: '1px solid rgba(0,201,167,.3)',
+              background: 'rgba(201,168,76,.15)',
+              border: '1px solid rgba(201,168,76,.3)',
               borderRadius: 4,
               padding: '2px 7px',
               fontFamily: "'DM Mono',monospace",
               fontSize: 8,
-              color: '#00C9A7',
+              color: '#C9A84C',
               letterSpacing: 1,
             }
           },
