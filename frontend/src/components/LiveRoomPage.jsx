@@ -281,6 +281,7 @@ export default function LiveRoomPage({
   var [theaterMode,        setTheaterMode]        = useState(false);
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
+  var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -429,6 +430,15 @@ export default function LiveRoomPage({
       setTimeout(function() { setScoreReveal(null); }, 3200);
     });
 
+    socket.on('screen-share-active', function(data) {
+      if (!data) return;
+      if (data.userId !== userId) setScreenShareHost({ username: data.username || 'Host' });
+    });
+
+    socket.on('screen-share-ended', function() {
+      setScreenShareHost(null);
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
@@ -445,6 +455,8 @@ export default function LiveRoomPage({
       socket.off('super-chat');
       socket.off('react-burst');
       socket.off('gift-received');
+      socket.off('screen-share-active');
+      socket.off('screen-share-ended');
     };
   }, [socket]);
 
@@ -492,6 +504,7 @@ export default function LiveRoomPage({
     if (cameraTrackRef.current) {
       rtcManager.replaceTrack('video', cameraTrackRef.current);
     }
+    if (socket) socket.emit('screen-share-stop', { roomId: roomId });
     if (addToast) addToast('Screen share ended — camera restored', 'info');
   }
 
@@ -508,6 +521,7 @@ export default function LiveRoomPage({
       screenStreamRef.current = displayStream;
       setIsScreenSharing(true);
       rtcManager.replaceTrack('video', videoTrack);
+      if (socket) socket.emit('screen-share-start', { roomId: roomId, userId: userId, username: username });
       if (addToast) addToast('Screen share active — viewers now see your screen', 'success');
     } catch(e) {
       if (e.name !== 'NotAllowedError') {
@@ -668,6 +682,7 @@ export default function LiveRoomPage({
 
   function endStream() {
     if (!socket) return;
+    if (isScreenSharing) stopScreenShare();
     socket.emit('end-broadcast', { roomId: roomId });
     if (setIsLive) setIsLive(false);
     if (addToast) addToast('Stream ended', 'info');
@@ -825,7 +840,7 @@ export default function LiveRoomPage({
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 500 }}>{speakerName} is speaking</span>
           </div>
         )}
-        {/* Screen share banner */}
+        {/* Screen share banner — host side */}
         {isScreenSharing && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: RED, animation: 'livePulse 1.4s ease-in-out infinite', flexShrink: 0 }} />
@@ -834,6 +849,13 @@ export default function LiveRoomPage({
               onClick={stopScreenShare}
               style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 5, color: RED, fontSize: 10, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}
             >STOP</button>
+          </div>
+        )}
+        {/* Screen share banner — viewer side */}
+        {!isScreenSharing && screenShareHost && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
+            <span style={{ fontSize: 14 }}>🖥</span>
+            <span style={{ fontSize: 12, color: TEAL, fontWeight: 600, letterSpacing: 0.5 }}>{screenShareHost.username} is sharing screen</span>
           </div>
         )}
       </div>
