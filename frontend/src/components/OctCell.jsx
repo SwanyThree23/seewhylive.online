@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle }) {
+export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
   var videoRef    = useRef(null);
   var analyserRef = useRef(null);
   var animRef     = useRef(null);
@@ -69,6 +69,11 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
         if (cancelled) { stream.getTracks().forEach(function(t) { t.stop(); }); return; }
         streamRef.current = stream;
+
+        if (onCameraTrack) {
+          var vt = stream.getVideoTracks()[0];
+          if (vt) onCameraTrack(vt);
+        }
 
         if (videoRef.current) {
           videoRef.current.muted = true;

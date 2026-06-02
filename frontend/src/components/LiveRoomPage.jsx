@@ -280,9 +280,12 @@ export default function LiveRoomPage({
   var [streamStats,        setStreamStats]        = useState(null); // { bitratekbps, rttMs, lossPct }
   var [theaterMode,        setTheaterMode]        = useState(false);
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
+  var [isScreenSharing,    setIsScreenSharing]    = useState(false);
 
-  var chatEndRef    = useRef(null);
-  var gold          = (branding && branding.gold) ? branding.gold : GOLD;
+  var chatEndRef      = useRef(null);
+  var cameraTrackRef  = useRef(null);
+  var screenStreamRef = useRef(null);
+  var gold            = (branding && branding.gold) ? branding.gold : GOLD;
 
   // ── Camera warm-up ──
   useEffect(function() {
@@ -478,6 +481,39 @@ export default function LiveRoomPage({
     setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
     if (socket) socket.emit('react', { roomId: roomId, userId: userId, emoji: emoji });
     setReactsOpen(false);
+  }
+
+  function stopScreenShare() {
+    setIsScreenSharing(false);
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+      screenStreamRef.current = null;
+    }
+    if (cameraTrackRef.current) {
+      rtcManager.replaceTrack('video', cameraTrackRef.current);
+    }
+    if (addToast) addToast('Screen share ended — camera restored', 'info');
+  }
+
+  async function startScreenShare() {
+    if (!rtcManager || !rtcManager.producers || !rtcManager.producers['video']) {
+      if (addToast) addToast('Go live first to share your screen', 'error');
+      return;
+    }
+    try {
+      var displayStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false });
+      var videoTrack = displayStream.getVideoTracks()[0];
+      if (!videoTrack) { displayStream.getTracks().forEach(function(t) { t.stop(); }); return; }
+      videoTrack.addEventListener('ended', stopScreenShare);
+      screenStreamRef.current = displayStream;
+      setIsScreenSharing(true);
+      rtcManager.replaceTrack('video', videoTrack);
+      if (addToast) addToast('Screen share active — viewers now see your screen', 'success');
+    } catch(e) {
+      if (e.name !== 'NotAllowedError') {
+        if (addToast) addToast('Screen share failed: ' + e.message, 'error');
+      }
+    }
   }
 
   function submitPoll() {
@@ -783,10 +819,21 @@ export default function LiveRoomPage({
         </div>
 
         {/* Speaking indicator */}
-        {speakerName && (
+        {speakerName && !isScreenSharing && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
             <SpeakBars color={TEAL} small />
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 500 }}>{speakerName} is speaking</span>
+          </div>
+        )}
+        {/* Screen share banner */}
+        {isScreenSharing && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: RED, animation: 'livePulse 1.4s ease-in-out infinite', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: RED, fontWeight: 600, letterSpacing: 0.5 }}>SCREEN SHARING</span>
+            <button
+              onClick={stopScreenShare}
+              style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 5, color: RED, fontSize: 10, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}
+            >STOP</button>
           </div>
         )}
       </div>
@@ -944,6 +991,7 @@ export default function LiveRoomPage({
                           isCamOff={isOwn ? isCamOff : false}
                           onMuteToggle={isOwn ? toggleMute : null}
                           onCamToggle={isOwn ? toggleCam : null}
+                          onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
                         />
                       )}
                       {/* Expand button overlay */}
@@ -1443,6 +1491,15 @@ export default function LiveRoomPage({
             active={showMediaConf}
             onPress={function() { setShowMediaConf(function(v) { return !v; }); }}
           />
+          {(role === 'host' || role === 'cohost') && (
+            <IconBtn
+              icon={isScreenSharing ? '🛑' : '🖥'}
+              label={isScreenSharing ? 'Stop' : 'Screen'}
+              active={isScreenSharing}
+              danger={isScreenSharing}
+              onPress={isScreenSharing ? stopScreenShare : startScreenShare}
+            />
+          )}
           <IconBtn
             icon={theaterMode ? '⊡' : '⛶'}
             label={theaterMode ? 'Exit' : 'Theater'}
