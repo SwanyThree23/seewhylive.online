@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
 import {
   Play, Pause, Volume2, VolumeX, Maximize, Maximize2,
   Settings, Share2, Lock, Clock, Copy, Code2, Users, X
@@ -97,10 +94,10 @@ export default function EmbedPlayer({
       {/* Top overlay: stream info */}
       <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/70 to-transparent flex items-center gap-2">
         {isLive && (
-          <Badge className="bg-red-600 text-white text-xs gap-1 border-0 animate-pulse">
-            <div className="w-1.5 h-1.5 rounded-full bg-white" />
+          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', display:'inline-flex', alignItems:'center', gap:4 }}>
+            <div style={{ width:6, height:6, borderRadius:'50%', background:'#fff' }} />
             LIVE
-          </Badge>
+          </span>
         )}
         <div className="flex items-center gap-1.5 text-white text-xs">
           <Users className="w-3 h-3" />
@@ -145,14 +142,15 @@ export default function EmbedPlayer({
                 {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </button>
               <div className="w-20">
-                <Slider value={muted ? [0] : volume} onValueChange={setVolume} min={0} max={100}
-                  className="[&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-white" />
+                <input type="range" value={muted ? 0 : volume[0]} onChange={e => setVolume([+e.target.value])} min={0} max={100} step={1} style={{ width:'100%', accentColor:'#D4AF37' }} />
               </div>
               <div className="flex-1" />
-              <Badge className="text-[9px] bg-black/60 text-[#d4af37] border-[#d4af37]/30 cursor-pointer hover:bg-[#d4af37]/10"
-                onClick={() => setQuality(quality === 'Auto' ? '1080p' : quality === '1080p' ? '720p' : quality === '720p' ? '480p' : 'Auto')}>
+              <span
+                onClick={() => setQuality(quality === 'Auto' ? '1080p' : quality === '1080p' ? '720p' : quality === '720p' ? '480p' : 'Auto')}
+                style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(0,0,0,0.6)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', cursor:'pointer' }}
+              >
                 {quality}
-              </Badge>
+              </span>
               <button onClick={() => setShowEmbed(!showEmbed)} className="text-white/60 hover:text-white">
                 <Code2 className="w-4 h-4" />
               </button>
@@ -170,10 +168,10 @@ export default function EmbedPlayer({
           initial={{ scale: 0.8 }} animate={{ scale: 1 }}
           className="absolute top-12 left-3"
         >
-          <Badge className="bg-[#800020] text-[#d4af37] border-2 border-[#d4af37] gap-1 animate-pulse">
+          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#800020', color:'#D4AF37', border:'2px solid #D4AF37', display:'inline-flex', alignItems:'center', gap:4 }}>
             <Clock className="w-3 h-3" />
             PREVIEW: {formatTime(timeLeft)}
-          </Badge>
+          </span>
         </motion.div>
       )}
 
@@ -245,13 +243,12 @@ export default function EmbedPlayer({
             <pre className="bg-black/50 rounded-lg p-3 text-xs text-[#00d4ff] font-mono overflow-x-auto whitespace-pre-wrap mb-3">
               {embedCode}
             </pre>
-            <Button
-              size="sm"
+            <button
               onClick={() => { navigator.clipboard.writeText(embedCode); }}
-              className="bg-[#d4af37] text-black font-bold gap-2 hover:bg-[#f5e6a3]"
+              style={{ background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, padding:'6px 12px', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:6, fontFamily:'Barlow Condensed, sans-serif', fontSize:13 }}
             >
               <Copy className="w-3 h-3" /> Copy Code
-            </Button>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

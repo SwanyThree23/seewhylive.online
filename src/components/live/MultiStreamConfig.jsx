@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Radio, Plus, Trash2, Copy, Play, Square, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useMutation } from '@tanstack/react-query';
 
 export default function MultiStreamConfig({ roomId, isHost }) {
@@ -215,35 +214,17 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                   required
                 />
                 <div className="flex gap-1">
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="flex-1 bg-green-900/60 hover:bg-green-900/80 text-green-300 border border-green-600/50 text-xs"
-                  >
-                    Add Destination
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowForm(false)}
-                    className="flex-1 border-white/20 text-white/50 text-xs"
-                  >
-                    Cancel
-                  </Button>
+                  <button type="submit" style={{ flex:1, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#86efac', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Add Destination</button>
+                  <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'rgba(255,255,255,0.5)', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Cancel</button>
                 </div>
               </motion.form>
             )}
           </AnimatePresence>
 
           {!showForm && (
-            <Button
-              onClick={() => setShowForm(true)}
-              size="sm"
-              className="w-full gap-1 bg-[#d4af37]/15 hover:bg-[#d4af37]/25 text-[#d4af37] border border-[#d4af37]/30 text-xs"
-            >
+            <button onClick={() => setShowForm(true)} style={{ width:'100%', background:'rgba(212,175,55,0.15)', border:'1px solid rgba(212,175,55,0.3)', color:'#D4AF37', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
               <Plus className="w-3 h-3" /> Add Destination
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -251,22 +232,13 @@ export default function MultiStreamConfig({ roomId, isHost }) {
       {/* Control buttons */}
       {destinations.length > 0 && (
         <div className="flex gap-2">
-          <Button
-            onClick={handleStartStreaming}
-            disabled={isDistributing || distributeMutation.isPending}
-            className="flex-1 gap-2 bg-green-900/60 hover:bg-green-900/80 text-green-300 border border-green-600/50"
-          >
-            <Play className="w-4 h-4" />
-            {isDistributing ? 'Streaming...' : 'Start Multi-Streaming'}
-          </Button>
+          <button onClick={handleStartStreaming} disabled={isDistributing || distributeMutation.isPending} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#86efac', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
+            <Play className="w-4 h-4" />{isDistributing ? 'Streaming...' : 'Start Multi-Streaming'}
+          </button>
           {isDistributing && (
-            <Button
-              onClick={handleStopStreaming}
-              className="flex-1 gap-2 bg-red-900/60 hover:bg-red-900/80 text-red-300 border border-red-600/50"
-            >
-              <Square className="w-4 h-4" />
-              Stop
-            </Button>
+            <button onClick={handleStopStreaming} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(127,29,29,0.6)', border:'1px solid rgba(185,28,28,0.5)', color:'#fca5a5', padding:'8px 14px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
+              <Square className="w-4 h-4" />Stop
+            </button>
           )}
         </div>
       )}

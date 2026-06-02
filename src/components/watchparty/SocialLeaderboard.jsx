@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Star, Zap, Crown, TrendingUp } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const RANK_COLORS = ['#d4af37', '#c0c0c0', '#cd7f32', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.3)'];
 const RANK_ICONS = ['👑', '🥈', '🥉', '4️⃣', '5️⃣'];
@@ -62,11 +61,9 @@ export default function SocialLeaderboard({ members = [], reactionCounts = {}, b
             className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
             style={{ background: i === 0 ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.02)', border: i === 0 ? '1px solid rgba(212,175,55,0.2)' : '1px solid transparent' }}>
             <span className="text-sm w-5 text-center shrink-0">{RANK_ICONS[i]}</span>
-            <Avatar className="w-6 h-6 shrink-0">
-              <AvatarFallback className="text-[9px] font-bold text-white" style={{ background: getColor(m.user_name) + '50' }}>
-                {m.user_name?.charAt(0)?.toUpperCase() || '?'}
-              </AvatarFallback>
-            </Avatar>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: getColor(m.user_name) + '50', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 9, flexShrink: 0 }}>
+              {m.user_name?.charAt(0)?.toUpperCase() || '?'}
+            </div>
             <span className="text-[9px] font-bold text-white flex-1 truncate">{m.user_name}</span>
             <div className="flex items-center gap-1 shrink-0">
               {i === 0 && <TrendingUp className="w-2.5 h-2.5" style={{ color: '#d4af37' }} />}

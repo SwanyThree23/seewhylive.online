@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, AlignLeft } from 'lucide-react';
 
 const PRESETS = [
@@ -19,6 +16,19 @@ const DURATIONS = [
   { label: '30s', value: 30 },
   { label: '∞', value: 0 },
 ];
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px 14px',
+  background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 8,
+  color: '#fff',
+  fontSize: 13,
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'Barlow Condensed, sans-serif',
+};
 
 export default function LowerThirdsBanner({ onBannerChange }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -71,15 +81,21 @@ export default function LowerThirdsBanner({ onBannerChange }) {
         <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="overflow-hidden px-3 pb-3 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-white/60">Enable Banner</span>
-            <Switch checked={enabled} onCheckedChange={setEnabled} className="scale-75 data-[state=checked]:bg-[#d4af37]" />
+            <div
+              onClick={() => setEnabled(v => !v)}
+              style={{ width: 40, height: 22, borderRadius: 99, background: enabled ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+            >
+              <div style={{ position: 'absolute', top: 3, left: enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+            </div>
           </div>
 
           <div className="space-y-1">
             <p className="text-[10px] text-white/40">Banner Text</p>
-            <Input
-              value={text} onChange={(e) => setText(e.target.value)}
-              className="h-7 text-xs bg-white/5 border-white/20 text-white"
+            <input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
               placeholder="Enter banner text..."
+              style={{ ...inputStyle, height: 28, padding: '0 10px', fontSize: 12 }}
             />
           </div>
 

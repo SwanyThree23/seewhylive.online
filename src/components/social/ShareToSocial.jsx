@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Share2, Youtube, Copy, CheckCircle2, Link as LinkIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function ShareToSocial({ content }) {
   const [copied, setCopied] = useState(false);
@@ -58,6 +57,7 @@ export default function ShareToSocial({ content }) {
               style={{
                 background: `rgba(${platform.color === '#FF0000' ? '255,0,0' : '29,161,242'},0.1)`,
                 border: `1px solid rgba(${platform.color === '#FF0000' ? '255,0,0' : '29,161,242'},0.3)`,
+                cursor: 'pointer',
               }}
             >
               <Icon className="w-4 h-4" style={{ color: platform.color }} />
@@ -71,7 +71,7 @@ export default function ShareToSocial({ content }) {
         whileHover={{ scale: 1.02 }}
         onClick={handleCopyLink}
         className="w-full flex items-center justify-center gap-2 p-2 rounded-lg transition-all"
-        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)' }}
+        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', cursor: 'pointer' }}
       >
         {copied ? (
           <>

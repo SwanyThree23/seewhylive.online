@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Edit2, Check, X } from 'lucide-react';
+
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 
 export default function StreamMetadataEditor({ initialTitle = 'Live Stream', initialCategory = 'gaming' }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -62,11 +62,11 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
         <div>
           <label className="text-[9px] text-white/60 uppercase block mb-1.5">Stream Title</label>
           {isEditing ? (
-            <Input
+            <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={80}
-              className="bg-white/5 border-white/10 text-white text-sm h-9"
+              style={{ ...inputStyle, height:36 }}
             />
           ) : (
             <div className="text-white text-sm font-semibold line-clamp-2">{title}</div>
@@ -99,12 +99,12 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
           <label className="text-[9px] text-white/60 uppercase block mb-1.5">Tags</label>
           {isEditing ? (
             <>
-              <Input
+              <input
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 onKeyDown={addTag}
                 placeholder="Type a tag, press Enter"
-                className="bg-white/5 border-white/10 text-white text-[9px] h-8 mb-2"
+                style={{ ...inputStyle, fontSize:9, height:32, marginBottom:8 }}
               />
               {tagList.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
@@ -143,13 +143,13 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
         </div>
 
         {isEditing && (
-          <Button
+          <button
             onClick={handleSave}
-            className="w-full bg-[#d4af37] text-black hover:bg-[#e6c158] font-semibold text-sm h-9 flex items-center justify-center gap-2"
+            style={{ width:'100%', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:600, fontSize:14, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif' }}
           >
             <Check className="w-4 h-4" />
             Save Changes
-          </Button>
+          </button>
         )}
       </div>
     </motion.div>

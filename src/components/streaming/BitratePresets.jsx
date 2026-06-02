@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 
 const PRESETS = [
   { label: '480p', bitrate: 1500, recommended: false, desc: 'Mobile' },

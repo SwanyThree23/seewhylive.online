@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { DollarSign, Heart, Star, Award } from 'lucide-react';
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px 14px',
+  background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 8,
+  color: '#fff',
+  fontSize: 13,
+  outline: 'none',
+  boxSizing: 'border-box',
+  fontFamily: 'Barlow Condensed, sans-serif',
+};
 
 export default function TippingModal({ isOpen, onClose, recipient, roomId, communityId }) {
   const [amount, setAmount] = useState('');
@@ -44,7 +53,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
 
   const handleSendTip = () => {
     const tipAmount = selectedAmount || parseFloat(amount);
-    
+
     if (!tipAmount || tipAmount <= 0) {
       toast.error('Please enter a valid amount');
       return;
@@ -62,79 +71,86 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
     });
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Send a Tip</DialogTitle>
-          <DialogDescription>
-            Support {recipient?.name || 'this creator'} with a tip
-          </DialogDescription>
-        </DialogHeader>
+  if (!isOpen) return null;
 
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-3 gap-3">
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Send a Tip</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
+            Support {recipient?.name || 'this creator'} with a tip
+          </p>
+        </div>
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
             {quickAmounts.map((quick) => {
               const Icon = quick.icon;
               return (
-                <Button
+                <button
                   key={quick.value}
-                  variant={selectedAmount === quick.value ? 'default' : 'outline'}
-                  onClick={() => {
-                    setSelectedAmount(quick.value);
-                    setAmount('');
+                  onClick={() => { setSelectedAmount(quick.value); setAmount(''); }}
+                  style={{
+                    height: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    background: selectedAmount === quick.value ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+                    border: selectedAmount === quick.value ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 8, cursor: 'pointer', color: selectedAmount === quick.value ? '#D4AF37' : '#fff',
+                    fontFamily: 'Barlow Condensed, sans-serif',
                   }}
-                  className="h-20 flex-col gap-2"
                 >
-                  <Icon className="w-5 h-5" />
-                  <span>{quick.label}</span>
-                </Button>
+                  <Icon style={{ width: 20, height: 20 }} />
+                  <span style={{ fontWeight: 700 }}>{quick.label}</span>
+                </button>
               );
             })}
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Custom Amount</label>
-            <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
+            <label style={{ fontSize: 14, fontWeight: 500, color: '#fff', display: 'block', marginBottom: 8, fontFamily: 'Barlow Condensed, sans-serif' }}>Custom Amount</label>
+            <div style={{ position: 'relative' }}>
+              <DollarSign style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'rgba(255,255,255,0.4)' }} />
+              <input
                 type="number"
                 placeholder="Enter amount"
                 value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value);
-                  setSelectedAmount(null);
-                }}
-                className="pl-9"
+                onChange={(e) => { setAmount(e.target.value); setSelectedAmount(null); }}
                 min="1"
+                style={{ ...inputStyle, paddingLeft: 36 }}
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Message (Optional)</label>
-            <Textarea
+            <label style={{ fontSize: 14, fontWeight: 500, color: '#fff', display: 'block', marginBottom: 8, fontFamily: 'Barlow Condensed, sans-serif' }}>Message (Optional)</label>
+            <textarea
               placeholder="Add a message with your tip..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={3}
+              style={{ ...inputStyle, resize: 'none', minHeight: 80 }}
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={onClose} className="flex-1">
+          <div style={{ display: 'flex', gap: 12, paddingTop: 4 }}>
+            <button
+              onClick={onClose}
+              style={{ flex: 1, padding: '10px 0', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: 14, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
+            >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleSendTip}
               disabled={sendTipMutation.isPending}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600"
+              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #9333ea, #ec4899)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {sendTipMutation.isPending ? 'Sending...' : 'Send Tip'}
-            </Button>
+            </button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

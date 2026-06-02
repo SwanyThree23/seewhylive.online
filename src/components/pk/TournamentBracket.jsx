@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Trophy, Plus, Play, Users, Swords, Crown, ChevronRight, Calendar, Zap } from 'lucide-react';
 
@@ -183,9 +181,15 @@ export default function TournamentBracket() {
             <div className="text-5xl mb-2">🏆</div>
             <p className="text-xs uppercase tracking-[0.3em] mb-1" style={{ color: ET.sand }}>Tournament Champion</p>
             <h2 className="text-3xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: ET.gold }}>{champion}</h2>
-            <Button onClick={reset} size="sm" className="mt-3 text-xs" style={{ background: ET.midEarth, color: ET.sand, border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button
+              onClick={reset}
+              style={{
+                marginTop: 12, fontSize: 12, padding: '6px 16px', borderRadius: 8, cursor: 'pointer',
+                background: ET.midEarth, color: ET.sand, border: '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
               New Tournament
-            </Button>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -249,26 +253,32 @@ export default function TournamentBracket() {
                   className="flex-1 rounded-lg px-3 py-1.5 text-xs focus:outline-none"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: ET.cream }}
                 />
-                <Button
-                  size="sm"
+                <button
                   onClick={function() {
                     if (newPlayer.trim()) { setPlayerNames(function(p) { return p.concat([newPlayer.trim()]); }); setNewPlayer(''); }
                   }}
-                  className="h-8 px-3"
-                  style={{ background: ET.terracotta + '30', color: ET.terracotta, border: '1px solid ' + ET.terracotta + '50' }}
+                  style={{
+                    height: 32, padding: '0 12px', borderRadius: 8, cursor: 'pointer',
+                    background: ET.terracotta + '30', color: ET.terracotta, border: '1px solid ' + ET.terracotta + '50',
+                  }}
                 >
                   <Plus className="w-3 h-3" />
-                </Button>
+                </button>
               </div>
             </div>
 
-            <Button
+            <button
               onClick={startTournament}
-              className="w-full h-10 font-black text-sm gap-2 uppercase tracking-wider"
-              style={{ background: 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.clay + ')', color: '#fff' }}
+              style={{
+                width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14,
+                textTransform: 'uppercase', letterSpacing: '0.07em', cursor: 'pointer',
+                background: 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.clay + ')',
+                color: '#fff', border: 'none', borderRadius: 8,
+              }}
             >
               <Play className="w-4 h-4" /> Generate Bracket & Start
-            </Button>
+            </button>
           </div>
         </div>
       ) : (
@@ -276,9 +286,15 @@ export default function TournamentBracket() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: ET.gold }}>{tournamentName}</h2>
-            <Button onClick={reset} size="sm" className="text-xs" style={{ background: 'rgba(255,255,255,0.05)', color: ET.sand, border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button
+              onClick={reset}
+              style={{
+                fontSize: 12, padding: '4px 12px', borderRadius: 8, cursor: 'pointer',
+                background: 'rgba(255,255,255,0.05)', color: ET.sand, border: '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
               Reset
-            </Button>
+            </button>
           </div>
 
           <div className="overflow-x-auto pb-2">

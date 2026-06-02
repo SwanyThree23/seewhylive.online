@@ -2,13 +2,9 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
 import { Eye, EyeOff, Wifi, Lock, KeyRound, Trash2, Plus, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 import { toast } from 'sonner';
 
 const PLATFORM_PRESETS = [
@@ -31,8 +27,8 @@ const STATUS_CONFIG = {
 
 function StatusPill({ status, validationState }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.offline;
-  if (validationState === 'ok')    return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1 text-[10px]"><CheckCircle className="w-2.5 h-2.5" /> Ready</Badge>;
-  if (validationState === 'err')   return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 gap-1 text-[10px]"><XCircle className="w-2.5 h-2.5" /> Error</Badge>;
+  if (validationState === 'ok')    return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(34,197,94,0.2)', color:'#4ade80', border:'1px solid rgba(34,197,94,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" /> Ready</span>;
+  if (validationState === 'err')   return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(239,68,68,0.2)', color:'#f87171', border:'1px solid rgba(239,68,68,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><XCircle className="w-2.5 h-2.5" /> Error</span>;
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -87,11 +83,11 @@ function DestinationRow({ dest, userId, onRemove }) {
             {platform.label.charAt(0)}
           </div>
           <p className="text-xs font-semibold text-white flex-1 truncate">{dest.label}</p>
-          <Badge className="text-[9px] px-1.5 py-0" style={{ background: `${platform.color}15`, color: platform.color, borderColor: `${platform.color}30` }}>
+          <span style={{ fontSize:9, fontWeight:900, padding:'2px 6px', borderRadius:99, background:`${platform.color}15`, color:platform.color, border:`1px solid ${platform.color}30` }}>
             {platform.label}
-          </Badge>
+          </span>
           <StatusPill status={dest.status} validationState={validationState} />
-          <Switch checked={dest.is_enabled} onCheckedChange={toggleEnabled} className="data-[state=checked]:bg-[#d4af37] scale-75" />
+          <div onClick={toggleEnabled} style={{ width:40, height:22, borderRadius:99, background:dest.is_enabled?'#800020':'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}><div style={{ position:'absolute', top:3, left:dest.is_enabled?21:3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }}/></div>
           <button onClick={() => onRemove(dest.id)} className="w-5 h-5 flex items-center justify-center text-white/20 hover:text-red-400 transition-colors">
             <Trash2 className="w-3 h-3" />
           </button>
@@ -100,13 +96,13 @@ function DestinationRow({ dest, userId, onRemove }) {
         {/* Stream key input */}
         <div className="flex gap-1.5">
           <div className="relative flex-1">
-            <KeyRound className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" />
-            <Input
+            <KeyRound className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" style={{ position:'absolute', left:8, top:'50%', transform:'translateY(-50%)' }} />
+            <input
               type={showKey ? 'text' : 'password'}
               value={localKey}
               onChange={e => setLocalKey(e.target.value)}
               placeholder="Stream key (AES-256-GCM encrypted on save)"
-              className="pl-7 h-7 text-[11px] bg-white/5 border-white/10 text-white font-mono placeholder:text-white/20"
+              style={{ ...inputStyle, paddingLeft:28, fontSize:11, height:28, fontFamily:'monospace' }}
             />
           </div>
           <button
@@ -119,42 +115,35 @@ function DestinationRow({ dest, userId, onRemove }) {
 
         {/* Custom RTMP URL */}
         {dest.platform === 'custom' && (
-          <Input
+          <input
             value={localUrl}
             onChange={e => setLocalUrl(e.target.value)}
             placeholder="rtmp://your-server/live"
-            className="h-7 text-[11px] bg-white/5 border-white/10 text-white font-mono placeholder:text-white/20"
+            style={{ ...inputStyle, fontSize:11, height:28, fontFamily:'monospace' }}
           />
         )}
 
         {/* Bitrate + actions */}
         <div className="flex items-center gap-2">
           <p className="text-[9px] text-white/25 shrink-0">Bitrate</p>
-          <Slider
-            value={[dest.bitrate_kbps || 3000]}
-            onValueChange={([v]) => updateMutation.mutate({ data: { bitrate_kbps: v } })}
-            min={500} max={8000} step={500}
-            className="flex-1 [&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-[#d4af37] [&_[role=slider]]:h-3 [&_[role=slider]]:w-3"
-          />
+          <input type="range" value={dest.bitrate_kbps || 3000} onChange={e => updateMutation.mutate({ data: { bitrate_kbps: +e.target.value } })} min={500} max={8000} step={500} style={{ flex:1, accentColor:'#D4AF37' }} />
           <span className="text-[9px] font-mono text-[#d4af37] w-14 text-right shrink-0">{dest.bitrate_kbps || 3000} kbps</span>
         </div>
 
         <div className="flex gap-1.5 pt-0.5">
-          <Button
-            size="sm" variant="ghost"
+          <button
             onClick={validate} disabled={validating}
-            className="h-6 text-[10px] px-2 border border-[#00d4ff]/20 text-[#00d4ff] hover:bg-[#00d4ff]/10 gap-1"
+            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(0,212,255,0.2)', color:'#00d4ff', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             {validating ? <RefreshCw className="w-2.5 h-2.5 animate-spin" /> : <Wifi className="w-2.5 h-2.5" />}
             {validating ? 'Testing…' : 'Validate'}
-          </Button>
-          <Button
-            size="sm" variant="ghost"
+          </button>
+          <button
             onClick={save}
-            className="h-6 text-[10px] px-2 border border-[#d4af37]/20 text-[#d4af37] hover:bg-[#d4af37]/10 gap-1"
+            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(212,175,55,0.2)', color:'#D4AF37', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             <Lock className="w-2.5 h-2.5" /> Save & Encrypt
-          </Button>
+          </button>
         </div>
       </div>
     </motion.div>
@@ -212,9 +201,9 @@ export default function GuestRTMPPanel({ participantId, userId }) {
         <div className="flex items-center gap-2">
           <Lock className="w-3 h-3 text-[#d4af37]" />
           <span className="text-[11px] font-semibold text-[#d4af37]">RTMP Destinations</span>
-          <Badge className="bg-[#d4af37]/10 text-[#d4af37] border-[#d4af37]/20 text-[9px] px-1.5 py-0">
+          <span style={{ fontSize:9, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'rgba(212,175,55,0.1)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.2)' }}>
             VaultPro AES-256
-          </Badge>
+          </span>
         </div>
         <div className="flex items-center gap-2">
           {enabledCount > 0 && (
@@ -258,22 +247,21 @@ export default function GuestRTMPPanel({ participantId, userId }) {
                 </div>
                 {/* Label input */}
                 <div className="flex gap-1.5">
-                  <Input
+                  <input
                     value={label}
                     onChange={e => setLabel(e.target.value)}
                     placeholder={`e.g. My ${PLATFORM_PRESETS.find(p => p.id === selectedPreset)?.label}`}
-                    className="h-7 text-[11px] bg-white/5 border-white/10 text-white placeholder:text-white/20 flex-1"
+                    style={{ ...inputStyle, fontSize:11, height:28, flex:1 }}
                     onKeyDown={e => e.key === 'Enter' && addDestination()}
                   />
-                  <Button
-                    size="sm" onClick={addDestination}
+                  <button
+                    onClick={addDestination}
                     disabled={createMutation.isPending || !label.trim()}
-                    className="h-7 px-3 bg-[#d4af37] text-black font-bold text-[11px] hover:bg-[#f5e6a3]"
+                    style={{ height:28, padding:'0 12px', background:'#D4AF37', color:'#000', border:'none', borderRadius:6, fontWeight:700, fontSize:11, cursor:(createMutation.isPending||!label.trim())?'not-allowed':'pointer', opacity:(createMutation.isPending||!label.trim())?0.5:1 }}
                   >
                     Add
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}
-                    className="h-7 px-2 text-white/30 text-[11px]">✕</Button>
+                  </button>
+                  <button onClick={() => setShowAdd(false)} style={{ height:28, padding:'0 8px', background:'transparent', border:'none', color:'rgba(255,255,255,0.3)', fontSize:11, cursor:'pointer' }}>✕</button>
                 </div>
               </div>
             </motion.div>

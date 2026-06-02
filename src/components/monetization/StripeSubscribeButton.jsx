@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { CreditCard, Crown, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,7 +20,6 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
     }
     setLoading(tier.id);
 
-    // Create a pending ViewerSubscription record
     const sub = await base44.entities.ViewerSubscription.create({
       viewer_id: currentUserId,
       creator_id: creatorId,
@@ -32,8 +29,6 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
       started_at: new Date().toISOString(),
     });
 
-    // Use InvokeLLM to simulate Stripe Checkout URL generation
-    // In production, replace with a real backend function call to Stripe API
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Generate a mock Stripe Checkout session response JSON for a subscription:
 - Customer subscribes to "${tier.label}" tier at $${tier.price}/month
@@ -50,12 +45,10 @@ Only return valid JSON.`,
       },
     });
 
-    // Update the subscription with the session ID
     await base44.entities.ViewerSubscription.update(sub.id, {
       stripe_checkout_session_id: result.session_id,
     });
 
-    // Simulate immediate success (in production, handle via webhook)
     await simulatePaymentSuccess(sub.id, currentUserId, creatorId, tier.price);
 
     setLoading(null);
@@ -65,44 +58,49 @@ Only return valid JSON.`,
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Subscribe to {creatorName}</p>
+      <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        Subscribe to {creatorName}
+      </p>
       {TIERS.map(tier => (
         <div
           key={tier.id}
-          className="flex items-center justify-between p-4 rounded-xl border-2 transition-all"
-          style={{ borderColor: success === tier.id ? tier.color : 'transparent', background: `${tier.color}10` }}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: 16, borderRadius: 12,
+            border: `2px solid ${success === tier.id ? tier.color : 'transparent'}`,
+            background: `${tier.color}10`,
+          }}
         >
-          <div className="flex items-center gap-3">
-            <Crown className="w-5 h-5" style={{ color: tier.color }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Crown style={{ width: 20, height: 20, color: tier.color }} />
             <div>
-              <p className="font-bold" style={{ color: tier.color }}>{tier.label}</p>
-              <p className="text-xs text-muted-foreground">{tier.description}</p>
+              <p style={{ fontWeight: 700, color: tier.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{tier.label}</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{tier.description}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" style={{ borderColor: tier.color, color: tier.color }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'transparent', color: tier.color, border: `1px solid ${tier.color}` }}>
               ${tier.price}/mo
-            </Badge>
+            </span>
             {success === tier.id ? (
-              <Button size="sm" disabled className="bg-green-600 text-white">
-                <CheckCircle className="w-4 h-4 mr-1" /> Active
-              </Button>
+              <button disabled style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#16a34a', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, cursor: 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <CheckCircle style={{ width: 16, height: 16 }} /> Active
+              </button>
             ) : (
-              <Button
-                size="sm"
+              <button
                 disabled={!!loading}
                 onClick={() => handleSubscribe(tier)}
-                style={{ background: tier.color, color: '#000' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: tier.color, border: 'none', borderRadius: 8, color: '#000', fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 {loading === tier.id
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <><CreditCard className="w-4 h-4 mr-1" /> Subscribe</>}
-              </Button>
+                  ? <Loader2 style={{ width: 16, height: 16 }} className="animate-spin" />
+                  : <><CreditCard style={{ width: 16, height: 16 }} /> Subscribe</>}
+              </button>
             )}
           </div>
         </div>
       ))}
-      <p className="text-xs text-muted-foreground text-center">
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
         Powered by Stripe · Creator receives 90% · Cancel anytime
       </p>
     </div>

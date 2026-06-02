@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { Loader2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -85,10 +84,10 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
           {/* Transcription Section */}
           <div className="space-y-2">
             <label className="text-[10px] text-white/60 uppercase font-semibold block">Transcribe Recording</label>
-            <Button
+            <button
               onClick={handleTranscribe}
               disabled={loading || !recordingUrl}
-              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+              style={{ width:'100%', background:'#0891b2', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading||!recordingUrl?'default':'pointer', opacity:loading||!recordingUrl?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
             >
               {loading ? (
                 <>
@@ -98,7 +97,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
               ) : (
                 'Transcribe to Text'
               )}
-            </Button>
+            </button>
             
             {transcription && (
               <div className="relative">
@@ -133,10 +132,10 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                 </select>
               </div>
               
-              <Button
+              <button
                 onClick={handleTranslate}
                 disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                style={{ width:'100%', background:'#7c3aed', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
               >
                 {loading ? (
                   <>
@@ -146,7 +145,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                 ) : (
                   'Translate Text'
                 )}
-              </Button>
+              </button>
 
               {translatedText && (
                 <div className="relative">

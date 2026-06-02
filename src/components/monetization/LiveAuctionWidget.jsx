@@ -2,17 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Gavel, Clock, Plus, X, Check, Trophy, Flame, Crown, ArrowUp,
   Package, Users, Zap, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
+
+const GOLD = '#D4AF37';
+const inputStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
+};
 
 const AUCTION_TYPES = [
   { id: 'item', label: '📦 Physical Item', desc: 'Signed merch, equipment, etc.' },
@@ -43,8 +45,8 @@ function CountdownTimer({ endsAt, onExpire }) {
   }, [endsAt]);
 
   return (
-    <span className={`font-mono font-bold text-sm ${urgent ? 'text-red-400 animate-pulse' : 'text-[#00d4ff]'}`}>
-      <Clock className="w-3.5 h-3.5 inline mr-1" />{time}
+    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: urgent ? '#f87171' : '#00d4ff' }}>
+      <Clock className="w-3.5 h-3.5" style={{ display: 'inline', marginRight: 4 }} />{time}
     </span>
   );
 }
@@ -53,12 +55,16 @@ function BidRow({ bid, isWinning, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
-      className={`flex items-center gap-2 py-1.5 px-2 rounded-lg ${isWinning ? 'bg-[#d4af37]/10 border border-[#d4af37]/20' : ''}`}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8,
+        background: isWinning ? 'rgba(212,175,55,0.1)' : 'transparent',
+        border: isWinning ? '1px solid rgba(212,175,55,0.2)' : '1px solid transparent',
+      }}
     >
-      {isWinning && <Crown className="w-3.5 h-3.5 text-[#d4af37] shrink-0" />}
-      <span className="text-xs text-white/60 w-5 shrink-0">{isWinning ? '' : `#${index + 1}`}</span>
-      <span className={`text-sm font-semibold flex-1 truncate ${isWinning ? 'text-[#d4af37]' : 'text-white/70'}`}>{bid.bidder_name}</span>
-      <span className={`font-bold text-sm ${isWinning ? 'text-[#d4af37]' : 'text-white/50'}`}>${bid.amount.toLocaleString()}</span>
+      {isWinning && <Crown className="w-3.5 h-3.5" style={{ color: GOLD, flexShrink: 0 }} />}
+      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', width: 20, flexShrink: 0 }}>{isWinning ? '' : `#${index + 1}`}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isWinning ? GOLD : 'rgba(255,255,255,0.7)' }}>{bid.bidder_name}</span>
+      <span style={{ fontWeight: 700, fontSize: 13, color: isWinning ? GOLD : 'rgba(255,255,255,0.5)' }}>${bid.amount.toLocaleString()}</span>
     </motion.div>
   );
 }
@@ -77,27 +83,32 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
 
   const minBid = Math.ceil((auction.current_bid || auction.starting_bid) + (auction.bid_increment || 1));
 
+  const cardBorder =
+    auction.status === 'ending_soon' ? '1px solid rgba(239,68,68,0.5)' :
+    auction.status === 'active' ? '1px solid rgba(212,175,55,0.2)' :
+    isEnded ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.1)';
+
+  const statusBadge = () => {
+    if (auction.status === 'active') return { bg: 'rgba(21,128,61,0.4)', color: '#4ade80', text: '🟢 LIVE' };
+    if (auction.status === 'ending_soon') return { bg: 'rgba(153,27,27,0.4)', color: '#f87171', text: '🔴 ENDING' };
+    if (auction.status === 'ended') return { bg: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', text: '✓ ENDED' };
+    return { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)', text: '⏳ SOON' };
+  };
+  const sb = statusBadge();
+
   return (
-    <Card className={`bg-[rgba(255,255,255,0.04)] transition-all ${
-      auction.status === 'ending_soon' ? 'border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]' :
-      auction.status === 'active' ? 'border-[#d4af37]/20' :
-      isEnded ? 'border-white/5 opacity-60' : 'border-white/10'
-    }`}>
-      <CardContent className="p-4 space-y-3">
+    <div style={{ background: 'rgba(255,255,255,0.04)', border: cardBorder, borderRadius: 12, opacity: isEnded ? 0.6 : 1, transition: 'all 0.2s' }}>
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Header */}
-        <div className="flex items-start justify-between gap-2">
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className={`text-[9px] px-2 ${
-                auction.status === 'active' ? 'bg-green-900/40 text-green-400 border-green-700/30' :
-                auction.status === 'ending_soon' ? 'bg-red-900/40 text-red-400 border-red-700/30 animate-pulse' :
-                auction.status === 'ended' ? 'bg-white/10 text-white/30' : 'bg-white/5 text-white/20'
-              }`}>
-                {auction.status === 'active' ? '🟢 LIVE' : auction.status === 'ending_soon' ? '🔴 ENDING' : auction.status === 'ended' ? '✓ ENDED' : '⏳ SOON'}
-              </Badge>
-              <p className="font-bold text-white">{auction.title}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: sb.bg, color: sb.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {sb.text}
+              </span>
+              <p style={{ fontWeight: 700, color: '#fff', margin: 0 }}>{auction.title}</p>
             </div>
-            <p className="text-[10px] text-white/40 mt-0.5">{AUCTION_TYPES.find(t => t.id === auction.auction_type)?.label}</p>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{AUCTION_TYPES.find(t => t.id === auction.auction_type)?.label}</p>
           </div>
           {!isEnded && auction.ends_at && (
             <CountdownTimer endsAt={auction.ends_at} onExpire={() => {}} />
@@ -105,97 +116,100 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
         </div>
 
         {auction.description && (
-          <p className="text-xs text-white/60 bg-white/3 rounded-lg p-2">{auction.description}</p>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 8, margin: 0 }}>{auction.description}</p>
         )}
 
         {/* Current bid */}
-        <div className="flex items-center justify-between p-3 bg-[#d4af37]/5 rounded-xl border border-[#d4af37]/10">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, background: 'rgba(212,175,55,0.05)', borderRadius: 12, border: '1px solid rgba(212,175,55,0.1)' }}>
           <div>
-            <p className="text-[10px] text-white/40">{isEnded ? 'Winning Bid' : 'Current Bid'}</p>
-            <p className="text-2xl font-bold text-[#d4af37]">${(auction.current_bid || auction.starting_bid).toLocaleString()}</p>
-            <p className="text-[10px] text-white/40">{auction.bid_count || 0} bids</p>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{isEnded ? 'Winning Bid' : 'Current Bid'}</p>
+            <p style={{ fontSize: 24, fontWeight: 700, color: GOLD, margin: '2px 0' }}>${(auction.current_bid || auction.starting_bid).toLocaleString()}</p>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{auction.bid_count || 0} bids</p>
           </div>
           {auction.current_winner_name && (
-            <div className="text-right">
-              <p className="text-[10px] text-white/40">{isEnded ? '🏆 Winner' : '👑 Leading'}</p>
-              <p className="text-sm font-semibold text-white">{auction.current_winner_name}</p>
-              {isWinning && <Badge className="text-[9px] bg-[#d4af37]/20 text-[#d4af37] border-[#d4af37]/30">That's you!</Badge>}
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{isEnded ? '🏆 Winner' : '👑 Leading'}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '2px 0' }}>{auction.current_winner_name}</p>
+              {isWinning && (
+                <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  That's you!
+                </span>
+              )}
             </div>
           )}
         </div>
 
         {/* Bid input (active only, non-creator) */}
         {auction.status === 'active' && !isCreator && currentUser && (
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">$</span>
-                <Input
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>$</span>
+                <input
                   type="number"
                   value={bidAmount}
                   onChange={e => setBidAmount(Number(e.target.value))}
                   min={minBid}
-                  className="pl-7 bg-white/5 border-white/20 text-white h-9"
+                  style={{ ...inputStyle, paddingLeft: 28, height: 36 }}
                 />
               </div>
-              <Button
+              <button
                 onClick={() => {
                   if (bidAmount < minBid) return toast.error(`Minimum bid: $${minBid}`);
                   onBid(auction, bidAmount);
                   setBidAmount(Math.ceil(bidAmount + (auction.bid_increment || 1)));
                 }}
-                className="bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold gap-1.5 h-9 shrink-0"
+                style={{ background: GOLD, color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '0 16px', height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 <Gavel className="w-4 h-4" /> Bid
-              </Button>
+              </button>
             </div>
             {/* Quick bid buttons */}
-            <div className="flex gap-1.5">
+            <div style={{ display: 'flex', gap: 6 }}>
               {[minBid, minBid + 5, minBid + 10, minBid + 25].map(amt => (
                 <button key={amt} onClick={() => setBidAmount(amt)}
-                  className="flex-1 text-[10px] py-1 rounded-lg border border-white/10 text-white/50 hover:border-[#d4af37]/30 hover:text-[#d4af37] transition-all">
+                  style={{ flex: 1, fontSize: 10, padding: '4px 0', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
                   ${amt}
                 </button>
               ))}
             </div>
             {/* Buyout */}
             {auction.buyout_price && (
-              <Button
+              <button
                 onClick={() => { onBid(auction, auction.buyout_price, true); }}
-                variant="outline"
-                className="w-full border-[#a78bfa]/30 text-[#a78bfa] hover:bg-[#a78bfa]/10 gap-1.5 h-8 text-xs"
+                style={{ width: '100%', border: '1px solid rgba(167,139,250,0.3)', background: 'transparent', color: '#a78bfa', borderRadius: 8, padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 <Zap className="w-3.5 h-3.5" /> Buy Now for ${auction.buyout_price}
-              </Button>
+              </button>
             )}
           </div>
         )}
 
         {/* Bid history toggle */}
         <button onClick={() => setShowBids(!showBids)}
-          className="w-full flex items-center justify-between text-[10px] text-white/30 hover:text-white/50 transition-all pt-1 border-t border-white/5">
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10, color: 'rgba(255,255,255,0.3)', background: 'transparent', border: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 8, cursor: 'pointer' }}>
           <span>Bid History ({bids.length})</span>
           {showBids ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
         <AnimatePresence>
           {showBids && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden space-y-0.5">
+              style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}>
               {bids.map((bid, i) => <BidRow key={bid.id} bid={bid} isWinning={i === 0} index={i} />)}
-              {bids.length === 0 && <p className="text-[10px] text-white/20 text-center py-2">No bids yet — be first!</p>}
+              {bids.length === 0 && <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: '8px 0', margin: 0 }}>No bids yet — be first!</p>}
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Creator controls */}
         {isCreator && auction.status !== 'ended' && (
-          <Button onClick={() => onEnd(auction.id)} variant="outline" size="sm"
-            className="w-full border-red-700/30 text-red-400 hover:bg-red-900/20 text-xs h-7">
+          <button onClick={() => onEnd(auction.id)}
+            style={{ width: '100%', border: '1px solid rgba(153,27,27,0.3)', background: 'transparent', color: '#f87171', borderRadius: 8, padding: '6px 0', cursor: 'pointer', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Auction
-          </Button>
+          </button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -298,20 +312,22 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
   const endedAuctions = auctions.filter(a => a.status === 'ended');
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-white flex items-center gap-2">
-          <Gavel className="w-4 h-4 text-[#d4af37]" /> Live Auctions
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          <Gavel className="w-4 h-4" style={{ color: GOLD }} /> Live Auctions
           {activeAuctions.length > 0 && (
-            <Badge className="text-[9px] bg-red-900/40 text-red-400 border-red-700/30 animate-pulse">{activeAuctions.length} LIVE</Badge>
+            <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(153,27,27,0.4)', color: '#f87171', border: '1px solid rgba(153,27,27,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {activeAuctions.length} LIVE
+            </span>
           )}
         </h3>
         {isCreator && (
-          <Button onClick={() => setShowCreate(!showCreate)} size="sm"
-            className="bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3] gap-1.5 h-7 text-xs">
+          <button onClick={() => setShowCreate(!showCreate)}
+            style={{ background: GOLD, color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '4px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, height: 28, fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Plus className="w-3 h-3" /> New Auction
-          </Button>
+          </button>
         )}
       </div>
 
@@ -319,77 +335,77 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
       <AnimatePresence>
         {showCreate && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="bg-[rgba(212,175,55,0.05)] border border-[#d4af37]/20 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-[#d4af37]">Start New Auction</p>
-              <button onClick={() => setShowCreate(false)} className="text-white/30 hover:text-white"><X className="w-4 h-4" /></button>
+            style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: GOLD, margin: 0 }}>Start New Auction</p>
+              <button onClick={() => setShowCreate(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}><X className="w-4 h-4" /></button>
             </div>
 
-            <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              placeholder="What are you auctioning?" className="bg-white/5 border-white/20 text-white placeholder:text-white/25" />
+            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              placeholder="What are you auctioning?" style={inputStyle} />
 
             {/* Type selector */}
-            <div className="grid grid-cols-2 gap-1.5">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {AUCTION_TYPES.map(t => (
                 <button key={t.id} onClick={() => setForm(f => ({ ...f, auction_type: t.id }))}
-                  className={`text-left p-2 rounded-xl border text-xs transition-all ${form.auction_type === t.id ? 'border-[#d4af37] bg-[#d4af37]/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'}`}>
-                  <span className="font-semibold">{t.label}</span>
-                  <p className="text-[10px] opacity-60 mt-0.5">{t.desc}</p>
+                  style={{ textAlign: 'left', padding: 8, borderRadius: 12, border: `1px solid ${form.auction_type === t.id ? GOLD : 'rgba(255,255,255,0.1)'}`, background: form.auction_type === t.id ? 'rgba(212,175,55,0.1)' : 'transparent', color: form.auction_type === t.id ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all 0.15s', fontSize: 11 }}>
+                  <span style={{ fontWeight: 600 }}>{t.label}</span>
+                  <p style={{ fontSize: 10, opacity: 0.6, marginTop: 2, marginBottom: 0 }}>{t.desc}</p>
                 </button>
               ))}
             </div>
 
             <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               placeholder="Describe what the winner gets..." rows={2}
-              className="w-full bg-white/5 border border-white/20 text-white text-sm rounded-lg px-3 py-2 outline-none focus:border-[#d4af37]/40 placeholder:text-white/25 resize-none" />
+              style={{ ...inputStyle, resize: 'none', minHeight: 60 }} />
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1">
-                <label className="text-[10px] text-white/40">Starting $</label>
-                <Input type="number" value={form.starting_bid} onChange={e => setForm(f => ({ ...f, starting_bid: Number(e.target.value) }))}
-                  className="bg-white/5 border-white/20 text-white h-8 text-sm" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Starting $</label>
+                <input type="number" value={form.starting_bid} onChange={e => setForm(f => ({ ...f, starting_bid: Number(e.target.value) }))}
+                  style={{ ...inputStyle, height: 32, fontSize: 12 }} />
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] text-white/40">Min Increment</label>
-                <Input type="number" value={form.bid_increment} onChange={e => setForm(f => ({ ...f, bid_increment: Number(e.target.value) }))}
-                  className="bg-white/5 border-white/20 text-white h-8 text-sm" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Min Increment</label>
+                <input type="number" value={form.bid_increment} onChange={e => setForm(f => ({ ...f, bid_increment: Number(e.target.value) }))}
+                  style={{ ...inputStyle, height: 32, fontSize: 12 }} />
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] text-white/40">Buy Now $</label>
-                <Input type="number" value={form.buyout_price} onChange={e => setForm(f => ({ ...f, buyout_price: e.target.value }))}
-                  placeholder="Optional" className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/20" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Buy Now $</label>
+                <input type="number" value={form.buyout_price} onChange={e => setForm(f => ({ ...f, buyout_price: e.target.value }))}
+                  placeholder="Optional" style={{ ...inputStyle, height: 32, fontSize: 12 }} />
               </div>
             </div>
 
             {/* Duration */}
-            <div className="space-y-1">
-              <label className="text-[10px] text-white/40">Duration</label>
-              <div className="flex gap-1.5 flex-wrap">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <label style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Duration</label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {[5, 10, 15, 30, 60].map(min => (
                   <button key={min} onClick={() => setForm(f => ({ ...f, duration_minutes: min }))}
-                    className={`px-3 py-1 rounded-lg border text-xs transition-all ${form.duration_minutes === min ? 'border-[#d4af37] bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-white/40'}`}>
+                    style={{ padding: '4px 12px', borderRadius: 8, border: `1px solid ${form.duration_minutes === min ? GOLD : 'rgba(255,255,255,0.1)'}`, background: form.duration_minutes === min ? 'rgba(212,175,55,0.1)' : 'transparent', color: form.duration_minutes === min ? GOLD : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {min}min
                   </button>
                 ))}
               </div>
             </div>
 
-            <Button onClick={handleCreate} disabled={createMutation.isPending}
-              className="w-full bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold gap-2">
+            <button onClick={handleCreate} disabled={createMutation.isPending}
+              style={{ width: '100%', background: GOLD, color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '10px 0', cursor: createMutation.isPending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, opacity: createMutation.isPending ? 0.7 : 1 }}>
               <Gavel className="w-4 h-4" /> Start Auction
-            </Button>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Active auctions */}
       {activeAuctions.length === 0 && endedAuctions.length === 0 ? (
-        <div className="text-center py-8 text-white/30">
-          <Gavel className="w-10 h-10 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">{isCreator ? 'Start an auction to engage your viewers!' : 'No active auctions'}</p>
+        <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(255,255,255,0.3)' }}>
+          <Gavel className="w-10 h-10" style={{ display: 'block', margin: '0 auto 8px', opacity: 0.3 }} />
+          <p style={{ fontSize: 13, margin: 0 }}>{isCreator ? 'Start an auction to engage your viewers!' : 'No active auctions'}</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[...activeAuctions, ...endedAuctions.slice(0, 3)].map(auction => (
             <AuctionCard
               key={auction.id}

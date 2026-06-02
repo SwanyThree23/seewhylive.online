@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { BarChart3, Plus, X, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -67,13 +66,13 @@ export default function InteractivePollWidget({ roomId, isHost }) {
 
   if (polls.length === 0 && !showCreate) {
     return isHost ? (
-      <Button
+      <button
         onClick={() => setShowCreate(true)}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white h-9 flex items-center justify-center gap-2"
+        style={{ width:'100%', background:'#2563eb', color:'#fff', border:'none', borderRadius:8, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif', fontSize:13, fontWeight:600 }}
       >
         <BarChart3 className="w-3 h-3" />
         Create Poll
-      </Button>
+      </button>
     ) : null;
   }
 
@@ -148,12 +147,12 @@ export default function InteractivePollWidget({ roomId, isHost }) {
               >
                 + Add Option
               </button>
-              <Button
+              <button
                 onClick={handleCreatePoll}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-8 text-[9px]"
+                style={{ flex:1, background:'#2563eb', color:'#fff', border:'none', borderRadius:6, height:32, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:9, fontWeight:600 }}
               >
                 Launch
-              </Button>
+              </button>
             </div>
           </motion.div>
         )}

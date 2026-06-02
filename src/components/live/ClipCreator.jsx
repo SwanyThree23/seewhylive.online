@@ -2,8 +2,6 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Scissors, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -99,8 +97,9 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
               </div>
 
               {/* Clip title */}
-              <Input value={title} onChange={e => setTitle(e.target.value)}
-                placeholder="Clip title..." className="bg-white/5 border-white/20 text-white text-sm h-8 placeholder:text-white/25" />
+              <input value={title} onChange={e => setTitle(e.target.value)}
+                placeholder="Clip title..."
+                style={{ width: '100%', padding: '6px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }} />
 
               {/* Timeline scrubber */}
               <div className="space-y-2">
@@ -145,10 +144,10 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                 </div>
               </div>
 
-              <Button onClick={handleSave} disabled={createClipMutation.isPending || duration < 3}
-                className="w-full bg-[#a78bfa] hover:bg-[#c4b5fd] text-white font-bold gap-2">
+              <button onClick={handleSave} disabled={createClipMutation.isPending || duration < 3}
+                style={{ width: '100%', background: '#a78bfa', color: '#fff', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, opacity: (createClipMutation.isPending || duration < 3) ? 0.5 : 1 }}>
                 <Check className="w-4 h-4" /> Create {duration}s Clip
-              </Button>
+              </button>
             </div>
           </motion.div>
         )}

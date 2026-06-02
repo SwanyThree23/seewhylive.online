@@ -1,32 +1,38 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Zap, Heart, Gift, Users, TrendingUp, DollarSign } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const GOLD = '#D4AF37';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RevenueCard = ({ icon: IconComponent, label, amount, growth, color }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-white/5 border border-white/10 rounded-lg p-4"
+    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 16 }}
   >
-    <div className="flex items-center justify-between mb-2">
-      <p className="text-[10px] text-white/60 uppercase font-semibold">{label}</p>
-      <div className="p-2 rounded-lg" style={{ background: `${color}20` }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 600, margin: 0, ...T }}>{label}</p>
+      <div style={{ padding: 8, borderRadius: 8, background: `${color}20` }}>
         <IconComponent className="w-4 h-4" style={{ color }} />
       </div>
     </div>
-    <p className="text-2xl font-black text-white mb-1">${amount.toLocaleString()}</p>
-    <p className="text-[9px] text-green-400 font-semibold">↑ {growth}% this month</p>
+    <p style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: '0 0 4px', ...T }}>${amount.toLocaleString()}</p>
+    <p style={{ fontSize: 9, color: '#4ade80', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
   </motion.div>
 );
 
+const TABS = ['subscriptions', 'supporters', 'analytics'];
+const TAB_LABELS = { subscriptions: 'Subs', supporters: 'Top Fans', analytics: 'Analytics' };
+
 const StreamerMonetizationCenter = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [activeTab, setActiveTab] = useState('subscriptions');
 
   const revenueBreakdown = [
     { label: 'Tips', amount: 1250, growth: 35, color: '#FF1564' },
     { label: 'Subscriptions', amount: 3420, growth: 22, color: '#00F5FF' },
-    { label: 'Virtual Goods', amount: 890, growth: 15, color: '#d4af37' },
+    { label: 'Virtual Goods', amount: 890, growth: 15, color: GOLD },
     { label: 'Sponsorships', amount: 2100, growth: 48, color: '#8B5CF6' }
   ];
 
@@ -48,30 +54,30 @@ const StreamerMonetizationCenter = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+      style={{ background: 'rgba(26,10,46,0.5)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}
     >
       {/* Header */}
       <div>
-        <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-2">
-          <DollarSign className="w-5 h-5 text-[#d4af37]" />
+        <h2 style={{ fontSize: 17, fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, ...T }}>
+          <DollarSign className="w-5 h-5" style={{ color: GOLD }} />
           Monetization Center
         </h2>
-        <p className="text-[10px] text-white/60">Manage your streaming revenue & supporter relationships</p>
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', margin: 0, ...T }}>Manage your streaming revenue & supporter relationships</p>
       </div>
 
       {/* Total Revenue Banner */}
-      <div className="bg-gradient-to-r from-[#d4af37]/20 to-[#8B5CF6]/20 border border-[#d4af37]/30 rounded-lg p-4">
-        <div className="flex items-center justify-between">
+      <div style={{ background: 'linear-gradient(to right, rgba(212,175,55,0.2), rgba(139,92,246,0.2))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p className="text-[10px] text-white/60 uppercase font-semibold mb-1">Total This Month</p>
-            <p className="text-3xl font-black text-white">${totalRevenue.toLocaleString()}</p>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 4px', ...T }}>Total This Month</p>
+            <p style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, ...T }}>${totalRevenue.toLocaleString()}</p>
           </div>
-          <TrendingUp className="w-8 h-8 text-green-400" />
+          <TrendingUp className="w-8 h-8" style={{ color: '#4ade80' }} />
         </div>
       </div>
 
       {/* Revenue Breakdown */}
-      <div className="grid grid-cols-2 gap-2">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {revenueBreakdown.map((item, idx) => (
           <RevenueCard
             key={idx}
@@ -85,99 +91,102 @@ const StreamerMonetizationCenter = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="subscriptions" className="w-full">
-        <TabsList className="w-full bg-white/10 border border-white/10 grid grid-cols-3">
-          <TabsTrigger value="subscriptions" className="text-[9px]">Subs</TabsTrigger>
-          <TabsTrigger value="supporters" className="text-[9px]">Top Fans</TabsTrigger>
-          <TabsTrigger value="analytics" className="text-[9px]">Analytics</TabsTrigger>
-        </TabsList>
+      <div style={{ width: '100%' }}>
+        {/* Tab List */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 2, gap: 2 }}>
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                fontSize: 9, padding: '6px 4px', borderRadius: 6, border: 'none', cursor: 'pointer', ...T,
+                background: activeTab === tab ? 'rgba(255,255,255,0.15)' : 'transparent',
+                color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.6)',
+                fontWeight: activeTab === tab ? 700 : 400,
+              }}
+            >
+              {TAB_LABELS[tab]}
+            </button>
+          ))}
+        </div>
 
-        {/* Subscriptions Tab */}
-        <TabsContent value="subscriptions" className="space-y-2 mt-3">
-          {subscriptionTiers.map((tier, idx) => (
+        {/* Tab Content */}
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {activeTab === 'subscriptions' && subscriptionTiers.map((tier, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white/5 border border-white/10 rounded-lg p-3"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 12 }}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div>
-                  <p className="text-[10px] font-bold text-white">{tier.name} Tier</p>
-                  <p className="text-[9px] text-white/60">${tier.price}/month</p>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, ...T }}>{tier.name} Tier</p>
+                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', margin: 0, ...T }}>${tier.price}/month</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-white">{tier.members}</p>
-                  <p className="text-[8px] text-white/50">members</p>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, ...T }}>{tier.members}</p>
+                  <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>members</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between text-[9px]">
-                <span className="text-white/60">Monthly Revenue:</span>
-                <span className="font-bold text-[#d4af37]">${tier.revenue}</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 9 }}>
+                <span style={{ color: 'rgba(255,255,255,0.6)', ...T }}>Monthly Revenue:</span>
+                <span style={{ fontWeight: 700, color: GOLD, ...T }}>${tier.revenue}</span>
               </div>
             </motion.div>
           ))}
-        </TabsContent>
 
-        {/* Top Supporters Tab */}
-        <TabsContent value="supporters" className="space-y-2 mt-3">
-          {topSupporters.map((supporter, idx) => (
+          {activeTab === 'supporters' && topSupporters.map((supporter, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-center justify-between"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-white">#{idx + 1}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(to bottom right, #8b5cf6, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', ...T }}>#{idx + 1}</span>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-white">{supporter.name}</p>
-                  <p className="text-[8px] text-white/50">{supporter.subs} active subs</p>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, ...T }}>{supporter.name}</p>
+                  <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>{supporter.subs} active subs</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] font-bold text-[#d4af37]">${supporter.tips}</p>
-                <p className="text-[8px] text-white/50">tips</p>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: GOLD, margin: 0, ...T }}>${supporter.tips}</p>
+                <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>tips</p>
               </div>
             </motion.div>
           ))}
-        </TabsContent>
 
-        {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-2 mt-3">
-          <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-            <p className="text-[10px] font-bold text-white mb-3">Key Metrics</p>
-            <div className="space-y-2">
-              <div className="flex justify-between text-[9px]">
-                <span className="text-white/60">Conversion Rate:</span>
-                <span className="font-bold text-white">8.2%</span>
-              </div>
-              <div className="flex justify-between text-[9px]">
-                <span className="text-white/60">Avg. Tip Value:</span>
-                <span className="font-bold text-white">$12.50</span>
-              </div>
-              <div className="flex justify-between text-[9px]">
-                <span className="text-white/60">Churn Rate:</span>
-                <span className="font-bold text-white">3.1%</span>
-              </div>
-              <div className="flex justify-between text-[9px]">
-                <span className="text-white/60">Lifetime Value:</span>
-                <span className="font-bold text-white">$285</span>
+          {activeTab === 'analytics' && (
+            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 12 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: '0 0 12px', ...T }}>Key Metrics</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  { label: 'Conversion Rate:', value: '8.2%' },
+                  { label: 'Avg. Tip Value:', value: '$12.50' },
+                  { label: 'Churn Rate:', value: '3.1%' },
+                  { label: 'Lifetime Value:', value: '$285' },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9 }}>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', ...T }}>{label}</span>
+                    <span style={{ fontWeight: 700, color: '#fff', ...T }}>{value}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+          )}
+        </div>
+      </div>
 
       {/* Payout Info */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-        <p className="text-[10px] text-blue-300 font-semibold mb-1">Next Payout</p>
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-blue-200">$3,847 on May 31, 2026</span>
-          <span className="text-[9px] bg-blue-500/30 text-blue-300 px-2 py-1 rounded">Ready to withdraw</span>
+      <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 8, padding: 12 }}>
+        <p style={{ fontSize: 10, color: '#93c5fd', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, color: '#bfdbfe', ...T }}>$3,847 on May 31, 2026</span>
+          <span style={{ fontSize: 9, background: 'rgba(59,130,246,0.3)', color: '#93c5fd', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
         </div>
       </div>
     </motion.div>

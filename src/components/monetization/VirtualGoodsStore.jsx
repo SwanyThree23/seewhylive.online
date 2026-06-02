@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { ShoppingBag, Sparkles } from 'lucide-react';
 
-const rarityColors = {
-  common: 'bg-gray-100 text-gray-800 border-gray-300',
-  rare: 'bg-blue-100 text-blue-800 border-blue-300',
-  epic: 'bg-purple-100 text-purple-800 border-purple-300',
-  legendary: 'bg-amber-100 text-amber-800 border-amber-300',
+const rarityStyles = {
+  common:    { background: 'rgba(107,114,128,0.15)', color: '#9ca3af', border: '1px solid rgba(107,114,128,0.3)' },
+  rare:      { background: 'rgba(59,130,246,0.15)',  color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' },
+  epic:      { background: 'rgba(139,92,246,0.15)',  color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' },
+  legendary: { background: 'rgba(245,158,11,0.15)',  color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' },
 };
+
+const TABS = ['all', 'badge', 'emoji', 'theme', 'effect', 'frame'];
 
 export default function VirtualGoodsStore({ userId }) {
   const [selectedType, setSelectedType] = useState('all');
@@ -23,7 +21,7 @@ export default function VirtualGoodsStore({ userId }) {
     queryKey: ['virtualGoods', selectedType],
     queryFn: async () => {
       const allGoods = await base44.entities.VirtualGood.list();
-      return selectedType === 'all' 
+      return selectedType === 'all'
         ? allGoods.filter(g => g.is_active)
         : allGoods.filter(g => g.is_active && g.type === selectedType);
     },
@@ -51,9 +49,7 @@ export default function VirtualGoodsStore({ userId }) {
       });
 
       if (good.is_limited && good.stock) {
-        await base44.entities.VirtualGood.update(good.id, {
-          stock: good.stock - 1,
-        });
+        await base44.entities.VirtualGood.update(good.id, { stock: good.stock - 1 });
       }
     },
     onSuccess: () => {
@@ -66,90 +62,94 @@ export default function VirtualGoodsStore({ userId }) {
     },
   });
 
-  const isOwned = (goodId) => {
-    return inventory.some(item => item.virtual_good_id === goodId);
-  };
+  const isOwned = (goodId) => inventory.some(item => item.virtual_good_id === goodId);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <ShoppingBag className="w-6 h-6" />
-        <h2 className="text-2xl font-bold">Virtual Goods Store</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: 'Barlow Condensed, sans-serif' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <ShoppingBag style={{ width: 24, height: 24, color: '#fff' }} />
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#fff', margin: 0 }}>Virtual Goods Store</h2>
       </div>
 
-      <Tabs value={selectedType} onValueChange={setSelectedType}>
-        <TabsList>
-          <TabsTrigger value="all">All Items</TabsTrigger>
-          <TabsTrigger value="badge">Badges</TabsTrigger>
-          <TabsTrigger value="emoji">Emojis</TabsTrigger>
-          <TabsTrigger value="theme">Themes</TabsTrigger>
-          <TabsTrigger value="effect">Effects</TabsTrigger>
-          <TabsTrigger value="frame">Frames</TabsTrigger>
-        </TabsList>
+      {/* Tab bar */}
+      <div style={{ display: 'flex', gap: 0, background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: 4, flexWrap: 'wrap' }}>
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            onClick={() => setSelectedType(tab)}
+            style={{
+              padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
+              background: selectedType === tab ? 'rgba(212,175,55,0.2)' : 'transparent',
+              color: selectedType === tab ? '#D4AF37' : 'rgba(255,255,255,0.5)',
+              fontSize: 13, fontWeight: selectedType === tab ? 700 : 400,
+              fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'capitalize',
+            }}
+          >
+            {tab === 'all' ? 'All Items' : tab.charAt(0).toUpperCase() + tab.slice(1) + 's'}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value={selectedType} className="mt-6">
-          {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">Loading items...</div>
-          ) : goods.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">No items available</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {goods.map((good) => (
-                <Card key={good.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="flex items-center gap-2">
-                          {good.name}
-                          {good.is_limited && (
-                            <Sparkles className="w-4 h-4 text-amber-500" />
-                          )}
-                        </CardTitle>
-                        <CardDescription className="mt-1">{good.description}</CardDescription>
+      <div style={{ marginTop: 8 }}>
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '48px 0', color: 'rgba(255,255,255,0.4)' }}>Loading items...</div>
+        ) : goods.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '48px 0', color: 'rgba(255,255,255,0.4)' }}>No items available</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+            {goods.map((good) => (
+              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+                <div style={{ padding: '16px 16px 8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>{good.name}</span>
+                        {good.is_limited && <Sparkles style={{ width: 16, height: 16, color: '#f59e0b' }} />}
                       </div>
+                      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>{good.description}</p>
                     </div>
-                    <div className="flex items-center gap-2 mt-3">
-                      <Badge className={rarityColors[good.rarity]} variant="outline">
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    {good.rarity && (
+                      <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, textTransform: 'capitalize', ...(rarityStyles[good.rarity] || rarityStyles.common) }}>
                         {good.rarity}
-                      </Badge>
-                      {good.is_limited && good.stock !== undefined && (
-                        <Badge variant="outline">
-                          {good.stock} left
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  {good.image_url && (
-                    <CardContent>
-                      <img 
-                        src={good.image_url} 
-                        alt={good.name}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                    </CardContent>
-                  )}
-
-                  <CardFooter className="flex items-center justify-between">
-                    <span className="text-lg font-bold">${good.price}</span>
-                    {isOwned(good.id) ? (
-                      <Badge>Owned</Badge>
-                    ) : (
-                      <Button
-                        onClick={() => purchaseMutation.mutate({ good })}
-                        disabled={purchaseMutation.isPending || (good.is_limited && good.stock === 0)}
-                        size="sm"
-                      >
-                        {purchaseMutation.isPending ? 'Buying...' : 'Buy Now'}
-                      </Button>
+                      </span>
                     )}
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                    {good.is_limited && good.stock !== undefined && (
+                      <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        {good.stock} left
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {good.image_url && (
+                  <div style={{ padding: '0 16px 8px' }}>
+                    <img src={good.image_url} alt={good.name} style={{ width: '100%', height: 128, objectFit: 'cover', borderRadius: 8 }} />
+                  </div>
+                )}
+
+                <div style={{ padding: '8px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>${good.price}</span>
+                  {isOwned(good.id) ? (
+                    <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
+                      Owned
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => purchaseMutation.mutate({ good })}
+                      disabled={purchaseMutation.isPending || (good.is_limited && good.stock === 0)}
+                      style={{ padding: '6px 14px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, color: '#D4AF37', fontSize: 13, fontWeight: 700, cursor: (purchaseMutation.isPending || (good.is_limited && good.stock === 0)) ? 'not-allowed' : 'pointer', opacity: (purchaseMutation.isPending || (good.is_limited && good.stock === 0)) ? 0.5 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      {purchaseMutation.isPending ? 'Buying...' : 'Buy Now'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

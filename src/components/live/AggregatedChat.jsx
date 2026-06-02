@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clampStr, LIMITS } from '@/lib/security';
-import { Button } from '@/components/ui/button';
-import BottomSheet, { BottomSheetOption } from '@/components/ui/BottomSheet';
 import { Languages, ShieldAlert, Send, Rocket, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -302,16 +300,14 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
             {targetLang.toUpperCase()}
             <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
           </button>
-          <Button
-            size="sm"
-            variant="ghost"
+          <button
             onClick={() => { setTranslateEnabled(t => !t); if (!translateEnabled) translateAll(); }}
-            className={`h-6 text-[10px] gap-1 px-2 ${translateEnabled ? 'text-[#00d4ff]' : 'text-white/40'}`}
             disabled={isTranslating}
+            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#00d4ff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             <Languages className="w-3 h-3" />
             {isTranslating ? '…' : translateEnabled ? 'On' : 'Translate'}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -398,46 +394,66 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           }}
         />
         <div style={{ position: 'relative' }}>
-          <Button
-            size="sm"
+          <button
             onClick={() => setBoostMode(v => !v)}
             title="RocketChat — pin your message for 30s (costs 50 Love)"
-            className="h-8 w-8 p-0"
             style={{
+              width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer',
               background: boostMode ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.06)',
               border: boostMode ? '1px solid rgba(212,175,55,0.6)' : '1px solid rgba(255,255,255,0.1)',
               color: boostMode ? '#D4AF37' : 'rgba(255,255,255,0.4)',
             }}
           >
             <Rocket className="w-3.5 h-3.5" />
-          </Button>
+          </button>
         </div>
-        <Button
-          size="sm"
+        <button
           onClick={sendMessage}
           disabled={!input.trim()}
-          className="h-8 w-8 p-0 bg-[#d4af37]/80 hover:bg-[#d4af37] text-black"
+          style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', background: 'rgba(212,175,55,0.8)', color: '#000', border: 'none' }}
         >
           <Send className="w-3.5 h-3.5" />
-        </Button>
+        </button>
       </div>
 
-      {/* Language picker BottomSheet */}
-      <BottomSheet isOpen={langSheetOpen} onClose={() => setLangSheetOpen(false)} title="Translate to…">
-        {LANG_OPTIONS.map(opt => (
-          <BottomSheetOption
-            key={opt.value}
-            label={opt.label}
-            icon={opt.flag}
-            selected={targetLang === opt.value}
-            onSelect={() => {
-              setTargetLang(opt.value);
-              setLangSheetOpen(false);
-              if (translateEnabled) setTimeout(translateAll, 100);
-            }}
-          />
-        ))}
-      </BottomSheet>
+      {/* Language picker modal */}
+      {langSheetOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0 }}
+          onClick={() => setLangSheetOpen(false)}
+        >
+          <div
+            style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Translate to…</p>
+            </div>
+            <div style={{ padding: '8px 0' }}>
+              {LANG_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setTargetLang(opt.value);
+                    setLangSheetOpen(false);
+                    if (translateEnabled) setTimeout(translateAll, 100);
+                  }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
+                    background: targetLang === opt.value ? 'rgba(212,175,55,0.12)' : 'transparent',
+                    border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#D4AF37' : '#fff',
+                    fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: targetLang === opt.value ? 700 : 400,
+                  }}
+                >
+                  <span style={{ fontSize: 18 }}>{opt.flag}</span>
+                  <span>{opt.label}</span>
+                  {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#D4AF37' }}>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
