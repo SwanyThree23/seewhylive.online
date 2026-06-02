@@ -1,10 +1,7 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, Zap, Crown, Flame, Heart, Star } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import TierBadge from './TierBadge';
@@ -44,7 +41,6 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
         auto_renew: true,
         benefits_snapshot: allBenefits,
       });
-      // Notify the creator
       const me = await base44.auth.me();
       await base44.entities.Notification.create({
         user_id: creatorId,
@@ -75,80 +71,87 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
 
   return (
     <motion.div whileHover={{ y: -4 }} transition={{ type: 'spring', stiffness: 300 }}>
-      <Card
-        className={`relative overflow-hidden h-full flex flex-col transition-all ${isHighlighted ? 'ring-2 ring-amber-500 shadow-lg shadow-amber-500/20' : ''} ${isFull && !isCurrentTier ? 'opacity-60' : ''}`}
+      <div
+        style={{
+          position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%',
+          background: 'rgba(13,6,24,0.95)',
+          border: isHighlighted ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 12,
+          boxShadow: isHighlighted ? '0 4px 20px rgba(245,158,11,0.2)' : 'none',
+          opacity: (isFull && !isCurrentTier) ? 0.6 : 1,
+          fontFamily: 'Barlow Condensed, sans-serif',
+        }}
       >
         {isHighlighted && (
-          <div className="absolute top-0 left-0 right-0 bg-amber-500 text-black text-xs font-bold text-center py-0.5 tracking-wide">
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#f59e0b', color: '#000', fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 0', letterSpacing: '0.08em' }}>
             MOST POPULAR
           </div>
         )}
 
         {/* Color bar */}
-        <div className="h-1.5 w-full" style={{ background: tier.color || '#d4af37' }} />
+        <div style={{ height: 6, width: '100%', background: tier.color || '#d4af37' }} />
 
-        <CardHeader className={`pb-3 ${isHighlighted ? 'pt-7' : 'pt-5'}`}>
-          <div className="flex items-start justify-between">
+        <div style={{ padding: `${isHighlighted ? 28 : 20}px 20px 12px` }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <TierBadge tier={tier} size="lg" showName={false} />
-            {isFull && !isCurrentTier && <Badge variant="secondary" className="text-xs">Full</Badge>}
+            {isFull && !isCurrentTier && (
+              <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.15)' }}>Full</span>
+            )}
           </div>
-          <div>
-            <h3 className="text-xl font-bold mt-2">{tier.name}</h3>
-            {tier.description && <p className="text-sm text-muted-foreground mt-0.5">{tier.description}</p>}
+          <div style={{ marginTop: 8 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: 0 }}>{tier.name}</h3>
+            {tier.description && <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>{tier.description}</p>}
           </div>
-          <div className="mt-3">
-            <span className="text-4xl font-extrabold">${tier.price}</span>
-            <span className="text-muted-foreground text-sm"> /month</span>
+          <div style={{ marginTop: 12 }}>
+            <span style={{ fontSize: 36, fontWeight: 800, color: '#fff' }}>${tier.price}</span>
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}> /month</span>
           </div>
           {tier.max_subscribers && (
-            <div className="text-xs text-muted-foreground">
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>
               {tier.subscriber_count || 0} / {tier.max_subscribers} spots filled
             </div>
           )}
-        </CardHeader>
+        </div>
 
-        <CardContent className="flex-1 pb-4">
-          <div className="space-y-2">
+        <div style={{ flex: 1, padding: '0 20px 16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {allBenefits.map((b, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <Check className="w-4 h-4 mt-0.5 shrink-0" style={{ color: tier.color || '#d4af37' }} />
-                <span className="text-sm">{b.label}</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <Check style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0, color: tier.color || '#d4af37' }} />
+                <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{b.label}</span>
               </div>
             ))}
             {allBenefits.length === 0 && (
-              <p className="text-sm text-muted-foreground italic">Basic membership</p>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>Basic membership</p>
             )}
           </div>
-        </CardContent>
+        </div>
 
-        <CardFooter className="flex flex-col gap-2">
+        <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {isCurrentTier ? (
             <>
-              <Button disabled className="w-full" style={{ background: tier.color, color: '#000' }}>
+              <button disabled style={{ width: '100%', padding: '10px 0', background: tier.color, border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 ✓ Current Plan
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-xs text-muted-foreground"
+              </button>
+              <button
+                style={{ width: '100%', padding: '6px 0', background: 'transparent', border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.4)', fontSize: 12, cursor: cancelMutation.isPending ? 'not-allowed' : 'pointer', opacity: cancelMutation.isPending ? 0.6 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
                 onClick={() => cancelMutation.mutate()}
                 disabled={cancelMutation.isPending}
               >
                 Cancel subscription
-              </Button>
+              </button>
             </>
           ) : (
-            <Button
-              className="w-full font-bold text-black"
-              style={{ background: tier.color || '#d4af37' }}
+            <button
+              style={{ width: '100%', padding: '10px 0', background: tier.color || '#d4af37', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (subscribeMutation.isPending || isFull) ? 'not-allowed' : 'pointer', opacity: (subscribeMutation.isPending || isFull) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
               onClick={() => subscribeMutation.mutate()}
               disabled={subscribeMutation.isPending || isFull}
             >
               {subscribeMutation.isPending ? 'Processing...' : isFull ? 'Full' : `Join ${tier.name}`}
-            </Button>
+            </button>
           )}
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

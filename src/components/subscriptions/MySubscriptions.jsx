@@ -1,12 +1,16 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Calendar, RefreshCw } from 'lucide-react';
+
+const statusColors = {
+  active:    { background: 'rgba(34,197,94,0.15)',  color: '#22c55e',           border: '1px solid rgba(34,197,94,0.3)' },
+  cancelled: { background: 'rgba(239,68,68,0.15)',  color: '#ef4444',           border: '1px solid rgba(239,68,68,0.3)' },
+  expired:   { background: 'rgba(107,114,128,0.15)',color: '#9ca3af',           border: '1px solid rgba(107,114,128,0.3)' },
+  paused:    { background: 'rgba(234,179,8,0.15)',  color: '#eab308',           border: '1px solid rgba(234,179,8,0.3)' },
+};
 
 export default function MySubscriptions({ userId }) {
   const qc = useQueryClient();
@@ -30,77 +34,70 @@ export default function MySubscriptions({ userId }) {
     onSuccess: () => qc.invalidateQueries(['allUserSubs', userId]),
   });
 
-  const statusColors = {
-    active: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
-    expired: 'bg-gray-100 text-gray-600',
-    paused: 'bg-yellow-100 text-yellow-800',
-  };
-
-  if (isLoading) return <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-muted animate-pulse rounded-xl" />)}</div>;
+  if (isLoading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {[...Array(3)].map((_, i) => <div key={i} style={{ height: 80, background: 'rgba(255,255,255,0.05)', borderRadius: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+    </div>
+  );
 
   if (subs.length === 0) return (
-    <div className="text-center py-10 text-muted-foreground">
-      <p className="text-3xl mb-2">📭</p>
+    <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+      <p style={{ fontSize: 32, marginBottom: 8 }}>📭</p>
       <p>You haven't subscribed to any creator yet.</p>
     </div>
   );
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {subs.map((sub, idx) => (
         <motion.div key={sub.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
-          <Card>
-            <CardContent className="py-4 px-5 flex items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold">{sub.tier_name}</span>
-                  <Badge className={statusColors[sub.status] || 'bg-gray-100'} variant="secondary">
-                    {sub.status}
-                  </Badge>
-                  {sub.auto_renew && sub.status === 'active' && (
-                    <Badge variant="outline" className="text-xs gap-1">
-                      <RefreshCw className="w-2.5 h-2.5" /> Auto-renew
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {sub.end_date ? `Renews ${new Date(sub.end_date).toLocaleDateString()}` : 'Active'}
-                  {' · '}${sub.price}/mo
-                </div>
-                {sub.benefits_snapshot?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {sub.benefits_snapshot.slice(0, 3).map((b, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">{b}</Badge>
-                    ))}
-                    {sub.benefits_snapshot.length > 3 && <Badge variant="outline" className="text-xs">+{sub.benefits_snapshot.length - 3}</Badge>}
-                  </div>
+          <div style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                <span style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>{sub.tier_name}</span>
+                <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, ...(statusColors[sub.status] || { background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }) }}>
+                  {sub.status}
+                </span>
+                {sub.auto_renew && sub.status === 'active' && (
+                  <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <RefreshCw style={{ width: 10, height: 10 }} /> Auto-renew
+                  </span>
                 )}
               </div>
-              {sub.status === 'active' && (
-                <div className="flex flex-col gap-1.5 shrink-0">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-xs h-7"
-                    onClick={() => toggleRenewMutation.mutate({ id: sub.id, auto_renew: !sub.auto_renew })}
-                  >
-                    {sub.auto_renew ? 'Disable Renew' : 'Enable Renew'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-xs h-7 text-destructive hover:text-destructive"
-                    onClick={() => cancelMutation.mutate(sub.id)}
-                    disabled={cancelMutation.isPending}
-                  >
-                    Cancel
-                  </Button>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 4, marginBottom: sub.benefits_snapshot?.length > 0 ? 6 : 0 }}>
+                <Calendar style={{ width: 14, height: 14 }} />
+                {sub.end_date ? `Renews ${new Date(sub.end_date).toLocaleDateString()}` : 'Active'}
+                {' · '}${sub.price}/mo
+              </div>
+              {sub.benefits_snapshot?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {sub.benefits_snapshot.slice(0, 3).map((b, i) => (
+                    <span key={i} style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.15)' }}>{b}</span>
+                  ))}
+                  {sub.benefits_snapshot.length > 3 && (
+                    <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.15)' }}>+{sub.benefits_snapshot.length - 3}</span>
+                  )}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+            {sub.status === 'active' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                <button
+                  style={{ fontSize: 12, height: 28, padding: '0 10px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  onClick={() => toggleRenewMutation.mutate({ id: sub.id, auto_renew: !sub.auto_renew })}
+                >
+                  {sub.auto_renew ? 'Disable Renew' : 'Enable Renew'}
+                </button>
+                <button
+                  style={{ fontSize: 12, height: 28, padding: '0 10px', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, color: '#ef4444', cursor: cancelMutation.isPending ? 'not-allowed' : 'pointer', opacity: cancelMutation.isPending ? 0.6 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+                  onClick={() => cancelMutation.mutate(sub.id)}
+                  disabled={cancelMutation.isPending}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
         </motion.div>
       ))}
     </div>

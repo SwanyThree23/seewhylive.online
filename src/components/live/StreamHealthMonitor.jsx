@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { Wifi, WifiOff, ChevronDown, ChevronUp } from 'lucide-react';
 

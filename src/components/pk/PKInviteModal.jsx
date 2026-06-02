@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { X, Swords } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
 const BORDER = 'rgba(212,175,55,0.18)';
+
+const inputStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box',
+  fontFamily: 'Barlow Condensed, sans-serif',
+};
+
+const selectStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box',
+};
 
 export default function PKInviteModal({ isOpen, onClose, creators }) {
   const [selectedChallenger, setSelectedChallenger] = useState(null);
@@ -48,14 +60,16 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.8)' }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 50, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', padding: 16,
+        background: 'rgba(0,0,0,0.8)',
+      }}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="rounded-xl p-6 max-w-md w-full"
-        style={{ background: PANEL, border: `1px solid ${BORDER}` }}
+        style={{ borderRadius: 12, padding: 24, maxWidth: 448, width: '100%', background: PANEL, border: `1px solid ${BORDER}` }}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -67,7 +81,7 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
           </div>
           <button
             onClick={onClose}
-            className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 transition-colors"
+            style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, background: 'transparent', border: 'none', cursor: 'pointer' }}
           >
             <X className="w-4 h-4 text-white/50" />
           </button>
@@ -83,7 +97,7 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Ultimate Showdown"
-              className="w-full px-3 py-2 rounded text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
+              style={inputStyle}
             />
           </div>
 
@@ -115,7 +129,7 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
             <select
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
-              className="w-full px-3 py-2 rounded text-sm bg-white/5 border border-white/10 text-white focus:outline-none focus:border-white/20"
+              style={selectStyle}
             >
               <option value="60">1 minute</option>
               <option value="180">3 minutes</option>
@@ -126,23 +140,25 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
 
           {/* Action buttons */}
           <div className="flex gap-2 pt-2">
-            <Button
+            <button
               onClick={onClose}
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs font-bold"
+              style={{
+                flex: 1, fontSize: 12, fontWeight: 700, padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+                background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.15)',
+              }}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={handleInvite}
               disabled={loading}
-              size="sm"
-              className="flex-1 text-xs font-bold"
-              style={{ background: G, color: '#000' }}
+              style={{
+                flex: 1, fontSize: 12, fontWeight: 700, padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+                background: G, color: '#000', border: 'none', opacity: loading ? 0.7 : 1,
+              }}
             >
               {loading ? 'Sending...' : 'Send Invite'}
-            </Button>
+            </button>
           </div>
         </div>
       </motion.div>

@@ -1,8 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Play, Scissors, BookOpen, Eye, Globe, Edit } from 'lucide-react';
 
 export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) {
@@ -14,17 +11,17 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
 
   const trimmedDuration = (vod.trim_end || vod.duration_seconds || 0) - (vod.trim_start || 0);
 
-  const statusColor = {
-    published: 'text-green-400 border-green-800 bg-green-900/20',
-    draft: 'text-white/40 border-white/10 bg-white/5',
-    unlisted: 'text-yellow-400 border-yellow-800 bg-yellow-900/20',
-  }[vod.status] || '';
+  const statusStyle = {
+    published: { color: '#4ade80', borderColor: '#166534', background: 'rgba(20,83,45,0.2)' },
+    draft: { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' },
+    unlisted: { color: '#facc15', borderColor: '#713f12', background: 'rgba(113,63,18,0.2)' },
+  }[vod.status] || { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2 }}>
-      <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)] text-white overflow-hidden group">
+      <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 12, overflow: 'hidden', color: '#fff' }}>
         {/* Thumbnail */}
-        <div className="relative h-36 bg-gradient-to-br from-[#1a0a20] to-[#0d0618] flex items-center justify-center">
+        <div className="relative h-36 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0a20, #0d0618)' }}>
           {vod.thumbnail_url
             ? <img src={vod.thumbnail_url} alt={vod.title} className="w-full h-full object-cover" />
             : <Play className="w-10 h-10 text-white/10" />
@@ -32,20 +29,30 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <Play className="w-8 h-8 text-white" />
           </div>
-          <Badge className={`absolute bottom-2 right-2 text-[10px] px-1.5 py-0.5 border ${statusColor}`}>
+          {/* Status badge */}
+          <span style={{
+            position: 'absolute', bottom: 8, right: 8, fontSize: 10, padding: '2px 8px',
+            borderRadius: 99, fontWeight: 900, border: '1px solid',
+            color: statusStyle.color, borderColor: statusStyle.borderColor, background: statusStyle.background,
+          }}>
             {vod.status}
-          </Badge>
+          </span>
           {vod.is_clipped && (
-            <Badge className="absolute top-2 left-2 bg-[#d4af37]/20 text-[#d4af37] border-[#d4af37]/30 text-[10px]">
-              <Scissors className="w-2.5 h-2.5 mr-1" /> Clipped
-            </Badge>
+            <span style={{
+              position: 'absolute', top: 8, left: 8, fontSize: 10, padding: '2px 8px',
+              borderRadius: 99, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 4,
+              background: 'rgba(212,175,55,0.2)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)',
+            }}>
+              <Scissors style={{ width: 10, height: 10 }} /> Clipped
+            </span>
           )}
-          <span className="absolute bottom-2 left-2 text-[10px] bg-black/70 text-white/80 px-1.5 py-0.5 rounded font-mono">
+          <span className="absolute bottom-2 left-2 text-[10px] text-white/80 px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(0,0,0,0.7)' }}>
             {fmt(trimmedDuration)}
           </span>
         </div>
 
-        <CardContent className="p-3 space-y-2">
+        {/* Content */}
+        <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p className="text-sm font-semibold text-white line-clamp-1">{vod.title}</p>
           <div className="flex items-center gap-2 text-[10px] text-white/40">
             <Eye className="w-3 h-3" /> {vod.views || 0} views
@@ -53,21 +60,42 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
               <><BookOpen className="w-3 h-3 ml-1" />{vod.chapters.length} chapters</>
             )}
           </div>
-          <div className="flex gap-1.5 pt-1">
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-white/50 hover:text-white" onClick={() => onTrim(vod)}>
-              <Scissors className="w-3 h-3 mr-1" /> Trim
-            </Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-white/50 hover:text-white" onClick={() => onChapters(vod)}>
-              <BookOpen className="w-3 h-3 mr-1" /> Chapters
-            </Button>
+          <div style={{ display: 'flex', gap: 6, paddingTop: 4 }}>
+            <button
+              onClick={() => onTrim(vod)}
+              style={{
+                height: 28, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
+                fontSize: 10, borderRadius: 6, cursor: 'pointer',
+                background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none',
+              }}
+            >
+              <Scissors className="w-3 h-3" /> Trim
+            </button>
+            <button
+              onClick={() => onChapters(vod)}
+              style={{
+                height: 28, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
+                fontSize: 10, borderRadius: 6, cursor: 'pointer',
+                background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none',
+              }}
+            >
+              <BookOpen className="w-3 h-3" /> Chapters
+            </button>
             {vod.status !== 'published' && (
-              <Button size="sm" className="h-7 px-2 text-[10px] bg-[#d4af37] text-black font-bold ml-auto" onClick={() => onPublish(vod)}>
-                <Globe className="w-3 h-3 mr-1" /> Publish
-              </Button>
+              <button
+                onClick={() => onPublish(vod)}
+                style={{
+                  marginLeft: 'auto', height: 28, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
+                  fontSize: 10, fontWeight: 700, borderRadius: 6, cursor: 'pointer',
+                  background: '#d4af37', color: '#000', border: 'none',
+                }}
+              >
+                <Globe className="w-3 h-3" /> Publish
+              </button>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

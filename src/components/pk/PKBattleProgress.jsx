@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Flame, Trophy, Users, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
@@ -192,28 +191,22 @@ export default function PKBattleProgress({ battleId }) {
       {isActive && (
         <div className="px-4 py-3 grid grid-cols-2 gap-2"
           style={{ background: 'rgba(0,0,0,0.2)', borderTop: `1px solid ${BORDER}` }}>
-          <Button
-            size="sm"
-            className="text-xs font-black h-8"
+          <button
             style={{
-              background: 'rgba(255,21,100,0.2)',
-              color: '#FF1564',
-              border: '1px solid rgba(255,21,100,0.3)',
+              fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
+              background: 'rgba(255,21,100,0.2)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.3)',
             }}
           >
             💰 Tip Creator
-          </Button>
-          <Button
-            size="sm"
-            className="text-xs font-black h-8"
+          </button>
+          <button
             style={{
-              background: 'rgba(139,92,246,0.2)',
-              color: '#8B5CF6',
-              border: '1px solid rgba(139,92,246,0.3)',
+              fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
+              background: 'rgba(139,92,246,0.2)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.3)',
             }}
           >
             💜 Tip Challenger
-          </Button>
+          </button>
         </div>
       )}
     </motion.div>

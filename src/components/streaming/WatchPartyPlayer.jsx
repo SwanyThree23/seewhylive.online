@@ -1,9 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
 import { Play, Pause, Volume2, VolumeX, Maximize, Radio } from 'lucide-react';
 
 export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
@@ -81,17 +77,17 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
     }
   };
 
-  const handleVolumeChange = (value) => {
-    const vol = value[0];
+  const handleVolumeChange = (e) => {
+    const vol = parseInt(e.target.value);
     setVolume(vol);
     if (videoRef.current) {
       videoRef.current.volume = vol / 100;
     }
   };
 
-  const handleSeek = (value) => {
+  const handleSeek = (e) => {
     if (!videoRef.current || !isHost) return;
-    const time = value[0];
+    const time = parseFloat(e.target.value);
     videoRef.current.currentTime = time;
     setCurrentTime(time);
     broadcastSync('seek', time);
@@ -129,13 +125,13 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
   };
 
   return (
-    <Card className="relative overflow-hidden bg-black border-2 border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+    <div style={{ position: 'relative', overflow: 'hidden', background: '#000', border: '2px solid #D4AF37', boxShadow: '0 0 30px rgba(212,175,55,0.2)', borderRadius: 12 }}>
       <div className="relative group">
         {/* Live Badge */}
-        <Badge className="absolute top-4 left-4 z-10 bg-[#800020] text-white border border-[#D4AF37] animate-pulse shadow-[0_0_15px_rgba(128,0,32,0.8)]">
-          <Radio className="w-3 h-3 mr-1" />
+        <span style={{ position: 'absolute', top: 16, left: 16, zIndex: 10, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 900, background: '#800020', color: '#fff', border: '1px solid #D4AF37', borderRadius: 99, padding: '3px 8px', animation: 'pulse 2s infinite' }}>
+          <Radio className="w-3 h-3" />
           WATCH PARTY LIVE
-        </Badge>
+        </span>
 
         {/* Video Element */}
         <video
@@ -150,71 +146,67 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
         {/* Control Overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
           {/* Progress Bar */}
-          <Slider
-            value={[currentTime]}
-            max={duration}
+          <input
+            type="range"
+            value={currentTime}
+            max={duration || 0}
             step={0.1}
-            onValueChange={handleSeek}
+            onChange={handleSeek}
             disabled={!isHost}
-            className="mb-4"
+            style={{ width: '100%', marginBottom: 16, accentColor: '#D4AF37', cursor: isHost ? 'pointer' : 'default' }}
           />
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                size="icon"
-                variant="ghost"
+              <button
                 onClick={handlePlayPause}
-                className="text-[#D4AF37] hover:bg-[#800020]/20"
                 disabled={!isHost && !isPlaying}
+                style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: (!isHost && !isPlaying) ? 'default' : 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-              </Button>
+              </button>
 
               <div className="flex items-center gap-2">
-                <Button
-                  size="icon"
-                  variant="ghost"
+                <button
                   onClick={() => {
                     setIsMuted(!isMuted);
                     if (videoRef.current) videoRef.current.muted = !isMuted;
                   }}
-                  className="text-[#D4AF37] hover:bg-[#800020]/20"
+                  style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
                 >
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </Button>
-                <Slider
-                  value={[volume]}
+                </button>
+                <input
+                  type="range"
+                  value={volume}
                   max={100}
                   step={1}
-                  onValueChange={handleVolumeChange}
-                  className="w-24"
+                  onChange={handleVolumeChange}
+                  style={{ width: 96, accentColor: '#D4AF37', cursor: 'pointer' }}
                 />
               </div>
 
-              <span className="text-[#D4AF37] text-sm font-mono">
+              <span style={{ color: '#D4AF37', fontSize: 14, fontFamily: 'monospace' }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               {isHost && (
-                <Badge variant="outline" className="text-[#D4AF37] border-[#D4AF37]">
+                <span style={{ fontSize: 10, fontWeight: 900, color: '#D4AF37', border: '1px solid #D4AF37', borderRadius: 99, padding: '2px 8px' }}>
                   HOST CONTROLS
-                </Badge>
+                </span>
               )}
-              <Button
-                size="icon"
-                variant="ghost"
+              <button
                 onClick={toggleFullscreen}
-                className="text-[#D4AF37] hover:bg-[#800020]/20"
+                style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
               >
                 <Maximize className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

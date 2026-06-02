@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { DollarSign, Gift, X, Zap, Star, Crown, Heart, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -152,15 +151,13 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                   placeholder="Add a message..."
                   className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#FFB800]/40"
                 />
-                <Button
-                  size="sm"
+                <button
                   onClick={handleSuperChat}
                   disabled={sendMutation.isPending}
-                  className="h-7 text-[10px] px-2 font-bold"
-                  style={{ background: selectedAmount.color, color: '#000' }}
+                  style={{ height:28, padding:'0 8px', borderRadius:6, border:'none', background: selectedAmount.color, color: '#000', fontWeight:700, fontSize:10, cursor: sendMutation.isPending ? 'not-allowed' : 'pointer' }}
                 >
                   {sendMutation.isPending ? '...' : `${selectedAmount.emoji} Send`}
-                </Button>
+                </button>
               </div>
             </div>
           </motion.div>

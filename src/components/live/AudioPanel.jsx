@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Volume2, VolumeX, Music, Radio, Headphones, Settings2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SoundboardWidget from './SoundboardWidget';
@@ -36,7 +33,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
         <div className="flex items-center gap-2">
           <Headphones className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Audio Panel</span>
-          {bgMusic && <Badge className="text-[8px] bg-purple-900/50 text-purple-300 border-purple-700/30 py-0">♪ Music</Badge>}
+          {bgMusic && <span style={{ fontSize: 8, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(88,28,135,0.5)', color: '#d8b4fe', border: '1px solid rgba(126,34,206,0.3)' }}>♪ Music</span>}
         </div>
         <span className="text-white/30 text-[10px]">{expanded ? '▲' : '▼'}</span>
       </button>
@@ -92,14 +89,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                 </div>
                 <div className="flex items-center gap-2">
                   <VolumeX className="w-3 h-3 text-white/30 shrink-0" />
-                  <Slider
-                    value={masterVolume}
-                    onValueChange={setMasterVolume}
-                    min={0}
-                    max={100}
-                    step={1}
-                    className="flex-1"
-                  />
+                  <input type="range" value={masterVolume[0]} onChange={e => setMasterVolume([+e.target.value])} min={0} max={100} step={1} style={{ flex: 1, accentColor: '#D4AF37' }} />
                   <Volume2 className="w-3 h-3 text-[#d4af37] shrink-0" />
                 </div>
               </div>
@@ -148,14 +138,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                         {p.user_name?.charAt(0)?.toUpperCase()}
                       </div>
                       <span className="text-[10px] text-white/60 w-16 truncate">{p.user_name}</span>
-                      <Slider
-                        value={[volumes[p.id] ?? 80]}
-                        onValueChange={([v]) => setVolumes(prev => ({ ...prev, [p.id]: v }))}
-                        min={0}
-                        max={100}
-                        step={5}
-                        className="flex-1"
-                      />
+                      <input type="range" value={volumes[p.id] ?? 80} onChange={e => setVolumes(prev => ({ ...prev, [p.id]: +e.target.value }))} min={0} max={100} step={5} style={{ flex: 1, accentColor: '#D4AF37' }} />
                       <span className="text-[9px] text-white/30 w-7 text-right">{volumes[p.id] ?? 80}%</span>
                     </div>
                   ))}

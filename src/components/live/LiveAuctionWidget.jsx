@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Gavel, Clock, Crown, ChevronUp, X, Plus, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -199,13 +198,12 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         {/* Bid input */}
         {currentUser && auction.status !== 'ended' && (
           <div className="flex gap-1.5">
-            <Input
+            <input
               type="number"
               placeholder={`Min $${minBid}`}
               value={bidAmount}
               onChange={e => setBidAmount(e.target.value)}
-              className="h-8 text-[11px] flex-1"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}
+              style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', flex: 1 }}
             />
             <button
               onClick={() => {
@@ -285,24 +283,23 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
         <span className="text-[11px] font-black uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>New Auction</span>
         <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
       </div>
-      <Input placeholder="Title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-        className="h-8 text-[11px]" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
+      <input placeholder="Title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+        style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />
       <select value={form.auction_type} onChange={e => setForm(f => ({ ...f, auction_type: e.target.value }))}
-        className="w-full h-8 px-2 rounded text-[10px]"
-        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}>
+        style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
         {types.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
       </select>
       <div className="flex gap-2">
-        <Input type="number" placeholder="Starting bid $" value={form.starting_bid} onChange={e => setForm(f => ({ ...f, starting_bid: e.target.value }))}
-          className="h-8 text-[11px]" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
-        <Input type="number" placeholder="Increment $" value={form.bid_increment} onChange={e => setForm(f => ({ ...f, bid_increment: e.target.value }))}
-          className="h-8 text-[11px]" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
+        <input type="number" placeholder="Starting bid $" value={form.starting_bid} onChange={e => setForm(f => ({ ...f, starting_bid: e.target.value }))}
+          style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />
+        <input type="number" placeholder="Increment $" value={form.bid_increment} onChange={e => setForm(f => ({ ...f, bid_increment: e.target.value }))}
+          style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />
       </div>
       <div className="flex gap-2">
-        <Input type="number" placeholder="Buyout (optional) $" value={form.buyout_price} onChange={e => setForm(f => ({ ...f, buyout_price: e.target.value }))}
-          className="h-8 text-[11px]" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
-        <Input type="number" placeholder="Duration (min)" value={form.duration_mins} onChange={e => setForm(f => ({ ...f, duration_mins: e.target.value }))}
-          className="h-8 text-[11px]" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
+        <input type="number" placeholder="Buyout (optional) $" value={form.buyout_price} onChange={e => setForm(f => ({ ...f, buyout_price: e.target.value }))}
+          style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />
+        <input type="number" placeholder="Duration (min)" value={form.duration_mins} onChange={e => setForm(f => ({ ...f, duration_mins: e.target.value }))}
+          style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />
       </div>
       <button onClick={() => mut.mutate()} disabled={!form.title || !form.starting_bid || mut.isPending}
         className="w-full py-2 rounded-xl font-black uppercase text-[11px]"

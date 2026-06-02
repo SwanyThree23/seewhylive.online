@@ -1,33 +1,30 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { CheckCircle, Star, Crown, Zap } from 'lucide-react';
 
 const tierConfig = {
   basic: {
     icon: Zap,
-    color: 'bg-blue-500',
-    gradient: 'from-blue-500 to-blue-600',
+    color: '#3b82f6',
+    gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
   },
   premium: {
     icon: Star,
-    color: 'bg-purple-500',
-    gradient: 'from-purple-500 to-purple-600',
+    color: '#a855f7',
+    gradient: 'linear-gradient(135deg, #a855f7, #9333ea)',
   },
   elite: {
     icon: Crown,
-    color: 'bg-amber-500',
-    gradient: 'from-amber-500 to-amber-600',
+    color: '#f59e0b',
+    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
   },
 };
 
 export default function SubscriptionCard({ tier, price, benefits, communityId, creatorId, isSubscribed }) {
   const queryClient = useQueryClient();
-  const config = tierConfig[tier];
+  const config = tierConfig[tier] || tierConfig.basic;
   const Icon = config.icon;
 
   const subscribeMutation = useMutation({
@@ -59,47 +56,49 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
   });
 
   return (
-    <Card className="relative overflow-hidden">
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.gradient}`} />
-      
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-lg ${config.color} flex items-center justify-center`}>
-            <Icon className="w-6 h-6 text-white" />
+    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 12, background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: config.gradient }} />
+
+      <div style={{ padding: '20px 20px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 8, background: config.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon style={{ width: 24, height: 24, color: '#fff' }} />
           </div>
           <div>
-            <CardTitle className="capitalize">{tier} Tier</CardTitle>
-            <CardDescription className="text-2xl font-bold text-foreground">
-              ${price}<span className="text-sm font-normal text-muted-foreground">/month</span>
-            </CardDescription>
+            <p style={{ fontWeight: 900, fontSize: 18, color: '#fff', textTransform: 'capitalize' }}>{tier} Tier</p>
+            <p style={{ fontSize: 24, fontWeight: 700, color: '#fff' }}>
+              ${price}<span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.4)' }}>/month</span>
+            </p>
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent>
-        <ul className="space-y-3">
+      <div style={{ padding: '0 20px 16px' }}>
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {benefits?.map((benefit, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <span className="text-sm">{benefit}</span>
+            <li key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <CheckCircle style={{ width: 20, height: 20, color: '#22c55e', flexShrink: 0, marginTop: 2 }} />
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{benefit}</span>
             </li>
           ))}
         </ul>
-      </CardContent>
+      </div>
 
-      <CardFooter>
+      <div style={{ padding: '0 20px 20px' }}>
         {isSubscribed ? (
-          <Badge className="w-full justify-center py-2">Active Subscription</Badge>
+          <span style={{ display: 'block', textAlign: 'center', padding: '10px 0', fontSize: 10, fontWeight: 900, borderRadius: 99, background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+            Active Subscription
+          </span>
         ) : (
-          <Button
+          <button
             onClick={() => subscribeMutation.mutate()}
             disabled={subscribeMutation.isPending}
-            className={`w-full bg-gradient-to-r ${config.gradient}`}
+            style={{ width: '100%', padding: '10px 0', background: config.gradient, border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: subscribeMutation.isPending ? 'not-allowed' : 'pointer', opacity: subscribeMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             {subscribeMutation.isPending ? 'Processing...' : 'Subscribe Now'}
-          </Button>
+          </button>
         )}
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }
