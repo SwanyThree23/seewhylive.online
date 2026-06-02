@@ -13,6 +13,7 @@ import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
 import LoveHearts from '../components/live/LoveHearts';
+import LoveTap from '../components/live/LoveTap';
 import { DollarSign } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
@@ -623,6 +624,15 @@ export default function LiveRoom() {
 
       {(roomId || party?.id) && (
         <LoveHearts roomId={roomId || party?.id} currentUser={user} creatorId={party?.host_id} />
+      )}
+
+      {(roomId || party?.id) && party?.host_id !== user?.id && (
+        <LoveTap
+          roomId={roomId || party?.id}
+          user={user}
+          creatorId={party?.host_id}
+          creatorName={hostName}
+        />
       )}
 
       {showExclusiveGate && (
