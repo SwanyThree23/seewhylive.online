@@ -2856,6 +2856,8 @@ io.on('connection', function(socket) {
         room.watchParty.ts = Date.now();
         io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
       }
+      // Clear screen share indicator if host was sharing
+      io.to(roomId).emit('screen-share-ended', {});
       // Notify room that host disconnected
       io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
     }
