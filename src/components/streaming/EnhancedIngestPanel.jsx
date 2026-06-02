@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Radio, Copy, Eye, EyeOff, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 import { toast } from 'sonner';
 import BitratePresets from './BitratePresets';
 import GuestStreamMonitor from './GuestStreamMonitor';
@@ -47,36 +45,30 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-[#d4af37]" />
           <h3 className="text-sm font-semibold text-white">Stream Ingest Setup</h3>
-          <Badge className="text-[9px] bg-cyan-900/50 text-cyan-300">BETA</Badge>
+          <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(8,47,73,0.5)', color:'#67e8f9' }}>BETA</span>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full justify-start border-b border-white/5 rounded-none bg-transparent p-0 h-auto">
-          <TabsTrigger
-            value="rtmp"
-            className="px-4 py-2.5 text-xs font-semibold rounded-none border-b-2 data-[state=active]:border-[#d4af37] data-[state=active]:text-[#d4af37]"
-          >
-            <Radio className="w-3 h-3 mr-1.5" />
-            RTMP Ingest
-          </TabsTrigger>
-          <TabsTrigger
-            value="whip"
-            className="px-4 py-2.5 text-xs font-semibold rounded-none border-b-2 data-[state=active]:border-[#d4af37] data-[state=active]:text-[#d4af37]"
-          >
-            WHIP Ingest
-          </TabsTrigger>
-          <TabsTrigger
-            value="guests"
-            className="px-4 py-2.5 text-xs font-semibold rounded-none border-b-2 data-[state=active]:border-[#d4af37] data-[state=active]:text-[#d4af37]"
-          >
-            Guest Destinations
-          </TabsTrigger>
-        </TabsList>
+      <div>
+        <div style={{ display:'flex', borderBottom:'1px solid rgba(255,255,255,0.05)', background:'transparent' }}>
+          {[
+            { id:'rtmp', label: <><Radio style={{width:12,height:12,marginRight:6,display:'inline'}}/>RTMP Ingest</> },
+            { id:'whip', label: 'WHIP Ingest' },
+            { id:'guests', label: 'Guest Destinations' },
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              style={{ padding:'10px 16px', fontSize:12, fontWeight:600, background:'transparent', border:'none', borderBottom: activeTab===t.id ? '2px solid #D4AF37' : '2px solid transparent', color: activeTab===t.id ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor:'pointer', display:'flex', alignItems:'center', fontFamily:'Barlow Condensed, sans-serif' }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-        <div className="p-4 space-y-4">
+        <div style={{ padding:16 }} className="space-y-4">
           {/* RTMP Tab */}
-          <TabsContent value="rtmp" className="space-y-3">
+          {activeTab === 'rtmp' && <div className="space-y-3">
             <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">⚡</div>
@@ -88,10 +80,10 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 <div>
                   <label className="text-[10px] text-white/60 block mb-1">Server URL</label>
                   <div className="flex gap-1.5 items-center">
-                    <Input
+                    <input
                       readOnly
                       value={rtmpUrl}
-                      className="bg-white/5 border-white/10 text-white text-xs font-mono h-8 flex-1"
+                      style={{ ...inputStyle, fontFamily:'monospace', fontSize:12, height:32, flex:1 }}
                     />
                     <button
                       onClick={() => copyToClipboard(rtmpUrl, 'RTMP URL')}
@@ -106,11 +98,11 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                   <label className="text-[10px] text-white/60 block mb-1">Stream Key</label>
                   <div className="flex gap-1.5 items-center">
                     <div className="relative flex-1">
-                      <Input
+                      <input
                         type={showKey ? 'text' : 'password'}
                         readOnly
                         value={rtmpKey}
-                        className="bg-white/5 border-white/10 text-white text-xs font-mono h-8"
+                        style={{ ...inputStyle, fontFamily:'monospace', fontSize:12, height:32 }}
                       />
                     </div>
                     <button
@@ -137,15 +129,15 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 </div>
               </div>
             </div>
-          </TabsContent>
+          </div>}
 
           {/* WHIP Tab */}
-          <TabsContent value="whip" className="space-y-3">
+          {activeTab === 'whip' && <div className="space-y-3">
             <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded bg-gradient-to-br from-red-500 via-yellow-500 to-green-500 flex items-center justify-center text-xs font-bold text-white">W</div>
                 <h4 className="text-sm font-bold text-white">WHIP Ingest</h4>
-                <Badge className="text-[8px] bg-blue-900/50 text-blue-300">Modern</Badge>
+                <span style={{ fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(30,27,75,0.5)', color:'#93c5fd' }}>Modern</span>
               </div>
               <p className="text-[10px] text-white/50 mb-3">Ultra-low-latency WHIP stream ingest. Perfect for browser-based producers and mobile. Supports full customization of size, position, and layering.</p>
 
@@ -153,10 +145,10 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 <div>
                   <label className="text-[10px] text-white/60 block mb-1">WHIP Endpoint</label>
                   <div className="flex gap-1.5 items-center">
-                    <Input
+                    <input
                       readOnly
                       value={whipUrl}
-                      className="bg-white/5 border-white/10 text-white text-xs font-mono h-8 flex-1"
+                      style={{ ...inputStyle, fontFamily:'monospace', fontSize:12, height:32, flex:1 }}
                     />
                     <button
                       onClick={() => copyToClipboard(whipUrl, 'WHIP URL')}
@@ -170,11 +162,11 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 <div>
                   <label className="text-[10px] text-white/60 block mb-1">Authorization Header</label>
                   <div className="flex gap-1.5 items-center">
-                    <Input
+                    <input
                       type={showKey ? 'text' : 'password'}
                       readOnly
                       value={whipAuth}
-                      className="bg-white/5 border-white/10 text-white text-xs font-mono h-8 flex-1"
+                      style={{ ...inputStyle, fontFamily:'monospace', fontSize:12, height:32, flex:1 }}
                     />
                     <button
                       onClick={() => setShowKey(!showKey)}
@@ -200,10 +192,10 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 </div>
               </div>
             </div>
-          </TabsContent>
+          </div>}
 
           {/* Guest Destinations Tab */}
-          <TabsContent value="guests" className="space-y-3">
+          {activeTab === 'guests' && <div className="space-y-3">
             <div className="space-y-3">
               {/* Guest Stream Monitor */}
               <GuestStreamMonitor guestName="Alex (YouTube)" isStreaming={mockGuestStreaming} />
@@ -213,9 +205,9 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4 text-[#d4af37]" />
                   <h4 className="text-sm font-bold text-white">Guest Destinations</h4>
-                  <Badge className="text-[8px] bg-purple-900/50 text-purple-300">BETA</Badge>
+                  <span style={{ fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(59,7,100,0.5)', color:'#d8b4fe' }}>BETA</span>
                 </div>
-                
+
                 <div className="space-y-3">
                   <BitratePresets selected={bitrate} onChange={setBitrate} />
 
@@ -229,15 +221,17 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                     </ul>
                   </div>
 
-                  <Button className="w-full bg-[#d4af37] text-black hover:bg-[#e6c158] font-bold text-sm">
+                  <button
+                    style={{ width:'100%', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, padding:'8px 0', cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:14 }}
+                  >
                     Manage Guest Streaming
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
-          </TabsContent>
+          </div>}
         </div>
-      </Tabs>
+      </div>
 
       <div className="px-4 py-3 bg-[rgba(7,7,15,0.5)] border-t border-white/5 text-[10px] text-white/40">
         💡 Tip: Save your RTMP key securely. Never share it publicly. Stream keys are AES-256 encrypted at rest.

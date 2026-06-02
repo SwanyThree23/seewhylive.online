@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { Heart, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -99,16 +98,18 @@ export default function PKBattleVotePanel({ battleId, creatorId, challengerId, c
       </div>
 
       {/* Action button */}
-      <Button
+      <button
         onClick={() => selectedAmount && handleContribute(selectedCreator, selectedAmount)}
         disabled={!selectedCreator || !selectedAmount || loading}
-        size="sm"
-        className="w-full text-xs font-black h-9"
-        style={{ background: G, color: '#000' }}
+        style={{
+          width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: 4, fontSize: 12, fontWeight: 900, borderRadius: 6, cursor: 'pointer',
+          background: G, color: '#000', border: 'none', opacity: (!selectedCreator || !selectedAmount || loading) ? 0.5 : 1,
+        }}
       >
-        <Gift className="w-3.5 h-3.5 mr-1" />
+        <Gift className="w-3.5 h-3.5" />
         {loading ? 'Processing...' : 'Send Support'}
-      </Button>
+      </button>
 
       <p className="text-[10px] text-white/40 text-center">
         Every contribution helps them win the battle!

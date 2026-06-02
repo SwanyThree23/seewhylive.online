@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Settings, ChevronDown, ChevronUp, Sliders } from 'lucide-react';
 import EnhancedAudioMixer from './EnhancedAudioMixer';
 import RoomBrandingEditor from './RoomBrandingEditor';
@@ -63,7 +61,7 @@ export default function EnhancedRoomControls({
             <div className="flex items-center gap-2">
               <Settings className="w-4 h-4 text-[#d4af37]" />
               <span className="text-sm font-semibold text-white">Room Customization</span>
-              <Badge className="text-[8px] bg-purple-900/50 text-purple-300">PRO</Badge>
+              <span style={{ fontSize: 8, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(88,28,135,0.5)', color: '#d8b4fe' }}>PRO</span>
             </div>
             {expandedSection === 'branding' ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}
           </button>

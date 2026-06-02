@@ -1,14 +1,55 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Flag, AlertCircle, CheckCircle, Clock, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+
+const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
+const CARD_HEADER = { padding:'16px 20px 12px' };
+const CARD_CONTENT = { padding:'0 20px 20px' };
+const TEXTAREA_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', minHeight:80 };
+const SELECT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom:6, color:'rgba(255,255,255,0.8)' };
+
+const priorityBadge = {
+  low:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
+  medium: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
+  high:   { background:'rgba(249,115,22,0.15)',  color:'#fb923c' },
+  urgent: { background:'rgba(239,68,68,0.15)',   color:'#f87171' },
+};
+
+const statusBadge = {
+  pending:      { background:'rgba(234,179,8,0.15)',   color:'#facc15' },
+  under_review: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
+  resolved:     { background:'rgba(34,197,94,0.15)',   color:'#4ade80' },
+  dismissed:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
+};
+
+function Badge({ label, badgeStyle }) {
+  return (
+    <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif', ...badgeStyle }}>
+      {label}
+    </span>
+  );
+}
+
+function StatCard({ label, value, color, icon: Icon, sub }) {
+  return (
+    <div style={CARD}>
+      <div style={CARD_HEADER}>
+        <p style={{ fontSize:12, color:'rgba(255,255,255,0.45)', marginBottom:4 }}>{label}</p>
+        <p style={{ fontSize:30, fontWeight:900, color: color || '#fff', margin:0, fontFamily:'Barlow Condensed, sans-serif' }}>{value}</p>
+      </div>
+      <div style={CARD_CONTENT}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:13, color:'rgba(255,255,255,0.4)' }}>
+          {Icon && <Icon style={{ width:16, height:16 }} />}
+          <span>{sub}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ReportsManager({ communityId, userId }) {
   const [selectedReport, setSelectedReport] = useState(null);
@@ -50,124 +91,76 @@ export default function ReportsManager({ communityId, userId }) {
   const pendingReports = reports.filter(r => r.status === 'pending' || r.status === 'under_review');
   const resolvedReports = reports.filter(r => r.status === 'resolved' || r.status === 'dismissed');
 
-  const priorityColors = {
-    low: 'bg-gray-100 text-gray-800',
-    medium: 'bg-blue-100 text-blue-800',
-    high: 'bg-orange-100 text-orange-800',
-    urgent: 'bg-red-100 text-red-800',
-  };
+  const resolvedTodayCount = resolvedReports.filter(r => {
+    const date = r.reviewed_at ? new Date(r.reviewed_at) : null;
+    return date && date.toDateString() === new Date().toDateString();
+  }).length;
 
-  const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    under_review: 'bg-blue-100 text-blue-800',
-    resolved: 'bg-green-100 text-green-800',
-    dismissed: 'bg-gray-100 text-gray-800',
-  };
+  const btnPrimary = { padding:'6px 14px', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:12, fontFamily:'Barlow Condensed, sans-serif' };
+  const btnOutline = { padding:'6px 14px', background:'transparent', color:'rgba(255,255,255,0.7)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:12, fontFamily:'Barlow Condensed, sans-serif' };
+  const btnGhost  = { padding:'6px 14px', background:'transparent', color:'rgba(255,255,255,0.4)', border:'none', borderRadius:8, fontWeight:600, cursor:'pointer', fontSize:12, fontFamily:'Barlow Condensed, sans-serif' };
 
   return (
-    <div className="space-y-6">
+    <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Pending Reports</CardDescription>
-            <CardTitle className="text-3xl">{pendingReports.length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Flag className="w-4 h-4" />
-              Require attention
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Resolved Today</CardDescription>
-            <CardTitle className="text-3xl text-green-600">
-              {resolvedReports.filter(r => {
-                const date = r.reviewed_at ? new Date(r.reviewed_at) : null;
-                return date && date.toDateString() === new Date().toDateString();
-              }).length}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle className="w-4 h-4" />
-              Cases handled
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Total Reports</CardDescription>
-            <CardTitle className="text-3xl">{reports.length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Shield className="w-4 h-4" />
-              All time
-            </div>
-          </CardContent>
-        </Card>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
+        <StatCard label="Pending Reports" value={pendingReports.length} icon={Flag} sub="Require attention" />
+        <StatCard label="Resolved Today" value={resolvedTodayCount} color="#4ade80" icon={CheckCircle} sub="Cases handled" />
+        <StatCard label="Total Reports" value={reports.length} icon={Shield} sub="All time" />
       </div>
 
       {/* Pending Reports */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Reports ({pendingReports.length})</CardTitle>
-          <CardDescription>Reports requiring moderation</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div style={CARD}>
+        <div style={CARD_HEADER}>
+          <p style={{ fontSize:16, fontWeight:700, color:'#fff', marginBottom:4 }}>Pending Reports ({pendingReports.length})</p>
+          <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', margin:0 }}>Reports requiring moderation</p>
+        </div>
+        <div style={{ ...CARD_CONTENT, display:'flex', flexDirection:'column', gap:16 }}>
           {pendingReports.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <p className="text-muted-foreground">All caught up! No pending reports.</p>
+            <div style={{ textAlign:'center', padding:'48px 0' }}>
+              <CheckCircle style={{ width:48, height:48, color:'#4ade80', margin:'0 auto 16px' }} />
+              <p style={{ color:'rgba(255,255,255,0.4)' }}>All caught up! No pending reports.</p>
             </div>
           ) : (
             pendingReports.map((report) => (
-              <div key={report.id} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge className={priorityColors[report.priority]}>{report.priority}</Badge>
-                      <Badge className={statusColors[report.status]}>{report.status}</Badge>
-                      <Badge variant="outline">{report.report_type}</Badge>
+              <div key={report.id} style={{ border:'1px solid rgba(255,255,255,0.08)', borderRadius:8, padding:16, display:'flex', flexDirection:'column', gap:12 }}>
+                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8, flexWrap:'wrap' }}>
+                      <Badge label={report.priority} badgeStyle={priorityBadge[report.priority] || {}} />
+                      <Badge label={report.status} badgeStyle={statusBadge[report.status] || {}} />
+                      <Badge label={report.report_type} badgeStyle={{ background:'rgba(255,255,255,0.08)', color:'rgba(255,255,255,0.6)' }} />
                     </div>
-                    <p className="font-medium">User ID: {report.reported_user_id}</p>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p style={{ fontWeight:600, color:'#fff', margin:0 }}>User ID: {report.reported_user_id}</p>
+                    <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', margin:'4px 0 0' }}>
                       Reported by: {report.reporter_id} • {format(new Date(report.created_date), 'PPp')}
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium">Description:</p>
-                  <p className="text-sm text-muted-foreground mt-1">{report.description}</p>
+                  <p style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.8)', marginBottom:4 }}>Description:</p>
+                  <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)', margin:0 }}>{report.description}</p>
                 </div>
 
                 {selectedReport?.id === report.id ? (
-                  <div className="space-y-3 border-t pt-3">
+                  <div style={{ display:'flex', flexDirection:'column', gap:12, borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:12 }}>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Action Taken</label>
-                      <Select value={actionTaken} onValueChange={setActionTaken}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select action" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="warning_issued">Warning Issued</SelectItem>
-                          <SelectItem value="user_muted">User Muted</SelectItem>
-                          <SelectItem value="user_banned">User Banned</SelectItem>
-                          <SelectItem value="content_removed">Content Removed</SelectItem>
-                          <SelectItem value="no_action">No Action Required</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <label style={LABEL_STYLE}>Action Taken</label>
+                      <select style={SELECT_STYLE} value={actionTaken} onChange={e => setActionTaken(e.target.value)}>
+                        <option value="">Select action</option>
+                        <option value="warning_issued">Warning Issued</option>
+                        <option value="user_muted">User Muted</option>
+                        <option value="user_banned">User Banned</option>
+                        <option value="content_removed">Content Removed</option>
+                        <option value="no_action">No Action Required</option>
+                      </select>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Resolution Notes</label>
-                      <Textarea
+                      <label style={LABEL_STYLE}>Resolution Notes</label>
+                      <textarea
+                        style={TEXTAREA_STYLE}
                         value={resolutionNotes}
                         onChange={(e) => setResolutionNotes(e.target.value)}
                         placeholder="Add notes about your decision..."
@@ -175,28 +168,20 @@ export default function ReportsManager({ communityId, userId }) {
                       />
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleResolve(report, 'resolved')} size="sm">
-                        Resolve
-                      </Button>
-                      <Button onClick={() => handleResolve(report, 'dismissed')} variant="outline" size="sm">
-                        Dismiss
-                      </Button>
-                      <Button onClick={() => setSelectedReport(null)} variant="ghost" size="sm">
-                        Cancel
-                      </Button>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <button style={btnPrimary} onClick={() => handleResolve(report, 'resolved')}>Resolve</button>
+                      <button style={btnOutline} onClick={() => handleResolve(report, 'dismissed')}>Dismiss</button>
+                      <button style={btnGhost} onClick={() => setSelectedReport(null)}>Cancel</button>
                     </div>
                   </div>
                 ) : (
-                  <Button onClick={() => setSelectedReport(report)} size="sm">
-                    Review Report
-                  </Button>
+                  <button style={btnPrimary} onClick={() => setSelectedReport(report)}>Review Report</button>
                 )}
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,4 @@
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Radio, Swords, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GuestRTMPPanel from '@/components/streaming/GuestRTMPPanel';
@@ -29,23 +25,21 @@ export default function MultiGuestPanel({ participants = [], spotlightId, onSpot
     <div className="h-full bg-[#2A1F1F] rounded-xl border-2 border-[#800020]/30 p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Badge className="bg-[#800020] text-[#D4AF37] border-[#D4AF37]">
-            <Radio className="w-3 h-3 mr-1" />
+          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#800020', color:'#D4AF37', border:'1px solid #D4AF37', display:'inline-flex', alignItems:'center', gap:4 }}>
+            <Radio className="w-3 h-3" />
             {speakers.length}/{maxGuests} GUESTS LIVE
-          </Badge>
+          </span>
         </div>
         
         <div className="flex gap-1">
           {['grid', 'spotlight', 'battle'].map(l => (
-            <Button
+            <button
               key={l}
-              size="sm"
-              variant={layout === l ? 'default' : 'outline'}
               onClick={() => setLayout(l)}
-              className={`text-[10px] h-6 px-2 ${layout === l ? 'bg-[#800020] text-[#D4AF37] border-[#D4AF37]' : 'border-white/20 text-white/50 bg-transparent'}`}
+              style={{ fontSize:10, height:24, padding:'0 8px', background:layout===l?'#800020':'transparent', color:layout===l?'#D4AF37':'rgba(255,255,255,0.5)', border:layout===l?'1px solid #D4AF37':'1px solid rgba(255,255,255,0.2)', borderRadius:6, cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4 }}
             >
               {l === 'battle' ? <Swords className="w-3 h-3" /> : l.charAt(0).toUpperCase() + l.slice(1)}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
@@ -126,27 +120,35 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
       exit={{ opacity: 0, scale: 0.8 }}
       className={`relative group ${compact ? 'h-full' : ''}`}
     >
-      <Card className={`${
-        isSpotlight ? 'h-full' : compact ? 'h-full' : 'aspect-video'
-      } bg-[#3C2F2F] border-2 ${
-        participant.is_streaming ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.3)]' : 'border-[#800020]/30'
-      } overflow-hidden relative`}>
-        <CardContent className="p-0 h-full">
+      <div style={{
+        background:'#3C2F2F',
+        border: `2px solid ${participant.is_streaming ? '#D4AF37' : 'rgba(128,0,32,0.3)'}`,
+        boxShadow: participant.is_streaming ? '0 0 20px rgba(212,175,55,0.3)' : 'none',
+        borderRadius:8,
+        overflow:'hidden',
+        position:'relative',
+        height: isSpotlight ? '100%' : compact ? '100%' : undefined,
+        aspectRatio: (!isSpotlight && !compact) ? '16/9' : undefined,
+      }}>
           {/* Video/Avatar Display */}
           <div className="relative w-full h-full bg-gradient-to-br from-[#3C2F2F] to-[#2A1F1F] flex items-center justify-center">
-            <Avatar className={isSpotlight ? 'w-32 h-32' : compact ? 'w-12 h-12' : 'w-20 h-20'}>
-              <AvatarImage src={participant.user_avatar} />
-              <AvatarFallback className="bg-[#800020] text-[#D4AF37] text-xl font-bold">
-                {participant.user_name?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div style={{
+              width: isSpotlight?128 : compact?48 : 80,
+              height: isSpotlight?128 : compact?48 : 80,
+              borderRadius:'50%', overflow:'hidden',
+              background:'rgba(212,175,55,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:isSpotlight?32:12, color:'#D4AF37'
+            }}>
+              {participant.user_avatar
+                ? <img src={participant.user_avatar} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                : participant.user_name?.charAt(0).toUpperCase()}
+            </div>
 
             {/* Streaming Indicator */}
             {participant.is_streaming && (
-              <Badge className="absolute top-2 right-2 bg-red-600 text-white animate-pulse">
-                <Radio className="w-2 h-2 mr-1" />
+              <span style={{ position:'absolute', top:8, right:8, fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', display:'inline-flex', alignItems:'center', gap:4 }}>
+                <Radio className="w-2 h-2" />
                 LIVE
-              </Badge>
+              </span>
             )}
 
             {/* Name & Status Overlay */}
@@ -158,9 +160,9 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
                   </p>
                   {!compact && (
                     <div className="flex items-center gap-1 mt-1">
-                      <Badge variant="outline" className="text-[10px] border-[#D4AF37] text-[#D4AF37]">
+                      <span style={{ fontSize:10, fontWeight:900, padding:'2px 6px', borderRadius:99, border:'1px solid #D4AF37', color:'#D4AF37', background:'transparent' }}>
                         {participant.role}
-                      </Badge>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -182,33 +184,28 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
 
             {/* Expand Button */}
             {!compact && (
-              <Button
-                size="icon"
-                variant="ghost"
+              <button
                 onClick={() => onSpotlight?.(participant.id)}
-                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 hover:bg-[#800020]/80 text-[#D4AF37]"
+                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ width:32, height:32, background:'rgba(0,0,0,0.5)', border:'none', borderRadius:6, cursor:'pointer', color:'#D4AF37', display:'flex', alignItems:'center', justifyContent:'center' }}
               >
                 {isSpotlight ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              </Button>
+              </button>
             )}
 
             {/* RTMP Toggle Button */}
             {!compact && (
-              <Button
-                size="icon"
-                variant="ghost"
+              <button
                 onClick={() => setShowRTMP(v => !v)}
                 title="Configure RTMP destinations"
-                className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all bg-black/50 hover:bg-[#D4AF37]/20 ${
-                  showRTMP ? 'opacity-100 text-[#D4AF37] bg-[#D4AF37]/20' : 'text-white/60'
-                }`}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all"
+                style={{ width:32, height:32, background: showRTMP ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.5)', border:'none', borderRadius:6, cursor:'pointer', color: showRTMP ? '#D4AF37' : 'rgba(255,255,255,0.6)', display:'flex', alignItems:'center', justifyContent:'center', opacity: showRTMP ? 1 : undefined }}
               >
                 <Radio className="w-4 h-4" />
-              </Button>
+              </button>
             )}
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Collapsible RTMP Panel */}
       <AnimatePresence>

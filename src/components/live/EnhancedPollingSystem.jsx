@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, X, RotateCcw, Zap, Plus, Copy } from 'lucide-react';
@@ -130,13 +129,12 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     return (
       <div className="p-4 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
         {isHost ? (
-          <Button
+          <button
             onClick={() => setShowCreate(!showCreate)}
-            className="w-full gap-2"
-            style={{ background: '#d4af37', color: '#000' }}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#d4af37', color: '#000', border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}
           >
             <Plus className="w-4 h-4" /> Create Poll
-          </Button>
+          </button>
         ) : (
           <p className="text-sm text-white/50">No active polls</p>
         )}

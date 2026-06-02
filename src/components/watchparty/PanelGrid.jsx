@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin } from 'lucide-react';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
 
 var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B7C', '#7C4A6B', '#6B4A4A'];
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -62,6 +57,7 @@ function useAudioLevel(stream) {
 }
 
 function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands }) {
+  var [menuOpen, setMenuOpen] = useState(false);
   var localSpeaking = useAudioLevel(isLocal ? stream : null);
   var speaking = isLocal ? localSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
@@ -132,11 +128,9 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-            <Avatar className="w-8 h-8 border" style={{ borderColor: color + '60' }}>
-              <AvatarFallback className="text-white font-bold text-xs" style={{ background: color + '40' }}>
-                {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
-              </AvatarFallback>
-            </Avatar>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', border: `1px solid ${color}60`, background: color + '40', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
+              {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
+            </div>
             {speaking && (
               <div className="flex items-end gap-0.5">
                 {[2, 4, 3, 5, 2].map(function(h, i) {
@@ -192,27 +186,28 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
             <Maximize2 className="w-2 h-2 text-white" />
           </button>
           {canManage && member.user_id !== hostId && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="w-4 h-4 rounded flex items-center justify-center"
-                  style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
-                >
-                  <MoreHorizontal className="w-2 h-2 text-white" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="text-xs" style={{ background: '#1A0F0A', border: '1px solid rgba(212,175,55,0.2)' }}>
-                <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer gap-2">
-                  <Pin className="w-3 h-3" /> Pin
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-white/10 cursor-pointer gap-2">
-                  <MicOff className="w-3 h-3" /> Mute
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-400 hover:bg-red-900/20 cursor-pointer gap-2">
-                  Remove
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setMenuOpen(v => !v)}
+                className="w-4 h-4 rounded flex items-center justify-center"
+                style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+              >
+                <MoreHorizontal className="w-2 h-2 text-white" />
+              </button>
+              {menuOpen && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 50, background: '#1A0F0A', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, minWidth: 100, overflow: 'hidden' }}
+                  onMouseLeave={() => setMenuOpen(false)}>
+                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#f87171' }].map(item => (
+                    <button key={item.label} onClick={() => setMenuOpen(false)}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'transparent', border: 'none', color: item.color, fontSize: 11, cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {item.icon && <item.icon className="w-3 h-3" />} {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -238,11 +233,9 @@ function SpotlitView({ member, hostId, stream, isLocal, onUnpin }) {
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <Avatar className="w-20 h-20">
-            <AvatarFallback className="text-2xl font-bold text-white" style={{ background: getColor(member.user_name) + '40' }}>
-              {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
-            </AvatarFallback>
-          </Avatar>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: getColor(member.user_name) + '40', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 24 }}>
+            {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
+          </div>
           <span className="text-sm font-semibold text-white">{member.user_name}</span>
           {member.user_id === hostId && <Crown className="w-4 h-4" style={{ color: '#d4af37' }} />}
         </div>
@@ -374,9 +367,9 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
   return (
     <div className="flex flex-col h-full" style={{ background: '#0d0618' }}>
       <div className="flex items-center gap-2 px-2 py-1.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <Badge className="text-[9px]" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)' }}>
+        <span style={{ fontSize: 9, background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 99, padding: '2px 8px' }}>
           {members.length}/{maxSlots} panelists
-        </Badge>
+        </span>
         <div className="flex gap-1 ml-auto">
           {SLOT_OPTIONS.map(function(n) {
             return (

@@ -2,13 +2,15 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
 import { Bell, Play, Plus, Trash2, X, Check, Volume2, Music } from 'lucide-react';
 import { toast } from 'sonner';
+
+const GOLD = '#D4AF37';
+const inputStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
+};
 
 // Sound presets using Web Audio API
 const SOUND_PRESETS = {
@@ -96,26 +98,27 @@ export function SoundAlertOverlay({ alerts, onTrigger }) {
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: -80, opacity: 0, scale: 0.8 }}
           transition={{ type: 'spring', damping: 15 }}
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] pointer-events-none"
+          style={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 100, pointerEvents: 'none' }}
         >
-          <div className="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border"
-            style={{
-              background: `linear-gradient(135deg, ${activeAlert.color || '#d4af37'}22, #0d0618)`,
-              borderColor: activeAlert.color || '#d4af37',
-              boxShadow: `0 0 40px ${activeAlert.color || '#d4af37'}44`
-            }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px', borderRadius: 16,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            background: `linear-gradient(135deg, ${activeAlert.color || GOLD}22, #0d0618)`,
+            border: `1px solid ${activeAlert.color || GOLD}`,
+            boxShadow: `0 0 40px ${activeAlert.color || GOLD}44`,
+          }}>
             <motion.div
               animate={{ rotate: [0, -15, 15, -15, 0] }}
               transition={{ duration: 0.5, repeat: 2 }}
-              className="text-3xl"
+              style={{ fontSize: 28 }}
             >
               {activeAlert.sound_preset === 'fanfare' ? '🎺' :
                activeAlert.sound_preset === 'explosion' ? '💥' :
                activeAlert.sound_preset === 'level_up' ? '⬆️' : '🎉'}
             </motion.div>
             <div>
-              <p className="font-bold text-white text-lg">{activeAlert.name}</p>
-              <p className="text-sm" style={{ color: activeAlert.color || '#d4af37' }}>{activeAlert.message}</p>
+              <p style={{ fontWeight: 700, color: '#fff', fontSize: 17, margin: 0 }}>{activeAlert.name}</p>
+              <p style={{ fontSize: 13, color: activeAlert.color || GOLD, margin: 0 }}>{activeAlert.message}</p>
             </div>
           </div>
         </motion.div>
@@ -155,44 +158,51 @@ export default function SoundAlertsManager({ creatorId }) {
   });
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Test widget */}
-      <div className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl">
-        <Volume2 className="w-4 h-4 text-[#d4af37] shrink-0" />
-        <span className="text-xs text-white/60">Test with $</span>
-        <Input type="number" value={testAmount} onChange={e => setTestAmount(Number(e.target.value))}
-          className="w-20 h-7 bg-white/5 border-white/20 text-white text-xs" />
-        <Button size="sm" className="h-7 text-xs bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3]"
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }}>
+        <Volume2 className="w-4 h-4" style={{ color: GOLD, flexShrink: 0 }} />
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>Test with $</span>
+        <input type="number" value={testAmount} onChange={e => setTestAmount(Number(e.target.value))}
+          style={{ ...inputStyle, width: 80, height: 28, fontSize: 11 }} />
+        <button
+          style={{ height: 28, fontSize: 11, background: GOLD, color: '#000', fontWeight: 700, border: 'none', borderRadius: 6, padding: '0 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
           onClick={() => {
             const matching = soundAlerts.filter(a => a.is_active && a.trigger_type === 'donation_amount' && testAmount >= (a.trigger_value || 0));
             if (matching.length) { playPreset(matching[matching.length - 1].sound_preset, matching[matching.length - 1].volume); toast.success(`Played: ${matching[matching.length - 1].name}`); }
             else toast.info('No alerts match this amount');
           }}>
-          <Play className="w-3 h-3 mr-1" /> Test
-        </Button>
-        <Button size="sm" variant="ghost" className="h-7 text-xs text-white/50 ml-auto" onClick={() => setShowForm(true)}>
-          <Plus className="w-3 h-3 mr-1" /> Add Alert
-        </Button>
+          <Play className="w-3 h-3" /> Test
+        </button>
+        <button
+          style={{ height: 28, fontSize: 11, background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto', fontFamily: 'Barlow Condensed, sans-serif' }}
+          onClick={() => setShowForm(true)}>
+          <Plus className="w-3 h-3" /> Add Alert
+        </button>
       </div>
 
       {/* Alerts list */}
-      <div className="space-y-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {soundAlerts.length === 0 && !showForm ? (
-          <p className="text-sm text-white/30 text-center py-4">No sound alerts yet</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '16px 0', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>No sound alerts yet</p>
         ) : soundAlerts.map(alert => (
-          <div key={alert.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${alert.is_active ? 'border-white/10 bg-white/3' : 'border-white/5 bg-white/[0.01] opacity-50'}`}>
-            <button onClick={() => playPreset(alert.sound_preset, alert.volume)} className="w-8 h-8 rounded-lg bg-[#d4af37]/10 flex items-center justify-center text-[#d4af37] hover:bg-[#d4af37]/20 shrink-0">
+          <div key={alert.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, border: alert.is_active ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.05)', background: alert.is_active ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)', opacity: alert.is_active ? 1 : 0.5, transition: 'all 0.2s' }}>
+            <button onClick={() => playPreset(alert.sound_preset, alert.volume)} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(212,175,55,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: GOLD, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
               <Play className="w-3.5 h-3.5" />
             </button>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white">{alert.name}</p>
-              <p className="text-[10px] text-white/40">{TRIGGER_TYPES.find(t => t.id === alert.trigger_type)?.label} {alert.trigger_value ? `· $${alert.trigger_value}` : ''}</p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>{alert.name}</p>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>{TRIGGER_TYPES.find(t => t.id === alert.trigger_type)?.label} {alert.trigger_value ? `· $${alert.trigger_value}` : ''}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge className="text-[9px] text-white/50 bg-white/5 border-white/10">{SOUND_PRESETS[alert.sound_preset]?.label?.split(' ')[0] || '🔔'}</Badge>
-              <Switch checked={alert.is_active} onCheckedChange={v => toggleMutation.mutate({ id: alert.id, is_active: v })}
-                className="scale-75 data-[state=checked]:bg-[#d4af37]" />
-              <button onClick={() => deleteMutation.mutate(alert.id)} className="text-white/20 hover:text-red-400">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {SOUND_PRESETS[alert.sound_preset]?.label?.split(' ')[0] || '🔔'}
+              </span>
+              {/* Switch */}
+              <div onClick={() => toggleMutation.mutate({ id: alert.id, is_active: !alert.is_active })} style={{ width: 40, height: 22, borderRadius: 99, background: alert.is_active ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', top: 3, left: alert.is_active ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </div>
+              <button onClick={() => deleteMutation.mutate(alert.id)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -204,33 +214,33 @@ export default function SoundAlertsManager({ creatorId }) {
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-            className="bg-white/5 border border-[#d4af37]/20 rounded-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-white">New Sound Alert</p>
-              <button onClick={() => setShowForm(false)} className="text-white/30 hover:text-white"><X className="w-4 h-4" /></button>
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>New Sound Alert</p>
+              <button onClick={() => setShowForm(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}><X className="w-4 h-4" /></button>
             </div>
 
-            <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="Alert name (e.g. 'Mega Donation')" className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/25" />
+            <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="Alert name (e.g. 'Mega Donation')" style={{ ...inputStyle, height: 32, fontSize: 12 }} />
 
-            <div className="grid grid-cols-2 gap-2">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <select value={form.trigger_type} onChange={e => setForm(f => ({ ...f, trigger_type: e.target.value }))}
-                className="bg-white/5 border border-white/20 rounded-lg px-2 py-1.5 text-xs text-white outline-none">
-                {TRIGGER_TYPES.map(t => <option key={t.id} value={t.id} className="bg-[#0d0618]">{t.label}</option>)}
+                style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                {TRIGGER_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
               </select>
               {(form.trigger_type === 'donation_amount' || form.trigger_type === 'donation_exact') && (
-                <Input type="number" value={form.trigger_value} onChange={e => setForm(f => ({ ...f, trigger_value: Number(e.target.value) }))}
-                  placeholder="$ amount" className="bg-white/5 border-white/20 text-white h-8 text-sm" />
+                <input type="number" value={form.trigger_value} onChange={e => setForm(f => ({ ...f, trigger_value: Number(e.target.value) }))}
+                  placeholder="$ amount" style={{ ...inputStyle, height: 32, fontSize: 12 }} />
               )}
             </div>
 
             {/* Sound presets */}
-            <div className="space-y-1">
-              <p className="text-[10px] text-white/40">Sound</p>
-              <div className="grid grid-cols-3 gap-1">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>Sound</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
                 {Object.entries(SOUND_PRESETS).map(([id, preset]) => (
                   <button key={id} onClick={() => { setForm(f => ({ ...f, sound_preset: id })); playPreset(id, 50); }}
-                    className={`text-xs py-1.5 px-2 rounded-lg border transition-all text-left ${form.sound_preset === id ? 'border-[#d4af37] bg-[#d4af37]/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20'}`}>
+                    style={{ fontSize: 11, padding: '6px 8px', borderRadius: 8, border: `1px solid ${form.sound_preset === id ? GOLD : 'rgba(255,255,255,0.1)'}`, background: form.sound_preset === id ? 'rgba(212,175,55,0.1)' : 'transparent', color: form.sound_preset === id ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {preset.label}
                   </button>
                 ))}
@@ -238,19 +248,21 @@ export default function SoundAlertsManager({ creatorId }) {
             </div>
 
             {/* Volume */}
-            <div className="space-y-1">
-              <div className="flex justify-between"><p className="text-[10px] text-white/40">Volume</p><span className="text-[10px] text-[#d4af37]">{form.volume}%</span></div>
-              <Slider value={[form.volume]} onValueChange={([v]) => setForm(f => ({ ...f, volume: v }))} min={0} max={100}
-                className="[&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-[#d4af37]" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>Volume</p>
+                <span style={{ fontSize: 10, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>{form.volume}%</span>
+              </div>
+              <input type="range" value={form.volume} onChange={e => setForm(f => ({ ...f, volume: +e.target.value }))} min={0} max={100} style={{ width: '100%', accentColor: GOLD }} />
             </div>
 
-            <Input value={form.message_template} onChange={e => setForm(f => ({ ...f, message_template: e.target.value }))}
-              placeholder="Message: {name} donated ${amount}!" className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/25" />
+            <input value={form.message_template} onChange={e => setForm(f => ({ ...f, message_template: e.target.value }))}
+              placeholder="Message: {name} donated ${amount}!" style={{ ...inputStyle, height: 32, fontSize: 12 }} />
 
-            <Button onClick={() => createMutation.mutate({ ...form, creator_id: creatorId })}
-              className="w-full bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3] h-8 text-sm">
-              <Check className="w-3.5 h-3.5 mr-1.5" /> Create Alert
-            </Button>
+            <button onClick={() => createMutation.mutate({ ...form, creator_id: creatorId })}
+              style={{ width: '100%', background: GOLD, color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }}>
+              <Check className="w-3.5 h-3.5" /> Create Alert
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

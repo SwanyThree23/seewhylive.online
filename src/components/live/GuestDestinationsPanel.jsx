@@ -2,10 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Eye, EyeOff, Wifi, Lock, KeyRound, Trash2, Plus, RefreshCw, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -65,11 +61,7 @@ function DestRow({ dest, userId }) {
         </span>
         {validState === 'ok' && <CheckCircle className="w-3 h-3 text-green-400" />}
         {validState === 'err' && <XCircle className="w-3 h-3 text-red-400" />}
-        <Switch
-          checked={!!dest.is_enabled}
-          onCheckedChange={function(v) { updateMut.mutate({ is_enabled: v }); }}
-          className="data-[state=checked]:bg-[#d4af37] scale-75"
-        />
+        <div onClick={function() { updateMut.mutate({ is_enabled: !dest.is_enabled }); }} style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: dest.is_enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
         <button onClick={function() { deleteMut.mutate(); }} className="text-white/20 hover:text-red-400 transition-colors">
           <Trash2 className="w-3 h-3" />
         </button>
@@ -78,39 +70,37 @@ function DestRow({ dest, userId }) {
       <div className="flex gap-1">
         <div className="relative flex-1">
           <KeyRound className="absolute left-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-white/20" />
-          <Input
+          <input
             type={showKey ? 'text' : 'password'}
             value={localKey}
             onChange={function(e) { setLocalKey(e.target.value); }}
             placeholder="Stream key"
-            className="pl-6 h-6 text-[10px] bg-white/5 border-white/10 text-white placeholder:text-white/20 font-mono"
+            style={{ width: '100%', paddingLeft: 24, paddingRight: 8, height: 24, fontSize: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
           />
         </div>
         <button onClick={function() { setShowKey(function(v) { return !v; }); }} className="w-6 h-6 rounded border border-white/10 flex items-center justify-center text-white/30">
           {showKey ? <EyeOff className="w-2.5 h-2.5" /> : <Eye className="w-2.5 h-2.5" />}
         </button>
-        <Button size="sm" onClick={validate} disabled={validating}
-          className="h-6 px-2 text-[9px] gap-1"
-          style={{ background: 'rgba(139,111,71,0.2)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)' }}>
+        <button onClick={validate} disabled={validating}
+          style={{ height: 24, padding: '0 8px', fontSize: 9, display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(139,111,71,0.2)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {validating ? <RefreshCw className="w-2 h-2 animate-spin" /> : <Wifi className="w-2 h-2" />}
           {validating ? '…' : 'Test'}
-        </Button>
-        <Button size="sm" onClick={function() {
+        </button>
+        <button onClick={function() {
           updateMut.mutate({ stream_key_encrypted: localKey, server_url: localUrl });
           toast.success('Saved');
         }}
-          className="h-6 px-2 text-[9px]"
-          style={{ background: '#d4af37', color: '#000' }}>
+          style={{ height: 24, padding: '0 8px', fontSize: 9, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
           Save
-        </Button>
+        </button>
       </div>
 
       {dest.platform === 'custom' && (
-        <Input
+        <input
           value={localUrl}
           onChange={function(e) { setLocalUrl(e.target.value); }}
           placeholder="rtmp://your-server/live"
-          className="h-6 text-[10px] bg-white/5 border-white/10 text-white font-mono placeholder:text-white/20"
+          style={{ width: '100%', padding: '2px 8px', height: 24, fontSize: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
         />
       )}
     </div>
@@ -210,17 +200,17 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
                         })}
                       </div>
                       <div className="flex gap-1">
-                        <Input value={label} onChange={function(e) { setLabel(e.target.value); }}
+                        <input value={label} onChange={function(e) { setLabel(e.target.value); }}
                           placeholder="Label e.g. My YouTube"
-                          className="h-6 flex-1 text-[10px] bg-white/5 border-white/10 text-white placeholder:text-white/20"
                           onKeyDown={function(e) { if (e.key === 'Enter') addDest(); }}
+                          style={{ flex: 1, height: 24, fontSize: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', outline: 'none', padding: '0 8px', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }}
                         />
-                        <Button size="sm" onClick={addDest} disabled={createMut.isPending || !label.trim()}
-                          className="h-6 px-2 text-[10px] font-bold" style={{ background: '#d4af37', color: '#000' }}>
+                        <button onClick={addDest} disabled={createMut.isPending || !label.trim()}
+                          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: (createMut.isPending || !label.trim()) ? 0.5 : 1 }}>
                           Add
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={function() { setShowAdd(false); }}
-                          className="h-6 px-1.5 text-white/30">✕</Button>
+                        </button>
+                        <button onClick={function() { setShowAdd(false); }}
+                          style={{ height: 24, padding: '0 6px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)' }}>✕</button>
                       </div>
                     </div>
                   </motion.div>

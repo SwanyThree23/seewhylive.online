@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { Swords, Users, Trophy, Zap, Timer, TrendingUp } from 'lucide-react';
 
 const BattleCard = ({ player, score, tips, isWinner }) => (
@@ -16,7 +15,7 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
     </div>
     <h3 className="font-bold text-white mb-1">{player?.name || 'Player'}</h3>
     <p className="text-[11px] text-white/60 mb-3">{player?.followers || 0} followers</p>
-    
+
     <div className="space-y-1.5 mb-3">
       <div className="bg-white/10 rounded px-2 py-1">
         <p className="text-[9px] text-white/50">TIPS</p>
@@ -107,18 +106,22 @@ export default function PKBattleInterface({ roomId }) {
           <h2 className="text-2xl font-black text-white">PK BATTLE</h2>
         </div>
         <p className="text-white/60 mb-6">Challenge another creator to a live battle</p>
-        <Button
+        <button
           onClick={() => {
             setBattleActive(true);
             setTimeLeft(180);
             setCreator(p => ({ ...p, tips: 0, score: 0 }));
             setChallenger(p => ({ ...p, tips: 0, score: 0 }));
           }}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold h-10"
+          style={{
+            width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer', borderRadius: 8,
+            background: '#f59e0b', color: '#000', border: 'none',
+          }}
         >
-          <Swords className="w-4 h-4 mr-2" />
+          <Swords className="w-4 h-4" />
           Start Battle
-        </Button>
+        </button>
       </motion.div>
     );
   }
@@ -140,13 +143,13 @@ export default function PKBattleInterface({ roomId }) {
 
       {/* VS View */}
       <div className="flex gap-3">
-        <BattleCard 
-          player={creator} 
+        <BattleCard
+          player={creator}
           score={creator.score}
           tips={creator.tips}
           isWinner={battleActive && winner === 'creator'}
         />
-        
+
         <div className="flex flex-col items-center justify-center gap-2">
           <div className="text-center">
             <p className="text-[10px] text-white/40 uppercase font-bold">VS</p>
@@ -158,7 +161,7 @@ export default function PKBattleInterface({ roomId }) {
           </div>
         </div>
 
-        <BattleCard 
+        <BattleCard
           player={challenger}
           score={challenger.score}
           tips={challenger.tips}
@@ -193,12 +196,16 @@ export default function PKBattleInterface({ roomId }) {
           <p className="text-sm font-bold text-white mb-2">
             {winner === 'creator' ? creator.name : challenger.name} Wins!
           </p>
-          <Button
+          <button
             onClick={() => setBattleActive(false)}
-            className="w-full bg-green-500 hover:bg-green-600 text-white h-9"
+            style={{
+              width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 600, fontSize: 14, cursor: 'pointer', borderRadius: 8,
+              background: '#22c55e', color: '#fff', border: 'none',
+            }}
           >
             View Results
-          </Button>
+          </button>
         </motion.div>
       )}
     </motion.div>

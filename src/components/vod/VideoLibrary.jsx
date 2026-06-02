@@ -1,13 +1,42 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Video, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import VODCard from './VODCard';
 import VODTrimEditor from './VODTrimEditor';
 import ChapterEditor from './ChapterEditor';
+
+const inputStyle = {
+  width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+  fontSize: 13, outline: 'none', boxSizing: 'border-box',
+  fontFamily: 'Barlow Condensed, sans-serif',
+};
+
+const textareaStyle = {
+  ...inputStyle,
+  resize: 'none',
+  minHeight: 80,
+};
+
+function Modal({ open, onClose, title, titleColor, children }) {
+  if (!open) return null;
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.75)' }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: '#0d0618', border: `1px solid ${titleColor || 'rgba(212,175,55,0.2)'}`, borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <h2 style={{ color: titleColor || '#d4af37', fontWeight: 700, fontSize: 16, marginBottom: 16 }}>{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function VideoLibrary({ creatorId }) {
   const qc = useQueryClient();
@@ -58,14 +87,27 @@ export default function VideoLibrary({ creatorId }) {
         </h3>
         <div className="flex gap-2">
           {recordings.filter(r => r.status === 'ready').length > 0 && (
-            <Button size="sm" variant="outline" className="border-white/10 text-white/60 text-xs h-8 gap-1.5"
-              onClick={() => importRecording(recordings.find(r => r.status === 'ready'))}>
+            <button
+              onClick={() => importRecording(recordings.find(r => r.status === 'ready'))}
+              style={{
+                height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 12, borderRadius: 8, cursor: 'pointer',
+                background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
+              }}
+            >
               <Upload className="w-3.5 h-3.5" /> Import Recording
-            </Button>
+            </button>
           )}
-          <Button size="sm" className="bg-[#d4af37] text-black font-bold text-xs h-8 gap-1.5" onClick={() => setShowAdd(true)}>
+          <button
+            onClick={() => setShowAdd(true)}
+            style={{
+              height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
+              background: '#d4af37', color: '#000', border: 'none',
+            }}
+          >
             <Plus className="w-3.5 h-3.5" /> Add VOD
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -88,69 +130,74 @@ export default function VideoLibrary({ creatorId }) {
         </div>
       )}
 
-      {/* Trim Dialog */}
-      <Dialog open={!!trimTarget} onOpenChange={() => setTrimTarget(null)}>
-        <DialogContent className="bg-[#0d0618] border-[#d4af37]/20 text-white max-w-lg">
-          <DialogHeader><DialogTitle className="text-[#d4af37]">Trim Video</DialogTitle></DialogHeader>
-          {trimTarget && (
-            <VODTrimEditor
-              video={trimTarget}
-              onSave={(data) => { updateVOD.mutate({ id: trimTarget.id, data }); setTrimTarget(null); }}
-              onCancel={() => setTrimTarget(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Trim Modal */}
+      <Modal open={!!trimTarget} onClose={() => setTrimTarget(null)} title="Trim Video" titleColor="#d4af37">
+        {trimTarget && (
+          <VODTrimEditor
+            video={trimTarget}
+            onSave={(data) => { updateVOD.mutate({ id: trimTarget.id, data }); setTrimTarget(null); }}
+            onCancel={() => setTrimTarget(null)}
+          />
+        )}
+      </Modal>
 
-      {/* Chapters Dialog */}
-      <Dialog open={!!chapterTarget} onOpenChange={() => setChapterTarget(null)}>
-        <DialogContent className="bg-[#0d0618] border-[#00d4ff]/20 text-white max-w-lg">
-          <DialogHeader><DialogTitle className="text-[#00d4ff]">Chapter Markers</DialogTitle></DialogHeader>
-          {chapterTarget && (
-            <ChapterEditor
-              video={chapterTarget}
-              onSave={(data) => { updateVOD.mutate({ id: chapterTarget.id, data }); setChapterTarget(null); }}
-              onCancel={() => setChapterTarget(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Chapters Modal */}
+      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#00d4ff">
+        {chapterTarget && (
+          <ChapterEditor
+            video={chapterTarget}
+            onSave={(data) => { updateVOD.mutate({ id: chapterTarget.id, data }); setChapterTarget(null); }}
+            onCancel={() => setChapterTarget(null)}
+          />
+        )}
+      </Modal>
 
-      {/* Add VOD Dialog */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
-        <DialogContent className="bg-[#0d0618] border-[#d4af37]/20 text-white max-w-md">
-          <DialogHeader><DialogTitle className="text-[#d4af37]">Add VOD to Library</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <input
-              placeholder="Video title..."
-              value={newVOD.title}
-              onChange={e => setNewVOD(p => ({ ...p, title: e.target.value }))}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-            />
-            <input
-              placeholder="Video URL (stream URL, direct link...)"
-              value={newVOD.video_url}
-              onChange={e => setNewVOD(p => ({ ...p, video_url: e.target.value }))}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
-            />
-            <textarea
-              placeholder="Description (optional)..."
-              value={newVOD.description}
-              onChange={e => setNewVOD(p => ({ ...p, description: e.target.value }))}
-              rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white resize-none"
-            />
-            <div className="flex gap-2 pt-1">
-              <Button variant="outline" size="sm" className="border-white/10 text-white/60" onClick={() => setShowAdd(false)}>Cancel</Button>
-              <Button size="sm" className="bg-[#d4af37] text-black font-bold ml-auto"
-                disabled={!newVOD.title || createVOD.isPending}
-                onClick={() => createVOD.mutate(newVOD)}>
-                Add to Library
-              </Button>
-            </div>
+      {/* Add VOD Modal */}
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Add VOD to Library" titleColor="#d4af37">
+        <div className="space-y-3">
+          <input
+            placeholder="Video title..."
+            value={newVOD.title}
+            onChange={e => setNewVOD(p => ({ ...p, title: e.target.value }))}
+            style={inputStyle}
+          />
+          <input
+            placeholder="Video URL (stream URL, direct link...)"
+            value={newVOD.video_url}
+            onChange={e => setNewVOD(p => ({ ...p, video_url: e.target.value }))}
+            style={inputStyle}
+          />
+          <textarea
+            placeholder="Description (optional)..."
+            value={newVOD.description}
+            onChange={e => setNewVOD(p => ({ ...p, description: e.target.value }))}
+            rows={3}
+            style={textareaStyle}
+          />
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => setShowAdd(false)}
+              style={{
+                fontSize: 12, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
+                background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              disabled={!newVOD.title || createVOD.isPending}
+              onClick={() => createVOD.mutate(newVOD)}
+              style={{
+                marginLeft: 'auto', fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
+                background: '#d4af37', color: '#000', border: 'none',
+                opacity: (!newVOD.title || createVOD.isPending) ? 0.5 : 1,
+              }}
+            >
+              Add to Library
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -254,13 +254,12 @@ function CreatorBattleCard({ name, score, pct, side, isLeading, onVote }) {
         </div>
         <p className="text-[10px] font-semibold text-white truncate">{name}</p>
         <p className="text-lg font-bold font-mono text-[#d4af37]">{score}</p>
-        <Button
-          size="sm"
+        <button
           onClick={onVote}
-          className="w-full h-6 text-[9px] bg-[#800020] hover:bg-[#9a0025] text-white border-0"
+          style={{ width:'100%', height:24, fontSize:9, background:'#800020', color:'#fff', border:'none', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
         >
-          <Zap className="w-2.5 h-2.5 mr-1" /> Vote
-        </Button>
+          <Zap className="w-2.5 h-2.5" /> Vote
+        </button>
       </div>
     </div>
   );
@@ -313,15 +312,14 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
           </button>
         ))}
       </div>
-      <Button
-        size="sm"
+      <button
         disabled={!creator1 || !creator2 || creator1 === creator2 || isLoading}
         onClick={() => onStart(c1, c2)}
-        className="w-full h-7 text-[10px] bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold"
+        style={{ width:'100%', height:28, fontSize:10, background:'#D4AF37', color:'#000', border:'none', borderRadius:6, fontWeight:700, cursor:(!creator1||!creator2||creator1===creator2||isLoading)?'not-allowed':'pointer', opacity:(!creator1||!creator2||creator1===creator2||isLoading)?0.5:1, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
       >
-        <Swords className="w-3 h-3 mr-1" />
+        <Swords className="w-3 h-3" />
         {isLoading ? 'Starting…' : '⚔️ Start Battle'}
-      </Button>
+      </button>
     </div>
   );
 }
