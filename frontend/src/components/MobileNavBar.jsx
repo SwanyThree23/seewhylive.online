@@ -52,6 +52,7 @@ export default function MobileNavBar(props) {
   var isLive       = props.isLive;
   var auraUnread   = props.auraUnread || 0;
   var onAuraClick  = props.onAuraClick;
+  var onResetTab   = props.onResetTab;
 
   var [showMore, setShowMore] = useState(false);
 
@@ -60,6 +61,12 @@ export default function MobileNavBar(props) {
 
   function goTo(id) {
     if (id === '__more__') { setShowMore(function(v) { return !v; }); return; }
+    if (id === activeTab) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (onResetTab) onResetTab(id);
+      setShowMore(false);
+      return;
+    }
     setActiveTab(id);
     if (id === 'aura' && onAuraClick) onAuraClick();
     setShowMore(false);

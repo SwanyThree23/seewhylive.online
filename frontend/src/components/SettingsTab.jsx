@@ -597,7 +597,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
             style={{ width: '100%', background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '7px 12px', color: '#EDE8F5', fontFamily: "'DM Mono',monospace", fontSize: 10, boxSizing: 'border-box', marginBottom: 8 }}
           />
           <button
-            onClick={function() { addToast('Account deletion requires contacting support', 'error'); }}
+            onClick={function() { if (deleteConfirm === 'DELETE') handleDeleteAccount(); }}
             disabled={deleteConfirm !== 'DELETE'}
             style={{
               background: deleteConfirm === 'DELETE' ? 'rgba(255,26,60,.2)' : 'rgba(255,26,60,.05)',
