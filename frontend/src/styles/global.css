@@ -2706,3 +2706,19 @@ select:focus { border-color: rgba(201,168,76,.5); }
   .media-controls-bar { padding-bottom: env(safe-area-inset-bottom); }
   .toasts-container { bottom: calc(60px + env(safe-area-inset-bottom)); }
 }
+
+/* ============================================================
+   SAFE AREA UTILITIES
+   ============================================================ */
+
+.pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ============================================================
+   TAB TRANSITION
+   ============================================================ */
+
+@keyframes tabSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

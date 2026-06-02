@@ -191,6 +191,7 @@ export default function App() {
   var [showMoreDrawer, setShowMoreDrawer] = useState(false);
   var [canGoBack, setCanGoBack] = useState(false);
   var [nextEventCountdown, setNextEventCountdown] = useState(null);
+  var [tabResetKey, setTabResetKey] = useState(0);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
@@ -775,7 +776,7 @@ export default function App() {
     <div style={{ minHeight: '100vh', background: '#0E0C09', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif" }}>
       <BrandChyron isLive={isLive} streamTitle={streamInfo.title} />
       {/* Header HUD */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44 }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,12,20,.95)', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', padding: '6px 16px', gap: 12, height: 44, paddingTop: 'max(6px, env(safe-area-inset-top, 6px))' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
           {canGoBack && (
             <button
@@ -941,6 +942,7 @@ export default function App() {
       <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
       <ErrorBoundary>
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 2 }}>LOADING...</div>}>
+      <div key={activeTab + '-' + tabResetKey} style={{ display: 'flex', flexDirection: 'column', flex: 1, animation: activeTab !== 'room' ? 'tabSlideIn .18s ease-out' : 'none' }}>
         {activeTab === 'room' && paidRoom.enabled && !paidUnlocked && (
           <PaywallScreen
             priceCents={paidRoom.priceCents}
@@ -1295,6 +1297,7 @@ export default function App() {
             roomId={APP_ID}
           />
         )}
+      </div>
       </Suspense>
       </ErrorBoundary>
       </main>
@@ -1373,7 +1376,7 @@ export default function App() {
           roomId={APP_ID}
         />
       )}
-      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} />
+      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
       <WelcomeAudio socket={socketRef.current} />
     </div>
   );

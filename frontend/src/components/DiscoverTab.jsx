@@ -991,7 +991,28 @@ export default function DiscoverTab(props) {
   var filteredCreators = creators;
 
   function handleRefresh() {
-    fetch('/api/active-rooms').then(function(r) { return r.json(); }).then(function(d) { if (d && d.rooms && d.rooms.length) setStreams(d.rooms); });
+    fetch('/api/active-rooms')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.rooms) {
+          var mapped = d.rooms.map(function(room) {
+            return {
+              id: room.id || room.roomId,
+              title: room.title || 'Live Stream',
+              hostName: room.hostName || 'Host',
+              viewerCount: room.viewerCount || room.viewers || 0,
+              genre: room.category || 'GENERAL',
+              isLive: true,
+              durationMins: 0,
+              tier: 'free',
+              category: room.category || 'GENERAL',
+              fromApi: true
+            };
+          });
+          setStreams(mapped);
+        }
+      })
+      .catch(function() {});
   }
 
   return React.createElement(
