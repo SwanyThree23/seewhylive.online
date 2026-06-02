@@ -133,6 +133,8 @@ export default function SettingsPage() {
     { label: 'Monetization',      href: 'Monetization' },
     { label: 'Analytics',         href: 'Analytics' },
     { label: 'Overlay Editor',    href: 'OverlayEditor' },
+    { label: 'Scene Templates',   href: 'SceneTemplates' },
+    { label: 'Stream Alerts',     href: 'StreamAlerts' },
   ];
 
   return (
