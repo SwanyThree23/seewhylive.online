@@ -5,22 +5,22 @@
  * One Worker per CPU core, one Router per room, simulcast video.
  */
 
-const mediasoup = require('mediasoup');
-const os = require('os');
+var mediasoup = require('mediasoup');
+var os = require('os');
 
-const ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
+var ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
 
 // ─── Internal state maps ───────────────────────────────────────────────────
-const workers = [];       // mediasoup.Worker[]
-const routers = {};       // roomId → mediasoup.Router
-const transports = {};    // transportId → mediasoup.WebRtcTransport
-const producers = {};     // producerId → { producer, guestId, kind, roomId }
-const consumers = {};     // consumerId → mediasoup.Consumer
+var workers = [];       // mediasoup.Worker[]
+var routers = {};       // roomId → mediasoup.Router
+var transports = {};    // transportId → mediasoup.WebRtcTransport
+var producers = {};     // producerId → { producer, guestId, kind, roomId }
+var consumers = {};     // consumerId → mediasoup.Consumer
 
-let workerIndex = 0;
+var workerIndex = 0;
 
 // ─── Codec definitions ────────────────────────────────────────────────────
-const mediaCodecs = [
+var mediaCodecs = [
   {
     kind: 'audio',
     mimeType: 'audio/opus',
@@ -50,12 +50,8 @@ const mediaCodecs = [
 
 // ─── Worker management ───────────────────────────────────────────────────
 
-/**
- * Spawn a single mediasoup Worker and attach crash recovery.
- * @returns {Promise<mediasoup.Worker>}
- */
 async function spawnWorker() {
-  const worker = await mediasoup.createWorker({
+  var worker = await mediasoup.createWorker({
     logLevel: 'warn',
     logTags: ['info', 'ice', 'dtls', 'rtp', 'srtp', 'rtcp'],
     rtcMinPort: 40000,
@@ -64,7 +60,7 @@ async function spawnWorker() {
 
   worker.on('died', function(error) {
     console.error('mediasoup Worker died, restarting in 2s:', error);
-    const idx = workers.indexOf(worker);
+    var idx = workers.indexOf(worker);
     if (idx !== -1) {
       workers.splice(idx, 1);
     }
@@ -81,56 +77,38 @@ async function spawnWorker() {
   return worker;
 }
 
-/**
- * Create one Worker per CPU core.
- * @returns {Promise<void>}
- */
 async function createWorkers() {
-  const numCores = os.cpus().length;
-  const promises = [];
-  for (let i = 0; i < numCores; i++) {
+  var numCores = os.cpus().length;
+  var promises = [];
+  for (var i = 0; i < numCores; i++) {
     promises.push(spawnWorker());
   }
-  const spawned = await Promise.all(promises);
+  var spawned = await Promise.all(promises);
   spawned.forEach(function(w) { workers.push(w); });
   console.log('mediasoup Workers created:', workers.length);
 }
 
-/**
- * Round-robin pick of an alive Worker.
- * @returns {mediasoup.Worker}
- */
 function pickWorker() {
   if (workers.length === 0) {
     throw new Error('No mediasoup Workers available');
   }
-  const worker = workers[workerIndex % workers.length];
+  var worker = workers[workerIndex % workers.length];
   workerIndex = (workerIndex + 1) % workers.length;
   return worker;
 }
 
 // ─── Router management ───────────────────────────────────────────────────
 
-/**
- * Get an existing Router for a room or create one.
- * @param {string} roomId
- * @returns {Promise<mediasoup.Router>}
- */
 async function getOrCreateRouter(roomId) {
   if (routers[roomId]) {
     return routers[roomId];
   }
-  const worker = pickWorker();
-  const router = await worker.createRouter({ mediaCodecs });
+  var worker = pickWorker();
+  var router = await worker.createRouter({ mediaCodecs: mediaCodecs });
   routers[roomId] = router;
   return router;
 }
 
-/**
- * Return the router RTP capabilities for a room.
- * @param {string} roomId
- * @returns {Object}
- */
 function getRouterRtpCapabilities(roomId) {
   if (!routers[roomId]) {
     throw new Error('No router for room: ' + roomId);
@@ -140,18 +118,13 @@ function getRouterRtpCapabilities(roomId) {
 
 // ─── Transport management ────────────────────────────────────────────────
 
-/**
- * Create a WebRtcTransport for a given router.
- * @param {string} routerId - the roomId whose router to use
- * @returns {Promise<{transport: mediasoup.WebRtcTransport, params: Object}>}
- */
 async function createWebRtcTransport(routerId) {
-  const router = routers[routerId];
+  var router = routers[routerId];
   if (!router) {
     throw new Error('No router for room: ' + routerId);
   }
 
-  const transport = await router.createWebRtcTransport({
+  var transport = await router.createWebRtcTransport({
     listenIps: [
       { ip: '0.0.0.0', announcedIp: ANNOUNCED_IP }
     ],
@@ -163,49 +136,34 @@ async function createWebRtcTransport(routerId) {
 
   transports[transport.id] = transport;
 
-  const params = {
+  var params = {
     id: transport.id,
     iceParameters: transport.iceParameters,
     iceCandidates: transport.iceCandidates,
     dtlsParameters: transport.dtlsParameters
   };
 
-  return { transport, params };
+  return { transport: transport, params: params };
 }
 
-/**
- * Connect a transport to the client-supplied DTLS parameters.
- * @param {string} transportId
- * @param {Object} dtlsParameters
- * @returns {Promise<void>}
- */
 async function connectTransport(transportId, dtlsParameters) {
-  const transport = transports[transportId];
+  var transport = transports[transportId];
   if (!transport) {
     throw new Error('Transport not found: ' + transportId);
   }
-  await transport.connect({ dtlsParameters });
+  await transport.connect({ dtlsParameters: dtlsParameters });
 }
 
 // ─── Producer management ─────────────────────────────────────────────────
 
-/**
- * Create a producer on the given transport.
- * @param {string} transportId
- * @param {Object} rtpParameters
- * @param {string} kind - 'audio' | 'video'
- * @param {string} guestId
- * @returns {Promise<{producer: mediasoup.Producer, producerId: string}>}
- */
 async function createProducer(transportId, rtpParameters, kind, guestId) {
-  const transport = transports[transportId];
+  var transport = transports[transportId];
   if (!transport) {
     throw new Error('Transport not found: ' + transportId);
   }
 
-  const producerOptions = { kind, rtpParameters };
+  var producerOptions = { kind: kind, rtpParameters: rtpParameters };
 
-  // Simulcast encodings for video producers
   if (kind === 'video') {
     producerOptions.encodings = [
       { rid: 'r0', maxBitrate: 100000, scalabilityMode: 'S1T3' },
@@ -217,30 +175,25 @@ async function createProducer(transportId, rtpParameters, kind, guestId) {
     };
   }
 
-  const producer = await transport.produce(producerOptions);
+  var producer = await transport.produce(producerOptions);
 
-  // Find which room this transport/producer belongs to by scanning routers
-  let roomId = null;
-  const roomIds = Object.keys(routers);
-  for (let i = 0; i < roomIds.length; i++) {
-    const rid = roomIds[i];
+  var roomId = null;
+  var roomIds = Object.keys(routers);
+  for (var i = 0; i < roomIds.length; i++) {
+    var rid = roomIds[i];
     if (routers[rid] && transport.routerId === routers[rid].id) {
       roomId = rid;
       break;
     }
   }
 
-  producers[producer.id] = { producer, guestId, kind, roomId };
+  producers[producer.id] = { producer: producer, guestId: guestId, kind: kind, roomId: roomId };
 
-  return { producer, producerId: producer.id };
+  return { producer: producer, producerId: producer.id };
 }
 
-/**
- * Close a producer and remove it from internal state.
- * @param {string} producerId
- */
 function closeProducer(producerId) {
-  const entry = producers[producerId];
+  var entry = producers[producerId];
   if (!entry) return;
   try {
     entry.producer.close();
@@ -250,68 +203,79 @@ function closeProducer(producerId) {
   delete producers[producerId];
 }
 
+function pauseProducer(producerId) {
+  var entry = producers[producerId];
+  if (!entry) return;
+  entry.producer.pause().catch(function(err) {
+    console.error('Error pausing producer:', producerId, err);
+  });
+}
+
+function resumeProducer(producerId) {
+  var entry = producers[producerId];
+  if (!entry) return;
+  entry.producer.resume().catch(function(err) {
+    console.error('Error resuming producer:', producerId, err);
+  });
+}
+
+function getProducerIdsByGuest(guestId) {
+  var ids = [];
+  Object.keys(producers).forEach(function(pid) {
+    if (producers[pid].guestId === guestId) ids.push(pid);
+  });
+  return ids;
+}
+
 // ─── Consumer management ─────────────────────────────────────────────────
 
-/**
- * Create a consumer for a specific producer.
- * @param {string} routerId - the roomId whose router to use
- * @param {string} transportId
- * @param {string} producerId
- * @param {Object} rtpCapabilities
- * @returns {Promise<{consumer: mediasoup.Consumer, params: Object}>}
- */
 async function createConsumer(routerId, transportId, producerId, rtpCapabilities) {
-  const router = routers[routerId];
+  var router = routers[routerId];
   if (!router) {
     throw new Error('No router for room: ' + routerId);
   }
 
-  const transport = transports[transportId];
+  var transport = transports[transportId];
   if (!transport) {
     throw new Error('Transport not found: ' + transportId);
   }
 
-  const producerEntry = producers[producerId];
+  var producerEntry = producers[producerId];
   if (!producerEntry) {
     throw new Error('Producer not found: ' + producerId);
   }
 
-  if (!router.canConsume({ producerId, rtpCapabilities })) {
+  if (!router.canConsume({ producerId: producerId, rtpCapabilities: rtpCapabilities })) {
     throw new Error('Cannot consume producer: ' + producerId);
   }
 
-  const consumer = await transport.consume({
-    producerId,
-    rtpCapabilities,
+  var consumer = await transport.consume({
+    producerId: producerId,
+    rtpCapabilities: rtpCapabilities,
     paused: false
   });
 
   consumers[consumer.id] = consumer;
 
-  const params = {
+  var params = {
     id: consumer.id,
-    producerId,
+    producerId: producerId,
     kind: consumer.kind,
     rtpParameters: consumer.rtpParameters,
     type: consumer.type,
     producerPaused: consumer.producerPaused
   };
 
-  return { consumer, params };
+  return { consumer: consumer, params: params };
 }
 
 // ─── Room-level helpers ───────────────────────────────────────────────────
 
-/**
- * Return all active producers for a room.
- * @param {string} roomId
- * @returns {Array<{producerId: string, guestId: string, kind: string}>}
- */
 function getRoomProducers(roomId) {
-  const result = [];
-  const ids = Object.keys(producers);
-  for (let i = 0; i < ids.length; i++) {
-    const entry = producers[ids[i]];
+  var result = [];
+  var ids = Object.keys(producers);
+  for (var i = 0; i < ids.length; i++) {
+    var entry = producers[ids[i]];
     if (entry.roomId === roomId) {
       result.push({ producerId: ids[i], guestId: entry.guestId, kind: entry.kind });
     }
@@ -319,40 +283,33 @@ function getRoomProducers(roomId) {
   return result;
 }
 
-/**
- * Close all producers, consumers, transports, and the router for a room.
- * @param {string} roomId
- */
 function cleanupRoom(roomId) {
-  // Close producers belonging to this room
-  const producerIds = Object.keys(producers);
-  for (let i = 0; i < producerIds.length; i++) {
-    const entry = producers[producerIds[i]];
+  var producerIds = Object.keys(producers);
+  for (var i = 0; i < producerIds.length; i++) {
+    var entry = producers[producerIds[i]];
     if (entry.roomId === roomId) {
       try { entry.producer.close(); } catch (e) { /* ignore */ }
       delete producers[producerIds[i]];
     }
   }
 
-  // Close transports belonging to this room's router
-  const router = routers[roomId];
+  var router = routers[roomId];
   if (router) {
-    const transportIds = Object.keys(transports);
-    for (let i = 0; i < transportIds.length; i++) {
-      const t = transports[transportIds[i]];
+    var transportIds = Object.keys(transports);
+    for (var j = 0; j < transportIds.length; j++) {
+      var t = transports[transportIds[j]];
       if (t.routerId === router.id) {
         try { t.close(); } catch (e) { /* ignore */ }
-        delete transports[transportIds[i]];
+        delete transports[transportIds[j]];
       }
     }
 
-    // Close consumers whose producer was in this room (already closed above, just clean map)
-    const consumerIds = Object.keys(consumers);
-    for (let i = 0; i < consumerIds.length; i++) {
-      const c = consumers[consumerIds[i]];
+    var consumerIds = Object.keys(consumers);
+    for (var k = 0; k < consumerIds.length; k++) {
+      var c = consumers[consumerIds[k]];
       if (c.routerId === router.id) {
         try { c.close(); } catch (e) { /* ignore */ }
-        delete consumers[consumerIds[i]];
+        delete consumers[consumerIds[k]];
       }
     }
 
@@ -361,24 +318,23 @@ function cleanupRoom(roomId) {
   }
 }
 
-/**
- * Return the current number of active workers (used by health endpoint).
- * @returns {number}
- */
 function getWorkerCount() {
   return workers.length;
 }
 
 module.exports = {
-  createWorkers,
-  getOrCreateRouter,
-  createWebRtcTransport,
-  connectTransport,
-  createProducer,
-  createConsumer,
-  closeProducer,
-  getRouterRtpCapabilities,
-  getRoomProducers,
-  cleanupRoom,
-  getWorkerCount
+  createWorkers: createWorkers,
+  getOrCreateRouter: getOrCreateRouter,
+  createWebRtcTransport: createWebRtcTransport,
+  connectTransport: connectTransport,
+  createProducer: createProducer,
+  createConsumer: createConsumer,
+  closeProducer: closeProducer,
+  pauseProducer: pauseProducer,
+  resumeProducer: resumeProducer,
+  getProducerIdsByGuest: getProducerIdsByGuest,
+  getRouterRtpCapabilities: getRouterRtpCapabilities,
+  getRoomProducers: getRoomProducers,
+  cleanupRoom: cleanupRoom,
+  getWorkerCount: getWorkerCount
 };
