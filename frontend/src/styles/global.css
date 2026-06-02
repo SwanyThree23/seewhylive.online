@@ -2708,6 +2708,14 @@ select:focus { border-color: rgba(201,168,76,.5); }
 }
 
 /* ============================================================
+   ANDROID DARK MODE — force dark even when system is light
+   ============================================================ */
+
+@media (prefers-color-scheme: light) {
+  html { background: #0E0C09; color: #F0E8D4; color-scheme: dark; }
+}
+
+/* ============================================================
    SAFE AREA UTILITIES
    ============================================================ */
 
