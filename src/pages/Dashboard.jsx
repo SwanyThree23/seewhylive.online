@@ -34,7 +34,7 @@ const TABS = [
 function Card({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-xl ${className}`}
-      style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
+      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
       {children}
     </div>
   );
@@ -115,7 +115,7 @@ function OverviewTab({ user }) {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="label" tick={{ fill: 'rgba(245,230,211,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 9 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: '#1A1A1A', border: `1px solid ${GOLD}30`, color: CREAM }} />
+              <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
               <Bar dataKey="total" fill={GOLD} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -319,13 +319,16 @@ function ContentTab({ user }) {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <select value={sort} onChange={e => setSort(e.target.value)}
-            className="text-[10px] px-2 py-1.5 rounded-lg outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
+          <div className="flex gap-1">
+            {[{v:'newest',l:'Newest'},{v:'views',l:'Views'},{v:'longest',l:'Longest'}].map(opt => (
+              <button key={opt.v} onClick={() => setSort(opt.v)}
+                className="text-[10px] px-2 py-1 rounded-lg font-black uppercase"
+                style={{ background: sort===opt.v ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${sort===opt.v ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: sort===opt.v ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {opt.l}
+              </button>
+            ))}
+          </div>
             <option value="newest">Newest</option>
-            <option value="views">Most Viewed</option>
-            <option value="longest">Longest</option>
-          </select>
           <button onClick={() => setShowCreate(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
             style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
@@ -409,7 +412,7 @@ function ContentTab({ user }) {
               onClick={() => { setShowCreate(false); setEditVod(null); }} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md rounded-2xl p-5 space-y-3"
-              style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>{editVod ? 'Edit VOD' : 'Upload VOD'}</span>
                 <button onClick={() => { setShowCreate(false); setEditVod(null); }}><X className="w-4 h-4 text-white/40" /></button>
@@ -425,19 +428,21 @@ function ContentTab({ user }) {
                   className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
               ))}
-              <div className="flex gap-2">
-                <select value={(editVod ? editVod : form).status}
-                  onChange={e => editVod ? setEditVod(v => ({ ...v, status: e.target.value })) : setForm(f => ({ ...f, status: e.target.value }))}
-                  className="flex-1 px-2 py-2 rounded-lg text-[10px] outline-none"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-                  {['draft','published','unlisted'].map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <select value={(editVod ? editVod : form).category}
-                  onChange={e => editVod ? setEditVod(v => ({ ...v, category: e.target.value })) : setForm(f => ({ ...f, category: e.target.value }))}
-                  className="flex-1 px-2 py-2 rounded-lg text-[10px] outline-none"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-                  {['gaming','music','education','talk','other'].map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <div className="flex flex-wrap gap-1.5">
+                {['draft','published','unlisted'].map(s => {
+                  const cur = (editVod ? editVod : form).status;
+                  return <button key={s} onClick={() => editVod ? setEditVod(v => ({...v, status: s})) : setForm(f => ({...f, status: s}))}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                    style={{ background: cur===s ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${cur===s ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: cur===s ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{s}</button>;
+                })}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {['gaming','music','education','talk','other'].map(c => {
+                  const cur = (editVod ? editVod : form).category;
+                  return <button key={c} onClick={() => editVod ? setEditVod(v => ({...v, category: c})) : setForm(f => ({...f, category: c}))}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                    style={{ background: cur===c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${cur===c ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: cur===c ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{c}</button>;
+                })}
               </div>
               <button
                 onClick={() => editVod ? updateMut.mutate({ id: editVod.id, data: editVod }) : createMut.mutate()}
@@ -501,12 +506,18 @@ function CommunityTab({ user }) {
     <div className="space-y-4">
       {/* Community selector */}
       <div className="flex items-center gap-2">
-        <select value={selectedCommunity || ''} onChange={e => setSelectedCommunity(e.target.value)}
-          className="flex-1 px-3 py-2 rounded-xl text-[11px] outline-none"
-          style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)`, color: CREAM }}>
-          {communities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          {communities.length === 0 && <option value="">No communities yet</option>}
-        </select>
+        <div className="flex-1 flex flex-wrap gap-1.5">
+          {communities.length === 0
+            ? <span className="text-[11px] px-3 py-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>No communities yet</span>
+            : communities.map(c => (
+              <button key={c.id} onClick={() => setSelectedCommunity(c.id)}
+                className="px-3 py-1.5 rounded-xl text-[11px] font-black"
+                style={{ background: selectedCommunity===c.id ? 'rgba(212,175,55,0.15)' : 'rgba(13,6,24,0.9)', border: `1px solid ${selectedCommunity===c.id ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.2)'}`, color: selectedCommunity===c.id ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
+                {c.name}
+              </button>
+            ))
+          }
+        </div>
       </div>
 
       {/* Polls section */}
@@ -597,7 +608,7 @@ function CommunityTab({ user }) {
               className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPollForm(false)} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-2xl p-5 space-y-3"
-              style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase" style={{ color: GOLD, ...T }}>Create Poll</span>
                 <button onClick={() => setShowPollForm(false)}><X className="w-4 h-4 text-white/40" /></button>
@@ -732,7 +743,7 @@ function MonetizationTab({ user }) {
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value">
                       {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ background: '#1A1A1A', border: `1px solid ${GOLD}30`, color: CREAM }} />
+                    <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -872,11 +883,15 @@ function SettingsTab({ user }) {
           ))}
           <div>
             <label className="text-[9px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>Category</label>
-            <select value={profile.category} onChange={e => setProfile(p => ({ ...p, category: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
-              {['gaming','music','education','talk','fitness','cooking','art','tech','other'].map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <div className="flex flex-wrap gap-1.5">
+              {['gaming','music','education','talk','fitness','cooking','art','tech','other'].map(c => (
+                <button key={c} onClick={() => setProfile(p => ({ ...p, category: c }))}
+                  className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                  style={{ background: profile.category===c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${profile.category===c ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: profile.category===c ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
           <div>
             <label className="text-[9px] uppercase font-black block mb-2" style={{ color: CREAM + '35', ...T }}>Social Links</label>
@@ -995,7 +1010,7 @@ function SettingsTab({ user }) {
       {/* Overlay Builder link */}
       <Link to="/OverlayBuilder">
         <div className="flex items-center justify-between p-4 rounded-xl cursor-pointer"
-          style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
+          style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5" style={{ color: GOLD }} />
             <div>
@@ -1021,9 +1036,9 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Header */}
-      <div className="px-4 md:px-8 py-4" style={{ background: '#1A1A1A', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+      <div className="sticky top-0 z-30 px-4 md:px-8 py-4" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: `1px solid rgba(212,175,55,0.12)`, backdropFilter: 'blur(12px)' }}>
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">

@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, GripVertical, Trash2, Play, Music2, List } from 'lucide-react';
 
@@ -49,7 +46,7 @@ export default function WatchQueue({ isHost, currentIndex = 0, onSelect }) {
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
         <List className="w-3.5 h-3.5 text-[#d4af37]" />
         <span className="text-xs font-semibold text-[#d4af37]">Watch Queue</span>
-        <Badge className="text-[9px] bg-white/5 text-white/40 border-white/10 ml-auto">{queue.length} videos</Badge>
+        <span style={{ fontSize: 9, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 99, padding: '1px 6px', marginLeft: 'auto' }}>{queue.length} videos</span>
       </div>
 
       {/* Queue list */}
@@ -112,21 +109,20 @@ export default function WatchQueue({ isHost, currentIndex = 0, onSelect }) {
       {isHost && (
         <div className="p-3 border-t border-white/5">
           <div className="flex gap-2">
-            <Input
+            <input
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addVideo()}
               placeholder="Paste YouTube URL..."
-              className="h-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/25"
+              style={{ flex: 1, height: 28, padding: '0 8px', fontSize: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
             />
-            <Button
-              size="sm"
+            <button
               onClick={addVideo}
               disabled={loading || !urlInput.trim()}
-              className="h-7 w-7 p-0 bg-[#d4af37] hover:bg-[#f5e6a3] text-black shrink-0"
+              style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#d4af37', border: 'none', borderRadius: 6, color: '#000', cursor: (loading || !urlInput.trim()) ? 'default' : 'pointer', opacity: (loading || !urlInput.trim()) ? 0.5 : 1, flexShrink: 0 }}
             >
               <Plus className="w-3 h-3" />
-            </Button>
+            </button>
           </div>
         </div>
       )}

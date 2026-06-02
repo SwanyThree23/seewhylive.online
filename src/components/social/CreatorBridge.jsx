@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Youtube, Link as LinkIcon, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function CreatorBridge({ user }) {
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -46,8 +45,12 @@ export default function CreatorBridge({ user }) {
               setYoutubeUrl(e.target.value);
               setError('');
             }}
-            className="w-full px-3 py-2 rounded-lg text-sm text-white placeholder:text-white/30"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{
+              width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
+              fontSize: 13, outline: 'none', boxSizing: 'border-box',
+              fontFamily: 'Barlow Condensed, sans-serif',
+            }}
           />
           {error && (
             <div className="flex items-center gap-1 text-[10px] text-red-400">
@@ -55,15 +58,18 @@ export default function CreatorBridge({ user }) {
               {error}
             </div>
           )}
-          <Button
+          <button
             onClick={handleLinkYouTube}
             disabled={!youtubeUrl}
-            className="w-full h-8 text-xs"
-            style={{ background: '#FF0000', color: 'white' }}
+            style={{
+              width: '100%', height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 4, fontSize: 12, cursor: youtubeUrl ? 'pointer' : 'not-allowed', borderRadius: 8,
+              background: '#FF0000', color: 'white', border: 'none', opacity: youtubeUrl ? 1 : 0.5,
+            }}
           >
-            <LinkIcon className="w-3 h-3 mr-1" />
+            <LinkIcon className="w-3 h-3" />
             Link Channel
-          </Button>
+          </button>
         </div>
       ) : (
         <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(34,197,94,0.1)' }}>

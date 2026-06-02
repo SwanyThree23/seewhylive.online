@@ -1,10 +1,6 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Users, Radio, Video, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -12,6 +8,12 @@ import VideoLibrary from '../components/vod/VideoLibrary';
 import FollowButton from '../components/shared/FollowButton';
 import PresenceDot from '../components/shared/PresenceDot';
 import ShareButtons from '../components/shared/ShareButtons';
+
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function PublicProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -30,18 +32,22 @@ export default function PublicProfile() {
   });
 
   if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+      <div className="w-10 h-10 rounded-full animate-spin" style={{ border: `3px solid ${GOLD}`, borderTopColor: 'transparent' }} />
     </div>
   );
 
   if (!profile) return (
-    <div className="min-h-screen flex items-center justify-center text-center px-4">
+    <div className="min-h-screen flex items-center justify-center text-center px-4" style={{ background: BG }}>
       <div>
-        <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-40" />
-        <p className="text-lg font-semibold">Profile not found</p>
-        <p className="text-sm text-muted-foreground mt-1">This user hasn't set up a profile yet.</p>
-        <Link to="/"><Button className="mt-4">Go Home</Button></Link>
+        <Users className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.15)' }} />
+        <p className="text-lg font-black" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>Profile not found</p>
+        <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>This user hasn't set up a profile yet.</p>
+        <Link to="/">
+          <button className="mt-4 px-5 py-2 rounded-xl font-black uppercase text-xs" style={{ background: CRIMSON, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+            Go Home
+          </button>
+        </Link>
       </div>
     </div>
   );
@@ -49,72 +55,98 @@ export default function PublicProfile() {
   const liveRoom = rooms.find(r => r.status === 'live');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen" style={{ background: BG }}>
       {/* Banner */}
-      <div className="h-48 bg-gradient-to-r from-purple-600 to-pink-600 relative">
-        {profile.banner_url && <img src={profile.banner_url} className="w-full h-full object-cover" alt="banner" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+      <div className="relative h-48 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #0d0618 60%, #080B18 100%)` }}>
+        {profile.banner_url && (
+          <img src={profile.banner_url} className="w-full h-full object-cover absolute inset-0" alt="banner" />
+        )}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(8,11,24,0.9) 100%)' }} />
+        {/* Gold shimmer border */}
+        <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${GOLD}44, transparent)` }} />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 -mt-16 relative pb-16">
+      <div className="max-w-4xl mx-auto px-4 pb-16" style={{ marginTop: -60 }}>
+        {/* Profile header */}
         <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
-          <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
-            <AvatarImage src={profile.avatar_url} />
-            <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-              {profile.display_name?.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 pt-10 sm:pt-14">
+          {/* OCT Avatar */}
+          <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
+            <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
+            <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
+              {profile.avatar_url
+                ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.display_name} style={{ clipPath: OCT }} />
+                : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.display_name?.charAt(0)}</span>
+              }
+            </div>
+          </div>
+
+          <div className="flex-1 pt-2 sm:pt-10">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold flex items-center gap-2">
+              <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: '#fff', ...T }}>
                 {profile.display_name}
                 <PresenceDot userId={userId} size="md" />
               </h1>
-              {profile.is_verified && <CheckCircle className="w-5 h-5 text-blue-500" />}
-              <Badge variant="outline" className="capitalize">{profile.category}</Badge>
-              {liveRoom && <Badge className="bg-red-500 text-white animate-pulse border-0">🔴 LIVE</Badge>}
+              {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#4fc3f7' }} />}
+              {profile.category && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                  {profile.category}
+                </span>
+              )}
+              {liveRoom && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase animate-pulse" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
+                  🔴 LIVE
+                </span>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground mt-1 max-w-lg">{profile.bio}</p>
-            <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-              <span><strong className="text-foreground">{profile.subscriber_count || 0}</strong> subscribers</span>
-              <span><strong className="text-foreground">{profile.follower_count || 0}</strong> followers</span>
+            {profile.bio && <p className="text-sm mt-1 max-w-lg" style={{ color: 'rgba(255,255,255,0.5)' }}>{profile.bio}</p>}
+            <div className="flex gap-4 mt-2 text-sm">
+              <span style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <strong style={{ color: GOLD }}>{profile.subscriber_count || 0}</strong> subscribers
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <strong style={{ color: GOLD }}>{profile.follower_count || 0}</strong> followers
+              </span>
             </div>
           </div>
-          <div className="sm:pt-14 flex gap-2 flex-wrap">
+
+          {/* Action buttons */}
+          <div className="sm:pt-10 flex gap-2 flex-wrap">
             {liveRoom && (
               <Link to={createPageUrl('Room') + `?id=${liveRoom.id}`}>
-                <Button className="bg-red-500 hover:bg-red-600 text-white gap-2">
-                  <Radio className="w-4 h-4" /> Watch Live
-                </Button>
+                <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
+                  <Radio className="w-3.5 h-3.5" /> Watch Live
+                </button>
               </Link>
             )}
             <FollowButton targetUserId={userId} targetUserName={profile.display_name} />
             <ShareButtons url={window.location.href} title={`Check out ${profile.display_name} on SeeWhy LIVE`} />
             <Link to={createPageUrl('CreatorChannel') + `?id=${userId}`}>
-              <Button variant="outline" className="gap-2">
-                <ExternalLink className="w-4 h-4" /> Full Channel
-              </Button>
+              <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
+                <ExternalLink className="w-3.5 h-3.5" /> Full Channel
+              </button>
             </Link>
           </div>
         </div>
 
         {/* Recent Rooms */}
         {rooms.length > 0 && (
-          <Card className="mb-6">
-            <CardContent className="pt-4">
-              <p className="text-sm font-semibold mb-3 flex items-center gap-2"><Video className="w-4 h-4" /> Recent Streams</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {rooms.slice(0, 6).map(r => (
-                  <Link key={r.id} to={createPageUrl('Room') + `?id=${r.id}`}>
-                    <div className="bg-slate-100 rounded-xl p-3 hover:bg-slate-200 transition-colors cursor-pointer">
-                      <p className="text-xs font-medium truncate">{r.title}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">{r.viewer_count || 0} viewers</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <p className="text-xs font-black uppercase mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+              <Video className="w-4 h-4" /> Recent Streams
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {rooms.slice(0, 6).map(r => (
+                <Link key={r.id} to={createPageUrl('Room') + `?id=${r.id}`}>
+                  <div className="rounded-xl p-3 transition-all" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'}>
+                    <p className="text-xs font-black truncate" style={{ color: '#fff', ...T }}>{r.title}</p>
+                    <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{r.viewer_count || 0} viewers</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* VOD Library */}

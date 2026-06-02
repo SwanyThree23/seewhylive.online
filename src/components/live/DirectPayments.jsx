@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ExternalLink, DollarSign, Plus, Trash2 } from 'lucide-react';
+import { ExternalLink, DollarSign, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
@@ -45,112 +42,113 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
       navigator.clipboard.writeText(val);
       return;
     }
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const activeLinks = PAYMENT_PLATFORMS.filter(p => links[p.id] || saved[p.id]);
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-[#0d0618] border-[#d4af37]/20 text-white max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-[#d4af37] flex items-center gap-2">
-            <DollarSign className="w-5 h-5" />
-            Support {creatorName || 'Creator'} Directly
-          </DialogTitle>
-        </DialogHeader>
+  if (!isOpen) return null;
 
-        <div className="space-y-4">
-          <p className="text-xs text-white/50">
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }} onClick={onClose} />
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', maxHeight: '85vh', overflowY: 'auto', background: '#0d0618', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#d4af37' }}>
+            <DollarSign className="w-5 h-5" />
+            <span style={{ fontWeight: 700, fontSize: 16, fontFamily: 'Barlow Condensed, sans-serif' }}>Support {creatorName || 'Creator'} Directly</span>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}><X className="w-4 h-4" /></button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
             Send money directly — no platform cut, no gift tokens. Just real payments.
           </p>
 
           {!editMode ? (
             <>
               {activeLinks.length === 0 ? (
-                <div className="text-center py-8">
-                  <DollarSign className="w-10 h-10 mx-auto text-white/20 mb-3" />
-                  <p className="text-white/40 text-sm">No payment links configured yet</p>
-                  <Button
-                    size="sm"
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <DollarSign className="w-10 h-10" style={{ margin: '0 auto 12px', color: 'rgba(255,255,255,0.2)' }} />
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>No payment links configured yet</p>
+                  <button
                     onClick={() => setEditMode(true)}
-                    className="mt-3 bg-[#d4af37] text-black hover:bg-[#f5e6a3]"
+                    style={{ marginTop: 12, padding: '6px 14px', fontSize: 12, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}
                   >
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Add My Links
-                  </Button>
+                    <Plus className="w-3.5 h-3.5" /> Add My Links
+                  </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {activeLinks.map(platform => (
                     <button
                       key={platform.id}
                       onClick={() => handleOpen(platform)}
-                      className={`flex items-center gap-2 p-3 rounded-xl bg-gradient-to-r ${platform.color} hover:opacity-90 transition-all text-left`}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12, background: `linear-gradient(to right, var(--c1), var(--c2))`, opacity: 1, cursor: 'pointer', border: 'none', textAlign: 'left' }}
+                      className={`bg-gradient-to-r ${platform.color} hover:opacity-90 transition-all`}
                     >
-                      <span className="text-xl">{platform.emoji}</span>
+                      <span style={{ fontSize: 20 }}>{platform.emoji}</span>
                       <div>
-                        <p className="text-xs font-bold text-white">{platform.name}</p>
-                        <p className="text-[9px] text-white/70 flex items-center gap-0.5">
-                          Send <ExternalLink className="w-2.5 h-2.5 ml-0.5" />
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{platform.name}</p>
+                        <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                          Send <ExternalLink className="w-2.5 h-2.5" style={{ marginLeft: 2 }} />
                         </p>
                       </div>
                     </button>
                   ))}
                 </div>
               )}
-              <Button
-                size="sm"
-                variant="ghost"
+              <button
                 onClick={() => setEditMode(true)}
-                className="w-full text-xs text-white/40 hover:text-white"
+                style={{ width: '100%', fontSize: 12, color: 'rgba(255,255,255,0.4)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 0', fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 ✏️ Edit My Payment Links
-              </Button>
+              </button>
             </>
           ) : (
-            <div className="space-y-3">
-              <p className="text-xs text-white/50 font-semibold uppercase tracking-wider">Configure Your Links</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Configure Your Links</p>
               {PAYMENT_PLATFORMS.map(platform => (
-                <div key={platform.id} className="flex items-center gap-2">
-                  <span className="text-lg w-7">{platform.emoji}</span>
-                  <div className="flex-1">
-                    <p className="text-[10px] text-white/60 mb-0.5">{platform.name}</p>
-                    <Input
+                <div key={platform.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18, width: 28 }}>{platform.emoji}</span>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>{platform.name}</p>
+                    <input
                       value={links[platform.id] || ''}
                       onChange={e => setLinks(prev => ({ ...prev, [platform.id]: e.target.value }))}
                       placeholder={platform.placeholder}
-                      className="h-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/20"
+                      style={{ width: '100%', padding: '5px 10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }}
                     />
                   </div>
                   {links[platform.id] && (
-                    <button onClick={() => setLinks(prev => { const n = {...prev}; delete n[platform.id]; return n; })}>
-                      <Trash2 className="w-3.5 h-3.5 text-red-400 hover:text-red-300" />
+                    <button onClick={() => setLinks(prev => { const n = {...prev}; delete n[platform.id]; return n; })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', display: 'flex', alignItems: 'center' }}>
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
               ))}
-              <div className="flex gap-2 pt-2">
-                <Button
-                  size="sm"
+              <div style={{ display: 'flex', gap: 8, paddingTop: 8 }}>
+                <button
                   onClick={handleSave}
-                  className="flex-1 bg-[#d4af37] text-black hover:bg-[#f5e6a3]"
+                  style={{ flex: 1, padding: '8px 0', background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13 }}
                 >
                   Save Links
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setEditMode(false)} className="text-white/40">
+                </button>
+                <button onClick={() => setEditMode(false)} style={{ padding: '8px 16px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13 }}>
                   Cancel
-                </Button>
+                </button>
               </div>
             </div>
           )}
 
-          <div className="border-t border-white/5 pt-3">
-            <p className="text-[10px] text-white/30 text-center">
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 12 }}>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
               💯 100% goes directly to the creator — no platform fees
             </p>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

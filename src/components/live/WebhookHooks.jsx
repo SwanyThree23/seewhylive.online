@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Webhook, Plus, Trash2, ChevronDown, Check, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
@@ -133,11 +132,9 @@ export default function WebhookHooks({ roomId, isHost }) {
                   <p className="text-[10px] text-white/30 uppercase tracking-wider">Registered Hooks</p>
                   {hooks.map(hook => (
                     <div key={hook.id} className="flex items-center gap-2 bg-white/5 rounded-lg px-2 py-1.5 border border-white/5">
-                      <Switch
-                        checked={hook.active}
-                        onCheckedChange={() => toggleHook(hook.id)}
-                        className="scale-[0.6] data-[state=checked]:bg-[#d4af37]"
-                      />
+                      <div onClick={() => toggleHook(hook.id)} style={{ width:40, height:22, borderRadius:99, background: hook.active ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                        <div style={{ position:'absolute', top:3, left: hook.active ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
+                      </div>
                       <span className="flex-1 text-[10px] text-white/50 truncate">{hook.url}</span>
                       <button
                         onClick={() => testHook(hook)}

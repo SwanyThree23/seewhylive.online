@@ -1,0 +1,153 @@
+{
+  "name": "StreamHealthMetric",
+  "type": "object",
+  "properties": {
+    "rtmp_destination_id": {
+      "type": "string",
+      "description": "Associated RTMPDestination ID"
+    },
+    "stream_session_id": {
+      "type": "string",
+      "description": "Associated StreamSession ID"
+    },
+    "room_id": {
+      "type": "string",
+      "description": "Associated Room ID"
+    },
+    "creator_id": {
+      "type": "string",
+      "description": "Creator user ID"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "twitch",
+        "youtube",
+        "tiktok",
+        "facebook",
+        "kick",
+        "linkedin",
+        "twitter",
+        "rumble",
+        "custom"
+      ],
+      "description": "Streaming platform"
+    },
+    "bitrate_kbps": {
+      "type": "number",
+      "default": 0,
+      "description": "Current bitrate in kbps"
+    },
+    "target_bitrate_kbps": {
+      "type": "number",
+      "default": 3000,
+      "description": "Target bitrate in kbps"
+    },
+    "fps": {
+      "type": "number",
+      "default": 0,
+      "description": "Current frames per second"
+    },
+    "dropped_frames_pct": {
+      "type": "number",
+      "default": 0,
+      "description": "Percentage of dropped frames"
+    },
+    "latency_ms": {
+      "type": "number",
+      "default": 0,
+      "description": "Stream latency in milliseconds"
+    },
+    "cpu_usage_pct": {
+      "type": "number",
+      "default": 0,
+      "description": "Encoder CPU usage percentage"
+    },
+    "reconnect_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of reconnects this session"
+    },
+    "encoder_type": {
+      "type": "string",
+      "enum": [
+        "x264",
+        "nvenc",
+        "quicksync",
+        "amf",
+        "apple_vt",
+        "hardware",
+        "software"
+      ],
+      "default": "x264",
+      "description": "Video encoder in use"
+    },
+    "health_status": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "degraded",
+        "critical",
+        "offline"
+      ],
+      "default": "healthy",
+      "description": "Overall health classification"
+    },
+    "error_code": {
+      "type": "string",
+      "description": "Last error code if any"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Metric snapshot timestamp"
+    }
+  },
+  "required": [
+    "rtmp_destination_id",
+    "platform"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

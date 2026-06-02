@@ -1,8 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Youtube, Upload, List, Radio, Link as LinkIcon, X, ChevronDown, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -170,13 +168,12 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
               {tab === 'youtube' && (
                 <>
                   <p className="text-[10px] text-white/40">Paste a YouTube video, shorts, or live URL</p>
-                  <Input
+                  <input
                     placeholder="https://youtube.com/watch?v=..."
                     value={ytUrl}
                     onChange={e => setYtUrl(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submitYouTube()}
-                    className="h-9 text-sm text-white placeholder:text-white/25"
-                    style={{ background: 'rgba(255,0,0,0.06)', border: '1px solid rgba(255,0,0,0.2)' }}
+                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(255,0,0,0.06)', border: '1px solid rgba(255,0,0,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
                   />
                   {ytUrl && getYouTubeId(ytUrl) && (
                     <img
@@ -185,9 +182,9 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                       alt="thumbnail"
                     />
                   )}
-                  <Button onClick={submitYouTube} className="w-full h-9 text-xs font-bold" style={{ background: '#FF0000', color: '#fff' }}>
-                    <Youtube className="w-3.5 h-3.5 mr-1.5" /> Play YouTube Video
-                  </Button>
+                  <button onClick={submitYouTube} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: '#FF0000', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+                    <Youtube className="w-3.5 h-3.5" /> Play YouTube Video
+                  </button>
                 </>
               )}
 
@@ -195,52 +192,49 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                 <>
                   <p className="text-[10px] text-white/40">Upload a video file from your device (mp4, webm, mov)</p>
                   <input ref={fileRef} type="file" accept="video/*" className="hidden" onChange={handleDeviceUpload} />
-                  <Button
+                  <button
                     onClick={() => fileRef.current?.click()}
                     disabled={uploading}
-                    className="w-full h-9 text-xs font-bold"
-                    style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)' }}
+                    style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.7 : 1 }}
                   >
                     {uploading ? (
-                      <><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />Uploading...</>
+                      <><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />Uploading...</>
                     ) : (
-                      <><Upload className="w-3.5 h-3.5 mr-1.5" />Choose Video File</>
+                      <><Upload className="w-3.5 h-3.5" />Choose Video File</>
                     )}
-                  </Button>
+                  </button>
                 </>
               )}
 
               {tab === 'url' && (
                 <>
                   <p className="text-[10px] text-white/40">Paste a direct video URL (mp4, m3u8, etc.)</p>
-                  <Input
+                  <input
                     placeholder="https://example.com/video.mp4"
                     value={directUrl}
                     onChange={e => setDirectUrl(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submitDirect()}
-                    className="h-9 text-sm text-white placeholder:text-white/25"
-                    style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}
+                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
                   />
-                  <Button onClick={submitDirect} className="w-full h-9 text-xs font-bold" style={{ background: 'rgba(0,212,255,0.15)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
-                    <LinkIcon className="w-3.5 h-3.5 mr-1.5" /> Play URL
-                  </Button>
+                  <button onClick={submitDirect} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(0,212,255,0.15)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 8, cursor: 'pointer' }}>
+                    <LinkIcon className="w-3.5 h-3.5" /> Play URL
+                  </button>
                 </>
               )}
 
               {tab === 'stream' && (
                 <>
                   <p className="text-[10px] text-white/40">Enter an RTMP or HLS stream URL to embed</p>
-                  <Input
+                  <input
                     placeholder="https://stream.example.com/live.m3u8"
                     value={streamUrl}
                     onChange={e => setStreamUrl(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submitStream()}
-                    className="h-9 text-sm text-white placeholder:text-white/25"
-                    style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)' }}
+                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
                   />
-                  <Button onClick={submitStream} className="w-full h-9 text-xs font-bold" style={{ background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)' }}>
-                    <Radio className="w-3.5 h-3.5 mr-1.5" /> Play Stream
-                  </Button>
+                  <button onClick={submitStream} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', borderRadius: 8, cursor: 'pointer' }}>
+                    <Radio className="w-3.5 h-3.5" /> Play Stream
+                  </button>
                 </>
               )}
 
@@ -248,24 +242,22 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                 <>
                   <p className="text-[10px] text-white/40">Build a queue of videos to play in order</p>
                   <div className="space-y-1.5">
-                    <Input
+                    <input
                       placeholder="Video URL (YouTube or direct)"
                       value={newPlaylistUrl}
                       onChange={e => setNewPlaylistUrl(e.target.value)}
-                      className="h-8 text-xs text-white placeholder:text-white/25"
-                      style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)' }}
+                      style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 12, background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
                     />
                     <div className="flex gap-2">
-                      <Input
+                      <input
                         placeholder="Title (optional)"
                         value={newPlaylistTitle}
                         onChange={e => setNewPlaylistTitle(e.target.value)}
-                        className="h-8 text-xs text-white placeholder:text-white/25 flex-1"
-                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        style={{ flex: 1, height: 32, padding: '0 10px', fontSize: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
                       />
-                      <Button onClick={addToPlaylist} size="sm" className="h-8 text-xs px-3 shrink-0" style={{ background: 'rgba(139,92,246,0.2)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.3)' }}>
+                      <button onClick={addToPlaylist} style={{ height: 32, padding: '0 12px', background: 'rgba(139,92,246,0.2)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 6, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                         <Plus className="w-3 h-3" />
-                      </Button>
+                      </button>
                     </div>
                   </div>
                   {playlist.length > 0 ? (

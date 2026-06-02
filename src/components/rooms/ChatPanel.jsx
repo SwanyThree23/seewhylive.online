@@ -150,8 +150,8 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
     onSuccess: () => {
       setMessage('');
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: () => {
+      toast.error('Failed to send message. Please try again.');
     },
   });
 

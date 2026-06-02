@@ -1,0 +1,99 @@
+{
+  "name": "ContentModeration",
+  "type": "object",
+  "properties": {
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "message",
+        "room",
+        "profile",
+        "community"
+      ],
+      "description": "Type of content"
+    },
+    "content_id": {
+      "type": "string",
+      "description": "ID of moderated content"
+    },
+    "ai_confidence": {
+      "type": "number",
+      "description": "AI confidence score 0-1"
+    },
+    "violation_type": {
+      "type": "string",
+      "enum": [
+        "spam",
+        "harassment",
+        "hate_speech",
+        "inappropriate",
+        "safe"
+      ],
+      "description": "Detected violation"
+    },
+    "action_taken": {
+      "type": "string",
+      "enum": [
+        "none",
+        "flagged",
+        "hidden",
+        "deleted",
+        "user_warned"
+      ],
+      "default": "none"
+    },
+    "ai_explanation": {
+      "type": "string",
+      "description": "AI reasoning"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Human reviewer ID"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "override_decision": {
+      "type": "string",
+      "enum": [
+        "upheld",
+        "reversed"
+      ]
+    }
+  },
+  "required": [
+    "content_type",
+    "content_id",
+    "violation_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.reviewed_by": "{{user.id}}"
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

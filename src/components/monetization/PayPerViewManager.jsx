@@ -81,6 +81,7 @@ export default function PayPerViewManager({ roomId }) {
             placeholder="Event title"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            maxLength={120}
             className="w-full px-3 py-2 rounded text-sm outline-none"
             style={{ background: BG, border: `1px solid ${BORDER}`, color: 'white' }}
           />
@@ -88,6 +89,7 @@ export default function PayPerViewManager({ roomId }) {
             placeholder="Event description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            maxLength={500}
             className="w-full px-3 py-2 rounded text-sm outline-none resize-none"
             style={{ background: BG, border: `1px solid ${BORDER}`, color: 'white' }}
             rows="3"

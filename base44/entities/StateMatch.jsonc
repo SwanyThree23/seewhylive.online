@@ -1,0 +1,127 @@
+{
+  "properties": {
+    "away_score": {
+      "default": 0,
+      "title": "Away Score",
+      "type": "number"
+    },
+    "away_state": {
+      "title": "Away State",
+      "type": "string"
+    },
+    "away_state_abbr": {
+      "title": "Away State Abbr",
+      "type": "string"
+    },
+    "broadcast_url": {
+      "title": "Broadcast URL",
+      "type": "string"
+    },
+    "highlights": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Match Highlights",
+      "type": "array"
+    },
+    "home_score": {
+      "default": 0,
+      "title": "Home Score",
+      "type": "number"
+    },
+    "home_state": {
+      "title": "Home State",
+      "type": "string"
+    },
+    "home_state_abbr": {
+      "title": "Home State Abbr",
+      "type": "string"
+    },
+    "match_date": {
+      "title": "Match Date",
+      "type": "string"
+    },
+    "match_type": {
+      "enum": [
+        "regular_season",
+        "showcase",
+        "playoff",
+        "championship",
+        "exhibition"
+      ],
+      "title": "Match Type",
+      "type": "string"
+    },
+    "mvp": {
+      "title": "Match MVP",
+      "type": "string"
+    },
+    "notes": {
+      "title": "Match Notes",
+      "type": "string"
+    },
+    "room_id": {
+      "title": "SeeWhy Room ID",
+      "type": "string"
+    },
+    "round": {
+      "title": "Round/Week",
+      "type": "string"
+    },
+    "season": {
+      "default": "2026",
+      "title": "Season",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "scheduled",
+        "live",
+        "completed",
+        "postponed"
+      ],
+      "default": "scheduled",
+      "title": "Status",
+      "type": "string"
+    },
+    "venue": {
+      "title": "Venue",
+      "type": "string"
+    },
+    "viewers_peak": {
+      "default": 0,
+      "title": "Peak Viewers",
+      "type": "number"
+    },
+    "winner": {
+      "title": "Winner State",
+      "type": "string"
+    }
+  },
+  "required": [
+    "home_state",
+    "away_state",
+    "match_date",
+    "match_type"
+  ],
+  "type": "object",
+  "name": "StateMatch",
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

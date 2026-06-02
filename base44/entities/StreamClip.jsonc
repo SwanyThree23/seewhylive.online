@@ -1,0 +1,120 @@
+{
+  "name": "StreamClip",
+  "type": "object",
+  "properties": {
+    "stream_session_id": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "creator_id": {
+      "type": "string"
+    },
+    "clipped_by_id": {
+      "type": "string"
+    },
+    "clipped_by_username": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "start_timestamp_seconds": {
+      "type": "number"
+    },
+    "end_timestamp_seconds": {
+      "type": "number"
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "clip_url": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    },
+    "like_count": {
+      "type": "number",
+      "default": 0
+    },
+    "share_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "room_id",
+    "creator_id",
+    "clipped_by_id",
+    "title",
+    "start_timestamp_seconds",
+    "end_timestamp_seconds"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "data.clipped_by_id": "{{user.id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "data.clipped_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "data.clipped_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "data.clipped_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

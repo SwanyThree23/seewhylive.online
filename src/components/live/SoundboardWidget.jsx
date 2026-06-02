@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Volume2, Zap, Music } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Tag, Globe, AlertTriangle, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -81,11 +78,11 @@ export default function StreamMetadata({ room, isHost }) {
           <label className="text-xs text-white/50">Stream Title</label>
           <span className="text-[10px] text-white/30">{title.length}/100</span>
         </div>
-        <Input
+        <input
           value={title}
           onChange={e => setTitle(e.target.value.slice(0, 100))}
-          className="bg-white/5 border-white/20 text-white placeholder:text-white/25"
           placeholder="Stream title..."
+          style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
         />
       </div>
 
@@ -108,12 +105,12 @@ export default function StreamMetadata({ room, isHost }) {
       <div className="space-y-1.5">
         <label className="text-xs text-white/50 flex items-center gap-1"><Tag className="w-3 h-3" /> Tags ({tags.length}/10)</label>
         <div className="flex gap-1.5">
-          <Input
+          <input
             value={tagInput}
             onChange={e => setTagInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addTag()}
             placeholder="Add a tag..."
-            className="bg-white/5 border-white/20 text-white h-8 text-sm placeholder:text-white/25 flex-1"
+            style={{ flex:1, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
           />
           <button onClick={addTag} className="w-8 h-8 rounded-lg bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] hover:bg-[#d4af37]/20">
             <Plus className="w-3.5 h-3.5" />
@@ -122,12 +119,12 @@ export default function StreamMetadata({ room, isHost }) {
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {tags.map(t => (
-              <Badge key={t} className="text-[10px] bg-white/5 border-white/10 text-white/60 pr-1 flex items-center gap-1">
+              <span key={t} style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.6)', border:'1px solid rgba(255,255,255,0.1)', display:'inline-flex', alignItems:'center', gap:4 }}>
                 #{t}
-                <button onClick={() => setTags(prev => prev.filter(x => x !== t))} className="hover:text-red-400">
+                <button onClick={() => setTags(prev => prev.filter(x => x !== t))} style={{ background:'none', border:'none', cursor:'pointer', color:'inherit', padding:0, display:'flex' }}>
                   <X className="w-2.5 h-2.5" />
                 </button>
-              </Badge>
+              </span>
             ))}
           </div>
         )}

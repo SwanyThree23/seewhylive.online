@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Lock, Unlock, DollarSign, Crown, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -50,15 +47,15 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
               </div>
             ))}
             <div className="flex gap-2 mt-2">
-              <Input
+              <input
                 value={customPrice}
                 onChange={e => setCustomPrice(e.target.value)}
                 placeholder="Custom price $"
-                className="h-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/20"
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
               />
-              <Button size="sm" className="h-7 text-xs bg-[#d4af37] text-black hover:bg-[#f5e6a3]">
+              <button style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontSize:12, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
                 Add Tier
-              </Button>
+              </button>
             </div>
           </div>
         )}
@@ -108,8 +105,8 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
       </div>
 
       {selectedTier && (
-        <Button
-          className="w-full bg-[#d4af37] text-black hover:bg-[#f5e6a3] font-bold"
+        <button
+          style={{ width:'100%', padding:'10px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontWeight:700, cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:'Barlow Condensed, sans-serif' }}
           onClick={() => {
             if (selectedTier.price === 0) {
               onUnlock?.();
@@ -120,9 +117,9 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
             }
           }}
         >
-          <DollarSign className="w-4 h-4 mr-1" />
+          <DollarSign className="w-4 h-4" />
           {selectedTier.price === 0 ? 'Watch Free Preview' : `Unlock for $${selectedTier.price}`}
-        </Button>
+        </button>
       )}
     </div>
   );

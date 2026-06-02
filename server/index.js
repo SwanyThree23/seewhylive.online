@@ -262,7 +262,7 @@ app.use(rateLimit({
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: function(req) { return req.path === '/api/health'; }
+  skip: function(req) { return req.path === '/api/health' || req.path.startsWith('/socket.io'); }
 }));
 
 /* AI endpoint — tighter limit to protect Anthropic API key costs */

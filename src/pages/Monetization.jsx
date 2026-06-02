@@ -7,7 +7,7 @@ import PayPerViewManager from '@/components/monetization/PayPerViewManager';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
+const BG = '#080B18';
 
 export default function MonetizationPage() {
   const { data: user } = useQuery({
@@ -28,7 +28,7 @@ export default function MonetizationPage() {
   return (
     <div className="min-h-screen" style={{ background: BG }}>
       {/* Header */}
-      <div className="px-4 py-8 md:px-8 border-b" style={{ borderColor: 'rgba(212,175,55,0.12)' }}>
+      <div className="sticky top-0 z-20 px-4 py-6 md:px-8 border-b" style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-3 mb-4">
             <DollarSign className="w-6 h-6" style={{ color: G }} />

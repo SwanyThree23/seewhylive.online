@@ -1,0 +1,83 @@
+{
+  "type": "object",
+  "properties": {
+    "panelist_id": {
+      "type": "string",
+      "title": "Panelist ID"
+    },
+    "panelist_name": {
+      "type": "string",
+      "title": "Panelist Name"
+    },
+    "room_id": {
+      "type": "string",
+      "title": "Room ID"
+    },
+    "destinations": {
+      "type": "array",
+      "title": "Platform Destinations",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stream_keys": {
+      "type": "object",
+      "title": "Stream Keys (encrypted)"
+    },
+    "is_live": {
+      "type": "boolean",
+      "title": "Currently Live",
+      "default": false
+    },
+    "created_by_name": {
+      "type": "string",
+      "title": "Created By Name"
+    }
+  },
+  "required": [
+    "panelist_id",
+    "panelist_name"
+  ],
+  "name": "GuestDestination",
+  "rls": {
+    "create": {
+      "data.panelist_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.panelist_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.panelist_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.panelist_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

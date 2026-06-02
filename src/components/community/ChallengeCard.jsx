@@ -1,13 +1,12 @@
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Trophy, Target, Calendar, Users, Award } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+
+const GOLD = '#D4AF37';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function ChallengeCard({ challenge, userParticipation, userId }) {
   const queryClient = useQueryClient();
@@ -32,10 +31,10 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
   const progress = userParticipation ? (userParticipation.progress / challenge.goal_value) * 100 : 0;
   const isCompleted = userParticipation?.completed;
 
-  const statusColors = {
-    upcoming: 'bg-blue-100 text-blue-800',
-    active: 'bg-green-100 text-green-800',
-    completed: 'bg-gray-100 text-gray-800',
+  const statusBadgeStyle = {
+    upcoming: { background: 'rgba(59,130,246,0.2)', color: '#60a5fa' },
+    active:   { background: 'rgba(34,197,94,0.2)',  color: '#4ade80' },
+    completed:{ background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
   };
 
   const typeIcons = {
@@ -48,49 +47,71 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
 
   const Icon = typeIcons[challenge.type] || Target;
 
+  const btnBase = {
+    width: '100%', padding: '10px 0', borderRadius: 8, fontWeight: 700, fontSize: 13,
+    cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+    ...T,
+  };
+
   return (
-    <Card className={`${isCompleted ? 'bg-gradient-to-br from-yellow-50 to-orange-50' : ''}`}>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-              <Icon className="w-6 h-6 text-purple-600" />
+    <div style={{
+      background: isCompleted ? 'rgba(234,179,8,0.07)' : 'rgba(255,255,255,0.04)',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: 12,
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{ padding: '16px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon className="w-6 h-6" style={{ color: '#a78bfa' }} />
             </div>
             <div>
-              <CardTitle className="text-lg">{challenge.title}</CardTitle>
-              <CardDescription>{challenge.description}</CardDescription>
+              <h3 style={{ fontWeight: 700, fontSize: 15, color: '#fff', margin: '0 0 2px', ...T }}>{challenge.title}</h3>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>{challenge.description}</p>
             </div>
           </div>
-          <Badge className={statusColors[challenge.status]}>
+          <span style={{
+            fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99,
+            ...(statusBadgeStyle[challenge.status] || statusBadgeStyle.completed),
+            flexShrink: 0, ...T,
+          }}>
             {challenge.status}
-          </Badge>
+          </span>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Challenge Details */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.5)' }}>
+            <Calendar className="w-4 h-4" />
+            <span>
               {format(new Date(challenge.start_date), 'MMM d')} - {format(new Date(challenge.end_date), 'MMM d')}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">{challenge.participant_count} participants</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.5)' }}>
+            <Users className="w-4 h-4" />
+            <span>{challenge.participant_count} participants</span>
           </div>
         </div>
 
         {/* Goal */}
-        <div className="bg-slate-50 rounded-lg p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Goal</span>
-            <Badge variant="outline">{challenge.goal_value} {challenge.goal_type}</Badge>
+        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', ...T }}>Goal</span>
+            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', ...T }}>
+              {challenge.goal_value} {challenge.goal_type}
+            </span>
           </div>
           {isParticipating && (
             <>
-              <Progress value={progress} className="h-2 mb-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', marginBottom: 6 }}>
+                <div style={{ height: '100%', width: `${progress}%`, background: GOLD, borderRadius: 4 }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
                 <span>{userParticipation.progress} / {challenge.goal_value}</span>
                 <span>{Math.round(progress)}%</span>
               </div>
@@ -99,37 +120,33 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         </div>
 
         {/* Reward */}
-        <div className="flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-purple-600" />
-            <span className="text-sm font-medium">Reward</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(139,92,246,0.08)', borderRadius: 8, padding: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Trophy className="w-4 h-4" style={{ color: '#a78bfa' }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', ...T }}>Reward</span>
           </div>
-          <span className="text-sm font-bold text-purple-600">{challenge.reward_value}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', ...T }}>{challenge.reward_value}</span>
         </div>
 
         {/* Action Button */}
         {challenge.status === 'active' && (
           <>
             {!isParticipating ? (
-              <Button
-                onClick={() => joinChallengeMutation.mutate()}
-                className="w-full"
-              >
+              <button onClick={() => joinChallengeMutation.mutate()} style={{ ...btnBase, background: '#800020', color: '#fff' }}>
                 Join Challenge
-              </Button>
+              </button>
             ) : isCompleted ? (
-              <Button disabled className="w-full bg-green-600">
-                <Trophy className="w-4 h-4 mr-2" />
-                Completed!
-              </Button>
+              <button disabled style={{ ...btnBase, background: '#16a34a', color: '#fff', cursor: 'default' }}>
+                <Trophy className="w-4 h-4" /> Completed!
+              </button>
             ) : (
-              <Button variant="outline" className="w-full">
+              <button style={{ ...btnBase, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
                 View Progress
-              </Button>
+              </button>
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

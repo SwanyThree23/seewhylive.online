@@ -35,8 +35,8 @@ export default function ZEGOGuestJoin({ roomId, userId, userName, onJoined }) {
       qc.invalidateQueries(['participants', roomId]);
       setTimeout(() => onJoined?.(), 2000);
     },
-    onError: (err) => {
-      toast.error(err.message || 'Failed to request join');
+    onError: () => {
+      toast.error('Failed to send join request. Please try again.');
     },
   });
 

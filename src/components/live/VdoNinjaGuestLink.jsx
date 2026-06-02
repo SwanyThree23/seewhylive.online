@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Copy, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function VdoNinjaGuestLink({ roomId }) {
   const [copied, setCopied] = useState(false);
@@ -58,11 +57,11 @@ export default function VdoNinjaGuestLink({ roomId }) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1"
+                style={{ flex:1 }}
               >
-                <Button size="sm" variant="outline" className="w-full h-6 text-[8px] border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10">
+                <button style={{ width:'100%', height:24, borderRadius:6, border:'1px solid rgba(212,175,55,0.3)', background:'transparent', color:'#d4af37', cursor:'pointer', fontSize:8, fontWeight:600 }}>
                   Open
-                </Button>
+                </button>
               </a>
               <button
                 onClick={() => handleCopy(link.url)}

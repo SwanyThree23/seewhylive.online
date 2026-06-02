@@ -1,0 +1,131 @@
+{
+  "properties": {
+    "admitted_at": {
+      "format": "date-time",
+      "title": "Admitted At",
+      "type": "string"
+    },
+    "cam_ready": {
+      "default": false,
+      "title": "Camera Ready",
+      "type": "boolean"
+    },
+    "dest_platforms": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Destination Platforms",
+      "type": "array"
+    },
+    "guest_name": {
+      "title": "Guest Display Name",
+      "type": "string"
+    },
+    "guest_user_id": {
+      "title": "Guest User ID",
+      "type": "string"
+    },
+    "host_user_id": {
+      "title": "Host User ID",
+      "type": "string"
+    },
+    "mic_ready": {
+      "default": false,
+      "title": "Microphone Ready",
+      "type": "boolean"
+    },
+    "note": {
+      "title": "Guest Note",
+      "type": "string"
+    },
+    "position": {
+      "default": 0,
+      "title": "Queue Position",
+      "type": "number"
+    },
+    "room_id": {
+      "title": "Room ID",
+      "type": "string"
+    },
+    "signal_strength": {
+      "default": 0,
+      "maximum": 4,
+      "minimum": 0,
+      "title": "Signal Strength (0-4)",
+      "type": "number"
+    },
+    "status": {
+      "default": "waiting",
+      "enum": [
+        "waiting",
+        "admitted",
+        "dismissed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "wait_since": {
+      "format": "date-time",
+      "title": "Waiting Since",
+      "type": "string"
+    }
+  },
+  "required": [
+    "room_id",
+    "host_user_id",
+    "guest_user_id",
+    "guest_name"
+  ],
+  "type": "object",
+  "name": "GreenRoomQueue",
+  "rls": {
+    "create": {
+      "data.guest_user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.guest_user_id": "{{user.id}}"
+        },
+        {
+          "data.host_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.guest_user_id": "{{user.id}}"
+        },
+        {
+          "data.host_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.guest_user_id": "{{user.id}}"
+        },
+        {
+          "data.host_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

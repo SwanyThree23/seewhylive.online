@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,8 +36,13 @@ export default function NotificationBell() {
 
   return (
     <Link to={createPageUrl('Notifications')}>
-      <Button variant="ghost" size="icon" className="relative">
-        <Bell className="w-5 h-5" />
+      <button
+        style={{
+          position:'relative', display:'inline-flex', alignItems:'center', justifyContent:'center',
+          width:40, height:40, borderRadius:8, background:'transparent', border:'none', cursor:'pointer', color:'inherit',
+        }}
+      >
+        <Bell style={{ width:20, height:20 }} />
         <AnimatePresence>
           {unreadCount > 0 && (
             <motion.div
@@ -46,13 +50,19 @@ export default function NotificationBell() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white"
+              style={{
+                position:'absolute', top:-4, right:-4,
+                width:20, height:20, borderRadius:'50%',
+                background:'#ef4444', color:'#fff', fontSize:10, fontWeight:700,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                border:'2px solid #fff',
+              }}
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </motion.div>
           )}
         </AnimatePresence>
-      </Button>
+      </button>
     </Link>
   );
 }

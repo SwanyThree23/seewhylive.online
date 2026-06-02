@@ -2,18 +2,24 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus, Eye, EyeOff, RefreshCw, Wifi, WifiOff, AlertTriangle,
   Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle, PlayCircle, StopCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
+function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
+function CardHeader({ children, className = '' }) { return <div className={`px-4 pt-4 pb-2 ${className}`}>{children}</div>; }
+function CardTitle({ children, className = '' }) { return <p className={`font-black text-sm ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{children}</p>; }
+function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) { return <button onClick={onClick} disabled={disabled} {...rest} className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`} style={{ padding: size === 'sm' ? '5px 10px' : size === 'icon' ? '6px' : '8px 14px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : variant === 'outline' ? '1px solid rgba(255,255,255,0.15)' : 'none', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>{children}</button>; }
+function Input({ value, onChange, placeholder, type = 'text', className = '', style = {} }) { return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={{ width: '100%', padding: '8px 12px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />; }
+function Badge({ children, className = '', style = {} }) { return <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...style }}>{children}</span>; }
+function Slider({ value, onValueChange, min = 0, max = 100, step = 1, className = '' }) { return <input type="range" min={min} max={max} step={step} value={Array.isArray(value) ? value[0] : value} onChange={e => onValueChange && onValueChange([Number(e.target.value)])} className={className} style={{ width: '100%', accentColor: '#D4AF37' }} />; }
+function Tabs({ children, defaultValue }) { return <div data-defaulttab={defaultValue}>{children}</div>; }
+function TabsList({ children, className = '' }) { return <div className={`flex gap-1 ${className}`}>{children}</div>; }
+function TabsTrigger({ children, value, className = '' }) { return null; }
+function TabsContent({ children, value }) { return <div>{children}</div>; }
 
 const PLATFORMS = [
   { id: 'twitch', label: 'Twitch', color: '#9146ff', server: 'rtmp://live.twitch.tv/live' },
@@ -347,11 +353,9 @@ export default function MultiStreamManager() {
 
                         {/* Controls */}
                         <div className="flex flex-col items-end gap-2 shrink-0">
-                          <Switch
-                            checked={dest.is_enabled}
-                            onCheckedChange={() => toggleEnabled(dest)}
-                            className="data-[state=checked]:bg-[#d4af37]"
-                          />
+                          <div onClick={() => toggleEnabled(dest)} style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#D4AF37' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+                            <div style={{ position: 'absolute', top: 3, left: dest.is_enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+                          </div>
                           <div className="flex gap-1">
                             <button
                               onClick={() => testConnection(dest)}

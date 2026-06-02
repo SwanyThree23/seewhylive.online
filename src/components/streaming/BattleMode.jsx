@@ -2,11 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Swords, Zap, Trophy, DollarSign, Users, Crown, Timer, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -142,27 +137,24 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Battle Mode</span>
           {activeBattle && (
-            <Badge className="bg-red-600 text-white text-[9px] animate-pulse border-0">LIVE</Badge>
+            <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
           )}
         </div>
         {isHost && !activeBattle && (
-          <Button
-            size="sm"
+          <button
             onClick={() => setShowSetup(v => !v)}
-            className="h-6 text-[10px] bg-[#800020] hover:bg-[#9a0025] text-white border-0 px-2"
+            style={{ height:24, fontSize:10, background:'#800020', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
-            <Plus className="w-3 h-3 mr-1" /> Start Battle
-          </Button>
+            <Plus className="w-3 h-3" /> Start Battle
+          </button>
         )}
         {isHost && activeBattle && (
-          <Button
-            size="sm"
-            variant="destructive"
+          <button
             onClick={() => endBattleMutation.mutate(activeBattle)}
-            className="h-6 text-[10px] px-2"
+            style={{ height:24, fontSize:10, background:'#dc2626', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
-            <X className="w-3 h-3 mr-1" /> End
-          </Button>
+            <X className="w-3 h-3" /> End
+          </button>
         )}
       </div>
 
@@ -262,13 +254,12 @@ function CreatorBattleCard({ name, score, pct, side, isLeading, onVote }) {
         </div>
         <p className="text-[10px] font-semibold text-white truncate">{name}</p>
         <p className="text-lg font-bold font-mono text-[#d4af37]">{score}</p>
-        <Button
-          size="sm"
+        <button
           onClick={onVote}
-          className="w-full h-6 text-[9px] bg-[#800020] hover:bg-[#9a0025] text-white border-0"
+          style={{ width:'100%', height:24, fontSize:9, background:'#800020', color:'#fff', border:'none', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
         >
-          <Zap className="w-2.5 h-2.5 mr-1" /> Vote
-        </Button>
+          <Zap className="w-2.5 h-2.5" /> Vote
+        </button>
       </div>
     </div>
   );
@@ -321,15 +312,14 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
           </button>
         ))}
       </div>
-      <Button
-        size="sm"
+      <button
         disabled={!creator1 || !creator2 || creator1 === creator2 || isLoading}
         onClick={() => onStart(c1, c2)}
-        className="w-full h-7 text-[10px] bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold"
+        style={{ width:'100%', height:28, fontSize:10, background:'#D4AF37', color:'#000', border:'none', borderRadius:6, fontWeight:700, cursor:(!creator1||!creator2||creator1===creator2||isLoading)?'not-allowed':'pointer', opacity:(!creator1||!creator2||creator1===creator2||isLoading)?0.5:1, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
       >
-        <Swords className="w-3 h-3 mr-1" />
+        <Swords className="w-3 h-3" />
         {isLoading ? 'Starting…' : '⚔️ Start Battle'}
-      </Button>
+      </button>
     </div>
   );
 }

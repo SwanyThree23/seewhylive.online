@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_BASE44_APP_ID = "6990f5f24823b53e21fcdc9d"
+  VITE_BASE44_APP_BASE_URL = "https://seewhylive.online"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

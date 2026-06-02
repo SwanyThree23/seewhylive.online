@@ -1,8 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -83,18 +79,20 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
       navigator.clipboard.writeText(shareUrl);
       toast.success(`Link copied — paste it in ${platform.name}!`);
     } else {
-      window.open(shareLink, '_blank', 'width=600,height=400');
+      window.open(shareLink, '_blank', 'width=600,height=400,noopener,noreferrer');
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-[#0d0618] border-[#d4af37]/20 text-white">
-        <DialogHeader>
-          <DialogTitle className="text-[#d4af37] flex items-center gap-2 text-lg">
-            🔴 Share Your Live
-          </DialogTitle>
-        </DialogHeader>
+    <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background:'#0d0618', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:448, color:'#fff' }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+          <span style={{ color:'#d4af37', fontWeight:700, fontSize:18 }}>🔴 Share Your Live</span>
+        </div>
 
         <div className="space-y-4">
           <p className="text-xs text-white/50">
@@ -103,18 +101,17 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
 
           {/* Copy link */}
           <div className="flex gap-2">
-            <Input
+            <input
               value={shareUrl}
               readOnly
-              className="text-xs bg-white/5 border-white/10 text-white/70"
+              style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'rgba(255,255,255,0.7)', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
             />
-            <Button
-              size="sm"
+            <button
               onClick={handleCopy}
-              className={`shrink-0 ${copied ? 'bg-green-600' : 'bg-[#d4af37] text-black hover:bg-[#f5e6a3]'}`}
+              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, border:'none', background: copied ? '#16a34a' : '#d4af37', color: copied ? '#fff' : '#000', cursor:'pointer', display:'flex', alignItems:'center' }}
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </Button>
+            </button>
           </div>
 
           {/* Platforms */}
@@ -141,7 +138,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
             </p>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

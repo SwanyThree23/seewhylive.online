@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, MoreHorizontal, X, Pin, Radio } from 'lucide-react';
 import GuestDestinationsPanel from './GuestDestinationsPanel';
 import GuestStreamingPermissions from './GuestStreamingPermissions';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
 
 const LAYOUTS = [
   { label: '1', value: 1 },
@@ -58,9 +52,9 @@ export default React.memo(function GuestGrid({ participants = [], isHost, onInvi
       )}
       {/* Top bar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 shrink-0">
-        <Badge className="bg-[#800020]/60 text-[#d4af37] border-[#d4af37]/30 text-[10px]">
+        <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(128,0,32,0.6)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)' }}>
           {speakers.length}/{maxGuests} on stage
-        </Badge>
+        </span>
         <div className="flex gap-1 ml-auto">
           {LAYOUTS.map(l => (
             <button
@@ -141,11 +135,9 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
       >
         {/* Center avatar */}
         <div className="flex-1 flex items-center justify-center">
-          <Avatar className={isSpotlight ? 'w-24 h-24' : compact ? 'w-10 h-10' : 'w-14 h-14'}>
-            <AvatarFallback className="bg-gradient-to-br from-[#800020] to-[#d4af37] text-white font-bold text-xl">
-              {participant.user_name?.charAt(0)?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <div style={{ width: isSpotlight ? 96 : compact ? 40 : 56, height: isSpotlight ? 96 : compact ? 40 : 56, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(to bottom right, #800020, #d4af37)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isSpotlight ? 32 : compact ? 14 : 20, fontWeight: 700, color: '#fff' }}>
+            {participant.user_name?.charAt(0)?.toUpperCase()}
+          </div>
           {speaking && !compact && (
             <div className="absolute flex items-end gap-0.5 bottom-10 left-1/2 -translate-x-1/2">
               {[3, 5, 4, 6, 3].map((h, i) => (

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ListVideo, Plus, X, Play, Youtube, Video, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 function getYouTubeId(url) {
@@ -183,27 +181,25 @@ export default function VideoQueue({ isHost, currentUser, currentVideoUrl, onPla
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden rounded-lg p-2.5 space-y-2"
             style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
-            <Input
+            <input
               placeholder="YouTube URL or direct video URL"
               value={urlInput}
               onChange={e => setUrlInput(e.target.value)}
-              className="h-7 text-[10px]"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}
+              style={{ width: '100%', height: 28, padding: '0 8px', fontSize: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
             />
-            <Input
+            <input
               placeholder="Title (optional)"
               value={titleInput}
               onChange={e => setTitleInput(e.target.value)}
-              className="h-7 text-[10px]"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}
+              style={{ width: '100%', height: 28, padding: '0 8px', fontSize: 10, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
             />
             <div className="flex gap-1.5">
-              <Button size="sm" className="flex-1 h-7 text-[10px] font-black uppercase"
-                style={{ background: '#d4af37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}
+              <button
+                style={{ flex: 1, height: 28, fontSize: 10, fontWeight: 900, background: urlInput.trim() ? '#d4af37' : 'rgba(255,255,255,0.06)', color: urlInput.trim() ? '#000' : 'rgba(255,255,255,0.3)', border: 'none', borderRadius: 6, cursor: urlInput.trim() ? 'pointer' : 'default', fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase' }}
                 disabled={!urlInput.trim()}
                 onClick={addToQueue}>
                 Add to Queue
-              </Button>
+              </button>
               <button onClick={() => setShowAdd(false)}
                 className="w-7 h-7 flex items-center justify-center rounded"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -242,11 +238,11 @@ export default function VideoQueue({ isHost, currentUser, currentVideoUrl, onPla
 
       {/* Next up */}
       {isHost && queue.length > 0 && currentIndex < queue.length - 1 && (
-        <Button size="sm" className="w-full h-8 text-[10px] font-black uppercase gap-1.5"
-          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}
+        <button
+          style={{ width: '100%', height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, fontWeight: 900, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37', borderRadius: 8, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase' }}
           onClick={playNext}>
           <Play className="w-3 h-3" /> Play Next
-        </Button>
+        </button>
       )}
     </div>
   );

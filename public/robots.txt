@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /AdminDashboard
+Disallow: /StageCleanup
+Disallow: /RTMPServer
+Disallow: /ControlRoom
+Disallow: /ModerationDashboard
+Disallow: /TestMode
+Disallow: /VaultPro
 
-Sitemap: https://seewhy.live/sitemap.xml
+Sitemap: https://seewhylive.online/sitemap.xml

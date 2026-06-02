@@ -6,9 +6,8 @@ import { toast } from 'sonner';
 import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Users,
   Radio, LogOut, Copy, Maximize2, Minimize2,
-  ChevronLeft, ChevronRight, Swords, Monitor,
+  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid,
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
 import { useLocalMedia } from '../hooks/useLocalMedia';
@@ -25,6 +24,13 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import LoveHearts from '../components/live/LoveHearts';
+import GiftShop from '../components/live/GiftShop';
+import GiftAnimation from '../components/live/GiftAnimation';
+import ClipMarker from '../components/live/ClipMarker';
+import GuestQueue from '../components/live/GuestQueue';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -150,22 +156,35 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
 }
 
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
-function LiveCameraTile({ localStream, videoEnabled }) {
-  const ref = useRef(null);
-  useEffect(() => { if (ref.current && localStream) ref.current.srcObject = localStream; }, [localStream]);
+function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
+  const camRef = useRef(null);
+  const screenRef = useRef(null);
+  useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
+  useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
-      {localStream && videoEnabled
-        ? <video ref={ref} autoPlay muted playsInline className="w-full h-full object-cover" />
-        : <div className="flex flex-col items-center gap-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            <VideoOff className="w-12 h-12" />
-            <span className="text-xs">Camera off</span>
-          </div>}
+      {screenStream ? (
+        <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain" />
+      ) : localStream && videoEnabled ? (
+        <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+      ) : (
+        <div className="flex flex-col items-center gap-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <VideoOff className="w-12 h-12" />
+          <span className="text-xs">Camera off</span>
+        </div>
+      )}
       <div className="absolute top-3 left-3 flex items-center gap-1 text-[9px] px-2 py-1 rounded"
         style={{ background: 'rgba(255,21,100,0.2)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
-        LIVE
+        {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
+      {/* PIP camera when screen sharing */}
+      {screenStream && localStream && videoEnabled && (
+        <div className="absolute bottom-2 right-2 w-28 h-20 rounded-lg overflow-hidden"
+          style={{ border: '2px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+          <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+        </div>
+      )}
     </div>
   );
 }
@@ -198,13 +217,13 @@ function CreateScreen({ onSubmit, isPending }) {
         </div>
 
         <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)' }}>
-          <Input
+          <input
             placeholder="Broadcast title…"
             value={title}
             onChange={e => setTitle(e.target.value)}
             maxLength={120}
             className="h-11 text-white placeholder:text-white/30"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
           />
 
           <div>
@@ -226,13 +245,13 @@ function CreateScreen({ onSubmit, isPending }) {
           </div>
 
           {mode !== 'live' && (
-            <Input
+            <input
               placeholder="YouTube URL or direct video URL (optional)…"
               value={videoUrl}
               onChange={e => setVideoUrl(e.target.value)}
               maxLength={2048}
               className="h-10 text-white placeholder:text-white/30"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ width: '100%', padding: '8px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
             />
           )}
 
@@ -267,8 +286,32 @@ export default function BroadcastStudio() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [theaterMode, setTheaterMode] = useState(false);
   const [syncData, setSyncData] = useState(null);
+  const [hostSettings, setHostSettings] = useState({
+    chatEnabled: true,
+    reactionsEnabled: true,
+    guestMicEnabled: true,
+    guestVideoEnabled: true,
+    battlesEnabled: true,
+    maxViewers: 20,
+  });
   const [chatMessages, setChatMessages] = useState([]);
   const [elapsed, setElapsed] = useState(0);
+  const [aiMusicGenre, setAiMusicGenre] = useState(null);
+  const [aiMusicPlaying, setAiMusicPlaying] = useState(false);
+  const [guardianEnabled, setGuardianEnabled] = useState(true);
+  const [guardianStats, setGuardianStats] = useState({ blocked: 0, warned: 0, muted: 0 });
+  const [ariaEnabled, setAriaEnabled] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [showCameraPicker, setShowCameraPicker] = useState(false);
+  const [isExclusive, setIsExclusive] = useState(false);
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [giftEvent, setGiftEvent] = useState(null);
+  const [guardianWords, setGuardianWords] = useState([]);
+  const [guardianWordInput, setGuardianWordInput] = useState('');
+  const [ariaSuggestions] = useState(['What do you think about this topic?', 'Drop a ❤️ if you agree!', 'Questions? Type them below!']);
+  const [ariaTopicIdx, setAriaTopicIdx] = useState(0);
+  const [musicVolume, setMusicVolume] = useState(70);
+  const streamStartRef = useRef(Date.now());
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -306,7 +349,52 @@ export default function BroadcastStudio() {
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
+
+  // Screen share
+  const [screenStream, setScreenStream] = useState(null);
+  const [screenEnabled, setScreenEnabled] = useState(false);
+  const localStreamRef2 = useRef(localStream);
+  useEffect(() => { localStreamRef2.current = localStream; }, [localStream]);
+
+  const toggleScreenShare = useCallback(async () => {
+    if (screenEnabled && screenStream) {
+      screenStream.getTracks().forEach(t => t.stop());
+      setScreenStream(null);
+      setScreenEnabled(false);
+      const camTrack = localStreamRef2.current?.getVideoTracks()[0];
+      if (camTrack) {
+        peersRef.current.forEach(({ pc }) => {
+          const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+          if (sender) sender.replaceTrack(camTrack).catch(() => {});
+        });
+      }
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      const screenTrack = stream.getVideoTracks()[0];
+      screenTrack.onended = () => {
+        setScreenStream(null);
+        setScreenEnabled(false);
+        const camTrack = localStreamRef2.current?.getVideoTracks()[0];
+        if (camTrack) {
+          peersRef.current.forEach(({ pc }) => {
+            const s = pc.getSenders().find(s2 => s2.track?.kind === 'video');
+            if (s) s.replaceTrack(camTrack).catch(() => {});
+          });
+        }
+      };
+      setScreenStream(stream);
+      setScreenEnabled(true);
+      peersRef.current.forEach(({ pc }) => {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) sender.replaceTrack(screenTrack).catch(() => {});
+      });
+    } catch {
+      // User cancelled or browser denied — no-op
+    }
+  }, [screenEnabled, screenStream, peersRef]);
   const announceRef = useRef(announceJoin);
   const leaveRef = useRef(leaveRoom);
   useEffect(() => { announceRef.current = announceJoin; }, [announceJoin]);
@@ -325,6 +413,8 @@ export default function BroadcastStudio() {
   const myMember = members.find(m => m.user_id === user?.id);
   const isCoHost = myMember?.role === 'cohost';
   const canManage = isHost || isCoHost;
+
+  const speakingName = members.find(m => m.is_audio_enabled && m.user_id !== user?.id)?.user_name || null;
 
   // AI highlight detector — auto-clips when hype + sentiment spike
   useHighlightDetector({
@@ -410,6 +500,30 @@ export default function BroadcastStudio() {
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success('Invite link copied!');
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  // Build compositor slots from localStream + remoteStreams
+  const compositorSlots = React.useMemo(() => {
+    const slots = [];
+    if (localStream) {
+      slots.push({ stream: localStream, label: user?.full_name || user?.email || 'You (Host)' });
+    }
+    if (remoteStreams) {
+      remoteStreams.forEach((stream, peerId) => {
+        const userId = peerUserIds?.get(peerId);
+        const member = members.find(m => m.user_id === userId);
+        slots.push({ stream, label: member?.user_name || 'Guest' });
+      });
+    }
+    return slots;
+  }, [localStream, remoteStreams, peerUserIds, members, user]);
+
+  const compositorOverlay = {
+    title: party?.title || 'SeeWhy LIVE',
+    subtitle: `${members.length} panelists`,
+    showLive: true,
   };
 
   // ── Create screen ────────────────────────────────────────────────────────
@@ -436,93 +550,144 @@ export default function BroadcastStudio() {
     { id: 'polls',   label: '📊 Polls',  desc: 'Live polls' },
     { id: 'viewers', label: '👥 Panel',  desc: 'Manage' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
+    ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
+    { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
+    { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
 
   return (
     <div className={`flex flex-col ${theaterMode ? 'fixed inset-0 z-50' : 'h-screen'}`} style={{ background: BG }}>
 
-      {/* ── TOP BAR ────────────────────────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(0,0,0,0.65)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
-        {/* Toggle left panel */}
-        <button onClick={() => setLeftOpen(v => !v)}
-          className="w-7 h-7 flex items-center justify-center rounded-lg shrink-0"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
-          {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </button>
+      {/* ── FANBASE-STYLE TOP BAR ──────────────────────────────────────────── */}
+      <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
 
-        {/* Title + live badge */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="w-2 h-2 rounded-full shrink-0 animate-pulse" style={{ background: '#FF1564' }} />
-          <span className="font-black text-sm text-white truncate max-w-[160px]" style={T}>{party.title}</span>
-          <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0"
-            style={{ background: 'rgba(255,21,100,0.15)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.3)', ...T }}>LIVE</span>
-        </div>
-
-        {/* Mode pills */}
-        <div className="flex items-center gap-1 ml-1">
-          {[
-            { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
-            { id: 'watch',  icon: '🎬', label: 'Watch' },
-            { id: 'live',   icon: '🎙️', label: 'Live' },
-          ].map(mod => (
-            <button key={mod.id} onClick={() => setStudioMode(mod.id)}
-              className="text-[8px] px-2 py-1 rounded font-black uppercase transition-all"
-              style={{
-                background: studioMode === mod.id ? 'rgba(212,175,55,0.15)' : 'transparent',
-                border: studioMode === mod.id ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
-                color: studioMode === mod.id ? GOLD : 'rgba(255,255,255,0.3)', ...T,
-              }}>
-              {mod.icon} {mod.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Right controls */}
-        <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            <Users className="w-3 h-3 inline mr-0.5" />{members.length}/20
-          </span>
-
-          <button onClick={copyLink}
-            className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg"
-            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>
-            <Copy className="w-3 h-3" /> Invite
+        {/* Row 1: panel toggle | title + badges | right actions */}
+        <div className="flex items-center gap-2 px-3 h-12">
+          <button onClick={() => setLeftOpen(v => !v)}
+            className="w-8 h-8 flex items-center justify-center rounded-xl shrink-0 transition-all active:scale-95"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+            {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
 
-          {canManage && <GreenroomWaitlistPanel roomId={partyId} currentUser={user} />}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</span>
+            <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+              style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', ...T }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
+            </span>
+            {isExclusive && (
+              <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+                style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: `1px solid rgba(212,175,55,0.5)`, ...T }}>
+                🔐 EXCLUSIVE
+              </span>
+            )}
+            <span className="shrink-0 text-[9px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
+              SeeWhy LIVE
+            </span>
+          </div>
 
+          <div className="flex items-center gap-1 shrink-0">
+            <button onClick={copyLink}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: 'rgba(212,175,55,0.08)', color: GOLD }} title="Copy invite link">
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => setTheaterMode(v => !v)}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? GOLD : 'rgba(255,255,255,0.4)' }}>
+              {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
+            {canManage && <GreenroomWaitlistPanel roomId={partyId} currentUser={user} />}
+            {isHost && (
+              <VideoSourcePicker
+                compact
+                isHost={isHost}
+                isCoHost={isCoHost}
+                onSelect={src => {
+                  const safeSelectUrl = isSafeUrl(src.url) ? src.url : '';
+                  base44.entities.WatchParty.update(party.id, {
+                    video_url: safeSelectUrl,
+                    video_type: src.type === 'youtube' ? 'youtube' : 'direct',
+                    current_time: 0,
+                    playback_state: 'paused',
+                    updated_at_ms: Date.now(),
+                  }).then(() => {
+                    qc.invalidateQueries(['broadcast-party', partyId]);
+                    setStudioMode('watch');
+                  });
+                }}
+              />
+            )}
+            {isHost && (
+              <CompositorOverlay
+                layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
+                slots={compositorSlots}
+                overlayConfig={compositorOverlay}
+                userId={user?.id}
+                onScreenCapture={studioMode === 'watch' ? async () => {
+                  const s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+                  return s;
+                } : undefined}
+                isHost={isHost}
+              />
+            )}
+            {isHost && (
+              <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} />
+            )}
+            {isHost && (
+              <button onClick={() => endMut.mutate()}
+                className="flex items-center gap-1 text-[9px] px-2.5 py-1.5 rounded-xl transition-all active:scale-95"
+                style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
+                <LogOut className="w-3 h-3" /> End
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Row 2: host avatar + name | member count | mode pills | speaking indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black text-white"
+            style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+            {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
+          </div>
+          <span className="text-[10px] text-white/50 truncate max-w-[80px]" style={T}>{user?.full_name || 'Host'}</span>
+          <span className="text-white/15 mx-0.5">·</span>
+          <Users className="w-3 h-3 shrink-0" style={{ color: GOLD }} />
+          <span className="text-[10px] font-bold shrink-0" style={{ color: GOLD, ...T }}>{members.length}/20</span>
+          <div className="flex items-center gap-1 ml-1">
+            {[
+              { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
+              { id: 'watch',  icon: '🎬', label: 'Watch' },
+              { id: 'live',   icon: '🎙', label: 'Live' },
+            ].map(mod => (
+              <button key={mod.id} onClick={() => setStudioMode(mod.id)}
+                className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase transition-all active:scale-95"
+                style={{
+                  background: studioMode === mod.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                  border: studioMode === mod.id ? '1px solid rgba(212,175,55,0.35)' : '1px solid rgba(255,255,255,0.07)',
+                  color: studioMode === mod.id ? GOLD : 'rgba(255,255,255,0.3)', ...T,
+                }}>
+                {mod.icon} {mod.label}
+              </button>
+            ))}
+          </div>
           {isHost && (
-            <VideoSourcePicker
-              compact
-              isHost={isHost}
-              isCoHost={isCoHost}
-              onSelect={src => {
-                base44.entities.WatchParty.update(party.id, {
-                  video_url: src.url,
-                  video_type: src.type === 'youtube' ? 'youtube' : 'direct',
-                  current_time: 0,
-                  playback_state: 'paused',
-                  updated_at_ms: Date.now(),
-                }).then(() => {
-                  qc.invalidateQueries(['broadcast-party', partyId]);
-                  setStudioMode('watch');
-                });
-              }}
-            />
+            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, ...T }}>
+              Host
+            </span>
           )}
-
-          <button onClick={() => setTheaterMode(v => !v)}
-            className="w-7 h-7 flex items-center justify-center rounded-lg"
-            style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? GOLD : 'rgba(255,255,255,0.4)' }}>
-            {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-          </button>
-
-          {isHost && (
-            <button onClick={() => endMut.mutate()}
-              className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg"
-              style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
-              <LogOut className="w-3 h-3" /> End
-            </button>
+          {isCoHost && !isHost && (
+            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)', ...T }}>
+              Co-Host
+            </span>
+          )}
+          {speakingName && (
+            <span className="ml-auto text-[10px] italic shrink-0" style={{ color: 'rgba(255,255,255,0.6)', ...T }}>
+              &quot;{speakingName} is speaking&quot;
+            </span>
           )}
         </div>
       </div>
@@ -538,18 +703,63 @@ export default function BroadcastStudio() {
               animate={{ width: 216, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="shrink-0 overflow-hidden h-full"
+              className="shrink-0 overflow-hidden h-full flex flex-col"
               style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-              <PanelGrid
-                members={members}
-                currentUser={user}
-                hostId={party.host_id}
-                maxSlots={20}
-                isHost={canManage}
-                onInvite={copyLink}
-                remoteStreams={remoteStreams}
-                peerUserIds={peerUserIds}
-              />
+              <div className="shrink-0 flex items-center justify-between px-3 py-2"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+                <span className="text-[14px] font-black text-white" style={T}>Stage</span>
+                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
+                  {members.length}/{hostSettings.maxViewers}
+                </span>
+                <button className="w-6 h-6 flex items-center justify-center rounded"
+                  style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <LayoutGrid className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto min-h-0">
+                <PanelGrid
+                  members={members}
+                  currentUser={user}
+                  hostId={party.host_id}
+                  maxSlots={hostSettings.maxViewers}
+                  isHost={canManage}
+                  onInvite={copyLink}
+                  remoteStreams={remoteStreams}
+                  peerUserIds={peerUserIds}
+                  localStream={localStream}
+                />
+                {members.length > 6 && (() => {
+                  const stageMembers = members.filter(m => m.user_id === party.host_id || m.role === 'cohost' || m.role === 'speaker');
+                  const audienceMembers = members.filter(m => m.role === 'audience' || m.role === 'viewer' || (!m.role && m.user_id !== party.host_id));
+                  if (audienceMembers.length === 0) return null;
+                  const shown = audienceMembers.slice(0, 15);
+                  const overflow = audienceMembers.length - 15;
+                  return (
+                    <div className="px-2 pt-2 pb-3">
+                      <p className="text-[9px] uppercase font-bold mb-2 tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>Others in the Room</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {shown.map(m => (
+                          <div key={m.id} className="flex flex-col items-center gap-0.5">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-black text-white"
+                              style={{ background: 'rgba(255,255,255,0.08)' }}>
+                              {(m.user_name || '?')[0].toUpperCase()}
+                            </div>
+                            <span className="text-[8px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 32 }}>{m.user_name?.split(' ')[0]}</span>
+                          </div>
+                        ))}
+                        {overflow > 0 && (
+                          <div className="flex flex-col items-center gap-0.5">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold"
+                              style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>
+                              +{overflow}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -576,7 +786,7 @@ export default function BroadcastStudio() {
                 />
               )
             ) : (
-              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} />
+              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} />
             )}
 
             {/* Hybrid PIP: local camera overlay when video is playing */}
@@ -602,24 +812,72 @@ export default function BroadcastStudio() {
           {/* Viewer rail */}
           <ViewerRail members={members} hostId={party.host_id} />
 
-          {/* Emoji reactions */}
-          <div className="shrink-0">
-            <PartyReactionsOverlay
-              partyId={partyId}
-              currentUser={user}
-              currentTime={syncData?.current_time || party?.current_time || 0}
-            />
-          </div>
-          <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+          {/* Emoji reactions — hidden when host disables reactions */}
+          {hostSettings.reactionsEnabled && (
+            <>
+              <div className="shrink-0">
+                <PartyReactionsOverlay
+                  partyId={partyId}
+                  currentUser={user}
+                  currentTime={syncData?.current_time || party?.current_time || 0}
+                />
+              </div>
+              <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+            </>
+          )}
 
-          {/* PK Battle strip — always visible on center stage */}
-          <div className="flex-1 overflow-auto p-2 min-h-0">
-            <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
-          </div>
+          {/* PK Battle strip — hidden when host disables battles */}
+          {hostSettings.battlesEnabled && (
+            <div className="flex-1 overflow-auto p-2 min-h-0">
+              <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+            </div>
+          )}
         </div>
 
         {/* ── RIGHT: Tabbed tools panel ─────────────────────────────────── */}
         <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: 296, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0D0618' }}>
+
+          {/* Exclusive Live toggle */}
+          <div className="shrink-0 flex items-center gap-2 px-3 py-2"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)' }}>
+            <span style={{ fontSize: 14 }}>🔒</span>
+            <span className="flex-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Exclusive Live
+            </span>
+            <button
+              onClick={() => {
+                const next = !isExclusive;
+                setIsExclusive(next);
+                if (partyId && next) {
+                  base44.entities.WatchParty.update(partyId, { is_exclusive: true });
+                } else if (partyId && !next) {
+                  base44.entities.WatchParty.update(partyId, { is_exclusive: false });
+                }
+              }}
+              style={{
+                position: 'relative',
+                width: 36,
+                height: 20,
+                borderRadius: 10,
+                background: isExclusive ? GOLD : 'rgba(255,255,255,0.2)',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: 2,
+                left: isExclusive ? 18 : 2,
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                background: '#fff',
+                transition: 'left 0.2s',
+              }} />
+            </button>
+          </div>
 
           {/* Tab bar */}
           <div className="flex shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#0B0B18' }}>
@@ -636,28 +894,61 @@ export default function BroadcastStudio() {
             ))}
           </div>
 
+          {/* Quick-action feature row */}
+          <div className="shrink-0 flex items-center gap-2 px-3 py-2 overflow-x-auto"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+            {[
+              { icon: '🎁', label: 'Gifts',  action: () => setGiftOpen(true) },
+              { icon: '📊', label: 'Poll',   action: () => { window.location.href = '/PollManager'; } },
+              { icon: '🔔', label: 'Alert',  action: () => toast.info('Alert sent to audience!') },
+              { icon: '📱', label: 'QR',     action: () => toast.info(window.location.href) },
+              { icon: '🎵', label: 'Music',  action: () => { window.location.href = '/AIMusic'; } },
+            ].map(item => (
+              <button key={item.label}
+                onClick={item.action}
+                className="flex flex-col items-center gap-0.5 shrink-0 transition-all hover:opacity-80"
+              >
+                <div className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {item.icon}
+                </div>
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
           {/* Tab content */}
           <div className="flex-1 overflow-y-auto">
 
             {/* 💬 MULTILINGUAL CHAT */}
             {activeTab === 'chat' && (
-              <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} onMessagesChange={setChatMessages} />
+              hostSettings.chatEnabled
+                ? <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} onMessagesChange={setChatMessages} />
+                : <div className="flex items-center justify-center h-32">
+                    <p className="text-[10px] text-white/25">Chat disabled by host</p>
+                  </div>
             )}
 
             {/* ⚔️ PK BATTLE */}
             {activeTab === 'battle' && (
-              <div className="p-2 space-y-2">
-                <div className="flex items-center gap-2 px-1 pt-1">
-                  <Swords className="w-3.5 h-3.5" style={{ color: GOLD }} />
-                  <span className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>PK Battle Tiers</span>
+              hostSettings.battlesEnabled ? (
+                <div className="p-2 space-y-2">
+                  <div className="flex items-center gap-2 px-1 pt-1">
+                    <Swords className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                    <span className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>PK Battle Tiers</span>
+                  </div>
+                  <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+                  <div className="rounded-xl p-3 mt-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      Award tiers to panelists in real time. Points accumulate during the broadcast and reset each session.
+                    </p>
+                  </div>
                 </div>
-                <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
-                <div className="rounded-xl p-3 mt-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    Award tiers to panelists in real time. Points accumulate during the broadcast and reset each session.
-                  </p>
+              ) : (
+                <div className="flex items-center justify-center h-32">
+                  <p className="text-[10px] text-white/25">Battles disabled by host</p>
                 </div>
-              </div>
+              )
             )}
 
             {/* 📊 POLLS */}
@@ -725,7 +1016,7 @@ export default function BroadcastStudio() {
             {/* 🛡 HOST / CO-HOST MANAGEMENT */}
             {activeTab === 'manage' && canManage && (
               <div className="p-2 space-y-3">
-                <HostControls isHost={canManage} party={party} onUpdate={() => qc.invalidateQueries(['broadcast-party', partyId])} />
+                <HostControls isHost={canManage} party={party} onUpdate={setHostSettings} />
 
                 {/* Video source changer */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -734,8 +1025,9 @@ export default function BroadcastStudio() {
                     isHost={isHost}
                     isCoHost={isCoHost}
                     onSelect={src => {
+                      const safeManageUrl = isSafeUrl(src.url) ? src.url : '';
                       base44.entities.WatchParty.update(party.id, {
-                        video_url: src.url,
+                        video_url: safeManageUrl,
                         video_type: src.type === 'youtube' ? 'youtube' : 'direct',
                         current_time: 0,
                         playback_state: 'paused',
@@ -760,6 +1052,278 @@ export default function BroadcastStudio() {
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* 🎙 GUEST QUEUE */}
+            {activeTab === 'queue' && canManage && (
+              <div className="p-2">
+                <GuestQueue roomId={partyId} isHost={canManage} />
+              </div>
+            )}
+
+            {/* 🤖 AI TAB */}
+            {activeTab === 'ai' && (
+              <div className="p-3 space-y-4">
+                {/* AI Music */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm">🎵</span>
+                    <span className="text-[11px] font-black uppercase" style={{ color: '#a78bfa', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Background Music</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz'].map(g => (
+                      <button key={g}
+                        onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
+                        className="px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
+                        style={aiMusicGenre === g
+                          ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
+                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setAiMusicPlaying(v => !v)}
+                      className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
+                      style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {aiMusicPlaying ? '⏸ Pause' : '▶ Play'}
+                    </button>
+                    {aiMusicPlaying && (
+                      <button onClick={() => setAiMusicGenre(null)}
+                        className="px-3 py-2 rounded-xl text-[11px] font-black"
+                        style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                        title="Skip track">
+                        ⏭
+                      </button>
+                    )}
+                    <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
+                      className="px-3 py-2 rounded-xl text-[11px] font-black"
+                      style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      Full →
+                    </a>
+                  </div>
+                  {aiMusicPlaying && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.08)' }}>
+                        <div className="flex items-end gap-[2px]">
+                          {[3,6,4,7,3,5].map((h,i) => (
+                            <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
+                          ))}
+                        </div>
+                        <span className="text-[9px] flex-1" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
+                        <span className="text-[9px]" style={{ color: 'rgba(167,139,250,0.5)' }}>{musicVolume}%</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-1">
+                        <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
+                        <input type="range" min={0} max={100} value={musicVolume}
+                          onChange={e => setMusicVolume(+e.target.value)}
+                          className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
+                          style={{ accentColor: '#a78bfa' }} />
+                        <span className="text-[8px]" style={{ color: '#a78bfa' }}>🔊</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Guardian AI Moderation */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🛡️</span>
+                      <span className="text-[11px] font-black uppercase" style={{ color: '#22c55e', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI</span>
+                    </div>
+                    <button onClick={() => setGuardianEnabled(v => !v)}
+                      className="relative w-9 h-5 rounded-full transition-all"
+                      style={{ background: guardianEnabled ? '#22c55e' : 'rgba(255,255,255,0.1)' }}>
+                      <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                        style={{ left: guardianEnabled ? '17px' : '2px' }} />
+                    </button>
+                  </div>
+                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    {guardianEnabled ? '✓ Auto-removing hate speech, spam, and toxic messages' : 'Enable to auto-moderate chat in real time'}
+                  </p>
+                  {guardianEnabled && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex gap-3 text-center">
+                        {[['Blocked', guardianStats.blocked + guardianWords.length], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
+                          <div key={l} className="flex-1">
+                            <div className="text-sm font-black" style={{ color: '#22c55e' }}>{v}</div>
+                            <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Blocked words</div>
+                        <div className="flex flex-wrap gap-1 mb-1.5">
+                          {guardianWords.map(w => (
+                            <span key={w} className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              {w}
+                              <button onClick={() => setGuardianWords(ws => ws.filter(x => x !== w))} style={{ lineHeight: 1 }}>×</button>
+                            </span>
+                          ))}
+                          {guardianWords.length === 0 && (
+                            <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None added yet</span>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <input
+                            value={guardianWordInput}
+                            onChange={e => setGuardianWordInput(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && guardianWordInput.trim()) {
+                                setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
+                                setGuardianWordInput('');
+                              }
+                            }}
+                            placeholder="Add word…"
+                            maxLength={30}
+                            style={{ flex: 1, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
+                          />
+                          <button
+                            onClick={() => {
+                              if (guardianWordInput.trim()) {
+                                setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
+                                setGuardianWordInput('');
+                              }
+                            }}
+                            style={{ padding: '4px 10px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 6, color: '#22c55e', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ARIA Co-host */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🤖</span>
+                      <span className="text-[11px] font-black uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>ARIA Co-host</span>
+                    </div>
+                    <button onClick={() => setAriaEnabled(v => !v)}
+                      className="relative w-9 h-5 rounded-full transition-all"
+                      style={{ background: ariaEnabled ? '#D4AF37' : 'rgba(255,255,255,0.1)' }}>
+                      <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                        style={{ left: ariaEnabled ? '17px' : '2px' }} />
+                    </button>
+                  </div>
+                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    {ariaEnabled ? '✓ ARIA is answering questions and keeping chat active' : 'Enable ARIA to engage your audience automatically'}
+                  </p>
+                  {ariaEnabled && (
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending topics</div>
+                        <div className="flex flex-wrap gap-1">
+                          {['🎵 Music', '💬 Q&A', '🔥 Hype', '🎁 Gifts'].map((t, i) => (
+                            <button key={t} onClick={() => setAriaTopicIdx(i)}
+                              className="text-[9px] px-2 py-0.5 rounded-full font-bold"
+                              style={{
+                                background: ariaTopicIdx === i ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
+                                color: ariaTopicIdx === i ? GOLD : 'rgba(255,255,255,0.35)',
+                                border: ariaTopicIdx === i ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
+                                fontFamily: 'Barlow Condensed, sans-serif',
+                              }}>
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Suggested responses</div>
+                        <div className="space-y-1">
+                          {ariaSuggestions.map((s, i) => (
+                            <button key={i}
+                              className="w-full text-left text-[9px] px-2 py-1.5 rounded-lg transition-all hover:opacity-80"
+                              style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                              onClick={() => toast.success('ARIA sent: ' + s)}>
+                              💬 {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick link to full AI Hub */}
+                <a href="/AIHub" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-xl transition-all"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span className="text-[11px] font-bold text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Open Full AI Hub</span>
+                  <span className="text-white/25 text-xs">→</span>
+                </a>
+              </div>
+            )}
+
+            {/* 📢 SHARE TAB */}
+            {activeTab === 'share' && (
+              <div className="p-3 space-y-3">
+                <div className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Share Your Live Session</div>
+
+                {/* Copy link */}
+                <div className="flex gap-2">
+                  <div className="flex-1 h-9 px-3 flex items-center rounded-xl text-[10px] truncate"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+                    {window.location.href}
+                  </div>
+                  <button onClick={copyLink}
+                    className="h-9 px-3 rounded-xl text-[10px] font-black transition-all"
+                    style={{ background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(212,175,55,0.15)', color: linkCopied ? '#22c55e' : '#D4AF37', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.3)' : 'rgba(212,175,55,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    {linkCopied ? '✓ Copied' : 'Copy'}
+                  </button>
+                </div>
+
+                {/* Social platforms grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { name: 'WhatsApp',  emoji: '💬', color: '#25D366', href: `https://wa.me/?text=${encodeURIComponent('🔴 I\'m LIVE on SeeWhy! Join me → ' + window.location.href)}` },
+                    { name: 'Twitter/X', emoji: '🐦', color: '#1DA1F2', href: `https://twitter.com/intent/tweet?text=${encodeURIComponent('🔴 LIVE on SeeWhy LIVE! Join me → ' + window.location.href)}` },
+                    { name: 'Facebook',  emoji: '👥', color: '#1877F2', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
+                    { name: 'Telegram',  emoji: '✈️', color: '#2AABEE', href: `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('🔴 Join me LIVE on SeeWhy!')}` },
+                    { name: 'Instagram', emoji: '📸', color: '#E1306C', href: null, note: 'Copy link → paste in story' },
+                    { name: 'TikTok',    emoji: '🎵', color: '#000000', href: null, note: 'Copy link → paste in bio' },
+                  ].map(p => (
+                    <button key={p.name}
+                      onClick={() => p.href ? window.open(p.href, '_blank', 'noopener,noreferrer') : copyLink()}
+                      className="flex items-center gap-2 p-2 rounded-xl transition-all text-left"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <span className="text-base">{p.emoji}</span>
+                      <div>
+                        <div className="text-[10px] font-bold text-white">{p.name}</div>
+                        {p.note && <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{p.note}</div>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Native share if available */}
+                {navigator.share && (
+                  <button
+                    onClick={() => navigator.share({ title: 'Join me LIVE on SeeWhy!', url: window.location.href }).catch(() => {})}
+                    className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase"
+                    style={{ background: 'linear-gradient(135deg, #800020, #A0003A)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    📱 Share via Phone
+                  </button>
+                )}
+
+                {/* Embed code */}
+                <div className="rounded-xl p-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="text-[9px] font-bold uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Embed Code</div>
+                  <code className="text-[8px] break-all" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    {`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`}
+                  </code>
+                  <button onClick={() => { navigator.clipboard.writeText(`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`); }}
+                    className="mt-1.5 text-[8px] px-2 py-0.5 rounded"
+                    style={{ background: 'rgba(212,175,55,0.08)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    Copy Embed
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -790,10 +1354,26 @@ export default function BroadcastStudio() {
           {videoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
         </motion.button>
 
-        <motion.button whileTap={{ scale: 0.92 }}
-          className="flex items-center justify-center w-10 h-10 rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+        <motion.button whileTap={{ scale: 0.92 }} onClick={toggleScreenShare}
+          title={screenEnabled ? 'Stop screen share' : 'Share screen'}
+          className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
+          style={{
+            background: screenEnabled ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.05)',
+            border: screenEnabled ? '1px solid rgba(139,92,246,0.4)' : '1px solid rgba(255,255,255,0.1)',
+            color: screenEnabled ? '#8B5CF6' : 'rgba(255,255,255,0.4)',
+          }}>
           <Monitor className="w-4 h-4" />
+        </motion.button>
+
+        <motion.button whileTap={{ scale: 0.92 }} onClick={() => setShowCameraPicker(true)}
+          title="Switch camera / OBS source"
+          className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
+          style={{
+            background: 'rgba(212,175,55,0.08)',
+            border: '1px solid rgba(212,175,55,0.2)',
+            color: GOLD,
+          }}>
+          <Video className="w-4 h-4" />
         </motion.button>
 
         <div className="w-px h-6" style={{ background: 'rgba(255,255,255,0.1)' }} />
@@ -821,6 +1401,44 @@ export default function BroadcastStudio() {
           </motion.button>
         )}
       </div>
+
+      {showCameraPicker && (
+        <CameraSourcePicker
+          currentStream={localStream}
+          onSelect={(stream) => {
+            if (stream && localStream) {
+              const newTrack = stream.getVideoTracks()[0];
+              if (newTrack) {
+                peersRef.current.forEach(({ pc }) => {
+                  const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+                  if (sender) sender.replaceTrack(newTrack).catch(() => {});
+                });
+              }
+            }
+            setShowCameraPicker(false);
+          }}
+          onClose={() => setShowCameraPicker(false)}
+        />
+      )}
+
+      {partyId && (
+        <LoveHearts roomId={partyId} currentUser={user} creatorId={party?.host_id} />
+      )}
+
+      <GiftShop
+        isOpen={giftOpen}
+        onClose={() => setGiftOpen(false)}
+        roomId={partyId}
+        user={user}
+        creatorId={party?.host_id}
+        creatorName={party?.host_name || 'Creator'}
+        onGiftSent={(gift, sender) => {
+          setGiftEvent({ id: Date.now(), gift, senderName: sender?.full_name || sender?.email || 'You' });
+          setGiftOpen(false);
+        }}
+      />
+
+      <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
     </div>
   );
 }

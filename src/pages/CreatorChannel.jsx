@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Radio, Users, CheckCircle, Share2, Bell, Play, Clock,
   Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown
@@ -16,7 +11,16 @@ import VideoLibrary from '../components/vod/VideoLibrary';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+const BG = '#0d0618';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const TABS = ['live', 'videos', 'schedule', 'memberships', 'about'];
+
 export default function CreatorChannel() {
+  const [activeTab, setActiveTab] = useState('live');
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get('id');
   const qc = useQueryClient();
@@ -44,7 +48,6 @@ export default function CreatorChannel() {
   const liveRoom = rooms.find(r => r.status === 'live');
   const pastRooms = rooms.filter(r => r.status === 'ended');
   const scheduledRooms = rooms.filter(r => r.status === 'scheduled');
-
   const socialIcons = { twitter: Twitter, instagram: Instagram, youtube: Youtube };
 
   const notifyMutation = useMutation({
@@ -57,52 +60,58 @@ export default function CreatorChannel() {
     onSuccess: () => alert('Reminder set!'),
   });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0d0618] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+      <div className="w-12 h-12 rounded-full animate-spin" style={{ border: `3px solid ${GOLD}`, borderTopColor: 'transparent' }} />
+    </div>
+  );
 
   const displayName = profile?.display_name || 'Creator';
   const bio = profile?.bio || 'Welcome to my channel!';
   const category = profile?.category || 'other';
-  const bannerUrl = profile?.banner_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&q=80';
+  const bannerUrl = profile?.banner_url || null;
 
   return (
-    <div className="min-h-screen bg-[#0d0618] text-white">
+    <div className="min-h-screen text-white" style={{ background: BG }}>
       {/* Hero Banner */}
-      <div className="relative h-56 md:h-72 overflow-hidden">
-        <img src={bannerUrl} alt="banner" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0618] via-[#0d0618]/40 to-transparent" />
-
+      <div className="relative h-56 md:h-72 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #0d0618 100%)` }}>
+        {bannerUrl && <img src={bannerUrl} alt="banner" className="w-full h-full object-cover absolute inset-0" />}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(13,6,24,0.95) 100%)' }} />
         {liveRoom && (
           <div className="absolute top-4 right-4">
-            <Badge className="bg-red-600 text-white animate-pulse border-0 text-sm px-3 py-1.5 gap-2 shadow-2xl">
-              <div className="w-2 h-2 rounded-full bg-white" />
-              LIVE NOW
-            </Badge>
+            <span className="px-3 py-1.5 rounded-full text-xs font-black animate-pulse flex items-center gap-1.5"
+              style={{ background: 'rgba(255,21,100,0.85)', color: '#fff', ...T }}>
+              <div className="w-2 h-2 rounded-full bg-white" /> LIVE NOW
+            </span>
           </div>
         )}
       </div>
 
       {/* Profile Header */}
-      <div className="max-w-5xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16 mb-6 relative z-10">
-          <Avatar className="w-28 h-28 border-4 border-[#0d0618] shadow-2xl">
-            <AvatarImage src={profile?.avatar_url} />
-            <AvatarFallback className="bg-gradient-to-br from-[#800020] to-[#d4af37] text-3xl font-bold text-white w-full h-full">
-              {displayName.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          {/* OCT avatar */}
+          <div className="relative shrink-0" style={{ width: 112, height: 112 }}>
+            <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
+            <div className="absolute inset-[3px] flex items-center justify-center overflow-hidden"
+              style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={displayName} />
+                : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{displayName.charAt(0)}</span>
+              }
+            </div>
+          </div>
+
           <div className="flex-1 min-w-0 pb-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold text-white">{displayName}</h1>
-              {profile?.is_verified && <CheckCircle className="w-5 h-5 text-[#00d4ff]" />}
-              <Badge className="text-xs bg-[#d4af37]/10 text-[#d4af37] border-[#d4af37]/30 capitalize">{category}</Badge>
+              <h1 className="text-2xl font-black text-white" style={T}>{displayName}</h1>
+              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#00d4ff' }} />}
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase capitalize"
+                style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
+                {category}
+              </span>
             </div>
-            <div className="flex items-center gap-4 mt-1 text-sm text-white/50">
+            <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
               <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {(profile?.subscriber_count || 0).toLocaleString()} subscribers</span>
               <span>{(profile?.follower_count || 0).toLocaleString()} followers</span>
               <span>{Math.round(profile?.total_hours_streamed || 0)}h streamed</span>
@@ -112,36 +121,35 @@ export default function CreatorChannel() {
           <div className="flex items-center gap-2 pb-2">
             {liveRoom ? (
               <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
-                <Button className="bg-red-600 hover:bg-red-700 text-white font-bold gap-2">
-                  <Radio className="w-4 h-4" />
-                  Watch Now
-                </Button>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
+                  style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', cursor: 'pointer', ...T }}>
+                  <Radio className="w-4 h-4" /> Watch Now
+                </button>
               </Link>
             ) : (
-              <Button
-                variant="outline"
-                className="border-[#d4af37]/40 text-[#d4af37] hover:bg-[#d4af37]/10 gap-2"
-                onClick={() => notifyMutation.mutate()}
-              >
-                <Bell className="w-4 h-4" />
-                Notify Me
-              </Button>
+              <button onClick={() => notifyMutation.mutate()}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
+                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, cursor: 'pointer', ...T }}>
+                <Bell className="w-4 h-4" /> Notify Me
+              </button>
             )}
-            <Button variant="ghost" size="icon" className="text-white/50 hover:text-white w-10 h-10">
+            <button className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
               <Share2 className="w-4 h-4" />
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Bio + Socials */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start">
-          <p className="text-sm text-white/70 flex-1 max-w-2xl">{bio}</p>
+        <div className="mb-5 flex flex-col sm:flex-row gap-4 items-start">
+          <p className="text-sm flex-1 max-w-2xl" style={{ color: 'rgba(255,255,255,0.6)' }}>{bio}</p>
           <div className="flex items-center gap-2 shrink-0">
             {profile?.social_links && Object.entries(profile.social_links).map(([platform, url]) => {
               const Icon = socialIcons[platform];
               return url ? (
                 <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/30 transition-all">
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
                   {Icon ? <Icon className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />}
                 </a>
               ) : null;
@@ -149,129 +157,125 @@ export default function CreatorChannel() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="live" className="pb-16">
-          <TabsList className="bg-white/5 border border-white/10">
-            {['live', 'videos', 'schedule', 'memberships', 'about'].map(t => (
-              <TabsTrigger key={t} value={t}
-                className="capitalize text-white/50 data-[state=active]:text-[#d4af37] data-[state=active]:bg-[#d4af37]/10">
-                {t === 'memberships' ? <><Crown className="w-3.5 h-3.5 mr-1 inline" />Memberships</> : t}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {/* Tab bar */}
+        <div className="flex border-b mb-6" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          {TABS.map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)}
+              className="flex-1 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all capitalize flex items-center justify-center gap-1"
+              style={{ ...T, color: activeTab === tab ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === tab ? GOLD : 'transparent', background: activeTab === tab ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
+              {tab === 'memberships' && <Crown className="w-3 h-3" />}{tab}
+            </button>
+          ))}
+        </div>
 
-          {/* Live Tab */}
-          <TabsContent value="live" className="mt-6">
+        {/* Live */}
+        {activeTab === 'live' && (
+          <div className="pb-16">
             {liveRoom ? (
-              <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.15)] text-white overflow-hidden">
-                <div className="relative h-48 bg-gradient-to-br from-[#800020]/30 to-[#0d0618] flex items-center justify-center">
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CRIMSON}44, #0d0618)` }}>
                   <div className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="text-red-400 font-semibold text-sm">LIVE NOW</span>
+                      <span className="font-black text-sm uppercase" style={{ color: '#FF1564', ...T }}>LIVE NOW</span>
                     </div>
-                    <h3 className="text-xl font-bold text-white">{liveRoom.title}</h3>
-                    <p className="text-sm text-white/50 mt-1">{liveRoom.viewer_count || 0} viewers watching</p>
+                    <h3 className="text-xl font-black text-white" style={T}>{liveRoom.title}</h3>
+                    <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{liveRoom.viewer_count || 0} viewers watching</p>
                   </div>
                 </div>
-                <CardContent className="p-4">
+                <div className="p-4">
                   <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
-                    <Button className="w-full bg-red-600 hover:bg-red-700 gap-2">
+                    <button className="w-full py-3 rounded-xl font-black uppercase text-sm flex items-center justify-center gap-2"
+                      style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', cursor: 'pointer', ...T }}>
                       <Play className="w-4 h-4" /> Join Stream
-                    </Button>
+                    </button>
                   </Link>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ) : (
-              <div className="text-center py-16 text-white/30">
+              <div className="text-center py-16" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 <Radio className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>Not currently live</p>
                 {scheduledRooms.length > 0 && (
-                  <p className="text-sm mt-2">Next stream: <strong className="text-[#d4af37]">{scheduledRooms[0]?.title}</strong></p>
+                  <p className="text-sm mt-2">Next stream: <strong style={{ color: GOLD }}>{scheduledRooms[0]?.title}</strong></p>
                 )}
               </div>
             )}
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Videos Tab */}
-          <TabsContent value="videos" className="mt-6">
-            <VideoLibrary creatorId={userId} />
-          </TabsContent>
+        {activeTab === 'videos' && <div className="pb-16"><VideoLibrary creatorId={userId} /></div>}
 
-          {/* Schedule Tab */}
-          <TabsContent value="schedule" className="mt-6 space-y-3">
+        {/* Schedule */}
+        {activeTab === 'schedule' && (
+          <div className="pb-16 space-y-3">
             {(profile?.stream_schedule || []).map((item, i) => (
-              <Card key={i} className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)] text-white">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/20 flex items-center justify-center shrink-0">
-                    <Calendar className="w-5 h-5 text-[#d4af37]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">{item.title || 'Weekly Stream'}</p>
-                    <p className="text-sm text-white/50">{item.day} · {item.time}</p>
-                  </div>
-                  <Button size="sm" variant="outline"
-                    className="border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10 text-xs"
-                    onClick={() => notifyMutation.mutate()}>
-                    <Bell className="w-3 h-3 mr-1" /> Remind Me
-                  </Button>
-                </CardContent>
-              </Card>
+              <div key={i} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                  <Calendar className="w-5 h-5" style={{ color: GOLD }} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-black text-sm text-white" style={T}>{item.title || 'Weekly Stream'}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.day} · {item.time}</p>
+                </div>
+                <button onClick={() => notifyMutation.mutate()} className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] flex items-center gap-1"
+                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', ...T }}>
+                  <Bell className="w-3 h-3" /> Remind
+                </button>
+              </div>
             ))}
             {scheduledRooms.map(r => (
-              <Card key={r.id} className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)] text-white">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#00d4ff]/10 border border-[#00d4ff]/20 flex items-center justify-center shrink-0">
-                    <Clock className="w-5 h-5 text-[#00d4ff]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">{r.title}</p>
-                    <p className="text-sm text-white/50">{r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : 'Scheduled'}</p>
-                  </div>
-                  <Badge className="bg-[#00d4ff]/10 text-[#00d4ff] border-[#00d4ff]/30">Upcoming</Badge>
-                </CardContent>
-              </Card>
+              <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)' }}>
+                  <Clock className="w-5 h-5" style={{ color: '#00d4ff' }} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-black text-sm text-white" style={T}>{r.title}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : 'Scheduled'}</p>
+                </div>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
+              </div>
             ))}
             {!profile?.stream_schedule?.length && !scheduledRooms.length && (
-              <p className="text-center text-white/30 py-12">No upcoming streams scheduled</p>
+              <p className="text-center py-12" style={{ color: 'rgba(255,255,255,0.25)' }}>No upcoming streams scheduled</p>
             )}
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Memberships Tab */}
-          <TabsContent value="memberships" className="mt-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Crown className="w-5 h-5 text-[#d4af37]" />
-                <h3 className="text-lg font-bold text-white">Support {displayName}</h3>
+        {/* Memberships */}
+        {activeTab === 'memberships' && (
+          <div className="pb-16 space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Crown className="w-5 h-5" style={{ color: GOLD }} />
+              <h3 className="text-lg font-black text-white" style={T}>Support {displayName}</h3>
+            </div>
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.5)' }}>
+              <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+            </div>
+          </div>
+        )}
+
+        {/* About */}
+        {activeTab === 'about' && (
+          <div className="pb-16">
+            <div className="rounded-2xl p-6 space-y-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              <div>
+                <p className="text-xs font-black uppercase mb-2" style={{ color: GOLD, ...T }}>About</p>
+                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>{bio}</p>
               </div>
-              <div className="bg-white/3 rounded-2xl p-4">
-                <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>Category</p>
+                  <p className="text-sm font-black capitalize text-white mt-1" style={T}>{category}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>Total Hours</p>
+                  <p className="text-sm font-black text-white mt-1" style={{ fontFamily: 'Orbitron, monospace' }}>{Math.round(profile?.total_hours_streamed || 0)}h</p>
+                </div>
               </div>
             </div>
-          </TabsContent>
-
-          {/* About Tab */}
-          <TabsContent value="about" className="mt-6">
-            <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.12)] text-white">
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <p className="text-sm font-semibold text-[#d4af37] mb-2">About</p>
-                  <p className="text-sm text-white/70">{bio}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                  <div>
-                    <p className="text-[10px] text-white/30 uppercase">Category</p>
-                    <p className="text-sm font-semibold capitalize">{category}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-white/30 uppercase">Total Hours</p>
-                    <p className="text-sm font-semibold">{Math.round(profile?.total_hours_streamed || 0)}h</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );

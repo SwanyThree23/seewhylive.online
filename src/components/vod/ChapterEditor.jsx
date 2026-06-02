@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Plus, Trash2, BookOpen, Save } from 'lucide-react';
 
 export default function ChapterEditor({ video, onSave, onCancel }) {
@@ -25,6 +24,11 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  const inputStyle = {
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 8, padding: '6px 12px', fontSize: 14, color: '#fff', outline: 'none',
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm text-white/70">
@@ -41,7 +45,7 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
           <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2">
             <span className="text-[#00d4ff] font-mono text-xs w-10 shrink-0">{fmt(ch.time)}</span>
             <span className="text-sm text-white flex-1 truncate">{ch.title}</span>
-            <button onClick={() => remove(i)} className="text-white/30 hover:text-red-400">
+            <button onClick={() => remove(i)} className="text-white/30 hover:text-red-400" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -52,25 +56,45 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
         <input
           type="number" placeholder="Time (s)" value={newTime}
           onChange={e => setNewTime(e.target.value)}
-          className="w-24 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
+          style={{ ...inputStyle, width: 96 }}
         />
         <input
           type="text" placeholder="Chapter title..." value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addChapter()}
-          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white"
+          style={{ ...inputStyle, flex: 1 }}
         />
-        <Button size="sm" variant="outline" className="border-white/10 text-white/60 shrink-0" onClick={addChapter}>
+        <button
+          onClick={addChapter}
+          style={{
+            padding: '6px 10px', borderRadius: 8, cursor: 'pointer', flexShrink: 0,
+            background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
+          }}
+        >
           <Plus className="w-4 h-4" />
-        </Button>
+        </button>
       </div>
 
       <div className="flex gap-2 pt-1">
-        <Button variant="outline" size="sm" className="border-white/10 text-white/60" onClick={onCancel}>Cancel</Button>
-        <Button size="sm" className="bg-[#00d4ff] text-black font-bold gap-2 ml-auto"
-          onClick={() => onSave({ chapters })}>
+        <button
+          onClick={onCancel}
+          style={{
+            fontSize: 12, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
+            background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => onSave({ chapters })}
+          style={{
+            marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
+            fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
+            background: '#00d4ff', color: '#000', border: 'none',
+          }}
+        >
           <Save className="w-3.5 h-3.5" /> Save Chapters
-        </Button>
+        </button>
       </div>
     </div>
   );

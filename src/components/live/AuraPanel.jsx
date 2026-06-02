@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Sparkles, Zap, Heart, BarChart2, Smile, Volume2, VolumeX, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -186,15 +184,13 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
       {/* Manual trigger */}
       {isHost && isLive && (
         <div className="px-2 pb-2">
-          <Button
-            size="sm"
-            variant="ghost"
+          <button
             onClick={() => generateAuraMessage('stream_start', { title: streamTitle, viewers: viewerCount })}
             disabled={isGenerating || !enabled || callCount >= CAP}
-            className="w-full h-6 text-[9px] text-[#8B5CF6] hover:bg-[#8B5CF6]/10 border border-[#8B5CF6]/20"
+            style={{ width: '100%', height: 24, fontSize: 9, color: '#8B5CF6', background: 'transparent', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
-            <RefreshCw className="w-2.5 h-2.5 mr-1" /> Trigger AURA
-          </Button>
+            <RefreshCw className="w-2.5 h-2.5" style={{ marginRight: 2 }} /> Trigger AURA
+          </button>
         </div>
       )}
     </div>

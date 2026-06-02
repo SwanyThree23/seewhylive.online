@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Wifi, WifiOff, Play, Square, Circle, Monitor, RefreshCw,
   ChevronRight, Settings, Activity, Layers
@@ -21,6 +18,8 @@ const OBS_EVENTS = {
 function makeSceneSwitch(sceneName) {
   return { 'request-type': 'SetCurrentScene', 'message-id': 'scene-switch', 'scene-name': sceneName };
 }
+
+const INPUT_STYLE = { width:'100%', padding:'6px 12px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:14, outline:'none', boxSizing:'border-box', marginTop:4 };
 
 export default function OBSBridge() {
   const ws = useRef(null);
@@ -141,85 +140,83 @@ export default function OBSBridge() {
   };
 
   return (
-    <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(0,212,255,0.15)] text-white">
-      <CardHeader className="pb-3 pt-4 px-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm text-[#00d4ff] flex items-center gap-2">
-            <Monitor className="w-4 h-4" /> OBS Studio Bridge
-          </CardTitle>
-          <Badge className={connected
-            ? 'bg-green-900/30 text-green-400 border-green-700/40'
-            : 'bg-white/5 text-white/40 border-white/10'
-          }>
-            {connected ? <><Wifi className="w-3 h-3 mr-1" /> Connected</> : <><WifiOff className="w-3 h-3 mr-1" /> Offline</>}
-          </Badge>
+    <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(0,212,255,0.15)', borderRadius:12, overflow:'hidden', color:'#fff' }}>
+      {/* Header */}
+      <div style={{ padding:'16px 16px 12px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, fontWeight:700, color:'#00d4ff' }}>
+          <Monitor style={{ width:16, height:16 }} /> OBS Studio Bridge
         </div>
-      </CardHeader>
+        <span style={{
+          fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif',
+          background: connected ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
+          color: connected ? '#4ade80' : 'rgba(255,255,255,0.4)',
+          border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          display:'flex', alignItems:'center', gap:4,
+        }}>
+          {connected
+            ? <><Wifi style={{ width:12, height:12 }} /> Connected</>
+            : <><WifiOff style={{ width:12, height:12 }} /> Offline</>
+          }
+        </span>
+      </div>
 
-      <CardContent className="px-4 pb-4 space-y-4">
+      <div style={{ padding:'0 16px 16px', display:'flex', flexDirection:'column', gap:16 }}>
         {!connected ? (
-          <div className="space-y-3">
-            <p className="text-xs text-white/40">Connect to OBS via obs-websocket (Tools → WebSocket Server Settings in OBS)</p>
-            <div className="grid grid-cols-2 gap-2">
+          <>
+            <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', margin:0 }}>Connect to OBS via obs-websocket (Tools → WebSocket Server Settings in OBS)</p>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
               <div>
-                <label className="text-[10px] text-white/40 uppercase">Host</label>
-                <input value={host} onChange={e => setHost(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white mt-1" />
+                <label style={{ fontSize:10, color:'rgba(255,255,255,0.4)', textTransform:'uppercase' }}>Host</label>
+                <input style={INPUT_STYLE} value={host} onChange={e => setHost(e.target.value)} />
               </div>
               <div>
-                <label className="text-[10px] text-white/40 uppercase">Port</label>
-                <input value={port} onChange={e => setPort(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white mt-1" />
+                <label style={{ fontSize:10, color:'rgba(255,255,255,0.4)', textTransform:'uppercase' }}>Port</label>
+                <input style={INPUT_STYLE} value={port} onChange={e => setPort(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-[10px] text-white/40 uppercase">Password (optional)</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white mt-1"
-                placeholder="Leave blank if no password" />
+              <label style={{ fontSize:10, color:'rgba(255,255,255,0.4)', textTransform:'uppercase' }}>Password (optional)</label>
+              <input type="password" style={INPUT_STYLE} value={password} onChange={e => setPassword(e.target.value)} placeholder="Leave blank if no password" />
             </div>
-            <Button
-              className="w-full bg-[#00d4ff] text-black font-bold gap-2"
-              onClick={connect} disabled={connecting}>
-              <Wifi className="w-4 h-4" />
+            <button
+              onClick={connect}
+              disabled={connecting}
+              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'#00d4ff', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: connecting ? 'not-allowed' : 'pointer', opacity: connecting ? 0.7 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
+            >
+              <Wifi style={{ width:16, height:16 }} />
               {connecting ? 'Connecting...' : 'Connect to OBS'}
-            </Button>
-          </div>
+            </button>
+          </>
         ) : (
-          <div className="space-y-4">
+          <>
             {/* Stream/Record controls */}
-            <div className="grid grid-cols-2 gap-2">
-              <Button
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+              <button
                 onClick={toggleStream}
-                className={streaming
-                  ? 'bg-red-600 hover:bg-red-700 text-white font-bold gap-2'
-                  : 'bg-green-700 hover:bg-green-600 text-white font-bold gap-2'}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', background: streaming ? '#dc2626' : '#15803d', color:'#fff' }}
               >
-                {streaming ? <><Square className="w-4 h-4" /> Stop Stream</> : <><Play className="w-4 h-4" /> Start Stream</>}
-              </Button>
-              <Button
+                {streaming ? <><Square style={{ width:16, height:16 }} /> Stop Stream</> : <><Play style={{ width:16, height:16 }} /> Start Stream</>}
+              </button>
+              <button
                 onClick={toggleRecord}
-                variant="outline"
-                className={recording
-                  ? 'border-red-700 text-red-400 hover:bg-red-900/20 gap-2'
-                  : 'border-white/10 text-white/60 hover:text-white gap-2'}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', border: recording ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.1)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', color: recording ? '#f87171' : 'rgba(255,255,255,0.6)' }}
               >
-                <Circle className={`w-4 h-4 ${recording ? 'fill-red-500 text-red-500 animate-pulse' : ''}`} />
+                <Circle style={{ width:16, height:16, fill: recording ? '#ef4444' : 'transparent', color: recording ? '#ef4444' : 'currentColor' }} />
                 {recording ? 'Stop Rec' : 'Start Rec'}
-              </Button>
+              </button>
             </div>
 
             {/* Stats */}
             {stats && (
-              <div className="grid grid-cols-3 gap-2">
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:8 }}>
                 {[
                   { label: 'CPU', value: `${(stats.cpuUsage || 0).toFixed(1)}%` },
                   { label: 'FPS', value: `${Math.round(stats.activeFps || 0)}` },
                   { label: 'Drop', value: `${(stats.renderSkippedFramesPercentage || 0).toFixed(1)}%` },
                 ].map(s => (
-                  <div key={s.label} className="bg-white/5 rounded-xl p-2 text-center">
-                    <p className="text-[10px] text-white/40">{s.label}</p>
-                    <p className="text-sm font-bold text-[#00d4ff]">{s.value}</p>
+                  <div key={s.label} style={{ background:'rgba(255,255,255,0.05)', borderRadius:12, padding:8, textAlign:'center' }}>
+                    <p style={{ fontSize:10, color:'rgba(255,255,255,0.4)', margin:'0 0 2px' }}>{s.label}</p>
+                    <p style={{ fontSize:14, fontWeight:700, color:'#00d4ff', margin:0 }}>{s.value}</p>
                   </div>
                 ))}
               </div>
@@ -227,42 +224,52 @@ export default function OBSBridge() {
 
             {/* Scene switcher */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-white/50 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5" /> Scenes
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+                <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', display:'flex', alignItems:'center', gap:6, margin:0 }}>
+                  <Layers style={{ width:14, height:14 }} /> Scenes
                 </p>
-                <button onClick={refreshScenes} className="text-white/30 hover:text-white">
-                  <RefreshCw className="w-3 h-3" />
+                <button onClick={refreshScenes} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.3)', padding:2 }}>
+                  <RefreshCw style={{ width:12, height:12 }} />
                 </button>
               </div>
-              <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                {scenes.length === 0 && <p className="text-xs text-white/20 text-center py-2">No scenes found</p>}
-                {scenes.map(scene => (
-                  <button
-                    key={scene.sceneName}
-                    onClick={() => switchScene(scene.sceneName)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all ${
-                      currentScene === scene.sceneName
-                        ? 'bg-[#00d4ff]/15 border border-[#00d4ff]/30 text-[#00d4ff] font-semibold'
-                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${currentScene === scene.sceneName ? 'opacity-100' : 'opacity-0'}`} />
-                    <span className="truncate">{scene.sceneName}</span>
-                    {currentScene === scene.sceneName && (
-                      <Badge className="ml-auto bg-[#00d4ff]/20 text-[#00d4ff] border-[#00d4ff]/30 text-[9px] px-1.5 py-0">LIVE</Badge>
-                    )}
-                  </button>
-                ))}
+              <div style={{ display:'flex', flexDirection:'column', gap:6, maxHeight:160, overflowY:'auto', paddingRight:4 }}>
+                {scenes.length === 0 && <p style={{ fontSize:12, color:'rgba(255,255,255,0.2)', textAlign:'center', padding:'8px 0' }}>No scenes found</p>}
+                {scenes.map(scene => {
+                  const active = currentScene === scene.sceneName;
+                  return (
+                    <button
+                      key={scene.sceneName}
+                      onClick={() => switchScene(scene.sceneName)}
+                      style={{
+                        width:'100%', display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:12, fontSize:14, border:'none', cursor:'pointer', transition:'all 0.15s', textAlign:'left',
+                        background: active ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)',
+                        borderLeft: active ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
+                        color: active ? '#00d4ff' : 'rgba(255,255,255,0.6)',
+                        fontWeight: active ? 600 : 400,
+                      }}
+                    >
+                      <ChevronRight style={{ width:14, height:14, flexShrink:0, opacity: active ? 1 : 0 }} />
+                      <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{scene.sceneName}</span>
+                      {active && (
+                        <span style={{ fontSize:9, fontWeight:900, padding:'1px 6px', borderRadius:99, background:'rgba(0,212,255,0.2)', color:'#00d4ff', border:'1px solid rgba(0,212,255,0.3)', fontFamily:'Barlow Condensed, sans-serif' }}>LIVE</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <Button variant="ghost" size="sm" className="w-full text-white/30 hover:text-white/60 text-xs" onClick={disconnect}>
+            <button
+              onClick={disconnect}
+              style={{ width:'100%', padding:'8px', background:'transparent', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', fontSize:12, borderRadius:8, fontFamily:'Barlow Condensed, sans-serif' }}
+              onMouseEnter={e => e.currentTarget.style.color='rgba(255,255,255,0.6)'}
+              onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.3)'}
+            >
               Disconnect
-            </Button>
-          </div>
+            </button>
+          </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Swords, Trophy, X, Zap, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const BATTLE_DURATION = 120; // seconds
@@ -210,15 +209,14 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
-                <Button variant="outline" size="sm" onClick={() => setOpen(false)} className="border-white/10 text-white/60">Cancel</Button>
-                <Button
-                  size="sm"
-                  className="flex-1 bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3]"
+                <button onClick={() => setOpen(false)} style={{ padding:'6px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.1)', background:'transparent', color:'rgba(255,255,255,0.6)', cursor:'pointer', fontSize:12 }}>Cancel</button>
+                <button
+                  style={{ flex:1, padding:'6px 14px', borderRadius:8, border:'none', background: opponentName ? '#d4af37' : 'rgba(212,175,55,0.4)', color:'#000', fontWeight:700, cursor: opponentName ? 'pointer' : 'not-allowed', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
                   onClick={startBattle}
                   disabled={!opponentName}
                 >
-                  <Swords className="w-3.5 h-3.5 mr-1.5" /> Start Battle
-                </Button>
+                  <Swords className="w-3.5 h-3.5" /> Start Battle
+                </button>
               </div>
             </motion.div>
           </motion.div>

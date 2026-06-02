@@ -1,0 +1,87 @@
+{
+  "properties": {
+    "access_granted": {
+      "default": false,
+      "title": "Access Granted",
+      "type": "boolean"
+    },
+    "amount_cents": {
+      "title": "Amount (cents)",
+      "type": "number"
+    },
+    "creator_amount_cents": {
+      "title": "Creator Amount (90%)",
+      "type": "number"
+    },
+    "preview_watched": {
+      "default": false,
+      "title": "Preview Watched",
+      "type": "boolean"
+    },
+    "room_id": {
+      "title": "Room ID",
+      "type": "string"
+    },
+    "unlock_type": {
+      "enum": [
+        "golden",
+        "ppv",
+        "subscription"
+      ],
+      "title": "Unlock Type",
+      "type": "string"
+    },
+    "viewer_id": {
+      "title": "Viewer ID",
+      "type": "string"
+    }
+  },
+  "required": [
+    "room_id",
+    "viewer_id",
+    "amount_cents"
+  ],
+  "type": "object",
+  "name": "PaywallAccess",
+  "rls": {
+    "create": {
+      "data.viewer_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.viewer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.viewer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.viewer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

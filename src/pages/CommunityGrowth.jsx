@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Gift, Megaphone, TrendingUp } from 'lucide-react';
 import ReferralProgram from '../components/community/ReferralProgram';
 import ChallengeCard from '../components/community/ChallengeCard';
@@ -9,10 +8,22 @@ import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
 
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const TABS = [
+  { id: 'challenges', label: 'Challenges', icon: Trophy },
+  { id: 'referrals', label: 'Referrals', icon: Gift },
+  { id: 'announcements', label: 'Announcements', icon: Megaphone },
+];
+
 export default function CommunityGrowthPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const communityId = urlParams.get('id');
   const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [activeTab, setActiveTab] = useState('challenges');
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -27,10 +38,7 @@ export default function CommunityGrowthPage() {
 
   const { data: membership } = useQuery({
     queryKey: ['membership', communityId, user?.id],
-    queryFn: () => base44.entities.CommunityMember.filter({
-      community_id: communityId,
-      user_id: user?.id,
-    }).then(m => m[0]),
+    queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId, user_id: user?.id }).then(m => m[0]),
     enabled: !!communityId && !!user,
   });
 
@@ -50,132 +58,120 @@ export default function CommunityGrowthPage() {
 
   if (!community) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+        <p className="font-black uppercase text-sm" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>Loading…</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen pb-10" style={{ background: BG }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <h1 className="text-3xl font-bold mb-2">{community.name} - Growth Hub</h1>
-          <p className="text-purple-100">
-            Engage members, drive growth, and build community
-          </p>
+      <div className="sticky top-0 z-20 border-b"
+        style={{ background: 'rgba(8,11,24,0.97)', borderColor: 'rgba(212,175,55,0.12)', backdropFilter: 'blur(12px)' }}>
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex items-center gap-3 py-4">
+            <TrendingUp className="w-5 h-5" style={{ color: GOLD }} />
+            <div>
+              <h1 className="text-xl font-black text-white leading-none" style={T}>{community.name}</h1>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Growth Hub — Engage members, drive growth</p>
+            </div>
+          </div>
+          {/* Tab bar */}
+          <div className="flex border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+            {TABS.map(tab => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
+                  style={{ ...T, color: active ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: active ? GOLD : 'transparent', background: active ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
+                  <Icon className="w-3.5 h-3.5" />{tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <Tabs defaultValue="challenges" className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-3">
-            <TabsTrigger value="challenges">
-              <Trophy className="w-4 h-4 mr-2" />
-              Challenges
-            </TabsTrigger>
-            <TabsTrigger value="referrals">
-              <Gift className="w-4 h-4 mr-2" />
-              Referrals
-            </TabsTrigger>
-            <TabsTrigger value="announcements">
-              <Megaphone className="w-4 h-4 mr-2" />
-              Announcements
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Challenges Tab */}
-          <TabsContent value="challenges" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Active Challenges</h2>
-                  <p className="text-muted-foreground">
-                    Compete and earn rewards
-                  </p>
-                </div>
-
-                <div className="grid gap-4">
-                  {challenges.filter(c => c.status === 'active').map((challenge) => (
-                    <div key={challenge.id} onClick={() => setSelectedChallenge(challenge.id)}>
-                      <ChallengeCard
-                        challenge={challenge}
-                        userParticipation={userParticipation.find(p => p.challenge_id === challenge.id)}
-                        userId={user?.id}
-                      />
-                    </div>
-                  ))}
-                  {challenges.filter(c => c.status === 'active').length === 0 && (
-                    <div className="text-center py-12 bg-white rounded-lg border">
-                      <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-2 opacity-50" />
-                      <p className="text-muted-foreground">No active challenges</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Upcoming */}
-                {challenges.filter(c => c.status === 'upcoming').length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4">Coming Soon</h3>
-                    <div className="grid gap-4">
-                      {challenges.filter(c => c.status === 'upcoming').map((challenge) => (
-                        <ChallengeCard
-                          key={challenge.id}
-                          challenge={challenge}
-                          userId={user?.id}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Leaderboard Sidebar */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+        {/* Challenges */}
+        {activeTab === 'challenges' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-5">
               <div>
-                {selectedChallenge ? (
-                  <ChallengeLeaderboard challengeId={selectedChallenge} />
-                ) : (
-                  <div className="bg-white rounded-lg border p-6 text-center">
-                    <TrendingUp className="w-12 h-12 mx-auto text-muted-foreground mb-2 opacity-50" />
-                    <p className="text-sm text-muted-foreground">
-                      Select a challenge to view leaderboard
-                    </p>
+                <h2 className="text-xl font-black text-white mb-0.5" style={T}>Active Challenges</h2>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Compete and earn rewards</p>
+              </div>
+              <div className="space-y-4">
+                {challenges.filter(c => c.status === 'active').map((challenge) => (
+                  <div key={challenge.id} onClick={() => setSelectedChallenge(challenge.id)} style={{ cursor: 'pointer' }}>
+                    <ChallengeCard
+                      challenge={challenge}
+                      userParticipation={userParticipation.find(p => p.challenge_id === challenge.id)}
+                      userId={user?.id}
+                    />
+                  </div>
+                ))}
+                {challenges.filter(c => c.status === 'active').length === 0 && (
+                  <div className="text-center py-12 rounded-2xl"
+                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                    <Trophy className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
+                    <p className="font-black uppercase text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>No active challenges</p>
                   </div>
                 )}
               </div>
-            </div>
-          </TabsContent>
 
-          {/* Referrals Tab */}
-          <TabsContent value="referrals">
-            <div className="max-w-2xl">
-              <ReferralProgram communityId={communityId} userId={user?.id} />
-            </div>
-          </TabsContent>
-
-          {/* Announcements Tab */}
-          <TabsContent value="announcements" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {isAdmin && (
+              {challenges.filter(c => c.status === 'upcoming').length > 0 && (
                 <div>
-                  <AnnouncementPanel communityId={communityId} userId={user?.id} />
+                  <h3 className="text-lg font-black text-white mb-3" style={T}>Coming Soon</h3>
+                  <div className="space-y-4">
+                    {challenges.filter(c => c.status === 'upcoming').map((challenge) => (
+                      <ChallengeCard key={challenge.id} challenge={challenge} userId={user?.id} />
+                    ))}
+                  </div>
                 </div>
               )}
-              
-              <div className={isAdmin ? '' : 'lg:col-span-2'}>
-                <div className="mb-4">
-                  <h2 className="text-2xl font-bold mb-2">Announcements</h2>
-                  <p className="text-muted-foreground">
-                    Stay updated with community news
-                  </p>
-                </div>
-                <AnnouncementFeed communityId={communityId} />
-              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+
+            <div>
+              {selectedChallenge ? (
+                <ChallengeLeaderboard challengeId={selectedChallenge} />
+              ) : (
+                <div className="text-center py-12 rounded-2xl"
+                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  <TrendingUp className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
+                  <p className="text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>Select a challenge to view leaderboard</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Referrals */}
+        {activeTab === 'referrals' && (
+          <div className="max-w-2xl">
+            <ReferralProgram communityId={communityId} userId={user?.id} />
+          </div>
+        )}
+
+        {/* Announcements */}
+        {activeTab === 'announcements' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {isAdmin && (
+              <div>
+                <AnnouncementPanel communityId={communityId} userId={user?.id} />
+              </div>
+            )}
+            <div className={isAdmin ? '' : 'lg:col-span-2'}>
+              <div className="mb-4">
+                <h2 className="text-xl font-black text-white mb-0.5" style={T}>Announcements</h2>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Stay updated with community news</p>
+              </div>
+              <AnnouncementFeed communityId={communityId} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

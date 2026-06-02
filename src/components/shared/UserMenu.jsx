@@ -1,14 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   User, Activity, DollarSign, BarChart2, Radio, Globe,
   Mail, Shield, Users, Settings, LogOut, Crown, Download,
@@ -16,11 +10,20 @@ import {
 } from 'lucide-react';
 
 export default function UserMenu({ user, isAdmin }) {
+  const [open, setOpen] = useState(false);
   const handleLogout = () => base44.auth.logout();
 
   if (!user) {
     return (
-      <Button onClick={() => base44.auth.redirectToLogin()}>Sign In</Button>
+      <button
+        onClick={() => base44.auth.redirectToLogin()}
+        style={{
+          padding:'8px 18px', background:'#D4AF37', color:'#000', border:'none',
+          borderRadius:8, fontWeight:700, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:14,
+        }}
+      >
+        Sign In
+      </button>
     );
   }
 
@@ -67,57 +70,100 @@ export default function UserMenu({ user, isAdmin }) {
     },
   ];
 
+  const initials = user.full_name?.charAt(0) || user.email?.charAt(0) || '?';
+
+  const menuItemStyle = {
+    display:'flex', alignItems:'center', gap:8, width:'100%', padding:'7px 12px',
+    background:'transparent', border:'none', color:'rgba(255,255,255,0.8)', cursor:'pointer',
+    fontSize:13, textDecoration:'none', borderRadius:6, transition:'background 0.15s',
+    fontFamily:'inherit',
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-          <Avatar>
-            <AvatarImage src={user.avatar_url} />
-            <AvatarFallback className="bg-gradient-to-br from-amber-700 to-amber-500 text-white font-bold">
-              {user.full_name?.charAt(0) || user.email?.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 max-h-[85vh] overflow-y-auto" align="end">
-        <DropdownMenuLabel>
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.full_name || 'User'}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-          </div>
-        </DropdownMenuLabel>
-        {sections.map(({ label, items }) => (
-          <div key={label}>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider px-2 py-1">{label}</DropdownMenuLabel>
-            {items.map(({ label: itemLabel, icon: Icon, href }) => (
-              <DropdownMenuItem key={href} asChild>
-                <Link to={createPageUrl(href)}>
-                  <Icon className="mr-2 h-4 w-4" />
-                  <span>{itemLabel}</span>
-                </Link>
-              </DropdownMenuItem>
+    <div style={{ position:'relative' }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        style={{
+          width:40, height:40, borderRadius:'50%', overflow:'hidden',
+          background:'linear-gradient(135deg,#92400e,#d97706)', border:'none', cursor:'pointer',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          color:'#fff', fontWeight:700, fontSize:14, padding:0,
+        }}
+      >
+        {user.avatar_url
+          ? <img src={user.avatar_url} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt="" />
+          : initials
+        }
+      </button>
+
+      {open && (
+        <>
+          <div
+            style={{
+              position:'absolute', top:'calc(100% + 8px)', right:0, zIndex:100,
+              background:'rgba(13,6,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
+              borderRadius:12, boxShadow:'0 12px 40px rgba(0,0,0,0.7)',
+              width:224, maxHeight:'85vh', overflowY:'auto',
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding:'12px 14px', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
+              <p style={{ fontSize:14, fontWeight:600, color:'#fff', margin:0 }}>{user.full_name || 'User'}</p>
+              <p style={{ fontSize:12, color:'rgba(255,255,255,0.4)', margin:'2px 0 0' }}>{user.email}</p>
+            </div>
+
+            {sections.map(({ label, items }) => (
+              <div key={label}>
+                <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }} />
+                <p style={{ fontSize:10, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.08em', padding:'8px 14px 4px', fontWeight:700 }}>{label}</p>
+                {items.map(({ label: itemLabel, icon: Icon, href }) => (
+                  <Link
+                    key={href}
+                    to={createPageUrl(href)}
+                    onClick={() => setOpen(false)}
+                    style={menuItemStyle}
+                    onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}
+                  >
+                    <Icon style={{ width:16, height:16, flexShrink:0 }} />
+                    <span>{itemLabel}</span>
+                  </Link>
+                ))}
+              </div>
             ))}
+
+            {isAdmin && (
+              <div>
+                <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }} />
+                <p style={{ fontSize:10, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.08em', padding:'8px 14px 4px', fontWeight:700 }}>Admin</p>
+                <Link
+                  to={createPageUrl('ModerationDashboard')}
+                  onClick={() => setOpen(false)}
+                  style={menuItemStyle}
+                  onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.06)'}
+                  onMouseLeave={e => e.currentTarget.style.background='transparent'}
+                >
+                  <Shield style={{ width:16, height:16 }} />
+                  <span>Moderation</span>
+                </Link>
+              </div>
+            )}
+
+            <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }} />
+            <button
+              onClick={handleLogout}
+              style={{ ...menuItemStyle, color:'#ef4444', marginBottom:4 }}
+              onMouseEnter={e => e.currentTarget.style.background='rgba(239,68,68,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background='transparent'}
+            >
+              <LogOut style={{ width:16, height:16 }} />
+              <span>Log out</span>
+            </button>
           </div>
-        ))}
-        {isAdmin && (
-          <div>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider px-2 py-1">Admin</DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link to={createPageUrl('ModerationDashboard')}>
-                <Shield className="mr-2 h-4 w-4" />
-                <span>Moderation</span>
-              </Link>
-            </DropdownMenuItem>
-          </div>
-        )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+
+          <div style={{ position:'fixed', inset:0, zIndex:99 }} onClick={() => setOpen(false)} />
+        </>
+      )}
+    </div>
   );
 }

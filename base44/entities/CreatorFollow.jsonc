@@ -1,0 +1,77 @@
+{
+  "properties": {
+    "creator_id": {
+      "title": "Creator ID",
+      "type": "string"
+    },
+    "creator_name": {
+      "title": "Creator Name",
+      "type": "string"
+    },
+    "followed_at": {
+      "format": "date-time",
+      "title": "Followed At",
+      "type": "string"
+    },
+    "notify_on_live": {
+      "default": true,
+      "title": "Notify When Live",
+      "type": "boolean"
+    },
+    "viewer_id": {
+      "title": "Viewer User ID",
+      "type": "string"
+    }
+  },
+  "required": [
+    "viewer_id",
+    "creator_id",
+    "creator_name"
+  ],
+  "type": "object",
+  "name": "CreatorFollow",
+  "rls": {
+    "create": {
+      "data.viewer_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.viewer_id": "{{user.id}}"
+        },
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.viewer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.viewer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
