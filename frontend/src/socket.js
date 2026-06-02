@@ -1,6 +1,8 @@
 import { io } from 'socket.io-client';
 
-var SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://srv1581658.hstgr.cloud:3001';
+// In production, connect through nginx reverse proxy (same origin, port 443).
+// In dev, Vite's proxy forwards /socket.io → localhost:3001 automatically.
+var SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
 
 var socket = null;
 var _rejoinPayload = null;    // stored join-room payload for auto-rejoin on reconnect

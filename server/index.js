@@ -2948,6 +2948,7 @@ app.post('/api/webhooks/deploy', function(req, res) {
       'git fetch origin claude/seewhy-live-v33-build-v0L5Z',
       'git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z',
       'cd server && npm install --omit=dev --silent',
+      'cd /opt/seewhy/frontend && npm ci --silent && npm run build',
       'pm2 reload seewhy-server --update-env',
       'pm2 save --force'
     ].join(' && ');
