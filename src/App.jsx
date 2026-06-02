@@ -4,7 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import Greenroom from './pages/Greenroom';
 import ControlRoom from './pages/ControlRoom';
@@ -34,6 +34,17 @@ import LiveRoom from './pages/LiveRoom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
+import { base44 } from '@/api/base44Client';
+
+function LoginRedirect() {
+  useEffect(function() { base44.auth.redirectToLogin(window.location.origin); }, []);
+  return (
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0E0C09' }}>
+      <div style={{ width: 32, height: 32, border: '3px solid rgba(201,168,76,.2)', borderTopColor: '#C9A84C', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+    </div>
+  );
+}
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -49,8 +60,9 @@ const AuthenticatedApp = () => {
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0E0C09' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid rgba(201,168,76,.2)', borderTopColor: '#C9A84C', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
       </div>
     );
   }
@@ -116,6 +128,7 @@ const AuthenticatedApp = () => {
       <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
       <Route path="/BroadcastStudio" element={<BroadcastStudio />} />
       <Route path="/LiveRoom" element={<LiveRoom />} />
+      <Route path="/login" element={<LoginRedirect />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </Suspense>
