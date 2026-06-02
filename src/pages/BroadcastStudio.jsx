@@ -31,6 +31,10 @@ import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import ClipMarker from '../components/live/ClipMarker';
 import GuestQueue from '../components/live/GuestQueue';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
+import SuperChatRail from '../components/live/SuperChatRail';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import { Hand } from 'lucide-react';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -312,6 +316,12 @@ export default function BroadcastStudio() {
   const [ariaTopicIdx, setAriaTopicIdx] = useState(0);
   const [musicVolume, setMusicVolume] = useState(70);
   const streamStartRef = useRef(Date.now());
+  const [tipTotal, setTipTotal] = useState(0);
+  const [superchats, setSuperchats] = useState([]);
+  const [raisedHands, setRaisedHands] = useState(new Set());
+  const [slowMode, setSlowMode] = useState(false);
+  const [slowModeCooldown, setSlowModeCooldown] = useState(30);
+  const [pinnedMessage, setPinnedMessage] = useState(null);
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -344,6 +354,21 @@ export default function BroadcastStudio() {
     });
     return unsub;
   }, [partyId, qc]);
+
+  // Raised hand subscription
+  useEffect(() => {
+    if (!partyId) return;
+    const unsub = base44.entities.Message.subscribe((event) => {
+      if (event.data?.room_id !== partyId) return;
+      try {
+        const d = JSON.parse(event.data?.content || '{}');
+        if (d.action === 'raise-hand') {
+          setRaisedHands(prev => new Set([...prev, d.userId]));
+        }
+      } catch {}
+    });
+    return unsub;
+  }, [partyId]);
 
   // Local media
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
@@ -502,6 +527,28 @@ export default function BroadcastStudio() {
     toast.success('Invite link copied!');
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const kickMember = async (member) => {
+    await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
+    toast.success(`${member.user_name} removed from broadcast`);
+    qc.invalidateQueries(['broadcast-members', partyId]);
+  };
+
+  const sendRaiseHand = async () => {
+    if (!partyId || !user?.id) return;
+    await base44.entities.Message.create({
+      room_id: partyId,
+      user_id: user.id,
+      user_name: user.full_name || user.email,
+      content: JSON.stringify({ action: 'raise-hand', userId: user.id, userName: user.full_name || user.email }),
+      type: 'system',
+    });
+    toast.success('✋ Hand raised — waiting for host');
+  };
+
+  const dismissRaisedHand = (userId) => {
+    setRaisedHands(prev => { const s = new Set(prev); s.delete(userId); return s; });
   };
 
   // Build compositor slots from localStream + remoteStreams
@@ -690,6 +737,14 @@ export default function BroadcastStudio() {
             </span>
           )}
         </div>
+
+        {/* Metrics bar */}
+        <StreamMetricsBar
+          startTime={streamStartRef.current}
+          memberCount={members.length}
+          tipTotal={tipTotal}
+          peakViewers={members.length}
+        />
       </div>
 
       {/* ── MAIN AREA ──────────────────────────────────────────────────────── */}
@@ -804,6 +859,9 @@ export default function BroadcastStudio() {
             )}
           </div>
 
+          {/* Super chat rail */}
+          <SuperChatRail superchats={superchats} />
+
           {/* Hype meter */}
           <div className="shrink-0 px-3 py-1">
             <PartyHypeMeter partyId={partyId} memberCount={members.length} onHypeChange={setHypeLevel} />
@@ -879,6 +937,34 @@ export default function BroadcastStudio() {
             </button>
           </div>
 
+          {/* Slow mode toggle */}
+          {canManage && (
+            <div className="shrink-0 flex items-center gap-2 px-3 py-2"
+              style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+              <span style={{ fontSize: 14 }}>🐢</span>
+              <span className="flex-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Slow Mode
+              </span>
+              {slowMode && (
+                <div className="flex items-center gap-1 mr-2">
+                  {[10, 30, 60].map(s => (
+                    <button key={s} onClick={() => setSlowModeCooldown(s)}
+                      className="text-[8px] px-1.5 py-0.5 rounded-full"
+                      style={{ background: slowModeCooldown === s ? 'rgba(0,245,255,0.2)' : 'rgba(255,255,255,0.05)', color: slowModeCooldown === s ? '#00F5FF' : 'rgba(255,255,255,0.3)', border: slowModeCooldown === s ? '1px solid rgba(0,245,255,0.3)' : '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {s}s
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button
+                onClick={() => setSlowMode(v => !v)}
+                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: slowMode ? '#00F5FF' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+              >
+                <div style={{ position: 'absolute', top: 2, left: slowMode ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </button>
+            </div>
+          )}
+
           {/* Tab bar */}
           <div className="flex shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#0B0B18' }}>
             {RIGHT_TABS.map(tab => (
@@ -922,11 +1008,23 @@ export default function BroadcastStudio() {
 
             {/* 💬 MULTILINGUAL CHAT */}
             {activeTab === 'chat' && (
-              hostSettings.chatEnabled
-                ? <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} onMessagesChange={setChatMessages} />
-                : <div className="flex items-center justify-center h-32">
-                    <p className="text-[10px] text-white/25">Chat disabled by host</p>
+              hostSettings.chatEnabled ? (
+                <div className="flex flex-col h-full">
+                  {pinnedMessage && (
+                    <div className="shrink-0 flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-lg" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                      <span className="text-[10px]">📌</span>
+                      <span className="flex-1 text-[10px]" style={{ color: 'rgba(255,255,255,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMessage}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-h-0">
+                    <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} onMessagesChange={setChatMessages} slowMode={slowMode} slowModeCooldown={slowModeCooldown} />
                   </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-32">
+                  <p className="text-[10px] text-white/25">Chat disabled by host</p>
+                </div>
+              )
             )}
 
             {/* ⚔️ PK BATTLE */}
@@ -970,16 +1068,53 @@ export default function BroadcastStudio() {
                     + Invite
                   </button>
                 </div>
+
+                {/* Raised hands queue */}
+                {canManage && raisedHands.size > 0 && (
+                  <div className="rounded-xl p-2 mb-1" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    <div className="flex items-center gap-1 mb-1.5">
+                      <Hand className="w-3 h-3" style={{ color: GOLD }} />
+                      <span className="text-[9px] font-black uppercase" style={{ color: GOLD, ...T }}>
+                        Raised Hands ({raisedHands.size})
+                      </span>
+                    </div>
+                    {[...raisedHands].map(uid => {
+                      const mem = members.find(m => m.user_id === uid);
+                      return (
+                        <div key={uid} className="flex items-center gap-2 py-1">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
+                            style={{ background: 'rgba(212,175,55,0.2)', color: GOLD }}>
+                            {(mem?.user_name || '?')[0].toUpperCase()}
+                          </div>
+                          <span className="flex-1 text-[9px] truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{mem?.user_name || uid}</span>
+                          <button onClick={() => { if (mem) promoteCoHost(mem); dismissRaisedHand(uid); }}
+                            className="text-[8px] px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
+                            ✓ Allow
+                          </button>
+                          <button onClick={() => dismissRaisedHand(uid)}
+                            className="text-[8px] px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {members.map(mem => {
                   const isMe = mem.user_id === user?.id;
                   const isHostMem = mem.user_id === party.host_id;
                   const isCoHostMem = mem.role === 'cohost';
+                  const hasHand = raisedHands.has(mem.user_id);
                   return (
                     <div key={mem.id} className="flex items-center gap-2 p-2 rounded-lg"
-                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs shrink-0"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: hasHand ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.05)' }}>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs shrink-0 relative"
                         style={{ background: isHostMem ? 'rgba(212,175,55,0.2)' : isCoHostMem ? 'rgba(0,245,255,0.15)' : 'rgba(139,92,246,0.2)', color: isHostMem ? GOLD : isCoHostMem ? '#00F5FF' : '#8B5CF6' }}>
                         {(mem.user_name || '?')[0].toUpperCase()}
+                        {hasHand && <span className="absolute -top-1 -right-1 text-[10px]">✋</span>}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-white font-semibold truncate">{mem.user_name}{isMe ? ' (you)' : ''}</p>
@@ -988,19 +1123,27 @@ export default function BroadcastStudio() {
                         </p>
                       </div>
                       {canManage && !isMe && !isHostMem && (
-                        isCoHostMem ? (
-                          <button onClick={() => demoteToAudience(mem)}
+                        <div className="flex items-center gap-1">
+                          {isCoHostMem ? (
+                            <button onClick={() => demoteToAudience(mem)}
+                              className="text-[8px] px-1.5 py-0.5 rounded"
+                              style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
+                              Demote
+                            </button>
+                          ) : (
+                            <button onClick={() => promoteCoHost(mem)}
+                              className="text-[8px] px-1.5 py-0.5 rounded"
+                              style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                              Co-host
+                            </button>
+                          )}
+                          <button onClick={() => kickMember(mem)}
                             className="text-[8px] px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
-                            Demote
+                            style={{ background: 'rgba(255,21,100,0.08)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.2)', ...T }}
+                            title="Remove from broadcast">
+                            Kick
                           </button>
-                        ) : (
-                          <button onClick={() => promoteCoHost(mem)}
-                            className="text-[8px] px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
-                            Co-host
-                          </button>
-                        )
+                        </div>
                       )}
                     </div>
                   );
@@ -1017,6 +1160,39 @@ export default function BroadcastStudio() {
             {activeTab === 'manage' && canManage && (
               <div className="p-2 space-y-3">
                 <HostControls isHost={canManage} party={party} onUpdate={setHostSettings} />
+
+                {/* Stream goal */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[9px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
+                  <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={0} />
+                </div>
+
+                {/* Pinned message */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[9px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>📌 Pinned Message</p>
+                  {pinnedMessage ? (
+                    <div className="rounded-lg p-2 mb-2 flex items-start gap-2" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                      <span className="text-[10px] flex-1" style={{ color: 'rgba(255,255,255,0.8)' }}>{pinnedMessage}</span>
+                      <button onClick={() => setPinnedMessage(null)}
+                        style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, lineHeight: 1 }}>×</button>
+                    </div>
+                  ) : (
+                    <p className="text-[9px] mb-2" style={{ color: 'rgba(255,255,255,0.2)' }}>No pinned message</p>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="Pin a message for all viewers…"
+                      maxLength={200}
+                      onKeyDown={e => { if (e.key === 'Enter' && e.currentTarget.value.trim()) { setPinnedMessage(e.currentTarget.value.trim()); e.currentTarget.value = ''; } }}
+                      style={{ flex: 1, height: 28, padding: '0 8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    />
+                    <button
+                      onClick={e => { const inp = e.currentTarget.previousSibling; if (inp?.value?.trim()) { setPinnedMessage(inp.value.trim()); inp.value = ''; } }}
+                      style={{ height: 28, padding: '0 10px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, color: GOLD, fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
+                      📌
+                    </button>
+                  </div>
+                </div>
 
                 {/* Video source changer */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1383,6 +1559,15 @@ export default function BroadcastStudio() {
           {studioMode === 'watch' ? '🎬 Watch' : studioMode === 'live' ? '🎙️ Live' : '⚡ Hybrid'}
         </span>
 
+        {!canManage && (
+          <motion.button whileTap={{ scale: 0.92 }} onClick={sendRaiseHand}
+            title="Raise hand to ask to speak"
+            className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
+            style={{ background: raisedHands.has(user?.id) ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)', border: raisedHands.has(user?.id) ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)', color: raisedHands.has(user?.id) ? GOLD : 'rgba(255,255,255,0.4)' }}>
+            <Hand className="w-4 h-4" />
+          </motion.button>
+        )}
+
         <div className="w-px h-6" style={{ background: 'rgba(255,255,255,0.1)' }} />
 
         {!isHost ? (
@@ -1433,7 +1618,11 @@ export default function BroadcastStudio() {
         creatorId={party?.host_id}
         creatorName={party?.host_name || 'Creator'}
         onGiftSent={(gift, sender) => {
-          setGiftEvent({ id: Date.now(), gift, senderName: sender?.full_name || sender?.email || 'You' });
+          const senderName = sender?.full_name || sender?.email || 'You';
+          const amount = gift?.price || 0;
+          setGiftEvent({ id: Date.now(), gift, senderName });
+          setSuperchats(prev => [...prev, { id: Date.now(), senderName, amount, emoji: gift?.emoji }]);
+          if (amount > 0) setTipTotal(prev => prev + amount);
           setGiftOpen(false);
         }}
       />
