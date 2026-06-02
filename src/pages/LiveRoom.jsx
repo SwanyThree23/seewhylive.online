@@ -14,7 +14,9 @@ import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
-import { DollarSign } from 'lucide-react';
+import GiftShop from '../components/live/GiftShop';
+import GiftAnimation from '../components/live/GiftAnimation';
+import { DollarSign, Gift } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -300,6 +302,9 @@ export default function LiveRoom() {
   const [handRaised, setHandRaised] = useState(false);
   const [shareOpen, setShareOpen]   = useState(false);
   const [payOpen, setPayOpen]       = useState(false);
+  const [giftOpen, setGiftOpen]     = useState(false);
+  const [giftEvent, setGiftEvent]   = useState(null);
+  const lastGiftTsRef               = useRef(0);
 
   // Sync stage when real data arrives
   useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
@@ -334,6 +339,33 @@ export default function LiveRoom() {
     });
     return unsub;
   }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    const iv = setInterval(async () => {
+      try {
+        const tips = await base44.entities.Tip.filter({ room_id: roomId, type: 'gift' });
+        const newest = tips
+          .filter(t => t.user_id !== user.id)
+          .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+        if (newest) {
+          const ts = new Date(newest.created_date).getTime();
+          if (ts > lastGiftTsRef.current) {
+            lastGiftTsRef.current = ts;
+            const { GIFTS } = await import('../components/live/GiftShop');
+            const gift = GIFTS.find(g => g.id === newest.gift_id) || {
+              emoji: newest.gift_emoji || '🎁',
+              name:  newest.gift_name  || 'Gift',
+              color: '#D4AF37',
+              price: newest.amount || 0,
+            };
+            setGiftEvent({ id: ts, gift, senderName: newest.sender_name || 'Guest' });
+          }
+        }
+      } catch {}
+    }, 4000);
+    return () => clearInterval(iv);
+  }, [roomId, user?.id]);
 
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
@@ -565,6 +597,17 @@ export default function LiveRoom() {
             <span className="text-[8px] text-white/35"> </span>
           </button>
 
+          {/* Gift */}
+          {party && party?.host_id !== user?.id && (
+            <button onClick={() => setGiftOpen(true)} className="flex flex-col items-center gap-0.5">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}44` }}>
+                <Gift className="w-4 h-4" style={{ color: GOLD }} />
+              </div>
+              <span className="text-[8px]" style={{ color: GOLD }}>Gift</span>
+            </button>
+          )}
+
           {/* Tip */}
           {party && (
             <div className="flex flex-col items-center gap-0.5">
@@ -634,6 +677,22 @@ export default function LiveRoom() {
           creatorName={hostName}
         />
       )}
+
+      <GiftShop
+        isOpen={giftOpen}
+        onClose={() => setGiftOpen(false)}
+        roomId={roomId || party?.id}
+        user={user}
+        creatorId={party?.host_id}
+        creatorName={hostName}
+        onGiftSent={(gift, sender) => {
+          lastGiftTsRef.current = Date.now();
+          setGiftEvent({ id: Date.now(), gift, senderName: sender?.full_name || sender?.email || 'You' });
+          setGiftOpen(false);
+        }}
+      />
+
+      <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
 
       {showExclusiveGate && (
         <div style={{
