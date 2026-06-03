@@ -132,7 +132,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                   <button
                     key={a.value}
                     onClick={() => setSelectedAmount(a)}
-                    className={`py-1.5 rounded text-[9px] font-bold transition-all border ${
+                    className={`py-1.5 rounded text-[11px] font-bold transition-all border ${
                       selectedAmount.value === a.value
                         ? 'border-current'
                         : 'border-white/10 text-white/40 hover:border-white/20'
@@ -181,7 +181,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                     title={`${gift.name} — $${gift.price}`}
                   >
                     <span className="text-base">{gift.emoji}</span>
-                    <span className="text-[8px] text-white/30 mt-0.5">${gift.price}</span>
+                    <span className="text-[11px] text-white/30 mt-0.5">${gift.price}</span>
                   </button>
                 ))}
               </div>

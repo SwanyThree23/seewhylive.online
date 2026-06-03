@@ -66,7 +66,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
           <Zap className="w-4 h-4" style={{ color: '#00F5FF' }} />
           <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>ZEGOCLOUD Status</span>
         </div>
-        <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+        <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
           style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
           {sc.label === 'LIVE' && <span className="inline-block w-1.5 h-1.5 rounded-full mr-1 bg-green-400 animate-pulse" />}
           {sc.label}
@@ -75,18 +75,18 @@ export default function ZEGOStreamHealthCard({ roomId }) {
 
       {/* Badges row */}
       <div className="flex flex-wrap gap-2">
-        <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded"
+        <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded"
           style={{ background: `${platformColor}15`, color: platformColor, border: `1px solid ${platformColor}30`, fontFamily: 'Share Tech Mono, monospace' }}>
           {platform}
         </span>
         {zegoStream.kit_type && (
-          <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded"
+          <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded"
             style={{ background: `${GOLD}10`, color: GOLD, border: `1px solid ${GOLD}25`, ...T }}>
             {KIT_LABELS[zegoStream.kit_type] || zegoStream.kit_type}
           </span>
         )}
         {zegoStream.latency_mode && (
-          <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded"
+          <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded"
             style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
             {LATENCY_LABELS[zegoStream.latency_mode] || zegoStream.latency_mode}
           </span>
@@ -99,7 +99,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
           <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div>
               <p className="text-[7px] uppercase font-black" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Stream ID</p>
-              <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.stream_id}</p>
+              <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.stream_id}</p>
             </div>
           </div>
         )}
@@ -107,7 +107,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
           <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div>
               <p className="text-[7px] uppercase font-black" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>ZEGO Room ID</p>
-              <p className="text-[9px]" style={{ color: '#00F5FF', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.zego_room_id}</p>
+              <p className="text-[11px]" style={{ color: '#00F5FF', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.zego_room_id}</p>
             </div>
             <button onClick={() => { navigator.clipboard.writeText(zegoStream.zego_room_id); toast.success('Copied!'); }}>
               <Copy className="w-3 h-3 text-white/30 hover:text-white/60 transition-colors" />
@@ -139,7 +139,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
         <div>
           <div className="flex items-center justify-between mb-1">
             <span className="text-[7px] uppercase font-black" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Avg Bitrate</span>
-            <span className="text-[9px] font-bold" style={{ color: GOLD, fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.avg_bitrate_kbps} kbps</span>
+            <span className="text-[11px] font-bold" style={{ color: GOLD, fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.avg_bitrate_kbps} kbps</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
             <motion.div className="h-full rounded-full"

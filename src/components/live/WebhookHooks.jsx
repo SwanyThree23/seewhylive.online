@@ -70,7 +70,7 @@ export default function WebhookHooks({ roomId, isHost }) {
           <Webhook className={`w-4 h-4 ${hooks.filter(h => h.active).length > 0 ? 'text-[#d4af37]' : 'text-white/40'}`} />
           <span className="text-xs font-semibold text-white/70">Stream Webhooks</span>
           {hooks.filter(h => h.active).length > 0 && (
-            <span className="text-[9px] bg-blue-600/30 text-blue-400 border border-blue-600/30 px-1.5 py-0.5 rounded-full font-bold">
+            <span className="text-[11px] bg-blue-600/30 text-blue-400 border border-blue-600/30 px-1.5 py-0.5 rounded-full font-bold">
               {hooks.filter(h => h.active).length} ACTIVE
             </span>
           )}
@@ -139,7 +139,7 @@ export default function WebhookHooks({ roomId, isHost }) {
                       <button
                         onClick={() => testHook(hook)}
                         disabled={testing === hook.id}
-                        className="text-[9px] px-1.5 py-0.5 rounded border border-blue-700/40 text-blue-400 hover:bg-blue-900/30"
+                        className="text-[11px] px-1.5 py-0.5 rounded border border-blue-700/40 text-blue-400 hover:bg-blue-900/30"
                       >
                         {testing === hook.id ? '...' : 'Test'}
                       </button>
@@ -157,7 +157,7 @@ export default function WebhookHooks({ roomId, isHost }) {
                   <ChevronDown className="w-2.5 h-2.5 group-open:rotate-180 transition-transform" />
                   Sample payload
                 </summary>
-                <pre className="mt-1.5 bg-black/40 rounded p-2 text-[9px] text-white/30 overflow-x-auto">
+                <pre className="mt-1.5 bg-black/40 rounded p-2 text-[11px] text-white/30 overflow-x-auto">
 {`{
   "event": "tip.received",
   "roomId": "${roomId || 'room_id'}",
@@ -171,7 +171,7 @@ export default function WebhookHooks({ roomId, isHost }) {
                 </pre>
               </details>
 
-              <p className="text-[9px] text-white/20 italic">
+              <p className="text-[11px] text-white/20 italic">
                 POST requests are sent to each active endpoint when stream events occur.
               </p>
             </div>

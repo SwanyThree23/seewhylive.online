@@ -25,7 +25,7 @@ export function MerchStrip({ roomId, currentUser, hostId }) {
   return (
     <>
       <div style={{ background: C.card, borderTop: "1px solid " + C.gold + "44", borderBottom: "1px solid #2a2a2a", padding: "8px 0" }}>
-        <div style={{ fontFamily: C.fOrb, fontSize: 8, color: C.gold, letterSpacing: 2, padding: "0 12px 6px" }}>📦 LIVE SHOP</div>
+        <div style={{ fontFamily: C.fOrb, fontSize: 11, color: C.gold, letterSpacing: 2, padding: "0 12px 6px" }}>📦 LIVE SHOP</div>
         <div style={{ display: "flex", overflowX: "auto", gap: 10, padding: "0 12px" }}>
           {items.map(item => (
             <div key={item.id} onClick={() => setSelected(item)} style={{
@@ -104,7 +104,7 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
             {/* Sizes */}
             {item.sizes_available?.length > 0 && (
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1, marginBottom: 6 }}>SIZE</div>
+                <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 6 }}>SIZE</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {item.sizes_available.map(s => (
                     <button key={s} onClick={() => setSize(s)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid " + (size === s ? C.gold : "#333"), background: size === s ? "rgba(212,175,55,0.1)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: size === s ? C.gold : C.gray }}>{s}</button>
@@ -115,14 +115,14 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
 
             {/* Qty */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <span style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1 }}>QTY</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1 }}>QTY</span>
               <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ width: 28, height: 28, borderRadius: "50%", border: "1px solid #333", background: C.surface, color: C.white, cursor: "pointer" }}>−</button>
               <span style={{ fontFamily: C.fBeb, fontSize: 20, color: C.white, minWidth: 24, textAlign: "center" }}>{qty}</span>
               <button onClick={() => setQty(q => q + 1)} style={{ width: 28, height: 28, borderRadius: "50%", border: "1px solid #333", background: C.surface, color: C.white, cursor: "pointer" }}>+</button>
             </div>
 
             {/* Split note */}
-            <div style={{ padding: "8px 12px", background: "rgba(212,175,55,0.06)", border: "1px solid " + C.gold + "33", borderRadius: 8, fontFamily: C.fMon, fontSize: 9, color: C.dim, marginBottom: 14 }}>
+            <div style={{ padding: "8px 12px", background: "rgba(212,175,55,0.06)", border: "1px solid " + C.gold + "33", borderRadius: 8, fontFamily: C.fMon, fontSize: 11, color: C.dim, marginBottom: 14 }}>
               Creator receives <span style={{ color: C.gold }}>${creatorGets}</span> (90%) · Total: <span style={{ color: C.white }}>${total.toFixed(2)}</span>
             </div>
 

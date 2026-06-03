@@ -211,13 +211,13 @@ export default function StreamScheduler() {
                     <p className={`text-xs font-semibold mb-1 ${isToday ? 'text-[#d4af37]' : 'text-white/60'}`}>{day}</p>
                     <div className="space-y-0.5">
                       {dayStreams.slice(0, 2).map(s => (
-                        <div key={s.id} className="text-[9px] px-1 py-0.5 rounded truncate font-medium"
+                        <div key={s.id} className="text-[11px] px-1 py-0.5 rounded truncate font-medium"
                           style={{ background: `${CAT_COLORS[s.category] || '#d4af37'}25`, color: CAT_COLORS[s.category] || '#d4af37' }}>
                           {s.title}
                         </div>
                       ))}
                       {dayStreams.length > 2 && (
-                        <p className="text-[9px] text-white/30">+{dayStreams.length - 2} more</p>
+                        <p className="text-[11px] text-white/30">+{dayStreams.length - 2} more</p>
                       )}
                     </div>
                   </motion.div>
@@ -282,12 +282,12 @@ export default function StreamScheduler() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-white truncate">{s.title}</p>
                           {s.is_recurring && (
-                            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 99, background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
+                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
                               <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
                             </span>
                           )}
                           {!s.is_public && (
-                            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 99, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>
                               Private
                             </span>
                           )}

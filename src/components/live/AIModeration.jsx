@@ -105,7 +105,7 @@ export default function AIModeration({ roomId, isHost = false }) {
                   <div className="flex-1">
                     <p className="font-bold text-white/80">{flag.user}</p>
                     <p className="text-white/50">{flag.content}...</p>
-                    <p className="text-[9px] text-white/40 mt-1">Reason: {flag.reason}</p>
+                    <p className="text-[11px] text-white/40 mt-1">Reason: {flag.reason}</p>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     <button
@@ -130,7 +130,7 @@ export default function AIModeration({ roomId, isHost = false }) {
 
       {/* Status */}
       {isActive && (
-        <div className="text-[9px] text-white/30 text-center">
+        <div className="text-[11px] text-white/30 text-center">
           {processing ? 'Scanning...' : 'Active · Real-time content scanning'}
         </div>
       )}

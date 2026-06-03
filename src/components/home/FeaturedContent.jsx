@@ -119,7 +119,7 @@ function PartnerChannelChip({ channel }) {
         </div>
         <div>
           <p style={{ fontSize: 11, fontWeight: 700, color: '#fff', margin: 0, ...T }}>{channel.name}</p>
-          <p style={{ fontSize: 9, color: `${channel.color}99`, margin: 0, ...T }}>{channel.handle}</p>
+          <p style={{ fontSize: 11, color: `${channel.color}99`, margin: 0, ...T }}>{channel.handle}</p>
         </div>
         <ExternalLink style={{ width: 10, height: 10, color: `${channel.color}60`, marginLeft: 2 }} />
       </motion.div>
@@ -166,7 +166,7 @@ function FeaturedVideoCard({ video }) {
         {/* Tag badge */}
         <span style={{
           position: 'absolute', top: 6, left: 6,
-          fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
+          fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
           background: `${video.tagColor}25`, color: video.tagColor,
           border: `1px solid ${video.tagColor}45`, ...T,
         }}>{video.tag}</span>
@@ -188,7 +188,7 @@ function FeaturedVideoCard({ video }) {
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {video.title}
         </p>
-        <p style={{ fontSize: 9, color: `${video.channelColor}99`, margin: 0, ...T }}>{video.channel}</p>
+        <p style={{ fontSize: 11, color: `${video.channelColor}99`, margin: 0, ...T }}>{video.channel}</p>
       </div>
 
       {/* CTAs */}
@@ -239,7 +239,7 @@ export default function FeaturedContentSection() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', ...T }}>Featured Partners</span>
           <span style={{
-            fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
+            fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 99,
             background: `${G}15`, color: G, border: `1px solid ${G}30`, ...T,
           }}>OFFICIAL</span>
         </div>

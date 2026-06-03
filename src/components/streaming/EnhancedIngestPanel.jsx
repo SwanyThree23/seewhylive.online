@@ -45,7 +45,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-[#d4af37]" />
           <h3 className="text-sm font-semibold text-white">Stream Ingest Setup</h3>
-          <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(8,47,73,0.5)', color:'#67e8f9' }}>BETA</span>
+          <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(8,47,73,0.5)', color:'#67e8f9' }}>BETA</span>
         </div>
       </div>
 
@@ -137,7 +137,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded bg-gradient-to-br from-red-500 via-yellow-500 to-green-500 flex items-center justify-center text-xs font-bold text-white">W</div>
                 <h4 className="text-sm font-bold text-white">WHIP Ingest</h4>
-                <span style={{ fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(30,27,75,0.5)', color:'#93c5fd' }}>Modern</span>
+                <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(30,27,75,0.5)', color:'#93c5fd' }}>Modern</span>
               </div>
               <p className="text-[10px] text-white/50 mb-3">Ultra-low-latency WHIP stream ingest. Perfect for browser-based producers and mobile. Supports full customization of size, position, and layering.</p>
 
@@ -205,7 +205,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4 text-[#d4af37]" />
                   <h4 className="text-sm font-bold text-white">Guest Destinations</h4>
-                  <span style={{ fontSize:8, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(59,7,100,0.5)', color:'#d8b4fe' }}>BETA</span>
+                  <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(59,7,100,0.5)', color:'#d8b4fe' }}>BETA</span>
                 </div>
 
                 <div className="space-y-3">
@@ -213,7 +213,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
 
                   <div className="bg-white/5 border border-white/10 rounded p-2">
                     <p className="text-[10px] font-semibold text-white mb-1">Per-Guest Controls:</p>
-                    <ul className="text-[9px] text-white/60 space-y-0.5">
+                    <ul className="text-[11px] text-white/60 space-y-0.5">
                       <li>✓ Real-time bitrate/latency monitoring</li>
                       <li>✓ Adaptive bitrate with fallback</li>
                       <li>✓ Multi-destination support (5+ platforms)</li>

@@ -57,7 +57,7 @@ export function MerchShopV2({ onClose }) {
         <div style={{display:"flex",justifyContent:"space-between",borderTop:"1px solid #333",paddingTop:5,marginTop:5}}><span style={{fontFamily:G.fBeb,fontSize:14,color:G.gold}}>TOTAL</span><span style={{fontFamily:G.fBeb,fontSize:18,color:G.gold}}>${total.toFixed(2)}</span></div>
       </div>
       <button style={{width:"100%",marginTop:10,fontSize:13,padding:"10px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:"linear-gradient(135deg,#8B0000,#D4AF37)",color:"#000"}} onClick={function(){setCart([]);setCheckout(false);}}>PLACE ORDER · ${total.toFixed(2)}</button>
-      <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,textAlign:"center",marginTop:4}}>Stripe Connect · Ships 5-7 days · Powered by Printful</div>
+      <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,textAlign:"center",marginTop:4}}>Stripe Connect · Ships 5-7 days · Powered by Printful</div>
     </div>
   );
 
@@ -67,7 +67,7 @@ export function MerchShopV2({ onClose }) {
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:14}}>🛍️</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.white,letterSpacing:2}}>MERCH SHOP</span>
-          {cart.length>0&&<div style={{width:16,height:16,borderRadius:8,background:G.crimsonBright,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:8,color:"#fff"}}>{cart.length}</div>}
+          {cart.length>0&&<div style={{width:16,height:16,borderRadius:8,background:G.crimsonBright,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:11,color:"#fff"}}>{cart.length}</div>}
         </div>
         <div style={{display:"flex",gap:6}}>
           {cart.length>0&&<button style={{fontSize:10,padding:"4px 10px",background:"linear-gradient(135deg,#8B0000,#D4AF37)",color:"#000",borderRadius:6,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700}} onClick={function(){setCheckout(true);}}>CART ${total.toFixed(2)}</button>}
@@ -75,7 +75,7 @@ export function MerchShopV2({ onClose }) {
         </div>
       </div>
       <div style={{display:"flex",gap:4,padding:"0 14px 6px",overflowX:"auto"}}>
-        {categories.map(function(c){return <button key={c} onClick={function(){setFilter(c);}} style={{padding:"2px 8px",borderRadius:10,border:"1px solid "+(filter===c?G.crimsonBright:G.grayDim),background:filter===c?"rgba(196,30,58,.15)":"none",color:filter===c?G.crimsonBright:G.gray,fontFamily:G.fMon,fontSize:8,cursor:"pointer",whiteSpace:"nowrap"}}>{c}</button>;})}
+        {categories.map(function(c){return <button key={c} onClick={function(){setFilter(c);}} style={{padding:"2px 8px",borderRadius:10,border:"1px solid "+(filter===c?G.crimsonBright:G.grayDim),background:filter===c?"rgba(196,30,58,.15)":"none",color:filter===c?G.crimsonBright:G.gray,fontFamily:G.fMon,fontSize:11,cursor:"pointer",whiteSpace:"nowrap"}}>{c}</button>;})}
       </div>
       <div style={{padding:"0 14px 14px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
         {visible.map(function(item){
@@ -88,7 +88,7 @@ export function MerchShopV2({ onClose }) {
                 <div style={{fontFamily:G.fMon,fontSize:7,color:G.gray,marginBottom:5}}>{item.desc}</div>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{fontFamily:G.fBeb,fontSize:14,color:item.color}}>${item.price.toFixed(2)}</span>
-                  <button onClick={function(){inCart?removeFromCart(item.id):addToCart(item.id);}} style={{padding:"3px 7px",borderRadius:4,border:"1px solid "+(inCart?G.red:item.color),background:inCart?"rgba(255,59,48,.15)":item.color+"22",color:inCart?G.red:item.color,fontFamily:G.fMon,fontSize:8,cursor:"pointer"}}>{inCart?"REMOVE":"ADD"}</button>
+                  <button onClick={function(){inCart?removeFromCart(item.id):addToCart(item.id);}} style={{padding:"3px 7px",borderRadius:4,border:"1px solid "+(inCart?G.red:item.color),background:inCart?"rgba(255,59,48,.15)":item.color+"22",color:inCart?G.red:item.color,fontFamily:G.fMon,fontSize:11,cursor:"pointer"}}>{inCart?"REMOVE":"ADD"}</button>
                 </div>
               </div>
             </div>
@@ -129,16 +129,16 @@ export function ViewerControlsV2({ onClose }) {
       </div>
       <div style={{padding:"10px 14px",display:"flex",flexDirection:"column",gap:10}}>
         <div>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1}}>VOLUME</span><span style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>{volume}%</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1}}>VOLUME</span><span style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>{volume}%</span></div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:14}}>{volume===0?"🔇":volume<40?"🔉":"🔊"}</span>
             <input type="range" min={0} max={100} value={volume} onChange={function(e){setVolume(parseInt(e.target.value));}} style={{flex:1,accentColor:G.gold}} />
           </div>
         </div>
         <div>
-          <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:5}}>STREAM QUALITY</div>
+          <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:5}}>STREAM QUALITY</div>
           <div style={{display:"flex",gap:4}}>
-            {qualities.map(function(q){return <button key={q} onClick={function(){setQuality(q);}} style={{flex:1,padding:"5px 0",borderRadius:5,border:"1px solid "+(quality===q?G.volt:G.grayDim),background:quality===q?"rgba(200,255,0,.1)":"none",color:quality===q?G.volt:G.gray,fontFamily:G.fMon,fontSize:8,cursor:"pointer"}}>{q}</button>;})}
+            {qualities.map(function(q){return <button key={q} onClick={function(){setQuality(q);}} style={{flex:1,padding:"5px 0",borderRadius:5,border:"1px solid "+(quality===q?G.volt:G.grayDim),background:quality===q?"rgba(200,255,0,.1)":"none",color:quality===q?G.volt:G.gray,fontFamily:G.fMon,fontSize:11,cursor:"pointer"}}>{q}</button>;})}
           </div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
@@ -180,22 +180,22 @@ export function InRoomSubWidgetV2({ creatorName, onClose }) {
       <div style={{padding:"10px 14px"}}>
         <div style={{fontFamily:G.fRaj,fontSize:12,color:G.gray,marginBottom:10,textAlign:"center"}}>Support {creatorName||"creator"} every month</div>
         <div style={{display:"flex",gap:5,marginBottom:12}}>
-          {SUB_TIERS_V2.map(function(t){return <button key={t.id} onClick={function(){setSelected(t.id);setSubbed(false);}} style={{flex:1,padding:"7px 3px",borderRadius:7,border:"2px solid "+(selected===t.id?t.color:G.grayDim),background:selected===t.id?t.color+"18":"none",cursor:"pointer",textAlign:"center"}}><div style={{fontSize:16}}>{t.icon}</div><div style={{fontFamily:G.fMon,fontSize:8,color:selected===t.id?t.color:G.gray,marginTop:1}}>${t.price}</div></button>;})}
+          {SUB_TIERS_V2.map(function(t){return <button key={t.id} onClick={function(){setSelected(t.id);setSubbed(false);}} style={{flex:1,padding:"7px 3px",borderRadius:7,border:"2px solid "+(selected===t.id?t.color:G.grayDim),background:selected===t.id?t.color+"18":"none",cursor:"pointer",textAlign:"center"}}><div style={{fontSize:16}}>{t.icon}</div><div style={{fontFamily:G.fMon,fontSize:11,color:selected===t.id?t.color:G.gray,marginTop:1}}>${t.price}</div></button>;})}
         </div>
         <div style={{background:G.surfaceBg,borderRadius:9,padding:"10px",border:"1px solid "+tier.color+"44",marginBottom:10}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6}}><span style={{fontSize:18}}>{tier.icon}</span><div><div style={{fontFamily:G.fRaj,fontSize:13,fontWeight:700,color:tier.color}}>{tier.name}</div><div style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>${tier.price}/month</div></div></div>
+          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6}}><span style={{fontSize:18}}>{tier.icon}</span><div><div style={{fontFamily:G.fRaj,fontSize:13,fontWeight:700,color:tier.color}}>{tier.name}</div><div style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>${tier.price}/month</div></div></div>
           {tier.perks.map(function(p){return <div key={p} style={{fontFamily:G.fRaj,fontSize:11,color:G.white,display:"flex",alignItems:"center",gap:5,marginBottom:2}}><span style={{color:tier.color}}>✓</span>{p}</div>;})}
         </div>
         {!subbed ? (
           <>
             <button style={{width:"100%",fontSize:13,marginBottom:6,padding:"10px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:"linear-gradient(135deg,#8B0000,#D4AF37)",color:"#000"}} onClick={function(){setSubbed(true);}}>SUBSCRIBE · ${tier.price}/mo</button>
-            <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,textAlign:"center"}}>{(creatorName||"Creator")+" keeps "+fmtMoney(split.creator)+"/mo · Platform "+fmtMoney(split.platform)}</div>
+            <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,textAlign:"center"}}>{(creatorName||"Creator")+" keeps "+fmtMoney(split.creator)+"/mo · Platform "+fmtMoney(split.platform)}</div>
           </>
         ) : (
           <div style={{textAlign:"center",padding:"10px",background:"rgba(212,175,55,.1)",borderRadius:8,border:"1px solid "+tier.color,animation:"slideUp .3s ease-out"}}>
             <div style={{fontSize:28,marginBottom:3}}>{tier.icon}</div>
             <div style={{fontFamily:G.fBeb,fontSize:20,color:tier.color}}>SUBSCRIBED!</div>
-            <div style={{fontFamily:G.fMon,fontSize:9,color:G.gray,marginTop:3}}>Welcome to {tier.name}</div>
+            <div style={{fontFamily:G.fMon,fontSize:11,color:G.gray,marginTop:3}}>Welcome to {tier.name}</div>
           </div>
         )}
       </div>
@@ -222,11 +222,11 @@ export function TipAlertConfig() {
           </div>
         );})}
         <div>
-          <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:3}}>MIN ALERT: {fmtMoney(config.minAmount)}</div>
+          <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:3}}>MIN ALERT: {fmtMoney(config.minAmount)}</div>
           <input type="range" min={0} max={50} step={0.5} value={config.minAmount} onChange={function(e){setConfig(function(c){return Object.assign({},c,{minAmount:parseFloat(e.target.value)});});}} style={{accentColor:G.gold,width:"100%"}} />
         </div>
         <div>
-          <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:3}}>DURATION: {config.duration}s</div>
+          <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:3}}>DURATION: {config.duration}s</div>
           <input type="range" min={2} max={10} step={1} value={config.duration} onChange={function(e){setConfig(function(c){return Object.assign({},c,{duration:parseInt(e.target.value)});});}} style={{accentColor:G.gold,width:"100%"}} />
         </div>
         <button style={{width:"100%",fontSize:12,padding:"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:saved?"#C8FF00":"#8B0000",color:saved?"#080808":"#D4AF37"}} onClick={save}>{saved?"✓ SAVED":"SAVE ALERT CONFIG"}</button>
@@ -263,7 +263,7 @@ export function EngagementDashboardV2() {
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>ENGAGEMENT</span>
           {live&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #C8FF00",color:"#C8FF00",animation:"pulse 2s infinite"}}>● LIVE</span>}
         </div>
-        <button onClick={function(){setLive(function(l){return !l;});}} style={{fontFamily:G.fMon,fontSize:8,color:live?G.orange:G.green,background:"none",border:"none",cursor:"pointer"}}>{live?"PAUSE":"RESUME"}</button>
+        <button onClick={function(){setLive(function(l){return !l;});}} style={{fontFamily:G.fMon,fontSize:11,color:live?G.orange:G.green,background:"none",border:"none",cursor:"pointer"}}>{live?"PAUSE":"RESUME"}</button>
       </div>
       <div style={{padding:"10px 14px"}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,marginBottom:10}}>

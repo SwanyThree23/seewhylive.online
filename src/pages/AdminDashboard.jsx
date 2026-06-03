@@ -37,7 +37,7 @@ function StatCard({ label, value, icon: Icon, color, badge, sub }) {
           <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
-      {badge && <span className="text-[8px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{badge}</span>}
+      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{badge}</span>}
     </div>
   );
 }
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: u.role === 'admin' ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${u.role === 'admin' ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`, color: u.role === 'admin' ? GOLD : 'rgba(255,255,255,0.4)' }}>{u.role}</span>
+                          <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: u.role === 'admin' ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${u.role === 'admin' ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`, color: u.role === 'admin' ? GOLD : 'rgba(255,255,255,0.4)' }}>{u.role}</span>
                           {u.id !== user?.id && (
                             <div style={{ display: 'flex', gap: 3 }}>
                               {['user', 'admin'].map(r => (
@@ -288,10 +288,10 @@ export default function AdminDashboard() {
                         <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{room.type} · {room.viewer_count || 0} viewers · {format(new Date(room.created_date), 'MMM d')}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color }}>{room.status}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color }}>{room.status}</span>
                         {room.status === 'live' && (
                           <button onClick={() => endRoomMutation.mutate(room.id)}
-                            className="px-2.5 py-1 rounded-lg font-black uppercase text-[9px]"
+                            className="px-2.5 py-1 rounded-lg font-black uppercase text-[11px]"
                             style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', cursor: 'pointer', ...T }}>
                             End
                           </button>
@@ -321,8 +321,8 @@ export default function AdminDashboard() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(255,136,0,0.12)' : 'rgba(0,255,136,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.3)' : 'rgba(0,255,136,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#00ff88' }}>{report.status}</span>
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>{report.report_type}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(255,136,0,0.12)' : 'rgba(0,255,136,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.3)' : 'rgba(0,255,136,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#00ff88' }}>{report.status}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>{report.report_type}</span>
                       </div>
                       <p className="text-sm text-white" style={T}>{report.description}</p>
                       <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{format(new Date(report.created_date), 'MMM d, h:mm a')}</p>
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">🚫</span>
                 <span className="text-sm font-black uppercase" style={{ color: '#FF4444', ...T }}>IP Bans</span>
-                <span className="ml-auto text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
+                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
               </div>
               <div className="flex gap-2 mb-3">
                 <input value={newBanIP} onChange={e => setNewBanIP(e.target.value)}
@@ -372,9 +372,9 @@ export default function AdminDashboard() {
                 ) : bannedIPs.map((b, i) => (
                   <div key={i} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(255,68,68,0.05)', border: '1px solid rgba(255,68,68,0.1)' }}>
                     <span className="text-xs font-mono text-white/60 flex-1">{b.ip}</span>
-                    {b.reason && <span className="text-[9px] text-white/30">{b.reason}</span>}
+                    {b.reason && <span className="text-[11px] text-white/30">{b.reason}</span>}
                     <button onClick={() => setBannedIPs(p => p.filter((_, j) => j !== i))}
-                      className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>
+                      className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>
                       Unban
                     </button>
                   </div>
@@ -410,9 +410,9 @@ export default function AdminDashboard() {
               {suspensions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2 p-2 rounded-lg mt-1" style={{ background: 'rgba(255,136,0,0.05)', border: '1px solid rgba(255,136,0,0.1)' }}>
                   <span className="text-xs font-bold text-white/60 flex-1">{s.user}</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(255,136,0,0.15)', color: '#FF8800', ...T }}>{s.duration}</span>
+                  <span className="text-[11px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(255,136,0,0.15)', color: '#FF8800', ...T }}>{s.duration}</span>
                   <button onClick={() => setSuspensions(p => p.filter((_, j) => j !== i))}
-                    className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>Lift</button>
+                    className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>Lift</button>
                 </div>
               ))}
             </div>
@@ -452,9 +452,9 @@ export default function AdminDashboard() {
                   { label: 'Room creates/hr', value: '10/user', status: 'ok' },
                 ].map(r => (
                   <div key={r.label} className="p-2 rounded-lg" style={{ background: 'rgba(0,200,200,0.05)', border: '1px solid rgba(0,200,200,0.1)' }}>
-                    <p className="text-[8px] uppercase tracking-wide" style={{ color: 'rgba(0,200,200,0.6)' }}>{r.label}</p>
+                    <p className="text-[11px] uppercase tracking-wide" style={{ color: 'rgba(0,200,200,0.6)' }}>{r.label}</p>
                     <p className="text-sm font-black text-white">{r.value}</p>
-                    <p className="text-[8px]" style={{ color: '#00FF88' }}>● {r.status}</p>
+                    <p className="text-[11px]" style={{ color: '#00FF88' }}>● {r.status}</p>
                   </div>
                 ))}
               </div>
@@ -467,7 +467,7 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Admin Audit Log</span>
-              <button onClick={() => setAuditLog([])} className="text-[9px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Clear</button>
+              <button onClick={() => setAuditLog([])} className="text-[11px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Clear</button>
             </div>
             {auditLog.length === 0 ? (
               <div className="text-center py-8 text-white/20 text-xs">No audit entries yet. Actions you take appear here.</div>
@@ -476,9 +476,9 @@ export default function AdminDashboard() {
                 <span className="text-base">{entry.icon}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-white">{entry.action}</p>
-                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{entry.time}</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{entry.time}</p>
                 </div>
-                <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0" style={{ background: `${entry.color}18`, color: entry.color, border: `1px solid ${entry.color}33`, ...T }}>{entry.severity}</span>
+                <span className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0" style={{ background: `${entry.color}18`, color: entry.color, border: `1px solid ${entry.color}33`, ...T }}>{entry.severity}</span>
               </div>
             ))}
           </div>

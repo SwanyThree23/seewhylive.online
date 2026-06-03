@@ -88,7 +88,7 @@ function TierCard({ tier, isCurrentTier, onSubscribe, onCancel, loading, isDefau
           padding: '2px 10px',
           borderRadius: '0 0 8px 8px',
           background: tier.color || GOLD,
-          fontSize: 9,
+          fontSize: 11,
           fontWeight: 900,
           fontFamily: FONT,
           color: '#000',
@@ -128,8 +128,8 @@ function TierCard({ tier, isCurrentTier, onSubscribe, onCancel, loading, isDefau
         {tier.max_subscribers && (
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Spots</span>
-              <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>{tier.subscriber_count || 0}/{tier.max_subscribers}</span>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Spots</span>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>{tier.subscriber_count || 0}/{tier.max_subscribers}</span>
             </div>
             <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)' }}>
               <div style={{ height: '100%', borderRadius: 2, background: tier.color || GOLD, width: `${Math.min(100, ((tier.subscriber_count || 0) / tier.max_subscribers) * 100)}%` }} />
@@ -254,7 +254,7 @@ function CreatorView({ user }) {
 
       {subs.length > 0 && (
         <div>
-          <p style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
             Recent Subscribers
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -476,7 +476,7 @@ function MySubscriptionsView({ user }) {
           </div>
           {sub.status === 'active' && (
             <div style={{
-              fontSize: 9, fontWeight: 900, fontFamily: FONT,
+              fontSize: 11, fontWeight: 900, fontFamily: FONT,
               padding: '1px 6px', borderRadius: 999,
               background: 'rgba(0,255,136,0.12)', border: '1px solid rgba(0,255,136,0.25)',
               color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -493,7 +493,7 @@ function MySubscriptionsView({ user }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {active.length > 0 && (
         <>
-          <p style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)' }}>
+          <p style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)' }}>
             Active ({active.length})
           </p>
           {active.map(s => <SubRow key={s.id} sub={s} />)}
@@ -501,7 +501,7 @@ function MySubscriptionsView({ user }) {
       )}
       {past.length > 0 && (
         <>
-          <p style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.2)', marginTop: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.2)', marginTop: 8 }}>
             Past ({past.length})
           </p>
           {past.map(s => <SubRow key={s.id} sub={s} />)}

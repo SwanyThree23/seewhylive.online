@@ -36,7 +36,7 @@ function StatCard({ icon: Icon, label, value, color = GOLD }) {
       </div>
       <div>
         <div className="font-black text-lg leading-tight" style={{ color, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</div>
-        <div className="text-[9px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</div>
+        <div className="text-[11px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</div>
       </div>
     </div>
   );
@@ -49,11 +49,11 @@ function FlaggedItem({ mod, onAction, user }) {
       style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${vStyle.border}` }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+          <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
             style={{ background: vStyle.bg, color: vStyle.color, border: `1px solid ${vStyle.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {mod.content_type?.toUpperCase()}
           </span>
-          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+          <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
             style={{ background: vStyle.bg, color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {mod.violation_type?.replace('_', ' ')}
           </span>
@@ -65,7 +65,7 @@ function FlaggedItem({ mod, onAction, user }) {
           )}
         </div>
         <div className="text-right shrink-0">
-          <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Confidence</div>
+          <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Confidence</div>
           <div className="text-[10px] font-black" style={{ color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {Math.round((mod.ai_confidence || 0) * 100)}%
           </div>
@@ -90,7 +90,7 @@ function FlaggedItem({ mod, onAction, user }) {
         ].map(({ label, action, color }) => (
           <button key={action}
             onClick={() => onAction(mod, action)}
-            className="px-2.5 py-1 rounded-lg text-[8px] font-black uppercase transition-all"
+            className="px-2.5 py-1 rounded-lg text-[11px] font-black uppercase transition-all"
             style={{ background: `${color}12`, color, border: `1px solid ${color}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {label}
           </button>
@@ -106,7 +106,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
       style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+          <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
             style={{ background: 'rgba(255,100,100,0.12)', color: '#FF8080', border: '1px solid rgba(255,100,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {entry.action_type}
           </span>
@@ -114,9 +114,9 @@ function ChatModEntry({ entry, onQuickAction, user }) {
             <span className="text-[7px] px-1 py-0.5 rounded font-black"
               style={{ background: 'rgba(255,215,0,0.12)', color: '#FFD700' }}>AI</span>
           )}
-          <span className="text-[9px] font-bold text-white">{entry.target_user_name || entry.target_user_id}</span>
+          <span className="text-[11px] font-bold text-white">{entry.target_user_name || entry.target_user_id}</span>
         </div>
-        {entry.reason && <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{entry.reason}</p>}
+        {entry.reason && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{entry.reason}</p>}
         {entry.keywords_matched?.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {entry.keywords_matched.map((kw, i) => (
@@ -155,11 +155,11 @@ function ReportItem({ report, onAction, user }) {
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
-            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+            <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
               style={{ background: `${pri.color}15`, color: pri.color, border: `1px solid ${pri.color}30`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {pri.label}
             </span>
-            <span className="text-[8px] px-1 py-0.5 rounded"
+            <span className="text-[11px] px-1 py-0.5 rounded"
               style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>{report.report_type}</span>
           </div>
           {report.description && <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{report.description}</p>}
@@ -172,7 +172,7 @@ function ReportItem({ report, onAction, user }) {
           { label: 'Escalate', action: 'escalated', color: '#FF4444' },
         ].map(({ label, action, color }) => (
           <button key={action} onClick={() => onAction(report, action)}
-            className="flex-1 py-1 rounded text-[8px] font-black uppercase"
+            className="flex-1 py-1 rounded text-[11px] font-black uppercase"
             style={{ background: `${color}12`, color, border: `1px solid ${color}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {label}
           </button>
@@ -263,7 +263,7 @@ export default function ModerationDashboardPage() {
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
             Guardian AI
           </span>
-          <span className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.25)' }}>Moderation</span>
+          <span className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.25)' }}>Moderation</span>
         </div>
       </div>
 
@@ -278,7 +278,7 @@ export default function ModerationDashboardPage() {
         {/* Toxicity gauge */}
         <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[8px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               AI Confidence Level
             </span>
             <span className="text-[10px] font-black" style={{ color: avgConf > 0.7 ? '#FF4444' : avgConf > 0.4 ? GOLD : '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>

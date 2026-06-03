@@ -19,7 +19,7 @@ function ClipCard({ clip, onDelete, onShare }) {
       <div style={{ height:110, background:`linear-gradient(135deg, ${C.burg}33, ${C.obs})`, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
         <span style={{ fontSize:36 }}>{emoji}</span>
         <div style={{ position:'absolute', bottom:6, right:6, padding:'2px 6px', borderRadius:4, background:'rgba(0,0,0,0.8)', fontFamily:'Barlow Condensed', fontSize:10, color:C.white }}>{Math.floor(dur/60)}:{String(dur%60).padStart(2,'0')}</div>
-        <div style={{ position:'absolute', top:6, left:6, padding:'2px 8px', borderRadius:4, background:`${S.color}22`, border:`1px solid ${S.color}44`, fontFamily:'Barlow Condensed', fontSize:9, color:S.color, letterSpacing:1 }}>
+        <div style={{ position:'absolute', top:6, left:6, padding:'2px 8px', borderRadius:4, background:`${S.color}22`, border:`1px solid ${S.color}44`, fontFamily:'Barlow Condensed', fontSize:11, color:S.color, letterSpacing:1 }}>
           {status==='processing' && <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:S.color,marginRight:4,animation:'pulse 1.2s ease-in-out infinite'}} />}
           {S.label}
         </div>
@@ -29,7 +29,7 @@ function ClipCard({ clip, onDelete, onShare }) {
         <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:8 }}>
           <span style={{ fontSize:10, color:C.gray }}>👁 {clip.view_count||0}</span>
           <span style={{ fontSize:10, color:C.gray }}>🔗 {clip.share_count||0} shares</span>
-          {clip.share_count > 20 && <span style={{ fontSize:9, color:C.volt, fontFamily:'Barlow Condensed' }}>{clip.share_count} shares</span>}
+          {clip.share_count > 20 && <span style={{ fontSize:11, color:C.volt, fontFamily:'Barlow Condensed' }}>{clip.share_count} shares</span>}
         </div>
         <div style={{ display:'flex', gap:6 }}>
           <button onClick={() => onShare(clip)} style={{ flex:1, padding:'5px', background:'rgba(212,175,55,0.08)', border:`1px solid rgba(212,175,55,0.2)`, borderRadius:5, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>SHARE</button>
@@ -116,12 +116,12 @@ export default function ClipsLibraryPage() {
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {highlights.map(h => (
                 <div key={h.id} style={{ padding:'12px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.06)', background:'rgba(13,6,24,0.9)', display:'flex', alignItems:'center', gap:12 }}>
-                  <div style={{ padding:'3px 8px', borderRadius:4, background:`rgba(200,255,0,0.08)`, border:`1px solid rgba(200,255,0,0.2)`, fontFamily:'Barlow Condensed', fontSize:9, color:C.volt, letterSpacing:1, flexShrink:0 }}>{(h.highlight_type||'MOMENT').toUpperCase().replace('_',' ')}</div>
+                  <div style={{ padding:'3px 8px', borderRadius:4, background:`rgba(200,255,0,0.08)`, border:`1px solid rgba(200,255,0,0.2)`, fontFamily:'Barlow Condensed', fontSize:11, color:C.volt, letterSpacing:1, flexShrink:0 }}>{(h.highlight_type||'MOMENT').toUpperCase().replace('_',' ')}</div>
                   <div style={{ flex:1 }}>
                     <div style={{ fontFamily:'Barlow Condensed', fontSize:12, color:C.white }}>{h.description || 'AI-detected moment'}</div>
                     <div style={{ fontSize:10, color:C.gray }}>Confidence: {Math.round((h.ai_confidence||0.8)*100)}%</div>
                   </div>
-                  <button style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:9, letterSpacing:1, flexShrink:0 }}>CREATE CLIP</button>
+                  <button style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>CREATE CLIP</button>
                 </div>
               ))}
             </div>

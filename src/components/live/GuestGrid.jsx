@@ -158,7 +158,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
           <div className="flex items-center justify-between gap-1">
             <div className="flex items-center gap-1 min-w-0">
               {isHostUser && <Crown className="w-3 h-3 text-[#d4af37] shrink-0" />}
-              <p className={`text-white font-semibold truncate ${compact ? 'text-[9px]' : 'text-xs'}`}>
+              <p className={`text-white font-semibold truncate ${compact ? 'text-[11px]' : 'text-xs'}`}>
                 {participant.user_name}
               </p>
             </div>

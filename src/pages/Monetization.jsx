@@ -141,7 +141,7 @@ function FlywheelDiagram({ activeStage, onStageClick }) {
           <p style={{ color: G, fontSize: 13, fontWeight: 900, margin: 0, ...T }}>
             {FLYWHEEL_STAGES.find(s => s.id === activeStage)?.label || 'FLYWHEEL'}
           </p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, margin: '2px 0 0', maxWidth: 80, lineHeight: 1.3, ...T }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, margin: '2px 0 0', maxWidth: 80, lineHeight: 1.3, ...T }}>
             {FLYWHEEL_STAGES.find(s => s.id === activeStage)?.desc}
           </p>
         </motion.div>
@@ -186,7 +186,7 @@ function TierLadderPanel({ subCount }) {
                   : <span style={{ fontSize: 10, color: tier.color, fontWeight: 700, ...T }}>${tier.price}/mo</span>
                 }
                 {i > 0 && i < TIER_LADDER.length - 1 && (
-                  <span style={{ fontSize: 9, color: '#4b5563', marginLeft: 'auto', ...T }}>
+                  <span style={{ fontSize: 11, color: '#4b5563', marginLeft: 'auto', ...T }}>
                     {i > 0 ? `↑ Upgrade from ${TIER_LADDER[i - 1].label}` : ''}
                   </span>
                 )}
@@ -243,7 +243,7 @@ function RevenueStreamsPanel({ transactions, subscriptions }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <Icon style={{ width: 16, height: 16, color: stream.color }} />
               <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', ...T }}>{stream.label}</span>
-              <span style={{ marginLeft: 'auto', fontSize: 9, color: stream.color, fontWeight: 700, ...T }}>{stream.split}</span>
+              <span style={{ marginLeft: 'auto', fontSize: 11, color: stream.color, fontWeight: 700, ...T }}>{stream.split}</span>
             </div>
             <p style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: '0 0 4px', ...T }}>${stream.amount.toFixed(2)}</p>
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 10px' }}>{stream.desc}</p>
@@ -255,7 +255,7 @@ function RevenueStreamsPanel({ transactions, subscriptions }) {
                 style={{ height: '100%', background: stream.color, borderRadius: 99 }}
               />
             </div>
-            <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', margin: '4px 0 0', ...T }}>{pct.toFixed(1)}% of total</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', margin: '4px 0 0', ...T }}>{pct.toFixed(1)}% of total</p>
           </div>
         );
       })}
@@ -631,7 +631,7 @@ export default function MonetizationPage() {
                   <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {FLYWHEEL_STAGES.map(s => (
                       <button key={s.id} onClick={() => setStage(s.id)} style={{
-                        fontSize: 9, padding: '2px 8px', borderRadius: 99, border: `1px solid ${flywheelStage === s.id ? s.color : s.color + '30'}`,
+                        fontSize: 11, padding: '2px 8px', borderRadius: 99, border: `1px solid ${flywheelStage === s.id ? s.color : s.color + '30'}`,
                         background: flywheelStage === s.id ? `${s.color}20` : 'transparent',
                         color: flywheelStage === s.id ? s.color : 'rgba(255,255,255,0.35)',
                         cursor: 'pointer', outline: 'none', ...T, fontWeight: 700,

@@ -25,7 +25,7 @@ export function WhisperToast({ whisper, onDismiss }) {
       boxShadow: "0 4px 20px rgba(128,0,32,0.5)",
       animation: "slideUp .3s ease-out",
     }}>
-      <div style={{ fontFamily: C.fMon, fontSize: 9, color: C.gold, marginBottom: 3 }}>
+      <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.gold, marginBottom: 3 }}>
         🤫 WHISPER FROM {(whisper.sender_name || "").toUpperCase()}
       </div>
       <div style={{ fontFamily: C.fRaj, fontSize: 13, color: C.white }}>
@@ -92,7 +92,7 @@ export function WhisperPanel({ roomId, currentUser, recipientId, recipientName, 
                 fontFamily: C.fRaj, fontSize: 12, color: isMe ? "#ffaaaa" : C.gold,
                 fontStyle: "italic",
               }}>{m.content}</div>
-              <span style={{ fontFamily: C.fMon, fontSize: 8, color: C.dim, marginTop: 2 }}>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, marginTop: 2 }}>
                 {isMe ? "You" : m.sender_name}
               </span>
             </div>

@@ -98,7 +98,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
       </div>
 
       {/* Info */}
-      <div className="text-[9px] text-white/20 pt-1 border-t border-white/10">
+      <div className="text-[11px] text-white/20 pt-1 border-t border-white/10">
         Real-time points tracking · Tips, subs, polls, interactions
       </div>
     </div>

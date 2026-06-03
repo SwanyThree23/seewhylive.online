@@ -55,7 +55,7 @@ function GhostOctTile() {
     <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
       <div className="absolute inset-0" style={{ clipPath: OCT, border: '1px dashed rgba(212,175,55,0.3)', background: 'rgba(255,255,255,0.03)' }} />
       <div className="absolute inset-[2px] flex items-center justify-center" style={{ clipPath: OCT, background: 'rgba(0,0,0,0.4)' }}>
-        <span className="text-[9px] font-bold" style={{ color: 'rgba(212,175,55,0.5)' }}>Join</span>
+        <span className="text-[11px] font-bold" style={{ color: 'rgba(212,175,55,0.5)' }}>Join</span>
       </div>
     </div>
   );
@@ -66,7 +66,7 @@ function AudienceCameraStrip({ localStream, remoteStreams, currentUserId }) {
   return (
     <div className="flex items-center gap-2 px-4 py-1.5 shrink-0 overflow-x-auto"
       style={{ background: 'rgba(0,0,0,0.6)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
-      <span className="text-[8px] uppercase tracking-widest shrink-0" style={{ color: 'rgba(212,175,55,0.5)' }}>Audience</span>
+      <span className="text-[11px] uppercase tracking-widest shrink-0" style={{ color: 'rgba(212,175,55,0.5)' }}>Audience</span>
       {localStream && <OctCamTile stream={localStream} label="You" isLocal />}
       {remoteStreams && Array.from(remoteStreams.entries()).map(([peerId, stream]) => (
         <OctCamTile key={peerId} stream={stream} label="Viewer" isLocal={false} />
@@ -184,7 +184,7 @@ function CircularTimer({ timeLeft, totalTime }) {
           style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s' }}
         />
       </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontFamily: 'monospace', fontWeight: 'bold', color }}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontFamily: 'monospace', fontWeight: 'bold', color }}>
         {mm}:{ss}
       </div>
     </div>
@@ -566,10 +566,10 @@ export default function PKBattlePage() {
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="font-bold text-sm text-white truncate">{battle?.title || 'PK Battle'}</span>
           {battle?.status === 'active' && (
-            <span style={{ background: '#dc2626', color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
+            <span style={{ background: '#dc2626', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
           )}
           {battle?.status === 'ended' && (
-            <span style={{ background: '#4b5563', color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>ENDED</span>
+            <span style={{ background: '#4b5563', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>ENDED</span>
           )}
         </div>
         <CircularTimer timeLeft={timeLeft} totalTime={battleDurationRef.current} />
@@ -613,7 +613,7 @@ export default function PKBattlePage() {
               </AnimatePresence>
               <p className="text-3xl font-black text-blue-400 font-mono">{leftVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
-              <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {leftSupporters.size} supporting</p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {leftSupporters.size} supporting</p>
               <OnFireBadge show={leftOnFire} />
             </div>
           </div>
@@ -635,7 +635,7 @@ export default function PKBattlePage() {
         <div className={'flex flex-col items-center justify-center bg-black z-10 shrink-0 ' + (isMobile ? 'h-8 flex-row w-full' : 'w-10')}>
           <div className={'bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent ' + (isMobile ? 'flex-1 h-px' : 'flex-1 w-px')} />
           <div className="w-9 h-9 rounded-full bg-[#d4af37] flex flex-col items-center justify-center my-2 shrink-0">
-            <span className="text-black font-black leading-none" style={{ fontSize: 8 }}>PK</span>
+            <span className="text-black font-black leading-none" style={{ fontSize: 11 }}>PK</span>
             <span className="text-black font-black leading-none" style={{ fontSize: 10 }}>{pkRound}</span>
           </div>
           <div className={'bg-gradient-to-b from-transparent via-[#d4af37]/60 to-transparent ' + (isMobile ? 'flex-1 h-px' : 'flex-1 w-px')} />
@@ -660,7 +660,7 @@ export default function PKBattlePage() {
               </AnimatePresence>
               <p className="text-3xl font-black text-red-400 font-mono">{rightVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
-              <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {rightSupporters.size} supporting</p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {rightSupporters.size} supporting</p>
               <OnFireBadge show={rightOnFire} />
             </div>
           </div>
@@ -688,27 +688,27 @@ export default function PKBattlePage() {
 
       <div className="shrink-0 flex items-center gap-3 px-4 py-2"
         style={{ background: 'rgba(0,0,0,0.5)', borderTop: '1px solid rgba(212,175,55,0.08)' }}>
-        <span className="text-[9px] uppercase tracking-widest shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }}>Supporting</span>
+        <span className="text-[11px] uppercase tracking-widest shrink-0" style={{ color: 'rgba(255,255,255,0.35)' }}>Supporting</span>
         <div className="flex-1 flex items-center gap-1.5 overflow-x-auto">
           {Array.from(leftSupporters).slice(0, 5).map((uid, i) => (
-            <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
+            <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
               style={{ background: 'rgba(59,130,246,0.4)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.4)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>
           ))}
           {leftSupporters.size > 5 && (
-            <span className="text-[9px] text-blue-300">+{leftSupporters.size - 5}</span>
+            <span className="text-[11px] text-blue-300">+{leftSupporters.size - 5}</span>
           )}
-          {leftSupporters.size === 0 && <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
+          {leftSupporters.size === 0 && <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
         </div>
         <div className="w-px h-4" style={{ background: 'rgba(212,175,55,0.3)' }} />
         <div className="flex-1 flex items-center gap-1.5 overflow-x-auto justify-end">
-          {rightSupporters.size === 0 && <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
+          {rightSupporters.size === 0 && <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
           {rightSupporters.size > 5 && (
-            <span className="text-[9px] text-red-300">+{rightSupporters.size - 5}</span>
+            <span className="text-[11px] text-red-300">+{rightSupporters.size - 5}</span>
           )}
           {Array.from(rightSupporters).slice(0, 5).map((uid, i) => (
-            <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
+            <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
               style={{ background: 'rgba(239,68,68,0.4)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.4)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>

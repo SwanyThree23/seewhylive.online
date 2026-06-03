@@ -54,7 +54,7 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
         <span>viewers</span>
       </div>
       {peakViewers > 0 && (
-        <p className="text-[9px] text-[#d4af37]/70">Peak: {peakViewers.toLocaleString()}</p>
+        <p className="text-[11px] text-[#d4af37]/70">Peak: {peakViewers.toLocaleString()}</p>
       )}
       {history.length > 3 && (
         <div className="w-20 h-8 mt-1">

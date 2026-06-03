@@ -35,7 +35,7 @@ export default function LiveTranslationWidget({ chatMessage, onTranslation }) {
     >
       <button
         onClick={() => setShowLanguages(!showLanguages)}
-        className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] bg-white/5 hover:bg-white/10 border border-white/10 text-white/70"
+        className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] bg-white/5 hover:bg-white/10 border border-white/10 text-white/70"
       >
         <Globe className="w-3 h-3" />
         Translate
@@ -52,7 +52,7 @@ export default function LiveTranslationWidget({ chatMessage, onTranslation }) {
               key={lang}
               onClick={() => handleTranslate(lang)}
               disabled={translating}
-              className="block w-full text-left px-3 py-1.5 text-[9px] text-white/70 hover:bg-white/10 rounded disabled:opacity-50"
+              className="block w-full text-left px-3 py-1.5 text-[11px] text-white/70 hover:bg-white/10 rounded disabled:opacity-50"
             >
               {translating ? (
                 <>

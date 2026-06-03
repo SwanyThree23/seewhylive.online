@@ -70,7 +70,7 @@ function IncomingRaidBanner({ raid, onWelcome }) {
               <p className="text-[11px] font-bold text-white mt-0.5">
                 <span style={{ color: GOLD }}>{raid.from_creator_username}</span> is raiding you with <strong>{raid.viewer_count_sent || 0}</strong> viewers!
               </p>
-              {raid.raid_message && <p className="text-[9px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.4)' }}>"{raid.raid_message}"</p>}
+              {raid.raid_message && <p className="text-[11px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.4)' }}>"{raid.raid_message}"</p>}
             </div>
             <button onClick={() => setVisible(false)}><X className="w-3.5 h-3.5 text-white/40" /></button>
           </div>
@@ -138,12 +138,12 @@ function RaidLauncher({ room, currentUser, onClose }) {
               <p className="text-[11px] font-bold text-white">{target.title}</p>
               <div className="flex items-center gap-1 mt-0.5">
                 <Users className="w-2.5 h-2.5 text-white/30" />
-                <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{target.viewer_count || 0} viewers</span>
-                {target.category && <span className="text-[8px] px-1 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>{target.category}</span>}
+                <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{target.viewer_count || 0} viewers</span>
+                {target.category && <span className="text-[11px] px-1 rounded" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>{target.category}</span>}
               </div>
             </div>
             <button onClick={() => raidMut.mutate(target)} disabled={raidMut.isPending}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-black uppercase"
               style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               <Repeat className="w-2.5 h-2.5" /> Raid
             </button>

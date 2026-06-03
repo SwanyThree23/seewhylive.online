@@ -62,10 +62,10 @@ export default function ZEGOConfigPanel({ user }) {
           </div>
           <div>
             <p className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>Streaming Engine</p>
-            <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>ZEGOCLOUD Configuration</p>
+            <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>ZEGOCLOUD Configuration</p>
           </div>
         </div>
-        <span className="text-[8px] font-black uppercase px-2 py-1 rounded-full"
+        <span className="text-[11px] font-black uppercase px-2 py-1 rounded-full"
           style={{
             background: isConfigured ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,68,0.12)',
             color: isConfigured ? '#00FF88' : '#FF4444',
@@ -77,7 +77,7 @@ export default function ZEGOConfigPanel({ user }) {
 
       {/* App ID */}
       <div>
-        <label className="text-[9px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+        <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
           App ID <span style={{ color: 'rgba(255,255,255,0.2)' }}>(numeric)</span>
         </label>
         <input
@@ -92,7 +92,7 @@ export default function ZEGOConfigPanel({ user }) {
 
       {/* App Sign */}
       <div>
-        <label className="text-[9px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+        <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
           App Sign <span style={{ color: 'rgba(255,255,255,0.2)' }}>(64-char hex)</span>
         </label>
         <div className="relative">
@@ -113,7 +113,7 @@ export default function ZEGOConfigPanel({ user }) {
       {/* Selectors */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-[9px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Latency Mode</label>
+          <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Latency Mode</label>
           <select
             value={form.latency_mode}
             onChange={e => setForm(f => ({ ...f, latency_mode: e.target.value }))}
@@ -125,7 +125,7 @@ export default function ZEGOConfigPanel({ user }) {
           </select>
         </div>
         <div>
-          <label className="text-[9px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>UIKit Type</label>
+          <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>UIKit Type</label>
           <select
             value={form.kit_type}
             onChange={e => setForm(f => ({ ...f, kit_type: e.target.value }))}
@@ -166,7 +166,7 @@ export default function ZEGOConfigPanel({ user }) {
 
       {/* OBS URL preview */}
       <div className="px-3 py-2 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
-        <p className="text-[8px] uppercase font-black mb-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>OBS Ingest URL</p>
+        <p className="text-[11px] uppercase font-black mb-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>OBS Ingest URL</p>
         <p className="text-[10px] break-all" style={{ color: '#00F5FF', fontFamily: 'Share Tech Mono, monospace' }}>{obsUrl}</p>
       </div>
     </div>

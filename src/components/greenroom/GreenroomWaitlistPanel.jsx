@@ -37,7 +37,7 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[11px] font-bold text-white">{entry.user_name}</span>
-            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+            <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
               style={{ background: 'rgba(212,175,55,0.12)', color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {entry.role_requested}
             </span>
@@ -47,7 +47,7 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
           )}
           <div className="flex items-center gap-1 mt-0.5">
             <Clock className="w-2.5 h-2.5" style={{ color: 'rgba(255,255,255,0.25)' }} />
-            <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Share Tech Mono, monospace' }}>
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Share Tech Mono, monospace' }}>
               Waiting {fmtWait(entry.created_date)}
             </span>
           </div>
@@ -62,7 +62,7 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
             maxLength={LIMITS.DENY_REASON}
             onKeyDown={e => { if (e.key === 'Enter') onDeny(entry, clampStr(denyReason, LIMITS.DENY_REASON)); }} />
           <button onClick={() => onDeny(entry, clampStr(denyReason, LIMITS.DENY_REASON))}
-            className="h-7 px-3 rounded text-[9px] font-black uppercase"
+            className="h-7 px-3 rounded text-[11px] font-black uppercase"
             style={{ background: `rgba(128,0,32,0.4)`, color: '#ff6680', border: '1px solid rgba(128,0,32,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Deny
           </button>
@@ -75,12 +75,12 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
       ) : (
         <div className="flex gap-1.5">
           <button onClick={() => onAdmit(entry)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-black uppercase text-[9px] transition-all hover:brightness-110"
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-black uppercase text-[11px] transition-all hover:brightness-110"
             style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <CheckCircle className="w-3 h-3" /> Admit
           </button>
           <button onClick={() => setDenying(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-black uppercase text-[9px] transition-all"
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-black uppercase text-[11px] transition-all"
             style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <XCircle className="w-3 h-3" /> Deny
           </button>
@@ -158,7 +158,7 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
         <Users className="w-3.5 h-3.5" />
         Greenroom
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] flex items-center justify-center font-black"
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[11px] flex items-center justify-center font-black"
             style={{ background: BURGUNDY, color: 'white', border: '1.5px solid #0D0D0D' }}>
             {count}
           </span>
@@ -185,14 +185,14 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
                   <h3 className="font-black uppercase text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Greenroom Waitlist
                   </h3>
-                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                     {count} {count === 1 ? 'person' : 'people'} waiting to join
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   {count > 1 && (
                     <button onClick={admitAll}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase"
                       style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       <CheckCheck className="w-3 h-3" /> Admit All
                     </button>

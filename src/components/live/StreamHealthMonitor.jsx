@@ -61,7 +61,7 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
               style={{ transition: 'stroke-dashoffset 0.5s ease' }}
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold" style={{ color: healthColor }}>
+          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold" style={{ color: healthColor }}>
             {health}
           </span>
         </div>

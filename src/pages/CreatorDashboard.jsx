@@ -223,7 +223,7 @@ export default function CreatorDashboardPage() {
                                 <span className="flex-1 font-black text-[12px] text-white truncate" style={T}>
                                   {room.title || 'Untitled Stream'}
                                 </span>
-                                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase shrink-0"
+                                <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                                   style={{
                                     background: isLive ? `${PINK}18` : 'rgba(255,255,255,0.06)',
                                     border: `1px solid ${isLive ? `${PINK}35` : 'rgba(255,255,255,0.1)'}`,

@@ -26,13 +26,13 @@ function MetricTile({ icon: Icon, label, value, unit, color, trend, sparkData })
           <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: `${color}15` }}>
             <Icon className="w-3 h-3" style={{ color }} />
           </div>
-          <span className="text-[9px] font-bold uppercase text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>{label}</span>
+          <span className="text-[11px] font-bold uppercase text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>{label}</span>
         </div>
         <TrendIcon className="w-3 h-3" style={{ color: trendColor }} />
       </div>
       <div className="relative flex items-baseline gap-1">
         <span className="text-xl font-black font-mono" style={{ color }}>{value}</span>
-        {unit && <span className="text-[9px] text-white/30">{unit}</span>}
+        {unit && <span className="text-[11px] text-white/30">{unit}</span>}
       </div>
     </div>
   );
@@ -53,7 +53,7 @@ function DestinationStatus({ platform, status }) {
       <span className="text-[10px] font-bold text-white capitalize">{platform}</span>
       <div className="flex items-center gap-1.5">
         {cfg.dot && <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: cfg.color }} />}
-        <span className="text-[9px] font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
+        <span className="text-[11px] font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
       </div>
     </div>
   );
@@ -74,7 +74,7 @@ function NetworkGauge({ qualityScore }) {
             style={{ background: i < filled ? color : 'rgba(255,255,255,0.08)' }} />
         ))}
       </div>
-      <span className="text-[9px] font-bold w-14 text-right" style={{ color }}>{label} {qualityScore}%</span>
+      <span className="text-[11px] font-bold w-14 text-right" style={{ color }}>{label} {qualityScore}%</span>
     </div>
   );
 }
@@ -196,10 +196,10 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
           {isLive ? (
             <>
               <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[9px] font-black text-red-400" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
+              <span className="text-[11px] font-black text-red-400" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
             </>
           ) : (
-            <span className="text-[9px] text-white/30">Offline</span>
+            <span className="text-[11px] text-white/30">Offline</span>
           )}
         </div>
       </div>
@@ -217,14 +217,14 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
       {/* Network quality bar */}
       <div className="rounded-xl px-3 py-2.5 space-y-1.5"
         style={{ background: 'rgba(0,245,255,0.04)', border: '1px solid rgba(0,245,255,0.1)' }}>
-        <span className="text-[9px] font-bold uppercase text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Network Quality</span>
+        <span className="text-[11px] font-bold uppercase text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Network Quality</span>
         <NetworkGauge qualityScore={metrics.networkQuality} />
       </div>
 
       {/* RTMP destination statuses (host only) */}
       {isHost && rtmpStatuses.length > 0 && (
         <div className="space-y-1.5">
-          <span className="text-[9px] font-bold uppercase text-white/30 px-0.5" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+          <span className="text-[11px] font-bold uppercase text-white/30 px-0.5" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
             RTMP Destinations
           </span>
           {rtmpStatuses.map((d, i) => (
@@ -236,7 +236,7 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
       {/* Viewer trend sparkline */}
       {history.length > 3 && (
         <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <span className="text-[9px] font-bold uppercase text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewer Trend</span>
+          <span className="text-[11px] font-bold uppercase text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewer Trend</span>
           <div className="h-16">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={history} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
@@ -249,7 +249,7 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
                 <XAxis dataKey="t" hide />
                 <Tooltip
                   contentStyle={{ background: '#0d0618', border: '1px solid rgba(0,245,255,0.2)', borderRadius: 8, fontSize: 10 }}
-                  labelStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 9 }}
+                  labelStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
                   formatter={(v) => [v, 'Viewers']}
                 />
                 <Area type="monotone" dataKey="viewers" stroke="#00F5FF" fill="url(#viewerGrad)" strokeWidth={1.5} dot={false} />

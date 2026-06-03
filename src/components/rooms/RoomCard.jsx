@@ -71,7 +71,7 @@ export default function RoomCard({ room, onJoin }) {
 
           {/* Type badge */}
           <div className="absolute bottom-2 right-2">
-            <span className="text-[9px] px-1.5 py-0.5 rounded capitalize"
+            <span className="text-[11px] px-1.5 py-0.5 rounded capitalize"
               style={{ background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {room.type}
             </span>
@@ -98,7 +98,7 @@ export default function RoomCard({ room, onJoin }) {
           {room.tags && room.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {room.tags.slice(0, 3).map((tag, idx) => (
-                <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded-full capitalize"
+                <span key={idx} className="text-[11px] px-1.5 py-0.5 rounded-full capitalize"
                   style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(196,168,130,0.6)', border: '1px solid rgba(212,175,55,0.12)' }}>
                   {tag}
                 </span>

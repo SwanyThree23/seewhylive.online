@@ -64,7 +64,7 @@ function StatsBadge({ label, value, color }) {
       display: 'inline-flex',
       alignItems: 'center',
       gap: 4,
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: 900,
       fontFamily: 'Barlow Condensed, sans-serif',
       textTransform: 'uppercase',
@@ -666,7 +666,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
 
       {remoteList.length > 0 && (
         <div>
-          <div style={{ fontSize: 9, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
             Remote Feeds
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 120px)', gap: 8 }}>
@@ -724,7 +724,7 @@ function RemoteTile({ peerId, stream, members }) {
         </div>
       </div>
       {member && (
-        <div style={{ marginTop: 4, fontSize: 9, textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', truncate: true, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ marginTop: 4, fontSize: 11, textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', truncate: true, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {member.user_name}
         </div>
       )}

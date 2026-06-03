@@ -25,7 +25,7 @@ export default function ZEGOMobileAppBanner() {
           {/* Title */}
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>SeeWhy LIVE Mobile</h3>
-            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+            <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
               style={{ background: 'rgba(0,245,255,0.1)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.2)', ...T }}>
               Coming Soon
             </span>

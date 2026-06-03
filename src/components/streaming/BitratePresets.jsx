@@ -23,7 +23,7 @@ export default function BitratePresets({ selected, onChange }) {
             }`}
           >
             <p>{preset.label}</p>
-            <p className="text-[8px] text-white/40 mt-0.5">{preset.bitrate} kbps</p>
+            <p className="text-[11px] text-white/40 mt-0.5">{preset.bitrate} kbps</p>
             {preset.recommended && <p className="text-[7px] text-white/50 mt-1">✓</p>}
           </button>
         ))}

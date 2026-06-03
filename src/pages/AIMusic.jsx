@@ -262,7 +262,7 @@ function MiniScrubber({ isPlaying, duration }) {
   return (
     <div style={{ padding: '0 16px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.3)', minWidth: 28 }}>{fmtTime(progress)}</span>
+        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', minWidth: 28 }}>{fmtTime(progress)}</span>
         <div
           style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, cursor: 'pointer', position: 'relative' }}
           onClick={(e) => {
@@ -277,7 +277,7 @@ function MiniScrubber({ isPlaying, duration }) {
           />
           <div style={{ position: 'absolute', top: '50%', left: `${progress * 100}%`, transform: 'translate(-50%, -50%)', width: 8, height: 8, borderRadius: '50%', background: GOLD, opacity: isPlaying ? 1 : 0.5 }} />
         </div>
-        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.3)', minWidth: 28, textAlign: 'right' }}>{fmtTime(1)}</span>
+        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', minWidth: 28, textAlign: 'right' }}>{fmtTime(1)}</span>
       </div>
     </div>
   );
@@ -372,7 +372,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             </span>
             {track.streamReady && (
               <span style={{
-                ...T, fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
+                ...T, fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
                 padding: '2px 7px', borderRadius: 999,
                 background: GREEN + '22', border: `1px solid ${GREEN}55`, color: GREEN,
                 textTransform: 'uppercase',
@@ -1044,8 +1044,8 @@ export default function AIMusic() {
                         className="w-full h-1.5 rounded-full appearance-none"
                         style={{ background: `linear-gradient(to right, ${GOLD} ${((bpm - 60) / 120) * 100}%, rgba(255,255,255,0.1) 0%)` }} />
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>60 Slow</span>
-                        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>Hyper 180</span>
+                        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>60 Slow</span>
+                        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Hyper 180</span>
                       </div>
                     </div>
 
@@ -1300,7 +1300,7 @@ export default function AIMusic() {
               ].map(s => (
                 <div key={s.label} style={{ flex: 1, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', padding: '8px 10px', textAlign: 'center' }}>
                   <div style={{ ...T, fontSize: 18, fontWeight: 900, color: s.color }}>{s.value}</div>
-                  <div style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
+                  <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
                 </div>
               ))}
             </div>

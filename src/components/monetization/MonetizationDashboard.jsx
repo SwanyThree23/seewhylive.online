@@ -62,14 +62,14 @@ export default function MonetizationDashboard({ roomId }) {
               style={{ background: `${metric.color}15` }}
             >
               <Icon className="w-3 h-3 mb-1" style={{ color: metric.color }} />
-              <p className="text-[9px] text-white/50">{metric.label}</p>
+              <p className="text-[11px] text-white/50">{metric.label}</p>
               <p className="text-xs font-bold" style={{ color: metric.color }}>{metric.value}</p>
             </motion.div>
           );
         })}
       </div>
 
-      <div className="text-[9px] text-white/40 space-y-1">
+      <div className="text-[11px] text-white/40 space-y-1">
         <p>Transactions: <strong style={{ color: G }}>{analytics.total_transactions}</strong></p>
         <p>Paywall conversions: <strong style={{ color: G }}>{analytics.total_paywall_conversions}</strong></p>
         <p>Net payout: <strong style={{ color: '#00FF88' }}>${analytics.net_creator_payout.toFixed(2)}</strong></p>

@@ -100,7 +100,7 @@ export default function RewardShopEditor({ creatorId }) {
             <span style={{ fontSize:16, width:24, textAlign:'center' }}>{reward.icon || '🎁'}</span>
             <div style={{ flex:1, minWidth:0 }}>
               <p style={{ fontSize:11, fontWeight:700, color:'#fff', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{reward.name}</p>
-              <p style={{ fontSize:9, color:'rgba(255,255,255,0.4)', margin:'2px 0 0' }}>{reward.points_required.toLocaleString()} pts · {reward.claimed_count || 0} claimed</p>
+              <p style={{ fontSize:11, color:'rgba(255,255,255,0.4)', margin:'2px 0 0' }}>{reward.points_required.toLocaleString()} pts · {reward.claimed_count || 0} claimed</p>
             </div>
             <button onClick={() => toggleMutation.mutate({ id: reward.id, is_active: reward.is_active })}
               style={{ background:'none', border:'none', cursor:'pointer', color: reward.is_active ? '#d4af37' : 'rgba(255,255,255,0.4)', padding:2 }}>

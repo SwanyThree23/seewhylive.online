@@ -52,7 +52,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
       
       <div className="flex items-center gap-2 mb-2">
         <Clock className="w-3.5 h-3.5" style={{ color: GOLD }} />
-        <span className="text-[9px] font-black uppercase" style={{ color: GOLD, ...T }}>
+        <span className="text-[11px] font-black uppercase" style={{ color: GOLD, ...T }}>
           {pendingGuests.length} Join Request{pendingGuests.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -69,7 +69,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
             
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-white truncate">{guest.user_name}</p>
-              <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Wants to co-host</p>
+              <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Wants to co-host</p>
             </div>
 
             <div className="flex items-center gap-1">

@@ -131,7 +131,7 @@ export default function ContentCalendarPage() {
                       {getTypeIcon(item.content_type)}
                       <span className="text-[10px] font-black uppercase" style={T}>{item.content_type}</span>
                     </div>
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                       style={{ ...T, background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color }}>
                       {item.status}
                     </span>
@@ -150,7 +150,7 @@ export default function ContentCalendarPage() {
                   </div>
 
                   {item.recurrence !== 'none' && (
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                       style={{ ...T, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD }}>
                       Repeats {item.recurrence}
                     </span>

@@ -20,7 +20,7 @@ function SentimentMeter({ score }) {
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between items-center">
-        <span className="text-[9px] font-bold uppercase text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+        <span className="text-[11px] font-bold uppercase text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
           Chat Sentiment
         </span>
         <span className="text-[10px] font-black" style={{ color }}>{label} {score}</span>
@@ -49,7 +49,7 @@ function InsightCard({ insight, onDismiss, onCopy }) {
           <Icon className="w-3 h-3" style={{ color: cfg.color }} />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-[9px] font-black uppercase" style={{ color: cfg.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+          <span className="text-[11px] font-black uppercase" style={{ color: cfg.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
             {cfg.label}
           </span>
           <p className="text-[11px] text-white/80 leading-relaxed mt-0.5">{insight.content}</p>
@@ -68,7 +68,7 @@ function InsightCard({ insight, onDismiss, onCopy }) {
       {insight.urgency === 'high' && (
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: cfg.color }} />
-          <span className="text-[8px] font-bold uppercase" style={{ color: cfg.color, opacity: 0.7 }}>Act Now</span>
+          <span className="text-[11px] font-bold uppercase" style={{ color: cfg.color, opacity: 0.7 }}>Act Now</span>
         </div>
       )}
     </motion.div>
@@ -136,7 +136,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
             AI Copilot
           </span>
           {visibleInsights.length > 0 && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(139,92,246,0.2)', color: '#8B5CF6' }}>
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(139,92,246,0.2)', color: '#8B5CF6' }}>
               {visibleInsights.length}
             </span>
           )}
@@ -145,7 +145,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
           <button
             onClick={(e) => { e.stopPropagation(); analyzeMutation.mutate(); }}
             disabled={analyzeMutation.isPending || recentMessages.length < 3}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-bold transition-all disabled:opacity-40"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-40"
             style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)' }}>
             <RefreshCw className={`w-2.5 h-2.5 ${analyzeMutation.isPending ? 'animate-spin' : ''}`} />
             Analyze
@@ -162,7 +162,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
               {trendingTopics.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {trendingTopics.map(t => (
-                    <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full font-bold"
+                    <span key={t} className="text-[11px] px-1.5 py-0.5 rounded-full font-bold"
                       style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)' }}>
                       #{t}
                     </span>
@@ -185,7 +185,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
                 </div>
               )}
               {lastAnalyzed && (
-                <p className="text-[8px] text-white/20 text-right">Last: {lastAnalyzed.toLocaleTimeString()}</p>
+                <p className="text-[11px] text-white/20 text-right">Last: {lastAnalyzed.toLocaleTimeString()}</p>
               )}
             </div>
           </motion.div>

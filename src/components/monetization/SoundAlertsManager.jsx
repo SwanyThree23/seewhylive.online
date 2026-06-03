@@ -195,7 +195,7 @@ export default function SoundAlertsManager({ creatorId }) {
               <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0, fontFamily: 'Barlow Condensed, sans-serif' }}>{TRIGGER_TYPES.find(t => t.id === alert.trigger_type)?.label} {alert.trigger_value ? `· $${alert.trigger_value}` : ''}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {SOUND_PRESETS[alert.sound_preset]?.label?.split(' ')[0] || '🔔'}
               </span>
               {/* Switch */}

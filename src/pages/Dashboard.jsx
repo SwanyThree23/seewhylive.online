@@ -45,9 +45,9 @@ function StatTile({ label, value, sub, color = GOLD, icon: Icon }) {
     <Card>
       <div className="p-4 flex items-start justify-between gap-2">
         <div>
-          <p className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'rgba(245,230,211,0.35)', ...T }}>{label}</p>
+          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(245,230,211,0.35)', ...T }}>{label}</p>
           <p className="text-2xl font-black leading-none" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
-          {sub && <p className="text-[9px] mt-1" style={{ color: 'rgba(245,230,211,0.3)' }}>{sub}</p>}
+          {sub && <p className="text-[11px] mt-1" style={{ color: 'rgba(245,230,211,0.3)' }}>{sub}</p>}
         </div>
         {Icon && <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
           <Icon className="w-4 h-4" style={{ color }} />
@@ -114,7 +114,7 @@ function OverviewTab({ user }) {
             <BarChart data={days}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="label" tick={{ fill: 'rgba(245,230,211,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 9 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
               <Bar dataKey="total" fill={GOLD} radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -133,7 +133,7 @@ function OverviewTab({ user }) {
               <div key={a.id} className="flex items-center gap-3 px-4 py-2.5">
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ background: GOLD }} />
                 <p className="text-[11px] flex-1" style={{ color: CREAM + '70' }}>{a.title}</p>
-                <span className="text-[8px]" style={{ color: CREAM + '30' }}>{new Date(a.created_date).toLocaleDateString()}</span>
+                <span className="text-[11px]" style={{ color: CREAM + '30' }}>{new Date(a.created_date).toLocaleDateString()}</span>
               </div>
             ))}
         </div>
@@ -252,7 +252,7 @@ function AnalyticsTab({ user }) {
                 <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <div className="h-full rounded-full" style={{ width: `${Math.min(100,(p.viewers/300)*100)}%`, background: COLORS[i % COLORS.length] }} />
                 </div>
-                <span className="text-[9px] w-12 text-right" style={{ color: CREAM + '50' }}>{p.viewers}</span>
+                <span className="text-[11px] w-12 text-right" style={{ color: CREAM + '50' }}>{p.viewers}</span>
               </div>
             ))}
           </div>
@@ -312,7 +312,7 @@ function ContentTab({ user }) {
         <div className="flex gap-1.5">
           {['all','published','draft','clips'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className="px-3 py-1.5 rounded-lg font-black uppercase text-[9px]"
+              className="px-3 py-1.5 rounded-lg font-black uppercase text-[11px]"
               style={{ background: filter===f ? `${GOLD}20` : 'rgba(255,255,255,0.04)', color: filter===f ? GOLD : CREAM+'50', border: filter===f ? `1px solid ${GOLD}40` : '1px solid rgba(255,255,255,0.08)', ...T }}>
               {f}
             </button>
@@ -354,7 +354,7 @@ function ContentTab({ user }) {
             <div className="p-2.5 space-y-1">
               <p className="text-[10px] font-bold text-white leading-tight line-clamp-1">{v.title}</p>
               <div className="flex items-center justify-between">
-                <span className="text-[8px]" style={{ color: CREAM + '40' }}>{(v.views || 0).toLocaleString()} views</span>
+                <span className="text-[11px]" style={{ color: CREAM + '40' }}>{(v.views || 0).toLocaleString()} views</span>
                 <div className="flex gap-1">
                   <button onClick={() => setEditVod(v)}
                     className="w-5 h-5 flex items-center justify-center rounded"
@@ -388,11 +388,11 @@ function ContentTab({ user }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] font-bold text-white">{h.title || 'Stream Highlight'}</p>
-                    <p className="text-[8px]" style={{ color: CREAM + '40' }}>
+                    <p className="text-[11px]" style={{ color: CREAM + '40' }}>
                       {h.highlight_type} · {Math.floor((h.start_time||0)/60)}:{String((h.start_time||0)%60).padStart(2,'0')}
                     </p>
                   </div>
-                  <span className="text-[8px] font-black px-1.5 py-0.5 rounded"
+                  <span className="text-[11px] font-black px-1.5 py-0.5 rounded"
                     style={{ background: `${GOLD}15`, color: GOLD }}>
                     {Math.round((h.ai_confidence || 0) * 100)}%
                   </span>
@@ -525,7 +525,7 @@ function CommunityTab({ user }) {
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', ...T }}>Active Polls</p>
           <button onClick={() => setShowPollForm(true)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[9px]"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[11px]"
             style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30`, ...T }}>
             <Plus className="w-3 h-3" /> Poll
           </button>
@@ -540,7 +540,7 @@ function CommunityTab({ user }) {
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-bold text-[12px] text-white">{poll.question}</p>
                   <button onClick={() => endPollMut.mutate(poll.id)}
-                    className="text-[8px] px-2 py-1 rounded font-black uppercase shrink-0"
+                    className="text-[11px] px-2 py-1 rounded font-black uppercase shrink-0"
                     style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>End</button>
                 </div>
                 <div className="space-y-1.5">
@@ -550,7 +550,7 @@ function CommunityTab({ user }) {
                     const pct = Math.round((votes / total) * 100);
                     return (
                       <div key={i} className="space-y-0.5">
-                        <div className="flex justify-between text-[9px]">
+                        <div className="flex justify-between text-[11px]">
                           <span style={{ color: CREAM + '70' }}>{label}</span>
                           <span style={{ color: GOLD, ...T }}>{pct}%</span>
                         </div>
@@ -561,7 +561,7 @@ function CommunityTab({ user }) {
                     );
                   })}
                 </div>
-                <p className="text-[8px]" style={{ color: CREAM + '30' }}>{poll.total_votes || 0} total votes</p>
+                <p className="text-[11px]" style={{ color: CREAM + '30' }}>{poll.total_votes || 0} total votes</p>
               </div>
             </Card>
           );
@@ -585,7 +585,7 @@ function CommunityTab({ user }) {
                     style={{ background: `${GOLD}15`, color: GOLD, ...T }}>{c.challenge_type}</span>
                 </div>
                 <div className="space-y-0.5">
-                  <div className="flex justify-between text-[8px]">
+                  <div className="flex justify-between text-[11px]">
                     <span style={{ color: CREAM + '40' }}>{c.participant_count || 0} / {c.goal_value || 0}</span>
                     <span style={{ color: GOLD }}>{progress}%</span>
                   </div>
@@ -621,7 +621,7 @@ function CommunityTab({ user }) {
                   className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
               ))}
-              {pollForm.options.length < 6 && <button onClick={() => setPollForm(f => ({ ...f, options: [...f.options, ''] }))} className="text-[9px] font-black" style={{ color: GOLD, ...T }}>+ Add Option</button>}
+              {pollForm.options.length < 6 && <button onClick={() => setPollForm(f => ({ ...f, options: [...f.options, ''] }))} className="text-[11px] font-black" style={{ color: GOLD, ...T }}>+ Add Option</button>}
               <button onClick={() => createPollMut.mutate()} disabled={!pollForm.question}
                 className="w-full py-2.5 rounded-xl font-black uppercase text-[11px]"
                 style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>Create Poll</button>
@@ -692,10 +692,10 @@ function MonetizationTab({ user }) {
                   </button>
                 </div>
                 <p className="text-2xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${tier.price}<span className="text-[10px]">/mo</span></p>
-                <p className="text-[8px]" style={{ color: CREAM + '40' }}>{tier.subscriber_count || 0} subscribers</p>
+                <p className="text-[11px]" style={{ color: CREAM + '40' }}>{tier.subscriber_count || 0} subscribers</p>
                 <div className="space-y-0.5">
                   {(tier.benefits || []).slice(0, 3).map((b, i) => (
-                    <p key={i} className="text-[9px] flex items-center gap-1" style={{ color: CREAM + '60' }}>
+                    <p key={i} className="text-[11px] flex items-center gap-1" style={{ color: CREAM + '60' }}>
                       <span style={{ color: GOLD }}>✓</span> {b}
                     </p>
                   ))}
@@ -713,20 +713,20 @@ function MonetizationTab({ user }) {
           <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Payout Status</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-[8px]" style={{ color: CREAM + '40' }}>Pending Balance</p>
+              <p className="text-[11px]" style={{ color: CREAM + '40' }}>Pending Balance</p>
               <p className="text-xl font-black" style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.pending_balance || 0)}</p>
             </div>
             <div>
-              <p className="text-[8px]" style={{ color: CREAM + '40' }}>Total Paid Out</p>
+              <p className="text-[11px]" style={{ color: CREAM + '40' }}>Total Paid Out</p>
               <p className="text-xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.total_paid_out || 0)}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[8px] px-1.5 py-0.5 rounded font-black uppercase"
+            <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
               style={{ background: payout?.stripe_connected ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#00FF88' : '#FF4444', ...T }}>
               {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
-            {payout?.last_payout_at && <span className="text-[8px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
+            {payout?.last_payout_at && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
           </div>
         </div>
       </Card>
@@ -754,7 +754,7 @@ function MonetizationTab({ user }) {
           <div className="p-4 space-y-3">
             <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>90/10 Creator Split</p>
             <div>
-              <div className="flex items-center justify-between text-[9px] mb-1">
+              <div className="flex items-center justify-between text-[11px] mb-1">
                 <span style={{ color: '#00FF88' }}>Creator 90%</span>
                 <span style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>${creatorShare.toFixed(2)}</span>
               </div>
@@ -763,13 +763,13 @@ function MonetizationTab({ user }) {
                   style={{ background: 'linear-gradient(90deg, #00FF88, #00D4FF)' }} />
                 <div className="h-full flex-1" style={{ background: 'rgba(255,21,100,0.3)' }} />
               </div>
-              <div className="flex items-center justify-between text-[9px] mt-1">
+              <div className="flex items-center justify-between text-[11px] mt-1">
                 <span style={{ color: 'rgba(255,21,100,0.7)' }}>Platform 10%</span>
                 <span style={{ color: 'rgba(255,21,100,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
               </div>
             </div>
             <div className="pt-1 space-y-1">
-              <p className="text-[8px]" style={{ color: CREAM + '30' }}>Gift Shop: ${giftTotal.toFixed(2)}</p>
+              <p className="text-[11px]" style={{ color: CREAM + '30' }}>Gift Shop: ${giftTotal.toFixed(2)}</p>
             </div>
           </div>
         </Card>
@@ -871,7 +871,7 @@ function SettingsTab({ user }) {
           <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Profile Settings</p>
           {['display_name','bio','avatar_url'].map(field => (
             <div key={field}>
-              <label className="text-[9px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>{field.replace('_',' ')}</label>
+              <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>{field.replace('_',' ')}</label>
               {field === 'bio'
                 ? <textarea value={profile[field]} onChange={e => setProfile(p => ({ ...p, [field]: e.target.value }))} rows={3}
                     className="w-full px-3 py-2 rounded-lg text-[11px] outline-none resize-none"
@@ -882,7 +882,7 @@ function SettingsTab({ user }) {
             </div>
           ))}
           <div>
-            <label className="text-[9px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>Category</label>
+            <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>Category</label>
             <div className="flex flex-wrap gap-1.5">
               {['gaming','music','education','talk','fitness','cooking','art','tech','other'].map(c => (
                 <button key={c} onClick={() => setProfile(p => ({ ...p, category: c }))}
@@ -894,7 +894,7 @@ function SettingsTab({ user }) {
             </div>
           </div>
           <div>
-            <label className="text-[9px] uppercase font-black block mb-2" style={{ color: CREAM + '35', ...T }}>Social Links</label>
+            <label className="text-[11px] uppercase font-black block mb-2" style={{ color: CREAM + '35', ...T }}>Social Links</label>
             <div className="grid grid-cols-2 gap-2">
               {SOCIAL_FIELDS.map(s => (
                 <input key={s} placeholder={s} value={profile.social_links?.[s] || ''}
@@ -921,7 +921,7 @@ function SettingsTab({ user }) {
               const slot = schedule.find(s => s.day === day) || {};
               return (
                 <div key={day} className="flex items-center gap-2">
-                  <span className="text-[9px] w-8 font-black" style={{ color: CREAM + '50', ...T }}>{day}</span>
+                  <span className="text-[11px] w-8 font-black" style={{ color: CREAM + '50', ...T }}>{day}</span>
                   <input type="time" value={slot.time || ''} onChange={e => setSchedule(prev => {
                     const next = prev.filter(s => s.day !== day);
                     if (e.target.value) next.push({ day, time: e.target.value, title: slot.title || '' });
@@ -975,7 +975,7 @@ function SettingsTab({ user }) {
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>RTMP Destinations</p>
             <Link to={createPageUrl('StreamInfra')}>
-              <button className="text-[8px] font-black uppercase px-2 py-1 rounded"
+              <button className="text-[11px] font-black uppercase px-2 py-1 rounded"
                 style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}25`, ...T }}>
                 Manage in Stream Setup
               </button>
@@ -986,7 +986,7 @@ function SettingsTab({ user }) {
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="flex-1">
                 <p className="text-[10px] font-bold text-white">{d.label || d.platform}</p>
-                <p className="text-[8px]" style={{ color: CREAM + '35' }}>{d.rtmp_url?.slice(0, 30)}…</p>
+                <p className="text-[11px]" style={{ color: CREAM + '35' }}>{d.rtmp_url?.slice(0, 30)}…</p>
               </div>
               <button onClick={() => toggleDest.mutate({ id: d.id, is_enabled: !d.is_enabled })}
                 className="w-9 h-5 rounded-full relative shrink-0"
@@ -1015,7 +1015,7 @@ function SettingsTab({ user }) {
             <Layers className="w-5 h-5" style={{ color: GOLD }} />
             <div>
               <p className="font-black text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</p>
-              <p className="text-[9px]" style={{ color: CREAM + '40' }}>Design and export custom stream overlays</p>
+              <p className="text-[11px]" style={{ color: CREAM + '40' }}>Design and export custom stream overlays</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4" style={{ color: GOLD + '60' }} />
@@ -1052,7 +1052,7 @@ export default function DashboardPage() {
                 <h1 className="font-black text-lg uppercase leading-none" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
                   {profile?.display_name || user?.full_name || 'Creator Dashboard'}
                 </h1>
-                <p className="text-[9px] mt-0.5" style={{ color: CREAM + '40', ...T }}>SeeWhy LIVE Creator Studio</p>
+                <p className="text-[11px] mt-0.5" style={{ color: CREAM + '40', ...T }}>SeeWhy LIVE Creator Studio</p>
               </div>
             </div>
             <Link to={createPageUrl('LiveRoom')}>
@@ -1067,7 +1067,7 @@ export default function DashboardPage() {
           <div className="flex overflow-x-auto scrollbar-hide gap-0">
             {TABS.map(t => (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
-                className="flex items-center gap-1.5 px-4 py-2.5 shrink-0 font-black uppercase text-[9px] transition-all border-b-2"
+                className="flex items-center gap-1.5 px-4 py-2.5 shrink-0 font-black uppercase text-[11px] transition-all border-b-2"
                 style={{
                   ...T,
                   color: activeTab === t.id ? GOLD : CREAM + '35',

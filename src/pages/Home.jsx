@@ -111,18 +111,18 @@ function FanbaseRoomCard({ room }) {
         {/* Top row: LIVE + TRENDING badges | Join */}
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
           <div className="flex items-center gap-1.5">
-            <span className="flex items-center gap-1 text-[8px] font-black px-1.5 py-0.5 rounded-full"
+            <span className="flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded-full"
               style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isTrending && (
-              <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full"
+              <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
                 style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}
           </div>
-          <span className="text-[9px] font-black uppercase px-2.5 py-1 rounded-full"
+          <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-full"
             style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
             Join
           </span>
@@ -164,15 +164,15 @@ function FanbaseRoomCard({ room }) {
             </span>
           )}
           {tag && (
-            <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
+            <span className="text-[11px] font-black px-2 py-0.5 rounded-full"
               style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {tag}
             </span>
           )}
           {duration && (
-            <span className="text-[9px] font-black" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{duration}</span>
+            <span className="text-[11px] font-black" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{duration}</span>
           )}
-          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full ml-auto"
+          <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full ml-auto"
             style={{ ...accessStyle, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {accessLabel}
           </span>
@@ -184,7 +184,7 @@ function FanbaseRoomCard({ room }) {
             {displayNames.map(function(name, i) { return <OctTile key={i} label={name} size={32} />; })}
             {displayNames.length === 0 && <OctTile label="?" size={32} />}
             {extra > 0 && (
-              <span className="text-[9px] font-black ml-0.5" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span className="text-[11px] font-black ml-0.5" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 +{extra}
               </span>
             )}

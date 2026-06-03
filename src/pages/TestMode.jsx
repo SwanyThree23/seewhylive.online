@@ -99,14 +99,14 @@ function OctTile({ p, size = 80 }) {
           )}
         </div>
         {p.muted && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px]"
+          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[11px]"
             style={{ background:'#EF4444', border:`2px solid ${BG}` }}>🔇</div>
         )}
         {(isHost||isCohost) && (
           <div className="absolute -top-1 left-0 right-0 flex justify-center text-[10px]">👑</div>
         )}
         {p.team && (
-          <div className="absolute top-0 left-0 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black"
+          <div className="absolute top-0 left-0 w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-black"
             style={{ background: p.team==='A'?`${GOLD}CC`:`${PINK}CC` }}>
             {p.team}
           </div>
@@ -114,7 +114,7 @@ function OctTile({ p, size = 80 }) {
       </div>
       <p className="text-[10px] font-bold text-white truncate" style={{ maxWidth:size+8 }}>{p.name}</p>
       {(isHost||isCohost) && (
-        <p className="text-[8px] font-semibold" style={{ color:`${GOLD}BB`, marginTop:-4 }}>
+        <p className="text-[11px] font-semibold" style={{ color:`${GOLD}BB`, marginTop:-4 }}>
           {isHost?'Host':'Co-host'}
         </p>
       )}
@@ -154,7 +154,7 @@ function ViewerPanel({ data, chatMessages, reactions, onReact }) {
         <div className="text-sm font-black text-white truncate flex-1">
           {data.label || 'Live Room'}
         </div>
-        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider"
           style={ data.status==='live'||data.status==='battle'||data.status==='watching'
             ? { background:`${PINK}20`, border:`1px solid ${PINK}44`, color:PINK }
             : { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.35)' }}>
@@ -205,7 +205,7 @@ function ViewerPanel({ data, chatMessages, reactions, onReact }) {
             {chatMessages.slice(-20).map(m => (
               <motion.div key={m.id} initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }}
                 className="flex items-start gap-1.5">
-                <span className="text-[9px] font-black shrink-0 mt-0.5" style={{ color:avatarColor(m.user) }}>
+                <span className="text-[11px] font-black shrink-0 mt-0.5" style={{ color:avatarColor(m.user) }}>
                   {m.user.split(' ')[0]}
                 </span>
                 <span className="text-[11px] text-white/70 leading-snug">{m.text}</span>
@@ -222,7 +222,7 @@ function ViewerPanel({ data, chatMessages, reactions, onReact }) {
               {e}
             </button>
           ))}
-          <div className="ml-auto text-[9px] text-white/25 self-center">tap to react</div>
+          <div className="ml-auto text-[11px] text-white/25 self-center">tap to react</div>
         </div>
       </div>
 
@@ -254,7 +254,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
       <div className="px-3 py-2 shrink-0 flex items-center justify-between"
         style={{ background:`${CRIMSON}22`, borderBottom:`1px solid ${GOLD}22` }}>
         <span className="text-xs font-black" style={{ color:GOLD }}>🎙️ CREATOR VIEW</span>
-        <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
+        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
           style={{ background:`${CRIMSON}44`, color:GOLD, border:`1px solid ${GOLD}33` }}>
           HOST
         </span>
@@ -265,7 +265,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
         {stats.map(s => (
           <div key={s.label} className="flex flex-col items-center py-2" style={{ background:BG2 }}>
             <span className="text-sm font-black" style={{ color:s.color }}>{s.value}</span>
-            <span className="text-[8px] text-white/30 uppercase tracking-wide">{s.label}</span>
+            <span className="text-[11px] text-white/30 uppercase tracking-wide">{s.label}</span>
           </div>
         ))}
       </div>
@@ -289,7 +289,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
         <div className="h-24 overflow-y-auto px-3 py-1.5 space-y-1">
           {chatMessages.slice(-10).map(m => (
             <div key={m.id} className="flex gap-1.5 items-start">
-              <span className="text-[9px] font-black shrink-0" style={{ color:avatarColor(m.user) }}>
+              <span className="text-[11px] font-black shrink-0" style={{ color:avatarColor(m.user) }}>
                 {m.user.split(' ')[0]}:
               </span>
               <span className="text-[10px] text-white/60">{m.text}</span>
@@ -582,12 +582,12 @@ export default function TestMode() {
         ].map(s => (
           <div key={s.label} className="flex flex-col">
             <span className="text-sm font-black" style={{ color:GOLD }}>{s.value}</span>
-            <span className="text-[8px] text-white/30 uppercase">{s.label}</span>
+            <span className="text-[11px] text-white/30 uppercase">{s.label}</span>
           </div>
         ))}
         <div className="ml-auto">
           {autoChat && (
-            <motion.div className="flex items-center gap-1 text-[9px] font-semibold"
+            <motion.div className="flex items-center gap-1 text-[11px] font-semibold"
               style={{ color:GREEN }}
               animate={{ opacity:[1,0.5,1] }} transition={{ duration:1, repeat:Infinity }}>
               ● SIMULATING
@@ -608,11 +608,11 @@ export default function TestMode() {
                 <span className="text-lg">{p.emoji}</span>
                 <div>
                   <div className="text-sm font-bold text-white">{p.label}</div>
-                  <div className="text-[9px] text-white/35">{p.desc}</div>
+                  <div className="text-[11px] text-white/35">{p.desc}</div>
                 </div>
               </a>
               <button onClick={() => copyURL(p.path)}
-                className="w-full py-1.5 text-[9px] font-semibold uppercase tracking-wider transition-colors"
+                className="w-full py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-colors"
                 style={{ borderTop:'1px solid rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.25)' }}
                 onMouseEnter={e => e.target.style.color = GOLD}
                 onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.25)'}>
