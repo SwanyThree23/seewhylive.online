@@ -65,6 +65,20 @@ var ANIMATION_STYLES = '' +
 
 var REACT_EMOJIS = ['❤️', '🔥', '😂', '💯', '😮', '👏'];
 
+var FEATURED_VIDEOS = [
+  { id: '7HwU_IDVKuc', url: 'https://youtu.be/7HwU_IDVKuc', channel: 'AIverse Podcast' },
+  { id: 'cDkr2u40oJc', url: 'https://youtu.be/cDkr2u40oJc', channel: 'AIverse Podcast' },
+  { id: '-o--N8NswMM', url: 'https://youtu.be/-o--N8NswMM', channel: 'AIverse Podcast' },
+  { id: 'sn-X0avptY0', url: 'https://youtu.be/sn-X0avptY0', channel: 'Domino Entertainment' },
+  { id: 'cFbjR6VFbnI', url: 'https://youtu.be/cFbjR6VFbnI', channel: 'Domino Entertainment' },
+  { id: 'RTR9Rt09qRY', url: 'https://youtu.be/RTR9Rt09qRY', channel: 'Domino Entertainment' },
+];
+
+var PARTNER_CHANNELS = [
+  { name: 'AIverse Podcast',      handle: '@aiversepodcast',         url: 'https://youtube.com/@aiversepodcast' },
+  { name: 'Domino Entertainment', handle: '@dominoentertainment5513', url: 'https://youtube.com/@dominoentertainment5513' },
+];
+
 export default function WatchPartyTab(props) {
   var guests   = props.guests;
   var socket   = props.socket;
@@ -121,6 +135,9 @@ export default function WatchPartyTab(props) {
 
   // --- sync latency ---
   var [syncMs, setSyncMs] = useState(null);
+
+  // --- featured panel ---
+  var [showFeatured, setShowFeatured] = useState(false);
 
   // --- AI Summary ---
   var [aiSummary,    setAiSummary]    = useState('');
@@ -699,6 +716,33 @@ export default function WatchPartyTab(props) {
     if (addToast) addToast('Sync – ' + action + ' sent to all viewers', 'success');
   }
 
+  // ── Featured handlers ─────────────────────────
+  function handleLoadFeatured(item) {
+    setVideoId(item.id);
+    setDirectUrl('');
+    setLocalFileUrl('');
+    setSourceType('youtube');
+    setUrlInput(item.url);
+    setCurrentTitle(item.channel);
+    setPosition(0); posRef.current = 0;
+    if (socket && roomId) {
+      socket.emit('watch-party-url', { roomId: roomId, videoId: item.id, url: item.url, type: 'youtube' });
+    }
+    if (!watchPartyActive) {
+      setWatchPartyActive(true);
+      setShowCreatePanel(false);
+      if (socket) socket.emit('watch-party-start', { roomId: roomId });
+    }
+    setShowFeatured(false);
+    if (addToast) addToast('Loading: ' + item.channel, 'info');
+  }
+
+  function handleAddFeaturedToQueue(item) {
+    var qitem = { id: Date.now() + Math.random(), title: item.channel, url: item.url, videoId: item.id, type: 'youtube', addedBy: 'host', duration: 0 };
+    setQueue(function(q) { return q.concat([qitem]); });
+    if (addToast) addToast('Added to queue: ' + item.channel, 'success');
+  }
+
   // ── Queue handlers ───────────────────────────
   function handleAddToQueue() {
     var raw = queueInput.trim();
@@ -813,6 +857,11 @@ export default function WatchPartyTab(props) {
             style={{ background: BURG, border: 'none', borderRadius: 6, padding: '6px 12px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
             LOAD
           </button>
+          <button
+            onClick={function() { setShowFeatured(function(o) { return !o; }); }}
+            style={{ background: showFeatured ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (showFeatured ? 'rgba(201,168,76,.4)' : DIM), borderRadius: 6, padding: '6px 10px', color: showFeatured ? GOLD : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+            🎬 PICKS
+          </button>
           {/* Queue toggle */}
           <button
             onClick={function() { setShowQueue(function(o) { return !o; }); }}
@@ -836,6 +885,55 @@ export default function WatchPartyTab(props) {
               + QUEUE
             </button>
           )}
+        </div>
+      )}
+
+      {/* ── FEATURED / PICKS PANEL (active party, host) ── */}
+      {watchPartyActive && isHost && showFeatured && (
+        <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '10px 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: TEXT, letterSpacing: 2 }}>🎬 SEEWHY PICKS</span>
+            <button onClick={function() { setShowFeatured(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, padding: 0 }}>✕</button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            {PARTNER_CHANNELS.map(function(ch) {
+              return (
+                <a key={ch.handle} href={ch.url} target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '5px 8px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7, textDecoration: 'none', textAlign: 'center', letterSpacing: .5, display: 'block' }}>
+                  📺 {ch.name}<br/>
+                  <span style={{ color: MUTED, fontSize: 6 }}>{ch.handle}</span>
+                </a>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+            {FEATURED_VIDEOS.map(function(item) {
+              return (
+                <div key={item.id} style={{ flexShrink: 0, width: 120, background: CARD, borderRadius: 8, border: '1px solid ' + BORDER, overflow: 'hidden' }}>
+                  <img
+                    src={'https://img.youtube.com/vi/' + item.id + '/mqdefault.jpg'}
+                    alt={item.channel}
+                    style={{ width: '100%', height: 68, objectFit: 'cover', display: 'block' }}
+                  />
+                  <div style={{ padding: '5px 6px' }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: .3, marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.channel}</div>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button
+                        onClick={function() { handleLoadFeatured(item); }}
+                        style={{ flex: 1, background: BURG, border: 'none', borderRadius: 4, padding: '4px 0', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: .5 }}>
+                        ▶ NOW
+                      </button>
+                      <button
+                        onClick={function() { handleAddFeaturedToQueue(item); }}
+                        style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '4px 7px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -952,6 +1050,51 @@ export default function WatchPartyTab(props) {
               alt="Thumbnail"
               style={{ width: '100%', borderRadius: 8, marginBottom: 10, objectFit: 'cover', maxHeight: 100 }}
             />
+          )}
+
+          {/* SeeWhy Picks — quick-load curated content */}
+          {isHost && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>🎬 SeeWhy Picks — Quick Load</div>
+              {/* Partner channel chips */}
+              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                {PARTNER_CHANNELS.map(function(ch) {
+                  return (
+                    <a key={ch.handle} href={ch.url} target="_blank" rel="noopener noreferrer"
+                      style={{ flex: 1, background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 6, padding: '5px 6px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 6.5, textDecoration: 'none', textAlign: 'center', letterSpacing: .3, display: 'block' }}>
+                      📺 {ch.name}<br/>
+                      <span style={{ color: MUTED, fontSize: 6 }}>{ch.handle}</span>
+                    </a>
+                  );
+                })}
+              </div>
+              {/* Video thumbnail cards */}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+                {FEATURED_VIDEOS.map(function(item) {
+                  return (
+                    <div key={item.id} style={{ flexShrink: 0, width: 108, background: CARD2, borderRadius: 7, border: '1px solid ' + BORDER, overflow: 'hidden' }}>
+                      <img
+                        src={'https://img.youtube.com/vi/' + item.id + '/mqdefault.jpg'}
+                        alt={item.channel}
+                        style={{ width: '100%', height: 61, objectFit: 'cover', display: 'block' }}
+                      />
+                      <div style={{ padding: '4px 5px' }}>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: .3, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.channel}</div>
+                        <button
+                          onClick={function() {
+                            setUrlInput(item.url);
+                            setVideoId(item.id);
+                            setSourceType('youtube');
+                          }}
+                          style={{ width: '100%', background: BURG, border: 'none', borderRadius: 4, padding: '4px 0', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8.5, cursor: 'pointer', letterSpacing: .5 }}>
+                          ▶ SELECT
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           <button
@@ -1106,7 +1249,7 @@ export default function WatchPartyTab(props) {
             )}
 
             {/* ±Nms sync badge */}
-            {(videoId || directUrl) {videoId && ({videoId && ( (
+            {(videoId || directUrl) && (
               <div style={{
                 position: 'absolute', top: 8,
                 right: is4K && isHost ? 50 : 8,
@@ -1224,7 +1367,7 @@ export default function WatchPartyTab(props) {
           {/* ── CONTROLS BAR ── */}
           <div style={{ background: BG, borderTop: '1px solid ' + DIM, padding: '8px 12px', flexShrink: 0 }}>
             {/* Scrubber */}
-            {(videoId || directUrl) {videoId && ({videoId && ( (
+            {(videoId || directUrl) && (
               <div
                 style={{ background: DIM, borderRadius: 3, height: 6, cursor: isHost ? 'pointer' : 'default', marginBottom: 9, position: 'relative' }}
                 onClick={isHost ? handleSeekClick : undefined}>
@@ -1238,7 +1381,7 @@ export default function WatchPartyTab(props) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               {/* Play / Pause */}
-              {isHost && videoId ? (
+              {isHost && (videoId || directUrl) ? (
                 <button
                   onClick={playing ? handlePause : handlePlay}
                   style={{ background: 'linear-gradient(135deg,' + BURG + ',#C01838)', border: 'none', borderRadius: 8, padding: '7px 14px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
@@ -1251,7 +1394,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* Timestamp */}
-              {(videoId || directUrl) {videoId && ({videoId && ( (
+              {(videoId || directUrl) && (
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, flexShrink: 0 }}>
                   {fmtS(position)}{duration > 0 ? ' / ' + fmtS(duration) : ''}
                 </span>
@@ -1269,7 +1412,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* SYNC button — host only, for YouTube sync-watch */}
-              {isHost {isHost && videoId && ({isHost && videoId && ( (videoId || directUrl) {isHost && videoId && ({isHost && videoId && ( (
+              {isHost && (videoId || directUrl) && (
                 <button
                   onClick={function() {
                     setSyncActive(function(s) { return !s; });
@@ -1283,7 +1426,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* Sync all — host only */}
-              {isHost {isHost && videoId && ({isHost && videoId && ( (videoId || directUrl) {isHost && videoId && ({isHost && videoId && ( (
+              {isHost && (videoId || directUrl) && (
                 <button
                   onClick={handleSyncAll}
                   style={{ background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 6, padding: '5px 8px', color: AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
@@ -1326,11 +1469,15 @@ export default function WatchPartyTab(props) {
                   {queue.map(function(item, idx) {
                     return (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: CARD2, borderRadius: 8, padding: '7px 10px', border: '1px solid ' + BORDER }}>
-                        <img
-                          src={'https://img.youtube.com/vi/' + item.videoId + '/default.jpg'}
-                          alt=""
-                          style={{ width: 56, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
-                        />
+                        {item.videoId ? (
+                          <img
+                            src={'https://img.youtube.com/vi/' + item.videoId + '/default.jpg'}
+                            alt=""
+                            style={{ width: 56, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+                          />
+                        ) : (
+                          <div style={{ width: 56, height: 40, background: DIM, borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🎥</div>
+                        )}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {idx + 1}. {item.title || item.videoId}
