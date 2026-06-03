@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, RefreshCw, AlertTriangle, CheckCircle, Layers, Clock } from 'lucide-react';
+import SelectSheet from '@/components/shared/SelectSheet';
 import { toast } from 'sonner';
 
 const AGE_OPTIONS = [
@@ -92,15 +93,12 @@ export default function StageCleanupPage() {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium">Older than</span>
-              <select
+              <SelectSheet
                 value={String(ageDays)}
-                onChange={e => setAgeDays(Number(e.target.value))}
-                style={{ width:128, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box' }}
-              >
-                {AGE_OPTIONS.map(o => (
-                  <option key={o.days} value={String(o.days)}>{o.label}</option>
-                ))}
-              </select>
+                onChange={function(v) { setAgeDays(Number(v)); }}
+                options={AGE_OPTIONS.map(function(o) { return { value: String(o.days), label: o.label }; })}
+                style={{ width: 128 }}
+              />
             </div>
 
             <div className="flex items-center gap-2 ml-auto flex-wrap">

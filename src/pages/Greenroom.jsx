@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import SelectSheet from '../components/shared/SelectSheet';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -422,11 +423,12 @@ export default function GreenroomPage() {
                     style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Join As
                   </label>
-                  <select value={roleRequested} onChange={e => setRoleRequested(e.target.value)}
-                    className="w-full h-8 px-2 rounded text-[10px]"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}>
-                    {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
-                  </select>
+                  <SelectSheet
+                    label="Join As"
+                    value={roleRequested}
+                    onChange={function(v) { setRoleRequested(v); }}
+                    options={ROLES.map(function(r) { return { value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }; })}
+                  />
                 </div>
                 <div>
                   <label className="text-[8px] font-black uppercase block mb-1"
