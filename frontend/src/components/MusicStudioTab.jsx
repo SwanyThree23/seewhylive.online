@@ -53,8 +53,8 @@ var COVER_GRADIENTS = [
   'linear-gradient(135deg,#2d0033,#FF1A3C)',
   'linear-gradient(135deg,#001a33,#00A2E8)',
   'linear-gradient(135deg,#1a1000,#FF6B35)',
-  'linear-gradient(135deg,#0d0d1a,#9B59B6)',
-  'linear-gradient(135deg,#001a00,#00C851)',
+  'linear-gradient(135deg,#1a0a00,#800020)',
+  'linear-gradient(135deg,#1a0a00,#D4854A)',
   'linear-gradient(135deg,#1a0000,#FF4757)',
 ];
 var COVER_EMOJIS = ['🎵','🎸','🎹','🎺','🎻','🥁','🎙','🎤','🎼','🎧','💿','🔊','🎶','👑','🔥'];
@@ -94,7 +94,7 @@ var VOCAL_STYLES = [
   { id: 'rnb-silk',      label: 'R&B Silk',       desc: 'Silky runs, whisper falsettos',     color: PURP,         emoji: '✨' },
   { id: 'lyrical-rap',   label: 'Lyrical Rap',    desc: 'Complex flows, internal rhymes',    color: GOLD,         emoji: '🎤' },
   { id: 'soul-church',   label: 'Soul / Church',  desc: 'Full range, powerful gospel belts', color: '#FF6B35',    emoji: '🙏' },
-  { id: 'afro-flow',     label: 'Afro Flow',      desc: 'Percussive cadence, diaspora vibe', color: '#00C851',    emoji: '🌍' },
+  { id: 'afro-flow',     label: 'Afro Flow',      desc: 'Percussive cadence, diaspora vibe', color: '#D4854A',    emoji: '🌍' },
   { id: 'pop-radio',     label: 'Pop Radio',      desc: 'Catchy hooks, clean delivery',      color: BLUE,         emoji: '📻' },
   { id: 'drill-cadence', label: 'Drill Cadence',  desc: 'Menacing flow, UK/Chicago style',   color: RED,          emoji: '🔱' },
   { id: 'lo-fi-chill',   label: 'Lo-Fi Chill',    desc: 'Breathy, intimate, bedroom pop',    color: TEAL,         emoji: '🎧' },

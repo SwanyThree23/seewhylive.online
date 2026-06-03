@@ -2009,7 +2009,7 @@ export default function LiveRoomPage({
           { cents: 500,  label: '$5',  color: '#C9A84C' },
           { cents: 1000, label: '$10', color: '#FF8C42' },
           { cents: 2000, label: '$20', color: '#FF1A3C' },
-          { cents: 5000, label: '$50', color: '#9B59B6' },
+          { cents: 5000, label: '$50', color: '#800020' },
         ];
         var selectedTier = SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0] || SC_TIERS[0];
 

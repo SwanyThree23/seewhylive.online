@@ -222,7 +222,7 @@ html {
 
 body {
   background-color: var(--bg0);
-  color: #D0C0E0;
+  color: #F0E8D4;
   font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.5;
@@ -866,7 +866,7 @@ input, select, textarea {
 }
 
 .chat-text {
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .chat-translation {
@@ -890,7 +890,7 @@ input, select, textarea {
   flex: 1;
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   outline: none;
@@ -1039,7 +1039,7 @@ input, select, textarea {
 .select-input {
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   font-family: var(--font-ui);
@@ -1058,7 +1058,7 @@ input, select, textarea {
 .text-input {
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   outline: none;
@@ -1284,7 +1284,7 @@ input, select, textarea {
 
 .preset-btn:hover {
   border-color: rgba(201, 168, 76, 0.5);
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .preset-swatch {
@@ -1343,7 +1343,7 @@ input, select, textarea {
 .toggle-label {
   font-family: var(--font-ui);
   font-size: 14px;
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .toggle-switch {
@@ -1550,7 +1550,7 @@ input, select, textarea {
   width: 100%;
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   font-family: var(--font-mono);
   font-size: 11px;
   padding: 8px;
@@ -1606,7 +1606,7 @@ input, select, textarea {
 .bot-rule-name {
   font-family: var(--font-ui);
   font-size: 15px;
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .bot-log-feed {
@@ -1664,7 +1664,7 @@ input, select, textarea {
 }
 
 .bot-log-msg {
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 /* ============================================================
@@ -1769,7 +1769,7 @@ input, select, textarea {
 .gift-from {
   font-family: var(--font-ui);
   font-size: 13px;
-  color: #D0C0E0;
+  color: #F0E8D4;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1915,7 +1915,7 @@ input, select, textarea {
 
 .toast--info {
   border-left-color: rgba(201, 168, 76, 0.4);
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 /* ============================================================
@@ -2022,7 +2022,7 @@ input, select, textarea {
 .guest-name {
   font-family: var(--font-ui);
   font-size: 15px;
-  color: #D0C0E0;
+  color: #F0E8D4;
   flex: 1;
 }
 
