@@ -1656,6 +1656,31 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('hand-lower', { guestId: guestId });
   });
 
+  // ── mute-all ───────────────────────────────────────────────────────────
+  socket.on('mute-all', function(data) {
+    var roomId = (data && data.roomId) || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('mute-all', { by: socket.data.userId });
+    io.to(roomId).emit('chat-message', {
+      userId:   'system',
+      username: 'SeeWhy LIVE',
+      text:     '🔇 ' + (socket.data.username || 'Host') + ' muted all participants',
+      ts:       Math.floor(Date.now() / 1000)
+    });
+  });
+
+  // ── lock-stage ─────────────────────────────────────────────────────────
+  socket.on('lock-stage', function(data) {
+    var roomId = (data && data.roomId) || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room   = getRoom(roomId);
+    var locked = Boolean(data && data.locked);
+    room.stageLocked = locked;
+    io.to(roomId).emit('stage-lock-update', { locked: locked });
+  });
+
   // ── overlay-update ────────────────────────────────────────────────────
   socket.on('overlay-update', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -1683,13 +1708,16 @@ io.on('connection', function(socket) {
 
   socket.on('watch-party-url', function(data) {
     var roomId = data.roomId || socket.data.roomId;
-    if (!roomId || !data.videoId) return;
-    if (socket.data.role !== 'host') return;
+    if (!roomId) return;
+    if (!data.videoId && !data.url) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = { playing: false, position: 0, ts: Date.now() };
-    room.watchParty.videoId = data.videoId;
-    room.watchParty.url = data.url || '';
-    io.to(roomId).emit('watch-party-url', { videoId: data.videoId, url: data.url || '' });
+    var type = data.type || (data.videoId ? 'youtube' : 'direct');
+    room.watchParty.videoId = data.videoId || null;
+    room.watchParty.url  = data.url || '';
+    room.watchParty.type = type;
+    io.to(roomId).emit('watch-party-url', { videoId: data.videoId || null, url: data.url || '', type: type });
   });
 
   socket.on('watch-party-play', function(data) {
@@ -1741,6 +1769,7 @@ io.on('connection', function(socket) {
       io.to(socket.id).emit('watch-party-sync', {
         videoId:  wp.videoId,
         url:      wp.url,
+        type:     wp.type || 'youtube',
         playing:  wp.playing,
         position: wp.position + elapsed,
         ts:       Date.now()
