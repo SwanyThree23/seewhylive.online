@@ -413,7 +413,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
                     <button
                       onClick={function() { setStatus(ev.id, 'SCHED'); }}
                       disabled={ev.status === 'SCHED'}
-                      style={{ background: ev.status === 'SCHED' ? 'rgba(122,111,144,.2)' : 'rgba(122,111,144,.06)', border: '1px solid rgba(122,111,144,' + (ev.status === 'SCHED' ? '.5' : '.2') + ')', borderRadius: 5, padding: '2px 8px', color: '#9A8FB0', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: ev.status === 'SCHED' ? 'default' : 'pointer', letterSpacing: 1, opacity: ev.status === 'SCHED' ? 1 : 0.75 }}>
+                      style={{ background: ev.status === 'SCHED' ? 'rgba(61,48,32,.2)' : 'rgba(61,48,32,.06)', border: '1px solid rgba(61,48,32,' + (ev.status === 'SCHED' ? '.5' : '.2') + ')', borderRadius: 5, padding: '2px 8px', color: '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: ev.status === 'SCHED' ? 'default' : 'pointer', letterSpacing: 1, opacity: ev.status === 'SCHED' ? 1 : 0.75 }}>
                       SCHED
                     </button>
                   </div>

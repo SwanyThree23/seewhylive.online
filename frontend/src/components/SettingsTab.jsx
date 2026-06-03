@@ -215,8 +215,8 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           width: 40,
           height: 22,
           borderRadius: 999,
-          background: value ? '#C9A84C' : 'rgba(122,111,144,.25)',
-          border: value ? '1px solid #C9A84C' : '1px solid rgba(122,111,144,.4)',
+          background: value ? '#C9A84C' : 'rgba(61,48,32,.25)',
+          border: value ? '1px solid #C9A84C' : '1px solid rgba(61,48,32,.4)',
           cursor: 'pointer',
           position: 'relative',
           flexShrink: 0,
@@ -638,7 +638,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               onClick={function() { setActiveTab(tab.id); }}
               style={{
                 background: isActive ? '#C9A84C' : 'transparent',
-                border: isActive ? '1px solid #C9A84C' : '1px solid rgba(122,111,144,.3)',
+                border: isActive ? '1px solid #C9A84C' : '1px solid rgba(61,48,32,.3)',
                 borderRadius: 999,
                 padding: '4px 10px',
                 color: isActive ? '#0E0C09' : '#8A7A62',
