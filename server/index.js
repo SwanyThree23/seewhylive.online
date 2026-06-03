@@ -1693,7 +1693,7 @@ io.on('connection', function(socket) {
   socket.on('watch-party-start', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     room.watchParty = { videoId: null, url: null, playing: false, position: 0, ts: Date.now() };
     var hostName = socket.data.username || 'Host';
@@ -1723,7 +1723,7 @@ io.on('connection', function(socket) {
   socket.on('watch-party-play', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     var now = Date.now();
     var position = data.position || 0;
@@ -1737,7 +1737,7 @@ io.on('connection', function(socket) {
   socket.on('watch-party-pause', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     var position = data.position || 0;
     if (!room.watchParty) room.watchParty = {};
@@ -1750,7 +1750,7 @@ io.on('connection', function(socket) {
   socket.on('watch-party-seek', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || typeof data.position !== 'number') return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = {};
     room.watchParty.position = data.position;
@@ -2478,6 +2478,7 @@ io.on('connection', function(socket) {
   // ── Watch sync handler ─────────────────────────────────────────────────
   socket.on('watch-sync', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = String(data.roomId);
     io.to(sRoomId).emit('watch-sync', { action: data.action, position: data.position, timestamp: Date.now() });
   });
