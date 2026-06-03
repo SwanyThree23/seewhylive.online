@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, Plus, X, ChevronRight, Zap,
-  Sparkles, Radio
+  Sparkles, Radio, Sliders, Send, Search, Filter
 } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
@@ -140,6 +140,32 @@ const INITIAL_TRACKS = [
   },
 ];
 
+// ── Advanced generation options ───────────────────────────────────────────────
+const VOCAL_TYPES = [
+  { id: 'auto',        label: 'Auto',        color: GOLD },
+  { id: 'male-rap',    label: 'Male Rap',    color: CYAN },
+  { id: 'female-rnb',  label: 'Female R&B',  color: PINK },
+  { id: 'male-singer', label: 'Male Singer', color: PURPLE },
+  { id: 'choir',       label: 'Choir',       color: GREEN },
+  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#00d4ff' },
+];
+
+const MASTER_PRESETS = [
+  { id: 'radio',   label: 'Radio',   color: GOLD },
+  { id: 'club',    label: 'Club',    color: PINK },
+  { id: 'youtube', label: 'YouTube', color: '#FF0000' },
+  { id: 'lo-fi',   label: 'Lo-Fi',   color: PURPLE },
+];
+
+const DURATIONS = [
+  { s: 30,  label: '30s' },
+  { s: 60,  label: '1m' },
+  { s: 120, label: '2m' },
+  { s: 180, label: '3m' },
+];
+
+const KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
 // ── Generation status messages ────────────────────────────────────────────────
 const GEN_STEPS = [
   'Analyzing style tags…',
@@ -205,8 +231,60 @@ function StyleChip({ label, color, active, onClick, onRemove }) {
   );
 }
 
+// ── MiniScrubber ──────────────────────────────────────────────────────────────
+function MiniScrubber({ isPlaying, duration }) {
+  const [progress, setProgress] = useState(0);
+  const rafRef = useRef(null);
+  const startRef = useRef(null);
+  const [totalSecs] = useState(() => {
+    const [m, s] = (duration || '2:00').split(':').map(Number);
+    return m * 60 + (s || 0);
+  });
+
+  useEffect(() => {
+    if (!isPlaying) { cancelAnimationFrame(rafRef.current); return; }
+    startRef.current = Date.now() - progress * totalSecs * 10;
+    const tick = () => {
+      const elapsed = (Date.now() - startRef.current) / 1000;
+      const pct = Math.min(1, elapsed / totalSecs);
+      setProgress(pct);
+      if (pct < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isPlaying]);
+
+  const fmtTime = (p) => {
+    const s = Math.floor(p * totalSecs);
+    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div style={{ padding: '0 16px 12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.3)', minWidth: 28 }}>{fmtTime(progress)}</span>
+        <div
+          style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, cursor: 'pointer', position: 'relative' }}
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            setProgress(p);
+            if (isPlaying) startRef.current = Date.now() - p * totalSecs * 1000;
+          }}
+        >
+          <motion.div
+            style={{ height: '100%', background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, borderRadius: 2, width: `${progress * 100}%` }}
+          />
+          <div style={{ position: 'absolute', top: '50%', left: `${progress * 100}%`, transform: 'translate(-50%, -50%)', width: 8, height: 8, borderRadius: '50%', background: GOLD, opacity: isPlaying ? 1 : 0.5 }} />
+        </div>
+        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.3)', minWidth: 28, textAlign: 'right' }}>{fmtTime(1)}</span>
+      </div>
+    </div>
+  );
+}
+
 // ── TrackCard ─────────────────────────────────────────────────────────────────
-function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix }) {
+function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix, onAddToStream }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [lyricsOpen, setLyricsOpen] = useState(false);
   const [editingLyrics, setEditingLyrics] = useState(false);
@@ -417,6 +495,31 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
         </div>
       </div>
 
+      {/* Add to Stream + Scrubber row */}
+      <div style={{ padding: '0 16px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        {track.streamReady && (
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => onAddToStream?.(track)}
+            style={{
+              ...T, display: 'flex', alignItems: 'center', gap: 5,
+              padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800,
+              background: `${GREEN}15`, border: `1px solid ${GREEN}40`, color: GREEN,
+              cursor: 'pointer', letterSpacing: '0.04em', textTransform: 'uppercase',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${GREEN}25`; }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${GREEN}15`; }}
+          >
+            <Send size={10} /> Add to Stream
+          </motion.button>
+        )}
+        <span style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{track.duration}</span>
+      </div>
+
+      {/* Mini audio scrubber */}
+      {isPlaying && <MiniScrubber isPlaying={isPlaying} duration={track.duration} />}
+
       {/* Lyrics panel */}
       <AnimatePresence>
         {lyricsOpen && track.lyrics && (
@@ -564,6 +667,19 @@ export default function AIMusic() {
   const [titleInput, setTitleInput] = useState('');
   const [instrumental, setInstrumental] = useState(false);
 
+  // Advanced options
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [bpm, setBpm] = useState(120);
+  const [keyNote, setKeyNote] = useState('C');
+  const [keyScale, setKeyScale] = useState('major');
+  const [duration, setDuration] = useState(120);
+  const [vocalType, setVocalType] = useState('auto');
+  const [masterPreset, setMasterPreset] = useState('radio');
+
+  // Library filters
+  const [libFilter, setLibFilter] = useState('all'); // all | liked | streamready
+  const [libSearch, setLibSearch] = useState('');
+
   // Generation state
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState(0);
@@ -706,6 +822,17 @@ export default function AIMusic() {
     setMobileTab('create');
     showToast('🎛️ Remix settings loaded!');
   }
+
+  function handleAddToStream(track) {
+    showToast(`📡 "${track.title}" added to stream queue!`);
+  }
+
+  const filteredTracks = tracks.filter(t => {
+    if (libFilter === 'liked' && !t.liked) return false;
+    if (libFilter === 'streamready' && !t.streamReady) return false;
+    if (libSearch && !t.title.toLowerCase().includes(libSearch.toLowerCase()) && !t.tags.some(tag => tag.includes(libSearch.toLowerCase()))) return false;
+    return true;
+  });
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -881,6 +1008,107 @@ export default function AIMusic() {
               </span>
             </div>
 
+            {/* Advanced options toggle */}
+            <button
+              onClick={() => setShowAdvanced(v => !v)}
+              style={{ ...T, display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: showAdvanced ? CYAN : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: showAdvanced ? 0 : 4 }}
+            >
+              <Sliders size={12} /> Advanced Options
+              <ChevronRight size={11} style={{ transform: showAdvanced ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
+
+            <AnimatePresence>
+              {showAdvanced && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  style={{ overflow: 'hidden', marginBottom: 16 }}
+                >
+                  <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                    {/* BPM Slider */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <label style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>BPM</label>
+                        <span style={{ ...T, fontSize: 13, fontWeight: 800, color: GOLD }}>{bpm}</span>
+                      </div>
+                      <input type="range" min={60} max={180} step={1} value={bpm} onChange={e => setBpm(+e.target.value)}
+                        className="w-full h-1.5 rounded-full appearance-none"
+                        style={{ background: `linear-gradient(to right, ${GOLD} ${((bpm - 60) / 120) * 100}%, rgba(255,255,255,0.1) 0%)` }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+                        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>60 Slow</span>
+                        <span style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>Hyper 180</span>
+                      </div>
+                    </div>
+
+                    {/* Key/Scale */}
+                    <div>
+                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+                        Key: <span style={{ color: PURPLE }}>{keyNote} {keyScale}</span>
+                      </label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
+                        {KEYS.map(k => (
+                          <button key={k} onClick={() => setKeyNote(k)}
+                            style={{ ...T, padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: keyNote === k ? PURPLE + '25' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyNote === k ? PURPLE + '60' : 'rgba(255,255,255,0.08)'}`, color: keyNote === k ? PURPLE : 'rgba(255,255,255,0.4)' }}>
+                            {k}
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {['major', 'minor'].map(s => (
+                          <button key={s} onClick={() => setKeyScale(s)}
+                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em', transition: 'all 0.12s', background: keyScale === s ? PURPLE + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyScale === s ? PURPLE + '50' : 'rgba(255,255,255,0.08)'}`, color: keyScale === s ? PURPLE : 'rgba(255,255,255,0.35)' }}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Duration */}
+                    <div>
+                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Duration</label>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {DURATIONS.map(d => (
+                          <button key={d.s} onClick={() => setDuration(d.s)}
+                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: duration === d.s ? CYAN + '18' : 'rgba(255,255,255,0.04)', border: `1px solid ${duration === d.s ? CYAN + '50' : 'rgba(255,255,255,0.08)'}`, color: duration === d.s ? CYAN : 'rgba(255,255,255,0.35)' }}>
+                            {d.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Vocal type */}
+                    <div>
+                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Vocal Type</label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                        {VOCAL_TYPES.map(v => (
+                          <button key={v.id} onClick={() => { setVocalType(v.id); if (v.id !== 'auto') setInstrumental(false); }}
+                            style={{ ...T, padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: vocalType === v.id ? v.color + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${vocalType === v.id ? v.color + '60' : 'rgba(255,255,255,0.08)'}`, color: vocalType === v.id ? v.color : 'rgba(255,255,255,0.4)' }}>
+                            {v.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Mastering preset */}
+                    <div>
+                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Mastering Preset</label>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {MASTER_PRESETS.map(p => (
+                          <button key={p.id} onClick={() => setMasterPreset(p.id)}
+                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: masterPreset === p.id ? p.color + '18' : 'rgba(255,255,255,0.04)', border: `1px solid ${masterPreset === p.id ? p.color + '50' : 'rgba(255,255,255,0.08)'}`, color: masterPreset === p.id ? p.color : 'rgba(255,255,255,0.35)' }}>
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* CTA Buttons */}
             <div style={{ display: 'flex', gap: 12 }}>
               <motion.button
@@ -1047,13 +1275,53 @@ export default function AIMusic() {
         }}
           className="desktop-show-right"
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <span style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '0.02em' }}>
-              My Library
-            </span>
-            <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
-              {tracks.length} track{tracks.length !== 1 ? 's' : ''}
-            </span>
+          {/* Library header */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <span style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '0.02em' }}>My Library</span>
+              <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
+                {filteredTracks.length}/{tracks.length} tracks
+              </span>
+            </div>
+
+            {/* Stats row */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+              {[
+                { label: 'Total', value: tracks.length, color: GOLD },
+                { label: 'Liked', value: tracks.filter(t => t.liked).length, color: PINK },
+                { label: 'Stream Ready', value: tracks.filter(t => t.streamReady).length, color: GREEN },
+              ].map(s => (
+                <div key={s.label} style={{ flex: 1, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', padding: '8px 10px', textAlign: 'center' }}>
+                  <div style={{ ...T, fontSize: 18, fontWeight: 900, color: s.color }}>{s.value}</div>
+                  <div style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div style={{ position: 'relative', marginBottom: 8 }}>
+              <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)' }} />
+              <input
+                value={libSearch}
+                onChange={e => setLibSearch(e.target.value)}
+                placeholder="Search tracks, tags…"
+                style={{ width: '100%', height: 34, padding: '0 12px 0 28px', fontSize: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', borderRadius: 8, outline: 'none', boxSizing: 'border-box', ...T }}
+              />
+            </div>
+
+            {/* Filter tabs */}
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[
+                { id: 'all',         label: 'All',         color: GOLD },
+                { id: 'liked',       label: '❤ Liked',     color: PINK },
+                { id: 'streamready', label: '📡 Stream Ready', color: GREEN },
+              ].map(f => (
+                <button key={f.id} onClick={() => setLibFilter(f.id)}
+                  style={{ ...T, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: libFilter === f.id ? f.color + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${libFilter === f.id ? f.color + '55' : 'rgba(255,255,255,0.08)'}`, color: libFilter === f.id ? f.color : 'rgba(255,255,255,0.35)' }}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Continue panel */}
@@ -1096,20 +1364,19 @@ export default function AIMusic() {
           </AnimatePresence>
 
           {/* Track cards */}
-          {tracks.length === 0 ? (
-            <div style={{
-              textAlign: 'center', padding: '60px 20px',
-              borderRadius: 20, background: BG2, border: '1px solid rgba(255,255,255,0.06)',
-            }}>
+          {filteredTracks.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: 20, background: BG2, border: '1px solid rgba(255,255,255,0.06)' }}>
               <Music size={44} color="rgba(255,255,255,0.15)" style={{ marginBottom: 12 }} />
-              <p style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: 700 }}>No tracks yet</p>
+              <p style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: 700 }}>
+                {tracks.length === 0 ? 'No tracks yet' : 'No tracks match your filter'}
+              </p>
               <p style={{ ...T, color: 'rgba(255,255,255,0.25)', fontSize: 12, marginTop: 4 }}>
-                Create your first AI track in the Create tab
+                {tracks.length === 0 ? 'Create your first AI track in the Create tab' : 'Try a different filter or search term'}
               </p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {tracks.map(track => (
+              {filteredTracks.map(track => (
                 <TrackCard
                   key={track.id}
                   track={track}
@@ -1119,6 +1386,7 @@ export default function AIMusic() {
                   onDelete={() => deleteTrack(track.id)}
                   onContinue={() => setContinueTrack(track)}
                   onRemix={() => remixTrack(track)}
+                  onAddToStream={() => handleAddToStream(track)}
                 />
               ))}
             </div>

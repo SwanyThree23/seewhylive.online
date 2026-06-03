@@ -328,6 +328,9 @@ export default function WatchPartyPage() {
   const [videoUrl, setVideoUrl] = useState('');
   const [partyTitle, setPartyTitle] = useState('');
   const [creating, setCreating] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
+  const createFileRef = React.useRef(null);
   const [syncData, setSyncData] = useState(null);
   const [activePanel, setActivePanel] = useState('chat');
   const [reactionCount, setReactionCount] = useState(0);
@@ -363,6 +366,14 @@ export default function WatchPartyPage() {
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
   const [pinnedMemberId, setPinnedMemberId] = useState(null);
+  const [pinnedMessage, setPinnedMessage] = useState('');
+  const [slowMode, setSlowMode] = useState(false);
+  const [slowCooldown, setSlowCooldown] = useState(30);
+
+  const handleSlowMode = (enabled, cooldown) => {
+    setSlowMode(enabled);
+    setSlowCooldown(cooldown);
+  };
 
   const handleMuteMember = async (member) => {
     if (!isHost) return;
@@ -563,40 +574,76 @@ export default function WatchPartyPage() {
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
           />
           <div className="space-y-2">
-            <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Video Source</p>
-            <div className="grid grid-cols-2 gap-2">
+            <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Video Source</p>
+            <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'youtube', label: 'YouTube URL', icon: Youtube, color: '#FF0000', placeholder: 'https://youtube.com/watch?v=...' },
-                { id: 'direct', label: 'Direct URL', icon: Video, color: '#00d4ff', placeholder: 'https://example.com/video.mp4' },
+                { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF0000' },
+                { id: 'direct',  label: 'Link/URL', icon: Video,   color: '#00d4ff' },
+                { id: 'device',  label: 'Upload',   icon: Plus,    color: '#d4af37' },
               ].map(opt => (
                 <button key={opt.id}
-                  onClick={() => { setVideoUrl(''); }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
-                  style={{ background: `${opt.color}12`, border: `1px solid ${opt.color}30`, color: opt.color }}>
-                  <opt.icon className="w-4 h-4" /> {opt.label}
+                  onClick={() => { setVideoUrl(''); if (opt.id === 'device') createFileRef.current?.click(); }}
+                  className="flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: `${opt.color}12`, border: `1px solid ${opt.color}30`, color: opt.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <opt.icon className="w-3.5 h-3.5" /> {opt.label}
                 </button>
               ))}
             </div>
-            <Input
-              placeholder="YouTube URL or direct video URL"
-              value={videoUrl}
-              onChange={e => setVideoUrl(e.target.value)}
-              className="h-11 text-white placeholder:text-white/30"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+            <input
+              ref={createFileRef}
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setUploadingVideo(true);
+                setUploadPct(0);
+                const prog = setInterval(() => setUploadPct(p => Math.min(p + 10, 88)), 400);
+                try {
+                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                  clearInterval(prog);
+                  setUploadPct(100);
+                  setVideoUrl(file_url);
+                  toast.success(`🎬 ${file.name} ready!`);
+                } catch (_) {
+                  toast.error('Upload failed');
+                } finally {
+                  clearInterval(prog);
+                  setTimeout(() => { setUploadingVideo(false); setUploadPct(0); }, 600);
+                }
+              }}
             />
+            {uploadingVideo && (
+              <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin shrink-0" />
+                  <span className="text-xs font-bold" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>Uploading… {uploadPct}%</span>
+                </div>
+                <div style={{ height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
+                  <div style={{ height: '100%', width: uploadPct + '%', background: 'linear-gradient(90deg, #800020, #d4af37)', borderRadius: 2, transition: 'width 0.3s' }} />
+                </div>
+              </div>
+            )}
+            {!uploadingVideo && (
+              <Input
+                placeholder="YouTube URL, video URL, or HLS stream"
+                value={videoUrl}
+                onChange={e => setVideoUrl(e.target.value)}
+                className="h-11 text-white placeholder:text-white/30"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+              />
+            )}
             {videoUrl && (
               <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#00d4ff' }}>
                 {detectType(videoUrl) === 'youtube'
-                  ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
+                  ? <><Youtube className="w-3.5 h-3.5" /> YouTube detected {getYouTubeId(videoUrl) && '✓'}</>
                   : <><Video className="w-3.5 h-3.5" /> Direct video URL</>}
               </div>
             )}
             {videoUrl && getYouTubeId(videoUrl) && (
-              <img
-                src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
-                className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
-                alt="preview"
-              />
+              <img src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
+                className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }} alt="preview" />
             )}
           </div>
           <Button
@@ -849,8 +896,29 @@ export default function WatchPartyPage() {
                     ✨ AI Summary
                   </button>
                 </div>
-                {isHost && (
-                  <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
+                {(isHost) && (
+                  <HostControls
+                    isHost={isHost}
+                    isCoHost={false}
+                    party={party}
+                    members={members}
+                    pinnedMessage={pinnedMessage}
+                    onPinMessage={setPinnedMessage}
+                    slowMode={slowMode}
+                    slowModeCooldown={slowCooldown}
+                    onSlowMode={handleSlowMode}
+                    onUpdate={(action) => {
+                      if (action?.action === 'kick') handleRemoveMember(action.member);
+                      else if (action?.action === 'promote') toast.success(`${action.member.user_name} promoted to co-host`);
+                    }}
+                  />
+                )}
+                {pinnedMessage && (
+                  <div className="flex items-start gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    <span className="text-[10px] shrink-0" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>📌 PINNED</span>
+                    <span className="text-[11px] text-white/70 flex-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMessage}</span>
+                    {isHost && <button onClick={() => setPinnedMessage('')} className="text-white/30 hover:text-white shrink-0 text-[10px]">✕</button>}
+                  </div>
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
                 {members.length < 10 && (
