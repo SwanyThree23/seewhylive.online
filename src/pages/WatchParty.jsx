@@ -362,6 +362,31 @@ export default function WatchPartyPage() {
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
+  const [pinnedMemberId, setPinnedMemberId] = useState(null);
+
+  const handleMuteMember = async (member) => {
+    if (!isHost) return;
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { is_audio_enabled: false });
+      qc.invalidateQueries(['watchparty-members', partyId]);
+      toast.success(`${member.user_name} muted`);
+    } catch (_) { toast.error('Could not mute member'); }
+  };
+
+  const handleRemoveMember = async (member) => {
+    if (!isHost) return;
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
+      qc.invalidateQueries(['watchparty-members', partyId]);
+      toast.success(`${member.user_name} removed`);
+    } catch (_) { toast.error('Could not remove member'); }
+  };
+
+  const handlePinMember = (member) => {
+    if (!isHost) return;
+    setPinnedMemberId(prev => prev === member.user_id ? null : member.user_id);
+    toast.success(pinnedMemberId === member.user_id ? 'Unpinned' : `${member.user_name} pinned for stream`);
+  };
 
   const handleScreenCapture = async () => {
     if (screenCaptureStream) {
@@ -775,6 +800,10 @@ export default function WatchPartyPage() {
             localStream={localStream}
             remoteStreams={remoteStreams}
             peerUserIds={peerUserIds}
+            onMuteMember={handleMuteMember}
+            onRemoveMember={handleRemoveMember}
+            onPinMember={handlePinMember}
+            pinnedMemberId={pinnedMemberId}
           />
         </div>
 
@@ -871,6 +900,10 @@ export default function WatchPartyPage() {
                 localStream={localStream}
                 remoteStreams={remoteStreams}
                 peerUserIds={peerUserIds}
+                onMuteMember={handleMuteMember}
+                onRemoveMember={handleRemoveMember}
+                onPinMember={handlePinMember}
+                pinnedMemberId={pinnedMemberId}
               />
             )}
             {activePanel === 'battle' && (
