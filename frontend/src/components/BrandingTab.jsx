@@ -5,7 +5,7 @@ var PRESETS = [
   { name: 'Midnight Domino',    gold: '#E8C46A', burg: '#C01838', desc: 'Deep red night mode' },
   { name: 'Cyber Teal',         gold: '#C9A84C', burg: '#00FFFF', desc: 'Electric neon finish' },
   { name: 'Glitch Lime',        gold: '#E8FF47', burg: '#FF0040', desc: 'Fades battle mode' },
-  { name: 'Royal Purple',       gold: '#C084FC', burg: '#5B2D8E', desc: 'Premium prestige' },
+  { name: 'Royal Purple',       gold: '#C9A84C', burg: '#5B2D8E', desc: 'Premium prestige' },
   { name: 'Monochrome',         gold: '#F0E8D4', burg: '#3D3020', desc: 'Clean minimal' },
 ];
 

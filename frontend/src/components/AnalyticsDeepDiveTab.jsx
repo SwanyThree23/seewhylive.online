@@ -22,7 +22,7 @@ var HOURLY    = [142, 287, 612, 934, 1408, 2102, 2847, 2694, 2211, 1837, 1402, 9
 
 function fmtC(c) { return '$' + (Math.floor(c || 0) / 100).toFixed(2); }
 
-var TYPE_COLORS = { tip: '#C9A84C', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#9B4DCA' };
+var TYPE_COLORS = { tip: '#C9A84C', subscription: '#C0C0C0', fades_boost: '#FF1A3C', direct_pay: '#800020' };
 
 export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addToast }) {
   var [engData, setEngData] = useState(ENG_DATA.slice());
@@ -236,7 +236,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
 
       {/* Retention curve */}
       <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC', letterSpacing: 2, marginBottom: 8 }}>VIEWER RETENTION CURVE</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>VIEWER RETENTION CURVE</div>
         <div style={{ position: 'relative', height: 50, display: 'flex', alignItems: 'flex-end', gap: 1 }}>
           {RETENTION.map(function(v, i) {
             var h = (v / 100) * 100;
@@ -249,7 +249,7 @@ export default function AnalyticsDeepDiveTab({ viewerCount, gifts, isLive, addTo
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>0:00</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC' }}>AVG HOLD: {RETENTION[Math.floor(RETENTION.length / 2)]}%</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>AVG HOLD: {RETENTION[Math.floor(RETENTION.length / 2)]}%</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>+20m</span>
         </div>
       </div>

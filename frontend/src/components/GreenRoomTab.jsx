@@ -16,7 +16,7 @@ var ROLE_BG = {
   cohost:  'rgba(201,168,76,.15)',
   'co-host': 'rgba(201,168,76,.15)',
   guest:   'rgba(212,133,74,.15)',
-  viewer:  'rgba(36,28,52,.6)'
+  viewer:  'rgba(26,21,16,.6)'
 };
 
 function RoleBadge({ role }) {
@@ -403,7 +403,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                           key={r}
                           onClick={function() { if (!active) promoteGuest(id, r); }}
                           disabled={active}
-                          style={{ padding: '3px 8px', background: active ? (ROLE_BG[r] || 'rgba(36,28,52,.6)') : 'rgba(26,21,16,.4)', border: '1px solid ' + (active ? (ROLE_COLORS[r] || '#8A7A62') + '55' : '#3D3020'), borderRadius: 4, color: active ? (ROLE_COLORS[r] || '#8A7A62') : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: active ? 'default' : 'pointer', opacity: active ? 1 : 0.7 }}>
+                          style={{ padding: '3px 8px', background: active ? (ROLE_BG[r] || 'rgba(26,21,16,.6)') : 'rgba(26,21,16,.4)', border: '1px solid ' + (active ? (ROLE_COLORS[r] || '#8A7A62') + '55' : '#3D3020'), borderRadius: 4, color: active ? (ROLE_COLORS[r] || '#8A7A62') : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: active ? 'default' : 'pointer', opacity: active ? 1 : 0.7 }}>
                           {r.toUpperCase()}
                         </button>
                       );
@@ -551,7 +551,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               );
             })}
             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-              {[['12 LANGS', '#C9A84C'], ['ACTIVE', '#C9A84C'], ['claude-haiku', '#9B4DCA']].map(function(s) {
+              {[['12 LANGS', '#C9A84C'], ['ACTIVE', '#C9A84C'], ['claude-haiku', '#800020']].map(function(s) {
                 return (
                   <span key={s[0]} style={{ background: s[1] + '18', border: '1px solid ' + s[1] + '44', borderRadius: 999, padding: '2px 8px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: s[1] }}>
                     {s[0]}

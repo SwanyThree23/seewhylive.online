@@ -31,7 +31,7 @@ var GUARDIAN_LOG = [
   '14:23:44  PASSED  domino_fan3 — clean message',
 ];
 
-var ACTION_COLORS = { blocked: '#FF1A3C', stripped: '#C9A84C', held: '#C084FC', passed: '#C9A84C' };
+var ACTION_COLORS = { blocked: '#FF1A3C', stripped: '#C9A84C', held: '#C9A84C', passed: '#C9A84C' };
 
 var VIEWS = [
   { id: 'rules',   label: 'RULES'   },
@@ -332,7 +332,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
         </div>
         <button
           onClick={toggleSubscriberOnly}
-          style={{ background: subscriberOnly ? 'rgba(201,168,76,.25)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (subscriberOnly ? '#C9A84C' : '#3D3020'), borderRadius: 20, padding: '5px 14px', color: subscriberOnly ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+          style={{ background: subscriberOnly ? 'rgba(201,168,76,.25)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (subscriberOnly ? '#C9A84C' : '#3D3020'), borderRadius: 20, padding: '5px 14px', color: subscriberOnly ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
           {subscriberOnly ? 'ON' : 'OFF'}
         </button>
       </div>
@@ -410,7 +410,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
                 </div>
                 <button
                   onClick={function() { toggleRule(r.id); }}
-                  style={{ background: r.enabled ? 'rgba(201,168,76,.2)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (r.enabled ? '#C9A84C' : '#3D3020'), borderRadius: 20, padding: '4px 10px', color: r.enabled ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+                  style={{ background: r.enabled ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (r.enabled ? '#C9A84C' : '#3D3020'), borderRadius: 20, padding: '4px 10px', color: r.enabled ? '#C9A84C' : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
                   {r.enabled ? 'ON' : 'OFF'}
                 </button>
               </div>
@@ -496,7 +496,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#F0E8D4' }}>{u.username}</span>
                     {isShadow && <span style={{ fontSize: 12 }}>&#x1F47B;</span>}
-                    {isShadow && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C084FC', background: 'rgba(192,132,252,.15)', border: '1px solid rgba(192,132,252,.3)', borderRadius: 3, padding: '1px 4px' }}>SHADOW</span>}
+                    {isShadow && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C', background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 3, padding: '1px 4px' }}>SHADOW</span>}
                     {!isShadow && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#FF1A3C', background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 3, padding: '1px 4px' }}>BANNED</span>}
                   </div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{u.reason + ' · ' + (u.ts || '')}</div>
@@ -505,7 +505,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
                 {!isShadow && (
                   <button
                     onClick={function() { shadowBanUser(u.userId, u.username); }}
-                    style={{ background: 'rgba(192,132,252,.1)', border: '1px solid rgba(192,132,252,.3)', borderRadius: 5, padding: '4px 9px', color: '#C084FC', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0 }}>
+                    style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 5, padding: '4px 9px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0 }}>
                     SHADOW BAN
                   </button>
                 )}

@@ -35,7 +35,7 @@ var GENRE_COLORS = {
 var CATEGORIES = ['ALL', 'MUSIC', 'GAMING', 'TECH', 'EDUCATION', 'BUSINESS', 'SPORTS', 'LIFESTYLE'];
 
 var TRENDING_CHANNELS = [
-  { id: 'tc1', name: 'AI Verse Podcast',      handle: '@aiverse',   emoji: '🎙', color: '#C084FC', live: false },
+  { id: 'tc1', name: 'AI Verse Podcast',      handle: '@aiverse',   emoji: '🎙', color: '#C9A84C', live: false },
   { id: 'tc2', name: 'Memoirs of a Shy Girl', handle: '@shygirl',   emoji: '📖', color: '#FF6B9D', live: false },
   { id: 'tc3', name: 'Domino Entertainment',  handle: '@dominoent', emoji: '🎲', color: '#C9A84C', live: true  },
 ];
@@ -44,7 +44,7 @@ var QUICK_ACTIONS = [
   { id: 'golive',  label: 'Go Live',      icon: '📡', color: '#FF1564' },
   { id: 'watch',   label: 'Watch Party',  icon: '📺', color: '#C9A84C' },
   { id: 'battles', label: 'PK Battles',   icon: '⚡', color: '#C9A84C' },
-  { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C084FC' },
+  { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C9A84C' },
   { id: 'create',  label: 'Create Room',  icon: '➕', color: '#8A7A62' },
 ];
 

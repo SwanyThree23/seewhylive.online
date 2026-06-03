@@ -7,8 +7,8 @@ var BURG   = '#800020';
 var BURG_H = '#C01838';
 var TEAL   = '#C9A84C';
 var TEAL_H = '#C9A84C';
-var PURP   = '#9B4DCA';
-var PURP_H = '#C084FC';
+var PURP   = '#800020';
+var PURP_H = '#C9A84C';
 var LIME   = '#C9A84C';
 var MUTED  = '#6B5F82';
 var TEXT   = '#EDE8F4';
@@ -355,7 +355,7 @@ export default function ReplayTab({ addToast, isLive }) {
             {clips.length} SEGMENTS &middot; {highlightCount} HIGHLIGHTS &middot; {chapterCount} CHAPTERS
           </span>
           {reel.length > 0 && (
-            <span style={{ fontFamily: fM, fontSize: 7, color: PURP, background: 'rgba(155,77,202,.15)', border: '1px solid rgba(155,77,202,.35)', borderRadius: 3, padding: '1px 6px', letterSpacing: 1 }}>
+            <span style={{ fontFamily: fM, fontSize: 7, color: PURP, background: 'rgba(128,0,32,.15)', border: '1px solid rgba(128,0,32,.35)', borderRadius: 3, padding: '1px 6px', letterSpacing: 1 }}>
               REEL: {reel.length}
             </span>
           )}
@@ -411,7 +411,7 @@ export default function ReplayTab({ addToast, isLive }) {
                       <span style={{ fontFamily: fM, fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 2, padding: '0 4px' }}>HIGHLIGHT</span>
                     )}
                     {inReel && (
-                      <span style={{ fontFamily: fM, fontSize: 7, color: PURP, background: 'rgba(155,77,202,.1)', border: '1px solid rgba(155,77,202,.3)', borderRadius: 2, padding: '0 4px' }}>IN REEL</span>
+                      <span style={{ fontFamily: fM, fontSize: 7, color: PURP, background: 'rgba(128,0,32,.1)', border: '1px solid rgba(128,0,32,.3)', borderRadius: 2, padding: '0 4px' }}>IN REEL</span>
                     )}
                   </div>
                 </div>
@@ -442,7 +442,7 @@ export default function ReplayTab({ addToast, isLive }) {
                   {!inReel ? (
                     <button
                       onClick={function() { addToReel(clip); }}
-                      style={{ background: 'rgba(155,77,202,.15)', border: '1px solid rgba(155,77,202,.4)', borderRadius: 6, padding: '5px 10px', color: PURP_H, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
+                      style={{ background: 'rgba(128,0,32,.15)', border: '1px solid rgba(128,0,32,.4)', borderRadius: 6, padding: '5px 10px', color: PURP_H, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
                     >+ ADD TO REEL</button>
                   ) : (
                     <button
@@ -467,8 +467,8 @@ export default function ReplayTab({ addToast, isLive }) {
         {/* Highlight Reel card */}
         {reel.length > 0 && (
           <div style={{
-            background: 'rgba(155,77,202,.08)',
-            border: '1px solid rgba(155,77,202,.45)',
+            background: 'rgba(128,0,32,.08)',
+            border: '1px solid rgba(128,0,32,.45)',
             borderRadius: 10,
             padding: '11px 12px',
             marginTop: 4,
@@ -485,14 +485,14 @@ export default function ReplayTab({ addToast, isLive }) {
                 >🎬 EXPORT</button>
                 <button
                   onClick={function() { addToast('📤 Shared to Techmunity!', 'info'); }}
-                  style={{ background: 'rgba(155,77,202,.15)', border: '1px solid rgba(155,77,202,.4)', borderRadius: 6, padding: '5px 10px', color: PURP_H, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
+                  style={{ background: 'rgba(128,0,32,.15)', border: '1px solid rgba(128,0,32,.4)', borderRadius: 6, padding: '5px 10px', color: PURP_H, fontFamily: fU, fontWeight: 700, fontSize: 9, cursor: 'pointer' }}
                 >📤 SHARE</button>
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {reel.map(function(rc) {
                 return (
-                  <div key={rc.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(155,77,202,.07)', borderRadius: 6, padding: '5px 8px' }}>
+                  <div key={rc.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(128,0,32,.07)', borderRadius: 6, padding: '5px 8px' }}>
                     <span style={{ fontSize: 12 }}>{rc.thumb}</span>
                     <span style={{ fontFamily: fU, fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rc.title}</span>
                     <span style={{ fontFamily: fM, fontSize: 8, color: GOLD }}>{fmtS(rc.end - rc.start)}</span>

@@ -93,7 +93,7 @@ function RolePill({ role }) {
     host:   { bg: 'rgba(201,168,76,.18)',  color: GOLD,    label: 'HOST'    },
     cohost: { bg: 'rgba(201,168,76,.12)',   color: TEAL,    label: 'CO-HOST' },
     guest:  { bg: 'rgba(212,133,74,.14)',  color: '#D4854A', label: 'GUEST'  },
-    viewer: { bg: 'rgba(46,37,69,.7)',     color: MUTED,   label: 'VIEWER'  },
+    viewer: { bg: 'rgba(36,28,20,.7)',     color: MUTED,   label: 'VIEWER'  },
   };
   var s = cfg[role] || cfg.viewer;
   return (
@@ -800,7 +800,7 @@ export default function LiveRoomPage({
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#fff', letterSpacing: 1 }}>GO LIVE</span>
               </button>
             ) : (
-              <div style={{ background: 'rgba(46,37,69,.8)', borderRadius: 999, padding: '4px 10px' }}>
+              <div style={{ background: 'rgba(36,28,20,.8)', borderRadius: 999, padding: '4px 10px' }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>OFFLINE</span>
               </div>
             )}
