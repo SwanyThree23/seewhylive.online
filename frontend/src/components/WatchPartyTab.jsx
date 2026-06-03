@@ -613,7 +613,9 @@ export default function WatchPartyTab(props) {
     if (socket && roomId) {
       socket.emit('watch-party-sync', {
         roomId:   roomId,
-        videoId:  videoId,
+        videoId:  videoId || null,
+        url:      directUrl || '',
+        type:     sourceType,
         position: pos,
         playing:  playing
       });
@@ -624,8 +626,22 @@ export default function WatchPartyTab(props) {
   function handleCreateParty() {
     setShowCreatePanel(false);
     setWatchPartyActive(true);
-    if (addToast) addToast('Watch Party started! Sharing with room.', 'success');
     if (socket) socket.emit('watch-party-start', { roomId: roomId });
+    // Auto-broadcast whatever URL/file was entered in the create panel
+    var raw = urlInput.trim();
+    if (raw && sourceType === 'youtube') {
+      var vid = extractYtId(raw);
+      if (vid) {
+        setVideoId(vid);
+        if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: vid, url: raw, type: 'youtube' });
+      }
+    } else if (raw && sourceType === 'direct') {
+      setDirectUrl(raw);
+      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: raw, type: 'direct' });
+    } else if (localFileUrl) {
+      setDirectUrl(localFileUrl);
+    }
+    if (addToast) addToast('Watch Party started!', 'success');
   }
 
   // ── Screen Share ──────────────────────────────
@@ -1090,7 +1106,7 @@ export default function WatchPartyTab(props) {
             )}
 
             {/* ±Nms sync badge */}
-            {videoId && (
+            {(videoId || directUrl) {videoId && ({videoId && ( (
               <div style={{
                 position: 'absolute', top: 8,
                 right: is4K && isHost ? 50 : 8,
@@ -1208,7 +1224,7 @@ export default function WatchPartyTab(props) {
           {/* ── CONTROLS BAR ── */}
           <div style={{ background: BG, borderTop: '1px solid ' + DIM, padding: '8px 12px', flexShrink: 0 }}>
             {/* Scrubber */}
-            {videoId && (
+            {(videoId || directUrl) {videoId && ({videoId && ( (
               <div
                 style={{ background: DIM, borderRadius: 3, height: 6, cursor: isHost ? 'pointer' : 'default', marginBottom: 9, position: 'relative' }}
                 onClick={isHost ? handleSeekClick : undefined}>
@@ -1235,7 +1251,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* Timestamp */}
-              {videoId && (
+              {(videoId || directUrl) {videoId && ({videoId && ( (
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, flexShrink: 0 }}>
                   {fmtS(position)}{duration > 0 ? ' / ' + fmtS(duration) : ''}
                 </span>
@@ -1253,7 +1269,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* SYNC button — host only, for YouTube sync-watch */}
-              {isHost && videoId && (
+              {isHost {isHost && videoId && ({isHost && videoId && ( (videoId || directUrl) {isHost && videoId && ({isHost && videoId && ( (
                 <button
                   onClick={function() {
                     setSyncActive(function(s) { return !s; });
@@ -1267,7 +1283,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* Sync all — host only */}
-              {isHost && videoId && (
+              {isHost {isHost && videoId && ({isHost && videoId && ( (videoId || directUrl) {isHost && videoId && ({isHost && videoId && ( (
                 <button
                   onClick={handleSyncAll}
                   style={{ background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 6, padding: '5px 8px', color: AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>

@@ -1594,7 +1594,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                           showTx[msgId + ':EN'] ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <span style={{ fontSize: 10 }}>🇺🇸</span>
-                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{msg.translated}</span>
+                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', fontStyle: 'italic', flex: 1 }}>{msg.translated}</span>
                               <button onClick={function() { setShowTx(function(p) { var n = Object.assign({}, p); delete n[msgId + ':EN']; return n; }); }}
                                 style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
                             </div>
@@ -1610,7 +1610,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                           txTexts[userTxKey] ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <span style={{ fontSize: 10 }}>{LANG_FLAGS[chatLang] || '🌐'}</span>
-                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{txTexts[userTxKey]}</span>
+                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', fontStyle: 'italic', flex: 1 }}>{txTexts[userTxKey]}</span>
                               <button onClick={function() { setTxTexts(function(p) { var n = Object.assign({}, p); delete n[userTxKey]; return n; }); }}
                                 style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
                             </div>
@@ -1634,7 +1634,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                         return (
                           <button key={emoji}
                             onClick={function() { addReaction(msgId, emoji); }}
-                            style={{ background: count > 0 ? 'rgba(201,168,76,.15)' : 'transparent', border: count > 0 ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 10, padding: '1px 5px', cursor: 'pointer', fontSize: 9, display: 'flex', alignItems: 'center', gap: 2, color: '#A09AB8' }}>
+                            style={{ background: count > 0 ? 'rgba(201,168,76,.15)' : 'transparent', border: count > 0 ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 10, padding: '1px 5px', cursor: 'pointer', fontSize: 9, display: 'flex', alignItems: 'center', gap: 2, color: '#8A7A62' }}>
                             {emoji}{count > 0 ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7 }}>{count}</span> : null}
                           </button>
                         );
