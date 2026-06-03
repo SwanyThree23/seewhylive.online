@@ -9,7 +9,7 @@ var ROLE_COLORS = {
   cohost:  '#C9A84C',
   'co-host': '#C9A84C',
   guest:   '#C9A84C',
-  viewer:  'rgba(176,160,192,.5)'
+  viewer:  'rgba(138,122,98,.5)'
 };
 var ROLE_BG = {
   host:    'rgba(201,168,76,.18)',

@@ -278,7 +278,7 @@ export default function DiscoverTab(props) {
       {
         style: {
           background: 'rgba(138,122,98,.12)',
-          border: '1px solid rgba(122,111,144,.3)',
+          border: '1px solid rgba(61,48,32,.3)',
           borderRadius: 4,
           padding: '1px 6px',
           fontFamily: "'DM Mono',monospace",
@@ -935,7 +935,7 @@ export default function DiscoverTab(props) {
           {
             style: {
               background: 'rgba(138,122,98,.1)',
-              border: '1px solid rgba(122,111,144,.25)',
+              border: '1px solid rgba(61,48,32,.25)',
               borderRadius: 6,
               padding: '4px 12px',
               fontFamily: "'Barlow Condensed',sans-serif",
@@ -952,7 +952,7 @@ export default function DiscoverTab(props) {
           {
             style: {
               background: 'rgba(138,122,98,.1)',
-              border: '1px solid rgba(122,111,144,.25)',
+              border: '1px solid rgba(61,48,32,.25)',
               borderRadius: 6,
               padding: '4px 12px',
               fontFamily: "'Barlow Condensed',sans-serif",

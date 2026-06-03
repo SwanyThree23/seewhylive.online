@@ -80,7 +80,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
   /* ── styles ── */
   var card = { background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 10, padding: '12px 14px', marginBottom: 8 };
   var liveChip = { background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 20, padding: '2px 9px', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#FF1A3C', letterSpacing: 1 };
-  var staleChip = { background: 'rgba(122,111,144,.1)', border: '1px solid rgba(122,111,144,.25)', borderRadius: 20, padding: '2px 9px', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1 };
+  var staleChip = { background: 'rgba(61,48,32,.1)', border: '1px solid rgba(61,48,32,.25)', borderRadius: 20, padding: '2px 9px', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1 };
   var label = { fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1 };
   var value = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#F0E8D4', lineHeight: 1 };
   var tabBtn = function(id, color) {
