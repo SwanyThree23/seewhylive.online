@@ -369,10 +369,36 @@ export default function WatchPartyPage() {
   const [pinnedMessage, setPinnedMessage] = useState('');
   const [slowMode, setSlowMode] = useState(false);
   const [slowCooldown, setSlowCooldown] = useState(30);
+  const [countdown, setCountdown] = useState(null); // seconds remaining
+  const countdownRef = React.useRef(null);
 
   const handleSlowMode = (enabled, cooldown) => {
     setSlowMode(enabled);
     setSlowCooldown(cooldown);
+  };
+
+  const handleStartCountdown = (secs) => {
+    clearInterval(countdownRef.current);
+    setCountdown(secs);
+    countdownRef.current = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === null || prev <= 1) { clearInterval(countdownRef.current); return null; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleCancelCountdown = () => {
+    clearInterval(countdownRef.current);
+    setCountdown(null);
+  };
+
+  React.useEffect(() => () => clearInterval(countdownRef.current), []);
+
+  const fmtCountdown = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
   const handleMuteMember = async (member) => {
@@ -779,6 +805,45 @@ export default function WatchPartyPage() {
         </div>
       )}
 
+      {/* Countdown banner overlay */}
+      {countdown !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="shrink-0 flex items-center justify-between px-4 py-2"
+          style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.85), rgba(212,175,55,0.2))', borderBottom: '1px solid rgba(212,175,55,0.3)', backdropFilter: 'blur(8px)' }}
+        >
+          <div className="flex items-center gap-2">
+            <motion.span
+              animate={{ scale: [1, 1.12, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className="text-lg">⏱</motion.span>
+            <div>
+              <p className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Event Starting In</p>
+              <motion.p
+                animate={{ color: countdown < 60 ? ['#FF1564', '#D4AF37', '#FF1564'] : '#D4AF37' }}
+                transition={{ duration: 1, repeat: countdown < 60 ? Infinity : 0 }}
+                className="font-black"
+                style={{ fontSize: 24, fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>
+                {fmtCountdown(countdown)}
+              </motion.p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end">
+              <p className="text-[9px] font-bold" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{party.title}</p>
+              <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{members.length} watching</p>
+            </div>
+            {isHost && (
+              <button onClick={handleCancelCountdown} className="text-[9px] px-2 py-1 rounded"
+                style={{ background: 'rgba(255,21,100,0.12)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Cancel
+              </button>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       <div className="shrink-0 relative bg-black group" data-video-container style={{ aspectRatio: '16/9', width: '100%' }}>
         {party.video_type === 'youtube' ? (
           <YouTubeEmbed
@@ -907,6 +972,9 @@ export default function WatchPartyPage() {
                     slowMode={slowMode}
                     slowModeCooldown={slowCooldown}
                     onSlowMode={handleSlowMode}
+                    countdown={countdown}
+                    onStartCountdown={handleStartCountdown}
+                    onCancelCountdown={handleCancelCountdown}
                     onUpdate={(action) => {
                       if (action?.action === 'kick') handleRemoveMember(action.member);
                       else if (action?.action === 'promote') toast.success(`${action.member.user_name} promoted to co-host`);

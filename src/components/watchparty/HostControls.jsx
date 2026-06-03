@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings, MessageSquare, Mic, Video, Volume2, Users, Shield,
@@ -40,6 +40,10 @@ export default function HostControls({
   slowMode = false,
   slowModeCooldown = 30,
   onSlowMode,
+  // Controlled countdown (lifted to parent so viewers see it)
+  countdown = null,
+  onStartCountdown,
+  onCancelCountdown,
 }) {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('room');
@@ -58,9 +62,7 @@ export default function HostControls({
   const [localPinned, setLocalPinned] = useState(pinnedMessage);
   const [slowLocal, setSlowLocal] = useState(slowMode);
   const [cooldownLocal, setCooldownLocal] = useState(slowModeCooldown);
-  const [countdown, setCountdown] = useState(null); // null | number (seconds remaining)
   const [countdownInput, setCountdownInput] = useState('5');
-  const countdownRef = useRef(null);
 
   const canControl = isHost || isCoHost;
   if (!canControl) return null;
@@ -76,17 +78,8 @@ export default function HostControls({
   const startCountdown = () => {
     const secs = parseInt(countdownInput, 10) * 60;
     if (!secs || secs < 60) return;
-    setCountdown(secs);
-    clearInterval(countdownRef.current);
-    countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(countdownRef.current); return null; }
-        return prev - 1;
-      });
-    }, 1000);
+    onStartCountdown?.(secs);
   };
-
-  useEffect(() => () => clearInterval(countdownRef.current), []);
 
   const fmtCountdown = (s) => {
     const m = Math.floor(s / 60);
@@ -334,7 +327,7 @@ export default function HostControls({
                         {fmtCountdown(countdown)}
                       </motion.div>
                       <p style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Counting down to event start</p>
-                      <button onClick={() => { clearInterval(countdownRef.current); setCountdown(null); }}
+                      <button onClick={onCancelCountdown}
                         style={{ ...T, padding: '6px 16px', borderRadius: 8, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: PINK, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                         Cancel Timer
                       </button>

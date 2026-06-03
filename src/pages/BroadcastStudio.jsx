@@ -1241,67 +1241,129 @@ export default function BroadcastStudio() {
             {/* 🤖 AI TAB */}
             {activeTab === 'ai' && (
               <div className="p-3 space-y-4">
-                {/* AI Music */}
-                <div className="rounded-xl p-3" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm">🎵</span>
-                    <span className="text-[11px] font-black uppercase" style={{ color: '#a78bfa', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Background Music</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz'].map(g => (
-                      <button key={g}
-                        onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
-                        className="px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
-                        style={aiMusicGenre === g
-                          ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
-                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setAiMusicPlaying(v => !v)}
-                      className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
-                      style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      {aiMusicPlaying ? '⏸ Pause' : '▶ Play'}
-                    </button>
-                    {aiMusicPlaying && (
-                      <button onClick={() => setAiMusicGenre(null)}
-                        className="px-3 py-2 rounded-xl text-[11px] font-black"
-                        style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                        title="Skip track">
-                        ⏭
-                      </button>
-                    )}
-                    <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
-                      className="px-3 py-2 rounded-xl text-[11px] font-black"
-                      style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      Full →
-                    </a>
-                  </div>
-                  {aiMusicPlaying && (
-                    <div className="mt-2 space-y-2">
-                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.08)' }}>
-                        <div className="flex items-end gap-[2px]">
-                          {[3,6,4,7,3,5].map((h,i) => (
-                            <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
+                {/* AI Music Stream Queue */}
+                {(() => {
+                  const [queueTracks, setQueueTracks] = React.useState(() => {
+                    try { return JSON.parse(localStorage.getItem('seewhy_stream_queue') || '[]'); } catch { return []; }
+                  });
+                  const [queuePlayingIdx, setQueuePlayingIdx] = React.useState(null);
+
+                  const refreshQueue = () => {
+                    try { setQueueTracks(JSON.parse(localStorage.getItem('seewhy_stream_queue') || '[]')); } catch {}
+                  };
+                  const removeFromQueue = (id) => {
+                    try {
+                      const updated = queueTracks.filter(t => t.id !== id);
+                      localStorage.setItem('seewhy_stream_queue', JSON.stringify(updated));
+                      setQueueTracks(updated);
+                      if (queuePlayingIdx !== null && updated[queuePlayingIdx] === undefined) setQueuePlayingIdx(null);
+                    } catch {}
+                  };
+                  const playNext = () => {
+                    if (!queueTracks.length) return;
+                    setQueuePlayingIdx(prev => prev === null ? 0 : (prev + 1) % queueTracks.length);
+                  };
+
+                  const nowPlaying = queuePlayingIdx !== null ? queueTracks[queuePlayingIdx] : null;
+
+                  return (
+                    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+                      {/* Header */}
+                      <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: '1px solid rgba(167,139,250,0.12)' }}>
+                        <span className="text-sm">🎵</span>
+                        <span className="text-[11px] font-black uppercase flex-1" style={{ color: '#a78bfa', ...T }}>Stream Music Queue</span>
+                        <button onClick={refreshQueue} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}>↻</button>
+                        <a href="/AIMusic" target="_blank" rel="noopener noreferrer" className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.08)', ...T }}>Studio →</a>
+                      </div>
+
+                      {/* Now playing bar */}
+                      {nowPlaying ? (
+                        <div className="px-3 py-2" style={{ background: 'rgba(167,139,250,0.12)', borderBottom: '1px solid rgba(167,139,250,0.12)' }}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span style={{ fontSize: 16 }}>{nowPlaying.emoji}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-black truncate text-white" style={T}>{nowPlaying.title}</p>
+                              <p className="text-[9px]" style={{ color: 'rgba(167,139,250,0.7)', ...T }}>{nowPlaying.tags?.slice(0,3).join(' · ')}</p>
+                            </div>
+                            <div className="flex items-end gap-px">
+                              {[3,6,4,7,3,5].map((h,i) => (
+                                <motion.div key={i} animate={{ height: [`${h*1.5}px`, `${h*3}px`, `${h*1.5}px`] }} transition={{ duration: 0.5, repeat: Infinity, delay: i*0.1 }}
+                                  style={{ width: 2, borderRadius: 1, background: '#a78bfa' }} />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => setAiMusicPlaying(v => !v)}
+                              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black"
+                              style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.25)' : 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', ...T }}>
+                              {aiMusicPlaying ? '⏸ Pause' : '▶ Play'}
+                            </button>
+                            <button onClick={playNext} className="px-2 py-1 rounded-lg text-[10px]"
+                              style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.15)' }}>⏭</button>
+                            <button onClick={() => setQueuePlayingIdx(null)} className="px-2 py-1 rounded-lg text-[10px]"
+                              style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}>■</button>
+                            <div className="flex items-center gap-1 ml-auto">
+                              <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
+                              <input type="range" min={0} max={100} value={musicVolume} onChange={e => setMusicVolume(+e.target.value)}
+                                className="w-16 h-1 rounded-full appearance-none cursor-pointer" style={{ accentColor: '#a78bfa' }} />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="px-3 py-2" style={{ borderBottom: '1px solid rgba(167,139,250,0.08)' }}>
+                          <p className="text-[9px]" style={{ color: 'rgba(167,139,250,0.5)', ...T }}>No track playing · Add tracks from AI Music Studio</p>
+                        </div>
+                      )}
+
+                      {/* Queue list */}
+                      {queueTracks.length > 0 ? (
+                        <div className="overflow-y-auto" style={{ maxHeight: 160 }}>
+                          {queueTracks.map((t, i) => (
+                            <div key={t.id}
+                              className="flex items-center gap-2 px-3 py-1.5 group transition-all cursor-pointer"
+                              style={{ background: queuePlayingIdx === i ? 'rgba(167,139,250,0.1)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                              onClick={() => setQueuePlayingIdx(i)}
+                            >
+                              <span style={{ fontSize: 14 }}>{t.emoji}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-bold truncate" style={{ color: queuePlayingIdx === i ? '#a78bfa' : 'rgba(255,255,255,0.7)', ...T }}>{t.title}</p>
+                                <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{t.duration}</p>
+                              </div>
+                              <button onClick={(e) => { e.stopPropagation(); removeFromQueue(t.id); }}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}>×</button>
+                            </div>
                           ))}
                         </div>
-                        <span className="text-[9px] flex-1" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
-                        <span className="text-[9px]" style={{ color: 'rgba(167,139,250,0.5)' }}>{musicVolume}%</span>
-                      </div>
-                      <div className="flex items-center gap-2 px-1">
-                        <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
-                        <input type="range" min={0} max={100} value={musicVolume}
-                          onChange={e => setMusicVolume(+e.target.value)}
-                          className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
-                          style={{ accentColor: '#a78bfa' }} />
-                        <span className="text-[8px]" style={{ color: '#a78bfa' }}>🔊</span>
-                      </div>
+                      ) : (
+                        <div className="px-3 py-4 text-center">
+                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Queue is empty</p>
+                          <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
+                            className="text-[10px] font-black"
+                            style={{ color: '#a78bfa', ...T }}>Open AI Music Studio → Create &amp; Add tracks</a>
+                        </div>
+                      )}
+
+                      {/* Quick genre fallback */}
+                      {queueTracks.length === 0 && (
+                        <div className="p-3" style={{ borderTop: '1px solid rgba(167,139,250,0.08)' }}>
+                          <p className="text-[8px] font-black uppercase mb-2" style={{ color: 'rgba(167,139,250,0.5)', ...T }}>Quick Genre</p>
+                          <div className="flex flex-wrap gap-1">
+                            {['Lo-Fi','Trap','Gospel','R&B','Chill','Hype'].map(g => (
+                              <button key={g} onClick={() => { setAiMusicGenre(prev => prev === g ? null : g); setAiMusicPlaying(true); }}
+                                className="px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
+                                style={aiMusicGenre === g
+                                  ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
+                                  : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                {g}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
 
                 {/* Guardian AI Moderation */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
