@@ -264,7 +264,7 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-black" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Orbitron, monospace' }}>{room.viewer_count || 0}</span>
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T,
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T,
                           background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : room.status === 'ended' ? 'rgba(255,255,255,0.06)' : 'rgba(0,212,255,0.1)',
                           border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : room.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(0,212,255,0.3)'}`,
                           color: room.status === 'live' ? '#FF1564' : room.status === 'ended' ? 'rgba(255,255,255,0.4)' : '#00d4ff',

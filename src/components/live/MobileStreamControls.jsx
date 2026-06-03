@@ -41,7 +41,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               }`}
             >
               {micMuted ? <MicOff className="w-5 h-5 text-white" /> : <Mic className="w-5 h-5 text-white" />}
-              <span className="text-[8px] text-white/60">{micMuted ? 'Muted' : 'Live'}</span>
+              <span className="text-[11px] text-white/60">{micMuted ? 'Muted' : 'Live'}</span>
             </motion.button>
 
             {/* Flip Camera */}
@@ -51,7 +51,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex flex-col items-center justify-center gap-0.5"
             >
               <RotateCcw className="w-5 h-5 text-white" />
-              <span className="text-[8px] text-white/60">Flip</span>
+              <span className="text-[11px] text-white/60">Flip</span>
             </motion.button>
 
             {/* Toggle Chat */}
@@ -63,7 +63,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               }`}
             >
               <MessageSquare className="w-5 h-5 text-white" />
-              <span className="text-[8px] text-white/60">Chat</span>
+              <span className="text-[11px] text-white/60">Chat</span>
             </motion.button>
 
             {/* Quick React */}
@@ -73,7 +73,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               className="w-12 h-12 rounded-full bg-red-900/40 border border-red-700/40 flex flex-col items-center justify-center gap-0.5"
             >
               <span className="text-xl">❤️</span>
-              <span className="text-[8px] text-white/60">React</span>
+              <span className="text-[11px] text-white/60">React</span>
             </motion.button>
 
             {/* Quick Tip */}
@@ -83,7 +83,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               className="w-12 h-12 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex flex-col items-center justify-center gap-0.5"
             >
               <DollarSign className="w-5 h-5 text-[#d4af37]" />
-              <span className="text-[8px] text-white/60">Tip</span>
+              <span className="text-[11px] text-white/60">Tip</span>
             </motion.button>
 
             {/* More */}
@@ -93,7 +93,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex flex-col items-center justify-center gap-0.5"
             >
               <MoreHorizontal className="w-5 h-5 text-white" />
-              <span className="text-[8px] text-white/60">More</span>
+              <span className="text-[11px] text-white/60">More</span>
             </motion.button>
           </div>
         </div>

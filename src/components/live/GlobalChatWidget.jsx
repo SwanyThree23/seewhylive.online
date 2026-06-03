@@ -126,7 +126,7 @@ export default function GlobalChatWidget() {
         style={{ width: 52, height: 52, background: 'linear-gradient(135deg, #2C1810, #6B4423)', border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
         <MessageSquare className="w-5 h-5" style={{ color: '#d4af37' }} />
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
             style={{ background: '#CC7755', color: '#fff' }}>{unread > 9 ? '9+' : unread}</span>
         )}
       </motion.button>
@@ -222,14 +222,14 @@ export default function GlobalChatWidget() {
                     const msgLang = msg.metadata?.lang;
                     return (
                       <div key={msg.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
-                        <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-black mt-1"
+                        <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-1"
                           style={{ background: isMe ? 'rgba(0,245,255,0.2)' : 'rgba(212,175,55,0.15)', color: isMe ? '#00F5FF' : '#d4af37' }}>
                           {(msg.user_name || '?').charAt(0).toUpperCase()}
                         </div>
                         <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
                           <div className="flex items-center gap-1.5">
                             {msgLang && msgLang !== 'en' && (
-                              <span className="text-[9px]">{LANGUAGES.find(l => l.code === msgLang)?.flag}</span>
+                              <span className="text-[11px]">{LANGUAGES.find(l => l.code === msgLang)?.flag}</span>
                             )}
                             <span className="text-[10px] font-bold" style={{ color: isMe ? '#00F5FF' : '#d4af37' }}>
                               {msg.user_name}
@@ -245,7 +245,7 @@ export default function GlobalChatWidget() {
                           </div>
                           {!isMe && lang !== 'en' && !msg.translated && (
                             <button onClick={() => translateMessage(msg)} disabled={translating}
-                              className="text-[9px] px-1.5 py-0.5 rounded"
+                              className="text-[11px] px-1.5 py-0.5 rounded"
                               style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                               {translating ? '…' : `Translate →${selectedLang.flag}`}
                             </button>
@@ -298,7 +298,7 @@ export default function GlobalChatWidget() {
                       <Send className="w-4 h-4" style={{ color: input.trim() ? '#000' : '#d4af37' }} />
                     </button>
                   </div>
-                  <p className="text-[9px] mt-1 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                  <p className="text-[11px] mt-1 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>
                     {selectedLang.flag} Messages auto-translated • SeeWhy Global Chat
                   </p>
                 </div>

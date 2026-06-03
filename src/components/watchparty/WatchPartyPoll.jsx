@@ -54,7 +54,7 @@ function ActivePoll({ poll, currentUser, onVote }) {
       <div className="flex items-center gap-2 px-3 py-2"
         style={{ background: 'rgba(212,175,55,0.08)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
         <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-        <span className="text-[9px] font-black uppercase tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
+        <span className="text-[11px] font-black uppercase tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
           Live Poll · {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
         </span>
       </div>
@@ -173,7 +173,7 @@ function PollCreator({ partyId, roomId, currentUser, onPollCreated }) {
                 ))}
                 {options.length < 6 && (
                   <button onClick={addOption}
-                    className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded"
+                    className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded"
                     style={{ color: 'rgba(212,175,55,0.6)', background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
                     <Plus className="w-2.5 h-2.5" /> Add option
                   </button>
@@ -255,7 +255,7 @@ export default function WatchPartyPoll({ partyId, roomId, currentUser, isHost })
             <ActivePoll poll={poll} currentUser={currentUser} onVote={handleVote} />
             {isHost && (
               <button onClick={() => closeHostPoll(poll.id)}
-                className="absolute top-2 right-2 flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded"
+                className="absolute top-2 right-2 flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded"
                 style={{ background: 'rgba(180,50,30,0.2)', border: '1px solid rgba(180,50,30,0.3)', color: '#ff8866' }}>
                 <StopCircle className="w-2.5 h-2.5" /> End
               </button>

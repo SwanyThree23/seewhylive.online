@@ -125,7 +125,7 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
           <Zap className="w-2.5 h-2.5 text-black" />
         </div>
         <span className="text-[10px] font-bold text-[#FFB800] uppercase tracking-wider">Golden Wall</span>
-        <span className="text-[9px] text-[#FFB800]/40 ml-auto font-mono">{wallItems.length} recent</span>
+        <span className="text-[11px] text-[#FFB800]/40 ml-auto font-mono">{wallItems.length} recent</span>
       </div>
 
       {/* Items */}

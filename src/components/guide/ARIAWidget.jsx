@@ -418,7 +418,7 @@ export default function SwanyBotWidget() {
                   <p className="text-xs font-black uppercase tracking-widest" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     SwanyBot
                   </p>
-                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Your SeeWhy Guide 🔥</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Your SeeWhy Guide 🔥</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -483,7 +483,7 @@ export default function SwanyBotWidget() {
                                {conversationHistory.slice(0, 3).map(conv => (
                                  <div key={conv.id} className="text-xs p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
                                    <p className="text-white/70 truncate">{conv.title}</p>
-                                   <p className="text-white/30 text-[9px] mt-0.5">
+                                   <p className="text-white/30 text-[11px] mt-0.5">
                                      {new Date(conv.last_interaction).toLocaleDateString()}
                                    </p>
                                  </div>
@@ -611,7 +611,7 @@ export default function SwanyBotWidget() {
                   {listening && (
                     <motion.p
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      className="text-[9px] text-center mt-1.5"
+                      className="text-[11px] text-center mt-1.5"
                       style={{ color: 'rgba(239,68,68,0.7)' }}
                     >
                       🔴 Voice active — speak now, or tap mic to stop

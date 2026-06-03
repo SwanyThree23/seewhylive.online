@@ -22,7 +22,7 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
       >
         <Play className="w-10 h-10 text-white fill-white" />
       </motion.div>
-      <div className="absolute top-2 right-2 bg-black/80 text-[#d4af37] px-2 py-1 rounded text-[8px] font-bold">
+      <div className="absolute top-2 right-2 bg-black/80 text-[#d4af37] px-2 py-1 rounded text-[11px] font-bold">
         AI Generated
       </div>
     </div>
@@ -30,7 +30,7 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
     <div className="p-3 space-y-2">
       <div>
         <h3 className="text-[10px] font-bold text-white truncate">{highlight.title}</h3>
-        <p className="text-[8px] text-white/50">{highlight.duration}s • {highlight.views} views</p>
+        <p className="text-[11px] text-white/50">{highlight.duration}s • {highlight.views} views</p>
       </div>
 
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -44,14 +44,14 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
       <div className="flex gap-1.5 pt-2 border-t border-white/10">
         <button
           onClick={() => onShare?.(highlight)}
-          className="flex-1 flex items-center justify-center gap-1 text-[9px] bg-white/10 hover:bg-white/20 rounded py-1.5 text-white/70 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 text-[11px] bg-white/10 hover:bg-white/20 rounded py-1.5 text-white/70 transition-colors"
         >
           <Share2 className="w-3 h-3" />
           Share
         </button>
         <button
           onClick={() => onDelete?.(highlight.id)}
-          className="flex-1 flex items-center justify-center gap-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 rounded py-1.5 text-red-400 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 text-[11px] bg-red-500/10 hover:bg-red-500/20 rounded py-1.5 text-red-400 transition-colors"
         >
           <Trash2 className="w-3 h-3" />
           Delete
@@ -163,20 +163,20 @@ export default function AutomatedHighlightReels({ streamSession }) {
             exit={{ opacity: 0, height: 0 }}
             className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2"
           >
-            <p className="text-[9px] text-white/60 font-semibold uppercase">Auto-Generate When</p>
-            <label className="flex items-center gap-2 text-[9px] text-white/80">
+            <p className="text-[11px] text-white/60 font-semibold uppercase">Auto-Generate When</p>
+            <label className="flex items-center gap-2 text-[11px] text-white/80">
               <input type="checkbox" defaultChecked className="w-3 h-3" />
               Peak chat activity (2K+ messages/min)
             </label>
-            <label className="flex items-center gap-2 text-[9px] text-white/80">
+            <label className="flex items-center gap-2 text-[11px] text-white/80">
               <input type="checkbox" defaultChecked className="w-3 h-3" />
               Viewer spike (50%+ increase)
             </label>
-            <label className="flex items-center gap-2 text-[9px] text-white/80">
+            <label className="flex items-center gap-2 text-[11px] text-white/80">
               <input type="checkbox" defaultChecked className="w-3 h-3" />
               Milestone achievements
             </label>
-            <label className="flex items-center gap-2 text-[9px] text-white/80">
+            <label className="flex items-center gap-2 text-[11px] text-white/80">
               <input type="checkbox" className="w-3 h-3" />
               High tip moments
             </label>
@@ -206,15 +206,15 @@ export default function AutomatedHighlightReels({ streamSession }) {
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-white/5 rounded px-2 py-1.5">
-          <p className="text-[8px] text-white/60">TOTAL</p>
+          <p className="text-[11px] text-white/60">TOTAL</p>
           <p className="text-base font-bold text-white">{highlights.length}</p>
         </div>
         <div className="bg-white/5 rounded px-2 py-1.5">
-          <p className="text-[8px] text-white/60">TOTAL VIEWS</p>
+          <p className="text-[11px] text-white/60">TOTAL VIEWS</p>
           <p className="text-base font-bold text-[#d4af37]">{highlights.reduce((sum, h) => sum + h.views, 0).toLocaleString()}</p>
         </div>
         <div className="bg-white/5 rounded px-2 py-1.5">
-          <p className="text-[8px] text-white/60">AVG QUALITY</p>
+          <p className="text-[11px] text-white/60">AVG QUALITY</p>
           <p className="text-base font-bold text-white">89%</p>
         </div>
       </div>
@@ -236,7 +236,7 @@ export default function AutomatedHighlightReels({ streamSession }) {
       {highlights.length === 0 && (
         <div className="text-center py-8">
           <Sparkles className="w-8 h-8 text-white/30 mx-auto mb-2" />
-          <p className="text-[9px] text-white/50">No highlights yet. Generate some to get started!</p>
+          <p className="text-[11px] text-white/50">No highlights yet. Generate some to get started!</p>
         </div>
       )}
     </motion.div>

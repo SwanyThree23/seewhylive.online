@@ -161,7 +161,7 @@ export default function ViewerDashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{liveRooms.length}</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{liveRooms.length}</span>
               </div>
               {liveRooms.length === 0 ? (
                 <p className="text-sm py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No one is live right now</p>
@@ -212,7 +212,7 @@ export default function ViewerDashboard() {
                     <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
                     <p className="text-xs" style={{ color: '#00d4ff' }}>{getCountdown(room.scheduled_start)}</p>
                   </div>
-                  <span className="text-[9px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
                 </div>
               ))}
             </div>
@@ -228,7 +228,7 @@ export default function ViewerDashboard() {
                         <Play className="w-8 h-8 transition-all" style={{ color: 'rgba(255,255,255,0.25)' }} />
                       </div>
                       {vod.duration_seconds && (
-                        <span className="absolute bottom-1.5 right-1.5 text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.8)', color: '#fff' }}>
+                        <span className="absolute bottom-1.5 right-1.5 text-[11px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.8)', color: '#fff' }}>
                           {Math.floor(vod.duration_seconds / 60)}m
                         </span>
                       )}
@@ -266,7 +266,7 @@ export default function ViewerDashboard() {
                       <p className="text-sm font-black text-white" style={T}>{s.tier_name || 'Subscription'}</p>
                       <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>${s.price}/mo · since {s.start_date ? new Date(s.start_date).toLocaleDateString() : new Date(s.created_date).toLocaleDateString()}</p>
                     </div>
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00ff88', ...T }}>Active</span>
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00ff88', ...T }}>Active</span>
                   </div>
                 ))
               }

@@ -81,7 +81,7 @@ export default function ClipCreatorSheet({ roomId, sessionId, creatorId, elapsed
                         <span style={{ fontSize:14 }}>✂️</span>
                         <div style={{ flex:1 }}>
                           <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:'rgba(255,255,255,0.6)' }}>{c.title}</div>
-                          <div style={{ fontSize:9, color:C.gray }}>{c.duration_seconds}s · {c.share_count} shares</div>
+                          <div style={{ fontSize:11, color:C.gray }}>{c.duration_seconds}s · {c.share_count} shares</div>
                         </div>
                       </div>
                     ))}

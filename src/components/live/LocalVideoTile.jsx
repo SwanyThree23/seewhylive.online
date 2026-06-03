@@ -38,7 +38,7 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
       {/* Bottom overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          {isHost && <span style={{ fontSize:9, fontWeight:900, background:'#D4AF37', color:'#000', padding:'1px 6px', borderRadius:99, textShadow:'0 0 8px rgba(212,175,55,0.5)', fontFamily:'Barlow Condensed, sans-serif' }}>HOST</span>}
+          {isHost && <span style={{ fontSize:11, fontWeight:900, background:'#D4AF37', color:'#000', padding:'1px 6px', borderRadius:99, textShadow:'0 0 8px rgba(212,175,55,0.5)', fontFamily:'Barlow Condensed, sans-serif' }}>HOST</span>}
           <span className="text-xs text-white font-semibold truncate max-w-[120px]" style={{ textShadow: '0 0 10px rgba(212,175,55,0.5)' }}>{userName}</span>
         </div>
         <div className="flex items-center gap-1">
@@ -54,7 +54,7 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
       {/* No stream indicator */}
       {!stream && (
         <div className="absolute top-2 right-2">
-          <span style={{ fontSize:9, fontWeight:900, background:'rgba(127,29,29,0.6)', color:'#fca5a5', border:'1px solid #b91c1c', padding:'1px 6px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif' }}>No Camera</span>
+          <span style={{ fontSize:11, fontWeight:900, background:'rgba(127,29,29,0.6)', color:'#fca5a5', border:'1px solid #b91c1c', padding:'1px 6px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif' }}>No Camera</span>
         </div>
       )}
     </div>

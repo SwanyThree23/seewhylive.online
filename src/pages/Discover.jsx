@@ -54,11 +54,11 @@ function FanbaseRoomCard({ room }) {
     <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
       style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
-        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full"
+        <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full"
           style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
           {tag || 'Live'}
         </span>
-        <span className="text-[9px] font-black uppercase px-2.5 py-1 rounded-full"
+        <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-full"
           style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Join
         </span>
@@ -68,12 +68,12 @@ function FanbaseRoomCard({ room }) {
           ? <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
-        <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black"
+        <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
           style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
         </div>
         {viewers > 0 && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[9px] font-bold"
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[11px] font-bold"
             style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Users className="w-3 h-3" />{viewers.toLocaleString()}
           </div>
@@ -249,7 +249,7 @@ export default function DiscoverPage() {
                   <Icon className="w-3.5 h-3.5" />
                   {t.label}
                   {t.id === 'live' && liveRooms.length > 0 && (
-                    <span className="bg-white/20 rounded-full px-1.5 text-[9px]">{liveRooms.length}</span>
+                    <span className="bg-white/20 rounded-full px-1.5 text-[11px]">{liveRooms.length}</span>
                   )}
                 </button>
               );
@@ -374,7 +374,7 @@ export default function DiscoverPage() {
                             </div>
                             <div className="flex flex-col items-center gap-1 shrink-0">
                               <ExternalLink style={{ width: 16, height: 16, color: ch.color + '80' }} />
-                              <span className="text-[9px] font-bold uppercase" style={{ color: ch.color + '80', fontFamily: 'Barlow Condensed, sans-serif' }}>Visit</span>
+                              <span className="text-[11px] font-bold uppercase" style={{ color: ch.color + '80', fontFamily: 'Barlow Condensed, sans-serif' }}>Visit</span>
                             </div>
                           </div>
                         </a>
@@ -407,7 +407,7 @@ export default function DiscoverPage() {
                               onError={e => { e.target.style.display = 'none'; }}
                               className="w-full h-full object-cover" />
                             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.8) 0%, transparent 55%)' }} />
-                            <span className="absolute top-2 left-2 text-[9px] font-black px-2 py-0.5 rounded-full"
+                            <span className="absolute top-2 left-2 text-[11px] font-black px-2 py-0.5 rounded-full"
                               style={{ background: `${video.tagColor}30`, color: video.tagColor, border: `1px solid ${video.tagColor}50`, fontFamily: 'Barlow Condensed, sans-serif' }}>
                               {video.tag}
                             </span>
@@ -463,7 +463,7 @@ function TrendingCard({ room, rank }) {
         )}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           <span className="text-xs font-black font-mono" style={{ color: rankColors[rank - 1] }}>#{rank}</span>
-          <span style={{ background: '#FF1564', color: '#fff', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+          <span style={{ background: '#FF1564', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
           </span>
         </div>
@@ -512,7 +512,7 @@ function CreatorCard({ creator }) {
         className="relative p-4 rounded-2xl cursor-pointer text-center"
         style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(139,92,246,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black"
+          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
             style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
           </div>
@@ -532,7 +532,7 @@ function CreatorCard({ creator }) {
         <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(139,92,246,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
           <Users className="w-3 h-3" style={{ color: '#8B5CF6' }} />
-          <span className="text-[9px] font-bold" style={{ color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
+          <span className="text-[11px] font-bold" style={{ color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
         </div>
       </motion.div>
     </Link>

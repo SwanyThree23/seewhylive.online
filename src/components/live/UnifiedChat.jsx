@@ -20,12 +20,12 @@ const MSG_STYLES = {
 
 function MessageBadge({ type }) {
   const badges = {
-    tip: <span className="text-[8px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
-    subscription: <span className="text-[8px] bg-purple-700 text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
-    moderation: <span className="text-[8px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
-    qa: <span className="text-[8px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
-    poll: <span className="text-[8px] bg-green-700 text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
-    cohost: <span className="text-[8px] bg-[#d4af37]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
+    tip: <span className="text-[11px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
+    subscription: <span className="text-[11px] bg-purple-700 text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
+    moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
+    qa: <span className="text-[11px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
+    poll: <span className="text-[11px] bg-green-700 text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
+    cohost: <span className="text-[11px] bg-[#d4af37]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
   };
   return badges[type] || null;
 }
@@ -164,7 +164,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
               style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
               <Pin className="w-3 h-3 mt-0.5 shrink-0 text-[#d4af37]" />
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold mb-0.5" style={{ color: '#d4af37' }}>Pinned</p>
+                <p className="text-[11px] font-bold mb-0.5" style={{ color: '#d4af37' }}>Pinned</p>
                 <p className="text-xs text-white/75 line-clamp-2">{pinnedMsg.content}</p>
               </div>
               {isHost && (
@@ -188,7 +188,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
               className={`group px-2 py-1.5 rounded-lg ${MSG_STYLES[msg.message_type || 'regular']}`}>
               <div className="flex items-start gap-2">
                 {/* Avatar dot */}
-                <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[8px] font-black mt-0.5"
+                <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-0.5"
                   style={{ background: msg.user_id === currentUser?.id ? 'rgba(0,245,255,0.2)' : 'rgba(212,175,55,0.15)', color: msg.user_id === currentUser?.id ? '#00F5FF' : '#d4af37' }}>
                   {(msg.user_name || '?').charAt(0).toUpperCase()}
                 </div>
@@ -282,7 +282,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
         </div>
 
         {isHost && (
-          <div className="flex items-center gap-3 mt-1.5 text-[9px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <div className="flex items-center gap-3 mt-1.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
             <span>{msgPerMin} msg/min</span>
             <span>{activeChatters} chatters</span>
           </div>

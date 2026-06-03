@@ -127,7 +127,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
           </div>
         )}
         <div className="ml-auto flex items-center gap-1.5">
-          <span className="text-[9px] text-white/30 font-mono">{callCount}/{CAP}/hr</span>
+          <span className="text-[11px] text-white/30 font-mono">{callCount}/{CAP}/hr</span>
           <button
             onClick={() => setEnabled(v => !v)}
             className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
@@ -145,7 +145,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
           <button
             key={m.id}
             onClick={() => setMode(m.id)}
-            className={`flex-1 py-1 rounded text-[9px] font-bold transition-all border ${
+            className={`flex-1 py-1 rounded text-[11px] font-bold transition-all border ${
               mode === m.id
                 ? 'border-[#8B5CF6] text-[#8B5CF6] bg-[#8B5CF6]/10'
                 : 'border-white/10 text-white/30 hover:border-white/20'
@@ -187,7 +187,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
           <button
             onClick={() => generateAuraMessage('stream_start', { title: streamTitle, viewers: viewerCount })}
             disabled={isGenerating || !enabled || callCount >= CAP}
-            style={{ width: '100%', height: 24, fontSize: 9, color: '#8B5CF6', background: 'transparent', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ width: '100%', height: 24, fontSize: 11, color: '#8B5CF6', background: 'transparent', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             <RefreshCw className="w-2.5 h-2.5" style={{ marginRight: 2 }} /> Trigger AURA
           </button>

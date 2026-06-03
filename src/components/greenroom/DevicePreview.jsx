@@ -49,7 +49,7 @@ function SimulatedCamera({ user }) {
       <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
         {user?.full_name || user?.email || 'You'}
       </p>
-      <p className="text-[9px] mt-1 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>Camera Preview</p>
+      <p className="text-[11px] mt-1 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)' }}>Camera Preview</p>
     </div>
   );
 }
@@ -195,7 +195,7 @@ export default function DevicePreview({ user, onDeviceState }) {
                   style={{ background: 'rgba(128,0,32,0.15)' }}>
                   <CameraOff className="w-8 h-8 text-red-400" />
                   <p className="text-[11px] text-center font-bold text-red-300">Camera access blocked</p>
-                  <p className="text-[9px] text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Check your browser settings to allow camera access</p>
+                  <p className="text-[11px] text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Check your browser settings to allow camera access</p>
                 </div>
               : <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                   <div className="w-16 h-16 rounded-full overflow-hidden mb-1"
@@ -214,14 +214,14 @@ export default function DevicePreview({ user, onDeviceState }) {
           style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
           title="Estimated connection to SeeWhy LIVE servers">
           <SignalBarsIcon quality={networkQuality} />
-          <span className="text-[8px] ml-0.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <span className="text-[11px] ml-0.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {networkQuality >= 3 ? 'GOOD' : networkQuality >= 2 ? 'FAIR' : 'POOR'}
           </span>
         </div>
 
         {/* LIVE label when on */}
         {cameraOn && (
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-black uppercase"
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-black uppercase"
             style={{ background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.3)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
             ● PREVIEW
           </div>
@@ -253,10 +253,10 @@ export default function DevicePreview({ user, onDeviceState }) {
       {/* Mic meter */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <span className="text-[8px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             MIC LEVEL
           </span>
-          <span className="text-[8px] font-mono" style={{ color: micOn ? GOLD : 'rgba(255,255,255,0.2)' }}>
+          <span className="text-[11px] font-mono" style={{ color: micOn ? GOLD : 'rgba(255,255,255,0.2)' }}>
             {micOn ? micLevel : '--'}
           </span>
         </div>
@@ -266,7 +266,7 @@ export default function DevicePreview({ user, onDeviceState }) {
             animate={{ width: micOn ? `${micLevel}%` : '0%' }}
             transition={{ duration: 0.08 }} />
         </div>
-        {!micOn && <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.2)' }}>Microphone muted</p>}
+        {!micOn && <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>Microphone muted</p>}
       </div>
 
       {/* Mic toggle + Speaker test */}

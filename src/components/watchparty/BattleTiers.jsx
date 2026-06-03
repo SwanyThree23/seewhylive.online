@@ -111,7 +111,7 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
           Battle Tiers
         </span>
         {myPts > 0 && (
-          <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37' }}>
+          <span className="ml-auto text-[11px] font-bold px-1.5 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37' }}>
             You: {myPts}pts
           </span>
         )}
@@ -125,7 +125,7 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
             className="flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-xl flex-1 min-w-[52px] transition-all"
             style={{ background: tier.bg, border: `1px solid ${tier.border}` }}>
             <span className="text-lg">{tier.emoji}</span>
-            <span className="text-[8px] font-black" style={{ color: tier.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span className="text-[11px] font-black" style={{ color: tier.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
               +{tier.pts}
             </span>
           </motion.button>
@@ -135,14 +135,14 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
       {/* Mini leaderboard */}
       {board.some(b => b.pts > 0) && (
         <div className="px-2.5 pb-2.5 space-y-1">
-          <p className="text-[8px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <p className="text-[11px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Top Battlers
           </p>
           {board.filter(b => b.pts > 0).map((b, i) => (
             <div key={b.uid} className="flex items-center gap-2 px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
               <span className="text-[10px]">{['🥇','🥈','🥉','4️⃣','5️⃣'][i]}</span>
-              <span className="text-[9px] font-bold text-white flex-1 truncate">{b.name}</span>
-              <span className="text-[9px] font-black tabular-nums" style={{ color: '#d4af37' }}>{b.pts}pts</span>
+              <span className="text-[11px] font-bold text-white flex-1 truncate">{b.name}</span>
+              <span className="text-[11px] font-black tabular-nums" style={{ color: '#d4af37' }}>{b.pts}pts</span>
             </div>
           ))}
         </div>

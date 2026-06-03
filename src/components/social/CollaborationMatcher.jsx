@@ -72,7 +72,7 @@ export default function CollaborationMatcher() {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <h4 className="text-xs font-bold text-white">{creator.name}</h4>
-                <p className="text-[9px] text-white/50">{creator.type}</p>
+                <p className="text-[11px] text-white/50">{creator.type}</p>
               </div>
               <a
                 href={creator.url}
@@ -87,7 +87,7 @@ export default function CollaborationMatcher() {
 
             <div className="flex flex-wrap gap-1 mb-2">
               {creator.interests.map(interest => (
-                <span key={interest} className="text-[8px] px-1.5 py-0.5 rounded-full" style={{ background: `rgba(${creator.color === '#8B5CF6' ? '139,92,246' : creator.color === '#EC4899' ? '236,72,153' : '245,158,11'},0.2)`, color: creator.color }}>
+                <span key={interest} className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: `rgba(${creator.color === '#8B5CF6' ? '139,92,246' : creator.color === '#EC4899' ? '236,72,153' : '245,158,11'},0.2)`, color: creator.color }}>
                   {interest}
                 </span>
               ))}

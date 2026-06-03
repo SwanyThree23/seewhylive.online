@@ -251,7 +251,7 @@ export default function OBSBridge() {
                       <ChevronRight style={{ width:14, height:14, flexShrink:0, opacity: active ? 1 : 0 }} />
                       <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{scene.sceneName}</span>
                       {active && (
-                        <span style={{ fontSize:9, fontWeight:900, padding:'1px 6px', borderRadius:99, background:'rgba(0,212,255,0.2)', color:'#00d4ff', border:'1px solid rgba(0,212,255,0.3)', fontFamily:'Barlow Condensed, sans-serif' }}>LIVE</span>
+                        <span style={{ fontSize:11, fontWeight:900, padding:'1px 6px', borderRadius:99, background:'rgba(0,212,255,0.2)', color:'#00d4ff', border:'1px solid rgba(0,212,255,0.3)', fontFamily:'Barlow Condensed, sans-serif' }}>LIVE</span>
                       )}
                     </button>
                   );

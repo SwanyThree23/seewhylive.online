@@ -249,7 +249,7 @@ export default function LoveTap({ roomId, user, creatorId, creatorName }) {
           {formatAmount(totalCents)}
         </div>
         {creatorName && (
-          <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
             90% → {creatorName}
           </div>
         )}

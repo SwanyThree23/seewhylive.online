@@ -119,7 +119,7 @@ export default function GuestJoin() {
                 <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
                 <p className="text-[10px] capitalize" style={{ color: 'rgba(255,255,255,0.35)' }}>{room.status}</p>
               </div>
-              <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                 style={{ ...T, background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#FF1564' : '#ffc800' }}>
                 {room.status === 'live' ? '● LIVE' : 'Scheduled'}
               </span>
@@ -162,7 +162,7 @@ export default function GuestJoin() {
                     {name.charAt(0).toUpperCase()}
                   </div>
                   <h2 className="text-base font-black text-white" style={T}>{name}</h2>
-                  <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${readyState ? '' : 'animate-pulse'}`}
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${readyState ? '' : 'animate-pulse'}`}
                     style={{ ...T, background: readyState ? 'rgba(0,255,136,0.12)' : 'rgba(255,200,0,0.12)', border: `1px solid ${readyState ? 'rgba(0,255,136,0.3)' : 'rgba(255,200,0,0.3)'}`, color: readyState ? '#00ff88' : '#ffc800' }}>
                     {readyState ? <><CheckCircle className="w-2.5 h-2.5" /> Ready</> : <><Clock className="w-2.5 h-2.5" /> Waiting</>}
                   </span>

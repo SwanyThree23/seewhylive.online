@@ -78,7 +78,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               style={{ background: levelColor }}
             />
           </div>
-          {micMuted && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#f87171', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
+          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#f87171', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>

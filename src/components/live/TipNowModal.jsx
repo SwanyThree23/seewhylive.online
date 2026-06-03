@@ -65,7 +65,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
         <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
           {/* Amounts */}
           <div>
-            <div style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>AMOUNT</div>
+            <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>AMOUNT</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {[1, 2, 5, 10, 20].map(v => (
                 <button key={v} onClick={() => { setAmount(v); setCustom(""); }} style={{
@@ -84,7 +84,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
 
           {/* Message */}
           <div>
-            <div style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1, marginBottom: 6 }}>MESSAGE (optional)</div>
+            <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 6 }}>MESSAGE (optional)</div>
             <input maxLength={100} value={message} onChange={e => setMessage(e.target.value)}
               style={{ width: "100%", background: "#111", border: "1px solid #333", borderRadius: 6, color: C.white, fontFamily: C.fRaj, fontSize: 13, padding: "8px 12px", outline: "none" }}
               placeholder="Say something…" />
@@ -92,14 +92,14 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
 
           {/* Payment method */}
           <div>
-            <div style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>PAYMENT METHOD</div>
+            <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>PAYMENT METHOD</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {["Card", "CashApp", "PayPal", "Venmo", "Zelle", "SeeGems"].map(m => (
                 <button key={m} onClick={() => setMethod(m)} style={{
                   padding: "5px 10px", borderRadius: 6,
                   border: "1px solid " + (method === m ? C.gold : "#333"),
                   background: method === m ? "rgba(212,175,55,0.1)" : C.surface,
-                  cursor: "pointer", fontFamily: C.fMon, fontSize: 9,
+                  cursor: "pointer", fontFamily: C.fMon, fontSize: 11,
                   color: method === m ? C.gold : C.gray,
                 }}>{m}</button>
               ))}
@@ -146,7 +146,7 @@ export function SubscribeButton({ creatorId, roomId, currentUser }) {
       <button onClick={() => setOpen(true)} style={{
         padding: "8px 14px", background: "linear-gradient(135deg," + C.burgundy + "," + C.gold + "44)",
         border: "1px solid " + C.gold, borderRadius: 8, color: C.gold,
-        fontFamily: C.fOrb, fontSize: 9, cursor: "pointer", letterSpacing: 1,
+        fontFamily: C.fOrb, fontSize: 11, cursor: "pointer", letterSpacing: 1,
       }}>⭐ SUBSCRIBE</button>
 
       {open && (
@@ -166,7 +166,7 @@ export function SubscribeButton({ creatorId, roomId, currentUser }) {
                 }}>
                   <div>
                     <div style={{ fontFamily: C.fBeb, fontSize: 18, color: C.gold }}>{tier.name}</div>
-                    <div style={{ fontFamily: C.fMon, fontSize: 8, color: C.dim }}>{tier.benefits.join(" · ")}</div>
+                    <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim }}>{tier.benefits.join(" · ")}</div>
                   </div>
                   <div style={{ fontFamily: C.fBeb, fontSize: 20, color: C.white }}>${tier.price_usd}<span style={{ fontSize: 10, color: C.dim }}>/mo</span></div>
                 </div>

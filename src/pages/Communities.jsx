@@ -109,7 +109,7 @@ export default function CommunitiesPage() {
         <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => setSelectedCategory(cat)}
-              className="px-3 py-1 rounded-full shrink-0 font-black uppercase text-[9px] transition-all capitalize"
+              className="px-3 py-1 rounded-full shrink-0 font-black uppercase text-[11px] transition-all capitalize"
               style={{
                 background:   selectedCategory === cat ? GOLD : 'rgba(255,255,255,0.06)',
                 border:       `1px solid ${selectedCategory === cat ? GOLD : 'rgba(255,255,255,0.1)'}`,

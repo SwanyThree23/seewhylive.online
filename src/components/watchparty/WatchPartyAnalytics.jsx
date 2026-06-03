@@ -13,8 +13,8 @@ function StatCard({ icon: IconComp, label, value, sub, color = '#d4af37' }) {
       </div>
       <div className="min-w-0">
         <div className="text-[18px] font-black leading-tight" style={{ color, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</div>
-        <div className="text-[9px] uppercase font-bold tracking-wide truncate" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</div>
-        {sub && <div className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>{sub}</div>}
+        <div className="text-[11px] uppercase font-bold tracking-wide truncate" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</div>
+        {sub && <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>{sub}</div>}
       </div>
     </div>
   );
@@ -76,12 +76,12 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
       {/* Viewer join timeline */}
       {joinTimeline.length > 1 && (
         <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="text-[9px] font-bold uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <div className="text-[11px] font-bold uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Viewer Growth
           </div>
           <ResponsiveContainer width="100%" height={80}>
             <LineChart data={joinTimeline}>
-              <XAxis dataKey="time" tick={{ fontSize: 8, fill: 'rgba(255,255,255,0.2)' }} />
+              <XAxis dataKey="time" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.2)' }} />
               <YAxis hide />
               <Tooltip
                 contentStyle={{ background: '#0B0B18', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 6, fontSize: 10 }}
@@ -96,12 +96,12 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
 
       {/* Engagement bars */}
       <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="text-[9px] font-bold uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <div className="text-[11px] font-bold uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Engagement Breakdown
         </div>
         <ResponsiveContainer width="100%" height={80}>
           <BarChart data={engagementData} barSize={20}>
-            <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'rgba(255,255,255,0.3)' }} />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} />
             <YAxis hide />
             <Tooltip
               contentStyle={{ background: '#0B0B18', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 6, fontSize: 10 }}
@@ -110,7 +110,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
             />
             <Bar dataKey="value" radius={[3, 3, 0, 0]}
               fill="#d4af37"
-              label={{ position: 'top', fontSize: 8, fill: 'rgba(255,255,255,0.4)' }}
+              label={{ position: 'top', fontSize: 11, fill: 'rgba(255,255,255,0.4)' }}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -119,7 +119,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
       {/* Member list */}
       {members.length > 0 && (
         <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="px-3 py-2 text-[9px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="px-3 py-2 text-[11px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             Viewer List
           </div>
           <div className="max-h-36 overflow-y-auto">
@@ -127,7 +127,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
               <div key={m.id} className="flex items-center justify-between px-3 py-1.5"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <span className="text-[10px] font-bold text-white/70">{m.user_name}</span>
-                <span className="text-[9px]" style={{ color: m.is_active ? '#00FF88' : 'rgba(255,255,255,0.2)' }}>
+                <span className="text-[11px]" style={{ color: m.is_active ? '#00FF88' : 'rgba(255,255,255,0.2)' }}>
                   {m.is_active ? '● Active' : '○ Left'}
                 </span>
               </div>

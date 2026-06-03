@@ -235,8 +235,8 @@ export default function StreamAnalytics() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={viewerData.slice(0, 20)}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="min" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} />
-                <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} />
+                <XAxis dataKey="min" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} />
+                <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
                 <Bar dataKey="messages" fill={GOLD} radius={[2, 2, 0, 0]} />
               </BarChart>
@@ -291,7 +291,7 @@ export default function StreamAnalytics() {
             <div className="flex items-center gap-2 px-4 pt-4 pb-2">
               <DollarSign className="w-4 h-4" style={{ color: GOLD }} />
               <span className="text-sm font-black" style={{ color: GOLD, ...T }}>Revenue Breakdown</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black"
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full font-black"
                 style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>
                 90/10 Split
               </span>
@@ -325,7 +325,7 @@ export default function StreamAnalytics() {
             <div style={{ height: 160 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={SOURCE_DATA} layout="vertical">
-                  <XAxis type="number" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} />
                   <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }} width={70} />
                   <Tooltip contentStyle={TOOLTIP_STYLE} />
                   <Bar dataKey="viewers" fill={CYAN} radius={[0, 4, 4, 0]} />

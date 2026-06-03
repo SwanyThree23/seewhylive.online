@@ -110,7 +110,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
               placeholder="Poll question"
               value={newPoll.question}
               onChange={(e) => setNewPoll(prev => ({ ...prev, question: e.target.value }))}
-              className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-[9px] text-white placeholder-white/40"
+              className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-[11px] text-white placeholder-white/40"
             />
 
             <div className="space-y-1.5">
@@ -126,7 +126,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
                         options: prev.options.map((o, i) => (i === idx ? e.target.value : o))
                       }))
                     }
-                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[9px] text-white placeholder-white/40"
+                    className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/40"
                   />
                   {newPoll.options.length > 2 && (
                     <button
@@ -143,13 +143,13 @@ export default function InteractivePollWidget({ roomId, isHost }) {
             <div className="flex gap-1.5">
               <button
                 onClick={handleAddOption}
-                className="flex-1 text-[9px] bg-white/5 hover:bg-white/10 rounded px-2 py-1 text-white/60"
+                className="flex-1 text-[11px] bg-white/5 hover:bg-white/10 rounded px-2 py-1 text-white/60"
               >
                 + Add Option
               </button>
               <button
                 onClick={handleCreatePoll}
-                style={{ flex:1, background:'#2563eb', color:'#fff', border:'none', borderRadius:6, height:32, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:9, fontWeight:600 }}
+                style={{ flex:1, background:'#2563eb', color:'#fff', border:'none', borderRadius:6, height:32, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:11, fontWeight:600 }}
               >
                 Launch
               </button>
@@ -179,7 +179,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
                   onClick={() => handleVote(poll.id, optIdx)}
                   className={`w-full text-left transition-all ${isVoted ? 'ring-1 ring-blue-400' : ''}`}
                 >
-                  <div className="flex items-center justify-between text-[9px] mb-0.5">
+                  <div className="flex items-center justify-between text-[11px] mb-0.5">
                     <div className="flex items-center gap-1">
                       {isVoted && <CheckCircle2 className="w-3 h-3 text-blue-400" />}
                       <span className="text-white">{option}</span>

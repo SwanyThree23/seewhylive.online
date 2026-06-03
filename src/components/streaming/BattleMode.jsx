@@ -137,7 +137,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Battle Mode</span>
           {activeBattle && (
-            <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
           )}
         </div>
         {isHost && !activeBattle && (
@@ -217,8 +217,8 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
               transition={{ type: 'spring', damping: 20 }}
             />
             <div className="absolute inset-0 flex items-center justify-between px-2">
-              <span className="text-[9px] font-bold text-white drop-shadow">{hostPct}%</span>
-              <span className="text-[9px] font-bold text-white drop-shadow">{challengerPct}%</span>
+              <span className="text-[11px] font-bold text-white drop-shadow">{hostPct}%</span>
+              <span className="text-[11px] font-bold text-white drop-shadow">{challengerPct}%</span>
             </div>
           </div>
 
@@ -256,7 +256,7 @@ function CreatorBattleCard({ name, score, pct, side, isLeading, onVote }) {
         <p className="text-lg font-bold font-mono text-[#d4af37]">{score}</p>
         <button
           onClick={onVote}
-          style={{ width:'100%', height:24, fontSize:9, background:'#800020', color:'#fff', border:'none', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
+          style={{ width:'100%', height:24, fontSize:11, background:'#800020', color:'#fff', border:'none', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
         >
           <Zap className="w-2.5 h-2.5" /> Vote
         </button>
@@ -281,7 +281,7 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
           const setVal = idx === 0 ? setCreator1 : setCreator2;
           return (
             <div key={label} className="space-y-1">
-              <p className="text-[9px] text-white/40">{label}</p>
+              <p className="text-[11px] text-white/40">{label}</p>
               <select
                 value={val}
                 onChange={e => setVal(e.target.value)}
@@ -299,12 +299,12 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
         })}
       </div>
       <div className="flex items-center gap-2">
-        <p className="text-[9px] text-white/40 shrink-0">Duration</p>
+        <p className="text-[11px] text-white/40 shrink-0">Duration</p>
         {[2, 5, 10].map(m => (
           <button
             key={m}
             onClick={() => setDurationMin(m)}
-            className={`text-[9px] px-2 py-0.5 rounded border transition-all ${
+            className={`text-[11px] px-2 py-0.5 rounded border transition-all ${
               durationMin === m ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-white/10 text-white/40'
             }`}
           >
@@ -335,7 +335,7 @@ function LastBattleResult({ battles }) {
       <Trophy className="w-5 h-5 text-[#d4af37] mx-auto" />
       <p className="text-[10px] text-white/50">Last Battle Winner</p>
       <p className="text-sm font-bold text-[#d4af37]">{last.winner_name}</p>
-      <p className="text-[9px] text-white/30">
+      <p className="text-[11px] text-white/30">
         {last.host_name} {last.host_score} — {last.challenger_score} {last.challenger_name}
       </p>
     </div>

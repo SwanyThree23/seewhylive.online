@@ -125,7 +125,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
                 <span className="text-lg">{platform.emoji}</span>
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-white">{platform.name}</p>
-                  <p className="text-[9px] text-white/70 truncate">{platform.note}</p>
+                  <p className="text-[11px] text-white/70 truncate">{platform.note}</p>
                 </div>
                 <ExternalLink className="w-3 h-3 text-white/50 ml-auto shrink-0" />
               </button>

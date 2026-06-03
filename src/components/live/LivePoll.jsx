@@ -174,7 +174,7 @@ export default function LivePoll({ roomId, isHost }) {
         {activePoll ? (
           <motion.div key="poll" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center gap-1.5 mb-2">
-              <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(220,38,38,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(220,38,38,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
             </div>
             <PollResults
               poll={activePoll}

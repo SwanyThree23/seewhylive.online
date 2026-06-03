@@ -68,7 +68,7 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
         </div>
 
         {/* Custom */}
-        <div style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', ...F, marginBottom: 5 }}>Custom Goal</div>
+        <div style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', ...F, marginBottom: 5 }}>Custom Goal</div>
         <div style={{ display: 'flex', gap: 5, flexDirection: 'column' }}>
           <input
             value={customLabel}

@@ -43,7 +43,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
     return (
       <div className="bg-[#1a0a2e]/50 border border-white/5 rounded-lg p-3 text-center">
         <WifiOff className="w-4 h-4 text-white/20 mx-auto mb-1" />
-        <p className="text-[9px] text-white/30">{guestName} not streaming</p>
+        <p className="text-[11px] text-white/30">{guestName} not streaming</p>
       </div>
     );
   }
@@ -57,10 +57,10 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
       <div className="flex items-center gap-2 mb-2">
         <div className="w-2 h-2 rounded-full bg-[#00FF88] animate-pulse" />
         <span className="text-[10px] font-semibold text-white">{guestName}</span>
-        <span className="text-[8px] text-white/40 ml-auto">{healthLabel[stats.health]}</span>
+        <span className="text-[11px] text-white/40 ml-auto">{healthLabel[stats.health]}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5 text-[9px]">
+      <div className="grid grid-cols-2 gap-1.5 text-[11px]">
         <div className="flex items-center gap-1.5 bg-white/5 rounded p-1.5">
           <Activity className="w-3 h-3 text-[#d4af37]" />
           <div>
@@ -97,7 +97,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
           className="bg-orange-900/20 border border-orange-600/30 rounded p-1.5 flex gap-1.5"
         >
           <AlertTriangle className="w-3 h-3 text-orange-400 shrink-0 mt-0.5" />
-          <p className="text-[8px] text-orange-300">
+          <p className="text-[11px] text-orange-300">
             {stats.health === 'warning' ? 'Connection unstable — consider lower bitrate' : 'Critical — connection degrading'}
           </p>
         </motion.div>

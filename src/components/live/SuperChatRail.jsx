@@ -39,7 +39,7 @@ export default function SuperChatRail({ superchats = [] }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 12, marginBottom: 5 }}>
         <DollarSign style={{ width: 10, height: 10, color: '#D4AF37' }} />
-        <span style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#D4AF37', ...F }}>
+        <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#D4AF37', ...F }}>
           Super Chats
         </span>
       </div>

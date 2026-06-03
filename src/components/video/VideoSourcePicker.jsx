@@ -197,7 +197,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                 const active = tab === t.id;
                 return (
                   <button key={t.id} onClick={() => setTab(t.id)}
-                    className="flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-black uppercase transition-all"
+                    className="flex-1 flex flex-col items-center gap-0.5 py-2 text-[11px] font-black uppercase transition-all"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? t.color : 'rgba(255,255,255,0.3)', borderBottom: active ? `2px solid ${t.color}` : '2px solid transparent', background: active ? t.color + '10' : 'transparent' }}>
                     <Icon className="w-3.5 h-3.5" />{t.label}
                   </button>
@@ -223,7 +223,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
               {tab === 'device' && (
                 <>
                   <UploadZone onFile={handleFileUpload} uploading={uploading} uploadPct={uploadPct} />
-                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', textAlign: 'center', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', textAlign: 'center', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Video is uploaded to your media library and streamed to all viewers
                   </p>
                 </>

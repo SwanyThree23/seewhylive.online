@@ -41,7 +41,7 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
           {result.appeal_approved ? '✓ Appeal Approved' : '✗ Appeal Denied'}
         </p>
         <p className="text-[10px] text-white/70">{result.reason}</p>
-        <p className="text-[9px] text-white/40 mt-2">Confidence: {Math.round(result.confidence * 100)}%</p>
+        <p className="text-[11px] text-white/40 mt-2">Confidence: {Math.round(result.confidence * 100)}%</p>
         <button
           onClick={onClose}
           className="mt-3 w-full px-2 py-1.5 rounded text-xs font-bold"

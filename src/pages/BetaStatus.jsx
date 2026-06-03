@@ -122,7 +122,7 @@ export default function BetaStatusPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-black text-sm text-white" style={T}>{feature.name}</p>
-                      <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                      <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                         style={{ ...T, background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}>
                         {feature.status}
                       </span>

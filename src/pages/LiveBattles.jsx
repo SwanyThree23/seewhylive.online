@@ -37,13 +37,13 @@ function BattleCard({ battle, index }) {
             </div>
             <div>
               {isActive && (
-                <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
+                <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
                   style={{ ...T, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564' }}>
                   ⚡ LIVE
                 </span>
               )}
               {isEnded && (
-                <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
+                <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
                   style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }}>
                   ENDED
                 </span>

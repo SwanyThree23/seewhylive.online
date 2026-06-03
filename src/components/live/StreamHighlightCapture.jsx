@@ -60,7 +60,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl p-2 space-y-1"
             style={{ background: '#0d0618', border: '1px solid rgba(255,184,0,0.2)', width: 160, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
-            <p className="text-[9px] font-bold uppercase text-white/30 px-1 pb-1"
+            <p className="text-[11px] font-bold uppercase text-white/30 px-1 pb-1"
               style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Tag This Moment</p>
             {MOMENTS.map(m => (
               <button key={m.id}

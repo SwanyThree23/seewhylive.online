@@ -83,7 +83,7 @@ function DestinationRow({ dest, userId, onRemove }) {
             {platform.label.charAt(0)}
           </div>
           <p className="text-xs font-semibold text-white flex-1 truncate">{dest.label}</p>
-          <span style={{ fontSize:9, fontWeight:900, padding:'2px 6px', borderRadius:99, background:`${platform.color}15`, color:platform.color, border:`1px solid ${platform.color}30` }}>
+          <span style={{ fontSize:11, fontWeight:900, padding:'2px 6px', borderRadius:99, background:`${platform.color}15`, color:platform.color, border:`1px solid ${platform.color}30` }}>
             {platform.label}
           </span>
           <StatusPill status={dest.status} validationState={validationState} />
@@ -125,9 +125,9 @@ function DestinationRow({ dest, userId, onRemove }) {
 
         {/* Bitrate + actions */}
         <div className="flex items-center gap-2">
-          <p className="text-[9px] text-white/25 shrink-0">Bitrate</p>
+          <p className="text-[11px] text-white/25 shrink-0">Bitrate</p>
           <input type="range" value={dest.bitrate_kbps || 3000} onChange={e => updateMutation.mutate({ data: { bitrate_kbps: +e.target.value } })} min={500} max={8000} step={500} style={{ flex:1, accentColor:'#D4AF37' }} />
-          <span className="text-[9px] font-mono text-[#d4af37] w-14 text-right shrink-0">{dest.bitrate_kbps || 3000} kbps</span>
+          <span className="text-[11px] font-mono text-[#d4af37] w-14 text-right shrink-0">{dest.bitrate_kbps || 3000} kbps</span>
         </div>
 
         <div className="flex gap-1.5 pt-0.5">
@@ -201,7 +201,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
         <div className="flex items-center gap-2">
           <Lock className="w-3 h-3 text-[#d4af37]" />
           <span className="text-[11px] font-semibold text-[#d4af37]">RTMP Destinations</span>
-          <span style={{ fontSize:9, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'rgba(212,175,55,0.1)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.2)' }}>
+          <span style={{ fontSize:11, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'rgba(212,175,55,0.1)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.2)' }}>
             VaultPro AES-256
           </span>
         </div>
@@ -234,7 +234,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
                     <button
                       key={p.id}
                       onClick={() => setSelectedPreset(p.id)}
-                      className={`py-1.5 px-1 rounded text-[9px] font-semibold transition-all border ${
+                      className={`py-1.5 px-1 rounded text-[11px] font-semibold transition-all border ${
                         selectedPreset === p.id
                           ? 'border-[#d4af37] bg-[#d4af37]/15 text-white'
                           : 'border-white/10 text-white/30 hover:border-white/20 hover:text-white/60'
@@ -293,7 +293,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
 
         {/* FFmpeg fanout notice */}
         {enabledCount > 1 && (
-          <p className="text-[9px] text-white/20 text-center pt-1">
+          <p className="text-[11px] text-white/20 text-center pt-1">
             FFmpeg fanout will simulcast to {enabledCount} platforms when you go live
           </p>
         )}

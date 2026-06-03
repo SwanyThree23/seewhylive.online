@@ -100,7 +100,7 @@ export default function ClipMarker({ roomId, user, streamStartTs }) {
             position: 'absolute', top: -5, right: -5,
             minWidth: 16, height: 16, borderRadius: 8,
             background: CRIMSON, color: '#fff',
-            fontSize: 9, fontWeight: 900,
+            fontSize: 11, fontWeight: 900,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '0 3px',
           }}>{allClips.length}</span>
@@ -163,7 +163,7 @@ export default function ClipMarker({ roomId, user, streamStartTs }) {
               />
 
               <div>
-                <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
                   Duration
                 </div>
                 <div style={{ display: 'flex', gap: 5 }}>
@@ -207,7 +207,7 @@ export default function ClipMarker({ roomId, user, streamStartTs }) {
 
             {allClips.length > 0 && (
               <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '8px 12px 10px' }}>
-                <div style={{ fontSize: 9, fontWeight: 700, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.25)', marginBottom: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.25)', marginBottom: 6 }}>
                   Recent Clips ({allClips.length})
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -221,7 +221,7 @@ export default function ClipMarker({ roomId, user, streamStartTs }) {
                       <span style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.6)', fontFamily: FONT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {c.title}
                       </span>
-                      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', fontFamily: FONT, flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: FONT, flexShrink: 0 }}>
                         {c.duration_seconds || ((c.end_timestamp_seconds || 0) - (c.start_timestamp_seconds || 0))}s
                       </span>
                       <div style={{

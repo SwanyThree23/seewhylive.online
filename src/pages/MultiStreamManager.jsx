@@ -14,7 +14,7 @@ function CardHeader({ children, className = '' }) { return <div className={`px-4
 function CardTitle({ children, className = '' }) { return <p className={`font-black text-sm ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{children}</p>; }
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) { return <button onClick={onClick} disabled={disabled} {...rest} className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`} style={{ padding: size === 'sm' ? '5px 10px' : size === 'icon' ? '6px' : '8px 14px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : variant === 'outline' ? '1px solid rgba(255,255,255,0.15)' : 'none', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>{children}</button>; }
 function Input({ value, onChange, placeholder, type = 'text', className = '', style = {} }) { return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={{ width: '100%', padding: '8px 12px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />; }
-function Badge({ children, className = '', style = {} }) { return <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...style }}>{children}</span>; }
+function Badge({ children, className = '', style = {} }) { return <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...style }}>{children}</span>; }
 function Slider({ value, onValueChange, min = 0, max = 100, step = 1, className = '' }) { return <input type="range" min={min} max={max} step={step} value={Array.isArray(value) ? value[0] : value} onChange={e => onValueChange && onValueChange([Number(e.target.value)])} className={className} style={{ width: '100%', accentColor: '#D4AF37' }} />; }
 function Tabs({ children, defaultValue }) { return <div data-defaulttab={defaultValue}>{children}</div>; }
 function TabsList({ children, className = '' }) { return <div className={`flex gap-1 ${className}`}>{children}</div>; }
@@ -298,7 +298,7 @@ export default function MultiStreamManager() {
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex items-center gap-3 flex-wrap">
                             <p className="font-semibold text-white text-sm">{dest.label}</p>
-                            <Badge className="text-[9px] px-1.5 py-0" style={{
+                            <Badge className="text-[11px] px-1.5 py-0" style={{
                               background: `${platform?.color}20`,
                               color: platform?.color,
                               borderColor: `${platform?.color}40`
@@ -374,7 +374,7 @@ export default function MultiStreamManager() {
                             </button>
                           </div>
                           {dest.last_used && (
-                            <p className="text-[9px] text-white/20">Last: {new Date(dest.last_used).toLocaleDateString()}</p>
+                            <p className="text-[11px] text-white/20">Last: {new Date(dest.last_used).toLocaleDateString()}</p>
                           )}
                         </div>
                       </div>
