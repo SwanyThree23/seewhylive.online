@@ -188,7 +188,7 @@ db.exec(`
     amount_cents    INTEGER NOT NULL,
     creator_cents   INTEGER NOT NULL,
     platform_cents  INTEGER NOT NULL,
-    tier_color      TEXT    NOT NULL DEFAULT '#5A8FFF',
+    tier_color      TEXT    NOT NULL DEFAULT '#C9A84C',
     ts              INTEGER NOT NULL
   );
 `);
@@ -2060,8 +2060,8 @@ io.on('connection', function(socket) {
     var platformCents = amountCents - creatorCents;
     var scId          = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
-    var TIER_COLORS   = { 100: '#5A8FFF', 200: '#00C96A', 500: '#C9A84C', 1000: '#FF8C42', 2000: '#FF1A3C', 5000: '#9B59B6' };
-    var tierColor     = TIER_COLORS[amountCents] || '#5A8FFF';
+    var TIER_COLORS   = { 100: '#C9A84C', 200: '#D4854A', 500: '#C9A84C', 1000: '#FF8C42', 2000: '#FF1A3C', 5000: '#800020' };
+    var tierColor     = TIER_COLORS[amountCents] || '#C9A84C';
 
     try {
       db.prepare(
