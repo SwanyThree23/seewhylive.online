@@ -5,6 +5,7 @@ import { Radio } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import FeaturedContentSection from '../components/home/FeaturedContent';
 
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
@@ -314,6 +315,9 @@ export default function Home() {
           })}
         </div>
       </div>
+
+      {/* ── FEATURED PARTNER CONTENT ── */}
+      <FeaturedContentSection />
 
       {/* ── ROOM CARDS ── */}
       <div className="px-4 pt-4 pb-8">
