@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -31,11 +31,12 @@ var BOTTOM_NAV = [
 
 // ── Drawer nav groups ──────────────────────────────────────────────────────
 var DRAWER_WATCH = [
-  { name: 'Home',        icon: Home,         href: createPageUrl('Home') },
-  { name: 'Watch',       icon: Eye,          href: createPageUrl('Discover') },
-  { name: 'Watch Party', icon: Eye,          href: createPageUrl('WatchParty') },
-  { name: 'Audio Room',  icon: Radio,        href: createPageUrl('AudioRoom') },
-  { name: 'Leaderboard', icon: Trophy,       href: createPageUrl('Leaderboard') },
+  { name: 'Home',             icon: Home,   href: createPageUrl('Home') },
+  { name: 'Discover',         icon: Eye,    href: createPageUrl('Discover') },
+  { name: 'Watch Party',      icon: Eye,    href: createPageUrl('WatchParty') },
+  { name: 'Featured Partners',icon: Tv2,    href: createPageUrl('Discover') + '?tab=partners' },
+  { name: 'Audio Room',       icon: Radio,  href: createPageUrl('AudioRoom') },
+  { name: 'Leaderboard',      icon: Trophy, href: createPageUrl('Leaderboard') },
 ];
 
 var DRAWER_CREATE = [
