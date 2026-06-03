@@ -918,44 +918,47 @@ export default function WatchPartyTab(props) {
             </div>
           </div>
 
-          {/* ── AUDIENCE AVATAR ROW ── */}
+          {/* ── CO-WATCHER PRESENCE STRIP ── */}
           {liveGuests.length > 0 && (
-            <div style={{ background: CARD, borderTop: '1px solid ' + BORDER, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0 }}>{liveGuests.length} WATCHING</span>
-              <div style={{ display: 'flex', gap: 4, overflowX: 'auto', flex: 1 }}>
-                {liveGuests.slice(0, 20).map(function(g) {
+            <div style={{ background: CARD, borderTop: '1px solid ' + BORDER, padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, minHeight: 52 }}>
+              {/* Live dot + count */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 6px #FF1A3C', animation: 'watchPulse 1.2s ease infinite' }} />
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: TEXT, letterSpacing: 1 }}>{liveGuests.length}</span>
+                </div>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: .5 }}>WATCHING</span>
+              </div>
+              {/* Avatar chips with name */}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', flex: 1, alignItems: 'center', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+                {liveGuests.slice(0, 12).map(function(g) {
                   var name     = g.username || 'Guest';
                   var initials = getInitials(name);
-                  var color    = avatarColor(name);
+                  var acolor   = avatarColor(name);
+                  var isLast   = g === liveGuests[liveGuests.length - 1];
                   return (
-                    <div
-                      key={g.userId || g.guestId || name}
-                      title={name}
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: '50%',
-                        background: color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        fontFamily: "'Barlow Condensed',sans-serif",
-                        fontWeight: 700,
-                        fontSize: 11,
-                        color: TEXT,
+                    <div key={g.userId || g.guestId || name} title={name}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                      <div style={{
+                        width: 30, height: 30, borderRadius: '50%',
+                        background: 'linear-gradient(135deg,' + acolor + ',' + acolor + 'BB)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT,
                         border: '2px solid ' + CARD,
                         boxShadow: '0 0 0 1px ' + BORDER,
-                        cursor: 'default',
-                        userSelect: 'none'
+                        userSelect: 'none',
                       }}>
-                      {initials}
+                        {initials}
+                      </div>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, maxWidth: 32, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {name.length > 6 ? name.slice(0, 5) + '…' : name}
+                      </span>
                     </div>
                   );
                 })}
-                {liveGuests.length > 20 && (
+                {liveGuests.length > 12 && (
                   <div style={{ width: 30, height: 30, borderRadius: '50%', background: DIM, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0, border: '2px solid ' + CARD }}>
-                    +{liveGuests.length - 20}
+                    +{liveGuests.length - 12}
                   </div>
                 )}
               </div>

@@ -1338,6 +1338,7 @@ io.on('connection', function(socket) {
     var guestId = data.guestId;
     if (!roomId || !guestId) return;
     io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
+    io.to(roomId).emit('hand-lower',   { guestId: guestId });
   });
 
   // ── stage-remove ───────────────────────────────────────────────────────
@@ -1645,6 +1646,14 @@ io.on('connection', function(socket) {
     var username = data.username || socket.data.username || guestId;
     if (!roomId) return;
     io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── hand-lower ─────────────────────────────────────────────────────────
+  socket.on('hand-lower', function(data) {
+    var roomId  = (data && data.roomId) || socket.data.roomId;
+    var guestId = (data && data.guestId) || socket.data.guestId || socket.id;
+    if (!roomId) return;
+    io.to(roomId).emit('hand-lower', { guestId: guestId });
   });
 
   // ── overlay-update ────────────────────────────────────────────────────

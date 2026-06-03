@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
+export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
   var videoRef    = useRef(null);
   var analyserRef = useRef(null);
   var animRef     = useRef(null);
@@ -17,7 +17,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
   var [streamReady,  setStreamReady]  = useState(false);
   var [retryCount,   setRetryCount]   = useState(0);
 
-  var size      = sz || 200;
+  var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
   var guestName = guest && guest.username ? guest.username : guestId;
   var isOwnCell = guestId === userId;
@@ -233,19 +233,23 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
     socket.emit('speaking', { roomId: roomId, guestId: userId, speaking: speaking });
   }, [speaking]);
 
-  var ringGlow = fadesMode
-    ? '0 0 0 3px #FF1A3C, 0 0 14px rgba(255,26,60,.6)'
-    : (speaking && !isMuted ? '0 0 0 3px ' + color + ', 0 0 12px ' + color + '88' : (online ? '0 0 0 2px rgba(201,168,76,.5)' : 'none'));
+  var ringGlow = fill ? 'none'
+    : fadesMode
+      ? '0 0 0 3px #FF1A3C, 0 0 14px rgba(255,26,60,.6)'
+      : (speaking && !isMuted ? '0 0 0 3px ' + color + ', 0 0 12px ' + color + '88' : (online ? '0 0 0 2px rgba(201,168,76,.5)' : 'none'));
 
   var connDotColor = connQuality === 'green' ? '#C9A84C' : (connQuality === 'yellow' ? '#C9A84C' : '#FF1A3C');
+  var avatarSz = fill ? '38%' : (Math.round(size * 0.38) + 'px');
+  var avatarFs = fill ? '18px' : (Math.round(size * 0.18) + 'px');
+  var nameFs   = fill ? '10px' : (Math.max(8, Math.round(size * 0.07)) + 'px');
 
   return (
     <div
-      style={{ width: size, height: size, cursor: onTap ? 'pointer' : 'default', position: 'relative', flexShrink: 0 }}
+      style={{ width: fill ? '100%' : size, height: fill ? '100%' : size, cursor: onTap ? 'pointer' : 'default', position: 'relative', flexShrink: 0 }}
       onClick={onTap ? function() { onTap(guest); } : undefined}
     >
-      {/* Octagonal clip container */}
-      <div style={{ clipPath: OCT, width: '100%', height: '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
+      {/* Video container — octagonal clip or full rect depending on fill mode */}
+      <div style={{ clipPath: fill ? 'none' : OCT, width: '100%', height: fill ? '100%' : '100%', position: 'relative', background: '#0E0C09', boxShadow: ringGlow }}>
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,12,9,.8)', zIndex: 2 }}>
             <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + color, borderTopColor: 'transparent' }} />
@@ -262,7 +266,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
         {/* Cam off overlay */}
         {online && isCamOff && isOwnCell && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#07050A', gap: 4 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0E0C09', gap: 4 }}>
             <div style={{ fontSize: 28 }}>🚫</div>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>CAM OFF</div>
           </div>
@@ -270,9 +274,9 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
 
         {/* Offline — avatar + name */}
         {!online && !loading && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0A0710', gap: 6 }}>
-            <div style={{ width: Math.round(size * 0.38), height: Math.round(size * 0.38), borderRadius: '50%', background: 'linear-gradient(135deg,' + color + '33,' + color + '11)', border: '2px solid ' + color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: Math.round(size * 0.18), color: color + 'BB', lineHeight: 1 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0E0C09', gap: 6 }}>
+            <div style={{ width: avatarSz, height: avatarSz, borderRadius: '50%', background: 'linear-gradient(135deg,' + color + '33,' + color + '11)', border: '2px solid ' + color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: avatarFs, color: color + 'BB', lineHeight: 1 }}>
                 {guestName ? guestName.charAt(0).toUpperCase() : '?'}
               </span>
             </div>
@@ -285,7 +289,7 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
                 </button>
               </div>
             ) : (
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: Math.max(8, Math.round(size * 0.07)), color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: nameFs, color: '#8A7A62', textAlign: 'center', maxWidth: '80%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guestName}</span>
             )}
           </div>
         )}
@@ -302,26 +306,44 @@ export default function OctCell({ guest, sz, isHost, fadesMode, branding, onTap,
           </div>
         )}
 
+        {/* Hand raised badge (shown inside video) */}
+        {handRaised && (
+          <div style={{ position: 'absolute', top: 6, left: 6, background: 'rgba(255,140,0,.9)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', zIndex: 5 }}>
+            ✋
+          </div>
+        )}
+
         {/* Connection quality dot */}
         <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
       </div>
 
-      {/* Name bar */}
-      <div style={{ textAlign: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: speaking && !isMuted ? color : '#B0A0C0', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {guestName}
-        {isOwnCell && <span style={{ color: '#8A7A62', fontStyle: 'italic' }}> (YOU)</span>}
-      </div>
+      {/* Name bar + EQ bars — hidden in fill/rect mode (host renders footer externally) */}
+      {!fill && (
+        <>
+          <div style={{ textAlign: 'center', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: speaking && !isMuted ? color : '#F0E8D4', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {guestName}
+            {isOwnCell && <span style={{ color: '#8A7A62', fontStyle: 'italic' }}> (YOU)</span>}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1, height: 12, marginTop: 2 }}>
+            {eqBars.map(function(h, i) {
+              return <div key={i} style={{ width: 3, height: Math.max(3, h * 0.2) + 'px', backgroundColor: isMuted ? '#3D3020' : color, borderRadius: 1 }} />;
+            })}
+          </div>
+        </>
+      )}
 
-      {/* EQ bars */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1, height: 12, marginTop: 2 }}>
-        {eqBars.map(function(h, i) {
-          return <div key={i} style={{ width: 3, height: Math.max(3, h * 0.2) + 'px', backgroundColor: isMuted ? '#3D3020' : color, borderRadius: 1 }} />;
-        })}
-      </div>
+      {/* In fill mode, show EQ bars as an overlay bar at bottom */}
+      {fill && online && !isCamOff && (
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 18, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 1, padding: '0 0 3px', background: 'linear-gradient(transparent, rgba(14,12,9,.5))', pointerEvents: 'none', zIndex: 4 }}>
+          {eqBars.map(function(h, i) {
+            return <div key={i} style={{ width: 3, height: Math.max(2, h * 0.14) + 'px', backgroundColor: isMuted ? '#3D302088' : color + 'CC', borderRadius: 1 }} />;
+          })}
+        </div>
+      )}
 
       {/* Own cell controls: mic + cam toggles */}
       {isOwnCell && (onMuteToggle || onCamToggle) && (
-        <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', flexDirection: 'column', gap: 3, zIndex: 10 }}>
+        <div style={{ position: 'absolute', top: 4, right: fill ? 28 : 4, display: 'flex', flexDirection: 'column', gap: 3, zIndex: 10 }}>
           {onMuteToggle && (
             <button
               onClick={function(e) { e.stopPropagation(); onMuteToggle(); }}
