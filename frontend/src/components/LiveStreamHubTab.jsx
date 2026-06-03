@@ -131,7 +131,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
       </div>
 
       {loading && (
-        <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#4A4060', letterSpacing: 2 }}>SCANNING...</div>
+        <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020', letterSpacing: 2 }}>SCANNING...</div>
       )}
       {error && !loading && (
         <div style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 8, padding: '12px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#FF6B81' }}>Error: {error}</div>
@@ -150,7 +150,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
           {activeIn.length === 0 && staleIn.length === 0 && (
             <div style={{ textAlign: 'center', padding: '32px 20px' }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>📡</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#4A4060', letterSpacing: 2 }}>NO ACTIVE STREAMS</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#3D3020', letterSpacing: 2 }}>NO ACTIVE STREAMS</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Streams appear here once a creator starts broadcasting</div>
             </div>
           )}
@@ -206,7 +206,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
                       <AvatarPortrait username={s.roomId} size={32} />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#8A7A62' }}>{maskKey(s.roomId)}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#4A4060' }}>{'Last seen ' + fmtAge(s.ageMs)}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#3D3020' }}>{'Last seen ' + fmtAge(s.ageMs)}</div>
                       </div>
                       <span style={staleChip}>ENDED</span>
                     </div>
@@ -231,7 +231,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
           {activeOut.length === 0 && (
             <div style={{ textAlign: 'center', padding: '32px 20px' }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>📤</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#4A4060', letterSpacing: 2 }}>NO ACTIVE FANOUTS</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#3D3020', letterSpacing: 2 }}>NO ACTIVE FANOUTS</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Start a fanout from the FANOUT tab to relay your stream to YouTube, TikTok, and more</div>
             </div>
           )}
@@ -265,7 +265,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
                     );
                   })}
                   {s.destinations.length === 0 && (
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#4A4060' }}>HLS only (no platform relay)</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#3D3020' }}>HLS only (no platform relay)</div>
                   )}
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function LiveStreamHubTab({ addToast, isLive, socket, roomId }) {
           {rooms.length === 0 && (
             <div style={{ textAlign: 'center', padding: '32px 20px' }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>◈</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#4A4060', letterSpacing: 2 }}>NO ACTIVE ROOMS</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#3D3020', letterSpacing: 2 }}>NO ACTIVE ROOMS</div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020', marginTop: 4 }}>Rooms with at least one viewer appear here</div>
             </div>
           )}

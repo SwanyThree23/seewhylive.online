@@ -80,7 +80,7 @@ export default function PushStreamTab({ isLive, addToast }) {
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
 
       {/* Status banner */}
-      <div style={{ background: isLive ? 'rgba(128,0,32,.18)' : 'rgba(36,28,52,.7)', border: '1px solid ' + (isLive ? '#FF1A3C44' : '#3D3020'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ background: isLive ? 'rgba(128,0,32,.18)' : 'rgba(26,21,16,.7)', border: '1px solid ' + (isLive ? '#FF1A3C44' : '#3D3020'), borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: isLive ? '#FF1A3C' : '#8A7A62', boxShadow: isLive ? '0 0 8px #FF1A3C' : 'none', flexShrink: 0 }} />
         <div>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: isLive ? '#F0E8D4' : '#8A7A62' }}>
@@ -135,7 +135,7 @@ export default function PushStreamTab({ isLive, addToast }) {
               <button
                 key={pr.id}
                 onClick={function() { setSelectedPreset(pr.id); }}
-                style={{ flex: 1, padding: '6px 0', background: active ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(36,28,52,.8)', border: '1px solid ' + (active ? '#C9A84C55' : '#3D3020'), borderRadius: 6, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '6px 0', background: active ? 'linear-gradient(135deg,#800020,#C01838)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (active ? '#C9A84C55' : '#3D3020'), borderRadius: 6, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer' }}>
                 {pr.label}
               </button>
             );

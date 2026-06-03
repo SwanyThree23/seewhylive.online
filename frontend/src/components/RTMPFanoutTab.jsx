@@ -197,7 +197,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
         var isTesting = Boolean(testing[p.id]);
 
         return (
-          <div key={p.id} style={{ background: isOn ? p.color + '0a' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? p.color + '44' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
+          <div key={p.id} style={{ background: isOn ? p.color + '0a' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? p.color + '44' : 'rgba(26,21,16,1)'), borderRadius: 10, padding: '10px 12px' }}>
             {/* Top row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: 6, background: p.color + '22', border: '1px solid ' + p.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0, color: p.color }}>
@@ -267,7 +267,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
         var isTesting = Boolean(testing[cid]);
         var lat     = latency[cid];
         return (
-          <div key={cid} style={{ background: isOn ? 'rgba(212,133,74,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(212,133,74,.4)' : 'rgba(36,28,52,1)'), borderRadius: 10, padding: '10px 12px' }}>
+          <div key={cid} style={{ background: isOn ? 'rgba(212,133,74,.06)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (isOn ? 'rgba(212,133,74,.4)' : 'rgba(26,21,16,1)'), borderRadius: 10, padding: '10px 12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(212,133,74,.15)', border: '1px solid rgba(212,133,74,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#C9A84C' }}>
                 📡

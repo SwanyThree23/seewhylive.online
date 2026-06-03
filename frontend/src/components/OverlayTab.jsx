@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
 
 var BANNER_POSITIONS = ['top', 'bottom'];
-var BANNER_COLORS    = ['#C9A84C', '#FF1A3C', '#C9A84C', '#C9A84C', '#C9A84C', '#9B4DCA', '#ffffff'];
+var BANNER_COLORS    = ['#C9A84C', '#FF1A3C', '#C9A84C', '#C9A84C', '#C9A84C', '#800020', '#ffffff'];
 
 var INIT_OVERLAY = {
   banner:      { text: '', position: 'bottom', color: '#C9A84C', visible: false },
@@ -185,7 +185,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
                   <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', flex: 1 }}>{g.username}</span>
                   <button
                     onClick={function() { toggleLT(g.guestId); }}
-                    style={{ padding: '3px 10px', background: lt.visible ? 'rgba(201,168,76,.2)' : 'rgba(36,28,52,.6)', border: '1px solid ' + (lt.visible ? gold + '55' : '#3D3020'), borderRadius: 5, color: lt.visible ? gold : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                    style={{ padding: '3px 10px', background: lt.visible ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (lt.visible ? gold + '55' : '#3D3020'), borderRadius: 5, color: lt.visible ? gold : '#8A7A62', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
                     {lt.visible ? 'SHOWN' : 'HIDDEN'}
                   </button>
                 </div>
@@ -468,7 +468,7 @@ export default function OverlayTab({ overlayConfig, setOverlayConfig, socket, ro
       )}
 
       {!isHost && (
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 8, background: 'rgba(36,28,52,.4)', borderRadius: 8 }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', textAlign: 'center', padding: 8, background: 'rgba(26,21,16,.4)', borderRadius: 8 }}>
           Overlay controls are host-only. Graphics will appear on your stage view.
         </div>
       )}

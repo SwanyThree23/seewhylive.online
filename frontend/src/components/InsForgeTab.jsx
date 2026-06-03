@@ -33,7 +33,7 @@ var MOCK_LOGS = [
 var SYSTEM_STATS = [
   { label: 'CPU USAGE',  val: '18%',     bar: 18,  color: '#C9A84C' },
   { label: 'MEMORY',     val: '19.4 MB', bar: 22,  color: '#C9A84C' },
-  { label: 'DISK USED',  val: '12%',     bar: 12,  color: '#C084FC' },
+  { label: 'DISK USED',  val: '12%',     bar: 12,  color: '#C9A84C' },
   { label: 'NETWORK RX', val: '1.2 MB/s',bar: 35,  color: '#C9A84C' },
   { label: 'UPTIME',     val: '7d 14h',  bar: 100, color: '#C9A84C' },
 ];
@@ -275,7 +275,7 @@ export default function InsForgeTab({ addToast, isLive }) {
   var VPS_ACTIONS = [
     { id: 'pm2restart',  label: 'RESTART PM2',     icon: '🔄', cmd: 'pm2 restart seewhylive-backend',  color: '#C9A84C' },
     { id: 'pm2logs',     label: 'TAIL PM2 LOGS',   icon: '📋', cmd: 'pm2 logs --lines 50',              color: '#C9A84C' },
-    { id: 'nginxtest',   label: 'TEST NGINX CFG',  icon: '⚡', cmd: 'nginx -t',                         color: '#C084FC' },
+    { id: 'nginxtest',   label: 'TEST NGINX CFG',  icon: '⚡', cmd: 'nginx -t',                         color: '#C9A84C' },
     { id: 'nginxreload', label: 'RELOAD NGINX',    icon: '🔃', cmd: 'nginx -s reload',                  color: '#C9A84C' },
     { id: 'diskcheck',   label: 'DISK USAGE',      icon: '💾', cmd: 'df -h /opt/seewhy',                color: '#C9A84C' },
     { id: 'memcheck',    label: 'MEMORY',          icon: '🧠', cmd: 'free -h',                          color: '#FF6B35' },
