@@ -435,7 +435,7 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
                   </div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: ACTION_COLORS[f.action] || '#8A7A62', background: ((ACTION_COLORS[f.action] || '#8A7A62') + '22'), borderRadius: 4, padding: '2px 6px' }}>{f.action ? f.action.toUpperCase() : 'FLAGGED'}</div>
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#A09AB8', marginBottom: 4, wordBreak: 'break-word' }}>{f.msg || f.text}</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginBottom: 4, wordBreak: 'break-word' }}>{f.msg || f.text}</div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>{(f.rule || f.reason || '') + ' · ' + f.ts}</div>
                   <div style={{ display: 'flex', gap: 5 }}>

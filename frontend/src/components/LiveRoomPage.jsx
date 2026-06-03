@@ -389,6 +389,11 @@ export default function LiveRoomPage({
       setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[data.guestId]; return n; });
     });
 
+    socket.on('mute-all', function() {
+      setIsMuted(true);
+      if (addToast) addToast('🔇 Host muted all participants', 'info');
+    });
+
     socket.on('stage-invite', function(data) {
       if (!data || !data.guestId) return;
       setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[data.guestId]; return n; });
@@ -483,6 +488,7 @@ export default function LiveRoomPage({
       socket.off('gift-received');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
+      socket.off('mute-all');
     };
   }, [socket]);
 

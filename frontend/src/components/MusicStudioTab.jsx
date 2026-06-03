@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 var BG    = '#0E0C09';
 var SURF  = '#0E0C09';
 var CARD  = '#1A1510';
-var CARD2 = '#211A30';
+var CARD2 = '#241C12';
 var GOLD  = '#C9A84C';
 var BURG  = '#800020';
 var TEAL  = '#C9A84C';
@@ -45,17 +45,17 @@ var GEN_STEPS = [
 
 var COVER_GRADIENTS = [
   'linear-gradient(135deg,#800020,#C01838)',
-  'linear-gradient(135deg,#1a0533,#7928CA)',
-  'linear-gradient(135deg,#003d4d,#C9A84C)',
-  'linear-gradient(135deg,#1a2a00,#7CB518)',
+  'linear-gradient(135deg,#3D1A00,#C9A84C)',
+  'linear-gradient(135deg,#1A0F00,#D4854A)',
+  'linear-gradient(135deg,#2A1200,#FF6B35)',
   'linear-gradient(135deg,#2d1b00,#C9A84C)',
-  'linear-gradient(135deg,#00104d,#C9A84C)',
-  'linear-gradient(135deg,#2d0033,#FF1A3C)',
-  'linear-gradient(135deg,#001a33,#00A2E8)',
+  'linear-gradient(135deg,#1a0000,#800020)',
+  'linear-gradient(135deg,#2d0a0a,#FF1A3C)',
+  'linear-gradient(135deg,#1a1000,#C9A84C)',
   'linear-gradient(135deg,#1a1000,#FF6B35)',
   'linear-gradient(135deg,#1a0a00,#800020)',
   'linear-gradient(135deg,#1a0a00,#D4854A)',
-  'linear-gradient(135deg,#1a0000,#FF4757)',
+  'linear-gradient(135deg,#1a0000,#FF1A3C)',
 ];
 var COVER_EMOJIS = ['🎵','🎸','🎹','🎺','🎻','🥁','🎙','🎤','🎼','🎧','💿','🔊','🎶','👑','🔥'];
 
