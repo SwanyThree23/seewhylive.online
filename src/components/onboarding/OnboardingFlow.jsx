@@ -194,7 +194,7 @@ export default function OnboardingFlow({ isOpen, onClose }) {
                           <p className="font-bold text-sm text-white">{cat.label} Community</p>
                           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Connect with {cat.label.toLowerCase()} enthusiasts</p>
                         </div>
-                        <span className="text-[9px] px-2 py-1 rounded-full font-bold"
+                        <span className="text-[11px] px-2 py-1 rounded-full font-bold"
                           style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
                           JOINED
                         </span>

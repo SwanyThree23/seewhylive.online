@@ -233,7 +233,7 @@ export default function CreatorChannel() {
                   <p className="font-black text-sm text-white" style={T}>{r.title}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : 'Scheduled'}</p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
               </div>
             ))}
             {!profile?.stream_schedule?.length && !scheduledRooms.length && (

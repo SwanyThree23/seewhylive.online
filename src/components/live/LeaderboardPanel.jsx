@@ -166,7 +166,7 @@ export default function LeaderboardPanel({ roomId }) {
                 style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }}
               >
                 <div className="text-xl mb-1">{BADGE_ICONS[badge.badge_type] || '🏅'}</div>
-                <p className="text-[9px] font-bold text-white truncate leading-tight">{badge.title}</p>
+                <p className="text-[11px] font-bold text-white truncate leading-tight">{badge.title}</p>
               </motion.div>
             ))}
           </div>

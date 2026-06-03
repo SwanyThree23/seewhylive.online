@@ -128,7 +128,7 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
       <div className="text-center" style={{ maxWidth: size + 8 }}>
         <p className="text-[11px] font-bold text-white leading-none truncate">{p.name}</p>
         {(isHost || isCohost) && (
-          <p className="text-[9px] mt-0.5 font-semibold" style={{ color: GOLD + 'BB' }}>
+          <p className="text-[11px] mt-0.5 font-semibold" style={{ color: GOLD + 'BB' }}>
             {isHost ? 'Host' : 'Co-host'}
           </p>
         )}
@@ -152,7 +152,7 @@ function AudienceTile({ p }) {
           </span>
         </div>
       </div>
-      <p className="text-[8px] text-white/35 truncate leading-none" style={{ maxWidth: 48 }}>
+      <p className="text-[11px] text-white/35 truncate leading-none" style={{ maxWidth: 48 }}>
         {p.name.split(' ')[0]}
       </p>
     </div>
@@ -186,7 +186,7 @@ function ChatPanel({ messages, onClose, onSend }) {
         style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <span className="text-sm font-black uppercase tracking-wide text-white"
           style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room Chat</span>
-        <span className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase"
+        <span className="text-[11px] px-2 py-0.5 rounded-full font-bold uppercase"
           style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}44` }}>LIVE</span>
         <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
       </div>
@@ -407,7 +407,7 @@ export default function LiveRoom() {
         <div className="px-4 pt-3 pb-1 flex items-center gap-3 flex-wrap">
           {/* Host */}
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
               style={{ background: avatarColor(hostName) + '55', color: avatarColor(hostName), border: `1.5px solid ${avatarColor(hostName)}` }}>
               {hostName.charAt(0)}
             </div>
@@ -438,19 +438,19 @@ export default function LiveRoom() {
               style={{ background: `${PINK}1A`, border: `1px solid ${PINK}44` }}>
               <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
                 animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 0.9, repeat: Infinity }} />
-              <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
+              <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
             </div>
           ) : (
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.25)' }} />
-              <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>Waiting to go live</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>Waiting to go live</span>
             </div>
           )}
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <Radio className="w-2.5 h-2.5" style={{ color: GOLD }} />
-            <span className="text-[9px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
+            <span className="text-[11px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
           </div>
         </div>
 
@@ -546,7 +546,7 @@ export default function LiveRoom() {
                   style={{ background: s.bg, border: '1px solid rgba(255,255,255,0.07)' }}>
                   {s.icon}
                 </div>
-                <span className="text-[8px] text-white/30">{s.label}</span>
+                <span className="text-[11px] text-white/30">{s.label}</span>
               </div>
             ))}
           </div>
@@ -572,10 +572,10 @@ export default function LiveRoom() {
               <MessageCircle className="w-4 h-4 text-white" />
             </div>
             {unread > 0 && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold"
+              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-bold"
                 style={{ background: PINK, color: '#fff' }}>{unread}</div>
             )}
-            <span className="text-[8px] text-white/35">Chat</span>
+            <span className="text-[11px] text-white/35">Chat</span>
           </button>
 
           {/* Heart */}
@@ -585,7 +585,7 @@ export default function LiveRoom() {
               <Heart className="w-4 h-4 transition-all"
                 style={{ color: liked ? PINK : 'rgba(255,255,255,0.6)', fill: liked ? PINK : 'none' }} />
             </div>
-            <span className="text-[8px]" style={{ color: liked ? PINK : 'rgba(255,255,255,0.35)' }}>{likeCount}</span>
+            <span className="text-[11px]" style={{ color: liked ? PINK : 'rgba(255,255,255,0.35)' }}>{likeCount}</span>
           </button>
 
           {/* Hand raise */}
@@ -594,7 +594,7 @@ export default function LiveRoom() {
               style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
               <Hand className="w-4 h-4 transition-all" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
             </div>
-            <span className="text-[8px] text-white/35"> </span>
+            <span className="text-[11px] text-white/35"> </span>
           </button>
 
           {/* Gift */}
@@ -604,7 +604,7 @@ export default function LiveRoom() {
                 style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}44` }}>
                 <Gift className="w-4 h-4" style={{ color: GOLD }} />
               </div>
-              <span className="text-[8px]" style={{ color: GOLD }}>Gift</span>
+              <span className="text-[11px]" style={{ color: GOLD }}>Gift</span>
             </button>
           )}
 
@@ -612,7 +612,7 @@ export default function LiveRoom() {
           {party && (
             <div className="flex flex-col items-center gap-0.5">
               <TipWidget roomId={roomId} hostId={party?.host_id} currentUser={user} />
-              <span className="text-[8px] text-white/35">Tip</span>
+              <span className="text-[11px] text-white/35">Tip</span>
             </div>
           )}
 
@@ -624,7 +624,7 @@ export default function LiveRoom() {
                 ? <MicOff className="w-4 h-4 text-red-400" />
                 : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
             </div>
-            <span className="text-[8px] text-white/35"> </span>
+            <span className="text-[11px] text-white/35"> </span>
           </button>
         </div>
       </div>

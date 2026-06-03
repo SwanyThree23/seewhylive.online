@@ -161,7 +161,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
         <div className="absolute bottom-0 left-0 right-0 px-1 py-0.5" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.92), transparent)' }}>
           <div className="flex items-center gap-0.5">
             {isHostMember && <Crown className="w-2 h-2 shrink-0" style={{ color: '#d4af37' }} />}
-            <span className="text-[8px] text-white font-semibold truncate flex-1">{member.user_name}</span>
+            <span className="text-[11px] text-white font-semibold truncate flex-1">{member.user_name}</span>
             {roleBadge && (
               <span className="text-[6px] px-0.5 rounded font-bold shrink-0" style={{ background: roleBadge.bg, color: roleBadge.color }}>
                 {roleBadge.label}
@@ -291,7 +291,7 @@ function SpotlitView({ member, hostId, stream, isLocal, onUnpin, speakerLevel = 
 
       <button
         onClick={onUnpin}
-        className="absolute top-2 right-2 text-[9px] px-2 py-1 rounded transition-all"
+        className="absolute top-2 right-2 text-[11px] px-2 py-1 rounded transition-all"
         style={{ background: 'rgba(0,0,0,0.65)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
         onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
         onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
@@ -451,7 +451,7 @@ export default function PanelGrid({
     <div className="flex flex-col h-full" style={{ background: '#0d0618' }}>
       {/* Header bar */}
       <div className="flex items-center gap-1.5 px-2 py-1.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <span style={{ fontSize: 9, background: 'rgba(212,175,55,0.13)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 99, padding: '2px 7px', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <span style={{ fontSize: 11, background: 'rgba(212,175,55,0.13)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 99, padding: '2px 7px', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {members.length}/{maxSlots}
         </span>
 
@@ -481,7 +481,7 @@ export default function PanelGrid({
             <button
               key={n}
               onClick={() => setSlots(n)}
-              className="text-[9px] w-5 h-5 rounded border transition-all"
+              className="text-[11px] w-5 h-5 rounded border transition-all"
               style={slots === n
                 ? { borderColor: '#d4af37', color: '#d4af37', background: 'rgba(212,175,55,0.1)' }
                 : { borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.25)' }}
@@ -494,7 +494,7 @@ export default function PanelGrid({
         {isHost && (
           <button
             onClick={onInvite}
-            className="flex items-center gap-1 text-[9px] px-1.5 py-1 rounded transition-all"
+            className="flex items-center gap-1 text-[11px] px-1.5 py-1 rounded transition-all"
             style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37' }}
           >
             <UserPlus className="w-2.5 h-2.5" />

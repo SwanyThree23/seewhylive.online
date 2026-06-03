@@ -51,7 +51,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
           <Lock className="w-4 h-4 text-[#d4af37]" />
           <span className="text-sm font-semibold text-white">Private Panels</span>
           {activePanels.length > 0 && (
-            <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)' }}>{activePanels.length}</span>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)' }}>{activePanels.length}</span>
           )}
         </div>
         {isHost && (
@@ -89,7 +89,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                   >
                     <span className="text-base">{type.icon}</span>
                     <p className="text-[10px] font-semibold text-white mt-0.5">{type.label}</p>
-                    <p className="text-[9px] text-white/40">{type.desc}</p>
+                    <p className="text-[11px] text-white/40">{type.desc}</p>
                   </button>
                 ))}
               </div>

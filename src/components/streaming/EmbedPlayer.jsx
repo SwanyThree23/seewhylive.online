@@ -147,7 +147,7 @@ export default function EmbedPlayer({
               <div className="flex-1" />
               <span
                 onClick={() => setQuality(quality === 'Auto' ? '1080p' : quality === '1080p' ? '720p' : quality === '720p' ? '480p' : 'Auto')}
-                style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(0,0,0,0.6)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', cursor:'pointer' }}
+                style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(0,0,0,0.6)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', cursor:'pointer' }}
               >
                 {quality}
               </span>

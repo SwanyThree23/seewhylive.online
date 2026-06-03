@@ -79,7 +79,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
                     disabled={launchMutation.isPending}
                     className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white/5 transition-all">
                     <p className="text-[11px] font-bold text-white">{t.q}</p>
-                    <p className="text-[9px] text-white/30">{t.opts.join(' · ')}</p>
+                    <p className="text-[11px] text-white/30">{t.opts.join(' · ')}</p>
                   </button>
                 ))}
                 <button onClick={() => setCustom(true)}

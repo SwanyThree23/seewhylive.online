@@ -163,7 +163,7 @@ export default function PKAnalyticsDashboard({ battles, user }) {
               </linearGradient>
             </defs>
             <XAxis dataKey="month" tick={{ fill: ET.sand + '60', fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: ET.sand + '40', fontSize: 9 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: ET.sand + '40', fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip content={CustomTooltip} />
             <Area type="monotone" dataKey="wins" stroke={ET.gold} strokeWidth={2} fill="url(#winsGrad)" name="wins" />
             <Area type="monotone" dataKey="losses" stroke={ET.rust} strokeWidth={2} fill="url(#lossGrad)" name="losses" />
@@ -184,8 +184,8 @@ export default function PKAnalyticsDashboard({ battles, user }) {
           </div>
           <ResponsiveContainer width="100%" height={100}>
             <BarChart data={displayMonthly} margin={{ top: 0, right: 4, bottom: 0, left: -24 }}>
-              <XAxis dataKey="month" tick={{ fill: ET.sand + '50', fontSize: 9 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: ET.sand + '40', fontSize: 8 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="month" tick={{ fill: ET.sand + '50', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: ET.sand + '40', fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip content={CustomTooltip} />
               <Bar dataKey="viewers" fill={ET.terracotta + 'CC'} radius={[3,3,0,0]} name="viewers" />
             </BarChart>
@@ -199,8 +199,8 @@ export default function PKAnalyticsDashboard({ battles, user }) {
           </div>
           <ResponsiveContainer width="100%" height={100}>
             <BarChart data={displayMonthly} margin={{ top: 0, right: 4, bottom: 0, left: -16 }}>
-              <XAxis dataKey="month" tick={{ fill: ET.sand + '50', fontSize: 9 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: ET.sand + '40', fontSize: 8 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="month" tick={{ fill: ET.sand + '50', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: ET.sand + '40', fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip content={CustomTooltip} />
               <Bar dataKey="earnings" fill={ET.clay + 'CC'} radius={[3,3,0,0]} name="earnings" />
             </BarChart>
@@ -247,17 +247,17 @@ export default function PKAnalyticsDashboard({ battles, user }) {
               var wr = Math.round((op.wins / op.battles) * 100);
               return (
                 <div key={op.name} className="flex items-center gap-2">
-                  <span className="text-[9px] w-3 shrink-0" style={{ color: ET.sand + '40' }}>{i + 1}</span>
+                  <span className="text-[11px] w-3 shrink-0" style={{ color: ET.sand + '40' }}>{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-[11px] font-bold truncate" style={{ color: ET.cream }}>{op.name}</span>
-                      <span className="text-[9px] font-black" style={{ color: wr >= 50 ? ET.gold : ET.terracotta }}>{wr}%</span>
+                      <span className="text-[11px] font-black" style={{ color: wr >= 50 ? ET.gold : ET.terracotta }}>{wr}%</span>
                     </div>
                     <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div className="h-full rounded-full" style={{ width: wr + '%', background: wr >= 50 ? ET.gold : ET.terracotta }} />
                     </div>
                   </div>
-                  <span className="text-[9px] shrink-0" style={{ color: ET.sand + '50' }}>{op.battles}b</span>
+                  <span className="text-[11px] shrink-0" style={{ color: ET.sand + '50' }}>{op.battles}b</span>
                 </div>
               );
             })}

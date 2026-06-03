@@ -78,7 +78,7 @@ function PodiumEntry({ rank, entry, statLabel, statValue }) {
         <p className="font-black text-sm leading-none" style={{ color, fontFamily: 'Orbitron, monospace' }}>
           {statValue}
         </p>
-        <p className="text-[9px] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{statLabel}</p>
+        <p className="text-[11px] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{statLabel}</p>
       </div>
 
       {/* podium base */}
@@ -119,7 +119,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
         <p className="font-black text-sm text-white truncate flex items-center gap-1" style={T}>
           {user?.full_name || 'Anonymous'}
           {isCurrentUser && (
-            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md"
+            <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded-md"
               style={{ background: 'rgba(212,175,55,0.15)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>
               You
             </span>
@@ -133,7 +133,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
         <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
           {typeof stat === 'number' && stat >= 1000 ? `${(stat / 1000).toFixed(1)}k` : stat}
         </p>
-        <p className="text-[9px] uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{statLabel}</p>
+        <p className="text-[11px] uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{statLabel}</p>
       </div>
     </div>
   );

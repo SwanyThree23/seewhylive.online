@@ -69,6 +69,20 @@ export default function Layout({ children, currentPageName }) {
   var location = useLocation();
   var navigate = useNavigate();
   var { backgroundStyle, backgrounds } = useBackground();
+  // Scroll-position preservation per bottom-nav tab
+  var scrollPositions = React.useRef({});
+  useEffect(function() {
+    var key = location.pathname;
+    var saved = scrollPositions.current[key];
+    if (saved !== undefined) window.scrollTo(0, saved);
+  }, [location.pathname]);
+  useEffect(function() {
+    function saveScroll() {
+      scrollPositions.current[location.pathname] = window.scrollY;
+    }
+    window.addEventListener('scroll', saveScroll, { passive: true });
+    return function() { window.removeEventListener('scroll', saveScroll); };
+  }, [location.pathname]);
 
   // Pages that own their full viewport — suppress header, bottom nav, and padding
   var isFullscreen = ['BroadcastStudio', 'LiveRoom'].includes(currentPageName);
@@ -112,7 +126,7 @@ export default function Layout({ children, currentPageName }) {
   function DrawerSection({ label, items, labelColor }) {
     return (
       <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        <p className="text-[9px] uppercase font-bold tracking-widest mb-2 px-1"
+        <p className="text-[11px] uppercase font-bold tracking-widest mb-2 px-1"
           style={{ fontFamily: 'Barlow Condensed, sans-serif', color: labelColor || 'rgba(255,255,255,0.2)' }}>
           {label}
         </p>
@@ -171,14 +185,14 @@ export default function Layout({ children, currentPageName }) {
               <div className="flex flex-col">
                 <span className="font-bold text-base leading-none"
                   style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37', letterSpacing: '0.05em' }}>SeeWhy</span>
-                <span className="text-[9px] text-white/30 leading-none"
+                <span className="text-[11px] text-white/30 leading-none"
                   style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
               </div>
               {liveCount > 0 && (
                 <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
                   style={{ background: 'rgba(180,50,30,0.25)', border: '1px solid rgba(200,80,30,0.3)' }}>
                   <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-                  <span className="text-[9px] font-bold text-orange-300">{liveCount}</span>
+                  <span className="text-[11px] font-bold text-orange-300">{liveCount}</span>
                 </div>
               )}
             </Link>
@@ -261,7 +275,7 @@ export default function Layout({ children, currentPageName }) {
                   </div>
                   <div className="flex flex-col">
                     <span className="font-bold text-sm leading-none" style={{ fontFamily: 'Orbitron, monospace', color: '#d4af37' }}>SeeWhy</span>
-                    <span className="text-[8px] text-white/30 leading-none mt-0.5" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
+                    <span className="text-[11px] text-white/30 leading-none mt-0.5" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.2em' }}>LIVE</span>
                   </div>
                 </div>
                 <button onClick={function() { setShowMobileMenu(false); }}
@@ -283,7 +297,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Group 4: Admin (isAdmin only) */}
               {isAdmin && (
                 <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,140,0,0.12)' }}>
-                  <p className="text-[9px] uppercase font-bold tracking-widest mb-2 px-1 text-orange-400/40"
+                  <p className="text-[11px] uppercase font-bold tracking-widest mb-2 px-1 text-orange-400/40"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Admin</p>
                   <div className="space-y-0.5">
                     {DRAWER_ADMIN.map(function(item) {
@@ -344,12 +358,15 @@ export default function Layout({ children, currentPageName }) {
               var Icon = item.icon;
               var active = isActive(item.href);
 
-              // Tapping an active tab scrolls to top (resets to root)
               function handleTabPress(e) {
                 if (active) {
+                  // Double-tap active tab → scroll to top
                   e.preventDefault();
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                   navigate(item.href, { replace: true });
+                } else {
+                  // Save current scroll before leaving
+                  scrollPositions.current[location.pathname] = window.scrollY;
                 }
               }
 
@@ -366,7 +383,7 @@ export default function Layout({ children, currentPageName }) {
                       }}>
                       <Icon className="w-6 h-6 text-black" />
                     </motion.div>
-                    <span className="text-[9px] font-black mt-1 uppercase"
+                    <span className="text-[11px] font-black mt-1 uppercase"
                       style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37', letterSpacing: '0.1em' }}>
                       {item.name}
                     </span>
@@ -386,7 +403,7 @@ export default function Layout({ children, currentPageName }) {
                         style={{ background: '#d4af37' }} />
                     )}
                   </div>
-                  <span className="text-[9px] uppercase font-bold"
+                  <span className="text-[11px] uppercase font-bold"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{item.name}</span>
                 </Link>
               );

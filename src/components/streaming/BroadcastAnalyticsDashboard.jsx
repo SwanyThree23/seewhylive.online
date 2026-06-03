@@ -11,10 +11,10 @@ const StatCard = ({ icon: IconComponent, label, value, trend, color }) => (
   >
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-[9px] text-white/60 uppercase font-semibold">{label}</p>
+        <p className="text-[11px] text-white/60 uppercase font-semibold">{label}</p>
         <p className="text-xl font-bold text-white mt-1">{value}</p>
         {trend && (
-          <p className={`text-[8px] mt-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
             {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </p>
         )}
@@ -80,7 +80,7 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
 
         {/* Viewer Trend Chart */}
         <div className="bg-white/5 border border-white/10 rounded-lg p-3 mb-4">
-          <p className="text-[9px] text-white/60 uppercase font-semibold mb-2">Viewer Trend</p>
+          <p className="text-[11px] text-white/60 uppercase font-semibold mb-2">Viewer Trend</p>
           <ResponsiveContainer width="100%" height={150}>
             <LineChart data={viewerData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -97,11 +97,11 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
 
         {/* Engagement Breakdown */}
         <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-          <p className="text-[9px] text-white/60 uppercase font-semibold mb-2">Engagement Breakdown</p>
+          <p className="text-[11px] text-white/60 uppercase font-semibold mb-2">Engagement Breakdown</p>
           <ResponsiveContainer width="100%" height={120}>
             <BarChart data={engagementData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="label" tick={{ fill: '#fff', fontSize: 9 }} />
+              <XAxis dataKey="label" tick={{ fill: '#fff', fontSize: 11 }} />
               <YAxis tick={{ fill: '#fff', fontSize: 10 }} />
               <Tooltip
                 contentStyle={{ background: '#0B0B18', border: '1px solid rgba(212,175,55,0.2)' }}

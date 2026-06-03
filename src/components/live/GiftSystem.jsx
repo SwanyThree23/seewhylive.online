@@ -111,7 +111,7 @@ export function GiftLeaderboard({ roomId }) {
 
   return (
     <div style={{ background: C.card, borderBottom: "1px solid " + C.gold + "33", padding: "6px 12px", display: "flex", gap: 10, overflowX: "auto" }}>
-      <span style={{ fontFamily: C.fOrb, fontSize: 8, color: C.gold, letterSpacing: 2, flexShrink: 0, alignSelf: "center" }}>🏆 TOP GIFTERS</span>
+      <span style={{ fontFamily: C.fOrb, fontSize: 11, color: C.gold, letterSpacing: 2, flexShrink: 0, alignSelf: "center" }}>🏆 TOP GIFTERS</span>
       {leaders.map((l, i) => (
         <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, gap: 2 }}>
           <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg," + C.burgundy + "," + C.gold + ")", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: C.fBeb, fontSize: 11, color: C.white }}>
@@ -201,7 +201,7 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
                   </span>
                   <span style={{ fontFamily: C.fMon, fontSize: 7, color: rs.color }}>{rs.label}</span>
                   <span style={{ fontFamily: C.fRaj, fontSize: 10, color: C.white }}>{gift.name}</span>
-                  <span style={{ fontFamily: C.fMon, fontSize: 9, color: C.gold }}>💎{gift.price}</span>
+                  <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.gold }}>💎{gift.price}</span>
                   <span style={{ fontFamily: C.fMon, fontSize: 7, color: C.dim }}>{gift.times_sent || 0}x sent</span>
                 </button>
               );

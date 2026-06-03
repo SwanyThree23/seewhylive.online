@@ -118,7 +118,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
                   <div className="flex items-center gap-1">
                     <span className="text-xs font-semibold text-white truncate">{msg.user_name}</span>
                     {msg.is_moderator && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(139,92,246,0.3)', color: '#8B5CF6' }}>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(139,92,246,0.3)', color: '#8B5CF6' }}>
                         MOD
                       </span>
                     )}

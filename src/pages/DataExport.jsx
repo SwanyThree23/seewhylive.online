@@ -106,7 +106,7 @@ export default function DataExportPage() {
                 <p className="font-black text-sm text-white" style={T}>{set.label}</p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{set.description}</p>
               </div>
-              <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                 style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }}>
                 Personal Data
               </span>

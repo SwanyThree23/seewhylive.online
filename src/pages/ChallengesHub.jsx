@@ -54,7 +54,7 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
             style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid rgba(212,175,55,0.2)` }}>
             <div className="px-4 py-3 sticky top-0 flex items-center justify-between" style={{ background: 'rgba(13,6,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>🏆 {title}</span>
-              <button onClick={onClose} className="text-[9px]" style={{ color: CREAM + '40' }}>Close</button>
+              <button onClick={onClose} className="text-[11px]" style={{ color: CREAM + '40' }}>Close</button>
             </div>
             <div className="p-3 space-y-1.5">
               {participants.map((p, i) => (
@@ -63,7 +63,7 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
                   <span className="w-6 text-center text-sm shrink-0">{i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span>
                   <div className="flex-1">
                     <p className="text-[10px] font-bold text-white">{p.user_id?.slice(0, 12)}</p>
-                    <p className="text-[8px]" style={{ color: CREAM + '40' }}>{p.completed ? '✓ Completed' : `Progress: ${p.progress || 0}`}</p>
+                    <p className="text-[11px]" style={{ color: CREAM + '40' }}>{p.completed ? '✓ Completed' : `Progress: ${p.progress || 0}`}</p>
                   </div>
                   <span className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{p.score || 0}</span>
                 </div>
@@ -104,19 +104,19 @@ function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderb
               </span>
             </div>
             <h4 className="font-black text-[12px] text-white">{challenge.title}</h4>
-            {challenge.description && <p className="text-[9px] mt-0.5" style={{ color: CREAM + '40' }}>{challenge.description}</p>}
+            {challenge.description && <p className="text-[11px] mt-0.5" style={{ color: CREAM + '40' }}>{challenge.description}</p>}
           </div>
           {challenge.end_date && (
             <div className="text-right shrink-0">
               <p className="text-[7px]" style={{ color: CREAM + '30' }}>Ends in</p>
-              <p className="font-black text-[9px]" style={{ color: GOLD, ...T }}><ChallengeCountdown endDate={challenge.end_date} /></p>
+              <p className="font-black text-[11px]" style={{ color: GOLD, ...T }}><ChallengeCountdown endDate={challenge.end_date} /></p>
             </div>
           )}
         </div>
 
         {/* Progress bar */}
         <div>
-          <div className="flex justify-between text-[8px] mb-1">
+          <div className="flex justify-between text-[11px] mb-1">
             <div className="flex items-center gap-1">
               <Users className="w-2.5 h-2.5" style={{ color: CREAM + '40' }} />
               <span style={{ color: CREAM + '50' }}>{challenge.participant_count || 0} joined</span>
@@ -137,13 +137,13 @@ function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderb
             </button>
           )}
           {hasJoined && (
-            <div className="flex-1 py-2 rounded-xl text-center font-black uppercase text-[9px]"
+            <div className="flex-1 py-2 rounded-xl text-center font-black uppercase text-[11px]"
               style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
               ✓ Joined · {myParticipation.progress || 0} progress
             </div>
           )}
           <button onClick={showLeaderboard}
-            className="px-3 py-2 rounded-xl font-black uppercase text-[9px]"
+            className="px-3 py-2 rounded-xl font-black uppercase text-[11px]"
             style={{ background: `${GOLD}10`, color: GOLD, border: `1px solid ${GOLD}20`, ...T }}>
             🏆
           </button>
@@ -212,7 +212,7 @@ export default function ChallengesHubPage() {
           <div className="flex overflow-x-auto scrollbar-hide gap-0">
             {TABS.map(t => (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
-                className="px-4 py-2 shrink-0 text-[9px] font-black uppercase border-b-2 transition-all"
+                className="px-4 py-2 shrink-0 text-[11px] font-black uppercase border-b-2 transition-all"
                 style={{ ...T, color: activeTab === t.id ? GOLD : CREAM + '35', borderBottomColor: activeTab === t.id ? GOLD : 'transparent', background: activeTab === t.id ? `${GOLD}07` : 'transparent' }}>
                 {t.label}
               </button>
@@ -260,7 +260,7 @@ export default function ChallengesHubPage() {
                           </div>
                         </div>
                         <div className="space-y-0.5">
-                          <div className="flex justify-between text-[8px]">
+                          <div className="flex justify-between text-[11px]">
                             <span style={{ color: CREAM + '40' }}>Progress: {p.progress || 0}</span>
                             <span style={{ color: GOLD }}>{progress}%</span>
                           </div>
@@ -269,7 +269,7 @@ export default function ChallengesHubPage() {
                           </div>
                         </div>
                         <button onClick={() => challenge && setLbOpen(challenge)}
-                          className="text-[8px] font-black uppercase" style={{ color: GOLD, ...T }}>
+                          className="text-[11px] font-black uppercase" style={{ color: GOLD, ...T }}>
                           🏆 View Leaderboard →
                         </button>
                       </div>
@@ -293,7 +293,7 @@ export default function ChallengesHubPage() {
                         <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
                           style={{ background: `${tc.color}15`, color: tc.color, ...T }}>{tc.label}</span>
                         <p className="font-bold text-[11px] text-white">{c.title}</p>
-                        <div className="flex items-center gap-1 text-[9px]">
+                        <div className="flex items-center gap-1 text-[11px]">
                           <Clock className="w-3 h-3" style={{ color: GOLD + '70' }} />
                           <span style={{ color: GOLD }}>Starts in {d > 0 ? `${d}d ${h}h` : `${h}h`}</span>
                         </div>
@@ -316,7 +316,7 @@ export default function ChallengesHubPage() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-[11px] text-white">Challenge {p.challenge_id?.slice(0, 8)}</p>
-                        <p className="text-[8px]" style={{ color: CREAM + '40' }}>
+                        <p className="text-[11px]" style={{ color: CREAM + '40' }}>
                           Rank: {p.rank || '—'} · Completed {p.updated_date ? new Date(p.updated_date).toLocaleDateString() : ''}
                         </p>
                       </div>

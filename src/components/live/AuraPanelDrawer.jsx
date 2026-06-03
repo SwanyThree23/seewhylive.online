@@ -73,7 +73,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
 
   return (
     <motion.div initial={{x:'100%'}} animate={{x:0}} exit={{x:'100%'}} transition={{type:'spring',damping:28,stiffness:300}}
-      style={{ position:'fixed', top:0, right:0, bottom:0, width:320, background:'#111', borderLeft:`1px solid rgba(212,175,55,0.15)`, zIndex:200, overflow:'auto', display:'flex', flexDirection:'column' }}>
+      style={{ position:'fixed', top:0, right:0, bottom:0, width:'min(320px, 100vw)', background:'#111', borderLeft:`1px solid rgba(212,175,55,0.15)`, zIndex:200, overflow:'auto', display:'flex', flexDirection:'column' }}>
       {/* Header */}
       <div style={{ padding:'14px 16px', borderBottom:`1px solid rgba(212,175,55,0.1)`, background:`linear-gradient(90deg, rgba(128,0,32,0.3), transparent)`, display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
         <div>
@@ -81,7 +81,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
           <div style={{ display:'flex', gap:8, alignItems:'center', marginTop:4 }}>
             <div style={{ width:7, height:7, borderRadius:'50%', background:statusColor[st], animation:st==='active'?'pulse 1.5s ease-in-out infinite':'none' }} />
             <span style={{ fontFamily:'Barlow Condensed', fontSize:10, color:statusColor[st], letterSpacing:1 }}>{st.toUpperCase()}</span>
-            {aura?.persona_style && <span style={{ padding:'1px 6px', background:'rgba(212,175,55,0.1)', borderRadius:4, fontSize:9, color:C.gold, fontFamily:'Barlow Condensed' }}>{aura.persona_style.toUpperCase()}</span>}
+            {aura?.persona_style && <span style={{ padding:'1px 6px', background:'rgba(212,175,55,0.1)', borderRadius:4, fontSize:11, color:C.gold, fontFamily:'Barlow Condensed' }}>{aura.persona_style.toUpperCase()}</span>}
           </div>
         </div>
         <button onClick={onClose} style={{ background:'transparent', border:'none', color:C.gray, fontSize:18, cursor:'pointer' }}>✕</button>
@@ -107,7 +107,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
                   style={{ padding:'8px', borderRadius:7, border:`1px solid ${active?C.gold:'#2a2a2a'}`, background:active?'rgba(212,175,55,0.08)':'transparent', cursor:'pointer', textAlign:'left' }}>
                   <div style={{ fontSize:16, marginBottom:2 }}>{p.emoji}</div>
                   <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:active?C.gold:C.gray }}>{p.label}</div>
-                  <div style={{ fontSize:9, color:'#444', marginTop:1, lineHeight:1.3 }}>{p.desc}</div>
+                  <div style={{ fontSize:11, color:'#444', marginTop:1, lineHeight:1.3 }}>{p.desc}</div>
                 </button>
               );
             })}

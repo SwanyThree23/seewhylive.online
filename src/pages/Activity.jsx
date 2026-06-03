@@ -55,7 +55,7 @@ export default function ActivityPage() {
                     {activity.description && (
                       <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{activity.description}</p>
                     )}
-                    <p className="text-[9px] mt-1" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>
+                    <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>
                       {format(new Date(activity.created_date), 'PPp')}
                     </p>
                   </div>

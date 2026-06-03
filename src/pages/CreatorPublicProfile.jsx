@@ -87,7 +87,7 @@ function PastStreamCard({ room }) {
           borderRadius: 4,
           padding: "2px 6px",
           fontFamily: "Share Tech Mono, monospace",
-          fontSize: 9,
+          fontSize: 11,
           color: G.gray,
         }}>
           {room.duration_seconds ? Math.round(room.duration_seconds / 60) + "m" : "—"}
@@ -98,9 +98,9 @@ function PastStreamCard({ room }) {
           {room.title || "Untitled Stream"}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 9, color: G.gray }}>{date}</span>
+          <span style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 11, color: G.gray }}>{date}</span>
           {room.viewer_count > 0 && (
-            <span style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 9, color: G.cyan, display: "flex", alignItems: "center", gap: 3 }}>
+            <span style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 11, color: G.cyan, display: "flex", alignItems: "center", gap: 3 }}>
               <Eye size={9} /> {room.viewer_count}
             </span>
           )}
@@ -136,13 +136,13 @@ function ScheduledCard({ room }) {
         flexShrink: 0,
       }}>
         <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 900, color: G.gold, lineHeight: 1 }}>{dateStr.split(" ")[1]}</div>
-        <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 8, color: G.gray, textTransform: "uppercase" }}>{dateStr.split(" ")[0]}</div>
+        <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 11, color: G.gray, textTransform: "uppercase" }}>{dateStr.split(" ")[0]}</div>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {room.title || "Upcoming Stream"}
         </div>
-        <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 9, color: G.gray }}>{timeStr}</div>
+        <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 11, color: G.gray }}>{timeStr}</div>
       </div>
       <div style={{ flexShrink: 0 }}>
         <span style={{
@@ -151,7 +151,7 @@ function ScheduledCard({ room }) {
           borderRadius: 20,
           padding: "2px 8px",
           fontFamily: "Barlow Condensed, sans-serif",
-          fontSize: 9,
+          fontSize: 11,
           color: G.gold,
           fontWeight: 700,
           letterSpacing: 1,
@@ -388,7 +388,7 @@ export default function CreatorPublicProfile() {
                     minWidth: 72,
                   }}>
                   <span style={{ fontSize: 22 }}>{style.icon}</span>
-                  <span style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 9, color: style.color, fontWeight: 700, textAlign: "center", lineHeight: 1.2 }}>
+                  <span style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 11, color: style.color, fontWeight: 700, textAlign: "center", lineHeight: 1.2 }}>
                     {badge.title}
                   </span>
                   <span style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 7, color: rColor, letterSpacing: 1 }}>
@@ -480,7 +480,7 @@ export default function CreatorPublicProfile() {
                   <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 13, color: "#fff" }}>
                     {t.transaction_type === "subscription" ? "New subscriber" : "Direct support"}
                   </div>
-                  <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 9, color: G.gray }}>
+                  <div style={{ fontFamily: "Share Tech Mono, monospace", fontSize: 11, color: G.gray }}>
                     {t.payment_method?.toUpperCase()}
                   </div>
                 </div>

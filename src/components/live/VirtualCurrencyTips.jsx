@@ -177,8 +177,8 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
               className="flex flex-col items-center gap-1 py-2 rounded-xl text-center transition-all disabled:opacity-40"
               style={{ background: `${tip.color}12`, border: `1px solid ${tip.color}30` }}>
               <span className="text-lg">{tip.emoji}</span>
-              <span className="text-[9px] font-bold" style={{ color: tip.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{tip.coins}</span>
-              <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>${(tip.coins / 10).toFixed(2)}</span>
+              <span className="text-[11px] font-bold" style={{ color: tip.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{tip.coins}</span>
+              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>${(tip.coins / 10).toFixed(2)}</span>
             </motion.button>
           ))}
         </div>
@@ -198,7 +198,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
               </button>
             ))}
           </div>
-          <p className="text-[9px] mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>1 coin = $0.10 · 90% goes to creator</p>
+          <p className="text-[11px] mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>1 coin = $0.10 · 90% goes to creator</p>
         </div>
       </div>
     </div>

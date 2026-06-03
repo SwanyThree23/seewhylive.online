@@ -81,7 +81,7 @@ export default function SpotlightBanner({ communityId, isAdmin }) {
             </div>
             <div style={{ flex:1 }}>
               <div style={{ display:'flex', gap:6, alignItems:'center', marginBottom:3 }}>
-                <span style={{ padding:'2px 8px', borderRadius:4, background:`${TYPE_COLORS[active.spotlight_type]||C.gold}22`, border:`1px solid ${TYPE_COLORS[active.spotlight_type]||C.gold}44`, fontFamily:'Barlow Condensed', fontSize:8, color:TYPE_COLORS[active.spotlight_type]||C.gold, letterSpacing:1 }}>{active.spotlight_type.toUpperCase()}</span>
+                <span style={{ padding:'2px 8px', borderRadius:4, background:`${TYPE_COLORS[active.spotlight_type]||C.gold}22`, border:`1px solid ${TYPE_COLORS[active.spotlight_type]||C.gold}44`, fontFamily:'Barlow Condensed', fontSize:11, color:TYPE_COLORS[active.spotlight_type]||C.gold, letterSpacing:1 }}>{active.spotlight_type.toUpperCase()}</span>
               </div>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:20, color:C.white, letterSpacing:1 }}>{active.title}</div>
               <div style={{ fontSize:11, color:'rgba(255,255,255,0.6)', marginTop:2 }}>{active.user_name} · {active.description}</div>
@@ -118,7 +118,7 @@ export default function SpotlightBanner({ communityId, isAdmin }) {
                     <div style={{ fontFamily:'Barlow Condensed', fontSize:12, color:'rgba(255,255,255,0.6)' }}>{s.title}</div>
                     <div style={{ fontSize:10, color:C.gray }}>{s.user_name}</div>
                   </div>
-                  <div style={{ fontFamily:'Barlow Condensed', fontSize:9, color:C.gray }}>{s.end_date ? new Date(s.end_date).toLocaleDateString() : ''}</div>
+                  <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray }}>{s.end_date ? new Date(s.end_date).toLocaleDateString() : ''}</div>
                 </div>
               ))}
             </div>

@@ -86,7 +86,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
         <div style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 8px', borderRadius:8, background:'rgba(212,175,55,0.1)', border:'1px solid rgba(212,175,55,0.2)' }}>
           <Zap style={{ width:12, height:12, color:'#d4af37' }} />
           <span style={{ fontSize:12, fontWeight:900, fontFamily:'monospace', color:'#d4af37' }}>{balance.toLocaleString()}</span>
-          <span style={{ fontSize:9, color:'rgba(255,255,255,0.4)' }}>pts</span>
+          <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>pts</span>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
                 <p style={{ fontSize:12, fontWeight:700, color:'#fff', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{reward.name}</p>
                 <p style={{ fontSize:10, color:'rgba(255,255,255,0.4)', margin:'2px 0 0', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{reward.description || REWARD_LABELS[reward.reward_type]}</p>
                 {reward.stock != null && (
-                  <p style={{ fontSize:9, color:'rgba(251,146,60,0.7)', margin:'2px 0 0' }}>{reward.stock - (reward.claimed_count || 0)} left</p>
+                  <p style={{ fontSize:11, color:'rgba(251,146,60,0.7)', margin:'2px 0 0' }}>{reward.stock - (reward.claimed_count || 0)} left</p>
                 )}
               </div>
               <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4, flexShrink:0 }}>
@@ -122,7 +122,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
                   onClick={() => handleRedeem(reward)}
                   disabled={!canAfford || isRedeeming}
                   style={{
-                    fontSize:9, fontWeight:900, textTransform:'uppercase', padding:'4px 10px', borderRadius:8,
+                    fontSize:11, fontWeight:900, textTransform:'uppercase', padding:'4px 10px', borderRadius:8,
                     border:'none', cursor: (!canAfford || isRedeeming) ? 'not-allowed' : 'pointer',
                     fontFamily:'Barlow Condensed, sans-serif',
                     background: canAfford ? '#d4af37' : 'rgba(255,255,255,0.06)',

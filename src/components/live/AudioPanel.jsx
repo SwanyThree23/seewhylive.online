@@ -33,7 +33,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
         <div className="flex items-center gap-2">
           <Headphones className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Audio Panel</span>
-          {bgMusic && <span style={{ fontSize: 8, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(88,28,135,0.5)', color: '#d8b4fe', border: '1px solid rgba(126,34,206,0.3)' }}>♪ Music</span>}
+          {bgMusic && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(88,28,135,0.5)', color: '#d8b4fe', border: '1px solid rgba(126,34,206,0.3)' }}>♪ Music</span>}
         </div>
         <span className="text-white/30 text-[10px]">{expanded ? '▲' : '▼'}</span>
       </button>
@@ -63,7 +63,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   </button>
                   <div>
                     <p className="text-xs text-white font-semibold">{micMuted ? 'Muted' : 'Live'}</p>
-                    <p className="text-[9px] text-white/40">{micMuted ? 'Tap to unmute' : 'Tap to mute'}</p>
+                    <p className="text-[11px] text-white/40">{micMuted ? 'Tap to unmute' : 'Tap to mute'}</p>
                   </div>
                 </div>
 
@@ -134,12 +134,12 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   <p className="text-[10px] text-white/50 uppercase tracking-wider">Speaker Volumes</p>
                   {audioOnlyParticipants.map(p => (
                     <div key={p.id} className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-[8px] font-bold text-white shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
                         {p.user_name?.charAt(0)?.toUpperCase()}
                       </div>
                       <span className="text-[10px] text-white/60 w-16 truncate">{p.user_name}</span>
                       <input type="range" value={volumes[p.id] ?? 80} onChange={e => setVolumes(prev => ({ ...prev, [p.id]: +e.target.value }))} min={0} max={100} step={5} style={{ flex: 1, accentColor: '#D4AF37' }} />
-                      <span className="text-[9px] text-white/30 w-7 text-right">{volumes[p.id] ?? 80}%</span>
+                      <span className="text-[11px] text-white/30 w-7 text-right">{volumes[p.id] ?? 80}%</span>
                     </div>
                   ))}
                 </div>
@@ -156,7 +156,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                   <Radio className="w-3 h-3 text-[#d4af37]" />
                   <p className="text-[10px] text-[#d4af37] font-semibold">Audio-Only Mode Active</p>
                 </div>
-                <p className="text-[9px] text-white/30 mt-0.5">Saves bandwidth — video off, audio on</p>
+                <p className="text-[11px] text-white/30 mt-0.5">Saves bandwidth — video off, audio on</p>
               </div>
             </div>
           </motion.div>

@@ -128,9 +128,9 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
                   )}
                   <div className="absolute top-2 left-2 flex gap-1">
                     {selectedDevice?.isOBS && (
-                      <span className="text-[8px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(0,255,136,0.2)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>OBS VIRTUAL</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(0,255,136,0.2)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>OBS VIRTUAL</span>
                     )}
-                    <span className="text-[8px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{quality}</span>
+                    <span className="text-[11px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{quality}</span>
                   </div>
                 </div>
 
@@ -147,7 +147,7 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
                       <span className="text-lg">{d.isOBS ? '🟢' : d.isElgato ? '🎮' : '📹'}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-white truncate">{d.label}</p>
-                        <p className="text-[8px]" style={{ color: d.isOBS ? '#00FF88' : 'rgba(255,255,255,0.3)' }}>
+                        <p className="text-[11px]" style={{ color: d.isOBS ? '#00FF88' : 'rgba(255,255,255,0.3)' }}>
                           {d.isOBS ? 'OBS Virtual Camera detected' : d.isVirtual ? 'Virtual camera' : 'Physical camera'}
                         </p>
                       </div>
@@ -158,11 +158,11 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
 
                 {/* Quality selector */}
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest mb-2 font-semibold" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Stream Quality</p>
+                  <p className="text-[11px] uppercase tracking-widest mb-2 font-semibold" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Stream Quality</p>
                   <div className="grid grid-cols-4 gap-1.5">
                     {Object.entries(QUALITY_PRESETS).map(([key, preset]) => (
                       <button key={key} onClick={() => setQuality(key)}
-                        className="py-1.5 rounded-lg text-[9px] font-black transition-all"
+                        className="py-1.5 rounded-lg text-[11px] font-black transition-all"
                         style={quality === key
                           ? { background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }
                           : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -175,7 +175,7 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
                 {/* OBS tip */}
                 {!devices.some(d => d.isOBS) && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.12)' }}>
-                    <p className="text-[9px]" style={{ color: 'rgba(0,255,136,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    <p className="text-[11px]" style={{ color: 'rgba(0,255,136,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       💡 Don't see OBS? Open OBS → Tools → Virtual Camera → Start Virtual Camera, then refresh this list.
                     </p>
                   </div>

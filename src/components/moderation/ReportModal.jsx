@@ -3,6 +3,16 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Flag } from 'lucide-react';
+import NativeSelect from '../shared/NativeSelect';
+
+const REPORT_REASONS = [
+  { value: 'spam',                  label: 'Spam' },
+  { value: 'harassment',            label: 'Harassment' },
+  { value: 'hate_speech',           label: 'Hate Speech' },
+  { value: 'inappropriate_content', label: 'Inappropriate Content' },
+  { value: 'impersonation',         label: 'Impersonation' },
+  { value: 'other',                 label: 'Other' },
+];
 
 const OVERLAY = { position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 };
 const MODAL = { background:'#0d0618', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:480, boxShadow:'0 24px 64px rgba(0,0,0,0.8)' };
@@ -74,15 +84,12 @@ export default function ReportModal({ isOpen, onClose, reportedUser, roomId, com
         <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
           <div>
             <label style={LABEL_STYLE}>Reason</label>
-            <select style={SELECT_STYLE} value={reportType} onChange={e => setReportType(e.target.value)}>
-              <option value="">Select reason</option>
-              <option value="spam">Spam</option>
-              <option value="harassment">Harassment</option>
-              <option value="hate_speech">Hate Speech</option>
-              <option value="inappropriate_content">Inappropriate Content</option>
-              <option value="impersonation">Impersonation</option>
-              <option value="other">Other</option>
-            </select>
+            <NativeSelect
+              value={reportType}
+              onChange={setReportType}
+              options={REPORT_REASONS}
+              placeholder="Select reason"
+            />
           </div>
 
           <div>

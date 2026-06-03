@@ -43,7 +43,7 @@ export default function ViewerLoyaltyCard({ userId, creatorId, compact = false }
         style={{ background: cfg.bg, border: `1px solid ${cfg.color}30` }}>
         <Zap className="w-3 h-3" style={{ color: cfg.color }} />
         <span className="text-[10px] font-bold font-mono" style={{ color: cfg.color }}>{pts.toLocaleString()}</span>
-        <span className="text-[9px]" style={{ color: `${cfg.color}80` }}>{cfg.label}</span>
+        <span className="text-[11px]" style={{ color: `${cfg.color}80` }}>{cfg.label}</span>
       </div>
     );
   }
@@ -67,7 +67,7 @@ export default function ViewerLoyaltyCard({ userId, creatorId, compact = false }
 
       {nextThreshold && (
         <div className="space-y-1">
-          <div className="flex justify-between text-[9px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <div className="flex justify-between text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
             <span>Progress to next tier</span>
             <span>{pts.toLocaleString()} / {nextThreshold.toLocaleString()}</span>
           </div>
@@ -86,7 +86,7 @@ export default function ViewerLoyaltyCard({ userId, creatorId, compact = false }
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2" style={{ background: 'rgba(0,0,0,0.2)' }}>
             <p className="text-[11px] font-bold text-white/80">{s.value}</p>
-            <p className="text-[8px] text-white/30 uppercase">{s.label}</p>
+            <p className="text-[11px] text-white/30 uppercase">{s.label}</p>
           </div>
         ))}
       </div>

@@ -353,7 +353,7 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
                 {isViolation && (
                   <span className="text-yellow-400 mr-1">
                     {isAppealing
-                      ? <span className="text-[9px] text-white/30">reviewing…</span>
+                      ? <span className="text-[11px] text-white/30">reviewing…</span>
                       : <ShieldAlert
                           className="w-3 h-3 inline cursor-pointer hover:text-yellow-300"
                           title={`Flagged: ${modStatus} — click to appeal`}

@@ -281,7 +281,7 @@ function StreamTab({ user }) {
                   <div key={w.event} className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full" style={{ background: w.color }} />
-                      <span className="text-[9px] text-white/40" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{w.event}</span>
+                      <span className="text-[11px] text-white/40" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{w.event}</span>
                     </div>
                     <StatusDot active={true} label="Ready" />
                   </div>
@@ -338,7 +338,7 @@ function SocialAudioRoles() {
             >
               <r.Icon className="w-5 h-5" style={{ color: active ? r.color : 'rgba(255,255,255,0.25)' }} />
               <span className="text-[10px] font-bold uppercase" style={{ color: active ? r.color : 'rgba(255,255,255,0.35)' }}>{r.label}</span>
-              <span className="text-[9px] text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>{r.desc}</span>
+              <span className="text-[11px] text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>{r.desc}</span>
             </button>
           );
         })}
@@ -423,7 +423,7 @@ function LiveRoomTab({ user }) {
                     >
                       {p.name.charAt(0)}
                       {p.hand && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px]" style={{ background: '#FFB800' }}>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[11px]" style={{ background: '#FFB800' }}>
                           ✋
                         </div>
                       )}
@@ -434,7 +434,7 @@ function LiveRoomTab({ user }) {
                     </div>
                     <div className="text-center">
                       <p className="text-[10px] font-bold text-white/80 truncate max-w-[4rem]">{p.name.split(' ')[0]}</p>
-                      <p className="text-[9px] font-bold uppercase" style={{ color: rc }}>{p.role}</p>
+                      <p className="text-[11px] font-bold uppercase" style={{ color: rc }}>{p.role}</p>
                     </div>
                   </div>
                 );
@@ -450,7 +450,7 @@ function LiveRoomTab({ user }) {
                     >
                       <Plus className="w-4 h-4 text-white/20" />
                     </div>
-                    <p className="text-[9px] text-white/20">Open slot</p>
+                    <p className="text-[11px] text-white/20">Open slot</p>
                   </div>
                 );
               })}
@@ -463,7 +463,7 @@ function LiveRoomTab({ user }) {
               {listenerParticipants.map(function(p) {
                 return (
                   <div key={p.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.18)' }}>
-                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: 'rgba(139,92,246,0.4)' }}>
+                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-bold text-white" style={{ background: 'rgba(139,92,246,0.4)' }}>
                       {p.name.charAt(0)}
                     </div>
                     <span className="text-[10px] text-white/60">{p.name.split(' ')[0]}</span>
@@ -545,7 +545,7 @@ function LiveRoomTab({ user }) {
                 return (
                   <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-xl font-bold" style={{ fontFamily: 'Share Tech Mono, monospace', color: s.c }}>{s.val}</p>
-                    <p className="text-[9px] text-white/30 uppercase">{s.label}</p>
+                    <p className="text-[11px] text-white/30 uppercase">{s.label}</p>
                   </div>
                 );
               })}
@@ -620,7 +620,7 @@ function StudioTab({ user }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-white/90 truncate">{room.name}</span>
-                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: sc + '18', color: sc }}>{room.status}</span>
+                    <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: sc + '18', color: sc }}>{room.status}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="text-[10px] text-white/35"><Users className="w-2.5 h-2.5 inline mr-0.5" />{room.participants}</span>
@@ -756,7 +756,7 @@ export default function StreamInfra() {
                   <span className="text-xs font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em', color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>
                     {t.label}
                   </span>
-                  <span className="text-[9px] text-white/25">{t.sub}</span>
+                  <span className="text-[11px] text-white/25">{t.sub}</span>
                 </button>
               );
             })}

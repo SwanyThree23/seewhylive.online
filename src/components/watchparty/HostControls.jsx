@@ -23,7 +23,7 @@ function Toggle({ on, onChange }) {
 
 function SectionLabel({ children }) {
   return (
-    <p style={{ ...T, fontSize: 8, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8 }}>
+    <p style={{ ...T, fontSize: 11, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 8 }}>
       {children}
     </p>
   );
@@ -125,7 +125,7 @@ export default function HostControls({
           {isHost ? 'Host Controls' : 'Co-Host Controls'}
         </span>
         {countdown !== null && (
-          <span className="text-[9px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(255,21,100,0.2)', color: PINK, ...T }}>
+          <span className="text-[11px] px-1.5 py-0.5 rounded font-black" style={{ background: 'rgba(255,21,100,0.2)', color: PINK, ...T }}>
             ⏱ {fmtCountdown(countdown)}
           </span>
         )}
@@ -140,7 +140,7 @@ export default function HostControls({
             <div className="flex" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               {SECTIONS.map(({ id, label, icon: Icon }) => (
                 <button key={id} onClick={() => setActiveSection(id)}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 text-[9px] font-black uppercase transition-all"
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 text-[11px] font-black uppercase transition-all"
                   style={{ ...T, color: activeSection === id ? GOLD : 'rgba(255,255,255,0.3)', borderBottom: activeSection === id ? `2px solid ${GOLD}` : '2px solid transparent', background: activeSection === id ? 'rgba(212,175,55,0.06)' : 'transparent' }}>
                   <Icon className="w-2.5 h-2.5" /> {label}
                 </button>
@@ -179,7 +179,7 @@ export default function HostControls({
                       <div className="flex gap-1.5">
                         {[10, 30, 60, 120].map(s => (
                           <button key={s} onClick={() => { setCooldownLocal(s); onSlowMode?.(true, s); }}
-                            className="flex-1 py-1 rounded text-[9px] font-black transition-all"
+                            className="flex-1 py-1 rounded text-[11px] font-black transition-all"
                             style={{ ...T, background: cooldownLocal === s ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${cooldownLocal === s ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.08)'}`, color: cooldownLocal === s ? GOLD : 'rgba(255,255,255,0.35)' }}>
                             {s < 60 ? s + 's' : Math.floor(s/60) + 'm'}
                           </button>
@@ -219,7 +219,7 @@ export default function HostControls({
                     <div className="flex gap-1.5">
                       {THEMES.map(t => (
                         <button key={t.id} onClick={() => setSettings(s => ({ ...s, theme: t.id }))}
-                          className="flex-1 py-1.5 rounded-lg text-[8px] font-bold transition-all"
+                          className="flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all"
                           style={{ ...T, background: t.color, border: settings.theme === t.id ? `1.5px solid ${GOLD}` : '1px solid rgba(255,255,255,0.1)', color: settings.theme === t.id ? GOLD : 'rgba(255,255,255,0.4)' }}>
                           {t.label}
                         </button>
@@ -255,7 +255,7 @@ export default function HostControls({
                               </div>
                               <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.7)', flex: 1, fontWeight: 700 }} className="truncate">{m.user_name}</span>
                               <Crown className="w-3 h-3 shrink-0" style={{ color: GOLD }} />
-                              <span style={{ ...T, fontSize: 9, color: GOLD }}>Co-Host</span>
+                              <span style={{ ...T, fontSize: 11, color: GOLD }}>Co-Host</span>
                             </div>
                           ))}
                         </div>
@@ -294,7 +294,7 @@ export default function HostControls({
                             </div>
                           ))}
                           {panelists.length > 8 && (
-                            <p style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.25)', textAlign: 'center' }}>+{panelists.length - 8} more in Viewers tab</p>
+                            <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.25)', textAlign: 'center' }}>+{panelists.length - 8} more in Viewers tab</p>
                           )}
                         </div>
                       ) : (
@@ -362,7 +362,7 @@ export default function HostControls({
                       <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                         <div className="flex items-start gap-2">
                           <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                          <p style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.3)', lineHeight: 1.5 }}>
+                          <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', lineHeight: 1.5 }}>
                             Countdown appears as a banner overlay for all viewers in the party
                           </p>
                         </div>

@@ -47,7 +47,7 @@ export default function SceneSwitcher({ activeScene, onSceneChange }) {
                     <Icon className="w-3 h-3" style={{ color: isActive ? '#d4af37' : 'rgba(255,255,255,0.5)' }} />
                     <span className="text-[10px] font-semibold text-white truncate">{scene.label}</span>
                   </div>
-                  <p className="text-[9px] text-white/40 truncate">{scene.desc}</p>
+                  <p className="text-[11px] text-white/40 truncate">{scene.desc}</p>
                   {isActive && (
                     <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
                   )}

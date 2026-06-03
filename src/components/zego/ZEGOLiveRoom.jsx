@@ -247,14 +247,14 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
                   <div className="text-center">
                     <div className="w-12 h-12 rounded-full mx-auto mb-2 animate-pulse" style={{ background: 'rgba(212,175,55,0.15)' }} />
                     <p className="text-[10px]" style={{ color: GOLD }}>{p.name}</p>
-                    <p className="text-[8px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       {connState === 'connecting' ? 'Connecting…' : connState === 'failed' ? 'Connection failed' : 'Waiting for stream…'}
                     </p>
                   </div>
                 </div>
               )}
               <div className="absolute top-2 left-2 flex items-center gap-1">
-                <span className="text-[8px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#00F5FF' }}>
+                <span className="text-[11px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#00F5FF' }}>
                   {p.role}
                 </span>
                 {connState === 'connected' && stream && (
@@ -268,7 +268,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
 
       {/* Controls Bar */}
       <div className="flex items-center justify-between gap-2 p-3" style={{ background: 'rgba(0,0,0,0.5)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="flex items-center gap-1 text-[9px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <div className="flex items-center gap-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
           <Users className="w-3 h-3" />
           <span>{participants.length + 1} in room</span>
         </div>
@@ -332,7 +332,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
         </div>
 
         {connecting && (
-          <span className="text-[8px]" style={{ color: GOLD }}>Connecting…</span>
+          <span className="text-[11px]" style={{ color: GOLD }}>Connecting…</span>
         )}
       </div>
     </div>

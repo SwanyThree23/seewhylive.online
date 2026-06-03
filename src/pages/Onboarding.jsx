@@ -144,7 +144,7 @@ function Step2({ onboarding, onDone }) {
           <button key={f.name} onClick={() => setFont(i)}
             style={{ flex: 1, padding: '8px', borderRadius: 8, border: `2px solid ${font===i?C.gold:'#333'}`, background: 'rgba(13,6,24,0.9)', cursor: 'pointer' }}>
             <div style={{ fontFamily: 'Barlow Condensed', fontSize: 13, color: font===i?C.gold:C.gray }}>{f.name}</div>
-            <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>{f.sample}</div>
+            <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{f.sample}</div>
           </button>
         ))}
       </div>
@@ -155,8 +155,8 @@ function Step2({ onboarding, onDone }) {
           <div style={{ fontFamily: 'Barlow Condensed', fontSize: 16, color: T.secondary, letterSpacing: 2 }}>YOUR CHANNEL</div>
           <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>● LIVE NOW · 1,247 viewers</div>
           <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
-            <div style={{ padding: '4px 10px', background: T.primary, borderRadius: 4, fontSize: 9, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>SUBSCRIBE</div>
-            <div style={{ padding: '4px 10px', background: `${T.secondary}20`, borderRadius: 4, fontSize: 9, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>TIP</div>
+            <div style={{ padding: '4px 10px', background: T.primary, borderRadius: 4, fontSize: 11, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>SUBSCRIBE</div>
+            <div style={{ padding: '4px 10px', background: `${T.secondary}20`, borderRadius: 4, fontSize: 11, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>TIP</div>
           </div>
         </div>
       </div>
@@ -194,7 +194,7 @@ function Step3({ onboarding, onDone }) {
         <input style={{...inp, flex:1, marginBottom:0}} readOnly value={showKey ? streamKey : '••••••••••••••••'} />
         <button onClick={() => setShowKey(v => !v)} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid #333', borderRadius: 6, color: C.gray, cursor:'pointer', fontSize: 11 }}>{showKey?'🙈':'👁'}</button>
       </div>
-      <label style={lbl}>ZEGOCLOUD App ID <a href="https://console.zegocloud.com" target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:9,marginLeft:4}}>console.zegocloud.com ↗</a></label>
+      <label style={lbl}>ZEGOCLOUD App ID <a href="https://console.zegocloud.com" target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:11,marginLeft:4}}>console.zegocloud.com ↗</a></label>
       <input style={inp} value={zegoId} onChange={e => setZegoId(e.target.value)} placeholder="Enter your ZEGOCLOUD App ID" />
       <label style={lbl}>ZEGOCLOUD App Sign</label>
       <input style={inp} value={zegoSign} onChange={e => setZegoSign(e.target.value)} placeholder="Enter your App Sign (optional)" type="password" />

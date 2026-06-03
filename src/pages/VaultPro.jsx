@@ -291,7 +291,7 @@ export default function VaultPro() {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-white leading-none" style={T}>VaultPro</h1>
-                <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                   style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: GREEN, ...T }}>
                   AES-256 Encrypted
                 </span>
@@ -346,7 +346,7 @@ export default function VaultPro() {
               Create New Vault
             </button>
 
-            <div className="text-center text-[9px] leading-relaxed px-4"
+            <div className="text-center text-[11px] leading-relaxed px-4"
               style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
               AES-256-GCM · PBKDF2 100k iterations · Zero-knowledge · Keys never leave your device
             </div>
@@ -397,7 +397,7 @@ export default function VaultPro() {
                         {revealedKeys[key.id] ? revealedKeys[key.id] : 'RTMP Key — [ENCRYPTED]'}
                       </p>
                       {revealedKeys[key.id] && (
-                        <p className="text-[8px] mt-0.5" style={{ color: 'rgba(255,136,0,0.7)', ...T }}>Auto-hides in 10s</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,136,0,0.7)', ...T }}>Auto-hides in 10s</p>
                       )}
                     </div>
                     <button onClick={() => handleRevealKey(key)}
@@ -448,7 +448,7 @@ export default function VaultPro() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <p className="text-sm font-black text-white" style={T}>{item.title}</p>
-                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase"
+                          <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full uppercase"
                             style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)', color: GREEN, ...T }}>
                             🔒 Encrypted
                           </span>
@@ -456,7 +456,7 @@ export default function VaultPro() {
                         {unlockedContent[item.id] && (
                           <p className="text-xs mt-1" style={{ color: GREEN, ...T }}>{unlockedContent[item.id]}</p>
                         )}
-                        <p className="text-[9px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Protected by AES-256</p>
+                        <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Protected by AES-256</p>
                       </div>
                       <button onClick={() => handleUnlockContent(item)}
                         className="h-8 px-3 rounded-xl text-[10px] font-black uppercase shrink-0"
@@ -527,7 +527,7 @@ export default function VaultPro() {
                     {sharePin === pin.id && (
                       <div className="mt-2 p-2 rounded-xl"
                         style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(0,255,136,0.1)' }}>
-                        <p className="text-[8px] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Share link</p>
+                        <p className="text-[11px] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Share link</p>
                         <p className="text-[10px] font-mono break-all" style={{ color: GREEN }}>
                           vault://{pin.encrypted.slice(0, 32)}…
                         </p>
@@ -560,7 +560,7 @@ export default function VaultPro() {
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Vault Activity</p>
                   <button onClick={() => setAuditLog([])}
-                    className="text-[9px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+                    className="text-[11px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
                     Clear
                   </button>
                 </div>
@@ -574,7 +574,7 @@ export default function VaultPro() {
                     <span className="text-base">{entry.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-white" style={T}>{entry.action}</p>
-                      <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{fmtTime(entry.time)}</p>
+                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{fmtTime(entry.time)}</p>
                     </div>
                   </div>
                 ))}

@@ -29,7 +29,7 @@ function Button({ children, onClick, className = '', style = {}, disabled, varia
 }
 function Badge({ children, className = '', style = {} }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
+    <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
       style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', ...style }}>
       {children}
     </span>
@@ -79,7 +79,7 @@ function StatChip({ label, value, color }) {
   return (
     <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: (color || '#d4af37') + '12', border: '1px solid ' + (color || '#d4af37') + '28' }}>
       <span className="text-lg font-black" style={{ fontFamily: 'Orbitron, monospace', color: color || '#d4af37' }}>{value}</span>
-      <span className="text-[9px] text-white/35 uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] text-white/35 uppercase tracking-wider">{label}</span>
     </div>
   );
 }
@@ -445,10 +445,10 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                     </p>
                   </div>
                   <div className="shrink-0 flex flex-col items-end gap-1">
-                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full" style={{ background: st.bg, color: st.color, border: '1px solid ' + st.border, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full" style={{ background: st.bg, color: st.color, border: '1px solid ' + st.border, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {b.status}
                     </span>
-                    {b.winner_name && <span className="text-[9px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>🏆 {b.winner_name}</span>}
+                    {b.winner_name && <span className="text-[11px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>🏆 {b.winner_name}</span>}
                   </div>
                 </button>
               );
@@ -760,7 +760,7 @@ export default function PKBattleManager() {
                   <span className="text-xs font-bold uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em', color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>
                     {t.label}
                   </span>
-                  <span className="text-[9px] text-white/25">{t.sub}</span>
+                  <span className="text-[11px] text-white/25">{t.sub}</span>
                 </button>
               );
             })}

@@ -83,14 +83,14 @@ export default function GreenroomQueue({ roomId, isHost }) {
           <Users className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Greenroom</span>
           {waitingGuests.length > 0 && (
-            <span style={{ fontSize:9, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff' }}>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff' }}>
               {waitingGuests.length} waiting
             </span>
           )}
         </div>
         <button
           onClick={copyJoinLink}
-          style={{ height:24, fontSize:9, background:'transparent', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+          style={{ height:24, fontSize:11, background:'transparent', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
         >
           <Copy className="w-2.5 h-2.5" /> Invite Link
         </button>
@@ -99,7 +99,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
       {/* Live guests */}
       {liveGuests.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[9px] text-white/30 uppercase tracking-wider">On Stage</p>
+          <p className="text-[11px] text-white/30 uppercase tracking-wider">On Stage</p>
           {liveGuests.map(p => (
             <GuestRow key={p.id} participant={p} status="live" />
           ))}
@@ -116,7 +116,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
 
       {/* Waiting queue */}
       <div className="space-y-2">
-        <p className="text-[9px] text-white/30 uppercase tracking-wider">
+        <p className="text-[11px] text-white/30 uppercase tracking-wider">
           Waiting ({waitingGuests.length})
         </p>
 
@@ -144,7 +144,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
                   <p className="text-[11px] font-semibold text-white truncate">{p.user_name}</p>
                   <div className="flex items-center gap-1 mt-0.5">
                     <StatusDot status={p.status} />
-                    <span className="text-[9px] text-white/40 capitalize">{p.status}</span>
+                    <span className="text-[11px] text-white/40 capitalize">{p.status}</span>
                   </div>
                 </div>
                 {isHost && (
@@ -179,11 +179,11 @@ export default function GreenroomQueue({ roomId, isHost }) {
 function GuestRow({ participant, status }) {
   return (
     <div className="flex items-center gap-2 px-2 py-1.5 bg-green-900/20 border border-green-500/20 rounded-lg">
-      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-[9px] font-bold text-white shrink-0">
+      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
         {participant.user_name?.charAt(0)?.toUpperCase()}
       </div>
       <p className="text-[10px] font-semibold text-white truncate flex-1">{participant.user_name}</p>
-      <span style={{ fontSize:8, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'#15803d', color:'#fff', display:'inline-flex', alignItems:'center', gap:2 }}>
+      <span style={{ fontSize:11, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'#15803d', color:'#fff', display:'inline-flex', alignItems:'center', gap:2 }}>
         <Radio className="w-2 h-2" /> LIVE
       </span>
     </div>

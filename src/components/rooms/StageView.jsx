@@ -158,11 +158,11 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}>
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-white font-semibold truncate max-w-[100px]" style={{ textShadow: '0 0 8px rgba(212,175,55,0.5)' }}>{participant?.user_name}</span>
-            <span className="text-[9px] px-1.5 py-0 rounded font-black uppercase"
+            <span className="text-[11px] px-1.5 py-0 rounded font-black uppercase"
               style={{ background: getRoleColor(participant?.role), color: '#000' }}>
               {participant?.role}
             </span>
-            <Badge variant="outline" className="text-[9px] px-1 py-0 border-white/30 text-white/70">You</Badge>
+            <Badge variant="outline" className="text-[11px] px-1 py-0 border-white/30 text-white/70">You</Badge>
           </div>
           <div className="flex items-center gap-1">
             {audioEnabled ? <Mic className="w-3 h-3 text-green-400" /> : <MicOff className="w-3 h-3 text-red-400" />}

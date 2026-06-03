@@ -110,7 +110,7 @@ function FormatCard({ fmt, onSelect }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
           {fmt.features.map(f => (
             <span key={f} style={{
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 700,
               fontFamily: FONT,
               padding: '2px 7px',
@@ -216,7 +216,7 @@ function CameraPreview({ onStreamReady }) {
 
         {/* Top left: PREVIEW badge */}
         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 5, alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: camOn ? 'rgba(255,21,100,0.85)' : 'rgba(0,0,0,0.5)', fontSize: 9, fontWeight: 900, color: '#fff', fontFamily: FONT, letterSpacing: '0.08em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: camOn ? 'rgba(255,21,100,0.85)' : 'rgba(0,0,0,0.5)', fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT, letterSpacing: '0.08em' }}>
             {camOn && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />}
             {camOn ? 'PREVIEW' : 'NO SIGNAL'}
           </div>
@@ -250,7 +250,7 @@ function CameraPreview({ onStreamReady }) {
         <motion.div
           initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
           style={{ marginTop: 8, borderRadius: 12, background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(212,175,55,0.18)', padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)' }}>Device Settings</div>
+          <div style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)' }}>Device Settings</div>
 
           {cameras.length > 0 && (
             <div>
@@ -301,7 +301,7 @@ function RtmpKeyRow({ streamKey }) {
       border: '1px solid rgba(255,255,255,0.08)',
       padding: '10px 12px',
     }}>
-      <div style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
+      <div style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
         RTMP Stream Key
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -328,7 +328,7 @@ function RtmpKeyRow({ streamKey }) {
             : <Copy style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.4)' }} />}
         </button>
       </div>
-      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, marginTop: 4 }}>
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, marginTop: 4 }}>
         RTMP URL: rtmp://ingest.seewhylive.online/live
       </div>
     </div>
@@ -452,7 +452,7 @@ export default function GoLive() {
     window.location.href = `${createPageUrl(dest)}?id=${partyId}`;
   }
 
-  const SL = { fontSize: 9, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 };
+  const SL = { fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 };
   const INPUT = {
     width: '100%',
     padding: '10px 12px',
@@ -557,7 +557,7 @@ export default function GoLive() {
                 onChange={e => setTitle(e.target.value)}
                 maxLength={80}
               />
-              <div style={{ textAlign: 'right', fontSize: 9, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, marginTop: 3 }}>{title.length}/80</div>
+              <div style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, marginTop: 3 }}>{title.length}/80</div>
             </div>
 
             <div>

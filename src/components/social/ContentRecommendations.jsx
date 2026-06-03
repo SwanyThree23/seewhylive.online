@@ -98,11 +98,11 @@ export default function ContentRecommendations() {
             {/* Content */}
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-bold text-white truncate">{rec.title}</h4>
-              <p className="text-[9px] text-white/60">{rec.channel}</p>
+              <p className="text-[11px] text-white/60">{rec.channel}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[8px] text-cyan-400/70">{rec.duration}</span>
-                <span className="text-[8px] text-white/40">•</span>
-                <span className="text-[8px] text-white/40">{rec.views} views</span>
+                <span className="text-[11px] text-cyan-400/70">{rec.duration}</span>
+                <span className="text-[11px] text-white/40">•</span>
+                <span className="text-[11px] text-white/40">{rec.views} views</span>
               </div>
             </div>
 

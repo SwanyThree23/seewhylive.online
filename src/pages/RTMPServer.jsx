@@ -126,7 +126,7 @@ export default function RTMPServer() {
                 <div className="flex items-center gap-2 mb-1">
                   <Radio className="w-4 h-4 text-[#d4af37]" />
                   <h2 className="font-bold text-sm">RTMP Ingest</h2>
-                  <span style={{ background: 'rgba(21,128,61,0.5)', color: '#86efac', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>RECOMMENDED</span>
+                  <span style={{ background: 'rgba(21,128,61,0.5)', color: '#86efac', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>RECOMMENDED</span>
                 </div>
                 <CopyField label="Server URL" value={RTMP_SERVER} />
                 <div className="space-y-1">
@@ -157,7 +157,7 @@ export default function RTMPServer() {
                   <div className="flex items-center gap-2 mb-1">
                     <Wifi className="w-4 h-4 text-blue-400" />
                     <h2 className="font-bold text-sm">SRT Ingest</h2>
-                    <span style={{ background: 'rgba(30,58,138,0.5)', color: '#93c5fd', fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
+                    <span style={{ background: 'rgba(30,58,138,0.5)', color: '#93c5fd', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
                   </div>
                   <CopyField label="SRT URL" value={SRT_SERVER} />
                   <CopyField label="Stream ID (passphrase)" value={streamKey} secret />

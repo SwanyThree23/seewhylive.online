@@ -159,7 +159,7 @@ export default function NotificationHub() {
                   <button
                     onClick={() => markAllMutation.mutate()}
                     disabled={markAllMutation.isPending}
-                    className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg font-bold"
+                    className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg font-bold"
                     style={{ background: 'rgba(212,175,55,0.1)', color: G, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
                     title="Mark all read"
                   >
@@ -176,7 +176,7 @@ export default function NotificationHub() {
             <div className="flex border-b" style={{ borderColor: BORDER, background: '#08080F' }}>
               {[['all','All'], ['tips','Tips'], ['subs','Subs'], ['live','Live'], ['system','System']].map(([id, label]) => (
                 <button key={id} onClick={() => setCategory(id)}
-                  className="flex-1 py-1.5 text-[9px] font-black uppercase transition-all"
+                  className="flex-1 py-1.5 text-[11px] font-black uppercase transition-all"
                   style={{
                     fontFamily: 'Barlow Condensed, sans-serif',
                     color: category === id ? G : 'rgba(255,255,255,0.3)',

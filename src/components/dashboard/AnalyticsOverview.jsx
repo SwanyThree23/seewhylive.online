@@ -110,8 +110,8 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.1)" />
-            <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
-            <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
+            <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v.toLocaleString(), 'Viewers']} />
             <Line type="monotone" dataKey="viewers" stroke={G} strokeWidth={2} dot={{ fill: G, r: 3 }} />
           </LineChart>
@@ -137,8 +137,8 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
-            <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" tickFormatter={v => `$${v}`} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
+            <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" tickFormatter={v => `$${v}`} />
             <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v, name) => [`$${v}`, name === 'tips' ? 'Tips' : 'Subscriptions']} />
             <Area type="monotone" dataKey="tips" stroke={G} fill="url(#gradTips)" strokeWidth={2} />
             <Area type="monotone" dataKey="subs" stroke="#00FF88" fill="url(#gradSubs)" strokeWidth={2} />
@@ -148,7 +148,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
           {[['Tips', G], ['Subscriptions', '#00FF88']].map(([label, color]) => (
             <div key={label} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-              <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</span>
+              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</span>
             </div>
           ))}
         </div>
@@ -163,8 +163,8 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
         <ResponsiveContainer width="100%" height={160}>
           <BarChart data={followerData} barSize={timeRange === '7d' ? 24 : 8}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
-            <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
+            <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v, 'Subscribers']} />
             <Bar dataKey="subscribers" fill="rgba(0,245,255,0.7)" radius={[4, 4, 0, 0]} />
           </BarChart>

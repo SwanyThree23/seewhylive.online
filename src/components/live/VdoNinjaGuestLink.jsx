@@ -49,7 +49,7 @@ export default function VdoNinjaGuestLink({ roomId }) {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <p className="text-[10px] font-semibold text-white">{link.name}</p>
-                <p className="text-[8px] text-white/40">{link.desc}</p>
+                <p className="text-[11px] text-white/40">{link.desc}</p>
               </div>
             </div>
             <div className="flex gap-1">
@@ -59,13 +59,13 @@ export default function VdoNinjaGuestLink({ roomId }) {
                 rel="noopener noreferrer"
                 style={{ flex:1 }}
               >
-                <button style={{ width:'100%', height:24, borderRadius:6, border:'1px solid rgba(212,175,55,0.3)', background:'transparent', color:'#d4af37', cursor:'pointer', fontSize:8, fontWeight:600 }}>
+                <button style={{ width:'100%', height:24, borderRadius:6, border:'1px solid rgba(212,175,55,0.3)', background:'transparent', color:'#d4af37', cursor:'pointer', fontSize:11, fontWeight:600 }}>
                   Open
                 </button>
               </a>
               <button
                 onClick={() => handleCopy(link.url)}
-                className="flex-1 h-6 rounded border border-white/20 bg-white/5 hover:bg-white/10 text-[8px] text-white/50 hover:text-white flex items-center justify-center gap-1 transition-all"
+                className="flex-1 h-6 rounded border border-white/20 bg-white/5 hover:bg-white/10 text-[11px] text-white/50 hover:text-white flex items-center justify-center gap-1 transition-all"
               >
                 {copied ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
               </button>

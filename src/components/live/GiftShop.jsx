@@ -69,7 +69,7 @@ function GiftCard({ gift, selected, onSelect }) {
       )}
       <span style={{ fontSize: 28, lineHeight: 1 }}>{gift.emoji}</span>
       <span style={{
-        fontSize: 9,
+        fontSize: 11,
         fontWeight: 900,
         fontFamily: 'Barlow Condensed, sans-serif',
         color: selected ? gift.color : 'rgba(255,255,255,0.6)',
@@ -112,7 +112,7 @@ function TopGifters({ roomId }) {
   return (
     <div style={{ padding: '8px 16px 0' }}>
       <p style={{
-        fontSize: 9,
+        fontSize: 11,
         fontWeight: 900,
         fontFamily: 'Barlow Condensed, sans-serif',
         textTransform: 'uppercase',
@@ -146,7 +146,7 @@ function TopGifters({ roomId }) {
             }}>
               {name.split(' ')[0]}
             </span>
-            <span style={{ fontSize: 9, color: GREEN, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>
+            <span style={{ fontSize: 11, color: GREEN, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>
               ${total.toFixed(0)}
             </span>
           </div>

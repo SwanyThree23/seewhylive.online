@@ -48,7 +48,7 @@ export default function SpotlightSection({ communityId }) {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-white truncate">{spotlight.user_name}</p>
               <p className="text-[10px] text-white/60 line-clamp-2 mb-1">{spotlight.title}</p>
-              <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold" style={{ background: `${G}20`, color: G }}>
+              <span className="inline-block px-2 py-0.5 rounded text-[11px] font-bold" style={{ background: `${G}20`, color: G }}>
                 {spotlight.spotlight_type}
               </span>
             </div>

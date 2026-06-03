@@ -32,7 +32,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
         <span className="text-[10px] font-bold uppercase text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
           Pending Redemptions
         </span>
-        <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(239,68,68,0.2)', color: '#f87171' }}>
+        <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(239,68,68,0.2)', color: '#f87171' }}>
           {redemptions.length}
         </span>
       </div>
@@ -46,12 +46,12 @@ export default function RedemptionQueue({ creatorId, roomId }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[10px] font-black text-white">{r.user_name}</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37' }}>
+                <span className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37' }}>
                   {r.reward_name}
                 </span>
               </div>
               {r.message && <p className="text-[10px] text-white/60 mt-0.5 italic">"{r.message}"</p>}
-              <p className="text-[9px] text-white/30 mt-0.5">{r.points_spent} pts spent</p>
+              <p className="text-[11px] text-white/30 mt-0.5">{r.points_spent} pts spent</p>
             </div>
             <div className="flex gap-1 shrink-0">
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'fulfilled' })}

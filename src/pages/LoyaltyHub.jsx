@@ -48,20 +48,20 @@ function LoyaltyCard({ loyalty, isMain = false }) {
           </div>
           <div>
             <span className="font-black uppercase text-lg leading-none" style={{ color: tc.color, fontFamily: 'Orbitron, monospace' }}>{tc.label}</span>
-            <p className="text-[9px] mt-0.5" style={{ color: CREAM + '40', ...T }}>Loyalty Tier</p>
+            <p className="text-[11px] mt-0.5" style={{ color: CREAM + '40', ...T }}>Loyalty Tier</p>
           </div>
         </div>
         <div className="text-right">
           <p className="font-black text-2xl leading-none" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
             {(loyalty?.loyalty_points || 0).toLocaleString()}
           </p>
-          <p className="text-[8px]" style={{ color: CREAM + '40', ...T }}>POINTS</p>
+          <p className="text-[11px]" style={{ color: CREAM + '40', ...T }}>POINTS</p>
         </div>
       </div>
 
       {next && (
         <div>
-          <div className="flex justify-between text-[8px] mb-1">
+          <div className="flex justify-between text-[11px] mb-1">
             <span style={{ color: CREAM + '40' }}>{(loyalty?.loyalty_points || 0)} / {next}</span>
             <span style={{ color: tc.color }}>{Math.round(progress)}% to next tier</span>
           </div>
@@ -77,7 +77,7 @@ function LoyaltyCard({ loyalty, isMain = false }) {
           <div className="flex items-center gap-1">
             <Flame className="w-3.5 h-3.5" style={{ color: '#FF6B00' }} />
             <span className="font-black text-sm" style={{ color: '#FF6B00' }}>{loyalty?.streak_days || 0}</span>
-            <span className="text-[8px]" style={{ color: CREAM + '40' }}>day streak</span>
+            <span className="text-[11px]" style={{ color: CREAM + '40' }}>day streak</span>
           </div>
         </div>
       )}
@@ -112,7 +112,7 @@ function PointsBreakdownRow({ vp }) {
                 <div key={label} className="flex items-center gap-2 pt-2">
                   <Icon className="w-3 h-3" style={{ color: GOLD + '70' }} />
                   <div>
-                    <p className="text-[9px] font-black" style={{ color: GOLD }}>{value}</p>
+                    <p className="text-[11px] font-black" style={{ color: GOLD }}>{value}</p>
                     <p className="text-[7px]" style={{ color: CREAM + '35' }}>{label}</p>
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export default function LoyaltyHubPage() {
               <Trophy className="w-5 h-5" style={{ color: GOLD }} />
               <span className="font-black uppercase text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>Loyalty Hub</span>
             </div>
-            <span className="text-[9px] px-2 py-0.5 rounded font-black uppercase"
+            <span className="text-[11px] px-2 py-0.5 rounded font-black uppercase"
               style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30`, ...T }}>
               {totalPoints.toLocaleString()} total pts
             </span>
@@ -176,7 +176,7 @@ export default function LoyaltyHubPage() {
           <div className="flex gap-0">
             {TABS.map(t => (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
-                className="flex-1 py-2 text-[9px] font-black uppercase transition-all border-b-2"
+                className="flex-1 py-2 text-[11px] font-black uppercase transition-all border-b-2"
                 style={{ ...T, color: activeTab === t.id ? GOLD : CREAM + '35', borderBottomColor: activeTab === t.id ? GOLD : 'transparent', background: activeTab === t.id ? `${GOLD}07` : 'transparent' }}>
                 {t.label}
               </button>
@@ -219,7 +219,7 @@ export default function LoyaltyHubPage() {
                 {/* Creator tabs */}
                 {myLoyalties.slice(1).map(l => (
                   <div key={l.id} className="rounded-xl p-3" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p className="text-[9px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.creator_id?.slice(0,12)}</p>
+                    <p className="text-[11px] mb-2" style={{ color: CREAM + '40' }}>Creator: {l.creator_id?.slice(0,12)}</p>
                     <LoyaltyCard loyalty={l} />
                   </div>
                 ))}
@@ -241,11 +241,11 @@ export default function LoyaltyHubPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-[11px] text-white">{r.name}</p>
-                          <p className="text-[9px]" style={{ color: CREAM + '40' }}>{r.description}</p>
-                          <p className="text-[9px] font-black mt-0.5" style={{ color: GOLD }}>{r.points_required.toLocaleString()} pts</p>
+                          <p className="text-[11px]" style={{ color: CREAM + '40' }}>{r.description}</p>
+                          <p className="text-[11px] font-black mt-0.5" style={{ color: GOLD }}>{r.points_required.toLocaleString()} pts</p>
                         </div>
                         <button disabled={!canRedeem}
-                          className="px-3 py-1.5 rounded-lg font-black uppercase text-[8px] shrink-0"
+                          className="px-3 py-1.5 rounded-lg font-black uppercase text-[11px] shrink-0"
                           style={{ background: canRedeem ? BURGUNDY : 'rgba(255,255,255,0.05)', color: canRedeem ? GOLD : CREAM + '25', border: canRedeem ? `1px solid ${GOLD}40` : '1px solid rgba(255,255,255,0.08)', ...T, cursor: canRedeem ? 'pointer' : 'not-allowed' }}>
                           {canRedeem ? 'Redeem' : `Need ${(r.points_required - totalPoints).toLocaleString()} more`}
                         </button>
@@ -268,7 +268,7 @@ export default function LoyaltyHubPage() {
                         <span>{e.icon}</span>
                         <span className="text-[10px]" style={{ color: CREAM + '60' }}>{e.label}</span>
                       </div>
-                      <span className="font-black text-[9px]" style={{ color: GOLD, ...T }}>{e.rate}</span>
+                      <span className="font-black text-[11px]" style={{ color: GOLD, ...T }}>{e.rate}</span>
                     </div>
                   ))}
                 </div>
