@@ -698,7 +698,15 @@ export default function WatchPartyPage() {
     <div className={`flex flex-col overflow-hidden transition-all duration-300 ${theaterMode ? 'h-screen fixed inset-0 z-50' : 'h-[calc(100vh-120px)]'}`} style={{ background: '#0B0B18' }}>
       <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
 
+        {/* Row 1: ← back | title + badges | right actions */}
         <div className="flex items-center gap-2 px-3 h-12">
+          <button
+            onClick={() => window.history.back()}
+            className="w-8 h-8 flex items-center justify-center rounded-xl shrink-0 transition-all active:scale-95"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+            <LogOut className="w-3.5 h-3.5" style={{ transform: 'scaleX(-1)' }} />
+          </button>
+
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <h2 className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</h2>
             <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
@@ -758,14 +766,24 @@ export default function WatchPartyPage() {
           </div>
         </div>
 
+        {/* Row 2: host avatar + name | member count | speaking indicator | sync */}
         <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
           <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black text-white"
             style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
-            {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
+            {(party.host_name || user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
           </div>
           <span className="text-[10px] text-white/50 truncate max-w-[80px]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {user?.full_name || 'Host'}
+            {party.host_name || user?.full_name || 'Host'}
           </span>
+          <span className="text-white/15 mx-0.5">·</span>
+          {(() => {
+            const speaker = members.find(m => m.is_speaking);
+            return speaker ? (
+              <span className="text-[9px] truncate max-w-[90px]" style={{ color: '#00F5FF', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                🎙 {speaker.user_name} speaking
+              </span>
+            ) : null;
+          })()}
           <span className="text-white/15 mx-0.5">·</span>
           <Users className="w-3 h-3 shrink-0" style={{ color: '#d4af37' }} />
           <span className="text-[10px] font-bold shrink-0" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{members.length}/20</span>

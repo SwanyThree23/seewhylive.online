@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter
+  Zap, Eye, Clock, ChevronRight, Filter, Tv2, Play, ExternalLink, Mic
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -12,6 +12,7 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
+import { FEATURED_VIDEOS, PARTNER_CHANNELS } from '../components/home/FeaturedContent';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -93,7 +94,10 @@ export default function DiscoverPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [genre, setGenre] = useState('All');
-  const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
+  const [tab, setTab] = useState(() => {
+    const p = new URLSearchParams(window.location.search).get('tab');
+    return ['live','scheduled','communities','creators','partners'].includes(p) ? p : 'live';
+  });
   const debounceRef = useRef(null);
   const queryClient = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
@@ -234,6 +238,7 @@ export default function DiscoverPage() {
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
+              { id: 'partners', label: 'Partners', icon: Tv2 },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -341,6 +346,95 @@ export default function DiscoverPage() {
                     <CreatorCard creator={c} />
                   </motion.div>
                 ))}
+              </div>
+            </motion.div>
+          )}
+
+          {tab === 'partners' && (
+            <motion.div key="partners" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+              {/* Channel Showcase */}
+              <div>
+                <h2 className="text-xl font-black text-white mb-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Official Partner Channels</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {PARTNER_CHANNELS.map((ch, i) => {
+                    const Icon = ch.icon;
+                    return (
+                      <motion.div key={ch.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+                        <a href={ch.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                          <div className="rounded-2xl p-5 flex items-center gap-4 transition-all cursor-pointer"
+                            style={{ background: `${ch.color}0A`, border: `1px solid ${ch.color}30`, backdropFilter: 'blur(8px)' }}>
+                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
+                              style={{ background: `${ch.color}20`, border: `2px solid ${ch.color}50` }}>
+                              <Icon style={{ width: 28, height: 28, color: ch.color }} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-black text-white text-lg" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{ch.name}</p>
+                              <p className="text-sm mb-1" style={{ color: ch.color + '99', fontFamily: 'Barlow Condensed, sans-serif' }}>{ch.handle}</p>
+                              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{ch.desc}</p>
+                            </div>
+                            <div className="flex flex-col items-center gap-1 shrink-0">
+                              <ExternalLink style={{ width: 16, height: 16, color: ch.color + '80' }} />
+                              <span className="text-[9px] font-bold uppercase" style={{ color: ch.color + '80', fontFamily: 'Barlow Condensed, sans-serif' }}>Visit</span>
+                            </div>
+                          </div>
+                        </a>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Featured Videos Grid */}
+              <div>
+                <h2 className="text-xl font-black text-white mb-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  Featured Episodes
+                  <span className="ml-3 text-xs font-bold px-2 py-0.5 rounded-full align-middle"
+                    style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)' }}>
+                    {FEATURED_VIDEOS.length} videos
+                  </span>
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {FEATURED_VIDEOS.map((video, i) => {
+                    const ytUrl = `https://www.youtube.com/watch?v=${video.id}`;
+                    const wpUrl = `${createPageUrl('WatchParty')}?videoUrl=${encodeURIComponent(ytUrl)}&title=${encodeURIComponent(video.title + ' — Watch Party')}`;
+                    const thumb = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+                    return (
+                      <motion.div key={video.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+                        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+                          {/* Thumbnail */}
+                          <div className="relative" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0d0620, #0a1020)', overflow: 'hidden' }}>
+                            <img src={thumb} alt={video.title}
+                              onError={e => { e.target.style.display = 'none'; }}
+                              className="w-full h-full object-cover" />
+                            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.8) 0%, transparent 55%)' }} />
+                            <span className="absolute top-2 left-2 text-[9px] font-black px-2 py-0.5 rounded-full"
+                              style={{ background: `${video.tagColor}30`, color: video.tagColor, border: `1px solid ${video.tagColor}50`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              {video.tag}
+                            </span>
+                            <div className="absolute right-3 bottom-3 w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,0,0,0.85)' }}>
+                              <Play style={{ width: 16, height: 16, color: '#fff', marginLeft: 2 }} />
+                            </div>
+                          </div>
+                          {/* Info */}
+                          <div className="p-3">
+                            <p className="font-black text-white text-sm line-clamp-2 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{video.title}</p>
+                            <p className="text-[11px] mb-3" style={{ color: video.channelColor + '99', fontFamily: 'Barlow Condensed, sans-serif' }}>{video.channel}</p>
+                            <div className="flex gap-2">
+                              <a href={ytUrl} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black"
+                                style={{ background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.3)', color: '#ff4444', textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                                <Play style={{ width: 11, height: 11 }} /> Watch on YouTube
+                              </a>
+                              <Link to={wpUrl} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black"
+                                style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                                <Users style={{ width: 11, height: 11 }} /> Watch Party
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </motion.div>
           )}
