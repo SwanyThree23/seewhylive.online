@@ -325,8 +325,8 @@ export default function WatchPartyPage() {
   const partyId = urlParams.get('id');
   const qc = useQueryClient();
 
-  const [videoUrl, setVideoUrl] = useState('');
-  const [partyTitle, setPartyTitle] = useState('');
+  const [videoUrl, setVideoUrl] = useState(urlParams.get('videoUrl') || '');
+  const [partyTitle, setPartyTitle] = useState(urlParams.get('title') || '');
   const [creating, setCreating] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
