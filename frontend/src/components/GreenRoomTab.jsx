@@ -61,8 +61,9 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
     linkBlocking: true,
     allCaps:     false,
   });
+  var [lockStage,      setLockStage]      = useState(false);
 
-  var isHost = role === 'host';
+  var isHost = role === 'host' || role === 'cohost';
 
   var roster = guests && guests.length > 0 ? guests : [
     { userId: 'demo1', username: 'SwanyThree',  role: 'host'  },
@@ -112,22 +113,48 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
       setHandQueue(function(q) { return q.filter(function(x) { return x.guestId !== data.guestId; }); });
     }
 
-    socket.on('hand-raise',    onHandRaise);
-    socket.on('stage-invite',  onStageInvite);
-    socket.on('stage-remove',  onStageRemove);
-    socket.on('guest-muted',   onGuestMuted);
-    socket.on('guest-unmuted', onGuestUnmuted);
-    socket.on('guest-kicked',  onGuestKicked);
+    function onStageLock(data) {
+      if (data && typeof data.locked === 'boolean') setLockStage(data.locked);
+    }
+
+    function onMuteAll() {
+      // reflect in local state if needed (mute badge on self handled by parent)
+    }
+
+    socket.on('hand-raise',       onHandRaise);
+    socket.on('stage-invite',     onStageInvite);
+    socket.on('stage-remove',     onStageRemove);
+    socket.on('guest-muted',      onGuestMuted);
+    socket.on('guest-unmuted',    onGuestUnmuted);
+    socket.on('guest-kicked',     onGuestKicked);
+    socket.on('stage-lock-update', onStageLock);
+    socket.on('mute-all',          onMuteAll);
 
     return function() {
-      socket.off('hand-raise',    onHandRaise);
-      socket.off('stage-invite',  onStageInvite);
-      socket.off('stage-remove',  onStageRemove);
-      socket.off('guest-muted',   onGuestMuted);
-      socket.off('guest-unmuted', onGuestUnmuted);
-      socket.off('guest-kicked',  onGuestKicked);
+      socket.off('hand-raise',       onHandRaise);
+      socket.off('stage-invite',     onStageInvite);
+      socket.off('stage-remove',     onStageRemove);
+      socket.off('guest-muted',      onGuestMuted);
+      socket.off('guest-unmuted',    onGuestUnmuted);
+      socket.off('guest-kicked',     onGuestKicked);
+      socket.off('stage-lock-update', onStageLock);
+      socket.off('mute-all',          onMuteAll);
     };
   }, [socket]);
+
+  function muteAll() {
+    if (!socket || !isHost) return;
+    socket.emit('mute-all', { roomId: roomId });
+    if (addToast) addToast('All participants muted', 'info');
+  }
+
+  function toggleLockStage() {
+    if (!socket || !isHost) return;
+    var next = !lockStage;
+    setLockStage(next);
+    socket.emit('lock-stage', { roomId: roomId, locked: next });
+    if (addToast) addToast(next ? '🔒 Stage locked — no new invites' : '🔓 Stage unlocked', 'info');
+  }
 
   function muteGuest(gid) {
     if (!socket || !isHost) return;
@@ -420,10 +447,29 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
       {section === 'stage' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
+          {/* Host stage controls */}
+          {isHost && (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                onClick={muteAll}
+                style={{ flex: 1, background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '8px 0', color: '#FF1A3C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                🔇 MUTE ALL
+              </button>
+              <button
+                onClick={toggleLockStage}
+                style={{ flex: 1, background: lockStage ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (lockStage ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 8, padding: '8px 0', color: lockStage ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                {lockStage ? '🔒 LOCKED' : '🔓 LOCK STAGE'}
+              </button>
+            </div>
+          )}
+
           {/* Current stage occupants */}
-          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (lockStage ? 'rgba(201,168,76,.2)' : '#3D3020'), borderRadius: 10, padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>STAGE ROSTER</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2 }}>STAGE ROSTER</div>
+                {lockStage && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 3, padding: '1px 5px' }}>LOCKED</span>}
+              </div>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>{stageList.length} / 6</div>
             </div>
             {stageList.length === 0 ? (
@@ -610,7 +656,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             return (
               <div key={u} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '10px 12px' }}>
                 <span style={{ fontSize: 12, color: '#FF1A3C' }}>🚫</span>
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#A09AB8', flex: 1 }}>{u}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#8A7A62', flex: 1 }}>{u}</span>
                 <button
                   onClick={function() { removeBan(u); }}
                   style={{ background: 'none', border: '1px solid #3D3020', borderRadius: 6, padding: '3px 8px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
