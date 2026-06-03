@@ -14,7 +14,7 @@ var INIT_SCHEDULE = [
 var CATS = ['Domino', 'Tournament', 'Podcast', 'Music', 'Education', 'Sports', 'Tech', 'Gaming'];
 
 var CAT_COLORS = {
-  Domino: '#C9A84C', Tournament: '#FF1A3C', Podcast: '#9B4DCA',
+  Domino: '#C9A84C', Tournament: '#FF1A3C', Podcast: '#800020',
   Music: '#C9A84C', Education: '#C9A84C', Sports: '#FF6B35',
   Tech: '#C9A84C', Gaming: '#C9A84C',
 };
@@ -87,7 +87,7 @@ function formatLiveDuration(secs) {
 }
 
 var RECUR_LABELS = { none: 'One-time', weekly: 'Weekly', biweekly: 'Bi-weekly' };
-var RECUR_COLORS = { none: '#8A7A62', weekly: '#C9A84C', biweekly: '#C084FC' };
+var RECUR_COLORS = { none: '#8A7A62', weekly: '#C9A84C', biweekly: '#C9A84C' };
 
 function rowToEvent(row) {
   return {
@@ -299,7 +299,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       )}
 
       {/* Countdown banner */}
-      <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(155,77,202,.1))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '12px 16px', textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.1),rgba(128,0,32,.1))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '12px 16px', textAlign: 'center' }}>
         <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 3, marginBottom: 4 }}>NEXT EVENT IN</div>
         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 32, color: nextTime ? '#C9A84C' : '#444050', letterSpacing: 4, lineHeight: 1 }}>
           {nextTime ? countdownDisplay : '--:--:--'}
@@ -312,9 +312,9 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
       </div>
 
       {/* Header */}
-      <div style={{ background: 'rgba(155,77,202,.08)', border: '1px solid rgba(155,77,202,.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: 'rgba(128,0,32,.08)', border: '1px solid rgba(128,0,32,.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 13, color: '#C084FC', letterSpacing: 3 }}>SCHEDULE MANAGER</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: 13, color: '#C9A84C', letterSpacing: 3 }}>SCHEDULE MANAGER</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>{schedule.length} events \xB7 {liveCount} live \xB7 {recurCount} recurring</div>
         </div>
         {liveCount > 0 && (
@@ -432,7 +432,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
 
       {/* Add new */}
       <div style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '12px 14px' }}>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C084FC', letterSpacing: 2, marginBottom: 10 }}>ADD STREAM</div>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 10 }}>ADD STREAM</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <input
             value={newTitle}
@@ -469,7 +469,7 @@ export default function ScheduleTab({ addToast, isLive, streamInfo }) {
           <button
             onClick={addEvent}
             disabled={!newTitle.trim() || !newTime.trim()}
-            style={{ padding: '10px', background: 'rgba(155,77,202,.2)', border: '1px solid rgba(155,77,202,.4)', borderRadius: 8, color: '#C084FC', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: !newTitle.trim() || !newTime.trim() ? 'not-allowed' : 'pointer', opacity: !newTitle.trim() || !newTime.trim() ? 0.5 : 1 }}>
+            style={{ padding: '10px', background: 'rgba(128,0,32,.2)', border: '1px solid rgba(128,0,32,.4)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: !newTitle.trim() || !newTime.trim() ? 'not-allowed' : 'pointer', opacity: !newTitle.trim() || !newTime.trim() ? 0.5 : 1 }}>
             + SCHEDULE STREAM
           </button>
         </div>

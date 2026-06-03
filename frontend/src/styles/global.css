@@ -2167,7 +2167,7 @@ input, select, textarea {
   padding: 4px 10px;
   background: rgba(26,21,16,.8);
   border: 1px solid #3D3020;
-  color: rgba(176,160,192,.5);
+  color: rgba(138,122,98,.5);
   border-radius: 4px;
   cursor: pointer;
   transition: all .15s;
@@ -2183,7 +2183,7 @@ input, select, textarea {
 .stage-capacity {
   font-family: var(--font-mono);
   font-size: 8px;
-  color: rgba(176,160,192,.4);
+  color: rgba(138,122,98,.4);
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -2407,7 +2407,7 @@ input, select, textarea {
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
-  border-bottom: 1px solid rgba(36,28,52,.6);
+  border-bottom: 1px solid rgba(26,21,16,.6);
 }
 
 .hand-queue-name {
@@ -2421,7 +2421,7 @@ input, select, textarea {
 .hand-queue-time {
   font-family: var(--font-mono);
   font-size: 8px;
-  color: rgba(176,160,192,.4);
+  color: rgba(138,122,98,.4);
   flex-shrink: 0;
 }
 
@@ -2432,7 +2432,7 @@ input, select, textarea {
   gap: 4px;
   padding: 6px 8px;
   background: rgba(14,12,9,.95);
-  border-top: 1px solid rgba(36,28,52,.8);
+  border-top: 1px solid rgba(26,21,16,.8);
   flex-shrink: 0;
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -2450,7 +2450,7 @@ input, select, textarea {
   border: 1px solid #3D3020;
   border-radius: 8px;
   padding: 6px 10px;
-  color: rgba(176,160,192,.6);
+  color: rgba(138,122,98,.6);
   cursor: pointer;
   transition: all .15s;
   flex-shrink: 0;
@@ -2489,7 +2489,7 @@ input, select, textarea {
 .mc-divider {
   width: 1px;
   height: 28px;
-  background: rgba(36,28,52,.8);
+  background: rgba(26,21,16,.8);
   flex-shrink: 0;
   margin: 0 2px;
 }
@@ -2573,7 +2573,7 @@ input, select, textarea {
 .role-host   { background: rgba(201,168,76,.18); color: #C9A84C; border: 1px solid rgba(201,168,76,.4); }
 .role-cohost { background: rgba(201,168,76,.15);  color: #C9A84C; border: 1px solid rgba(201,168,76,.35); }
 .role-guest  { background: rgba(212,133,74,.15); color: #C9A84C; border: 1px solid rgba(212,133,74,.35); }
-.role-viewer { background: rgba(36,28,52,.6);    color: rgba(176,160,192,.5); border: 1px solid #3D3020; }
+.role-viewer { background: rgba(26,21,16,.6);    color: rgba(138,122,98,.5); border: 1px solid #3D3020; }
 
 .role-pill {
   font-family: var(--font-mono);

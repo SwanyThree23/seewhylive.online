@@ -14,7 +14,7 @@ var MUTED = '#8A7A62';
 var DIM   = '#2E2318';
 var BORD  = 'rgba(255,255,255,.06)';
 var BLUE  = '#C9A84C';
-var PURP  = '#C084FC';
+var PURP  = '#C9A84C';
 
 // ─── Animations ────────────────────────────────────────────────────────────
 var ANIM = [

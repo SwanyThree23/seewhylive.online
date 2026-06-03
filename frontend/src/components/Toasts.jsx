@@ -9,7 +9,7 @@ var TYPE_MAP = {
   info:    { bg: 'rgba(212,133,74,.13)',  border: 'rgba(212,133,74,.35)',  color: '#D4854A' },
   warn:    { bg: 'rgba(201,168,76,.15)',  border: 'rgba(201,168,76,.4)',   color: '#C9A84C' },
   gift:    { bg: 'rgba(201,168,76,.18)',  border: 'rgba(232,196,106,.5)',  color: '#E8C46A' },
-  sub:     { bg: 'rgba(192,132,252,.14)', border: 'rgba(192,132,252,.4)', color: '#C084FC' },
+  sub:     { bg: 'rgba(201,168,76,.14)', border: 'rgba(201,168,76,.4)', color: '#C9A84C' },
   teal:    { bg: 'rgba(201,168,76,.14)',   border: 'rgba(201,168,76,.4)',   color: '#C9A84C' },
   burg:    { bg: 'rgba(128,0,32,.22)',    border: 'rgba(192,24,56,.5)',    color: '#FF8C9A' },
   volt:    { bg: 'rgba(170,255,0,.12)',   border: 'rgba(170,255,0,.35)',  color: '#AAFF00' },
