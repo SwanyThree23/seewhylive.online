@@ -180,7 +180,7 @@ export default function PushStreamTab({ isLive, addToast }) {
                 <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(128,0,32,.4)', border: '1px solid #C9A84C44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', flexShrink: 0 }}>
                   {i + 1}
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#A09AB8', lineHeight: 1.5, flex: 1, wordBreak: 'break-all' }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', lineHeight: 1.5, flex: 1, wordBreak: 'break-all' }}>
                   {step}
                 </div>
               </div>
