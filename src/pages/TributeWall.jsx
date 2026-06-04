@@ -129,6 +129,7 @@ export default function TributeWall() {
     <>
       <style>{GLOBAL_CSS}</style>
       <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px' }}>
+        <a href="/Leaderboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 12 }} aria-label="Back to Leaderboard">← Leaderboard</a>
 
         {/* Hero */}
         <div className="glow-tribute" style={{
