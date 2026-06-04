@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const GREEN   = '#00FF88';
+const GREEN   = '#6DBF7E';
 const FONT    = 'Barlow Condensed, sans-serif';
 
 function fmt(secs) {

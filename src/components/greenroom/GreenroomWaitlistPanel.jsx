@@ -76,7 +76,7 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
         <div className="flex gap-1.5">
           <button onClick={() => onAdmit(entry)}
             className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-black uppercase text-[11px] transition-all hover:brightness-110"
-            style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <CheckCircle className="w-3 h-3" /> Admit
           </button>
           <button onClick={() => setDenying(true)}
@@ -193,7 +193,7 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
                   {count > 1 && (
                     <button onClick={admitAll}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase"
-                      style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       <CheckCheck className="w-3 h-3" /> Admit All
                     </button>
                   )}

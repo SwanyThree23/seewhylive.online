@@ -37,9 +37,9 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
 
   const [engagementData, setEngagementData] = useState([
     { label: 'Likes', value: 1240, color: '#FF1564' },
-    { label: 'Comments', value: 580, color: '#00F5FF' },
+    { label: 'Comments', value: 580, color: '#C9A84C' },
     { label: 'Shares', value: 320, color: '#d4af37' },
-    { label: 'Tips', value: 890, color: '#00FF88' },
+    { label: 'Tips', value: 890, color: '#6DBF7E' },
   ]);
 
   useEffect(() => {
@@ -72,9 +72,9 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 gap-2 mb-4">
-          <StatCard icon={Users} label="Current Viewers" value={totalViewers} trend={12} color="#00F5FF" />
+          <StatCard icon={Users} label="Current Viewers" value={totalViewers} trend={12} color="#C9A84C" />
           <StatCard icon={Eye} label="Peak Viewers" value={peakViewers} trend={8} color="#d4af37" />
-          <StatCard icon={MessageSquare} label="Messages" value={engagementData[1]?.value} trend={-5} color="#8B5CF6" />
+          <StatCard icon={MessageSquare} label="Messages" value={engagementData[1]?.value} trend={-5} color="#D4AF37" />
           <StatCard icon={Heart} label="Total Engagement" value={totalEngagement} trend={15} color="#FF1564" />
         </div>
 
@@ -90,7 +90,7 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
                 contentStyle={{ background: '#0B0B18', border: '1px solid rgba(212,175,55,0.2)' }}
                 labelStyle={{ color: '#fff' }}
               />
-              <Line type="monotone" dataKey="viewers" stroke="#00F5FF" dot={false} strokeWidth={2} />
+              <Line type="monotone" dataKey="viewers" stroke="#C9A84C" dot={false} strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>

@@ -15,7 +15,7 @@ const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, san
 const STATUS_STYLE = {
   draft:      { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' },
   scheduled:  { bg: 'rgba(0,212,255,0.1)',    border: 'rgba(0,212,255,0.3)',    color: '#00d4ff' },
-  published:  { bg: 'rgba(0,255,136,0.1)',    border: 'rgba(0,255,136,0.3)',    color: '#00ff88' },
+  published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#00ff88' },
   cancelled:  { bg: 'rgba(255,21,100,0.1)',   border: 'rgba(255,21,100,0.3)',   color: '#FF1564' },
 };
 
@@ -160,7 +160,7 @@ export default function ContentCalendarPage() {
                     <div className="flex gap-2">
                       <button onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'published' })}
                         className="flex-1 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: '#00ff88', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer' }}>
                         Publish
                       </button>
                       <button onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'cancelled' })}

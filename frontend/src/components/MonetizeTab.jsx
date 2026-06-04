@@ -32,7 +32,7 @@ var SAAS_TIERS = [
   { id: 'free',    label: 'FREE',    price: 0,    color: MUTED,  panels: 2,  streams: 1, features: ['2 panels', '1 revenue stream', 'Basic analytics', 'Chat + reactions'] },
   { id: 'creator', label: 'CREATOR', price: 1900, color: AMBER,  panels: 5,  streams: 3, features: ['5 panels', '3 revenue streams', 'Super Chat', 'Polls + VS', 'Download clips'] },
   { id: 'pro',     label: 'PRO',     price: 4900, color: GOLD,   panels: 10, streams: 5, features: ['10 panels', 'All revenue streams', 'AURA AI', 'PPV rooms', 'SwanyBot', 'Priority support'] },
-  { id: 'studio',  label: 'STUDIO',  price: 14900,color: '#C084FC',panels: 20, streams: 99, features: ['20 panels', 'White-label', 'Custom AURA', 'Watch Party sync', 'Dedicated support', 'API access'] },
+  { id: 'studio',  label: 'STUDIO',  price: 14900,color: '#C9A84C',panels: 20, streams: 99, features: ['20 panels', 'White-label', 'Custom AURA', 'Watch Party sync', 'Dedicated support', 'API access'] },
 ];
 
 var SUB_TIERS = [

@@ -10,9 +10,9 @@ import {
 import { TrendingUp, Users, DollarSign, MessageSquare, Download, BarChart2 } from 'lucide-react';
 
 const GOLD = '#D4AF37';
-const CYAN = '#00F5FF';
+const CYAN = '#C9A84C';
 const CRIMSON = '#800020';
-const GREEN = '#00FF88';
+const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function genViewerData(points = 30) {

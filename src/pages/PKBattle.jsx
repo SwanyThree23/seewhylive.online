@@ -109,7 +109,7 @@ export default function PKBattlePage() {
                           <p style={{ color: G }}>
                             {(battle.creator_tips || 0) + (battle.creator_subs || 0) * 10}
                           </p>
-                          <p style={{ color: '#8B5CF6' }}>
+                          <p style={{ color: '#D4AF37' }}>
                             {(battle.challenger_tips || 0) + (battle.challenger_subs || 0) * 10}
                           </p>
                         </div>

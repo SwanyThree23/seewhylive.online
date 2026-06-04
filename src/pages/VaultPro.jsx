@@ -4,7 +4,7 @@ import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardLi
 const BG = '#080B18';
 const BG2 = 'rgba(13,6,24,0.9)';
 const GOLD = '#D4AF37';
-const GREEN = '#00FF88';
+const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Crypto helpers ────────────────────────────────────────────────────────────
@@ -292,7 +292,7 @@ export default function VaultPro() {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-white leading-none" style={T}>VaultPro</h1>
                 <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                  style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: GREEN, ...T }}>
+                  style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: GREEN, ...T }}>
                   AES-256 Encrypted
                 </span>
               </div>
@@ -393,7 +393,7 @@ export default function VaultPro() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-black text-white" style={T}>{key.platform}</p>
                       <p className="text-[10px] font-mono truncate mt-0.5"
-                        style={{ color: revealedKeys[key.id] ? '#00FF88' : 'rgba(255,255,255,0.3)' }}>
+                        style={{ color: revealedKeys[key.id] ? '#6DBF7E' : 'rgba(255,255,255,0.3)' }}>
                         {revealedKeys[key.id] ? revealedKeys[key.id] : 'RTMP Key — [ENCRYPTED]'}
                       </p>
                       {revealedKeys[key.id] && (
@@ -449,7 +449,7 @@ export default function VaultPro() {
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <p className="text-sm font-black text-white" style={T}>{item.title}</p>
                           <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full uppercase"
-                            style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)', color: GREEN, ...T }}>
+                            style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)', color: GREEN, ...T }}>
                             🔒 Encrypted
                           </span>
                         </div>
@@ -496,7 +496,7 @@ export default function VaultPro() {
             {activeTab === 'pins' && (
               <div className="space-y-3">
                 <div className="p-3 rounded-2xl text-xs"
-                  style={{ background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.1)', color: 'rgba(255,255,255,0.4)', ...T }}>
+                  style={{ background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.1)', color: 'rgba(255,255,255,0.4)', ...T }}>
                   💡 Tip: Share the <span style={{ color: GREEN }}>vault://</span> link. Only people with the PIN can join.
                 </div>
 
@@ -507,7 +507,7 @@ export default function VaultPro() {
                   </div>
                 ) : roomPins.map(pin => (
                   <div key={pin.id} className="p-3 rounded-2xl"
-                    style={{ background: BG2, border: '1px solid rgba(0,255,136,0.1)' }}>
+                    style={{ background: BG2, border: '1px solid rgba(109,191,126,0.1)' }}>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-black text-white" style={T}>{pin.room}</p>
@@ -515,7 +515,7 @@ export default function VaultPro() {
                       </div>
                       <button onClick={() => handleCopyPin(pin)}
                         className="h-8 px-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-1"
-                        style={{ background: copiedPin === pin.id ? 'rgba(0,255,136,0.15)' : 'rgba(0,255,136,0.08)', color: GREEN, border: '1px solid rgba(0,255,136,0.2)', ...T }}>
+                        style={{ background: copiedPin === pin.id ? 'rgba(109,191,126,0.15)' : 'rgba(109,191,126,0.08)', color: GREEN, border: '1px solid rgba(109,191,126,0.2)', ...T }}>
                         <Copy className="w-3 h-3" /> {copiedPin === pin.id ? 'Copied!' : 'Copy PIN'}
                       </button>
                       <button onClick={() => setSharePin(sharePin === pin.id ? null : pin.id)}
@@ -526,7 +526,7 @@ export default function VaultPro() {
                     </div>
                     {sharePin === pin.id && (
                       <div className="mt-2 p-2 rounded-xl"
-                        style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(0,255,136,0.1)' }}>
+                        style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(109,191,126,0.1)' }}>
                         <p className="text-[11px] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Share link</p>
                         <p className="text-[10px] font-mono break-all" style={{ color: GREEN }}>
                           vault://{pin.encrypted.slice(0, 32)}…
@@ -538,7 +538,7 @@ export default function VaultPro() {
 
                 <button onClick={() => setShowAddPin(true)}
                   className="w-full py-3 rounded-2xl text-sm font-black uppercase flex items-center justify-center gap-2 transition-all active:scale-95"
-                  style={{ background: 'rgba(0,255,136,0.05)', border: '1px dashed rgba(0,255,136,0.2)', color: GREEN, ...T }}>
+                  style={{ background: 'rgba(109,191,126,0.05)', border: '1px dashed rgba(109,191,126,0.2)', color: GREEN, ...T }}>
                   <Plus className="w-4 h-4" /> New Room PIN
                 </button>
 

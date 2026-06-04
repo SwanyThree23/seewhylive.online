@@ -346,7 +346,7 @@ export default function AIHub() {
             ].map(m => (
               <div key={m.label} style={{
                 padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.1)',
+                background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.1)',
               }}>
                 <p style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>{m.label}</p>
                 <p style={{ ...T, fontSize: 22, fontWeight: 900, color: m.color, letterSpacing: '0.02em' }}>{m.value}</p>
@@ -359,7 +359,7 @@ export default function AIHub() {
               whileTap={{ scale: 0.97 }}
               style={{
                 ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
-                background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.25)',
+                background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)',
                 color: '#00ff88', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
                 textTransform: 'uppercase', cursor: 'pointer',
               }}

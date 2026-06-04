@@ -18,7 +18,7 @@ const CRIMSON = '#800020';
 const PINK    = '#FF1564';
 const BG      = '#080B18';
 const BG2     = '#0d0618';
-const GREEN   = '#00FF88';
+const GREEN   = '#6DBF7E';
 
 const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
 

@@ -35,7 +35,7 @@ export default function LiveAudiencePulse({ roomId, isHost, viewerCount }) {
     setPulse(newPulse);
   }, [recentMessages.length, viewerCount]);
 
-  const color = pulse >= 70 ? '#00FF88' : pulse >= 40 ? '#FFB800' : '#FF1564';
+  const color = pulse >= 70 ? '#6DBF7E' : pulse >= 40 ? '#FFB800' : '#FF1564';
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
 
   return (

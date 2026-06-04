@@ -39,9 +39,9 @@ export default function AudienceInsights({ creatorId }) {
   };
 
   const cards = [
-    { label: 'Total Followers', value: insights.followers, icon: '👥', color: '#00F5FF' },
+    { label: 'Total Followers', value: insights.followers, icon: '👥', color: '#C9A84C' },
     { label: 'Active Subscribers', value: insights.subscribers, icon: '⭐', color: G },
-    { label: 'Sub Conversion', value: `${insights.retention}%`, icon: '📈', color: '#00FF88' },
+    { label: 'Sub Conversion', value: `${insights.retention}%`, icon: '📈', color: '#6DBF7E' },
   ];
 
   return (
@@ -85,7 +85,7 @@ export default function AudienceInsights({ creatorId }) {
       <div className="mt-4 pt-4 border-t" style={{ borderColor: BORDER }}>
         <p className="text-xs font-bold text-white/60 mb-2">Growth Trend</p>
         <p className="text-sm text-white/80">
-          📊 Growing at <span style={{ color: '#00FF88' }}>+{Math.round(Math.random() * 20)}%</span> month-over-month
+          📊 Growing at <span style={{ color: '#6DBF7E' }}>+{Math.round(Math.random() * 20)}%</span> month-over-month
         </p>
       </div>
     </motion.div>

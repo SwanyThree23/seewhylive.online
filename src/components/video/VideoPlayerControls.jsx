@@ -142,9 +142,9 @@ export default function VideoPlayerControls({ playerRef, playerType = 'direct', 
         <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded shrink-0"
           style={{
             fontFamily: 'Barlow Condensed, sans-serif',
-            background: isHost ? 'rgba(212,175,55,0.2)' : 'rgba(0,245,255,0.15)',
-            color: isHost ? '#d4af37' : '#00F5FF',
-            border: `1px solid ${isHost ? 'rgba(212,175,55,0.3)' : 'rgba(0,245,255,0.25)'}`,
+            background: isHost ? 'rgba(212,175,55,0.2)' : 'rgba(201,168,76,0.15)',
+            color: isHost ? '#d4af37' : '#C9A84C',
+            border: `1px solid ${isHost ? 'rgba(212,175,55,0.3)' : 'rgba(201,168,76,0.25)'}`,
           }}>
           {isHost ? 'HOST' : 'CO-HOST'}
         </span>

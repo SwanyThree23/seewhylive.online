@@ -9,9 +9,9 @@ import { toast } from 'sonner';
 const GIFTS = [
   { emoji: '🌹', label: 'Rose',    pts: 1,   usd: 0.10, color: '#ff6b6b' },
   { emoji: '🍰', label: 'Cake',    pts: 5,   usd: 0.50, color: '#ffd93d' },
-  { emoji: '💎', label: 'Diamond', pts: 10,  usd: 1.00, color: '#00F5FF' },
+  { emoji: '💎', label: 'Diamond', pts: 10,  usd: 1.00, color: '#C9A84C' },
   { emoji: '🔥', label: 'Fire',    pts: 25,  usd: 2.50, color: '#ff8c00' },
-  { emoji: '🚀', label: 'Rocket',  pts: 50,  usd: 5.00, color: '#8B5CF6' },
+  { emoji: '🚀', label: 'Rocket',  pts: 50,  usd: 5.00, color: '#D4AF37' },
   { emoji: '👑', label: 'Crown',   pts: 100, usd: 10.00, color: '#d4af37' },
 ];
 
@@ -107,7 +107,7 @@ function WinnerCelebration({ battle, onClose }) {
   const particles = [...Array(30)].map((_, i) => ({
     id: i,
     x: `${(i * 7 + 5) % 100}%`,
-    color: ['#d4af37','#CC7755','#6B7C4A','#00F5FF','#8B5CF6'][i % 5],
+    color: ['#d4af37','#CC7755','#6B7C4A','#C9A84C','#D4AF37'][i % 5],
     size: 4 + (i % 4),
     duration: 1.8 + (i % 4) * 0.3,
     delay: i * 0.06,

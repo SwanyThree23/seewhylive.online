@@ -368,8 +368,8 @@ export default function SwanyBotWidget() {
               background: 'linear-gradient(135deg, #1a0d2e 0%, #2d1b6b 50%, #1a0d2e 100%)',
               border: `1px solid ${G}40`,
               boxShadow: pulse
-                ? `0 0 0 0 ${G}60, 0 4px 24px rgba(139,92,246,0.5)`
-                : '0 4px 20px rgba(139,92,246,0.35)',
+                ? `0 0 0 0 ${G}60, 0 4px 24px rgba(212,175,55,0.5)`
+                : '0 4px 20px rgba(212,175,55,0.35)',
             }}
           >
             {pulse && (
@@ -396,7 +396,7 @@ export default function SwanyBotWidget() {
             style={{
               background: BG,
               border: `1px solid ${BORDER}`,
-              boxShadow: '0 8px 60px rgba(0,0,0,0.8), 0 0 40px rgba(139,92,246,0.15)',
+              boxShadow: '0 8px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.15)',
               maxHeight: minimized ? '56px' : '520px',
             }}
           >

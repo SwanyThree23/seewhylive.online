@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Edit2, Check, X } from 'lucide-react';
-import NativeSelect, { convertOptions } from '../shared/NativeSelect';
 
 const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 
@@ -81,12 +80,15 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
         <div>
           <label className="text-[11px] text-white/60 uppercase block mb-1.5">Category</label>
           {isEditing ? (
-            <NativeSelect
+            <select
               value={category}
-              onChange={setCategory}
-              options={convertOptions(CATEGORIES)}
-              placeholder="Select category"
-            />
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded px-2 py-2 text-[11px] text-white/80"
+            >
+              {CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+              ))}
+            </select>
           ) : (
             <div className="text-white/70 text-[11px] capitalize">{category}</div>
           )}
@@ -102,7 +104,7 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
                 onChange={(e) => setTags(e.target.value)}
                 onKeyDown={addTag}
                 placeholder="Type a tag, press Enter"
-                style={{ ...inputStyle, fontSize:11, height:32, marginBottom:8 }}
+                style={{ ...inputStyle, fontSize:9, height:32, marginBottom:8 }}
               />
               {tagList.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">

@@ -10,9 +10,9 @@ const BORDER = 'rgba(212,175,55,0.18)';
 
 const PRESETS = [
   { name: 'Gold Empire', colors: { primary: G, secondary: '#FF8C00', bg: '#0A0710' } },
-  { name: 'Cyber Neon', colors: { primary: '#00F5FF', secondary: '#FF1564', bg: '#0A0710' } },
-  { name: 'Forest Chill', colors: { primary: '#00FF88', secondary: '#00F5FF', bg: '#0A1510' } },
-  { name: 'Purple Haze', colors: { primary: '#8B5CF6', secondary: '#00F5FF', bg: '#0A0710' } },
+  { name: 'Cyber Neon', colors: { primary: '#C9A84C', secondary: '#FF1564', bg: '#0A0710' } },
+  { name: 'Forest Chill', colors: { primary: '#6DBF7E', secondary: '#C9A84C', bg: '#0A1510' } },
+  { name: 'Purple Haze', colors: { primary: '#D4AF37', secondary: '#C9A84C', bg: '#0A0710' } },
 ];
 
 export default function OverlayThemeBuilder({ creatorId }) {

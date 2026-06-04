@@ -188,7 +188,7 @@ db.exec(`
     amount_cents    INTEGER NOT NULL,
     creator_cents   INTEGER NOT NULL,
     platform_cents  INTEGER NOT NULL,
-    tier_color      TEXT    NOT NULL DEFAULT '#5A8FFF',
+    tier_color      TEXT    NOT NULL DEFAULT '#C9A84C',
     ts              INTEGER NOT NULL
   );
 `);
@@ -1338,6 +1338,7 @@ io.on('connection', function(socket) {
     var guestId = data.guestId;
     if (!roomId || !guestId) return;
     io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
+    io.to(roomId).emit('hand-lower',   { guestId: guestId });
   });
 
   // ── stage-remove ───────────────────────────────────────────────────────
@@ -1647,6 +1648,39 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── hand-lower ─────────────────────────────────────────────────────────
+  socket.on('hand-lower', function(data) {
+    var roomId  = (data && data.roomId) || socket.data.roomId;
+    var guestId = (data && data.guestId) || socket.data.guestId || socket.id;
+    if (!roomId) return;
+    io.to(roomId).emit('hand-lower', { guestId: guestId });
+  });
+
+  // ── mute-all ───────────────────────────────────────────────────────────
+  socket.on('mute-all', function(data) {
+    var roomId = (data && data.roomId) || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('mute-all', { by: socket.data.userId });
+    io.to(roomId).emit('chat-message', {
+      userId:   'system',
+      username: 'SeeWhy LIVE',
+      text:     '🔇 ' + (socket.data.username || 'Host') + ' muted all participants',
+      ts:       Math.floor(Date.now() / 1000)
+    });
+  });
+
+  // ── lock-stage ─────────────────────────────────────────────────────────
+  socket.on('lock-stage', function(data) {
+    var roomId = (data && data.roomId) || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room   = getRoom(roomId);
+    var locked = Boolean(data && data.locked);
+    room.stageLocked = locked;
+    io.to(roomId).emit('stage-lock-update', { locked: locked });
+  });
+
   // ── overlay-update ────────────────────────────────────────────────────
   socket.on('overlay-update', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -1659,7 +1693,7 @@ io.on('connection', function(socket) {
   socket.on('watch-party-start', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     room.watchParty = { videoId: null, url: null, playing: false, position: 0, ts: Date.now() };
     var hostName = socket.data.username || 'Host';
@@ -1674,19 +1708,22 @@ io.on('connection', function(socket) {
 
   socket.on('watch-party-url', function(data) {
     var roomId = data.roomId || socket.data.roomId;
-    if (!roomId || !data.videoId) return;
-    if (socket.data.role !== 'host') return;
+    if (!roomId) return;
+    if (!data.videoId && !data.url) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = { playing: false, position: 0, ts: Date.now() };
-    room.watchParty.videoId = data.videoId;
-    room.watchParty.url = data.url || '';
-    io.to(roomId).emit('watch-party-url', { videoId: data.videoId, url: data.url || '' });
+    var type = data.type || (data.videoId ? 'youtube' : 'direct');
+    room.watchParty.videoId = data.videoId || null;
+    room.watchParty.url  = data.url || '';
+    room.watchParty.type = type;
+    io.to(roomId).emit('watch-party-url', { videoId: data.videoId || null, url: data.url || '', type: type });
   });
 
   socket.on('watch-party-play', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     var now = Date.now();
     var position = data.position || 0;
@@ -1700,7 +1737,7 @@ io.on('connection', function(socket) {
   socket.on('watch-party-pause', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     var position = data.position || 0;
     if (!room.watchParty) room.watchParty = {};
@@ -1713,7 +1750,7 @@ io.on('connection', function(socket) {
   socket.on('watch-party-seek', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || typeof data.position !== 'number') return;
-    if (socket.data.role !== 'host') return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = {};
     room.watchParty.position = data.position;
@@ -1732,6 +1769,7 @@ io.on('connection', function(socket) {
       io.to(socket.id).emit('watch-party-sync', {
         videoId:  wp.videoId,
         url:      wp.url,
+        type:     wp.type || 'youtube',
         playing:  wp.playing,
         position: wp.position + elapsed,
         ts:       Date.now()
@@ -2060,8 +2098,8 @@ io.on('connection', function(socket) {
     var platformCents = amountCents - creatorCents;
     var scId          = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
-    var TIER_COLORS   = { 100: '#5A8FFF', 200: '#00C96A', 500: '#C9A84C', 1000: '#FF8C42', 2000: '#FF1A3C', 5000: '#9B59B6' };
-    var tierColor     = TIER_COLORS[amountCents] || '#5A8FFF';
+    var TIER_COLORS   = { 100: '#C9A84C', 200: '#D4854A', 500: '#C9A84C', 1000: '#FF8C42', 2000: '#FF1A3C', 5000: '#800020' };
+    var tierColor     = TIER_COLORS[amountCents] || '#C9A84C';
 
     try {
       db.prepare(
@@ -2440,6 +2478,7 @@ io.on('connection', function(socket) {
   // ── Watch sync handler ─────────────────────────────────────────────────
   socket.on('watch-sync', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = String(data.roomId);
     io.to(sRoomId).emit('watch-sync', { action: data.action, position: data.position, timestamp: Date.now() });
   });
@@ -2856,6 +2895,8 @@ io.on('connection', function(socket) {
         room.watchParty.ts = Date.now();
         io.to(roomId).emit('watch-party-pause', { position: room.watchParty.position, reason: 'host_disconnected' });
       }
+      // Clear screen share indicator if host was sharing
+      io.to(roomId).emit('screen-share-ended', {});
       // Notify room that host disconnected
       io.to(roomId).emit('host-disconnected', { ts: Math.floor(Date.now() / 1000) });
     }
@@ -2948,6 +2989,7 @@ app.post('/api/webhooks/deploy', function(req, res) {
       'git fetch origin claude/seewhy-live-v33-build-v0L5Z',
       'git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z',
       'cd server && npm install --omit=dev --silent',
+      'cd /opt/seewhy/frontend && npm ci --silent && npm run build',
       'pm2 reload seewhy-server --update-env',
       'pm2 save --force'
     ].join(' && ');

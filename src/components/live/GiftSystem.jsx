@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#800020", gold: "#D4AF37",
-  volt: "#C8FF00", white: "#FFF", gray: "#888", dim: "#444",
+  volt: "#D4AF37", white: "#FFF", gray: "#888", dim: "#444",
   purple: "#BF5FFF", cyan: "#00E5FF", green: "#30D158",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",

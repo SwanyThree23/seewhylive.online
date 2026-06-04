@@ -48,7 +48,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className="rounded-xl p-3 space-y-2"
-      style={{ background: 'rgba(0,245,255,0.08)', border: '1px solid rgba(0,245,255,0.2)' }}>
+      style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)' }}>
       
       <div className="flex items-center gap-2 mb-2">
         <Clock className="w-3.5 h-3.5" style={{ color: GOLD }} />
@@ -78,7 +78,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
                 onClick={() => approveMut.mutate(guest.id)}
                 disabled={approveMut.isPending}
                 className="flex items-center justify-center w-7 h-7 rounded transition-all"
-                style={{ background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.3)', color: '#00FF88' }}>
+                style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E' }}>
                 <Check className="w-3.5 h-3.5" />
               </motion.button>
               <motion.button

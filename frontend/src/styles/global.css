@@ -222,7 +222,7 @@ html {
 
 body {
   background-color: var(--bg0);
-  color: #D0C0E0;
+  color: #F0E8D4;
   font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.5;
@@ -866,7 +866,7 @@ input, select, textarea {
 }
 
 .chat-text {
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .chat-translation {
@@ -890,7 +890,7 @@ input, select, textarea {
   flex: 1;
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   outline: none;
@@ -1039,7 +1039,7 @@ input, select, textarea {
 .select-input {
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   font-family: var(--font-ui);
@@ -1058,7 +1058,7 @@ input, select, textarea {
 .text-input {
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   outline: none;
@@ -1284,7 +1284,7 @@ input, select, textarea {
 
 .preset-btn:hover {
   border-color: rgba(201, 168, 76, 0.5);
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .preset-swatch {
@@ -1343,7 +1343,7 @@ input, select, textarea {
 .toggle-label {
   font-family: var(--font-ui);
   font-size: 14px;
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .toggle-switch {
@@ -1550,7 +1550,7 @@ input, select, textarea {
   width: 100%;
   background: var(--bg2);
   border: 1px solid rgba(201, 168, 76, 0.2);
-  color: #D0C0E0;
+  color: #F0E8D4;
   font-family: var(--font-mono);
   font-size: 11px;
   padding: 8px;
@@ -1606,7 +1606,7 @@ input, select, textarea {
 .bot-rule-name {
   font-family: var(--font-ui);
   font-size: 15px;
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 .bot-log-feed {
@@ -1664,7 +1664,7 @@ input, select, textarea {
 }
 
 .bot-log-msg {
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 /* ============================================================
@@ -1769,7 +1769,7 @@ input, select, textarea {
 .gift-from {
   font-family: var(--font-ui);
   font-size: 13px;
-  color: #D0C0E0;
+  color: #F0E8D4;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1915,7 +1915,7 @@ input, select, textarea {
 
 .toast--info {
   border-left-color: rgba(201, 168, 76, 0.4);
-  color: #D0C0E0;
+  color: #F0E8D4;
 }
 
 /* ============================================================
@@ -2022,7 +2022,7 @@ input, select, textarea {
 .guest-name {
   font-family: var(--font-ui);
   font-size: 15px;
-  color: #D0C0E0;
+  color: #F0E8D4;
   flex: 1;
 }
 
@@ -2167,7 +2167,7 @@ input, select, textarea {
   padding: 4px 10px;
   background: rgba(26,21,16,.8);
   border: 1px solid #3D3020;
-  color: rgba(176,160,192,.5);
+  color: rgba(138,122,98,.5);
   border-radius: 4px;
   cursor: pointer;
   transition: all .15s;
@@ -2183,7 +2183,7 @@ input, select, textarea {
 .stage-capacity {
   font-family: var(--font-mono);
   font-size: 8px;
-  color: rgba(176,160,192,.4);
+  color: rgba(138,122,98,.4);
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -2353,7 +2353,7 @@ input, select, textarea {
   border-radius: 8px;
   overflow: hidden;
   background: #000;
-  border: 1px solid rgba(90,143,255,.3);
+  border: 1px solid rgba(212,133,74,.3);
   position: relative;
   min-height: 0;
 }
@@ -2407,7 +2407,7 @@ input, select, textarea {
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
-  border-bottom: 1px solid rgba(36,28,52,.6);
+  border-bottom: 1px solid rgba(26,21,16,.6);
 }
 
 .hand-queue-name {
@@ -2421,7 +2421,7 @@ input, select, textarea {
 .hand-queue-time {
   font-family: var(--font-mono);
   font-size: 8px;
-  color: rgba(176,160,192,.4);
+  color: rgba(138,122,98,.4);
   flex-shrink: 0;
 }
 
@@ -2432,7 +2432,7 @@ input, select, textarea {
   gap: 4px;
   padding: 6px 8px;
   background: rgba(14,12,9,.95);
-  border-top: 1px solid rgba(36,28,52,.8);
+  border-top: 1px solid rgba(26,21,16,.8);
   flex-shrink: 0;
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -2450,7 +2450,7 @@ input, select, textarea {
   border: 1px solid #3D3020;
   border-radius: 8px;
   padding: 6px 10px;
-  color: rgba(176,160,192,.6);
+  color: rgba(138,122,98,.6);
   cursor: pointer;
   transition: all .15s;
   flex-shrink: 0;
@@ -2489,7 +2489,7 @@ input, select, textarea {
 .mc-divider {
   width: 1px;
   height: 28px;
-  background: rgba(36,28,52,.8);
+  background: rgba(26,21,16,.8);
   flex-shrink: 0;
   margin: 0 2px;
 }
@@ -2572,8 +2572,8 @@ input, select, textarea {
 /* Role access badges */
 .role-host   { background: rgba(201,168,76,.18); color: #C9A84C; border: 1px solid rgba(201,168,76,.4); }
 .role-cohost { background: rgba(201,168,76,.15);  color: #C9A84C; border: 1px solid rgba(201,168,76,.35); }
-.role-guest  { background: rgba(90,143,255,.15); color: #C9A84C; border: 1px solid rgba(90,143,255,.35); }
-.role-viewer { background: rgba(36,28,52,.6);    color: rgba(176,160,192,.5); border: 1px solid #3D3020; }
+.role-guest  { background: rgba(212,133,74,.15); color: #C9A84C; border: 1px solid rgba(212,133,74,.35); }
+.role-viewer { background: rgba(26,21,16,.6);    color: rgba(138,122,98,.5); border: 1px solid #3D3020; }
 
 .role-pill {
   font-family: var(--font-mono);

@@ -15,7 +15,7 @@ var AVATAR_ITEMS = [
 var RARITY_COLORS = {
   common:    '#8A7A62',
   rare:      '#C9A84C',
-  epic:      '#C084FC',
+  epic:      '#C9A84C',
   legendary: '#C9A84C',
   mythic:    '#FF1A3C',
 };
@@ -43,7 +43,7 @@ var BADGES = [
 ];
 
 var VIEWER_NAMES = ['King D', 'Cali J', 'Volt V', 'Teal B', 'Gold G', 'Purp R', 'Dia H', 'Dom N'];
-var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#C9A84C','#C084FC','#C9A84C','#FF6B35','#C9A84C','#FF1493'];
+var VIEWER_COLORS = ['#FF1A3C','#C9A84C','#C9A84C','#C9A84C','#C9A84C','#FF6B35','#C9A84C','#FF1493'];
 
 export default function AvatarHubTab({ addToast, isLive }) {
   var [items,            setItems]            = useState(AVATAR_ITEMS.map(function(a) { return Object.assign({}, a); }));
@@ -168,7 +168,7 @@ export default function AvatarHubTab({ addToast, isLive }) {
   });
 
   var liveShadow = isLive
-    ? '0 0 ' + (8 + Math.floor(livePulse / 10)) + 'px rgba(192,132,252,' + (0.4 + livePulse / 250).toFixed(2) + ')'
+    ? '0 0 ' + (8 + Math.floor(livePulse / 10)) + 'px rgba(201,168,76,' + (0.4 + livePulse / 250).toFixed(2) + ')'
     : 'none';
 
   return (
@@ -223,8 +223,8 @@ export default function AvatarHubTab({ addToast, isLive }) {
       )}
 
       {isLive && liveViewerAvatars.length > 0 && (
-        <div style={{ background: 'rgba(192,132,252,.07)', border: '1px solid rgba(192,132,252,.25)', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C084FC', letterSpacing: 2, flexShrink: 0 }}>WATCHING LIVE</div>
+        <div style={{ background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 2, flexShrink: 0 }}>WATCHING LIVE</div>
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {liveViewerAvatars.map(function(v) {
               return (

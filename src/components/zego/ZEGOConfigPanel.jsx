@@ -57,8 +57,8 @@ export default function ZEGOConfigPanel({ user }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.2)' }}>
-            <Zap className="w-4 h-4" style={{ color: '#00F5FF' }} />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)' }}>
+            <Zap className="w-4 h-4" style={{ color: '#C9A84C' }} />
           </div>
           <div>
             <p className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>Streaming Engine</p>
@@ -67,9 +67,9 @@ export default function ZEGOConfigPanel({ user }) {
         </div>
         <span className="text-[11px] font-black uppercase px-2 py-1 rounded-full"
           style={{
-            background: isConfigured ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,68,0.12)',
-            color: isConfigured ? '#00FF88' : '#FF4444',
-            border: `1px solid ${isConfigured ? 'rgba(0,255,136,0.3)' : 'rgba(255,68,68,0.3)'}`,
+            background: isConfigured ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)',
+            color: isConfigured ? '#6DBF7E' : '#FF4444',
+            border: `1px solid ${isConfigured ? 'rgba(109,191,126,0.3)' : 'rgba(255,68,68,0.3)'}`,
           }}>
           {isConfigured ? '● CONFIGURED' : '● NOT CONFIGURED'}
         </span>
@@ -167,7 +167,7 @@ export default function ZEGOConfigPanel({ user }) {
       {/* OBS URL preview */}
       <div className="px-3 py-2 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
         <p className="text-[11px] uppercase font-black mb-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>OBS Ingest URL</p>
-        <p className="text-[10px] break-all" style={{ color: '#00F5FF', fontFamily: 'Share Tech Mono, monospace' }}>{obsUrl}</p>
+        <p className="text-[10px] break-all" style={{ color: '#C9A84C', fontFamily: 'Share Tech Mono, monospace' }}>{obsUrl}</p>
       </div>
     </div>
   );
