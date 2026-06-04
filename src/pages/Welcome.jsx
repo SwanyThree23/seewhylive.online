@@ -146,10 +146,42 @@ export default function WelcomePage() {
         </div>
       </main>
 
+      {/* Feature Highlights */}
+      <section className="relative z-20 py-12 px-4 md:px-8" style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
+        <div className="max-w-3xl mx-auto">
+          <p className="text-center text-xs font-black uppercase tracking-widest mb-6" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>Platform Features</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            {[
+              { emoji: '⚔️', label: 'State vs State',    sub: 'Domino Tournaments' },
+              { emoji: '🤖', label: 'AI Co-Host',         sub: 'Joyce AI + ARIA' },
+              { emoji: '🎙️', label: 'Podcast Studio',    sub: 'AI Script + Record' },
+              { emoji: '🕊️', label: 'Tribute Wall',      sub: 'Honor Legends' },
+              { emoji: '🎵', label: 'AI Music Studio',   sub: 'Generate & Mix' },
+              { emoji: '⚡', label: 'INS Forge',          sub: 'AI Graphics' },
+              { emoji: '🛡️', label: 'Guardian AI',       sub: 'Live Moderation' },
+              { emoji: '📡', label: 'Multi-Platform',    sub: 'Stream Everywhere' },
+            ].map(f => (
+              <div key={f.label} className="text-center p-3 rounded-xl" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <div style={{ fontSize: 22, marginBottom: 4 }}>{f.emoji}</div>
+                <p className="text-xs font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{f.label}</p>
+                <p className="text-[10px]" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{f.sub}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <Link to="/PlatformShowcase">
+              <button className="px-6 py-2 rounded-full text-xs font-black uppercase tracking-wider" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                See all features →
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"
         style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <p>© {new Date().getFullYear()} SeeWhy LIVE. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split</p>
       </footer>
     </div>
   );
