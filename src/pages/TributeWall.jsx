@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const BG      = '#080B18';
 const BG2     = '#0D1022';
@@ -168,9 +169,11 @@ export default function TributeWall() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <Btn label="REGISTER TEAM" variant="tribute" size="sm" style={{ flex: 1 }} />
-              <Btn label="SHARE" variant="ghost" size="sm" />
-              <Btn label="DONATE" variant="ghost" size="sm" />
+              <Link to="/StateVsState" style={{ textDecoration: 'none', flex: 1 }}>
+                <Btn label="REGISTER TEAM" variant="tribute" size="sm" style={{ width: '100%' }} />
+              </Link>
+              <Btn label="SHARE" variant="ghost" size="sm" onClick={() => { try { navigator.share({ title: 'SeeWhy LIVE Tribute Gaming Event', url: window.location.href }); } catch(_) { navigator.clipboard.writeText(window.location.href); } }} />
+              <Btn label="DONATE" variant="ghost" size="sm" onClick={() => window.open('https://seewhy.live/donate', '_blank', 'noopener,noreferrer')} />
             </div>
           </GCard>
         )}
