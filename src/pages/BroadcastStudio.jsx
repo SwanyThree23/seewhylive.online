@@ -41,33 +41,33 @@ const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Video sync engine ────────────────────────────────────────────────────────
-function useSyncEngine({ party, isHost, onTimeSync }) {
+function useSyncEngine({ party, isController, onTimeSync }) {
   const qc = useQueryClient();
 
   const pushState = useCallback(async (playerState) => {
-    if (!isHost || !party?.id) return;
+    if (!isController || !party?.id) return;
     await base44.entities.WatchParty.update(party.id, {
       playback_state: playerState.playing ? 'playing' : 'paused',
       current_time: playerState.currentTime,
       updated_at_ms: Date.now(),
     });
-  }, [isHost, party?.id]);
+  }, [isController, party?.id]);
 
   useEffect(() => {
     if (!party?.id) return;
     const unsub = base44.entities.WatchParty.subscribe((event) => {
       if (event.id !== party.id) return;
-      if (!isHost && event.data) onTimeSync(event.data);
+      if (!isController && event.data) onTimeSync(event.data);
       qc.invalidateQueries(['broadcast-party', party.id]);
     });
     return unsub;
-  }, [party?.id, isHost, onTimeSync, qc]);
+  }, [party?.id, isController, onTimeSync, qc]);
 
   return { pushState };
 }
 
 // ── YouTube player ───────────────────────────────────────────────────────────
-function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
+function YouTubeEmbed({ videoId, isController, syncData, onStateChange }) {
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
 
@@ -79,10 +79,10 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
     window.onYouTubeIframeAPIReady = () => {
       playerRef.current = new window.YT.Player(iframeRef.current, {
         videoId,
-        playerVars: { autoplay: 0, controls: isHost ? 1 : 0 },
+        playerVars: { autoplay: 0, controls: isController ? 1 : 0 },
         events: {
           onStateChange: (e) => {
-            if (!isHost) return;
+            if (!isController) return;
             const s = e.data;
             if (s === window.YT.PlayerState.PLAYING || s === window.YT.PlayerState.PAUSED) {
               onStateChange({ playing: s === window.YT.PlayerState.PLAYING, currentTime: playerRef.current?.getCurrentTime() || 0 });
@@ -95,7 +95,7 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
 
   // Push every 3s during playback so viewers stay in sync
   useEffect(() => {
-    if (!isHost) return;
+    if (!isController) return;
     const iv = setInterval(() => {
       if (!playerRef.current?.getPlayerState) return;
       if (playerRef.current.getPlayerState() === window.YT?.PlayerState?.PLAYING) {
@@ -103,54 +103,54 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
       }
     }, 3000);
     return () => clearInterval(iv);
-  }, [isHost, onStateChange]);
+  }, [isController, onStateChange]);
 
   useEffect(() => {
-    if (isHost || !playerRef.current || !syncData) return;
+    if (isController || !playerRef.current || !syncData) return;
     const lag = Date.now() - (syncData.updated_at_ms || Date.now());
     const adj = (syncData.current_time || 0) + lag / 1000;
     const cur = playerRef.current.getCurrentTime?.() || 0;
     if (Math.abs(cur - adj) > 2) playerRef.current.seekTo?.(adj, true);
     if (syncData.playback_state === 'playing') playerRef.current.playVideo?.();
     else playerRef.current.pauseVideo?.();
-  }, [syncData, isHost]);
+  }, [syncData, isController]);
 
   return <div ref={iframeRef} className="w-full h-full" />;
 }
 
 // ── Direct video player ──────────────────────────────────────────────────────
-function DirectPlayer({ url, isHost, syncData, onStateChange }) {
+function DirectPlayer({ url, isController, syncData, onStateChange }) {
   const videoRef = useRef(null);
 
   const handleEvent = () => {
-    if (!isHost || !videoRef.current) return;
+    if (!isController || !videoRef.current) return;
     onStateChange({ playing: !videoRef.current.paused, currentTime: videoRef.current.currentTime });
   };
 
   useEffect(() => {
-    if (!isHost) return;
+    if (!isController) return;
     const iv = setInterval(() => {
       if (!videoRef.current || videoRef.current.paused) return;
       onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
     }, 3000);
     return () => clearInterval(iv);
-  }, [isHost, onStateChange]);
+  }, [isController, onStateChange]);
 
   useEffect(() => {
-    if (isHost || !videoRef.current || !syncData) return;
+    if (isController || !videoRef.current || !syncData) return;
     const v = videoRef.current;
     const lag = Date.now() - (syncData.updated_at_ms || Date.now());
     const adj = (syncData.current_time || 0) + lag / 1000;
     if (Math.abs(v.currentTime - adj) > 2) v.currentTime = adj;
     if (syncData.playback_state === 'playing') v.play().catch(() => {});
     else v.pause();
-  }, [syncData, isHost]);
+  }, [syncData, isController]);
 
   return (
     <video
       ref={videoRef}
       src={url}
-      controls={isHost}
+      controls={isController}
       className="w-full h-full object-contain bg-black"
       onPlay={handleEvent}
       onPause={handleEvent}
@@ -455,7 +455,7 @@ export default function BroadcastStudio() {
   });
 
   const onTimeSync = useCallback((data) => setSyncData(data), []);
-  const { pushState } = useSyncEngine({ party, isHost, onTimeSync });
+  const { pushState } = useSyncEngine({ party, isController: canManage, onTimeSync });
 
   // Auto-join as member
   useEffect(() => {
@@ -837,15 +837,15 @@ export default function BroadcastStudio() {
               party.video_type === 'youtube' && ytId ? (
                 <YouTubeEmbed
                   videoId={ytId}
-                  isHost={isHost}
-                  syncData={isHost ? null : (syncData || party)}
+                  isController={canManage}
+                  syncData={canManage ? null : (syncData || party)}
                   onStateChange={pushState}
                 />
               ) : (
                 <DirectPlayer
                   url={safeVideoUrl}
-                  isHost={isHost}
-                  syncData={isHost ? null : (syncData || party)}
+                  isController={canManage}
+                  syncData={canManage ? null : (syncData || party)}
                   onStateChange={pushState}
                 />
               )
