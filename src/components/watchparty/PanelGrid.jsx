@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin } from 'lucide-react';
+import PanelMusicPlayer from '../live/PanelMusicPlayer';
 
 var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B7C', '#7C4A6B', '#6B4A4A'];
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -445,6 +446,8 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
           </AnimatePresence>
         </div>
       )}
+
+      <PanelMusicPlayer style={{ borderTop: '1px solid rgba(212,175,55,0.1)' }} />
     </div>
   );
 }
