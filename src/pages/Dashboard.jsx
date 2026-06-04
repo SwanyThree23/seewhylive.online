@@ -141,9 +141,12 @@ function OverviewTab({ user }) {
 
       <div className="flex flex-wrap gap-2">
         {[
-          { label: '📡 Go Live', href: createPageUrl('LiveRoom'), color: BURGUNDY },
+          { label: '📡 Go Live', href: createPageUrl('GoLive'), color: BURGUNDY },
           { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: `rgba(212,175,55,0.15)` },
           { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
+          { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
+          { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(255,21,100,0.08)' },
+          { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(245,158,11,0.08)' },
         ].map(q => (
           <Link key={q.label} to={q.href}>
             <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
