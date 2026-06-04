@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const BG   = '#080B18';
 const BG2  = '#0D1022';
@@ -240,8 +241,12 @@ function BracketView({ matches }) {
                     </div>
                     {isLive && (
                       <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-                        <Btn label="WATCH NOW" variant="gold" size="sm" />
-                        <Btn label="WATCH PARTY" variant="ghost" size="sm" />
+                        <Link to="/Discover" style={{ textDecoration: 'none' }}>
+                          <Btn label="WATCH NOW" variant="gold" size="sm" />
+                        </Link>
+                        <Link to="/WatchParty" style={{ textDecoration: 'none' }}>
+                          <Btn label="WATCH PARTY" variant="ghost" size="sm" />
+                        </Link>
                       </div>
                     )}
                   </GCard>
