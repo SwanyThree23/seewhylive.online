@@ -195,6 +195,58 @@ function FanbaseRoomCard({ room }) {
   );
 }
 
+// ── Platform Spotlight Strip ──────────────────────────────────────────────
+var SPOTLIGHT_ITEMS = [
+  { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#1565C0', page: 'StateVsState' },
+  { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',       color: '#7B5EA7', page: 'TributeWall' },
+  { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI' },
+  { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#FF1564', page: 'GuardianAI' },
+  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#00d4ff', page: 'PodcastStudio' },
+  { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#a78bfa', page: 'AIMusic' },
+  { emoji: '⚡', label: 'INS Forge',      sub: 'AI Graphics',         color: '#F59E0B', page: 'INSForge' },
+  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#22c55e', page: 'MultiPlatform' },
+];
+
+function SpotlightStrip() {
+  return (
+    <div style={{ paddingTop: 8, paddingBottom: 4 }}>
+      <div style={{
+        padding: '0 16px 6px',
+        fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+        fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase',
+        color: 'rgba(255,255,255,0.25)',
+      }}>Platform Features</div>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {SPOTLIGHT_ITEMS.map(function(item) {
+          return (
+            <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{
+                width: 88, padding: '10px 8px 8px',
+                background: item.color + '14',
+                border: '1px solid ' + item.color + '30',
+                borderRadius: 14,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+              }}>
+                <div style={{ fontSize: 20, lineHeight: 1 }}>{item.emoji}</div>
+                <p style={{
+                  fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+                  fontSize: 11, color: '#fff', textAlign: 'center', lineHeight: 1.15,
+                  letterSpacing: '0.03em', margin: 0,
+                }}>{item.label}</p>
+                <p style={{
+                  fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9,
+                  color: item.color, textAlign: 'center', margin: 0,
+                  letterSpacing: '0.02em', opacity: 0.9,
+                }}>{item.sub}</p>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Domino Social Expo partner data ───────────────────────────────────────
 var DOMINO_VIDEOS = [
   { id: 'sn-X0avptY0' },
@@ -463,6 +515,9 @@ export default function Home() {
           })}
         </div>
       </div>
+
+      {/* ── PLATFORM FEATURES SPOTLIGHT ── */}
+      <SpotlightStrip />
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
