@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -31,13 +31,15 @@ var BOTTOM_NAV = [
 
 // ── Drawer nav groups ──────────────────────────────────────────────────────
 var DRAWER_WATCH = [
-  { name: 'Home',             icon: Home,   href: createPageUrl('Home') },
-  { name: 'Discover',         icon: Eye,    href: createPageUrl('Discover') },
-  { name: 'Watch Party',      icon: Eye,    href: createPageUrl('WatchParty') },
-  { name: 'Featured Partners',icon: Tv2,    href: createPageUrl('Discover') + '?tab=partners' },
-  { name: 'Social Expo',      icon: Tv2,    href: createPageUrl('SocialExpo') },
-  { name: 'Audio Room',       icon: Radio,  href: createPageUrl('AudioRoom') },
-  { name: 'Leaderboard',      icon: Trophy, href: createPageUrl('Leaderboard') },
+  { name: 'Home',             icon: Home,    href: createPageUrl('Home') },
+  { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
+  { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
+  { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
+  { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
+  { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
+  { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
+  { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
+  { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
 ];
 
 var DRAWER_CREATE = [
