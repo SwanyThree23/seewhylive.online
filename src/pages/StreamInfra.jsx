@@ -48,11 +48,11 @@ function StatusDot({ active, label, pulse }) {
         className={pulse ? 'animate-pulse' : ''}
         style={{
           width: 7, height: 7, borderRadius: '50%',
-          background: active ? '#00FF88' : '#FF1564',
-          boxShadow: active ? '0 0 6px #00FF8860' : 'none'
+          background: active ? '#6DBF7E' : '#FF1564',
+          boxShadow: active ? '0 0 6px #6DBF7E60' : 'none'
         }}
       />
-      <span className="text-xs" style={{ color: active ? '#00FF88' : '#FF1564' }}>{label}</span>
+      <span className="text-xs" style={{ color: active ? '#6DBF7E' : '#FF1564' }}>{label}</span>
     </div>
   );
 }
@@ -81,7 +81,7 @@ function CopyField({ label, value, mono }) {
         <button
           onClick={handle}
           className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-          style={{ background: copied ? 'rgba(0,255,136,0.1)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (copied ? '#00FF8860' : '#d4af3740') }}
+          style={{ background: copied ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (copied ? '#6DBF7E60' : '#d4af3740') }}
         >
           {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-yellow-400" />}
         </button>
@@ -141,17 +141,17 @@ function StreamTab({ user }) {
 
   var platforms = [
     { id: 'youtube', label: 'YouTube Live', ph: 'yt_xxxx...', color: '#FF1564' },
-    { id: 'twitch', label: 'Twitch', ph: 'live_xxxx...', color: '#8B5CF6' },
-    { id: 'facebook', label: 'Facebook Live', ph: 'FB-xxxx...', color: '#00F5FF' },
+    { id: 'twitch', label: 'Twitch', ph: 'live_xxxx...', color: '#D4AF37' },
+    { id: 'facebook', label: 'Facebook Live', ph: 'FB-xxxx...', color: '#C9A84C' },
     { id: 'x', label: 'X / Twitter', ph: 'xxxx...', color: '#d4af37' },
   ];
 
   var n8nEvents = [
     { event: 'stream.started', color: '#FF1564' },
     { event: 'tip.received', color: '#d4af37' },
-    { event: 'subscriber.new', color: '#00F5FF' },
-    { event: 'raid.incoming', color: '#8B5CF6' },
-    { event: 'goal.reached', color: '#00FF88' },
+    { event: 'subscriber.new', color: '#C9A84C' },
+    { event: 'raid.incoming', color: '#D4AF37' },
+    { event: 'goal.reached', color: '#6DBF7E' },
     { event: 'clip.created', color: '#FF8C00' },
   ];
 
@@ -172,9 +172,9 @@ function StreamTab({ user }) {
       {/* Status grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'WebRTC Engine', sub: 'SFU mode', active: true, color: '#00F5FF' },
-          { label: 'RTMP Ingress', sub: 'OBS ready', active: true, color: '#00FF88' },
-          { label: 'Egress/Record', sub: 'Simulcast on', active: true, color: '#8B5CF6' },
+          { label: 'WebRTC Engine', sub: 'SFU mode', active: true, color: '#C9A84C' },
+          { label: 'RTMP Ingress', sub: 'OBS ready', active: true, color: '#6DBF7E' },
+          { label: 'Egress/Record', sub: 'Simulcast on', active: true, color: '#D4AF37' },
           { label: 'n8n Hooks', sub: 'Webhooks live', active: true, color: '#d4af37' },
         ].map(function(s) {
           return (
@@ -209,12 +209,12 @@ function StreamTab({ user }) {
         </PanelCard>
 
         {/* Social Audio Rooms */}
-        <PanelCard title="Social Audio Rooms" icon={Headphones} color="#8B5CF6">
+        <PanelCard title="Social Audio Rooms" icon={Headphones} color="#D4AF37">
           <SocialAudioRoles />
         </PanelCard>
 
         {/* Multi-Destination Egress */}
-        <PanelCard title="Multi-Destination Simulcast" icon={Share2} color="#00FF88">
+        <PanelCard title="Multi-Destination Simulcast" icon={Share2} color="#6DBF7E">
           <div className="space-y-3">
             <p className="text-[11px] text-white/40">Broadcast to platforms simultaneously via RTMP egress</p>
             {platforms.map(function(p) {
@@ -235,12 +235,12 @@ function StreamTab({ user }) {
                     className="flex-1 rounded-lg px-2 py-1.5 text-[10px] text-white/60 focus:outline-none"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Share Tech Mono, monospace' }}
                   />
-                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: egressKeys[p.id] ? '#00FF88' : 'rgba(255,255,255,0.15)' }} />
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: egressKeys[p.id] ? '#6DBF7E' : 'rgba(255,255,255,0.15)' }} />
                 </div>
               );
             })}
             <button
-              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(0,255,136,0.12)', color:'#00FF88', border:'1px solid rgba(0,255,136,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(109,191,126,0.12)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <Zap className="w-3 h-3" /> Start Simulcast to All Active
             </button>
@@ -281,7 +281,7 @@ function StreamTab({ user }) {
                   <div key={w.event} className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full" style={{ background: w.color }} />
-                      <span className="text-[9px] text-white/40" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{w.event}</span>
+                      <span className="text-[11px] text-white/40" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{w.event}</span>
                     </div>
                     <StatusDot active={true} label="Ready" />
                   </div>
@@ -317,7 +317,7 @@ function SocialAudioRoles() {
   var roles = [
     { id: 'speaker', label: 'Speaker', Icon: Mic, color: '#d4af37', desc: 'Mic + video' },
     { id: 'cohost', label: 'Co-Host', Icon: Crown, color: '#FFB800', desc: 'Moderation' },
-    { id: 'listener', label: 'Listener', Icon: Headphones, color: '#8B5CF6', desc: 'Audio-only' },
+    { id: 'listener', label: 'Listener', Icon: Headphones, color: '#D4AF37', desc: 'Audio-only' },
   ];
   var selected = roles.find(function(r) { return r.id === role; }) || roles[2];
   return (
@@ -338,7 +338,7 @@ function SocialAudioRoles() {
             >
               <r.Icon className="w-5 h-5" style={{ color: active ? r.color : 'rgba(255,255,255,0.25)' }} />
               <span className="text-[10px] font-bold uppercase" style={{ color: active ? r.color : 'rgba(255,255,255,0.35)' }}>{r.label}</span>
-              <span className="text-[9px] text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>{r.desc}</span>
+              <span className="text-[11px] text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>{r.desc}</span>
             </button>
           );
         })}
@@ -372,7 +372,7 @@ function LiveRoomTab({ user }) {
     { id: '6', name: 'Maya R.', role: 'cohost', mic: true, video: true, hand: false, speaking: false },
   ];
 
-  var roleColors = { host: '#FF1564', cohost: '#FFB800', speaker: '#d4af37', listener: '#8B5CF6' };
+  var roleColors = { host: '#FF1564', cohost: '#FFB800', speaker: '#d4af37', listener: '#D4AF37' };
   var hostParticipants = mockParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
   var listenerParticipants = mockParticipants.filter(function(p) { return p.role === 'listener'; });
 
@@ -423,18 +423,18 @@ function LiveRoomTab({ user }) {
                     >
                       {p.name.charAt(0)}
                       {p.hand && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px]" style={{ background: '#FFB800' }}>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[11px]" style={{ background: '#FFB800' }}>
                           ✋
                         </div>
                       )}
                       <div className="absolute -bottom-1 -right-1 flex gap-0.5">
-                        {p.mic && <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: '#00FF88' }}><Mic className="w-2 h-2 text-black" /></div>}
+                        {p.mic && <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: '#6DBF7E' }}><Mic className="w-2 h-2 text-black" /></div>}
                         {!p.mic && <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: '#FF1564' }}><MicOff className="w-2 h-2 text-white" /></div>}
                       </div>
                     </div>
                     <div className="text-center">
                       <p className="text-[10px] font-bold text-white/80 truncate max-w-[4rem]">{p.name.split(' ')[0]}</p>
-                      <p className="text-[9px] font-bold uppercase" style={{ color: rc }}>{p.role}</p>
+                      <p className="text-[11px] font-bold uppercase" style={{ color: rc }}>{p.role}</p>
                     </div>
                   </div>
                 );
@@ -450,7 +450,7 @@ function LiveRoomTab({ user }) {
                     >
                       <Plus className="w-4 h-4 text-white/20" />
                     </div>
-                    <p className="text-[9px] text-white/20">Open slot</p>
+                    <p className="text-[11px] text-white/20">Open slot</p>
                   </div>
                 );
               })}
@@ -458,12 +458,12 @@ function LiveRoomTab({ user }) {
           </PanelCard>
 
           {/* Listeners */}
-          <PanelCard title="Listeners" icon={Headphones} color="#8B5CF6">
+          <PanelCard title="Listeners" icon={Headphones} color="#D4AF37">
             <div className="flex flex-wrap gap-2">
               {listenerParticipants.map(function(p) {
                 return (
-                  <div key={p.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.18)' }}>
-                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{ background: 'rgba(139,92,246,0.4)' }}>
+                  <div key={p.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.18)' }}>
+                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-bold text-white" style={{ background: 'rgba(212,175,55,0.4)' }}>
                       {p.name.charAt(0)}
                     </div>
                     <span className="text-[10px] text-white/60">{p.name.split(' ')[0]}</span>
@@ -482,7 +482,7 @@ function LiveRoomTab({ user }) {
         <div className="space-y-3">
 
           {/* My Role */}
-          <PanelCard title="My Role" icon={UserCheck} color="#00F5FF">
+          <PanelCard title="My Role" icon={UserCheck} color="#C9A84C">
             <div className="space-y-2">
               {['host', 'speaker', 'listener'].map(function(r) {
                 var active = myRole === r;
@@ -504,23 +504,23 @@ function LiveRoomTab({ user }) {
           </PanelCard>
 
           {/* Media Controls */}
-          <PanelCard title="Media Controls" icon={Activity} color="#00FF88">
+          <PanelCard title="Media Controls" icon={Activity} color="#6DBF7E">
             <div className="space-y-2">
               <button
                 onClick={function() { setMicOn(!micOn); }}
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
-                style={{ background: micOn ? 'rgba(0,255,136,0.1)' : 'rgba(255,21,100,0.08)', border: '1px solid ' + (micOn ? 'rgba(0,255,136,0.25)' : 'rgba(255,21,100,0.2)') }}
+                style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(255,21,100,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(255,21,100,0.2)') }}
               >
                 {micOn ? <Mic className="w-4 h-4 text-emerald-400" /> : <MicOff className="w-4 h-4 text-red-400" />}
-                <span className="text-xs" style={{ color: micOn ? '#00FF88' : '#FF1564' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
+                <span className="text-xs" style={{ color: micOn ? '#6DBF7E' : '#FF1564' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
               </button>
               <button
                 onClick={function() { setVideoOn(!videoOn); }}
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
-                style={{ background: videoOn ? 'rgba(0,245,255,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (videoOn ? 'rgba(0,245,255,0.2)' : 'rgba(255,255,255,0.08)') }}
+                style={{ background: videoOn ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (videoOn ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.08)') }}
               >
                 {videoOn ? <Video className="w-4 h-4 text-cyan-400" /> : <VideoOff className="w-4 h-4 text-white/40" />}
-                <span className="text-xs" style={{ color: videoOn ? '#00F5FF' : 'rgba(255,255,255,0.4)' }}>{videoOn ? 'Video On' : 'Video Off'}</span>
+                <span className="text-xs" style={{ color: videoOn ? '#C9A84C' : 'rgba(255,255,255,0.4)' }}>{videoOn ? 'Video On' : 'Video Off'}</span>
               </button>
               <button
                 onClick={function() { setHandRaised(!handRaised); toast(handRaised ? 'Hand lowered' : '✋ Hand raised — waiting to speak'); }}
@@ -538,14 +538,14 @@ function LiveRoomTab({ user }) {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { label: 'On Stage', val: String(hostParticipants.length), c: '#d4af37' },
-                { label: 'Listeners', val: String(listenerParticipants.length + 42), c: '#8B5CF6' },
+                { label: 'Listeners', val: String(listenerParticipants.length + 42), c: '#D4AF37' },
                 { label: 'Hand Up', val: String(mockParticipants.filter(function(p) { return p.hand; }).length), c: '#FFB800' },
-                { label: 'Speaking', val: String(mockParticipants.filter(function(p) { return p.speaking; }).length), c: '#00FF88' },
+                { label: 'Speaking', val: String(mockParticipants.filter(function(p) { return p.speaking; }).length), c: '#6DBF7E' },
               ].map(function(s) {
                 return (
                   <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-xl font-bold" style={{ fontFamily: 'Share Tech Mono, monospace', color: s.c }}>{s.val}</p>
-                    <p className="text-[9px] text-white/30 uppercase">{s.label}</p>
+                    <p className="text-[11px] text-white/30 uppercase">{s.label}</p>
                   </div>
                 );
               })}
@@ -584,7 +584,7 @@ function StudioTab({ user }) {
     setRooms(function(prev) { return prev.filter(function(r) { return r.id !== id; }); });
   }
 
-  var statusColor = { live: '#FF1564', active: '#00FF88', idle: '#d4af3780' };
+  var statusColor = { live: '#FF1564', active: '#6DBF7E', idle: '#d4af3780' };
   var typeIcon = { video: Video, audio: Music };
 
   return (
@@ -592,10 +592,10 @@ function StudioTab({ user }) {
       {/* LiveKit global stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Active Rooms', val: String(rooms.filter(function(r) { return r.status !== 'idle'; }).length), c: '#00F5FF' },
+          { label: 'Active Rooms', val: String(rooms.filter(function(r) { return r.status !== 'idle'; }).length), c: '#C9A84C' },
           { label: 'Total Participants', val: String(rooms.reduce(function(a, r) { return a + r.participants; }, 0)), c: '#d4af37' },
           { label: 'Live Rooms', val: String(rooms.filter(function(r) { return r.status === 'live'; }).length), c: '#FF1564' },
-          { label: 'Idle Rooms', val: String(rooms.filter(function(r) { return r.status === 'idle'; }).length), c: '#8B5CF680' },
+          { label: 'Idle Rooms', val: String(rooms.filter(function(r) { return r.status === 'idle'; }).length), c: '#D4AF3780' },
         ].map(function(s) {
           return (
             <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -607,7 +607,7 @@ function StudioTab({ user }) {
       </div>
 
       {/* Room list */}
-      <PanelCard title="LiveKit Room Management" icon={Server} color="#00F5FF">
+      <PanelCard title="LiveKit Room Management" icon={Server} color="#C9A84C">
         <div className="space-y-2">
           {rooms.map(function(room) {
             var TypeIcon = typeIcon[room.type] || Video;
@@ -620,17 +620,17 @@ function StudioTab({ user }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-white/90 truncate">{room.name}</span>
-                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: sc + '18', color: sc }}>{room.status}</span>
+                    <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: sc + '18', color: sc }}>{room.status}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="text-[10px] text-white/35"><Users className="w-2.5 h-2.5 inline mr-0.5" />{room.participants}</span>
                     <span className="text-[10px] text-white/35" style={{ fontFamily: 'Share Tech Mono' }}>{room.bitrate}</span>
-                    <span className="text-[10px]" style={{ color: room.type === 'video' ? '#00F5FF60' : '#8B5CF660' }}>{room.type}</span>
+                    <span className="text-[10px]" style={{ color: room.type === 'video' ? '#C9A84C60' : '#D4AF3760' }}>{room.type}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
-                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(0,245,255,0.08)', color:'rgba(0,245,255,0.5)', border:'1px solid rgba(0,245,255,0.15)', cursor:'pointer' }}
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(201,168,76,0.08)', color:'rgba(201,168,76,0.5)', border:'1px solid rgba(201,168,76,0.15)', cursor:'pointer' }}
                   >
                     <Settings className="w-2.5 h-2.5" />
                   </button>
@@ -689,7 +689,7 @@ function StudioTab({ user }) {
                     <p className="text-xs font-bold text-white/80">{item.label}</p>
                     <p className="text-[10px] text-white/30 mt-0.5">{item.desc}</p>
                   </div>
-                  <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ background: item.active ? '#00FF88' : 'rgba(255,255,255,0.15)' }} />
+                  <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ background: item.active ? '#6DBF7E' : 'rgba(255,255,255,0.15)' }} />
                 </div>
               </div>
             );
@@ -735,7 +735,7 @@ export default function StreamInfra() {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-bold" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>ALL SYSTEMS OPERATIONAL</span>
+              <span className="text-xs font-bold" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>ALL SYSTEMS OPERATIONAL</span>
             </div>
           </div>
 
@@ -756,7 +756,7 @@ export default function StreamInfra() {
                   <span className="text-xs font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em', color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>
                     {t.label}
                   </span>
-                  <span className="text-[9px] text-white/25">{t.sub}</span>
+                  <span className="text-[11px] text-white/25">{t.sub}</span>
                 </button>
               );
             })}

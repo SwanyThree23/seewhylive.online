@@ -91,7 +91,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
                       <span style={{ fontSize: 20 }}>{platform.emoji}</span>
                       <div>
                         <p style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{platform.name}</p>
-                        <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 2 }}>
                           Send <ExternalLink className="w-2.5 h-2.5" style={{ marginLeft: 2 }} />
                         </p>
                       </div>

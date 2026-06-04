@@ -32,14 +32,14 @@ export default function ViewerRail({ members, hostId, maxVisible = 20 }) {
               <Crown className="w-2.5 h-2.5 text-[#d4af37] absolute -top-1 -right-0.5" />
             )}
             {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-black/90 text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-black/90 text-white text-[11px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
               {m.user_name}{m.user_id === hostId ? ' (Host)' : ''}
             </div>
           </motion.div>
         ))}
       </AnimatePresence>
       {overflow > 0 && (
-        <div className="w-7 h-7 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-[9px] text-white/60 font-bold shrink-0">
+        <div className="w-7 h-7 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-[11px] text-white/60 font-bold shrink-0">
           +{overflow}
         </div>
       )}

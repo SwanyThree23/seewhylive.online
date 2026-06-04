@@ -52,13 +52,13 @@ export default function BrandChyron() {
       {/* Top accent line */}
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #00F5FF, #00FF88, #8B5CF6, transparent)' }}
+        style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #C9A84C, #6DBF7E, #D4AF37, transparent)' }}
       />
 
       {/* Left: brand + signal */}
       <div className="shrink-0 flex items-center gap-2 px-3 border-r border-white/5">
         <SignalBars count={5} active={liveCount > 0} size="xs" />
-        <span className="text-[9px] font-bold text-[#FF1564] uppercase tracking-wider whitespace-nowrap">SeeWhy LIVE</span>
+        <span className="text-[11px] font-bold text-[#FF1564] uppercase tracking-wider whitespace-nowrap">SeeWhy LIVE</span>
       </div>
 
       {/* Center: scrolling ticker */}
@@ -77,10 +77,10 @@ export default function BrandChyron() {
         {liveCount > 0 && (
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-[#FF1564] animate-pulse" />
-            <span className="text-[9px] text-[#FF1564] font-bold font-mono">{liveCount} LIVE</span>
+            <span className="text-[11px] text-[#FF1564] font-bold font-mono">{liveCount} LIVE</span>
           </div>
         )}
-        <span className="text-[9px] text-white/30 font-mono">
+        <span className="text-[11px] text-white/30 font-mono">
           {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>

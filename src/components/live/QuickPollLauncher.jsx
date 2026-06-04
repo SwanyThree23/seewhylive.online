@@ -47,9 +47,9 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all active:scale-95"
         style={{
           fontFamily: 'Barlow Condensed, sans-serif',
-          background: open ? 'rgba(139,92,246,0.25)' : 'rgba(139,92,246,0.1)',
-          border: '1px solid rgba(139,92,246,0.3)',
-          color: '#8B5CF6',
+          background: open ? 'rgba(212,175,55,0.25)' : 'rgba(212,175,55,0.1)',
+          border: '1px solid rgba(212,175,55,0.3)',
+          color: '#D4AF37',
         }}>
         <BarChart2 className="w-3 h-3" /> Poll
       </button>
@@ -61,9 +61,9 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl overflow-hidden"
-            style={{ background: '#0d0618', border: '1px solid rgba(139,92,246,0.25)', width: 240, boxShadow: '0 8px 32px rgba(0,0,0,0.7)' }}>
+            style={{ background: '#0d0618', border: '1px solid rgba(212,175,55,0.25)', width: 240, boxShadow: '0 8px 32px rgba(0,0,0,0.7)' }}>
             <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <span className="text-[10px] font-black uppercase text-[#8B5CF6]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span className="text-[10px] font-black uppercase text-[#D4AF37]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Quick Poll
               </span>
               <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white transition-colors">
@@ -79,12 +79,12 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
                     disabled={launchMutation.isPending}
                     className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-white/5 transition-all">
                     <p className="text-[11px] font-bold text-white">{t.q}</p>
-                    <p className="text-[9px] text-white/30">{t.opts.join(' · ')}</p>
+                    <p className="text-[11px] text-white/30">{t.opts.join(' · ')}</p>
                   </button>
                 ))}
                 <button onClick={() => setCustom(true)}
                   className="w-full flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-[10px] font-bold transition-all"
-                  style={{ color: '#8B5CF6' }}>
+                  style={{ color: '#D4AF37' }}>
                   <Plus className="w-3 h-3" /> Custom poll
                 </button>
               </div>
@@ -112,7 +112,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
                 ))}
                 {options.length < 5 && (
                   <button onClick={() => setOptions([...options, ''])}
-                    className="text-[10px] text-[#8B5CF6] flex items-center gap-1">
+                    className="text-[10px] text-[#D4AF37] flex items-center gap-1">
                     <Plus className="w-3 h-3" /> Add option
                   </button>
                 )}
@@ -120,7 +120,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
                   onClick={() => launchMutation.mutate({ q: question, opts: options })}
                   disabled={!question || options.filter(Boolean).length < 2 || launchMutation.isPending}
                   className="w-full py-2 rounded-xl text-[11px] font-black uppercase transition-all disabled:opacity-40"
-                  style={{ background: '#8B5CF6', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: '#D4AF37', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   <Zap className="w-3 h-3 inline mr-1" /> Launch Poll
                 </button>
               </div>

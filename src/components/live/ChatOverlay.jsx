@@ -105,7 +105,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
               <div className="flex gap-2">
                 {/* Moderator Badge */}
                 <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ background: msg.is_moderator ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.1)' }}>
+                  style={{ background: msg.is_moderator ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.1)' }}>
                   {msg.is_moderator ? (
                     <Shield className="w-3 h-3 text-purple-400" />
                   ) : (
@@ -118,7 +118,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
                   <div className="flex items-center gap-1">
                     <span className="text-xs font-semibold text-white truncate">{msg.user_name}</span>
                     {msg.is_moderator && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(139,92,246,0.3)', color: '#8B5CF6' }}>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(212,175,55,0.3)', color: '#D4AF37' }}>
                         MOD
                       </span>
                     )}

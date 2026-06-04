@@ -43,13 +43,13 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
         {/* badges top-right */}
         <div className="absolute top-2 right-2 flex gap-1.5">
           {community.verified && (
-            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase"
+            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase"
               style={{ background: 'rgba(0,212,255,0.15)', border: '1px solid rgba(0,212,255,0.35)', color: '#00d4ff', ...T }}>
               <CheckCircle className="w-2.5 h-2.5" />Verified
             </span>
           )}
           {!community.is_public && (
-            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase"
+            <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase"
               style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.5)', ...T }}>
               <Lock className="w-2.5 h-2.5" />Private
             </span>
@@ -94,18 +94,18 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
         {/* Pills row */}
         <div className="flex flex-wrap gap-1.5">
           {community.category && (
-            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase"
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase"
               style={{ background: `${catColor}18`, border: `1px solid ${catColor}40`, color: catColor, ...T }}>
               {community.category}
             </span>
           )}
-          <span className="flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase"
+          <span className="flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...T }}>
             {community.is_public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
             {community.is_public ? 'Public' : 'Private'}
           </span>
           {community.tags?.slice(0, 2).map((tag, i) => (
-            <span key={i} className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase"
+            <span key={i} className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase"
               style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)', color: 'rgba(212,175,55,0.6)', ...T }}>
               #{tag}
             </span>

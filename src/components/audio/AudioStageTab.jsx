@@ -144,7 +144,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
       </motion.div>
 
       <span style={{
-        fontSize: 9,
+        fontSize: 11,
         fontFamily: 'Barlow Condensed, sans-serif',
         color: '#fff',
         maxWidth: size + 8,
@@ -257,7 +257,7 @@ function ListenerTile({ member, hasRaisedHand }) {
         )}
       </div>
       <span style={{
-        fontSize: 9,
+        fontSize: 11,
         fontFamily: 'Barlow Condensed, sans-serif',
         color: 'rgba(255,255,255,0.6)',
         maxWidth: size + 4,
@@ -430,7 +430,7 @@ export default function AudioStageTab({
               borderRadius: 8,
               background: '#FF1564',
               color: '#fff',
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 900,
               display: 'flex',
               alignItems: 'center',
@@ -528,9 +528,9 @@ export default function AudioStageTab({
                         gap: 4,
                         padding: '4px 10px',
                         borderRadius: 6,
-                        background: 'rgba(0,255,136,0.12)',
-                        border: '1px solid rgba(0,255,136,0.35)',
-                        color: '#00FF88',
+                        background: 'rgba(109,191,126,0.12)',
+                        border: '1px solid rgba(109,191,126,0.35)',
+                        color: '#6DBF7E',
                         fontSize: 11,
                         fontFamily: 'Barlow Condensed, sans-serif',
                         fontWeight: 700,

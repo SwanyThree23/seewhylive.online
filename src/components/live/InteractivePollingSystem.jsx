@@ -62,7 +62,7 @@ const PollResultsChart = ({ poll, votes }) => {
         })}
       </div>
 
-      <div className="text-[9px] text-white/40 text-center pt-1">
+      <div className="text-[11px] text-white/40 text-center pt-1">
         {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
       </div>
     </div>
@@ -91,7 +91,7 @@ const PollCard = ({ poll, votes, isHost, isPinned, onPin, onClose, hasVoted, onV
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h4 className="text-[11px] font-bold text-white truncate">{poll.question}</h4>
-          <p className="text-[9px] text-white/40 mt-0.5">
+          <p className="text-[11px] text-white/40 mt-0.5">
             {isActive ? '🔴 Live' : '✓ Closed'}
           </p>
         </div>
@@ -147,7 +147,7 @@ const PollCard = ({ poll, votes, isHost, isPinned, onPin, onClose, hasVoted, onV
       {votes.length > 0 && <PollResultsChart poll={poll} votes={votes} />}
 
       {hasVoted && isActive && (
-        <div className="text-[9px] text-white/50 text-center">✓ You voted</div>
+        <div className="text-[11px] text-white/50 text-center">✓ You voted</div>
       )}
     </motion.div>
   );
@@ -269,7 +269,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       {/* Pinned poll (top) */}
       {pinnedPoll && (
         <div className="border-2 border-[#d4af37] bg-[#d4af37]/5 rounded-lg p-2">
-          <div className="text-[9px] text-[#d4af37] font-semibold mb-1 flex items-center gap-1">
+          <div className="text-[11px] text-[#d4af37] font-semibold mb-1 flex items-center gap-1">
             <Pin className="w-3 h-3" /> PINNED
           </div>
           <PollCard
@@ -345,7 +345,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
                 ))}
                 <button
                   onClick={() => setNewOptions([...newOptions, ''])}
-                  className="text-[9px] text-white/50 hover:text-white/70 transition"
+                  className="text-[11px] text-white/50 hover:text-white/70 transition"
                 >
                   + Add option
                 </button>

@@ -23,15 +23,15 @@ function getYtThumb(url) {
 function StatusBadge({ status }) {
   const cfg = {
     queued:   { label: 'Queued',   bg: `rgba(212,175,55,0.15)`,  color: GOLD,     border: `rgba(212,175,55,0.3)` },
-    playing:  { label: 'Playing',  bg: `rgba(0,255,136,0.12)`,   color: '#00FF88', border: `rgba(0,255,136,0.3)`, pulse: true },
+    playing:  { label: 'Playing',  bg: `rgba(109,191,126,0.12)`,   color: '#6DBF7E', border: `rgba(109,191,126,0.3)`, pulse: true },
     played:   { label: 'Played',   bg: `rgba(255,255,255,0.05)`, color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' },
     skipped:  { label: 'Skipped',  bg: `rgba(128,0,32,0.2)`,     color: '#ff6680', border: `rgba(128,0,32,0.4)` },
     removed:  { label: 'Removed',  bg: `rgba(128,0,32,0.15)`,    color: '#ff6680', border: `rgba(128,0,32,0.3)` },
-    pending:  { label: 'Pending ✓',bg: `rgba(139,92,246,0.15)`,  color: '#8B5CF6', border: `rgba(139,92,246,0.3)` },
+    pending:  { label: 'Pending ✓',bg: `rgba(212,175,55,0.15)`,  color: '#D4AF37', border: `rgba(212,175,55,0.3)` },
   }[status] || { label: status, bg: 'transparent', color: 'gray', border: 'gray' };
 
   return (
-    <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded flex items-center gap-1"
+    <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded flex items-center gap-1"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
       {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
       {cfg.label}
@@ -136,8 +136,8 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
     <motion.div layout initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
       className="flex items-center gap-2 rounded-lg p-2 group"
       style={{
-        background: isPlaying ? 'rgba(212,175,55,0.08)' : isPending ? 'rgba(139,92,246,0.07)' : 'rgba(255,255,255,0.03)',
-        border: isPlaying ? `1px solid rgba(212,175,55,0.35)` : isPending ? '1px solid rgba(139,92,246,0.2)' : '1px solid rgba(255,255,255,0.07)',
+        background: isPlaying ? 'rgba(212,175,55,0.08)' : isPending ? 'rgba(212,175,55,0.07)' : 'rgba(255,255,255,0.03)',
+        border: isPlaying ? `1px solid rgba(212,175,55,0.35)` : isPending ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.07)',
         borderLeft: isPlaying ? `3px solid ${GOLD}` : undefined,
       }}>
 
@@ -152,7 +152,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           {isPlaying && (
-            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded animate-pulse"
+            <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded animate-pulse"
               style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
               ▶ NOW PLAYING
             </span>
@@ -161,8 +161,8 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
         </div>
         <p className="text-[10px] font-bold text-white/80 truncate mt-0.5">{item.title}</p>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{item.added_by_name}</span>
-          <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.2)' }}>{formatDuration(item.duration_seconds)}</span>
+          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{item.added_by_name}</span>
+          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>{formatDuration(item.duration_seconds)}</span>
         </div>
       </div>
 
@@ -172,13 +172,13 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
           <>
             <button disabled={alreadyVoted}
               onClick={() => voteMut.mutate({ dir: 'up' })}
-              className="flex items-center gap-0.5 px-1.5 py-1 rounded text-[9px] font-bold transition-all"
-              style={{ background: 'rgba(0,255,136,0.1)', color: alreadyVoted ? 'rgba(255,255,255,0.2)' : '#00FF88', border: '1px solid rgba(0,255,136,0.2)' }}>
+              className="flex items-center gap-0.5 px-1.5 py-1 rounded text-[11px] font-bold transition-all"
+              style={{ background: 'rgba(109,191,126,0.1)', color: alreadyVoted ? 'rgba(255,255,255,0.2)' : '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)' }}>
               <ThumbsUp className="w-2.5 h-2.5" />{item.votes_up || 0}
             </button>
             <button disabled={alreadyVoted}
               onClick={() => voteMut.mutate({ dir: 'down' })}
-              className="flex items-center gap-0.5 px-1.5 py-1 rounded text-[9px] font-bold transition-all"
+              className="flex items-center gap-0.5 px-1.5 py-1 rounded text-[11px] font-bold transition-all"
               style={{ background: 'rgba(128,0,32,0.12)', color: alreadyVoted ? 'rgba(255,255,255,0.2)' : '#ff6680', border: '1px solid rgba(128,0,32,0.25)' }}>
               <ThumbsDown className="w-2.5 h-2.5" />{item.votes_down || 0}
             </button>
@@ -189,7 +189,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
             {isPending && (
               <button onClick={() => actionMut.mutate({ host_approved: true })}
                 className="w-6 h-6 rounded flex items-center justify-center"
-                style={{ background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.3)' }}>
+                style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)' }}>
                 <CheckCircle className="w-3 h-3 text-green-400" />
               </button>
             )}
@@ -243,14 +243,14 @@ export default function VideoQueuePanel({ partyId, party, isHost, currentUser, o
             Video Queue
           </span>
           {queued.length > 0 && (
-            <span className="text-[8px] px-1.5 py-0.5 rounded-full font-black"
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-black"
               style={{ background: 'rgba(212,175,55,0.15)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)` }}>
               {queued.length}
             </span>
           )}
         </div>
         <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-1 text-[9px] font-black px-2 py-1 rounded uppercase"
+          className="flex items-center gap-1 text-[11px] font-black px-2 py-1 rounded uppercase"
           style={{ background: `rgba(212,175,55,0.12)`, border: `1px solid rgba(212,175,55,0.25)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
           <Plus className="w-2.5 h-2.5" /> Add Video
         </button>
@@ -259,7 +259,7 @@ export default function VideoQueuePanel({ partyId, party, isHost, currentUser, o
       {/* Now playing */}
       {playing && (
         <div>
-          <div className="text-[8px] font-black uppercase mb-1" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Now Playing</div>
+          <div className="text-[11px] font-black uppercase mb-1" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Now Playing</div>
           <QueueItem item={playing} isHost={isHost} currentUser={currentUser} onPlayVideo={onPlayVideo} />
         </div>
       )}
@@ -267,7 +267,7 @@ export default function VideoQueuePanel({ partyId, party, isHost, currentUser, o
       {/* Queued */}
       {queued.length > 0 && (
         <div>
-          <div className="text-[8px] font-black uppercase mb-1" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Up Next</div>
+          <div className="text-[11px] font-black uppercase mb-1" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>Up Next</div>
           <div className="space-y-1">
             <AnimatePresence>
               {queued.map(item => (
@@ -281,7 +281,7 @@ export default function VideoQueuePanel({ partyId, party, isHost, currentUser, o
       {/* History */}
       {rest.length > 0 && (
         <div>
-          <div className="text-[8px] font-black uppercase mb-1" style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>History</div>
+          <div className="text-[11px] font-black uppercase mb-1" style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>History</div>
           <div className="space-y-1 opacity-50">
             {rest.map(item => (
               <QueueItem key={item.id} item={item} isHost={isHost} currentUser={currentUser} />

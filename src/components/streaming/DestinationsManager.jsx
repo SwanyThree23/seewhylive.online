@@ -100,7 +100,7 @@ export default function DestinationsManager({ userId }) {
                     border: selectedPlatform === p.id ? `1px solid ${p.color}50` : '1px solid rgba(255,255,255,0.08)',
                   }}>
                   <span className="text-lg font-black">{p.icon}</span>
-                  <span className="text-[9px] font-bold text-white/70">{p.name}</span>
+                  <span className="text-[11px] font-bold text-white/70">{p.name}</span>
                 </button>
               ))}
             </div>
@@ -135,7 +135,7 @@ export default function DestinationsManager({ userId }) {
                       {showKey ? <EyeOff className="w-3.5 h-3.5 text-white/40" /> : <Eye className="w-3.5 h-3.5 text-white/40" />}
                     </button>
                   </div>
-                  <p className="text-[9px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>Your key will be securely encrypted</p>
+                  <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>Your key will be securely encrypted</p>
                 </div>
 
                 {/* Bitrate */}
@@ -194,7 +194,7 @@ export default function DestinationsManager({ userId }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-bold text-white truncate">{dest.label}</p>
-                    <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       {dest.bitrate_kbps}kbps • {dest.server_url.replace('rtmps://', '').split('/')[0]}
                     </p>
                   </div>

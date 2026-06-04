@@ -87,7 +87,7 @@ function BracketMatch({ match, roundIdx, matchIdx, onAdvance }) {
             }}
           >
             <div
-              className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black shrink-0"
+              className="w-5 h-5 rounded flex items-center justify-center text-[11px] font-black shrink-0"
               style={{ background: isW ? ET.gold : 'rgba(255,255,255,0.08)', color: isW ? '#000' : ET.sand + '80' }}
             >
               {p.name.charAt(0)}
@@ -103,7 +103,7 @@ function BracketMatch({ match, roundIdx, matchIdx, onAdvance }) {
       {!isComplete && p1 && p2 && p1.name !== '?' && p2.name !== '?' && (
         <button
           onClick={simulateResult}
-          className="w-full py-1.5 text-[9px] font-bold uppercase tracking-wider transition-all"
+          className="w-full py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all"
           style={{ background: isLive ? ET.burgundy + '30' : 'rgba(255,255,255,0.04)', color: isLive ? ET.terracotta : ET.sand + '50' }}
         >
           {isLive ? '⚡ Simulate' : '▶ Start'}
@@ -219,7 +219,7 @@ export default function TournamentBracket() {
                 {playerNames.map(function(name, i) {
                   return (
                     <div key={i} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <div className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-black shrink-0" style={{ background: ET.terracotta + '40', color: ET.terracotta }}>
+                      <div className="w-4 h-4 rounded flex items-center justify-center text-[11px] font-black shrink-0" style={{ background: ET.terracotta + '40', color: ET.terracotta }}>
                         {i + 1}
                       </div>
                       <input

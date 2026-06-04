@@ -57,7 +57,7 @@ export default function PKBattleVotePanel({ battleId, creatorId, challengerId, c
       <div className="grid grid-cols-2 gap-2">
         {[
           { id: creatorId, name: creatorName, color: '#FF1564' },
-          { id: challengerId, name: challengerName, color: '#8B5CF6' },
+          { id: challengerId, name: challengerName, color: '#D4AF37' },
         ].map((creator) => (
           <motion.button
             key={creator.id}

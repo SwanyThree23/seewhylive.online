@@ -6,7 +6,7 @@ import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const GREEN = '#00FF88';
+const GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
   const [cameraStream, setCameraStream] = useState(null);
@@ -128,7 +128,7 @@ export default function GreenroomEnhanced() {
                 style={{ background: 'rgba(255,21,100,0.9)' }}>
                 <motion.div className="w-1.5 h-1.5 rounded-full bg-white"
                   animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
-                <span className="text-[9px] font-black text-white">LIVE</span>
+                <span className="text-[11px] font-black text-white">LIVE</span>
               </div>
             )}
           </div>
@@ -152,7 +152,7 @@ export default function GreenroomEnhanced() {
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-black" style={{ color: GOLD }}>Pre-Broadcast Checklist</span>
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-              style={{ background: allReady ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.05)', color: allReady ? GREEN : 'rgba(255,255,255,0.3)', border: `1px solid ${allReady ? 'rgba(0,255,136,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+              style={{ background: allReady ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.05)', color: allReady ? GREEN : 'rgba(255,255,255,0.3)', border: `1px solid ${allReady ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
               {completedCount}/{checklist.length} ready
             </span>
           </div>
@@ -160,13 +160,13 @@ export default function GreenroomEnhanced() {
             {checklist.map(item => (
               <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all"
                 onClick={() => !item.auto && setChecklist(p => p.map(c => c.id === item.id ? { ...c, done: !c.done } : c))}
-                style={{ background: item.done ? 'rgba(0,255,136,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${item.done ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.06)'}` }}>
+                style={{ background: item.done ? 'rgba(109,191,126,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${item.done ? 'rgba(109,191,126,0.2)' : 'rgba(255,255,255,0.06)'}` }}>
                 <motion.div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black shrink-0"
-                  style={{ background: item.done ? 'rgba(0,255,136,0.2)' : 'rgba(255,255,255,0.06)', color: item.done ? GREEN : 'rgba(255,255,255,0.2)' }}>
+                  style={{ background: item.done ? 'rgba(109,191,126,0.2)' : 'rgba(255,255,255,0.06)', color: item.done ? GREEN : 'rgba(255,255,255,0.2)' }}>
                   {item.done ? '✓' : (item.auto ? '…' : '○')}
                 </motion.div>
                 <span className="text-xs font-semibold" style={{ color: item.done ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)' }}>{item.label}</span>
-                {!item.auto && !item.done && <span className="ml-auto text-[8px] text-white/20">tap to check</span>}
+                {!item.auto && !item.done && <span className="ml-auto text-[11px] text-white/20">tap to check</span>}
               </div>
             ))}
           </div>
@@ -177,16 +177,16 @@ export default function GreenroomEnhanced() {
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm">🔐</span>
             <span className="text-sm font-black" style={{ color: CRIMSON }}>Private Room PIN</span>
-            <span className="ml-auto text-[8px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(0,255,136,0.08)', color: GREEN, border: '1px solid rgba(0,255,136,0.2)' }}>AES-256</span>
+            <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(109,191,126,0.08)', color: GREEN, border: '1px solid rgba(109,191,126,0.2)' }}>AES-256</span>
           </div>
           {roomPin ? (
             <div className="space-y-2">
               <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.2)' }}>
                 <span className="text-2xl font-black tracking-widest" style={{ color: GOLD, fontFamily: 'monospace' }}>{roomPin}</span>
-                <button onClick={() => navigator.clipboard?.writeText(roomPin)} className="ml-auto text-[9px] px-2 py-1 rounded font-bold" style={{ background: 'rgba(212,175,55,0.1)', color: GOLD }}>Copy PIN</button>
+                <button onClick={() => navigator.clipboard?.writeText(roomPin)} className="ml-auto text-[11px] px-2 py-1 rounded font-bold" style={{ background: 'rgba(212,175,55,0.1)', color: GOLD }}>Copy PIN</button>
               </div>
-              {encryptedPin && <p className="text-[8px] text-white/25 font-mono break-all">{encryptedPin}</p>}
-              <p className="text-[9px] text-white/40">Share this PIN privately. Only guests with the PIN can join your room.</p>
+              {encryptedPin && <p className="text-[11px] text-white/25 font-mono break-all">{encryptedPin}</p>}
+              <p className="text-[11px] text-white/40">Share this PIN privately. Only guests with the PIN can join your room.</p>
             </div>
           ) : (
             <button onClick={generatePin}

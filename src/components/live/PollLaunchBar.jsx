@@ -108,7 +108,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                     <motion.div className="w-2 h-2 rounded-full bg-green-400 mt-1 shrink-0" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
                     <p className="text-[11px] font-bold text-white flex-1 leading-snug">{activePoll.question}</p>
                   </div>
-                  <div className="flex items-center justify-between text-[9px]" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
+                  <div className="flex items-center justify-between text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
                     <span>{activePoll.total_votes || 0} votes · {(activePoll.options || []).length} options</span>
                   </div>
                   <button
@@ -127,7 +127,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                 <div className="p-3 space-y-2">
                   {!custom ? (
                     <>
-                      <p className="text-[9px] uppercase font-bold" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Quick Launch</p>
+                      <p className="text-[11px] uppercase font-bold" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Quick Launch</p>
                       {QUICK_TEMPLATES.map((t, i) => (
                         <button key={i}
                           onClick={() => launchMutation.mutate({ q: t.q, opts: t.opts, dur: duration })}
@@ -136,7 +136,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                           style={{ border: '1px solid rgba(255,255,255,0.05)' }}
                         >
                           <p className="text-[11px] font-bold text-white leading-snug">{t.q}</p>
-                          <p className="text-[9px] mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.opts.join(' · ')}</p>
+                          <p className="text-[11px] mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.opts.join(' · ')}</p>
                         </button>
                       ))}
                       <button onClick={() => setCustom(true)}
@@ -147,7 +147,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                     </>
                   ) : (
                     <>
-                      <button onClick={() => setCustom(false)} className="text-[9px] font-bold flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      <button onClick={() => setCustom(false)} className="text-[11px] font-bold flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         ← Templates
                       </button>
                       <input
@@ -179,19 +179,19 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                       ))}
                       {options.length < 6 && (
                         <button onClick={() => setOptions([...options, ''])}
-                          className="text-[9px] flex items-center gap-1 font-bold" style={{ color: G }}>
+                          className="text-[11px] flex items-center gap-1 font-bold" style={{ color: G }}>
                           <Plus className="w-3 h-3" /> Add option
                         </button>
                       )}
 
                       {/* Duration selector */}
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Duration</span>
+                        <span className="text-[11px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Duration</span>
                         <div className="flex gap-1">
                           {[30, 60, 120, 300].map(d => (
                             <button key={d}
                               onClick={() => setDuration(d)}
-                              className="px-2 py-0.5 rounded text-[9px] font-black"
+                              className="px-2 py-0.5 rounded text-[11px] font-black"
                               style={{
                                 ...T,
                                 background: duration === d ? G : 'rgba(255,255,255,0.06)',

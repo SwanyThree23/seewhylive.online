@@ -82,7 +82,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
                 className="font-bold"
-                style={{ color: idx === 0 ? G : '#00F5FF' }}
+                style={{ color: idx === 0 ? G : '#C9A84C' }}
               >
                 {entry.points}
               </motion.span>
@@ -98,7 +98,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
       </div>
 
       {/* Info */}
-      <div className="text-[9px] text-white/20 pt-1 border-t border-white/10">
+      <div className="text-[11px] text-white/20 pt-1 border-t border-white/10">
         Real-time points tracking · Tips, subs, polls, interactions
       </div>
     </div>

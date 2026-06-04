@@ -101,7 +101,7 @@ export default function VideoPlayerControls({ playerRef, playerType = 'direct', 
   if (!canControl) {
     // Viewers: just show sync badge
     return syncStatus ? (
-      <div className="absolute top-2 right-2 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1"
+      <div className="absolute top-2 right-2 text-white text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
         style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
         <div className={`w-1.5 h-1.5 rounded-full ${syncStatus === 'synced' ? 'bg-green-400 animate-pulse' : 'bg-yellow-400 animate-spin'}`} />
         {syncStatus === 'synced' ? 'Live Sync' : 'Syncing...'}
@@ -129,7 +129,7 @@ export default function VideoPlayerControls({ playerRef, playerType = 'direct', 
             className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow opacity-0 group-hover:opacity-100 transition-opacity"
             style={{ left: `calc(${(progress / duration) * 100}% - 6px)` }}
           />
-          <div className="flex items-center justify-between text-[9px] text-white/50 mt-1 font-mono">
+          <div className="flex items-center justify-between text-[11px] text-white/50 mt-1 font-mono">
             <span>{fmt(progress)}</span>
             <span>{fmt(duration)}</span>
           </div>
@@ -139,12 +139,12 @@ export default function VideoPlayerControls({ playerRef, playerType = 'direct', 
       {/* Controls row */}
       <div className="flex items-center gap-2">
         {/* Role badge */}
-        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded shrink-0"
+        <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded shrink-0"
           style={{
             fontFamily: 'Barlow Condensed, sans-serif',
-            background: isHost ? 'rgba(212,175,55,0.2)' : 'rgba(0,245,255,0.15)',
-            color: isHost ? '#d4af37' : '#00F5FF',
-            border: `1px solid ${isHost ? 'rgba(212,175,55,0.3)' : 'rgba(0,245,255,0.25)'}`,
+            background: isHost ? 'rgba(212,175,55,0.2)' : 'rgba(201,168,76,0.15)',
+            color: isHost ? '#d4af37' : '#C9A84C',
+            border: `1px solid ${isHost ? 'rgba(212,175,55,0.3)' : 'rgba(201,168,76,0.25)'}`,
           }}>
           {isHost ? 'HOST' : 'CO-HOST'}
         </span>

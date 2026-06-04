@@ -246,7 +246,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold" style={{ color: ET.cream }}>{p.name}</span>
-                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: lc + '18', color: lc }}>{p.level}</span>
+                    <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: lc + '18', color: lc }}>{p.level}</span>
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="text-[10px]" style={{ color: ET.sand + '80' }}>{p.category}</span>

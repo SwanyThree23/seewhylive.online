@@ -43,7 +43,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#FF1564', Gaming: '#8B5CF6', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#FF1564', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -183,11 +183,11 @@ export default function DiscoverPage() {
           {/* Stats row */}
           <div className="flex items-center gap-4 sm:gap-6 mb-5 overflow-x-auto scrollbar-hide pb-1">
             <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-[#00F5FF]" />
+              <Eye className="w-4 h-4 text-[#C9A84C]" />
               <span className="text-2xl font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {totalViewers.toLocaleString()}
               </span>
-              <span className="text-[#00F5FF] text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewers</span>
+              <span className="text-[#C9A84C] text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewers</span>
             </div>
             <div className="w-px h-6 bg-white/10" />
             <div className="flex items-center gap-2">
@@ -377,7 +377,7 @@ function TrendingCard({ room, rank }) {
           <p className="text-sm font-bold text-white truncate">{room.title}</p>
           <div className="flex items-center justify-between mt-1">
             <SignalBars count={5} active={true} size="xs" />
-            <span className="text-[10px] text-[#00F5FF] font-mono">{(room.viewer_count || 0).toLocaleString()} viewers</span>
+            <span className="text-[10px] text-[#C9A84C] font-mono">{(room.viewer_count || 0).toLocaleString()} viewers</span>
           </div>
         </div>
       </motion.div>
@@ -416,7 +416,7 @@ function CreatorCard({ creator }) {
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
       <motion.div whileTap={{ scale: 0.97 }}
         className="relative p-4 rounded-2xl cursor-pointer text-center"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(139,92,246,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
             style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -424,9 +424,9 @@ function CreatorCard({ creator }) {
           </div>
         )}
         {/* Octagonal avatar */}
-        <div className="mx-auto mb-3" style={{ width: 64, height: 64, clipPath: OCT, background: 'rgba(139,92,246,0.25)' }}>
+        <div className="mx-auto mb-3" style={{ width: 64, height: 64, clipPath: OCT, background: 'rgba(212,175,55,0.25)' }}>
           <div style={{ width: '100%', height: '100%', clipPath: OCT,
-            background: creator.avatar_url ? 'transparent' : 'linear-gradient(135deg, #800020, #8B5CF6)',
+            background: creator.avatar_url ? 'transparent' : 'linear-gradient(135deg, #800020, #D4AF37)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 22, fontWeight: 900, color: 'white', overflow: 'hidden' }}>
             {creator.avatar_url
@@ -435,10 +435,10 @@ function CreatorCard({ creator }) {
           </div>
         </div>
         <p className="text-sm font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>{creator.display_name}</p>
-        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(139,92,246,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
+        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(212,175,55,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
-          <Users className="w-3 h-3" style={{ color: '#8B5CF6' }} />
-          <span className="text-[11px] font-bold" style={{ color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
+          <Users className="w-3 h-3" style={{ color: '#D4AF37' }} />
+          <span className="text-[11px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
         </div>
       </motion.div>
     </Link>

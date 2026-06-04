@@ -158,7 +158,7 @@ export default function AdvancedAnalyticsPage() {
                 {[
                   { title: 'Optimize Stream Times', desc: 'Peak viewership at 7–9 PM', color: '#00d4ff' },
                   { title: 'Increase Monetization', desc: '15% conversion rate on tips', color: '#00ff88' },
-                  { title: 'Community Engagement', desc: 'Chat activity up 23%', color: '#8B5CF6' },
+                  { title: 'Community Engagement', desc: 'Chat activity up 23%', color: '#D4AF37' },
                 ].map(({ title, desc, color }) => (
                   <div key={title} className="p-3 rounded-xl"
                     style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.06)` }}>
@@ -175,7 +175,7 @@ export default function AdvancedAnalyticsPage() {
                 {[
                   { label: 'System Performance', value: 95, text: 'Excellent', color: '#00ff88' },
                   { label: 'User Satisfaction', value: 88, text: 'High', color: '#00d4ff' },
-                  { label: 'Content Quality', value: 82, text: 'Good', color: '#8B5CF6' },
+                  { label: 'Content Quality', value: 82, text: 'Good', color: '#D4AF37' },
                 ].map(({ label, value, text, color }) => (
                   <div key={label}>
                     <div className="flex justify-between text-xs mb-1.5">

@@ -252,7 +252,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                   <div>
                     <p className="font-black uppercase text-sm leading-none"
                       style={{ ...T, color: G }}>Send a Tip</p>
-                    <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Support the creator</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Support the creator</p>
                   </div>
                 </div>
                 <button onClick={() => setOpen(false)}
@@ -267,7 +267,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
 
                 {/* Tier chips */}
                 <div>
-                  <p className="text-[9px] uppercase font-black tracking-widest mb-2.5"
+                  <p className="text-[11px] uppercase font-black tracking-widest mb-2.5"
                     style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>Tip Amount</p>
                   <div className="grid grid-cols-5 gap-2">
                     {TIERS.map(tier => {
@@ -286,7 +286,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                         >
                           <span className="text-lg mb-0.5">{tier.icon}</span>
                           <span className="text-[10px] font-black" style={{ ...T, color: active ? tier.color : 'rgba(255,255,255,0.5)' }}>${tier.amount}</span>
-                          <span className="text-[8px] font-black uppercase" style={{ ...T, color: active ? tier.color + 'cc' : 'rgba(255,255,255,0.25)' }}>{tier.label}</span>
+                          <span className="text-[11px] font-black uppercase" style={{ ...T, color: active ? tier.color + 'cc' : 'rgba(255,255,255,0.25)' }}>{tier.label}</span>
                         </motion.button>
                       );
                     })}
@@ -330,7 +330,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
 
                 {/* Emoji Reactions */}
                 <div>
-                  <p className="text-[9px] uppercase font-black tracking-widest mb-2"
+                  <p className="text-[11px] uppercase font-black tracking-widest mb-2"
                     style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>React with Emoji <span style={{ color: 'rgba(255,255,255,0.2)' }}>(optional)</span></p>
                   <div className="flex gap-2 flex-wrap">
                     {QUICK_EMOJIS.map(e => (
@@ -378,7 +378,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
 
                 {/* Message */}
                 <div>
-                  <p className="text-[9px] uppercase font-black tracking-widest mb-2"
+                  <p className="text-[11px] uppercase font-black tracking-widest mb-2"
                     style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>
                     Message <span style={{ color: 'rgba(255,255,255,0.15)' }}>(optional)</span>
                   </p>
@@ -390,7 +390,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                     className="w-full rounded-xl px-4 py-2.5 text-sm outline-none resize-none"
                     style={{ background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', ...T }}
                   />
-                  <p className="text-right text-[9px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+                  <p className="text-right text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
                     {message.length}/140
                   </p>
                 </div>

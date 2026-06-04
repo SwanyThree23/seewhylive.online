@@ -29,7 +29,7 @@ function Button({ children, onClick, className = '', style = {}, disabled, varia
 }
 function Badge({ children, className = '', style = {} }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
+    <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
       style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)', ...style }}>
       {children}
     </span>
@@ -79,7 +79,7 @@ function StatChip({ label, value, color }) {
   return (
     <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: (color || '#d4af37') + '12', border: '1px solid ' + (color || '#d4af37') + '28' }}>
       <span className="text-lg font-black" style={{ fontFamily: 'Orbitron, monospace', color: color || '#d4af37' }}>{value}</span>
-      <span className="text-[9px] text-white/35 uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] text-white/35 uppercase tracking-wider">{label}</span>
     </div>
   );
 }
@@ -191,7 +191,7 @@ function WinnerOverlay({ battle, onClose }) {
           <Button
             onClick={function() { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
             className="flex-1 gap-1.5 text-xs"
-            style={{ background: 'rgba(0,245,255,0.12)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.25)' }}
+            style={{ background: 'rgba(201,168,76,0.12)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.25)' }}
           >
             <Share2 className="w-3 h-3" /> Share
           </Button>
@@ -267,7 +267,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
 
   var statusStyle = {
     pending: { bg: 'rgba(212,175,55,0.1)', color: '#d4af37', border: 'rgba(212,175,55,0.25)' },
-    accepted: { bg: 'rgba(0,255,136,0.1)', color: '#00FF88', border: 'rgba(0,255,136,0.25)' },
+    accepted: { bg: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: 'rgba(109,191,126,0.25)' },
     active: { bg: 'rgba(255,21,100,0.1)', color: '#FF1564', border: 'rgba(255,21,100,0.25)' },
     ended: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'rgba(255,255,255,0.1)' },
     declined: { bg: 'rgba(255,21,100,0.05)', color: 'rgba(255,21,100,0.5)', border: 'rgba(255,21,100,0.1)' },
@@ -302,7 +302,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                       size="sm"
                       onClick={function() { respondMutation.mutate({ id: b.id, status: 'accepted' }); }}
                       className="h-8 text-xs gap-1 font-bold"
-                      style={{ background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)' }}
+                      style={{ background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)' }}
                     >
                       <CheckCircle className="w-3 h-3" /> Accept
                     </Button>
@@ -445,10 +445,10 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                     </p>
                   </div>
                   <div className="shrink-0 flex flex-col items-end gap-1">
-                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full" style={{ background: st.bg, color: st.color, border: '1px solid ' + st.border, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full" style={{ background: st.bg, color: st.color, border: '1px solid ' + st.border, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {b.status}
                     </span>
-                    {b.winner_name && <span className="text-[9px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>🏆 {b.winner_name}</span>}
+                    {b.winner_name && <span className="text-[11px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>🏆 {b.winner_name}</span>}
                   </div>
                 </button>
               );
@@ -563,8 +563,8 @@ function HistoryTab({ battles, user }) {
     <div className="space-y-4">
       {/* Summary stats */}
       <div className="grid grid-cols-4 gap-3">
-        <StatChip label="Battles" value={String(ended.length)} color="#00F5FF" />
-        <StatChip label="Wins" value={String(wins.length)} color="#00FF88" />
+        <StatChip label="Battles" value={String(ended.length)} color="#C9A84C" />
+        <StatChip label="Wins" value={String(wins.length)} color="#6DBF7E" />
         <StatChip label="Losses" value={String(losses.length)} color="#FF1564" />
         <StatChip label="Pts Earned" value={totalPts.toLocaleString()} color="#d4af37" />
       </div>
@@ -574,14 +574,14 @@ function HistoryTab({ battles, user }) {
         <div className="rounded-xl p-4" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-white/50 uppercase font-bold">Win Rate</span>
-            <span className="text-sm font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#00FF88' }}>
+            <span className="text-sm font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#6DBF7E' }}>
               {Math.round((wins.length / ended.length) * 100)}%
             </span>
           </div>
           <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,21,100,0.2)' }}>
             <div
               className="h-full rounded-full transition-all duration-700"
-              style={{ width: Math.round((wins.length / ended.length) * 100) + '%', background: 'linear-gradient(90deg, #00FF88, #00F5FF)' }}
+              style={{ width: Math.round((wins.length / ended.length) * 100) + '%', background: 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }}
             />
           </div>
         </div>
@@ -760,7 +760,7 @@ export default function PKBattleManager() {
                   <span className="text-xs font-bold uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em', color: active ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>
                     {t.label}
                   </span>
-                  <span className="text-[9px] text-white/25">{t.sub}</span>
+                  <span className="text-[11px] text-white/25">{t.sub}</span>
                 </button>
               );
             })}

@@ -237,7 +237,7 @@ export default function CompositorOverlay({
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-black uppercase" style={{ color: GOLD, ...T }}>Broadcast Studio</span>
-            <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase" style={{ background: `${s.color}22`, color: s.color, border: `1px solid ${s.color}44` }}>
+            <span className="text-[11px] px-2 py-0.5 rounded font-bold uppercase" style={{ background: `${s.color}22`, color: s.color, border: `1px solid ${s.color}44` }}>
               {s.label}
             </span>
           </div>
@@ -254,7 +254,7 @@ export default function CompositorOverlay({
             <button
               onClick={handleScreenCapture}
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-black uppercase"
-              style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', color: '#8B5CF6', ...T }}
+              style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', ...T }}
             >
               <Monitor className="w-3.5 h-3.5" /> Select Screen / Tab to Capture
             </button>
@@ -266,7 +266,7 @@ export default function CompositorOverlay({
               <button
                 key={label}
                 onClick={() => setUseRecord(i === 1)}
-                className="flex-1 py-1.5 text-[9px] font-black uppercase transition-all"
+                className="flex-1 py-1.5 text-[11px] font-black uppercase transition-all"
                 style={{
                   background: useRecord === (i === 1) ? 'rgba(212,175,55,0.12)' : 'transparent',
                   color: useRecord === (i === 1) ? GOLD : 'rgba(255,255,255,0.3)',
@@ -280,7 +280,7 @@ export default function CompositorOverlay({
 
           {!useRecord && (
             <div>
-              <p className="text-[9px] mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <p className="text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 WHIP Endpoint URL (Cloudflare Stream, Mux, etc.)
               </p>
               <div className="flex gap-2">
@@ -303,7 +303,7 @@ export default function CompositorOverlay({
                   </button>
                 )}
               </div>
-              <p className="text-[8px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+              <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 Get a WHIP URL from Cloudflare Stream, Mux, or your own media server.
               </p>
             </div>
@@ -338,7 +338,7 @@ export default function CompositorOverlay({
           {status === 'error' && (
             <div className="flex items-start gap-2 p-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
               <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-red-400" />
-              <p className="text-[9px] text-red-400">Stream failed. Check your WHIP URL and try again, or switch to Record mode.</p>
+              <p className="text-[11px] text-red-400">Stream failed. Check your WHIP URL and try again, or switch to Record mode.</p>
             </div>
           )}
         </div>

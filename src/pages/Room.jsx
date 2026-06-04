@@ -304,10 +304,10 @@ export default function RoomPage() {
             {room.title}
           </h1>
           {room.status === 'live' && (
-            <span className="shrink-0 px-2 py-0.5 rounded-md text-white font-black text-[9px] uppercase animate-pulse"
+            <span className="shrink-0 px-2 py-0.5 rounded-md text-white font-black text-[11px] uppercase animate-pulse"
               style={{ background: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
           )}
-          <span className="shrink-0 px-2 py-0.5 rounded-md font-black text-[9px] uppercase"
+          <span className="shrink-0 px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
             style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
             SeeWhy LIVE
           </span>
@@ -349,7 +349,7 @@ export default function RoomPage() {
             style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
             {hostParticipant?.user_avatar
               ? <img src={hostParticipant.user_avatar} alt="" className="w-full h-full object-cover" />
-              : <span className="w-full h-full flex items-center justify-center text-[8px] font-black text-black">
+              : <span className="w-full h-full flex items-center justify-center text-[11px] font-black text-black">
                   {(hostParticipant?.user_name || room.title || '?')[0].toUpperCase()}
                 </span>}
           </div>
@@ -368,14 +368,14 @@ export default function RoomPage() {
           {isHost && (
             <div className="flex items-center gap-1 ml-auto">
               <Link to={`/ControlRoom?room_id=${roomId}`}>
-                <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[8px]"
+                <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
                   style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   📡 Ctrl
                 </button>
               </Link>
               <Link to={`/ModerationDashboard?room_id=${roomId}`}>
-                <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[8px]"
-                  style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
+                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   🛡 Mod
                 </button>
               </Link>

@@ -27,7 +27,7 @@ export default function BackPage() {
       <div
         className="absolute inset-0 opacity-20"
         style={{
-          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(139,92,246,0.05) 100%)',
+          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%)',
         }}
       />
 
@@ -156,7 +156,7 @@ export default function BackPage() {
 
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(7,7,15,0.98)] border-t border-white/5 px-4 py-3">
-        <div className="flex items-center justify-around text-white/40 text-[9px]">
+        <div className="flex items-center justify-around text-white/40 text-[11px]">
           <span>© 2026 SeeWhy LIVE</span>
           <span>Privacy</span>
           <span>Terms</span>

@@ -60,7 +60,7 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
         <span className="text-[10px] font-black uppercase tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
           Collab Playlist
         </span>
-        <span className="ml-auto text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{items.length} videos</span>
+        <span className="ml-auto text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{items.length} videos</span>
       </div>
 
       {/* Add form */}
@@ -111,13 +111,13 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
               </div>
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold text-white truncate">{item.title}</p>
-                <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.addedBy}</p>
+                <p className="text-[11px] font-bold text-white truncate">{item.title}</p>
+                <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{item.addedBy}</p>
               </div>
               {/* Actions */}
               <div className="flex items-center gap-1 shrink-0">
                 <button onClick={() => vote(item.id)}
-                  className="flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-bold"
+                  className="flex items-center gap-0.5 px-1 py-0.5 rounded text-[11px] font-bold"
                   style={{ background: item.myVote ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)', color: item.myVote ? '#d4af37' : 'rgba(255,255,255,0.4)' }}>
                   <ThumbsUp className="w-2.5 h-2.5" /> {item.votes}
                 </button>

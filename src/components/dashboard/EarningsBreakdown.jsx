@@ -29,8 +29,8 @@ export default function EarningsBreakdown({ creatorId }) {
 
   const categories = [
     { label: 'Tips', value: breakdown.tips, icon: '💎', color: G },
-    { label: 'Subscriptions', value: breakdown.subscriptions, icon: '👑', color: '#00F5FF' },
-    { label: 'PPV Events', value: breakdown.ppv, icon: '🎫', color: '#00FF88' },
+    { label: 'Subscriptions', value: breakdown.subscriptions, icon: '👑', color: '#C9A84C' },
+    { label: 'PPV Events', value: breakdown.ppv, icon: '🎫', color: '#6DBF7E' },
   ];
 
   return (

@@ -9,7 +9,7 @@ const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#FF1564';
 const BG      = '#080B18';
-const GREEN   = '#00FF88';
+const GREEN   = '#6DBF7E';
 
 export const GIFTS = [
   { id: 'rose',     emoji: '🌹', name: 'Rose',      price: 0.99,   color: '#E8003D', particles: 12 },
@@ -17,7 +17,7 @@ export const GIFTS = [
   { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#00B4FF', particles: 24 },
   { id: 'crown',    emoji: '👑', name: 'Crown',     price: 9.99,   color: GOLD,      particles: 30 },
   { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#FF8C00', particles: 36 },
-  { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#00F5FF', particles: 48 },
+  { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#C9A84C', particles: 48 },
   { id: 'tsunami',  emoji: '🌊', name: 'Tsunami',   price: 99.99,  color: '#0066FF', particles: 60 },
   { id: 'legend',   emoji: '🏆', name: 'Legend',    price: 199.99, color: GOLD,      particles: 80 },
 ];
@@ -69,7 +69,7 @@ function GiftCard({ gift, selected, onSelect }) {
       )}
       <span style={{ fontSize: 28, lineHeight: 1 }}>{gift.emoji}</span>
       <span style={{
-        fontSize: 9,
+        fontSize: 11,
         fontWeight: 900,
         fontFamily: 'Barlow Condensed, sans-serif',
         color: selected ? gift.color : 'rgba(255,255,255,0.6)',
@@ -112,7 +112,7 @@ function TopGifters({ roomId }) {
   return (
     <div style={{ padding: '8px 16px 0' }}>
       <p style={{
-        fontSize: 9,
+        fontSize: 11,
         fontWeight: 900,
         fontFamily: 'Barlow Condensed, sans-serif',
         textTransform: 'uppercase',
@@ -146,7 +146,7 @@ function TopGifters({ roomId }) {
             }}>
               {name.split(' ')[0]}
             </span>
-            <span style={{ fontSize: 9, color: GREEN, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>
+            <span style={{ fontSize: 11, color: GREEN, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>
               ${total.toFixed(0)}
             </span>
           </div>

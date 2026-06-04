@@ -3,8 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#C8FF00', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
-const STATUS_COLORS = { draft:C.gray, scheduled:'#FFB800', sent:'#00FF88' };
+const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
+const STATUS_COLORS = { draft:C.gray, scheduled:'#FFB800', sent:'#6DBF7E' };
 const TEMPLATES = {
   stream_recap: {
     title: 'Stream Recap — [Date]',

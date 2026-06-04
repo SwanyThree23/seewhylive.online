@@ -60,7 +60,7 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
       <div className="space-y-3">
         {/* Title */}
         <div>
-          <label className="text-[9px] text-white/60 uppercase block mb-1.5">Stream Title</label>
+          <label className="text-[11px] text-white/60 uppercase block mb-1.5">Stream Title</label>
           {isEditing ? (
             <input
               value={title}
@@ -72,31 +72,31 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
             <div className="text-white text-sm font-semibold line-clamp-2">{title}</div>
           )}
           {isEditing && (
-            <p className="text-[8px] text-white/40 mt-1">{title.length}/80 characters</p>
+            <p className="text-[11px] text-white/40 mt-1">{title.length}/80 characters</p>
           )}
         </div>
 
         {/* Category */}
         <div>
-          <label className="text-[9px] text-white/60 uppercase block mb-1.5">Category</label>
+          <label className="text-[11px] text-white/60 uppercase block mb-1.5">Category</label>
           {isEditing ? (
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded px-2 py-2 text-[9px] text-white/80"
+              className="w-full bg-white/5 border border-white/10 rounded px-2 py-2 text-[11px] text-white/80"
             >
               {CATEGORIES.map(cat => (
                 <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
               ))}
             </select>
           ) : (
-            <div className="text-white/70 text-[9px] capitalize">{category}</div>
+            <div className="text-white/70 text-[11px] capitalize">{category}</div>
           )}
         </div>
 
         {/* Tags */}
         <div>
-          <label className="text-[9px] text-white/60 uppercase block mb-1.5">Tags</label>
+          <label className="text-[11px] text-white/60 uppercase block mb-1.5">Tags</label>
           {isEditing ? (
             <>
               <input
@@ -113,7 +113,7 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
                       key={tag}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="inline-flex items-center gap-1 bg-[#d4af37]/20 text-[#d4af37] px-2 py-0.5 rounded text-[8px] font-semibold"
+                      className="inline-flex items-center gap-1 bg-[#d4af37]/20 text-[#d4af37] px-2 py-0.5 rounded text-[11px] font-semibold"
                     >
                       {tag}
                       <button
@@ -131,12 +131,12 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
             <div className="flex flex-wrap gap-1">
               {tagList.length > 0 ? (
                 tagList.map(tag => (
-                  <span key={tag} className="inline-block bg-white/10 text-white/70 px-1.5 py-0.5 rounded text-[8px]">
+                  <span key={tag} className="inline-block bg-white/10 text-white/70 px-1.5 py-0.5 rounded text-[11px]">
                     #{tag}
                   </span>
                 ))
               ) : (
-                <span className="text-[9px] text-white/40">No tags added</span>
+                <span className="text-[11px] text-white/40">No tags added</span>
               )}
             </div>
           )}

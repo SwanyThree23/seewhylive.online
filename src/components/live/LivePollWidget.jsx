@@ -62,7 +62,7 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
         ))}
         {form.options.length < 6 && (
-          <button onClick={addOpt} className="text-[9px] font-black" style={{ color: GOLD, ...T }}>+ Add Option</button>
+          <button onClick={addOpt} className="text-[11px] font-black" style={{ color: GOLD, ...T }}>+ Add Option</button>
         )}
         <button onClick={() => mut.mutate()} disabled={!form.question || mut.isPending}
           className="w-full py-2.5 rounded-xl font-black uppercase text-[11px]"
@@ -199,7 +199,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
                   <div className="pt-1 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-bold text-[12px] text-white flex-1">{activePoll.question}</p>
-                      <div className="flex items-center gap-1 text-[9px] shrink-0" style={{ color: 'rgba(245,230,211,0.4)' }}>
+                      <div className="flex items-center gap-1 text-[11px] shrink-0" style={{ color: 'rgba(245,230,211,0.4)' }}>
                         <Clock className="w-3 h-3" />
                         {activePoll.ends_at ? <PollCountdown endsAt={activePoll.ends_at} /> : '—'}
                       </div>
@@ -230,24 +230,24 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
                                 <span className="text-[10px] font-bold" style={{ color: hasVoted ? GOLD : 'rgba(245,230,211,0.7)' }}>{label}</span>
                                 {hasVoted && <span className="text-[7px] px-1 py-0.5 rounded" style={{ background: `${GOLD}20`, color: GOLD }}>✓</span>}
                               </div>
-                              <span className="text-[9px] font-black" style={{ color: GOLD, ...T }}>{pct}%</span>
+                              <span className="text-[11px] font-black" style={{ color: GOLD, ...T }}>{pct}%</span>
                             </div>
                           </button>
                         );
                       })}
                     </div>
 
-                    <p className="text-[8px]" style={{ color: 'rgba(245,230,211,0.3)' }}>{activePoll.total_votes || 0} votes</p>
+                    <p className="text-[11px]" style={{ color: 'rgba(245,230,211,0.3)' }}>{activePoll.total_votes || 0} votes</p>
 
                     {isHost && (
                       <div className="flex gap-1.5">
                         <button onClick={() => endPollMut.mutate(activePoll.id)}
-                          className="flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase"
+                          className="flex-1 py-1.5 rounded-lg text-[11px] font-black uppercase"
                           style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
                           End Poll
                         </button>
                         <button onClick={() => pinResultsMut.mutate(activePoll)}
-                          className="flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase"
+                          className="flex-1 py-1.5 rounded-lg text-[11px] font-black uppercase"
                           style={{ background: `rgba(212,175,55,0.08)`, color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, ...T }}>
                           Pin Results
                         </button>

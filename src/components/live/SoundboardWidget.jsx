@@ -91,7 +91,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
             title={sound.label}
           >
             <span className="text-lg leading-none">{sound.icon}</span>
-            <span className="text-[9px] font-bold text-white/70 leading-tight">{sound.label.split(' ')[0]}</span>
+            <span className="text-[11px] font-bold text-white/70 leading-tight">{sound.label.split(' ')[0]}</span>
           </motion.button>
         ))}
       </div>

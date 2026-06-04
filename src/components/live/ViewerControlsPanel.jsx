@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
-  burgundy: "#800020", gold: "#D4AF37", volt: "#C8FF00",
+  burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
   white: "#FFF", gray: "#888", dim: "#444", green: "#30D158",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace",
@@ -72,7 +72,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
         <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Quality */}
           <div>
-            <div style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>VIDEO QUALITY</div>
+            <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>VIDEO QUALITY</div>
             <div style={{ display: "flex", gap: 6 }}>
               {["360p", "480p", "720p", "1080p"].map(q => (
                 <button key={q} onClick={() => setQuality(q)} style={{
@@ -89,7 +89,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
           {/* Volume */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1 }}>VOLUME</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1 }}>VOLUME</span>
               <button onClick={() => setMuted(m => !m)} style={{ background: "none", border: "none", color: muted ? C.burgundy : C.green, cursor: "pointer", fontSize: 14 }}>{muted ? "🔇" : "🔊"}</button>
             </div>
             <input type="range" min={0} max={100} value={muted ? 0 : volume}
@@ -99,14 +99,14 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
 
           {/* Layout */}
           <div>
-            <div style={{ fontFamily: C.fMon, fontSize: 9, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>LAYOUT</div>
+            <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>LAYOUT</div>
             <div style={{ display: "flex", gap: 6 }}>
               {[{ id: "grid", label: "▦ Grid" }, { id: "spotlight", label: "◉ Spotlight" }, { id: "theater", label: "▬ Theater" }].map(l => (
                 <button key={l.id} onClick={() => setLayout(l.id)} style={{
                   flex: 1, padding: "6px 4px", borderRadius: 6,
                   border: "1px solid " + (layout === l.id ? C.volt : "#333"),
                   background: layout === l.id ? "rgba(200,255,0,0.08)" : C.surface,
-                  cursor: "pointer", fontFamily: C.fMon, fontSize: 9,
+                  cursor: "pointer", fontFamily: C.fMon, fontSize: 11,
                   color: layout === l.id ? C.volt : C.gray,
                 }}>{l.label}</button>
               ))}
@@ -123,7 +123,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>{handRaised ? "✋" : "🙋"}</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 9, color: handRaised ? C.volt : C.gray }}>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: handRaised ? C.volt : C.gray }}>
                 {handRaised ? "HAND RAISED" : "RAISE HAND"}
               </span>
             </button>
@@ -134,7 +134,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>📺</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 9, color: C.gray }}>PIP MODE</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: C.gray }}>PIP MODE</span>
             </button>
 
             {/* CC */}
@@ -145,7 +145,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>CC</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 9, color: ccOn ? "#00E5FF" : C.gray }}>CAPTIONS</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: ccOn ? "#00E5FF" : C.gray }}>CAPTIONS</span>
             </button>
 
             {/* Report */}
@@ -154,7 +154,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>🚩</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 9, color: "#FF6B6B" }}>REPORT</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: "#FF6B6B" }}>REPORT</span>
             </button>
           </div>
         </div>

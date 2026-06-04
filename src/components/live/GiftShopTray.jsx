@@ -45,7 +45,7 @@ function FullScreenAnimation({ gift, senderName, onDone }) {
           animate={{ x: (Math.random() - 0.5) * 300, y: -200 - Math.random() * 200, opacity: 0, rotate: Math.random() * 360 }}
           transition={{ duration: 1.5 + Math.random(), delay: 0.2 + Math.random() * 0.5 }}
           className="absolute w-3 h-3 rounded-sm"
-          style={{ background: [GOLD, BURGUNDY, '#00FF88', '#FF1564'][i % 4] }} />
+          style={{ background: [GOLD, BURGUNDY, '#6DBF7E', '#FF1564'][i % 4] }} />
       ))}
     </motion.div>
   );
@@ -62,7 +62,7 @@ function GiftCard({ gift, onSend, sending }) {
           style={{ background: BURGUNDY, color: GOLD, ...T }}>LIMITED</span>
       )}
       <div className="text-3xl leading-none my-1">{gift.animation_url || '🎁'}</div>
-      <p className="text-[8px] font-bold text-center leading-tight mt-1" style={{ color: CREAM + '80' }}>{gift.name}</p>
+      <p className="text-[11px] font-bold text-center leading-tight mt-1" style={{ color: CREAM + '80' }}>{gift.name}</p>
       <p className="font-black text-[10px] mt-0.5" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{gift.price}</p>
       <span className="text-[6px] font-black uppercase px-1 py-0.5 rounded mt-1"
         style={{ background: `${r.color}15`, color: r.color, ...T }}>{r.label}</span>
@@ -90,12 +90,12 @@ function GiftLeaderboard({ roomId }) {
 
   return (
     <div className="space-y-1.5">
-      <p className="text-[8px] font-black uppercase" style={{ color: CREAM + '35', ...T }}>Top Gifters</p>
+      <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '35', ...T }}>Top Gifters</p>
       {senders.map(([name, total], i) => (
         <div key={name} className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <span className="text-sm shrink-0">{i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span>
-          <span className="flex-1 text-[9px]" style={{ color: CREAM + '70' }}>{name}</span>
+          <span className="flex-1 text-[11px]" style={{ color: CREAM + '70' }}>{name}</span>
           <span className="font-black text-[10px]" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${total.toFixed(1)}</span>
         </div>
       ))}
@@ -177,7 +177,7 @@ export default function GiftShopTray({ roomId, currentUser }) {
                 <div className="flex gap-1.5 px-4 py-2 overflow-x-auto scrollbar-hide">
                   {GIFT_CATEGORIES.map(c => (
                     <button key={c} onClick={() => setCategory(c)}
-                      className="px-3 py-1 rounded-full text-[8px] font-black uppercase shrink-0"
+                      className="px-3 py-1 rounded-full text-[11px] font-black uppercase shrink-0"
                       style={{ background: category === c ? GOLD : 'rgba(255,255,255,0.07)', color: category === c ? '#000' : CREAM + '50', ...T }}>
                       {c}
                     </button>

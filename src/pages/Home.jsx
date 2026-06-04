@@ -87,9 +87,9 @@ function FanbaseRoomCard({ room }) {
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
   var categoryColor = {
-    Music: '#FF1564', Gaming: '#8B5CF6', Tech: '#00d4ff',
+    Music: '#FF1564', Gaming: '#D4AF37', Tech: '#00d4ff',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
-    Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#8B5CF6'
+    Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
   var tag = room.tags && room.tags[0];
   var tagColor = tag ? (categoryColor[tag] || '#D4AF37') : '#D4AF37';
@@ -99,7 +99,7 @@ function FanbaseRoomCard({ room }) {
     ? { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }
     : accessLabel === 'FAN'
     ? { background: 'rgba(128,0,32,0.2)', color: '#ff9999', border: '1px solid rgba(128,0,32,0.4)' }
-    : { background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' };
+    : { background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.25)' };
 
   return (
     <Link to={`/LiveRoom?id=${room.id}`}>

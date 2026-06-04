@@ -79,14 +79,14 @@ export default function HostControls({ isHost, party, onUpdate }) {
 
               {/* Theme picker */}
               <div>
-                <p className="text-[8px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <p className="text-[11px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   Room Theme
                 </p>
                 <div className="flex gap-1.5">
                   {THEMES.map(t => (
                     <button key={t.id}
                       onClick={() => setSettings(s => ({ ...s, theme: t.id }))}
-                      className="flex-1 py-2 rounded-lg text-[8px] font-bold transition-all"
+                      className="flex-1 py-2 rounded-lg text-[11px] font-bold transition-all"
                       style={{
                         background: t.color,
                         border: settings.theme === t.id ? '1.5px solid #d4af37' : '1px solid rgba(255,255,255,0.1)',
@@ -101,7 +101,7 @@ export default function HostControls({ isHost, party, onUpdate }) {
 
               {/* Max viewers */}
               <div>
-                <p className="text-[8px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <p className="text-[11px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   Max Viewers: {settings.maxViewers}
                 </p>
                 <input type="range" min={4} max={20} step={2}

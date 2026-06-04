@@ -18,11 +18,11 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
 
     <div className="space-y-1.5 mb-3">
       <div className="bg-white/10 rounded px-2 py-1">
-        <p className="text-[9px] text-white/50">TIPS</p>
+        <p className="text-[11px] text-white/50">TIPS</p>
         <p className="text-2xl font-black text-white">${tips || 0}</p>
       </div>
       <div className="bg-white/10 rounded px-2 py-1">
-        <p className="text-[9px] text-white/50">SCORE</p>
+        <p className="text-[11px] text-white/50">SCORE</p>
         <p className="text-2xl font-black text-amber-400">{score || 0}</p>
       </div>
     </div>
@@ -156,7 +156,7 @@ export default function PKBattleInterface({ roomId }) {
             <Zap className="w-5 h-5 text-amber-500 mx-auto" />
           </div>
           <div className="text-center">
-            <p className="text-[9px] text-white/60">Creator Advantage</p>
+            <p className="text-[11px] text-white/60">Creator Advantage</p>
             <p className="text-sm font-bold text-white">{Math.round((creator.tips / (creator.tips + challenger.tips || 1)) * 100)}%</p>
           </div>
         </div>
@@ -172,15 +172,15 @@ export default function PKBattleInterface({ roomId }) {
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="bg-white/10 rounded-lg p-2">
-          <p className="text-[9px] text-white/60 uppercase">Total Tips</p>
+          <p className="text-[11px] text-white/60 uppercase">Total Tips</p>
           <p className="text-lg font-bold text-white">${(creator.tips + challenger.tips).toLocaleString()}</p>
         </div>
         <div className="bg-white/10 rounded-lg p-2">
-          <p className="text-[9px] text-white/60 uppercase">Engagement</p>
+          <p className="text-[11px] text-white/60 uppercase">Engagement</p>
           <p className="text-lg font-bold text-white">{(creator.score + challenger.score).toLocaleString()}</p>
         </div>
         <div className="bg-white/10 rounded-lg p-2">
-          <p className="text-[9px] text-white/60 uppercase">Viewers</p>
+          <p className="text-[11px] text-white/60 uppercase">Viewers</p>
           <p className="text-lg font-bold text-white">2.4K</p>
         </div>
       </div>
