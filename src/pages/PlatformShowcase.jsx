@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamepad2, Eye, Target } from 'lucide-react';
 
@@ -115,7 +117,10 @@ export default function PlatformShowcase() {
   return (
     <div className="min-h-screen" style={{ background: BG }}>
       {/* Header */}
-      <div className="px-4 py-8 md:px-8 md:py-12 text-center">
+      <div className="px-4 py-4 md:px-8">
+        <Link to={createPageUrl('Home')} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }} aria-label="Back to Home">← Home</Link>
+      </div>
+      <div className="px-4 pb-8 md:px-8 md:pb-12 text-center">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
