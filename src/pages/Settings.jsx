@@ -142,6 +142,7 @@ export default function SettingsPage() {
     { label: 'Scene Templates',   href: 'SceneTemplates' },
     { label: 'Stream Alerts',     href: 'StreamAlerts' },
     { label: 'Platform Showcase', href: 'PlatformShowcase' },
+    { label: 'Stream Ref Dash',  href: 'StreamRefDash' },
   ];
 
   return (
