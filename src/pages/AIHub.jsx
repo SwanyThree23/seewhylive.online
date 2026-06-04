@@ -714,6 +714,60 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Section 7: AI Podcast Studio ── */}
+        <Card accentColor={CYAN}>
+          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🎙️ AI Podcast Studio</p>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
+            NotebookLM-style AI podcast creation — paste sources, generate a full script with host + co-host dialogue, then record live on your panel.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+            <FeatureItem icon="📄" label="Up to 5 research sources per episode" />
+            <FeatureItem icon="🤖" label="Full AI-generated conversational script" />
+            <FeatureItem icon="🎤" label="Record straight from your 20-person panel" />
+            <FeatureItem icon="📚" label="Persistent episode library" />
+          </div>
+          <Link to={createPageUrl('PodcastStudio')} style={{ textDecoration: 'none', display: 'block' }}>
+            <motion.div
+              whileTap={{ scale: 0.97 }}
+              style={{
+                ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
+                background: `linear-gradient(90deg, ${CRIMSON}, ${CYAN})`,
+                color: '#000', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+                textTransform: 'uppercase', cursor: 'pointer',
+              }}
+            >
+              Open Podcast Studio →
+            </motion.div>
+          </Link>
+        </Card>
+
+        {/* ── Section 8: Multi-Platform Hub ── */}
+        <Card accentColor={GREEN}>
+          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🌐 Multi-Platform Hub</p>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
+            Connect Fanbase, YouTube, Twitch, TikTok and more. Manage webhooks, virtual camera overlays, and cross-platform audience engagement.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+            <FeatureItem icon="🎭" label="Fanbase.com webhook connections" />
+            <FeatureItem icon="📷" label="Virtual camera with overlay presets" />
+            <FeatureItem icon="💬" label="Aggregated chat from all platforms" />
+            <FeatureItem icon="🎁" label="Cross-platform gift & milestone tracker" />
+          </div>
+          <Link to={createPageUrl('MultiPlatform')} style={{ textDecoration: 'none', display: 'block' }}>
+            <motion.div
+              whileTap={{ scale: 0.97 }}
+              style={{
+                ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
+                background: `${GREEN}20`, border: `1px solid ${GREEN}55`,
+                color: GREEN, fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+                textTransform: 'uppercase', cursor: 'pointer',
+              }}
+            >
+              Open Multi-Platform Hub →
+            </motion.div>
+          </Link>
+        </Card>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
