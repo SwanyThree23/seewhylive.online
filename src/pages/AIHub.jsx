@@ -768,6 +768,54 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Section 9: State vs State ── */}
+        <Card accentColor="#1565C0">
+          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
+            Hybrid domino tournament series — states compete live on SeeWhy. Track brackets, rosters, live match scores, and standings.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+            <FeatureItem icon="🏆" label="Live bracket with QF / SF / FINAL rounds" />
+            <FeatureItem icon="👥" label="State rosters — join your team" />
+            <FeatureItem icon="🔴" label="Real-time score tracking & play log" />
+            <FeatureItem icon="📊" label="State standings leaderboard" />
+          </div>
+          <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
+            <motion.div whileTap={{ scale: 0.97 }} style={{
+              ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
+              background: 'linear-gradient(90deg, #1565C0, #C62828)',
+              color: '#fff', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+              textTransform: 'uppercase', cursor: 'pointer',
+            }}>
+              Enter the Tournament →
+            </motion.div>
+          </Link>
+        </Card>
+
+        {/* ── Section 10: Tribute Wall ── */}
+        <Card accentColor="#7B5EA7">
+          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🕊️ Tribute Wall</p>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
+            Honor the legends who built domino culture. Read bios, leave tributes, and register for the memorial gaming event.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+            <FeatureItem icon="🎯" label="Legend profiles with achievements" />
+            <FeatureItem icon="💬" label="Post community tribute messages" />
+            <FeatureItem icon="🏅" label="Nominate a legend" />
+            <FeatureItem icon="🎮" label="85/10/5 tribute gaming event" />
+          </div>
+          <Link to={createPageUrl('TributeWall')} style={{ textDecoration: 'none', display: 'block' }}>
+            <motion.div whileTap={{ scale: 0.97 }} style={{
+              ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
+              background: 'rgba(123,94,167,0.2)', border: '1px solid rgba(123,94,167,0.5)',
+              color: '#A07BC4', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+              textTransform: 'uppercase', cursor: 'pointer',
+            }}>
+              Visit Tribute Wall →
+            </motion.div>
+          </Link>
+        </Card>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
