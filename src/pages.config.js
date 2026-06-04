@@ -88,6 +88,10 @@ const VaultPro            = lazy(() => import('./pages/VaultPro'));
 const AudioRoom           = lazy(() => import('./pages/AudioRoom'));
 const SceneTemplates      = lazy(() => import('./pages/SceneTemplates'));
 const StreamAlerts        = lazy(() => import('./pages/StreamAlerts'));
+const PodcastStudio       = lazy(() => import('./pages/PodcastStudio'));
+const MultiPlatform       = lazy(() => import('./pages/MultiPlatform'));
+const StateVsState        = lazy(() => import('./pages/StateVsState'));
+const TributeWall         = lazy(() => import('./pages/TributeWall'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -169,6 +173,10 @@ export const PAGES = {
     "AudioRoom": AudioRoom,
     "SceneTemplates": SceneTemplates,
     "StreamAlerts": StreamAlerts,
+    "PodcastStudio": PodcastStudio,
+    "MultiPlatform": MultiPlatform,
+    "StateVsState": StateVsState,
+    "TributeWall": TributeWall,
 }
 
 export const pagesConfig = {
