@@ -93,6 +93,7 @@ const MultiPlatform       = lazy(() => import('./pages/MultiPlatform'));
 const StateVsState        = lazy(() => import('./pages/StateVsState'));
 const TributeWall         = lazy(() => import('./pages/TributeWall'));
 const INSForge            = lazy(() => import('./pages/INSForge'));
+const JoyceAI             = lazy(() => import('./pages/JoyceAI'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -179,6 +180,7 @@ export const PAGES = {
     "StateVsState": StateVsState,
     "TributeWall": TributeWall,
     "INSForge": INSForge,
+    "JoyceAI": JoyceAI,
 }
 
 export const pagesConfig = {
