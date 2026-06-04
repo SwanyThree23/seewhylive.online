@@ -5,6 +5,7 @@ import {
   Mic2, Headphones, RefreshCw, Plus, X, ChevronRight, Zap,
   Sparkles, Radio, Sliders, Send, Search, Filter
 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG      = '#080B18';
@@ -284,11 +285,12 @@ function MiniScrubber({ isPlaying, duration }) {
 }
 
 // ── TrackCard ─────────────────────────────────────────────────────────────────
-function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix, onAddToStream }) {
+function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix, onAddToStream, onPushToPanel, panelPushedId, onGenerateAILyrics }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [lyricsOpen, setLyricsOpen] = useState(false);
   const [editingLyrics, setEditingLyrics] = useState(false);
   const [lyricsText, setLyricsText] = useState(track.lyrics || '');
+  const [aiLyricsLoading, setAiLyricsLoading] = useState(false);
   const menuRef = useRef(null);
 
   // close menu on outside click
@@ -421,6 +423,23 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             </span>
           </motion.button>
 
+          {/* Push to Panel */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onPushToPanel}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px',
+              borderRadius: 8, border: `1px solid ${GOLD}44`,
+              background: panelPushedId === track.id ? `${GOLD}22` : 'transparent',
+              color: panelPushedId === track.id ? GOLD : 'rgba(255,255,255,0.4)',
+              fontSize: 11, fontWeight: 700, cursor: 'pointer', ...T,
+              transition: 'all 0.2s',
+            }}
+          >
+            <Radio size={10} />
+            {panelPushedId === track.id ? 'Pushed!' : 'Push'}
+          </motion.button>
+
           {/* More menu */}
           <div style={{ position: 'relative' }} ref={menuRef}>
             <motion.button
@@ -495,8 +514,8 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
         </div>
       </div>
 
-      {/* Add to Stream + Scrubber row */}
-      <div style={{ padding: '0 16px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Add to Stream + AI Lyrics + Scrubber row */}
+      <div style={{ padding: '0 16px 10px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         {track.streamReady && (
           <motion.button
             whileTap={{ scale: 0.94 }}
@@ -512,6 +531,32 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             onMouseLeave={e => { e.currentTarget.style.background = `${GREEN}15`; }}
           >
             <Send size={10} /> Add to Stream
+          </motion.button>
+        )}
+        {/* AI Lyrics button for tracks without lyrics */}
+        {!track.lyrics && (
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            disabled={aiLyricsLoading}
+            onClick={async () => {
+              setAiLyricsLoading(true);
+              try {
+                await onGenerateAILyrics?.(track);
+              } finally {
+                setAiLyricsLoading(false);
+              }
+            }}
+            style={{
+              ...T, display: 'flex', alignItems: 'center', gap: 5,
+              padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800,
+              background: aiLyricsLoading ? `${PURPLE}08` : `${PURPLE}15`,
+              border: `1px solid ${PURPLE}40`, color: PURPLE,
+              cursor: aiLyricsLoading ? 'not-allowed' : 'pointer',
+              letterSpacing: '0.04em', textTransform: 'uppercase',
+              transition: 'all 0.15s', opacity: aiLyricsLoading ? 0.6 : 1,
+            }}
+          >
+            <Mic2 size={10} /> {aiLyricsLoading ? 'Writing…' : 'AI Lyrics'}
           </motion.button>
         )}
         <span style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{track.duration}</span>
@@ -701,6 +746,14 @@ export default function AIMusic() {
   // Active style tag category filter
   const [activeCategory, setActiveCategory] = useState(0);
 
+  // DJ Mode
+  const [djMode, setDjMode] = useState(false);
+  const [djInsight, setDjInsight] = useState('');
+  const [djLoading, setDjLoading] = useState(false);
+
+  // Panel push state
+  const [panelPushed, setPanelPushed] = useState(null);
+
   // Parsed style tags (comma-separated from styleInput)
   const parsedTags = styleInput
     .split(',')
@@ -723,6 +776,21 @@ export default function AIMusic() {
     setTimeout(() => setToast({ visible: false, message: '' }), 3000);
   }
 
+  async function getDjRecommendation() {
+    setDjLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an AI DJ for a live stream. Based on these available tracks: ${tracks.map(t => t.title + ' (' + t.tags.join(', ') + ')').join(' | ')}, recommend which track to play next and why. Keep it under 30 words.`,
+        response_json_schema: { type: 'object', properties: { recommendation: { type: 'string' } } },
+      });
+      setDjInsight(result.recommendation || '');
+    } catch {
+      setDjInsight('Play a chill lo-fi track to ease into the stream and warm up the audience.');
+    } finally {
+      setDjLoading(false);
+    }
+  }
+
   function handleAddStyleTag(tag) {
     const lower = tag.toLowerCase();
     if (parsedTags.includes(lower)) return;
@@ -734,51 +802,63 @@ export default function AIMusic() {
     setStyleInput(newTags.join(', '));
   }
 
-  function handleCreate(forceInstrumental = false) {
+  async function handleCreate(forceInstrumental = false) {
     if (generating) return;
     setGenerating(true);
-    const totalDelay = 2500 + Math.random() * 600;
-    setTimeout(() => {
-      const tags = parsedTags.length > 0 ? parsedTags : ['chill'];
-      const isInstrumental = forceInstrumental || instrumental;
-      const title = titleInput ||
-        (tags[0] ? tags[0].charAt(0).toUpperCase() + tags[0].slice(1) : 'Track') +
-        ' — AI Generated';
-      const emojiMap = {
-        trap:'🌑', 'lo-fi':'🎧', gospel:'🎺', afrobeats:'🌍',
-        edm:'🎛️', 'hip-hop':'🎤', 'r&b':'💜', jazz:'🎷',
-        ambient:'🌊', house:'🎹', drill:'💥', pop:'⭐',
-        '808':'🥁', piano:'🎹', guitar:'🎸', choir:'🎶',
-      };
-      const emoji = emojiMap[tags[0]] || '🎵';
-      const minutes = 2 + Math.floor(Math.random() * 2);
-      const seconds = 10 + Math.floor(Math.random() * 50);
-      const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      const newTrack = {
-        id: `t${Date.now()}`,
-        title,
-        tags: tags.slice(0, 6),
-        duration,
-        emoji,
-        playing: false,
-        liked: false,
-        likeCount: Math.floor(Math.random() * 20),
-        streamReady: isInstrumental || Math.random() > 0.4,
-        lyrics: isInstrumental ? null : generateMockLyrics(tags),
-      };
-      setTracks(prev => [newTrack, ...prev]);
-      setGenerating(false);
-      setTitleInput('');
-      setDescription('');
-      setMobileTab('library');
-      showToast('🎵 Your track is ready!');
-    }, totalDelay);
+    const tags = parsedTags.length > 0 ? parsedTags : ['chill'];
+    const isInstrumental = forceInstrumental || instrumental;
+    const title = titleInput ||
+      (tags[0] ? tags[0].charAt(0).toUpperCase() + tags[0].slice(1) : 'Track') +
+      ' — AI Generated';
+    const emojiMap = {
+      trap:'🌑', 'lo-fi':'🎧', gospel:'🎺', afrobeats:'🌍',
+      edm:'🎛️', 'hip-hop':'🎤', 'r&b':'💜', jazz:'🎷',
+      ambient:'🌊', house:'🎹', drill:'💥', pop:'⭐',
+      '808':'🥁', piano:'🎹', guitar:'🎸', choir:'🎶',
+    };
+    const emoji = emojiMap[tags[0]] || '🎵';
+    const minutes = 2 + Math.floor(Math.random() * 2);
+    const seconds = 10 + Math.floor(Math.random() * 50);
+    const trackDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const lyrics = isInstrumental ? null : await generateLyricsWithAI(tags);
+    const newTrack = {
+      id: `t${Date.now()}`,
+      title,
+      tags: tags.slice(0, 6),
+      duration: trackDuration,
+      emoji,
+      playing: false,
+      liked: false,
+      likeCount: Math.floor(Math.random() * 20),
+      streamReady: isInstrumental || Math.random() > 0.4,
+      lyrics,
+    };
+    setTracks(prev => [newTrack, ...prev]);
+    setGenerating(false);
+    setTitleInput('');
+    setDescription('');
+    setMobileTab('library');
+    showToast('🎵 Your track is ready!');
   }
 
-  function generateMockLyrics(tags) {
+  function generateMockLyricsSync(tags) {
     const mood = tags.find(t => ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t)) || 'chill';
     const genre = tags[0] || 'music';
     return `[Verse 1]\nRiding the ${mood} wave, ${genre} in my veins\nSeeWhy LIVE is where the magic remains\nEvery beat a story, every note a dream\nNothing is impossible, or so it seems\n\n[Chorus]\n${genre.toUpperCase()}, can you feel it tonight\nThe music takes over, everything feels right\nLive on the stream, hearts locked in the flow\n${mood.charAt(0).toUpperCase() + mood.slice(1)} vibes only, watch the numbers grow\n\n[Verse 2]\nChat moving fast, the energy is real\nHitting every drop, you know how we feel\nAI composing what the soul demands\nSeeWhy LIVE, we're in your hands\n\n[Outro]\nFade into the ${mood} night\nThis music carries us just right`;
+  }
+
+  async function generateLyricsWithAI(tags) {
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Write song lyrics for a track with these style tags: ${tags.join(', ')}.
+Write a [Verse 1], [Chorus], and [Verse 2]. Keep it relevant to live streaming, hustle, creativity, community.
+Under 200 words total. Make it fit the mood/genre of the tags.`,
+        response_json_schema: { type: 'object', properties: { lyrics: { type: 'string' } } },
+      });
+      return result.lyrics || generateMockLyricsSync(tags);
+    } catch {
+      return generateMockLyricsSync(tags);
+    }
   }
 
   function handleContinueGenerate({ track, startTime, desc }) {
@@ -1282,6 +1362,84 @@ export default function AIMusic() {
         }}
           className="desktop-show-right"
         >
+          {/* ── DJ Mode Section ── */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: djMode ? 12 : 0 }}>
+              <button
+                onClick={() => setDjMode(v => !v)}
+                style={{
+                  ...T, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+                  borderRadius: 999, fontSize: 12, fontWeight: 800, letterSpacing: '0.06em',
+                  textTransform: 'uppercase', cursor: 'pointer',
+                  background: djMode ? `${GOLD}20` : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${djMode ? GOLD + '55' : 'rgba(255,255,255,0.1)'}`,
+                  color: djMode ? GOLD : 'rgba(255,255,255,0.4)',
+                  transition: 'all 0.2s',
+                }}
+              >
+                🎧 DJ Mode {djMode ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {djMode && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {/* DJ Mode active bar */}
+                  <div style={{
+                    padding: '10px 14px', borderRadius: 10, marginBottom: 10,
+                    background: `${GOLD}10`, border: `1px solid ${GOLD}30`,
+                    display: 'flex', alignItems: 'center', gap: 8,
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: GOLD, display: 'inline-block', flexShrink: 0 }} />
+                    <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 700, letterSpacing: '0.04em' }}>
+                      🎧 DJ Mode Active — AI is managing your playlist
+                    </span>
+                  </div>
+
+                  {/* Get Recommendation button */}
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    disabled={djLoading}
+                    onClick={getDjRecommendation}
+                    style={{
+                      ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
+                      background: djLoading ? `${GOLD}08` : `${GOLD}15`,
+                      border: `1px solid ${GOLD}40`,
+                      color: GOLD, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
+                      textTransform: 'uppercase', cursor: djLoading ? 'not-allowed' : 'pointer',
+                      opacity: djLoading ? 0.7 : 1,
+                    }}
+                  >
+                    {djLoading ? '⏳ Analyzing…' : '🤖 Get AI Recommendation'}
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {djInsight && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                          padding: '12px 14px', borderRadius: 10, marginBottom: 12,
+                          background: `${GOLD}10`, border: `1px solid ${GOLD}30`,
+                        }}
+                      >
+                        <p style={{ ...T, fontSize: 13, color: '#fff', fontWeight: 600, lineHeight: 1.5, margin: 0 }}>
+                          🎵 {djInsight}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Library header */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -1394,6 +1552,21 @@ export default function AIMusic() {
                   onContinue={() => setContinueTrack(track)}
                   onRemix={() => remixTrack(track)}
                   onAddToStream={() => handleAddToStream(track)}
+                  panelPushedId={panelPushed}
+                  onPushToPanel={() => {
+                    localStorage.setItem('seewhy_dj_track', JSON.stringify({
+                      id: track.id, title: track.title, tags: track.tags,
+                      emoji: track.emoji, duration: track.duration, streamReady: track.streamReady,
+                    }));
+                    setPanelPushed(track.id);
+                    setTimeout(() => setPanelPushed(null), 3000);
+                    showToast(`📡 "${track.title}" pushed to panels!`);
+                  }}
+                  onGenerateAILyrics={async (t) => {
+                    const lyrics = await generateLyricsWithAI(t.tags);
+                    setTracks(prev => prev.map(x => x.id === t.id ? { ...x, lyrics } : x));
+                    showToast('✍️ AI lyrics generated!');
+                  }}
                 />
               ))}
             </div>
