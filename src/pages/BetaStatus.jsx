@@ -169,9 +169,17 @@ export default function BetaStatusPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Creator Dashboard', href: 'CreatorDashboard' },
-            { label: 'Enhancement Suite', href: 'EnhancementSuite' },
-            { label: 'Invite Users', href: 'InviteUsers' },
-            { label: 'Moderation', href: 'AIModeration' },
+            { label: 'AI Hub',            href: 'AIHub' },
+            { label: 'Joyce AI',          href: 'JoyceAI' },
+            { label: 'Guardian AI',       href: 'GuardianAI' },
+            { label: 'State vs State',    href: 'StateVsState' },
+            { label: 'Tribute Wall',      href: 'TributeWall' },
+            { label: 'Podcast Studio',    href: 'PodcastStudio' },
+            { label: 'AI Music Studio',   href: 'AIMusic' },
+            { label: 'INS Forge',         href: 'INSForge' },
+            { label: 'Multi-Platform',    href: 'MultiPlatform' },
+            { label: 'Platform Showcase', href: 'PlatformShowcase' },
+            { label: 'Moderation',        href: 'AIModeration' },
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)}>
               <button className="w-full py-2.5 rounded-xl font-black uppercase text-[10px]"
