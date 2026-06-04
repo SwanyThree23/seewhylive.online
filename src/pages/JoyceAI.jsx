@@ -60,8 +60,16 @@ export default function JoyceAI() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState(null);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
+
+  function copyMsg(text, idx) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 1800);
+    });
+  }
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -173,18 +181,35 @@ export default function JoyceAI() {
             {m.role === 'assistant' && (
               <div style={{ ...MONO, fontSize: 9, color: GOLD, letterSpacing: '0.1em', paddingLeft: 4 }}>JOYCE AI</div>
             )}
-            <div style={{
-              maxWidth: '85%', padding: '10px 14px',
-              background: m.role === 'user'
-                ? `linear-gradient(135deg, ${GOLD}22, ${GOLDD}15)`
-                : BG3,
-              border: `1px solid ${m.role === 'user' ? GOLD + '44' : SLATE}`,
-              borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-              color: m.role === 'user' ? TEXT : TEXTD,
-              fontSize: 13, lineHeight: 1.65,
-              fontFamily: "'DM Sans', sans-serif"
-            }}>
-              {m.text}
+            <div style={{ position: 'relative', maxWidth: '85%' }}>
+              <div style={{
+                padding: '10px 14px',
+                background: m.role === 'user'
+                  ? `linear-gradient(135deg, ${GOLD}22, ${GOLDD}15)`
+                  : BG3,
+                border: `1px solid ${m.role === 'user' ? GOLD + '44' : SLATE}`,
+                borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                color: m.role === 'user' ? TEXT : TEXTD,
+                fontSize: 13, lineHeight: 1.65,
+                fontFamily: "'DM Sans', sans-serif",
+                paddingBottom: m.role === 'assistant' ? '28px' : '10px',
+              }}>
+                {m.text}
+              </div>
+              {m.role === 'assistant' && (
+                <button onClick={() => copyMsg(m.text, i)}
+                  style={{
+                    position: 'absolute', bottom: 6, right: 8,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    ...MONO, fontSize: 9, color: copiedIdx === i ? GOLD : 'rgba(255,255,255,0.2)',
+                    padding: '2px 6px', borderRadius: 6,
+                    transition: 'color .2s',
+                  }}
+                  title="Copy response"
+                >
+                  {copiedIdx === i ? '✓ copied' : '📋 copy'}
+                </button>
+              )}
             </div>
             {m.role === 'user' && (
               <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.08em', paddingRight: 4 }}>YOU</div>
