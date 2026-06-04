@@ -46,6 +46,7 @@ var DRAWER_CREATE = [
   { name: 'Monetize',   icon: DollarSign,     href: createPageUrl('Monetization') },
   { name: 'Dashboard',  icon: LayoutDashboard,href: createPageUrl('CreatorDashboard') },
   { name: 'AI Hub',           icon: Sparkles,       href: createPageUrl('AIHub') },
+  { name: 'AI Music Studio',  icon: Radio,          href: createPageUrl('AIMusic') },
   { name: 'Podcast Studio',   icon: Mic2,           href: createPageUrl('PodcastStudio') },
   { name: 'Multi-Platform',   icon: Globe,          href: createPageUrl('MultiPlatform') },
   { name: 'Messages',         icon: MessageSquare,  href: createPageUrl('Messages') },
