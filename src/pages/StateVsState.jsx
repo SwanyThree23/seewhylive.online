@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 const BG   = '#080B18';
@@ -412,7 +412,331 @@ function StandingsView() {
   );
 }
 
-const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS'];
+const ROUND_RULES = [
+  { rule: 'Win a round (opponent blocked)',   pts: '+1 Match Point' },
+  { rule: 'Domino out (all tiles played)',    pts: '+2 Match Points' },
+  { rule: 'Shut-out win (opponent scores 0)', pts: '+3 Match Points' },
+  { rule: 'Tiebreaker',                       pts: 'Pip count differential' },
+  { rule: 'Time violation (3rd offense)',     pts: '−1 Match Point' },
+  { rule: 'Forfeit',                          pts: 'Opponent wins 3–0' },
+];
+
+function JudgesView() {
+  const [rounds, setRounds] = useState([
+    { round: 1, home: '', away: '', notes: '', locked: false },
+    { round: 2, home: '', away: '', notes: '', locked: false },
+    { round: 3, home: '', away: '', notes: '', locked: false },
+    { round: 4, home: '', away: '', notes: '', locked: false },
+    { round: 5, home: '', away: '', notes: '', locked: false },
+  ]);
+  const [ruling, setRuling] = useState('');
+  const [rulingLog, setRulingLog] = useState([]);
+  const [matchPaused, setMatchPaused] = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [timerSecs, setTimerSecs] = useState(480);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [checkDone, setCheckDone] = useState(Array(6).fill(false));
+  const [copiedRuling, setCopiedRuling] = useState(false);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (timerRunning && timerSecs > 0) {
+      intervalRef.current = setInterval(() => setTimerSecs(s => s - 1), 1000);
+    } else {
+      clearInterval(intervalRef.current);
+      if (timerSecs === 0) setTimerRunning(false);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [timerRunning, timerSecs]);
+
+  const timerColor = timerSecs <= 30 ? RED2 : timerSecs <= 60 ? GOLD : TEAL;
+  const timerDisplay = `${Math.floor(timerSecs / 60)}:${String(timerSecs % 60).padStart(2, '0')}`;
+
+  function lockRound(i) {
+    const r = rounds[i];
+    if (!r.home.trim() || !r.away.trim()) return;
+    setRounds(prev => prev.map((x, idx) => idx === i ? { ...x, locked: true } : x));
+  }
+
+  function broadcastRuling() {
+    if (!ruling.trim()) return;
+    setRulingLog(log => [{ text: ruling, ts: new Date().toLocaleTimeString() }, ...log]);
+    setRuling('');
+  }
+
+  function copyRuling(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedRuling(true);
+      setTimeout(() => setCopiedRuling(false), 1500);
+    });
+  }
+
+  const lockedCount = rounds.filter(r => r.locked).length;
+  const homeTotal = rounds.filter(r => r.locked).reduce((s, r) => s + (parseInt(r.home) || 0), 0);
+  const awayTotal = rounds.filter(r => r.locked).reduce((s, r) => s + (parseInt(r.away) || 0), 0);
+
+  const preCheckSteps = [
+    'Confirm judge credentials active (role = judge)',
+    'Verify active match ID loaded in scorecard',
+    'Sync with both state captains before tip-off',
+    'Confirm stream overlay receiving judge:score events',
+    'Guardian AI monitoring match chat',
+    'Acknowledge match rules with both teams',
+  ];
+
+  const inputStyle = {
+    width: '100%',
+    background: BG3,
+    border: `1px solid rgba(255,255,255,0.12)`,
+    borderRadius: 8,
+    padding: '8px 10px',
+    color: '#fff',
+    fontFamily: 'Barlow Condensed, sans-serif',
+    fontSize: 13,
+    outline: 'none',
+    boxSizing: 'border-box',
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Timer + Match Control */}
+      <GCard glow={matchPaused || timerRunning}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div>
+            <div style={{ ...T, fontSize: 10, color: GOLD, fontWeight: 700, letterSpacing: '0.12em', marginBottom: 4 }}>ROUND TIMER</div>
+            <div style={{
+              fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif',
+              fontSize: 48, lineHeight: 1,
+              color: timerColor,
+              letterSpacing: 2,
+            }}>{timerDisplay}</div>
+            {timerSecs <= 30 && timerSecs > 0 && (
+              <div style={{ ...T, fontSize: 11, color: RED2, fontWeight: 700, animation: 'pulse 1s infinite' }}>⚠ TIME WARNING</div>
+            )}
+            {timerSecs === 0 && (
+              <div style={{ ...T, fontSize: 11, color: RED2, fontWeight: 700 }}>⏱ TIME EXPIRED</div>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <Btn
+                label={timerRunning ? '⏸ PAUSE' : '▶ START'}
+                variant={timerRunning ? 'ruby' : 'gold'}
+                size="sm"
+                onClick={() => setTimerRunning(r => !r)}
+              />
+              <Btn
+                label="RESET"
+                variant="ghost"
+                size="sm"
+                onClick={() => { setTimerRunning(false); setTimerSecs(480); }}
+              />
+            </div>
+            <Btn
+              label={matchPaused ? '▶ RESUME MATCH' : '⏸ PAUSE MATCH'}
+              variant={matchPaused ? 'state' : 'ruby'}
+              size="sm"
+              onClick={() => setMatchPaused(p => !p)}
+            />
+          </div>
+        </div>
+        {matchPaused && (
+          <div style={{
+            marginTop: 10, padding: '8px 12px',
+            background: `${RED2}22`, border: `1px solid ${RED2}55`,
+            borderRadius: 8, ...T, fontSize: 12, color: RED2, fontWeight: 700,
+          }}>⏸ MATCH PAUSED — Visible on stream overlay</div>
+        )}
+        {disputeOpen && (
+          <div style={{
+            marginTop: 8, padding: '8px 12px',
+            background: `${GOLD}18`, border: `1px solid ${GOLD}55`,
+            borderRadius: 8, ...T, fontSize: 12, color: GOLD, fontWeight: 700,
+          }}>⚖️ DISPUTE OPEN — Under review</div>
+        )}
+        <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+          <Btn
+            label={disputeOpen ? '✓ RESOLVE DISPUTE' : '⚖️ OPEN DISPUTE'}
+            variant={disputeOpen ? 'state' : 'ghost'}
+            size="sm"
+            onClick={() => { setDisputeOpen(d => !d); if (!matchPaused) setMatchPaused(true); }}
+          />
+        </div>
+      </GCard>
+
+      {/* Live Scoreboard */}
+      <GCard>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: '0.08em' }}>DIGITAL SCORECARD</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ textAlign: 'center', padding: '4px 14px', background: `${BLUE}22`, border: `1px solid ${BLUE}44`, borderRadius: 8 }}>
+              <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 22, color: '#fff', lineHeight: 1 }}>{homeTotal}</div>
+              <div style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>WA</div>
+            </div>
+            <div style={{ textAlign: 'center', padding: '4px 14px', background: `${RED2}22`, border: `1px solid ${RED2}44`, borderRadius: 8 }}>
+              <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 22, color: '#fff', lineHeight: 1 }}>{awayTotal}</div>
+              <div style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>FL</div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {rounds.map((r, i) => (
+            <div key={i} style={{
+              padding: '10px 12px',
+              background: r.locked ? `${TEAL}0E` : BG3,
+              border: `1px solid ${r.locked ? TEAL + '44' : 'rgba(255,255,255,0.07)'}`,
+              borderRadius: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: r.locked ? 0 : 8 }}>
+                <span style={{ ...T, fontSize: 11, color: r.locked ? TEAL : 'rgba(255,255,255,0.5)', fontWeight: 700, minWidth: 50 }}>
+                  RD {r.round} {r.locked ? '✓' : ''}
+                </span>
+                {r.locked ? (
+                  <div style={{ display: 'flex', gap: 12, flex: 1 }}>
+                    <span style={{ ...T, fontSize: 13, color: '#fff', fontWeight: 700 }}>WA: <span style={{ color: GOLD }}>{r.home}</span></span>
+                    <span style={{ ...T, fontSize: 13, color: '#fff', fontWeight: 700 }}>FL: <span style={{ color: GOLD }}>{r.away}</span></span>
+                    {r.notes && <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', flex: 1 }}>{r.notes}</span>}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: 6, flex: 1, flexWrap: 'wrap' }}>
+                    <input
+                      type="number" min="0" placeholder="WA pts"
+                      value={r.home}
+                      onChange={e => setRounds(prev => prev.map((x, idx) => idx === i ? { ...x, home: e.target.value } : x))}
+                      style={{ ...inputStyle, width: 72 }}
+                    />
+                    <input
+                      type="number" min="0" placeholder="FL pts"
+                      value={r.away}
+                      onChange={e => setRounds(prev => prev.map((x, idx) => idx === i ? { ...x, away: e.target.value } : x))}
+                      style={{ ...inputStyle, width: 72 }}
+                    />
+                    <input
+                      placeholder="Notes (optional)"
+                      value={r.notes}
+                      onChange={e => setRounds(prev => prev.map((x, idx) => idx === i ? { ...x, notes: e.target.value } : x))}
+                      style={{ ...inputStyle, flex: 1, minWidth: 100 }}
+                    />
+                    <Btn
+                      label="LOCK"
+                      variant="gold"
+                      size="sm"
+                      disabled={!r.home.trim() || !r.away.trim()}
+                      onClick={() => lockRound(i)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 8 }}>
+          {lockedCount}/5 rounds locked · Best of 5 · First to 3 wins
+        </div>
+      </GCard>
+
+      {/* Official Ruling Broadcast */}
+      <GCard>
+        <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: '0.08em', marginBottom: 10 }}>
+          📣 OFFICIAL RULING BROADCAST
+        </div>
+        <textarea
+          value={ruling}
+          onChange={e => setRuling(e.target.value)}
+          placeholder="Type an official ruling, foul call, or announcement to broadcast to all viewers…"
+          rows={3}
+          style={{ ...inputStyle, resize: 'vertical', marginBottom: 8 }}
+        />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Btn
+            label="📡 BROADCAST RULING"
+            variant="ruby"
+            size="sm"
+            disabled={!ruling.trim()}
+            onClick={broadcastRuling}
+          />
+        </div>
+        {rulingLog.length > 0 && (
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 700, letterSpacing: '0.1em' }}>RULING LOG</div>
+            {rulingLog.map((r, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 8,
+                padding: '8px 10px',
+                background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}44`,
+                borderRadius: 8,
+              }}>
+                <span style={{ ...T, fontSize: 10, color: GOLD, minWidth: 50, flexShrink: 0 }}>{r.ts}</span>
+                <span style={{ ...T, fontSize: 12, color: '#fff', flex: 1 }}>{r.text}</span>
+                <button
+                  onClick={() => copyRuling(r.text)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', ...T, fontSize: 10, color: copiedRuling ? TEAL : 'rgba(255,255,255,0.3)', flexShrink: 0 }}
+                >
+                  {copiedRuling ? '✓' : '📋'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </GCard>
+
+      {/* SVS Scoring Rules Quick Ref */}
+      <GCard>
+        <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: '0.08em', marginBottom: 10 }}>
+          ⚖️ SCORING RULES — QUICK REF
+        </div>
+        {ROUND_RULES.map(r => (
+          <div key={r.rule} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)',
+          }}>
+            <span style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{r.rule}</span>
+            <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 700 }}>{r.pts}</span>
+          </div>
+        ))}
+        <Link to="/StreamRefDash" style={{ textDecoration: 'none' }}>
+          <div style={{ ...T, fontSize: 11, color: CYAN, marginTop: 10, textAlign: 'right', fontWeight: 700 }}>
+            Full Judges Reference → StreamRefDash ⚖️
+          </div>
+        </Link>
+      </GCard>
+
+      {/* Pre-Match Checklist */}
+      <GCard>
+        <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: '0.08em', marginBottom: 8 }}>
+          ✅ PRE-MATCH JUDGE CHECKLIST
+        </div>
+        {preCheckSteps.map((step, i) => (
+          <div
+            key={i}
+            onClick={() => setCheckDone(d => d.map((v, j) => j === i ? !v : v))}
+            style={{
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              padding: '8px 4px', cursor: 'pointer',
+              borderBottom: '1px solid rgba(255,255,255,0.04)',
+              opacity: checkDone[i] ? 0.45 : 1,
+            }}
+          >
+            <span style={{ ...T, fontSize: 14, color: checkDone[i] ? TEAL : 'rgba(255,255,255,0.25)', marginTop: 1, flexShrink: 0 }}>
+              {checkDone[i] ? '✓' : '○'}
+            </span>
+            <span style={{
+              ...T, fontSize: 12, color: '#fff',
+              textDecoration: checkDone[i] ? 'line-through' : 'none',
+            }}>{step}</span>
+          </div>
+        ))}
+        <div style={{ ...T, fontSize: 11, color: GOLD, marginTop: 8 }}>
+          {checkDone.filter(Boolean).length} / {preCheckSteps.length} complete
+        </div>
+      </GCard>
+
+    </div>
+  );
+}
+
+const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 
 export default function StateVsState() {
   const [tab, setTab] = useState('BRACKET');
@@ -498,6 +822,7 @@ export default function StateVsState() {
       {tab === 'ROSTERS' && <RostersView />}
       {tab === 'LIVE MATCH' && <LiveMatchView />}
       {tab === 'STANDINGS' && <StandingsView />}
+      {tab === 'JUDGES' && <JudgesView />}
     </div>
   );
 }
