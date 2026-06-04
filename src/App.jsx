@@ -35,6 +35,8 @@ import Login from './pages/Login';
 import SocialExpo from './pages/SocialExpo';
 import PodcastStudio from './pages/PodcastStudio';
 import MultiPlatform from './pages/MultiPlatform';
+import AIMusic from './pages/AIMusic';
+import SeeWhyLIVEv36 from './pages/SeeWhyLIVEv36';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -124,6 +126,8 @@ const AuthenticatedApp = () => {
       <Route path="/SocialExpo" element={<LayoutWrapper currentPageName="SocialExpo"><SocialExpo /></LayoutWrapper>} />
       <Route path="/PodcastStudio" element={<LayoutWrapper currentPageName="PodcastStudio"><PodcastStudio /></LayoutWrapper>} />
       <Route path="/MultiPlatform" element={<LayoutWrapper currentPageName="MultiPlatform"><MultiPlatform /></LayoutWrapper>} />
+      <Route path="/AIMusic" element={<AIMusic />} />
+      <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
