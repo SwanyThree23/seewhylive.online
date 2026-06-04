@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -52,6 +52,7 @@ var DRAWER_CREATE = [
   { name: 'AI Music Studio',  icon: Radio,          href: createPageUrl('AIMusic') },
   { name: 'Podcast Studio',   icon: Mic2,           href: createPageUrl('PodcastStudio') },
   { name: 'Multi-Platform',   icon: Globe,          href: createPageUrl('MultiPlatform') },
+  { name: 'Joyce AI',         icon: Bot,            href: createPageUrl('JoyceAI') },
   { name: 'Messages',         icon: MessageSquare,  href: createPageUrl('Messages') },
 ];
 
