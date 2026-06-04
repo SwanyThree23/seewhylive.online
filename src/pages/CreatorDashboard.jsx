@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
@@ -87,6 +87,30 @@ export default function CreatorDashboardPage() {
       gradient: `linear-gradient(135deg, ${G}25, ${G}06)`,
       border: `${G}45`,
       iconColor: G,
+    },
+    {
+      icon: Bot,
+      label: 'Joyce AI',
+      href: createPageUrl('JoyceAI'),
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
+      border: 'rgba(212,175,55,0.35)',
+      iconColor: G,
+    },
+    {
+      icon: Zap,
+      label: 'INS Forge',
+      href: createPageUrl('INSForge'),
+      gradient: `linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05))`,
+      border: 'rgba(245,158,11,0.35)',
+      iconColor: '#F59E0B',
+    },
+    {
+      icon: Mic2,
+      label: 'Podcast',
+      href: createPageUrl('PodcastStudio'),
+      gradient: `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.04))`,
+      border: 'rgba(0,212,255,0.3)',
+      iconColor: '#00d4ff',
     },
   ];
 
