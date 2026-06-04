@@ -4,8 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter, Tv2, Play, ExternalLink, Mic,
-  Globe, Percent, Ticket, ArrowRight
+  Zap, Eye, Clock, ChevronRight, Filter
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -13,7 +12,6 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
-import { FEATURED_VIDEOS, PARTNER_CHANNELS } from '../components/home/FeaturedContent';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -45,7 +43,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#FF1564', Gaming: '#8B5CF6', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#FF1564', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -95,10 +93,7 @@ export default function DiscoverPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [genre, setGenre] = useState('All');
-  const [tab, setTab] = useState(() => {
-    const p = new URLSearchParams(window.location.search).get('tab');
-    return ['live','scheduled','communities','creators','partners'].includes(p) ? p : 'live';
-  });
+  const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
   const debounceRef = useRef(null);
   const queryClient = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
@@ -188,11 +183,11 @@ export default function DiscoverPage() {
           {/* Stats row */}
           <div className="flex items-center gap-4 sm:gap-6 mb-5 overflow-x-auto scrollbar-hide pb-1">
             <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-[#00F5FF]" />
+              <Eye className="w-4 h-4 text-[#C9A84C]" />
               <span className="text-2xl font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {totalViewers.toLocaleString()}
               </span>
-              <span className="text-[#00F5FF] text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewers</span>
+              <span className="text-[#C9A84C] text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Viewers</span>
             </div>
             <div className="w-px h-6 bg-white/10" />
             <div className="flex items-center gap-2">
@@ -239,7 +234,6 @@ export default function DiscoverPage() {
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
-              { id: 'partners', label: 'Partners', icon: Tv2 },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -350,155 +344,6 @@ export default function DiscoverPage() {
               </div>
             </motion.div>
           )}
-
-          {tab === 'partners' && (
-            <motion.div key="partners" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
-              {/* Channel Showcase */}
-              <div>
-                <h2 className="text-xl font-black text-white mb-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Official Partner Channels</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {PARTNER_CHANNELS.map((ch, i) => {
-                    const Icon = ch.icon;
-                    return (
-                      <motion.div key={ch.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-                        <a href={ch.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                          <div className="rounded-2xl p-5 flex items-center gap-4 transition-all cursor-pointer"
-                            style={{ background: `${ch.color}0A`, border: `1px solid ${ch.color}30`, backdropFilter: 'blur(8px)' }}>
-                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
-                              style={{ background: `${ch.color}20`, border: `2px solid ${ch.color}50` }}>
-                              <Icon style={{ width: 28, height: 28, color: ch.color }} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-black text-white text-lg" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{ch.name}</p>
-                              <p className="text-sm mb-1" style={{ color: ch.color + '99', fontFamily: 'Barlow Condensed, sans-serif' }}>{ch.handle}</p>
-                              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{ch.desc}</p>
-                            </div>
-                            <div className="flex flex-col items-center gap-1 shrink-0">
-                              <ExternalLink style={{ width: 16, height: 16, color: ch.color + '80' }} />
-                              <span className="text-[11px] font-bold uppercase" style={{ color: ch.color + '80', fontFamily: 'Barlow Condensed, sans-serif' }}>Visit</span>
-                            </div>
-                          </div>
-                        </a>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Domino Social Expo Banner */}
-              <div>
-                <Link to={createPageUrl('SocialExpo')} style={{ textDecoration: 'none', display: 'block' }}>
-                  <motion.div
-                    whileTap={{ scale: 0.98 }}
-                    className="rounded-2xl overflow-hidden cursor-pointer"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(128,0,32,0.35) 0%, rgba(255,21,100,0.18) 50%, rgba(0,245,255,0.08) 100%)',
-                      border: '1px solid rgba(255,21,100,0.3)',
-                      padding: '20px 22px',
-                      boxShadow: '0 4px 24px rgba(255,21,100,0.1)',
-                    }}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#FF1564] animate-pulse" />
-                          <span className="text-[11px] font-black uppercase tracking-widest"
-                            style={{ color: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                            OFFICIAL INTEGRATION
-                          </span>
-                        </div>
-                        <h3 className="font-black text-white text-lg leading-tight mb-1"
-                          style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                          Domino Social Expo
-                        </h3>
-                        <p className="text-xs text-white/50 mb-3 leading-relaxed">
-                          Cross-platform events · Weekly Social Lights show · 6 platforms · 10% affiliate program
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            { icon: Globe, label: '6 Platforms', color: '#00F5FF' },
-                            { icon: Ticket, label: '$0.99–$4.99', color: '#D4AF37' },
-                            { icon: Percent, label: '10% Affiliate', color: '#8B5CF6' },
-                          ].map((chip, i) => {
-                            const Icon = chip.icon;
-                            return (
-                              <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                                style={{ background: `${chip.color}12`, border: `1px solid ${chip.color}28` }}>
-                                <Icon style={{ width: 11, height: 11, color: chip.color }} />
-                                <span className="text-[11px] font-bold" style={{ color: chip.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{chip.label}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div className="shrink-0 flex flex-col items-center justify-center gap-1.5 mt-1">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                          style={{ background: 'rgba(255,21,100,0.18)', border: '1.5px solid rgba(255,21,100,0.4)' }}>
-                          <Tv2 style={{ width: 22, height: 22, color: '#FF1564' }} />
-                        </div>
-                        <div className="flex items-center gap-1"
-                          style={{ color: '#D4AF37', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
-                          Explore <ArrowRight style={{ width: 11, height: 11 }} />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              </div>
-
-              {/* Featured Videos Grid */}
-              <div>
-                <h2 className="text-xl font-black text-white mb-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  Featured Episodes
-                  <span className="ml-3 text-xs font-bold px-2 py-0.5 rounded-full align-middle"
-                    style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)' }}>
-                    {FEATURED_VIDEOS.length} videos
-                  </span>
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {FEATURED_VIDEOS.map((video, i) => {
-                    const ytUrl = `https://www.youtube.com/watch?v=${video.id}`;
-                    const wpUrl = `${createPageUrl('WatchParty')}?videoUrl=${encodeURIComponent(ytUrl)}&title=${encodeURIComponent(video.title + ' — Watch Party')}`;
-                    const thumb = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
-                    return (
-                      <motion.div key={video.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-                        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-                          {/* Thumbnail */}
-                          <div className="relative" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0d0620, #0a1020)', overflow: 'hidden' }}>
-                            <img src={thumb} alt={video.title}
-                              onError={e => { e.target.style.display = 'none'; }}
-                              className="w-full h-full object-cover" />
-                            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.8) 0%, transparent 55%)' }} />
-                            <span className="absolute top-2 left-2 text-[11px] font-black px-2 py-0.5 rounded-full"
-                              style={{ background: `${video.tagColor}30`, color: video.tagColor, border: `1px solid ${video.tagColor}50`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                              {video.tag}
-                            </span>
-                            <div className="absolute right-3 bottom-3 w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,0,0,0.85)' }}>
-                              <Play style={{ width: 16, height: 16, color: '#fff', marginLeft: 2 }} />
-                            </div>
-                          </div>
-                          {/* Info */}
-                          <div className="p-3">
-                            <p className="font-black text-white text-sm line-clamp-2 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{video.title}</p>
-                            <p className="text-[11px] mb-3" style={{ color: video.channelColor + '99', fontFamily: 'Barlow Condensed, sans-serif' }}>{video.channel}</p>
-                            <div className="flex gap-2">
-                              <a href={ytUrl} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black"
-                                style={{ background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.3)', color: '#ff4444', textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                                <Play style={{ width: 11, height: 11 }} /> Watch on YouTube
-                              </a>
-                              <Link to={wpUrl} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black"
-                                style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                                <Users style={{ width: 11, height: 11 }} /> Watch Party
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          )}
         </AnimatePresence>
       </div>
     </div>
@@ -532,7 +377,7 @@ function TrendingCard({ room, rank }) {
           <p className="text-sm font-bold text-white truncate">{room.title}</p>
           <div className="flex items-center justify-between mt-1">
             <SignalBars count={5} active={true} size="xs" />
-            <span className="text-[10px] text-[#00F5FF] font-mono">{(room.viewer_count || 0).toLocaleString()} viewers</span>
+            <span className="text-[10px] text-[#C9A84C] font-mono">{(room.viewer_count || 0).toLocaleString()} viewers</span>
           </div>
         </div>
       </motion.div>
@@ -571,7 +416,7 @@ function CreatorCard({ creator }) {
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
       <motion.div whileTap={{ scale: 0.97 }}
         className="relative p-4 rounded-2xl cursor-pointer text-center"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(139,92,246,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
             style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -579,9 +424,9 @@ function CreatorCard({ creator }) {
           </div>
         )}
         {/* Octagonal avatar */}
-        <div className="mx-auto mb-3" style={{ width: 64, height: 64, clipPath: OCT, background: 'rgba(139,92,246,0.25)' }}>
+        <div className="mx-auto mb-3" style={{ width: 64, height: 64, clipPath: OCT, background: 'rgba(212,175,55,0.25)' }}>
           <div style={{ width: '100%', height: '100%', clipPath: OCT,
-            background: creator.avatar_url ? 'transparent' : 'linear-gradient(135deg, #800020, #8B5CF6)',
+            background: creator.avatar_url ? 'transparent' : 'linear-gradient(135deg, #800020, #D4AF37)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 22, fontWeight: 900, color: 'white', overflow: 'hidden' }}>
             {creator.avatar_url
@@ -590,10 +435,10 @@ function CreatorCard({ creator }) {
           </div>
         </div>
         <p className="text-sm font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>{creator.display_name}</p>
-        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(139,92,246,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
+        <p className="text-[10px] mt-0.5 capitalize" style={{ color: 'rgba(212,175,55,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>{creator.category}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
-          <Users className="w-3 h-3" style={{ color: '#8B5CF6' }} />
-          <span className="text-[11px] font-bold" style={{ color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
+          <Users className="w-3 h-3" style={{ color: '#D4AF37' }} />
+          <span className="text-[11px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.follower_count || 0).toLocaleString()}</span>
         </div>
       </motion.div>
     </Link>

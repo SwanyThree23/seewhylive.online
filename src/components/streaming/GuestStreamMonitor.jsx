@@ -26,7 +26,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
   }, [isStreaming]);
 
   const healthColor = {
-    excellent: '#00FF88',
+    excellent: '#6DBF7E',
     good: '#d4af37',
     warning: '#FFB800',
     critical: '#FF1564'
@@ -52,10 +52,10 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/70 border border-[#00FF88]/20 rounded-lg p-3 space-y-2"
+      className="bg-[#1a0a2e]/70 border border-[#6DBF7E]/20 rounded-lg p-3 space-y-2"
     >
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-2 h-2 rounded-full bg-[#00FF88] animate-pulse" />
+        <div className="w-2 h-2 rounded-full bg-[#6DBF7E] animate-pulse" />
         <span className="text-[10px] font-semibold text-white">{guestName}</span>
         <span className="text-[11px] text-white/40 ml-auto">{healthLabel[stats.health]}</span>
       </div>

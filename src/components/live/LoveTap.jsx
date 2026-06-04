@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 
 const GOLD    = '#D4AF37';
 const PINK    = '#FF1564';
-const GREEN   = '#00FF88';
+const GREEN   = '#6DBF7E';
 
 const PARTICLE_COLORS = [PINK, GOLD, '#FF6B9D', '#FFD700', '#E8003D'];
 

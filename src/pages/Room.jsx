@@ -375,7 +375,7 @@ export default function RoomPage() {
               </Link>
               <Link to={`/ModerationDashboard?room_id=${roomId}`}>
                 <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
-                  style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   🛡 Mod
                 </button>
               </Link>

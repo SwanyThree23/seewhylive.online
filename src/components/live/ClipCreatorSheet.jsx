@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#C8FF00', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
+const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 
 export default function ClipCreatorSheet({ roomId, sessionId, creatorId, elapsedSeconds, roomTitle, onClose }) {
   const [title, setTitle] = useState(`${roomTitle||'Stream'} · ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`);

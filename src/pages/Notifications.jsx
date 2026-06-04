@@ -12,11 +12,11 @@ const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
   tip:          { icon: Gift,      color: '#D4AF37' },
-  subscription: { icon: Users,     color: '#00F5FF' },
+  subscription: { icon: Users,     color: '#C9A84C' },
   room_invite:  { icon: Radio,     color: '#FF1564' },
-  challenge:    { icon: Trophy,    color: '#8B5CF6' },
+  challenge:    { icon: Trophy,    color: '#D4AF37' },
   announcement: { icon: Megaphone, color: '#D4AF37' },
-  referral:     { icon: Gift,      color: '#00FF88' },
+  referral:     { icon: Gift,      color: '#6DBF7E' },
 };
 
 export default function NotificationsPage() {

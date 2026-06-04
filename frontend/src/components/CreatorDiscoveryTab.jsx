@@ -5,7 +5,7 @@ import SelectSheet from './SelectSheet.jsx';
 var CREATORS = [
   { id: 'c1', name: 'CaliBonesOG',  handle: 'calibonesog',  flag: '🇺🇸', category: 'Domino',  followers: 12400, live: true,  viewers: 892,  color: '#C01838' },
   { id: 'c2', name: 'VibeNBones',   handle: 'vibenbones',   flag: '🇺🇸', category: 'Music',   followers: 8200,  live: false, viewers: 0,    color: '#C9A84C' },
-  { id: 'c3', name: 'LyricQueen',   handle: 'lyricqueen',   flag: '🇳🇬', category: 'Music',   followers: 6700,  live: true,  viewers: 1203, color: '#C084FC' },
+  { id: 'c3', name: 'LyricQueen',   handle: 'lyricqueen',   flag: '🇳🇬', category: 'Music',   followers: 6700,  live: true,  viewers: 1203, color: '#C9A84C' },
   { id: 'c4', name: 'TechNerd42',   handle: 'technerd42',   flag: '🇺🇸', category: 'Tech',    followers: 4500,  live: true,  viewers: 4213, color: '#C9A84C' },
   { id: 'c5', name: 'DJ_Cipher',    handle: 'djcipher',     flag: '🇯🇲', category: 'Music',   followers: 3900,  live: false, viewers: 0,    color: '#C9A84C' },
   { id: 'c6', name: 'ZenFitPro',    handle: 'zenfitpro',    flag: '🇨🇦', category: 'Fitness', followers: 2800,  live: false, viewers: 0,    color: '#C9A84C' },
@@ -15,7 +15,7 @@ var CREATORS = [
 
 var CATS = ['All', 'Domino', 'Music', 'Tech', 'Fitness'];
 
-var CAT_COLORS = { Domino: '#C9A84C', Music: '#C084FC', Tech: '#C9A84C', Fitness: '#C9A84C', All: '#8A7A62' };
+var CAT_COLORS = { Domino: '#C9A84C', Music: '#C9A84C', Tech: '#C9A84C', Fitness: '#C9A84C', All: '#8A7A62' };
 
 function fmtFollowers(n) {
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k';

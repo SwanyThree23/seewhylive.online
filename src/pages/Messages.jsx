@@ -234,7 +234,7 @@ export default function Messages() {
                         <div style={{
                           position: "absolute", bottom: 1, right: 1,
                           width: 7, height: 7, borderRadius: "50%",
-                          background: "#00FF88",
+                          background: "#6DBF7E",
                           border: "1.5px solid #080B18",
                         }} />
                       )}

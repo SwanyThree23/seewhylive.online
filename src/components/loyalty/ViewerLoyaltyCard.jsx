@@ -7,8 +7,8 @@ const TIER_CONFIG = {
   bronze:   { color: '#CD7F32', glow: 'rgba(205,127,50,0.3)',   bg: 'rgba(205,127,50,0.08)',  label: 'Bronze',    next: 500 },
   silver:   { color: '#C0C0C0', glow: 'rgba(192,192,192,0.3)', bg: 'rgba(192,192,192,0.08)', label: 'Silver',    next: 2000 },
   gold:     { color: '#d4af37', glow: 'rgba(212,175,55,0.4)',  bg: 'rgba(212,175,55,0.1)',   label: 'Gold',      next: 7500 },
-  platinum: { color: '#00F5FF', glow: 'rgba(0,245,255,0.3)',   bg: 'rgba(0,245,255,0.08)',   label: 'Platinum',  next: 20000 },
-  diamond:  { color: '#8B5CF6', glow: 'rgba(139,92,246,0.4)', bg: 'rgba(139,92,246,0.1)',   label: 'Diamond ♦', next: null },
+  platinum: { color: '#C9A84C', glow: 'rgba(201,168,76,0.3)',   bg: 'rgba(201,168,76,0.08)',   label: 'Platinum',  next: 20000 },
+  diamond:  { color: '#D4AF37', glow: 'rgba(212,175,55,0.4)', bg: 'rgba(212,175,55,0.1)',   label: 'Diamond ♦', next: null },
 };
 
 const TIER_THRESHOLDS = { bronze: 0, silver: 500, gold: 2000, platinum: 7500, diamond: 20000 };

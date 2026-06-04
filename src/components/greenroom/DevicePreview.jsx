@@ -12,7 +12,7 @@ function SignalBarsIcon({ quality }) {
     { h: 'h-4', threshold: 2 },
     { h: 'h-5', threshold: 3 },
   ];
-  const color = quality >= 3 ? '#00FF88' : quality >= 2 ? '#FFD700' : '#FF4444';
+  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#FF4444';
   return (
     <div className="flex items-end gap-0.5">
       {bars.map((b, i) => (
@@ -222,7 +222,7 @@ export default function DevicePreview({ user, onDeviceState }) {
         {/* LIVE label when on */}
         {cameraOn && (
           <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-black uppercase"
-            style={{ background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.3)', color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
             ● PREVIEW
           </div>
         )}

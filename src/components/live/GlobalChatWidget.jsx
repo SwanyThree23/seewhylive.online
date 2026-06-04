@@ -223,7 +223,7 @@ export default function GlobalChatWidget() {
                     return (
                       <div key={msg.id} className={`flex gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
                         <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-1"
-                          style={{ background: isMe ? 'rgba(0,245,255,0.2)' : 'rgba(212,175,55,0.15)', color: isMe ? '#00F5FF' : '#d4af37' }}>
+                          style={{ background: isMe ? 'rgba(201,168,76,0.2)' : 'rgba(212,175,55,0.15)', color: isMe ? '#C9A84C' : '#d4af37' }}>
                           {(msg.user_name || '?').charAt(0).toUpperCase()}
                         </div>
                         <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
@@ -231,14 +231,14 @@ export default function GlobalChatWidget() {
                             {msgLang && msgLang !== 'en' && (
                               <span className="text-[11px]">{LANGUAGES.find(l => l.code === msgLang)?.flag}</span>
                             )}
-                            <span className="text-[10px] font-bold" style={{ color: isMe ? '#00F5FF' : '#d4af37' }}>
+                            <span className="text-[10px] font-bold" style={{ color: isMe ? '#C9A84C' : '#d4af37' }}>
                               {msg.user_name}
                             </span>
                           </div>
                           <div className={`px-3 py-2 rounded-2xl text-xs leading-relaxed`}
                             style={{
-                              background: isMe ? 'rgba(0,245,255,0.1)' : 'rgba(255,255,255,0.07)',
-                              border: isMe ? '1px solid rgba(0,245,255,0.2)' : '1px solid rgba(255,255,255,0.07)',
+                              background: isMe ? 'rgba(201,168,76,0.1)' : 'rgba(255,255,255,0.07)',
+                              border: isMe ? '1px solid rgba(201,168,76,0.2)' : '1px solid rgba(255,255,255,0.07)',
                               color: 'rgba(255,255,255,0.85)',
                             }}>
                             {msg.translated || msg.content}

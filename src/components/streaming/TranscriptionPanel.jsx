@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Loader2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import NativeSelect from '../shared/NativeSelect';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -122,13 +121,15 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
             <div className="space-y-2 pt-3 border-t border-white/10">
               <div className="flex gap-2 items-center">
                 <label className="text-[10px] text-white/60 uppercase font-semibold flex-1">Translate To</label>
-                <NativeSelect
+                <select
                   value={targetLanguage}
-                  onChange={setTargetLanguage}
-                  options={LANGUAGES.map(l => ({ value: l.code, label: l.name }))}
-                  placeholder="Language"
-                  style={{ minWidth: 120 }}
-                />
+                  onChange={(e) => setTargetLanguage(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white/80"
+                >
+                  {LANGUAGES.map(lang => (
+                    <option key={lang.code} value={lang.code}>{lang.name}</option>
+                  ))}
+                </select>
               </div>
               
               <button

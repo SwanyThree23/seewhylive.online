@@ -52,7 +52,7 @@ export default function BrandChyron() {
       {/* Top accent line */}
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #00F5FF, #00FF88, #8B5CF6, transparent)' }}
+        style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #C9A84C, #6DBF7E, #D4AF37, transparent)' }}
       />
 
       {/* Left: brand + signal */}

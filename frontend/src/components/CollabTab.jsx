@@ -21,16 +21,16 @@ function fmtN(n) {
 
 var COLLAB_REQUESTS = [
   { id: 'cr1', from: 'CaliBonesOG',    flag: '🇺🇸', color: '#C01838', type: 'LIVE COLLAB',       msg: "Let's do a Friday Night Dominos collab stream! 🎲",           time: '8:12 PM', status: 'pending',  split: '50/50' },
-  { id: 'cr2', from: 'AIverse_Pod',    flag: '🇺🇸', color: '#9B4DCA', type: 'PODCAST GUEST',     msg: 'Want to be on AIverse Ep.49? Topic: SeeWhy LIVE v33',         time: '7:55 PM', status: 'pending',  split: 'guest' },
-  { id: 'cr3', from: 'JoyceMoore',     flag: '🇺🇸', color: '#C084FC', type: 'LIVE COLLAB',       msg: 'Memoirs × SeeWhy — storytelling + creator economy episode',   time: '7:30 PM', status: 'accepted', split: '60/40' },
+  { id: 'cr2', from: 'AIverse_Pod',    flag: '🇺🇸', color: '#800020', type: 'PODCAST GUEST',     msg: 'Want to be on AIverse Ep.49? Topic: SeeWhy LIVE v33',         time: '7:55 PM', status: 'pending',  split: 'guest' },
+  { id: 'cr3', from: 'JoyceMoore',     flag: '🇺🇸', color: '#C9A84C', type: 'LIVE COLLAB',       msg: 'Memoirs × SeeWhy — storytelling + creator economy episode',   time: '7:30 PM', status: 'accepted', split: '60/40' },
   { id: 'cr4', from: 'DrMuk_HH',       flag: '🇺🇸', color: '#F59E0B', type: 'WATCH PARTY',       msg: 'DrMuk STEAMulater watch party on SeeWhy!',                    time: '6:45 PM', status: 'pending',  split: 'host'  }
 ];
 
 var COLLAB_CREATORS = [
   { id: 'cc1', n: 'CaliBonesOG',    f: '🇺🇸', c: '#C01838', cat: 'Gaming',  followers: '48.2K', live: true,  v: 2847 },
   { id: 'cc2', n: 'DJ_Cipher',      f: '🇯🇲', c: '#C9A84C', cat: 'Music',   followers: '24.1K', live: true,  v: 924  },
-  { id: 'cc3', n: 'JoyceMoore',     f: '🇺🇸', c: '#C084FC', cat: 'Talk',    followers: '31.5K', live: false, v: 0    },
-  { id: 'cc4', n: 'AIverse_Pod',    f: '🇺🇸', c: '#9B4DCA', cat: 'Tech',    followers: '19.3K', live: false, v: 0    },
+  { id: 'cc3', n: 'JoyceMoore',     f: '🇺🇸', c: '#C9A84C', cat: 'Talk',    followers: '31.5K', live: false, v: 0    },
+  { id: 'cc4', n: 'AIverse_Pod',    f: '🇺🇸', c: '#800020', cat: 'Tech',    followers: '19.3K', live: false, v: 0    },
   { id: 'cc5', n: 'DrMuk_HH',       f: '🇺🇸', c: '#F59E0B', cat: 'STEM',    followers: '8.9K',  live: false, v: 0    },
   { id: 'cc6', n: 'IsaacHayes_III', f: '🇺🇸', c: '#E8C46A', cat: 'Culture', followers: '62.1K', live: false, v: 0    }
 ];

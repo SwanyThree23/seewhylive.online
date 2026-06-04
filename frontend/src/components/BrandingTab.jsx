@@ -5,8 +5,8 @@ var PRESETS = [
   { name: 'Midnight Domino',    gold: '#E8C46A', burg: '#C01838', desc: 'Deep red night mode' },
   { name: 'Cyber Teal',         gold: '#C9A84C', burg: '#00FFFF', desc: 'Electric neon finish' },
   { name: 'Glitch Lime',        gold: '#E8FF47', burg: '#FF0040', desc: 'Fades battle mode' },
-  { name: 'Royal Purple',       gold: '#C084FC', burg: '#5B2D8E', desc: 'Premium prestige' },
-  { name: 'Monochrome',         gold: '#F0E8D4', burg: '#3D3450', desc: 'Clean minimal' },
+  { name: 'Royal Purple',       gold: '#C9A84C', burg: '#5B2D8E', desc: 'Premium prestige' },
+  { name: 'Monochrome',         gold: '#F0E8D4', burg: '#3D3020', desc: 'Clean minimal' },
 ];
 
 var FONT_OPTIONS = [
@@ -186,7 +186,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
                   <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
                 </label>
                 {logoFile && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{logoFile}</div>}
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', marginTop: logoFile ? 2 : 4 }}>PNG · SVG · max 2 MB</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020', marginTop: logoFile ? 2 : 4 }}>PNG · SVG · max 2 MB</div>
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
               <div key={opt.key} style={{ background: on ? 'rgba(201,168,76,.04)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (on ? gold + '25' : '#3D3020'), borderRadius: 10, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: on ? '#F0E8D4' : '#8A7A62' }}>{opt.label}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: on ? gold : '#3D3450', letterSpacing: 1 }}>{on ? 'ENABLED' : 'HIDDEN'}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: on ? gold : '#3D3020', letterSpacing: 1 }}>{on ? 'ENABLED' : 'HIDDEN'}</div>
                 </div>
                 <div onClick={function() { update(opt.key, !on); }}
                   style={{ width: 36, height: 20, borderRadius: 999, background: on ? gold + 'cc' : '#3D3020', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
@@ -291,7 +291,7 @@ export default function BrandingTab({ branding, setBranding, isLive, streamInfo 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2 }}>ACTIVE PALETTE</div>
               <button onClick={copyCssVars}
-                style={{ background: cssCopied ? 'rgba(201,168,76,.15)' : 'rgba(90,143,255,.1)', border: '1px solid ' + (cssCopied ? 'rgba(201,168,76,.4)' : 'rgba(90,143,255,.3)'), borderRadius: 6, padding: '3px 10px', color: cssCopied ? '#C9A84C' : '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ background: cssCopied ? 'rgba(201,168,76,.15)' : 'rgba(212,133,74,.1)', border: '1px solid ' + (cssCopied ? 'rgba(201,168,76,.4)' : 'rgba(212,133,74,.3)'), borderRadius: 6, padding: '3px 10px', color: cssCopied ? '#C9A84C' : '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', letterSpacing: 1 }}>
                 {cssCopied ? '✓ COPIED' : '&#x7B;&#x7D; CSS VARS'}
               </button>
             </div>

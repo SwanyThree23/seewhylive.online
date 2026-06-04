@@ -24,7 +24,7 @@ var PORTAL_CHANNELS = [
     id: 'pc1',
     name: 'AIverse Podcast',
     avatar: '🎙',
-    color: '#9B4DCA',
+    color: '#800020',
     tag: 'TECH · CULTURE',
     live: false,
     viewers: 0,

@@ -35,7 +35,7 @@ export default function MonetizationDashboard({ roomId }) {
   if (!analytics) return null;
 
   const metrics = [
-    { label: 'Total Revenue', value: `$${analytics.total_revenue.toFixed(2)}`, icon: DollarSign, color: '#00FF88' },
+    { label: 'Total Revenue', value: `$${analytics.total_revenue.toFixed(2)}`, icon: DollarSign, color: '#6DBF7E' },
     { label: 'Platform Cut (10%)', value: `$${analytics.platform_cut.toFixed(2)}`, icon: Zap, color: '#FF8C00' },
     { label: 'Your Earnings', value: `$${analytics.creator_earnings.toFixed(2)}`, icon: TrendingUp, color: G },
   ];
@@ -72,7 +72,7 @@ export default function MonetizationDashboard({ roomId }) {
       <div className="text-[11px] text-white/40 space-y-1">
         <p>Transactions: <strong style={{ color: G }}>{analytics.total_transactions}</strong></p>
         <p>Paywall conversions: <strong style={{ color: G }}>{analytics.total_paywall_conversions}</strong></p>
-        <p>Net payout: <strong style={{ color: '#00FF88' }}>${analytics.net_creator_payout.toFixed(2)}</strong></p>
+        <p>Net payout: <strong style={{ color: '#6DBF7E' }}>${analytics.net_creator_payout.toFixed(2)}</strong></p>
       </div>
     </motion.div>
   );
