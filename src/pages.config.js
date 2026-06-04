@@ -92,6 +92,7 @@ const PodcastStudio       = lazy(() => import('./pages/PodcastStudio'));
 const MultiPlatform       = lazy(() => import('./pages/MultiPlatform'));
 const StateVsState        = lazy(() => import('./pages/StateVsState'));
 const TributeWall         = lazy(() => import('./pages/TributeWall'));
+const INSForge            = lazy(() => import('./pages/INSForge'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -177,6 +178,7 @@ export const PAGES = {
     "MultiPlatform": MultiPlatform,
     "StateVsState": StateVsState,
     "TributeWall": TributeWall,
+    "INSForge": INSForge,
 }
 
 export const pagesConfig = {
