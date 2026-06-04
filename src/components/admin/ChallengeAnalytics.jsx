@@ -125,7 +125,7 @@ export default function ChallengeAnalytics({ communityId }) {
                       <p style={{ fontSize:24, fontWeight:900, color:'#4ade80', margin:0, fontFamily:'Barlow Condensed, sans-serif' }}>{challenge.completedCount}</p>
                     </div>
 
-                    <div style={{ background:'rgba(139,92,246,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
+                    <div style={{ background:'rgba(212,175,55,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, marginBottom:4 }}>
                         <Target style={{ width:16, height:16, color:'#a78bfa' }} />
                         <span style={{ fontSize:12, color:'#a78bfa', fontWeight:600 }}>Rate</span>
@@ -180,7 +180,7 @@ export default function ChallengeAnalytics({ communityId }) {
             </div>
           </div>
 
-          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(139,92,246,0.08)', borderRadius:8, border:'1px solid rgba(139,92,246,0.2)' }}>
+          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(212,175,55,0.08)', borderRadius:8, border:'1px solid rgba(212,175,55,0.2)' }}>
             <Users style={{ width:20, height:20, color:'#a78bfa', marginTop:2 }} />
             <div>
               <p style={{ fontWeight:600, color:'#c4b5fd', margin:'0 0 2px' }}>Community Engagement</p>

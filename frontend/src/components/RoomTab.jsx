@@ -133,7 +133,7 @@ var SC_TIERS = [
   { amount: 500,  label: '$5',  color: '#C9A84C', bg: 'rgba(201,168,76,.22)'  },
   { amount: 1000, label: '$10', color: '#FF8C42', bg: 'rgba(255,140,66,.22)'  },
   { amount: 2000, label: '$20', color: '#FF1A3C', bg: 'rgba(255,26,60,.22)'   },
-  { amount: 5000, label: '$50', color: '#9B59B6', bg: 'rgba(155,89,182,.22)'  },
+  { amount: 5000, label: '$50', color: '#800020', bg: 'rgba(128,0,32,.22)'   },
 ];
 var REACT_EMOJIS = ['🔥', '❤️', '💯', '😂', '🎯', '💎'];
 
@@ -972,7 +972,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <div style={{ fontSize: 40 }}>📺</div>
                   <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#8A7A62', letterSpacing: 3 }}>NO WATCH PARTY ACTIVE</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3450' }}>Start one in the 📺 WATCH tab</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#3D3020' }}>Start one in the 📺 WATCH tab</div>
                 </div>
               )}
               <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 5, padding: '3px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>
@@ -1020,7 +1020,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
             </div>
             {/* Battle score bar */}
             {(battleScores.a + battleScores.b) > 0 && (
-              <div style={{ height: 5, background: '#1A1428', flexShrink: 0 }}>
+              <div style={{ height: 5, background: '#1A1510', flexShrink: 0 }}>
                 <div style={{ height: '100%', width: Math.round((battleScores.a / (battleScores.a + battleScores.b)) * 100) + '%', background: 'linear-gradient(90deg,#C01838,#FF6B81)', transition: 'width .4s ease' }} />
               </div>
             )}
@@ -1370,8 +1370,8 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
       {/* SuperChat modal */}
       {showScModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 115, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,.72)', backdropFilter: 'blur(4px)', padding: 12 }}>
-          <div style={{ background: '#0E0C09', border: '1px solid rgba(155,89,182,.45)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#9B59B6', letterSpacing: 3, marginBottom: 10 }}>💎 SUPERCHAT</div>
+          <div style={{ background: '#0E0C09', border: '1px solid rgba(128,0,32,.45)', borderRadius: 14, padding: '18px 16px', width: '100%', maxWidth: 380 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A84C', letterSpacing: 3, marginBottom: 10 }}>💎 SUPERCHAT</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 12 }}>
               {SC_TIERS.map(function(tier) {
                 var isSel = scAmount === tier.amount;
@@ -1416,7 +1416,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
               ${(Math.floor(streamGoal.currentCents) / 100).toFixed(0)} / ${(Math.floor(streamGoal.targetCents) / 100).toFixed(0)}
             </span>
           </div>
-          <div style={{ background: '#1A1428', borderRadius: 999, height: 6, overflow: 'hidden' }}>
+          <div style={{ background: '#1A1510', borderRadius: 999, height: 6, overflow: 'hidden' }}>
             <div style={{ height: '100%', background: 'linear-gradient(90deg,#C9A84C,#C9A84C)', borderRadius: 999, width: Math.floor(Math.min(streamGoal.currentCents / streamGoal.targetCents * 100, 100)) + '%', transition: 'width .6s ease' }} />
           </div>
           {isLive && role === 'host' && (
@@ -1539,7 +1539,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: sc.tierColor, fontWeight: 700, flexShrink: 0 }}>{'💎 $' + Math.floor(sc.amountCents / 100)}</span>
                         <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.username}</span>
                       </div>
-                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#D0C0E0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.message}</div>
+                      <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.message}</div>
                     </div>
                   );
                 })}
@@ -1578,7 +1578,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                         {msgBadge ? <span style={{ fontSize: 10, marginRight: 2 }} title={'Gifter rank'}>{msgBadge}</span> : null}
                         <span style={{ color: msg.isBot ? '#D4854A' : '#C9A84C', fontWeight: 700, marginRight: 4 }}>{msg.username || 'anon'}</span>
                         {isNonEn && <span style={{ marginRight: 4, fontSize: 11 }} title={LANG_NAMES[msgLang] || msgLang}>{LANG_FLAGS[msgLang] || '🌐'}</span>}
-                        <span style={{ color: msg.isBot ? '#A8F0E8' : '#D0C0E0' }}>{msg.message}</span>
+                        <span style={{ color: msg.isBot ? '#D4854A' : '#F0E8D4' }}>{msg.message}</span>
                       </div>
                       {role === 'host' && !msg.isBot && (
                         <button onClick={function() { pinMessage(msg); }} title="Pin"
@@ -1594,7 +1594,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                           showTx[msgId + ':EN'] ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <span style={{ fontSize: 10 }}>🇺🇸</span>
-                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{msg.translated}</span>
+                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', fontStyle: 'italic', flex: 1 }}>{msg.translated}</span>
                               <button onClick={function() { setShowTx(function(p) { var n = Object.assign({}, p); delete n[msgId + ':EN']; return n; }); }}
                                 style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
                             </div>
@@ -1610,7 +1610,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                           txTexts[userTxKey] ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <span style={{ fontSize: 10 }}>{LANG_FLAGS[chatLang] || '🌐'}</span>
-                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#A09AB8', fontStyle: 'italic', flex: 1 }}>{txTexts[userTxKey]}</span>
+                              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', fontStyle: 'italic', flex: 1 }}>{txTexts[userTxKey]}</span>
                               <button onClick={function() { setTxTexts(function(p) { var n = Object.assign({}, p); delete n[userTxKey]; return n; }); }}
                                 style={{ background: 'none', border: 'none', color: '#8A7A62', cursor: 'pointer', fontSize: 8, padding: 0, flexShrink: 0 }}>✕</button>
                             </div>
@@ -1634,7 +1634,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                         return (
                           <button key={emoji}
                             onClick={function() { addReaction(msgId, emoji); }}
-                            style={{ background: count > 0 ? 'rgba(201,168,76,.15)' : 'transparent', border: count > 0 ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 10, padding: '1px 5px', cursor: 'pointer', fontSize: 9, display: 'flex', alignItems: 'center', gap: 2, color: '#A09AB8' }}>
+                            style={{ background: count > 0 ? 'rgba(201,168,76,.15)' : 'transparent', border: count > 0 ? '1px solid rgba(201,168,76,.3)' : '1px solid transparent', borderRadius: 10, padding: '1px 5px', cursor: 'pointer', fontSize: 9, display: 'flex', alignItems: 'center', gap: 2, color: '#8A7A62' }}>
                             {emoji}{count > 0 ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7 }}>{count}</span> : null}
                           </button>
                         );
@@ -1650,10 +1650,10 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                 onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }}
                 placeholder={'Say something… ' + (chatLang !== 'EN' ? (LANG_FLAGS[chatLang] || '') : '')}
                 maxLength={200}
-                style={{ flex: 1, background: '#0E0C09', border: '1px solid #3D3020', borderRadius: 6, padding: '6px 10px', color: '#D0C0E0', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
+                style={{ flex: 1, background: '#0E0C09', border: '1px solid #3D3020', borderRadius: 6, padding: '6px 10px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13 }} />
               <button onClick={function() { setShowScModal(true); }}
                 title="SuperChat"
-                style={{ background: 'rgba(155,89,182,.15)', border: '1px solid rgba(155,89,182,.35)', borderRadius: 6, padding: '6px 10px', color: '#9B59B6', cursor: 'pointer', flexShrink: 0, fontSize: 14 }}>
+                style={{ background: 'rgba(128,0,32,.15)', border: '1px solid rgba(128,0,32,.35)', borderRadius: 6, padding: '6px 10px', color: '#C9A84C', cursor: 'pointer', flexShrink: 0, fontSize: 14 }}>
                 💎
               </button>
               <button onClick={sendChat}

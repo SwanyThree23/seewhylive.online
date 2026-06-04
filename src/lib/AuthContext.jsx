@@ -24,13 +24,15 @@ export const AuthProvider = ({ children }) => {
       
       // First, check app public settings (with token if available)
       // This will tell us if auth is required, user not registered, etc.
+      // interceptResponses: false — we handle all redirects ourselves so the
+      // SDK interceptor never fires base44.app/login (which errors "App not found")
       const appClient = createAxiosClient({
-        baseURL: `/api/apps/public`,
+        baseURL: `https://base44.app/api/apps/public`,
         headers: {
           'X-App-Id': appParams.appId
         },
-        token: appParams.token, // Include token if available
-        interceptResponses: true
+        token: appParams.token,
+        interceptResponses: false
       });
       
       try {
@@ -124,7 +126,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Redirect to our own login page so users never hit base44.app/login
+
     window.location.href = `/login?from_url=${encodeURIComponent(window.location.href)}`;
   };
 

@@ -82,7 +82,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
                 className="font-bold"
-                style={{ color: idx === 0 ? G : '#00F5FF' }}
+                style={{ color: idx === 0 ? G : '#C9A84C' }}
               >
                 {entry.points}
               </motion.span>

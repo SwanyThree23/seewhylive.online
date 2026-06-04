@@ -16,7 +16,7 @@ const VIOLATION_STYLES = {
   spam:          { color: '#FFD700', bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.3)' },
   hate_speech:   { color: '#FF1564', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
   inappropriate: { color: '#FF8C00', bg: 'rgba(255,140,0,0.12)',   border: 'rgba(255,140,0,0.3)' },
-  safe:          { color: '#00FF88', bg: 'rgba(0,255,136,0.08)',   border: 'rgba(0,255,136,0.2)' },
+  safe:          { color: '#6DBF7E', bg: 'rgba(109,191,126,0.08)',   border: 'rgba(109,191,126,0.2)' },
 };
 
 const PRIORITY_STYLES = {
@@ -86,7 +86,7 @@ function FlaggedItem({ mod, onAction, user }) {
           { label: 'Hide', action: 'hidden', color: GOLD },
           { label: 'Delete', action: 'deleted', color: '#FF4444' },
           { label: 'Warn', action: 'warned', color: '#FFD700' },
-          { label: '✓ Safe', action: 'none_safe', color: '#00FF88' },
+          { label: '✓ Safe', action: 'none_safe', color: '#6DBF7E' },
         ].map(({ label, action, color }) => (
           <button key={action}
             onClick={() => onAction(mod, action)}
@@ -263,7 +263,7 @@ export default function ModerationDashboardPage() {
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
             Guardian AI
           </span>
-          <span className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.25)' }}>Moderation</span>
+          <span className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)' }}>Moderation</span>
         </div>
       </div>
 
@@ -272,8 +272,8 @@ export default function ModerationDashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <StatCard icon={Flag} label="Flags Today" value={todayFlags.length} color="#FF6B35" />
           <StatCard icon={Zap} label="Actions Taken" value={moderations.filter(m => m.action_taken && m.action_taken !== 'none').length} color={GOLD} />
-          <StatCard icon={Eye} label="Auto-Detected" value={autoDetected.length} color="#8B5CF6" />
-          <StatCard icon={TrendingUp} label="Human Overrides" value={humanOverrides.length} color="#00F5FF" />
+          <StatCard icon={Eye} label="Auto-Detected" value={autoDetected.length} color="#D4AF37" />
+          <StatCard icon={TrendingUp} label="Human Overrides" value={humanOverrides.length} color="#C9A84C" />
         </div>
         {/* Toxicity gauge */}
         <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -281,13 +281,13 @@ export default function ModerationDashboardPage() {
             <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               AI Confidence Level
             </span>
-            <span className="text-[10px] font-black" style={{ color: avgConf > 0.7 ? '#FF4444' : avgConf > 0.4 ? GOLD : '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span className="text-[10px] font-black" style={{ color: avgConf > 0.7 ? '#FF4444' : avgConf > 0.4 ? GOLD : '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {Math.round(avgConf * 100)}%
             </span>
           </div>
           <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
             <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #FF1564)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #00FF88, #00F5FF)' }} />
+              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #FF1564)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }} />
           </div>
         </div>
       </div>
@@ -313,8 +313,8 @@ export default function ModerationDashboardPage() {
         {activeTab === 'flagged' && (
           flagged.length === 0
             ? <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <Shield className="w-14 h-14" style={{ color: 'rgba(0,255,136,0.3)' }} />
-                <p className="font-black uppercase text-lg" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI: All Clear ✓</p>
+                <Shield className="w-14 h-14" style={{ color: 'rgba(109,191,126,0.3)' }} />
+                <p className="font-black uppercase text-lg" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI: All Clear ✓</p>
                 <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No flagged content requires review</p>
               </div>
             : flagged.map(mod => (

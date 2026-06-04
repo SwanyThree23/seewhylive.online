@@ -21,7 +21,7 @@ var CAT_COLORS = {
   'START':     '#C9A84C',
   'GO LIVE':   '#FF1A3C',
   'MONEY':     '#C9A84C',
-  'ENGAGE':    '#C084FC',
+  'ENGAGE':    '#C9A84C',
   'COMMUNITY': '#4DA6FF',
   'ANALYTICS': '#E8FF47',
   'AI':        '#C9A84C',
@@ -617,7 +617,7 @@ export default function CreatorTipsTab({ addToast, username }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <button onClick={function() { setActiveView('tips'); }} style={{ padding: '5px 12px', background: activeView === 'tips' ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (activeView === 'tips' ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'tips' ? '#E8C46A' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>TIPS</button>
             <button onClick={function() { setActiveView('checklist'); }} style={{ padding: '5px 12px', background: activeView === 'checklist' ? 'rgba(201,168,76,.15)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (activeView === 'checklist' ? 'rgba(201,168,76,.4)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'checklist' ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>CHECKLIST</button>
-            <button onClick={function() { setActiveView('guide'); }} style={{ padding: '5px 12px', background: activeView === 'guide' ? 'rgba(192,132,252,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (activeView === 'guide' ? 'rgba(192,132,252,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'guide' ? '#C084FC' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>AI GUIDE</button>
+            <button onClick={function() { setActiveView('guide'); }} style={{ padding: '5px 12px', background: activeView === 'guide' ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (activeView === 'guide' ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 6, color: activeView === 'guide' ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1 }}>AI GUIDE</button>
           </div>
         </div>
 
@@ -643,7 +643,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                 );
               })}
             </div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#4A4060', marginBottom: 8, letterSpacing: 1 }}>{filtered.length} tip{filtered.length !== 1 ? 's' : ''}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#3D3020', marginBottom: 8, letterSpacing: 1 }}>{filtered.length} tip{filtered.length !== 1 ? 's' : ''}</div>
           </div>
         )}
       </div>
@@ -712,7 +712,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                   </div>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', lineHeight: 1.4 }}>{tip.summary}</div>
                 </div>
-                <div style={{ color: '#4A4060', fontSize: 14, flexShrink: 0, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform .15s' }}>›</div>
+                <div style={{ color: '#3D3020', fontSize: 14, flexShrink: 0, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform .15s' }}>›</div>
               </div>
 
               {/* Expanded body */}
@@ -735,7 +735,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#C9A84C' }}>{tip.pro}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#4A4060' }}>TAB:</span>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020' }}>TAB:</span>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '2px 7px' }}>{tip.tab}</span>
                     </div>
                   </div>
@@ -746,7 +746,7 @@ export default function CreatorTipsTab({ addToast, username }) {
         })}
 
         {activeView === 'tips' && filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 20px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#4A4060' }}>
+          <div style={{ textAlign: 'center', padding: '40px 20px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>
             No tips match "{search}"
           </div>
         )}
@@ -756,10 +756,10 @@ export default function CreatorTipsTab({ addToast, username }) {
           <div style={{ display: 'flex', flexDirection: 'column', height: '70vh', minHeight: 400 }}>
 
             {/* AI Guide identity bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(192,132,252,.07)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 10, flexShrink: 0 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(192,132,252,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🎙</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 10, flexShrink: 0 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(201,168,76,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🎙</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C084FC', letterSpacing: 2, lineHeight: 1 }}>SWANY GUIDE · AI ASSISTANT</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C9A84C', letterSpacing: 2, lineHeight: 1 }}>SWANY GUIDE · AI ASSISTANT</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', marginTop: 1 }}>Powered by Claude · Knows every SeeWhy LIVE v33 feature</div>
               </div>
               <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 6px #C9A84C' }} />
@@ -771,7 +771,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                 return (
                   <button key={chip.label}
                     onClick={function() { if (!aiLoading) callGuide(chip.prompt); }}
-                    style={{ flexShrink: 0, padding: '5px 11px', background: 'rgba(192,132,252,.08)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 20, color: '#C084FC', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: aiLoading ? 'not-allowed' : 'pointer', letterSpacing: 0.5, opacity: aiLoading ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                    style={{ flexShrink: 0, padding: '5px 11px', background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 20, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: aiLoading ? 'not-allowed' : 'pointer', letterSpacing: 0.5, opacity: aiLoading ? 0.5 : 1, whiteSpace: 'nowrap' }}>
                     {chip.label}
                   </button>
                 );
@@ -785,28 +785,28 @@ export default function CreatorTipsTab({ addToast, username }) {
                 return (
                   <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexDirection: isGuide ? 'row' : 'row-reverse' }}>
                     {isGuide && (
-                      <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(192,132,252,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎙</div>
+                      <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(201,168,76,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎙</div>
                     )}
                     {!isGuide && (
                       <AvatarPortrait username={username || 'creator'} size={28} />
                     )}
                     <div style={{ maxWidth: '78%' }}>
-                      <div style={{ background: isGuide ? 'rgba(26,21,16,.9)' : 'rgba(128,0,32,.25)', border: '1px solid ' + (isGuide ? 'rgba(192,132,252,.15)' : 'rgba(128,0,32,.4)'), borderRadius: isGuide ? '4px 10px 10px 10px' : '10px 4px 10px 10px', padding: '9px 12px' }}>
-                        {isGuide && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C084FC', letterSpacing: 1, marginBottom: 4 }}>✦ SWANY GUIDE</div>}
+                      <div style={{ background: isGuide ? 'rgba(26,21,16,.9)' : 'rgba(128,0,32,.25)', border: '1px solid ' + (isGuide ? 'rgba(201,168,76,.15)' : 'rgba(128,0,32,.4)'), borderRadius: isGuide ? '4px 10px 10px 10px' : '10px 4px 10px 10px', padding: '9px 12px' }}>
+                        {isGuide && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#C9A84C', letterSpacing: 1, marginBottom: 4 }}>✦ SWANY GUIDE</div>}
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#F0E8D4', lineHeight: 1.5 }}>{msg.text}</div>
                       </div>
-                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#4A4060', marginTop: 3, textAlign: isGuide ? 'left' : 'right' }}>{msg.time}</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', marginTop: 3, textAlign: isGuide ? 'left' : 'right' }}>{msg.time}</div>
                     </div>
                   </div>
                 );
               })}
               {aiLoading && (
                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(192,132,252,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎙</div>
-                  <div style={{ background: 'rgba(26,21,16,.9)', border: '1px solid rgba(192,132,252,.15)', borderRadius: '4px 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', animation: 'pulse 1s infinite' }} />
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', opacity: 0.6 }} />
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C084FC', opacity: 0.3 }} />
+                  <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#800020,#5A0018)', border: '1px solid rgba(201,168,76,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎙</div>
+                  <div style={{ background: 'rgba(26,21,16,.9)', border: '1px solid rgba(201,168,76,.15)', borderRadius: '4px 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: 5, alignItems: 'center' }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C', animation: 'pulse 1s infinite' }} />
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C', opacity: 0.6 }} />
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C', opacity: 0.3 }} />
                   </div>
                 </div>
               )}
@@ -821,7 +821,7 @@ export default function CreatorTipsTab({ addToast, username }) {
                 onKeyDown={function(e) { if (e.key === 'Enter' && !aiLoading) callGuide(aiInput); }}
                 placeholder="Ask about any feature, workflow, or how to get started..."
                 disabled={aiLoading}
-                style={{ flex: 1, background: 'rgba(26,21,16,.8)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 10, padding: '10px 14px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', opacity: aiLoading ? 0.6 : 1 }}
+                style={{ flex: 1, background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '10px 14px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', opacity: aiLoading ? 0.6 : 1 }}
               />
               <button
                 onClick={function() { if (!aiLoading) callGuide(aiInput); }}

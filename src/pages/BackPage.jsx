@@ -27,7 +27,7 @@ export default function BackPage() {
       <div
         className="absolute inset-0 opacity-20"
         style={{
-          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(139,92,246,0.05) 100%)',
+          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(212,175,55,0.05) 100%)',
         }}
       />
 

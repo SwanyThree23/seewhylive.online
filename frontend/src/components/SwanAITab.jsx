@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 var BG    = '#0E0C09';
 var SURF  = '#0E0C09';
 var CARD  = '#1A1510';
-var CARD2 = '#211A30';
+var CARD2 = '#241C12';
 var GOLD  = '#C9A84C';
 var BURG  = '#800020';
 var TEAL  = '#C9A84C';

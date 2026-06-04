@@ -186,7 +186,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
   };
 
   return (
-    <div className="rounded-2xl overflow-hidden flex flex-col h-full" style={{ background: '#0F0F1A', border: '1px solid rgba(0,245,255,0.15)' }}>
+    <div className="rounded-2xl overflow-hidden flex flex-col h-full" style={{ background: '#0F0F1A', border: '1px solid rgba(201,168,76,0.15)' }}>
       {/* Video Grid */}
       <div className={`flex-1 ${gridLayout()} p-2 min-h-0`}>
         {/* Local Video */}
@@ -194,7 +194,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="relative rounded-xl overflow-hidden"
-          style={{ background: '#000', border: '1px solid rgba(0,245,255,0.2)' }}>
+          style={{ background: '#000', border: '1px solid rgba(201,168,76,0.2)' }}>
           {error ? (
             <div className="inset-0 flex items-center justify-center text-center p-4 text-red-400 text-sm">
               <p>{error}</p>
@@ -254,11 +254,11 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
                 </div>
               )}
               <div className="absolute top-2 left-2 flex items-center gap-1">
-                <span className="text-[11px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#00F5FF' }}>
+                <span className="text-[11px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#C9A84C' }}>
                   {p.role}
                 </span>
                 {connState === 'connected' && stream && (
-                  <span className="text-[7px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(0,255,136,0.2)', color: '#00FF88' }}>LIVE</span>
+                  <span className="text-[7px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(109,191,126,0.2)', color: '#6DBF7E' }}>LIVE</span>
                 )}
               </div>
             </motion.div>
@@ -281,9 +281,9 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
             disabled={connecting || !localStreamRef.current}
             className="flex items-center justify-center w-9 h-9 rounded-lg transition-all"
             style={{
-              background: localMuted ? 'rgba(255,68,68,0.2)' : 'rgba(0,255,136,0.15)',
-              border: localMuted ? '1px solid rgba(255,68,68,0.4)' : '1px solid rgba(0,255,136,0.3)',
-              color: localMuted ? '#FF4444' : '#00FF88',
+              background: localMuted ? 'rgba(255,68,68,0.2)' : 'rgba(109,191,126,0.15)',
+              border: localMuted ? '1px solid rgba(255,68,68,0.4)' : '1px solid rgba(109,191,126,0.3)',
+              color: localMuted ? '#FF4444' : '#6DBF7E',
             }}>
             {localMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </motion.button>
@@ -295,9 +295,9 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
             disabled={connecting || !localStreamRef.current}
             className="flex items-center justify-center w-9 h-9 rounded-lg transition-all"
             style={{
-              background: localVideoPaused ? 'rgba(255,68,68,0.2)' : 'rgba(0,245,255,0.15)',
-              border: localVideoPaused ? '1px solid rgba(255,68,68,0.4)' : '1px solid rgba(0,245,255,0.3)',
-              color: localVideoPaused ? '#FF4444' : '#00F5FF',
+              background: localVideoPaused ? 'rgba(255,68,68,0.2)' : 'rgba(201,168,76,0.15)',
+              border: localVideoPaused ? '1px solid rgba(255,68,68,0.4)' : '1px solid rgba(201,168,76,0.3)',
+              color: localVideoPaused ? '#FF4444' : '#C9A84C',
             }}>
             {localVideoPaused ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
           </motion.button>

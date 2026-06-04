@@ -282,7 +282,7 @@ export default function StreamScheduler() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-white truncate">{s.title}</p>
                           {s.is_recurring && (
-                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
+                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#a78bfa', border: '1px solid rgba(212,175,55,0.3)' }}>
                               <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
                             </span>
                           )}

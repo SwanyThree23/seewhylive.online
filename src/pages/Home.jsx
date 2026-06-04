@@ -88,9 +88,9 @@ function FanbaseRoomCard({ room }) {
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
   var categoryColor = {
-    Music: '#FF1564', Gaming: '#8B5CF6', Tech: '#00d4ff',
+    Music: '#FF1564', Gaming: '#D4AF37', Tech: '#00d4ff',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
-    Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#8B5CF6'
+    Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
   var tag = room.tags && room.tags[0];
   var tagColor = tag ? (categoryColor[tag] || '#D4AF37') : '#D4AF37';
@@ -100,7 +100,7 @@ function FanbaseRoomCard({ room }) {
     ? { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }
     : accessLabel === 'FAN'
     ? { background: 'rgba(128,0,32,0.2)', color: '#ff9999', border: '1px solid rgba(128,0,32,0.4)' }
-    : { background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.25)' };
+    : { background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.25)' };
 
   return (
     <Link to={`/LiveRoom?id=${room.id}`}>
@@ -195,6 +195,137 @@ function FanbaseRoomCard({ room }) {
   );
 }
 
+// ── Domino Social Expo partner data ───────────────────────────────────────
+var DOMINO_VIDEOS = [
+  { id: 'sn-X0avptY0' },
+  { id: 'cFbjR6VFbnI' },
+  { id: 'RTR9Rt09qRY' },
+];
+
+var DOMINO_FEATURES = [
+  { icon: '🌐', title: 'Cross-Platform', desc: 'Simultaneous engagement across all digital ecosystems' },
+  { icon: '💰', title: 'Multi-Revenue', desc: 'Tickets, gifts, sponsorships & affiliate commissions' },
+  { icon: '🌍', title: 'Global Reach', desc: 'All time zones, no geographic barriers' },
+  { icon: '🤝', title: 'Creator-First', desc: 'Collaborative revenue shares & tiered incentives' },
+];
+
+var DOMINO_OFFERINGS = [
+  { title: 'Social Lights', badge: 'WEEKLY', badgeColor: '#D4AF37', desc: 'Weekly spotlight show featuring influencers & organizers from Social Audio & Social Gaming communities.' },
+  { title: 'Domino Entertainment', badge: 'EVENTS', badgeColor: '#800020', desc: 'Hybrid events & tournaments bridging diverse communities with mobile livestream production.' },
+];
+
+var DOMINO_SPONSORSHIPS = [
+  { tier: 'Universal Chat', price: '$100', desc: 'Chat branding' },
+  { tier: 'Segment',        price: '$200', desc: 'Branded segment' },
+  { tier: 'Title Sponsor',  price: '$500', desc: 'Full event branding' },
+  { tier: 'Affiliate',      price: '10%',  desc: 'Per ticket sold', accent: '#D4854A' },
+];
+
+function DominoExpoSection() {
+  return (
+    <div style={{ background: 'rgba(13,6,2,0.98)', borderTop: '1px solid rgba(201,168,76,0.12)', borderBottom: '1px solid rgba(201,168,76,0.12)' }}>
+
+      {/* Header */}
+      <div style={{ padding: '16px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#C9A84C', padding: '2px 8px', background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.28)', borderRadius: 99 }}>
+            Featured Partner
+          </span>
+          <a href="https://youtube.com/@dominoentertainment5513" target="_blank" rel="noopener noreferrer"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 700, color: '#D4854A', letterSpacing: '0.04em', textDecoration: 'none' }}>
+            Follow →
+          </a>
+        </div>
+        <h2 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 26, color: '#F0E8D4', letterSpacing: '0.02em', margin: '0 0 2px', lineHeight: 1.1 }}>
+          Domino Social Expo
+        </h2>
+        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.4)', margin: '0 0 12px', letterSpacing: '0.02em' }}>
+          Connecting Worlds · Where Digital Meets Physical
+        </p>
+        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.52)', lineHeight: 1.5, margin: '0 0 14px' }}>
+          A revolutionary ecosystem bridging physical and digital worlds — hybrid events, cross-platform livestreaming, and a creator-first revenue model that turns passion into income.
+        </p>
+      </div>
+
+      {/* Feature pillars (horizontal scroll) */}
+      <div style={{ overflowX: 'auto', padding: '0 16px 14px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {DOMINO_FEATURES.map(function(f) {
+          return (
+            <div key={f.title} style={{ flexShrink: 0, width: 140, background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(201,168,76,0.11)', borderRadius: 12, padding: '12px 12px 10px' }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>{f.icon}</div>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14, color: '#F0E8D4', margin: '0 0 3px', letterSpacing: '0.02em' }}>{f.title}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.38)', margin: 0, lineHeight: 1.35 }}>{f.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: 'rgba(201,168,76,0.07)', margin: '0 16px 14px' }} />
+
+      {/* Videos */}
+      <div style={{ padding: '0 16px 8px' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>
+          Latest from Domino Entertainment
+        </span>
+      </div>
+      <div style={{ overflowX: 'auto', padding: '0 16px 16px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {DOMINO_VIDEOS.map(function(v) {
+          return (
+            <a key={v.id} href={'https://youtu.be/' + v.id} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, textDecoration: 'none' }}>
+              <div style={{ width: 150, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(201,168,76,0.14)', position: 'relative' }}>
+                <img src={'https://img.youtube.com/vi/' + v.id + '/mqdefault.jpg'} alt="Domino Entertainment"
+                  style={{ width: '100%', display: 'block', aspectRatio: '16/9', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,6,2,0.65) 0%, transparent 50%)' }} />
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 32, height: 32, borderRadius: '50%', background: 'rgba(128,0,32,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: '#fff', fontSize: 13, marginLeft: 2 }}>▶</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: 'rgba(201,168,76,0.07)', margin: '0 16px 14px' }} />
+
+      {/* Offerings */}
+      <div style={{ padding: '0 16px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {DOMINO_OFFERINGS.map(function(o) {
+          return (
+            <div key={o.title} style={{ background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(201,168,76,0.1)', borderRadius: 10, padding: '12px 10px' }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.12em', color: o.badgeColor, background: o.badgeColor + '18', border: '1px solid ' + o.badgeColor + '33', borderRadius: 99, padding: '2px 7px', textTransform: 'uppercase' }}>
+                {o.badge}
+              </span>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, color: '#F0E8D4', margin: '7px 0 4px', letterSpacing: '0.02em', lineHeight: 1.2 }}>{o.title}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.38)', margin: 0, lineHeight: 1.35 }}>{o.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Sponsorship & monetization tiers */}
+      <div style={{ padding: '0 16px 8px' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>
+          Sponsorship &amp; Monetization
+        </span>
+      </div>
+      <div style={{ overflowX: 'auto', padding: '0 16px 20px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {DOMINO_SPONSORSHIPS.map(function(s) {
+          var accent = s.accent || '#C9A84C';
+          return (
+            <div key={s.tier} style={{ flexShrink: 0, minWidth: 110, background: 'rgba(128,0,32,0.07)', border: '1px solid rgba(128,0,32,0.18)', borderRadius: 10, padding: '10px 14px' }}>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 20, color: accent, margin: '0 0 2px' }}>{s.price}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4', margin: '0 0 2px', letterSpacing: '0.02em' }}>{s.tier}</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: 0 }}>{s.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Filter pill labels and logic ───────────────────────────────────────────
 var FILTERS = ['All', 'Panel', 'FadesStage', 'Watch Party', 'Battles'];
 
@@ -284,6 +415,9 @@ export default function Home() {
           </motion.div>
         </Link>
       </div>
+
+      {/* ── DOMINO SOCIAL EXPO FEATURED PARTNER ── */}
+      <DominoExpoSection />
 
       {/* ── FILTER PILLS ── */}
       <div className="overflow-x-auto scrollbar-hide"

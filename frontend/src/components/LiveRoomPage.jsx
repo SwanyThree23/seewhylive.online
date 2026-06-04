@@ -43,6 +43,9 @@ var ANIM = [
   '@keyframes cellExpand{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}',
   '@keyframes recPulse{0%,100%{opacity:1;background:rgba(255,26,60,.9)}50%{opacity:.6;background:rgba(255,26,60,.5)}}',
   '@keyframes waveBar{0%{height:4px}100%{height:20px}}',
+  '@keyframes speakPulseGrid{0%,100%{box-shadow:0 0 0 2px '+TEAL+'99,0 0 8px '+TEAL+'22}50%{box-shadow:0 0 0 3px '+TEAL+',0 0 18px '+TEAL+'44}}',
+  '@keyframes handBadgePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.85}}',
+  '@keyframes cellMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
 ].join('\n');
 
 // ─── Direct Pay platforms ───────────────────────────────────────────────────
@@ -92,8 +95,8 @@ function RolePill({ role }) {
   var cfg = {
     host:   { bg: 'rgba(201,168,76,.18)',  color: GOLD,    label: 'HOST'    },
     cohost: { bg: 'rgba(201,168,76,.12)',   color: TEAL,    label: 'CO-HOST' },
-    guest:  { bg: 'rgba(90,143,255,.14)',  color: '#7AABFF', label: 'GUEST'  },
-    viewer: { bg: 'rgba(46,37,69,.7)',     color: MUTED,   label: 'VIEWER'  },
+    guest:  { bg: 'rgba(212,133,74,.14)',  color: '#D4854A', label: 'GUEST'  },
+    viewer: { bg: 'rgba(36,28,20,.7)',     color: MUTED,   label: 'VIEWER'  },
   };
   var s = cfg[role] || cfg.viewer;
   return (
@@ -107,26 +110,35 @@ function RolePill({ role }) {
   );
 }
 
-function AudienceCircle({ g, speaking }) {
+function AudienceCircle({ g, speaking, handRaised, onInvite }) {
   var name = g.username || g.guestId || '?';
   var init = name.charAt(0).toUpperCase();
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, width: 60 }}>
+    <div onClick={onInvite || undefined}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, width: 64, cursor: onInvite ? 'pointer' : 'default' }}>
       <div style={{
         width: 46, height: 46, borderRadius: '50%',
         background: 'linear-gradient(135deg,' + BURG + '50,' + CARD + ')',
-        border: '2px solid ' + (speaking ? TEAL : DIM),
-        boxShadow: speaking ? ('0 0 10px ' + TEAL + '55') : 'none',
+        border: '2px solid ' + (handRaised ? 'rgba(255,140,0,.8)' : speaking ? TEAL : DIM),
+        boxShadow: handRaised ? '0 0 10px rgba(255,140,0,.5)' : (speaking ? ('0 0 10px ' + TEAL + '55') : 'none'),
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        position: 'relative', flexShrink: 0, overflow: 'hidden',
+        position: 'relative', flexShrink: 0, overflow: 'visible',
         transition: 'border-color .3s, box-shadow .3s',
       }}>
         <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, lineHeight: 1, userSelect: 'none' }}>
           {init}
         </span>
-        {g.remoteMuted && (
+        {handRaised && (
           <div style={{
-            position: 'absolute', bottom: -1, right: -1,
+            position: 'absolute', top: -6, right: -6,
+            width: 18, height: 18, borderRadius: '50%',
+            background: 'rgba(255,140,0,.92)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 10, border: '1.5px solid ' + BG, animation: 'handBadgePulse 1.2s ease-in-out infinite',
+          }}>✋</div>
+        )}
+        {g.remoteMuted && !handRaised && (
+          <div style={{
+            position: 'absolute', bottom: -2, right: -2,
             width: 16, height: 16, borderRadius: '50%',
             background: RED, display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 7, border: '1.5px solid ' + BG,
@@ -135,11 +147,14 @@ function AudienceCircle({ g, speaking }) {
       </div>
       <span style={{
         fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 500, fontSize: 10,
-        color: MUTED, maxWidth: 56, overflow: 'hidden', textOverflow: 'ellipsis',
+        color: handRaised ? 'rgba(255,140,0,.9)' : MUTED, maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis',
         whiteSpace: 'nowrap', textAlign: 'center', lineHeight: 1.2,
       }}>
         {name}
       </span>
+      {onInvite && (
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: .5 }}>+ INVITE</span>
+      )}
     </div>
   );
 }
@@ -243,6 +258,9 @@ export default function LiveRoomPage({
   var [showQa,         setShowQa]         = useState(false);
   var [qaMyVotes,      setQaMyVotes]      = useState({});
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
+  var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: true } — persistent raised-hand indicators
+  var [pinnedId,       setPinnedId]       = useState(null);  // guestId | null — pinned/spotlight cell in grid
+  var [cellMenuId,     setCellMenuId]     = useState(null);  // guestId | null — host cell action menu
   var [musicBanner,    setMusicBanner]    = useState(null);   // {title,style,emoji,sharedBy} | null
   var [showGoalSet,    setShowGoalSet]    = useState(false);
   var [goalDraft,      setGoalDraft]      = useState({ label: '', amount: '' });
@@ -281,6 +299,7 @@ export default function LiveRoomPage({
   var [theaterMode,        setTheaterMode]        = useState(false);
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
+  var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -360,12 +379,24 @@ export default function LiveRoomPage({
     });
 
     socket.on('hand-raise', function(data) {
-      if (!data || role !== 'host') return;
-      if (addToast) addToast('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
+      if (!data) return;
+      if (role === 'host' && addToast) addToast('✋ ' + (data.username || data.guestId) + ' wants on stage', 'info');
+      setRaisedHands(function(h) { var n = Object.assign({}, h); n[data.guestId] = true; return n; });
+    });
+
+    socket.on('hand-lower', function(data) {
+      if (!data) return;
+      setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[data.guestId]; return n; });
+    });
+
+    socket.on('mute-all', function() {
+      setIsMuted(true);
+      if (addToast) addToast('🔇 Host muted all participants', 'info');
     });
 
     socket.on('stage-invite', function(data) {
       if (!data || !data.guestId) return;
+      setRaisedHands(function(h) { var n = Object.assign({}, h); delete n[data.guestId]; return n; });
       setStageGuests(function(s) {
         if (s.indexOf(data.guestId) >= 0) return s;
         if (s.length >= MAX_STAGE) return s;
@@ -429,10 +460,20 @@ export default function LiveRoomPage({
       setTimeout(function() { setScoreReveal(null); }, 3200);
     });
 
+    socket.on('screen-share-active', function(data) {
+      if (!data) return;
+      if (data.userId !== userId) setScreenShareHost({ username: data.username || 'Host' });
+    });
+
+    socket.on('screen-share-ended', function() {
+      setScreenShareHost(null);
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
       socket.off('hand-raise');
+      socket.off('hand-lower');
       socket.off('stage-invite');
       socket.off('poll-update');
       socket.off('qa-question');
@@ -445,6 +486,9 @@ export default function LiveRoomPage({
       socket.off('super-chat');
       socket.off('react-burst');
       socket.off('gift-received');
+      socket.off('screen-share-active');
+      socket.off('screen-share-ended');
+      socket.off('mute-all');
     };
   }, [socket]);
 
@@ -471,7 +515,8 @@ export default function LiveRoomPage({
   function raiseHand() {
     var next = !handRaised;
     setHandRaised(next);
-    if (socket && next) socket.emit('hand-raise', { roomId: roomId, guestId: userId, username: username });
+    if (socket && next)  socket.emit('hand-raise', { roomId: roomId, guestId: userId, username: username });
+    if (socket && !next) socket.emit('hand-lower', { roomId: roomId, guestId: userId });
     if (addToast) addToast(next ? '✋ Hand raised — waiting for host' : 'Hand lowered', 'info');
   }
 
@@ -492,6 +537,7 @@ export default function LiveRoomPage({
     if (cameraTrackRef.current) {
       rtcManager.replaceTrack('video', cameraTrackRef.current);
     }
+    if (socket) socket.emit('screen-share-stop', { roomId: roomId });
     if (addToast) addToast('Screen share ended — camera restored', 'info');
   }
 
@@ -508,6 +554,7 @@ export default function LiveRoomPage({
       screenStreamRef.current = displayStream;
       setIsScreenSharing(true);
       rtcManager.replaceTrack('video', videoTrack);
+      if (socket) socket.emit('screen-share-start', { roomId: roomId, userId: userId, username: username });
       if (addToast) addToast('Screen share active — viewers now see your screen', 'success');
     } catch(e) {
       if (e.name !== 'NotAllowedError') {
@@ -668,6 +715,7 @@ export default function LiveRoomPage({
 
   function endStream() {
     if (!socket) return;
+    if (isScreenSharing) stopScreenShare();
     socket.emit('end-broadcast', { roomId: roomId });
     if (setIsLive) setIsLive(false);
     if (addToast) addToast('Stream ended', 'info');
@@ -785,7 +833,7 @@ export default function LiveRoomPage({
                 <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#fff', letterSpacing: 1 }}>GO LIVE</span>
               </button>
             ) : (
-              <div style={{ background: 'rgba(46,37,69,.8)', borderRadius: 999, padding: '4px 10px' }}>
+              <div style={{ background: 'rgba(36,28,20,.8)', borderRadius: 999, padding: '4px 10px' }}>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>OFFLINE</span>
               </div>
             )}
@@ -825,7 +873,7 @@ export default function LiveRoomPage({
             <span style={{ fontSize: 12, color: TEAL, fontWeight: 500 }}>{speakerName} is speaking</span>
           </div>
         )}
-        {/* Screen share banner */}
+        {/* Screen share banner — host side */}
         {isScreenSharing && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: RED, animation: 'livePulse 1.4s ease-in-out infinite', flexShrink: 0 }} />
@@ -834,6 +882,13 @@ export default function LiveRoomPage({
               onClick={stopScreenShare}
               style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 5, color: RED, fontSize: 10, cursor: 'pointer', fontFamily: "'DM Mono',monospace" }}
             >STOP</button>
+          </div>
+        )}
+        {/* Screen share banner — viewer side */}
+        {!isScreenSharing && screenShareHost && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px solid ' + BORDER }}>
+            <span style={{ fontSize: 14 }}>🖥</span>
+            <span style={{ fontSize: 12, color: TEAL, fontWeight: 600, letterSpacing: 0.5 }}>{screenShareHost.username} is sharing screen</span>
           </div>
         )}
       </div>
@@ -909,38 +964,81 @@ export default function LiveRoomPage({
             </div>
           </div>
 
-          {/* Grid layout */}
+          {/* ── LIST MODE ── */}
           {stageLayout === 'grid' && panelMode === 'list' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {onStage.map(function(g) {
-                var gid  = g.guestId || g.userId || 'x';
-                var isOwn = gid === userId;
-                var isSp  = !!speakingIds[gid];
+                var gid    = g.guestId || g.userId || 'x';
+                var isOwn  = gid === userId;
+                var isSp   = !!speakingIds[gid];
+                var isHand = !!raisedHands[gid];
                 return (
-                  <div key={gid} onClick={function() { setFeaturedId(gid); setStageLayout('featured'); }}
+                  <div key={gid}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 10,
                       background: CARD, borderRadius: 12, padding: '8px 12px',
-                      border: '1.5px solid ' + (isSp ? TEAL + '88' : (gid === featuredId ? gold + '44' : BORDER)),
-                      boxShadow: isSp ? ('0 0 10px ' + TEAL + '33') : 'none',
-                      animation: 'fadeSlideIn .2s ease',
+                      border: '1.5px solid ' + (isSp ? TEAL + '99' : isHand ? 'rgba(255,140,0,.5)' : BORDER),
+                      boxShadow: isSp ? ('0 0 10px ' + TEAL + '22') : 'none',
+                      animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .2s ease',
+                      transition: 'border-color .2s, box-shadow .2s',
                     }}>
-                    {isSp && <SpeakBars color={TEAL} small />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {g.username || gid}
-                      </div>
+                    {/* Speaking bar */}
+                    <div style={{ width: 3, alignSelf: 'stretch', borderRadius: 2, background: isSp ? TEAL : DIM, flexShrink: 0, transition: 'background .2s' }} />
+                    {/* Avatar */}
+                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD2 + ')', border: '1.5px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: GOLD, lineHeight: 1 }}>
+                        {(g.username || gid).charAt(0).toUpperCase()}
+                      </span>
                     </div>
-                    <RolePill role={g.role || 'guest'} />
+                    {/* Name + role + hand */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {g.username || gid}
+                          {isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 3 }}>(YOU)</span>}
+                        </span>
+                        {isHand && <span style={{ fontSize: 13, animation: 'handBadgePulse 1.2s ease-in-out infinite' }} title="Hand raised">✋</span>}
+                        {isSp && <SpeakBars color={TEAL} small />}
+                      </div>
+                      <RolePill role={g.role || (isOwn ? role : 'guest')} />
+                    </div>
+                    {/* Mute status */}
+                    {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 12, color: RED }}>🔇</span>}
+                    {/* Own controls */}
                     {isOwn && (
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button onClick={function(e) { e.stopPropagation(); toggleMute(); }}
-                          style={{ background: isMuted ? 'rgba(255,26,60,.15)' : CARD2, border: 'none', borderRadius: 8, padding: '4px 8px', color: isMuted ? RED : MUTED, cursor: 'pointer', fontSize: 12 }}>
+                          style={{ background: isMuted ? 'rgba(255,26,60,.18)' : CARD2, border: 'none', borderRadius: 8, padding: '5px 9px', color: isMuted ? RED : MUTED, cursor: 'pointer', fontSize: 13 }}>
                           {isMuted ? '🔇' : '🎙'}
                         </button>
                         <button onClick={function(e) { e.stopPropagation(); toggleCam(); }}
-                          style={{ background: isCamOff ? 'rgba(255,26,60,.15)' : CARD2, border: 'none', borderRadius: 8, padding: '4px 8px', color: isCamOff ? RED : MUTED, cursor: 'pointer', fontSize: 12 }}>
-                          {isCamOff ? '📷' : '🎥'}
+                          style={{ background: isCamOff ? 'rgba(255,26,60,.18)' : CARD2, border: 'none', borderRadius: 8, padding: '5px 9px', color: isCamOff ? RED : MUTED, cursor: 'pointer', fontSize: 13 }}>
+                          {isCamOff ? '📵' : '🎥'}
+                        </button>
+                      </div>
+                    )}
+                    {/* Host controls */}
+                    {role === 'host' && !isOwn && (
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        {isHand && (
+                          <button
+                            onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); }}
+                            title="Invite to stage"
+                            style={{ padding: '4px 8px', background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 7, color: '#FF8C00', cursor: 'pointer', fontSize: 10, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, letterSpacing: .5 }}>
+                            + STAGE
+                          </button>
+                        )}
+                        <button
+                          onClick={function(e) { e.stopPropagation(); if (socket) socket.emit(g.remoteMuted ? 'unmute-guest' : 'mute-guest', { roomId: roomId, guestId: gid }); }}
+                          title={g.remoteMuted ? 'Unmute' : 'Mute'}
+                          style={{ width: 28, height: 28, background: g.remoteMuted ? 'rgba(255,26,60,.18)' : CARD2, border: 'none', borderRadius: 7, color: g.remoteMuted ? RED : MUTED, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {g.remoteMuted ? '🎙' : '🔇'}
+                        </button>
+                        <button
+                          onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid }); }}
+                          title="Remove from stage"
+                          style={{ width: 28, height: 28, background: 'rgba(255,26,60,.08)', border: 'none', borderRadius: 7, color: RED, cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          ✕
                         </button>
                       </div>
                     )}
@@ -949,72 +1047,135 @@ export default function LiveRoomPage({
               })}
             </div>
           )}
+
+          {/* ── GRID MODE ── CSS Grid, 16:9 cells, speaking animation, host actions */}
           {stageLayout === 'grid' && panelMode !== 'list' && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: n === 1 ? 'center' : 'flex-start' }}>
+            <div
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: 4 }}
+              onClick={function() { if (cellMenuId) setCellMenuId(null); }}>
               {onStage.map(function(g) {
-                var gid  = g.guestId || g.userId || 'x';
-                var isOwn = gid === userId;
-                var isSp  = !!speakingIds[gid];
+                var gid      = g.guestId || g.userId || 'x';
+                var isOwn    = gid === userId;
+                var isSp     = !!speakingIds[gid];
+                var isHand   = !!raisedHands[gid];
+                var isPinned = gid === pinnedId;
+                var showMenu = cellMenuId === gid;
                 return (
                   <div key={gid}
                     style={{
-                      width: sz, flexShrink: 0,
-                      background: CARD, borderRadius: 14, overflow: 'hidden',
-                      border: '1.5px solid ' + (isSp ? TEAL + '88' : (gid === featuredId ? gold + '44' : BORDER)),
-                      boxShadow: isSp ? ('0 0 16px ' + TEAL + '33') : 'none',
-                      transition: 'border-color .2s, box-shadow .2s',
-                      animation: 'fadeSlideIn .25s ease',
+                      gridColumn: isPinned && cols > 1 ? 'span 2' : 'span 1',
                       position: 'relative',
+                      background: CARD,
+                      borderRadius: 10,
+                      overflow: 'hidden',
+                      border: '2px solid ' + (isSp ? TEAL + 'BB' : isPinned ? GOLD + '66' : isHand ? 'rgba(255,140,0,.65)' : BORDER),
+                      animation: isSp ? 'speakPulseGrid 1.4s ease-in-out infinite' : 'fadeSlideIn .22s ease',
+                      transition: 'border-color .2s',
                     }}>
-                    <div style={{ position: 'relative' }} onClick={function() { setFeaturedId(gid); setStageLayout('featured'); }}>
-                      {audioOnly ? (
-                        <div style={{ width: sz, height: sz, background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                          <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD + ')', border: '2px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD }}>{(g.username || gid).charAt(0).toUpperCase()}</span>
+                    {/* 16:9 video wrapper */}
+                    <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
+                      <div style={{ position: 'absolute', inset: 0 }}>
+                        {audioOnly ? (
+                          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD + ')', border: '2px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD }}>{(g.username || gid).charAt(0).toUpperCase()}</span>
+                            </div>
+                            {isSp && <WaveBars color={TEAL} />}
                           </div>
-                          {isSp && <WaveBars color={TEAL} />}
-                        </div>
-                      ) : (
-                        <OctCell
-                          guest={g}
-                          sz={sz}
-                          isHost={role === 'host'}
-                          fadesMode={false}
-                          branding={branding}
-                          onTap={null}
-                          socket={socket}
-                          roomId={roomId}
-                          userId={userId}
-                          rtcManager={rtcReady ? rtcManager : null}
-                          mediaConfig={isOwn ? medConf : null}
-                          isMuted={isOwn ? isMuted : false}
-                          isCamOff={isOwn ? isCamOff : false}
-                          onMuteToggle={isOwn ? toggleMute : null}
-                          onCamToggle={isOwn ? toggleCam : null}
-                          onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
-                        />
-                      )}
-                      {/* Expand button overlay */}
-                      <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
-                        style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,.55)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 6, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 11, color: TEXT, zIndex: 5 }}>
-                        ⤢
-                      </button>
-                    </div>
-                    {/* Cell footer */}
-                    <div style={{ padding: '6px 8px 8px', background: CARD }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
-                        {isSp && <SpeakBars color={TEAL} small />}
-                        <span style={{ fontWeight: 700, fontSize: 12, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {g.username || gid}
-                          {isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 3 }}>(YOU)</span>}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <RolePill role={g.role || (isOwn ? role : 'guest')} />
-                        {(isOwn ? isMuted : g.remoteMuted) && (
-                          <span style={{ fontSize: 10 }}>🔇</span>
+                        ) : (
+                          <OctCell
+                            guest={g}
+                            fill={true}
+                            isHost={role === 'host'}
+                            fadesMode={false}
+                            branding={branding}
+                            onTap={null}
+                            socket={socket}
+                            roomId={roomId}
+                            userId={userId}
+                            rtcManager={rtcReady ? rtcManager : null}
+                            mediaConfig={isOwn ? medConf : null}
+                            isMuted={isOwn ? isMuted : false}
+                            isCamOff={isOwn ? isCamOff : false}
+                            onMuteToggle={isOwn ? toggleMute : null}
+                            onCamToggle={isOwn ? toggleCam : null}
+                            onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
+                            handRaised={isHand}
+                          />
                         )}
                       </div>
+                    </div>
+
+                    {/* Overlay badges (top-left) */}
+                    <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
+                      {isHand && (
+                        <div style={{ background: 'rgba(255,140,0,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>✋</div>
+                      )}
+                      {isPinned && (
+                        <div style={{ background: 'rgba(201,168,76,.92)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09' }}>📌</div>
+                      )}
+                      {isSp && (
+                        <div style={{ background: 'rgba(212,133,74,.85)', borderRadius: 999, padding: '1px 5px', display: 'flex', alignItems: 'center' }}>
+                          <SpeakBars color='#fff' small />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Top-right buttons: expand + host ⋮ menu */}
+                    <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 3, zIndex: 10 }}>
+                      <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
+                        style={{ width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        ⤢
+                      </button>
+                      {role === 'host' && !isOwn && (
+                        <button onClick={function(e) { e.stopPropagation(); setCellMenuId(function(p) { return p === gid ? null : gid; }); }}
+                          style={{ width: 20, height: 20, background: showMenu ? 'rgba(201,168,76,.25)' : 'rgba(0,0,0,.6)', border: '1px solid ' + (showMenu ? 'rgba(201,168,76,.5)' : 'rgba(255,255,255,.18)'), borderRadius: 4, color: TEXT, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                          ⋮
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Host context menu */}
+                    {showMenu && (
+                      <div style={{ position: 'absolute', top: 28, right: 4, background: CARD, border: '1px solid ' + BORDER, borderRadius: 8, overflow: 'hidden', zIndex: 30, minWidth: 150, boxShadow: '0 6px 22px rgba(0,0,0,.75)', animation: 'cellMenuIn .15s ease' }}
+                        onClick={function(e) { e.stopPropagation(); }}>
+                        {[
+                          { label: isPinned ? '📌 Unpin' : '📌 Spotlight', action: 'pin' },
+                          { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
+                          { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
+                          { label: '🚫 Remove from Stage', action: 'remove' },
+                        ].filter(function(item) { return !item.hide; }).map(function(item) {
+                          return (
+                            <button key={item.action}
+                              onClick={function(e) {
+                                e.stopPropagation();
+                                setCellMenuId(null);
+                                if (item.action === 'pin') {
+                                  setPinnedId(function(p) { return p === gid ? null : gid; });
+                                } else if (item.action === 'mute') {
+                                  if (socket) socket.emit(g.remoteMuted ? 'unmute-guest' : 'mute-guest', { roomId: roomId, guestId: gid });
+                                } else if (item.action === 'invite') {
+                                  if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid });
+                                } else if (item.action === 'remove') {
+                                  if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
+                                }
+                              }}
+                              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 13px', background: 'none', border: 'none', borderBottom: '1px solid ' + DIM, color: item.action === 'remove' ? RED : TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 12, cursor: 'pointer', letterSpacing: .3 }}>
+                              {item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Cell footer */}
+                    <div style={{ padding: '4px 8px 6px', background: CARD, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontWeight: 700, fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {g.username || gid}
+                        {isOwn && <span style={{ color: MUTED, fontWeight: 400, fontSize: 9, marginLeft: 3 }}>(YOU)</span>}
+                      </span>
+                      <RolePill role={g.role || (isOwn ? role : 'guest')} />
+                      {(isOwn ? isMuted : g.remoteMuted) && <span style={{ fontSize: 9 }}>🔇</span>}
                     </div>
                   </div>
                 );
@@ -1106,12 +1267,19 @@ export default function LiveRoomPage({
         </div>
 
         {/* ── Audience Section ── */}
-        {audienceList.length > 0 && (
+        {(audienceList.length > 0 || (role !== 'host' && onStage.every(function(g) { return (g.guestId || g.userId) !== userId; }))) && (
           <div style={{ padding: '10px 14px 10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: MUTED, letterSpacing: .3 }}>
-                Others in the Room
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 15, fontWeight: 500, color: MUTED, letterSpacing: .3 }}>
+                  In the Room
+                </span>
+                {Object.keys(raisedHands).length > 0 && (
+                  <span style={{ background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF8C00', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
+                    ✋ {Object.keys(raisedHands).length} raised
+                  </span>
+                )}
+              </div>
               {audienceList.length > 8 && (
                 <button onClick={function() { setShowAllAud(function(v) { return !v; }); }}
                   style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: gold, background: 'none', border: 'none', cursor: 'pointer', padding: 0, letterSpacing: .5 }}>
@@ -1123,14 +1291,26 @@ export default function LiveRoomPage({
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 10 }}>
                 {audienceList.map(function(g) {
                   var gid = g.guestId || g.userId || 'x';
-                  return <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]} />;
+                  var isHand = !!raisedHands[gid];
+                  return (
+                    <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
+                      handRaised={isHand}
+                      onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
+                    />
+                  );
                 })}
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
                 {audienceList.slice(0, 20).map(function(g) {
                   var gid = g.guestId || g.userId || 'x';
-                  return <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]} />;
+                  var isHand = !!raisedHands[gid];
+                  return (
+                    <AudienceCircle key={gid} g={g} speaking={!!speakingIds[gid]}
+                      handRaised={isHand}
+                      onInvite={role === 'host' && onStage.length < MAX_STAGE ? function() { if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); } : undefined}
+                    />
+                  );
                 })}
               </div>
             )}
@@ -1609,8 +1789,8 @@ export default function LiveRoomPage({
               socket.emit('vs-vote', { roomId: roomId, side: 'A' });
               setVsVoted('A');
             }} style={{
-              flex: 1, background: vsVoted === 'A' ? 'rgba(90,143,255,.22)' : 'rgba(90,143,255,.07)',
-              border: '1.5px solid ' + (vsVoted === 'A' ? '#C9A84C' : 'rgba(90,143,255,.28)'),
+              flex: 1, background: vsVoted === 'A' ? 'rgba(212,133,74,.22)' : 'rgba(212,133,74,.07)',
+              border: '1.5px solid ' + (vsVoted === 'A' ? '#C9A84C' : 'rgba(212,133,74,.28)'),
               borderRadius: 10, padding: '8px 6px',
               cursor: (vsPoll.active && !vsVoted) ? 'pointer' : 'default',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'background .2s, border-color .2s',
@@ -1755,7 +1935,7 @@ export default function LiveRoomPage({
                 <input value={vsDraft.sideA}
                   onChange={function(e) { var v = e.target.value; setVsDraft(function(d) { return { sideA: v, sideB: d.sideB, duration: d.duration }; }); }}
                   placeholder="Side A (e.g. Player 1)"
-                  style={{ flex: 1, background: 'rgba(90,143,255,.08)', border: '1px solid rgba(90,143,255,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+                  style={{ flex: 1, background: 'rgba(212,133,74,.08)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
                 <div style={{ display: 'flex', alignItems: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD, padding: '0 2px' }}>VS</div>
                 <input value={vsDraft.sideB}
                   onChange={function(e) { var v = e.target.value; setVsDraft(function(d) { return { sideA: d.sideA, sideB: v, duration: d.duration }; }); }}
@@ -1769,7 +1949,7 @@ export default function LiveRoomPage({
                   style={{ width: 70, background: CARD2, border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 12, outline: 'none', textAlign: 'center' }} />
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>10–300s</span>
               </div>
-              <button onClick={startVs} style={{ width: '100%', background: 'linear-gradient(90deg,rgba(90,143,255,.8),rgba(255,26,60,.8))', border: 'none', borderRadius: 8, padding: '9px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>LAUNCH VS POLL</button>
+              <button onClick={startVs} style={{ width: '100%', background: 'linear-gradient(90deg,rgba(212,133,74,.8),rgba(255,26,60,.8))', border: 'none', borderRadius: 8, padding: '9px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>LAUNCH VS POLL</button>
             </div>
           )}
 
@@ -1987,7 +2167,7 @@ export default function LiveRoomPage({
           { cents: 500,  label: '$5',  color: '#C9A84C' },
           { cents: 1000, label: '$10', color: '#FF8C42' },
           { cents: 2000, label: '$20', color: '#FF1A3C' },
-          { cents: 5000, label: '$50', color: '#9B59B6' },
+          { cents: 5000, label: '$50', color: '#800020' },
         ];
         var selectedTier = SC_TIERS.filter(function(t) { return t.cents === scAmt; })[0] || SC_TIERS[0];
 

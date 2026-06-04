@@ -299,7 +299,7 @@ export default function MediaConfigPanel({ onClose, onApply, addToast }) {
                 {[
                   ['Noise Suppression', noiseSup, setNoiseSup, '#C9A84C'],
                   ['Echo Cancellation', echoCan, setEchoCan, '#C9A84C'],
-                  ['Auto Gain Control', autoGain, setAutoGain, '#C084FC'],
+                  ['Auto Gain Control', autoGain, setAutoGain, '#C9A84C'],
                 ].map(function(item) {
                   return (
                     <div key={item[0]} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(26,21,16,.7)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px' }}>
