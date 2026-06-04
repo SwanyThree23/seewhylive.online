@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio } from 'lucide-react';
+import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+
+const SVS_STATES = [
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
+  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
+  { id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20', w: 3, l: 2, pts: 1650 },
+  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C', w: 3, l: 2, pts: 1610 },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#4A148C', w: 2, l: 3, pts: 1380 },
+  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#BF360C', w: 1, l: 4, pts: 1120 },
+];
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -251,6 +260,7 @@ export default function LeaderboardPage() {
             { id: 'earnings',    label: 'Top Earners',  icon: DollarSign },
             { id: 'viewers',     label: 'Most Viewed',  icon: Users },
             { id: 'subscribers', label: 'Subscribers',  icon: Star },
+            { id: 'svs',         label: 'State vs State', icon: Swords },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className="flex items-center gap-1.5 px-4 py-2 rounded-full shrink-0 font-black uppercase text-[10px] transition-all"
@@ -266,8 +276,63 @@ export default function LeaderboardPage() {
           ))}
         </div>
 
+        {/* ── SVS standings ── */}
+        {activeTab === 'svs' && (
+          <>
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              <div className="flex items-center gap-2 px-4 py-3"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <Swords className="w-4 h-4" style={{ color: GOLD }} />
+                <p className="font-black text-[11px] uppercase" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>
+                  State vs State · Season 1 Standings
+                </p>
+              </div>
+              <div className="p-3 space-y-2">
+                {SVS_STATES.map((s, i) => (
+                  <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl"
+                    style={{
+                      background: i === 0 ? `${GOLD}09` : 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${i === 0 ? `${GOLD}25` : 'rgba(255,255,255,0.04)'}`,
+                    }}>
+                    <div className="w-7 text-center shrink-0">
+                      {i === 0
+                        ? <Crown className="w-5 h-5 mx-auto" style={{ color: GOLD }} />
+                        : <span className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{i + 1}</span>}
+                    </div>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black text-white text-sm"
+                      style={{ background: s.color, fontFamily: 'Orbitron, monospace' }}>
+                      {s.abbr}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-sm text-white" style={T}>{s.name}</p>
+                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+                        {s.w}W – {s.l}L · Season record
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
+                        {s.pts.toLocaleString()}
+                      </p>
+                      <p className="text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>pts</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Link to={createPageUrl('StateVsState')}
+              className="flex items-center justify-center gap-2 rounded-2xl py-4"
+              style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', textDecoration: 'none' }}>
+              <Swords className="w-4 h-4" style={{ color: GOLD }} />
+              <span className="font-black text-sm uppercase" style={{ color: GOLD, ...T, letterSpacing: '0.06em' }}>
+                View Full Tournament →
+              </span>
+            </Link>
+          </>
+        )}
+
         {/* ── top-3 podium ── */}
-        {top3.length > 0 && (
+        {activeTab !== 'svs' && top3.length > 0 && (
           <div className="rounded-2xl p-5"
             style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
             {/* reorder: 2nd | 1st | 3rd */}
@@ -298,12 +363,12 @@ export default function LeaderboardPage() {
         )}
 
         {/* ── rank list (4th+) ── */}
-        {list.length === 0 ? (
+        {activeTab !== 'svs' && list.length === 0 ? (
           <div className="rounded-2xl flex items-center justify-center py-16"
             style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No data yet</p>
           </div>
-        ) : rest.length > 0 && (
+        ) : activeTab !== 'svs' && rest.length > 0 && (
           <div className="rounded-2xl overflow-hidden"
             style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="flex items-center gap-2 px-4 py-3"
