@@ -41,6 +41,7 @@ import StateVsState from './pages/StateVsState';
 import TributeWall from './pages/TributeWall';
 import INSForge from './pages/INSForge';
 import JoyceAI from './pages/JoyceAI';
+import GuardianAI from './pages/GuardianAI';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -135,6 +136,7 @@ const AuthenticatedApp = () => {
       <Route path="/TributeWall" element={<LayoutWrapper currentPageName="TributeWall"><TributeWall /></LayoutWrapper>} />
       <Route path="/INSForge" element={<LayoutWrapper currentPageName="INSForge"><INSForge /></LayoutWrapper>} />
       <Route path="/JoyceAI" element={<LayoutWrapper currentPageName="JoyceAI"><JoyceAI /></LayoutWrapper>} />
+      <Route path="/GuardianAI" element={<LayoutWrapper currentPageName="GuardianAI"><GuardianAI /></LayoutWrapper>} />
       <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />

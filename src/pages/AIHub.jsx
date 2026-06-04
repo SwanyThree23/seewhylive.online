@@ -840,7 +840,37 @@ export default function AIHub() {
           </Link>
         </Card>
 
-        {/* ── Section 12: Joyce AI ── */}
+        {/* ── Section 12: Guardian AI ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🛡️ Guardian AI</p>
+            <span style={{ ...T, fontSize: 11, color: '#FF1564', fontWeight: 700, letterSpacing: '0.05em' }}>MODERATION</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Real-time AI chat moderation. Set risk thresholds for auto-flag, mute, and ban. Powered by Claude Haiku.
+          </p>
+          <Link to={createPageUrl('GuardianAI')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{
+              margin: '0 16px 16px',
+              background: 'rgba(255,21,100,0.08)',
+              border: '1px solid rgba(255,21,100,0.2)', borderRadius: 10,
+              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🛡️</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: '#FF1564', fontWeight: 900 }}>OPEN GUARDIAN</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>CLAUDE HAIKU · REAL-TIME</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: '#FF1564', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                Set Up →
+              </span>
+            </div>
+          </Link>
+        </Card>
+
+        {/* ── Section 13: Joyce AI ── */}
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🤖 Joyce AI Co-Host</p>
