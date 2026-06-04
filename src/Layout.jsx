@@ -68,10 +68,11 @@ var DRAWER_ACCOUNT = [
 ];
 
 var DRAWER_ADMIN = [
-  { name: 'AdminDashboard', icon: Shield, href: createPageUrl('AdminDashboard') },
-  { name: 'Guardian AI',    icon: Shield, href: createPageUrl('GuardianAI') },
-  { name: 'StageCleanup',   icon: Layers, href: createPageUrl('StageCleanup') },
-  { name: 'RTMPServer',     icon: Server, href: createPageUrl('RTMPServer') },
+  { name: 'AdminDashboard',  icon: Shield, href: createPageUrl('AdminDashboard') },
+  { name: 'Guardian AI',     icon: Shield, href: createPageUrl('GuardianAI') },
+  { name: 'StageCleanup',    icon: Layers, href: createPageUrl('StageCleanup') },
+  { name: 'RTMPServer',      icon: Server, href: createPageUrl('RTMPServer') },
+  { name: 'Infra Reference', icon: Server, href: createPageUrl('StreamInfraRef') },
 ];
 
 export default function Layout({ children, currentPageName }) {
