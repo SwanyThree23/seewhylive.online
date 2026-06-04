@@ -42,6 +42,14 @@ const FEATURE_STATUS = [
   { name: 'Data Export', status: 'live', icon: BarChart2, note: 'PDF/CSV/JSON export of all user data' },
   { name: 'User Invite System', status: 'live', icon: UserPlus, note: 'Admin & user invite with role assignment' },
   { name: 'Error Boundaries', status: 'live', icon: Shield, note: 'Production-grade error recovery on all pages and components' },
+  { name: 'State vs State Tournaments', status: 'live', icon: Zap, note: 'Bracket, rosters, live match, standings — full State vs State domino tournament system' },
+  { name: 'Tribute Wall', status: 'live', icon: Users, note: 'Fallen/Passed Player Tribute system — legend cards, tribute messages, nomination form' },
+  { name: 'AI Podcast Studio', status: 'live', icon: Radio, note: 'NotebookLM-style AI podcast creation — topic intake, AI script, panel recording, library' },
+  { name: 'AI Music Studio', status: 'live', icon: Radio, note: 'Beat library, vocal mixer, AI mastering, release manager — full in-browser studio' },
+  { name: 'Multi-Platform Hub', status: 'live', icon: Globe, note: 'Simultaneous multi-platform publishing, webhooks, virtual camera, engagement sync' },
+  { name: 'INS Forge', status: 'live', icon: Zap, note: 'AI creative brief generator for SVS graphics, tribute cards, overlays, and promo assets' },
+  { name: 'Joyce AI Co-Host', status: 'live', icon: MessageSquare, note: 'In-stream AI co-host with quick-action prompts for tournaments, tributes, and hype' },
+  { name: 'Guardian AI Moderation', status: 'live', icon: Shield, note: 'Real-time risk thresholds with auto-flag/mute/ban — Claude Haiku powered' },
 ];
 
 const STATUS_STYLE = {
