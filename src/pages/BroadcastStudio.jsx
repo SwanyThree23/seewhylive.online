@@ -519,6 +519,12 @@ export default function BroadcastStudio() {
     qc.invalidateQueries(['broadcast-members', partyId]);
   };
 
+  const promoteSpeaker = async (member) => {
+    await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
+    toast.success(`${member.user_name} added to panel`);
+    qc.invalidateQueries(['broadcast-members', partyId]);
+  };
+
   const demoteToAudience = async (member) => {
     await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
     qc.invalidateQueries(['broadcast-members', partyId]);
@@ -1096,10 +1102,15 @@ export default function BroadcastStudio() {
                             {(mem?.user_name || '?')[0].toUpperCase()}
                           </div>
                           <span className="flex-1 text-[9px] truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{mem?.user_name || uid}</span>
+                          <button onClick={() => { if (mem) promoteSpeaker(mem); dismissRaisedHand(uid); }}
+                            className="text-[11px] px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(212,133,74,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+                            ✓ Panel
+                          </button>
                           <button onClick={() => { if (mem) promoteCoHost(mem); dismissRaisedHand(uid); }}
-                            className="text-[8px] px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
-                            ✓ Allow
+                            className="text-[11px] px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                            Co-host
                           </button>
                           <button onClick={() => dismissRaisedHand(uid)}
                             className="text-[8px] px-1.5 py-0.5 rounded"
@@ -1116,38 +1127,49 @@ export default function BroadcastStudio() {
                   const isMe = mem.user_id === user?.id;
                   const isHostMem = mem.user_id === party.host_id;
                   const isCoHostMem = mem.role === 'cohost';
+                  const isSpeakerMem = mem.role === 'speaker';
+                  const isOnStage = isHostMem || isCoHostMem || isSpeakerMem;
                   const hasHand = raisedHands.has(mem.user_id);
+                  const avatarBg = isHostMem ? 'rgba(212,175,55,0.2)' : isCoHostMem ? 'rgba(212,175,55,0.12)' : isSpeakerMem ? 'rgba(212,133,74,0.18)' : 'rgba(255,255,255,0.08)';
+                  const avatarColor = isHostMem ? GOLD : isCoHostMem ? GOLD : isSpeakerMem ? '#D4854A' : 'rgba(255,255,255,0.4)';
                   return (
                     <div key={mem.id} className="flex items-center gap-2 p-2 rounded-lg"
                       style={{ background: 'rgba(255,255,255,0.03)', border: hasHand ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.05)' }}>
                       <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs shrink-0 relative"
-                        style={{ background: isHostMem ? 'rgba(212,175,55,0.2)' : isCoHostMem ? 'rgba(0,245,255,0.15)' : 'rgba(139,92,246,0.2)', color: isHostMem ? GOLD : isCoHostMem ? '#00F5FF' : '#8B5CF6' }}>
+                        style={{ background: avatarBg, color: avatarColor }}>
                         {(mem.user_name || '?')[0].toUpperCase()}
                         {hasHand && <span className="absolute -top-1 -right-1 text-[10px]">✋</span>}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-white font-semibold truncate">{mem.user_name}{isMe ? ' (you)' : ''}</p>
-                        <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                          {isHostMem ? '👑 Host' : isCoHostMem ? '🎙️ Co-host' : 'Audience'}
+                        <p className="text-[11px] text-white font-semibold truncate">{mem.user_name}{isMe ? ' (you)' : ''}</p>
+                        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                          {isHostMem ? '👑 Host' : isCoHostMem ? '🎙 Co-host' : isSpeakerMem ? '🎤 Panel' : '👁 Audience'}
                         </p>
                       </div>
                       {canManage && !isMe && !isHostMem && (
-                        <div className="flex items-center gap-1">
-                          {isCoHostMem ? (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {isOnStage ? (
                             <button onClick={() => demoteToAudience(mem)}
-                              className="text-[8px] px-1.5 py-0.5 rounded"
+                              className="text-[11px] px-1.5 py-0.5 rounded"
                               style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
-                              Demote
+                              Remove
                             </button>
                           ) : (
-                            <button onClick={() => promoteCoHost(mem)}
-                              className="text-[8px] px-1.5 py-0.5 rounded"
-                              style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
-                              Co-host
-                            </button>
+                            <>
+                              <button onClick={() => promoteSpeaker(mem)}
+                                className="text-[11px] px-1.5 py-0.5 rounded"
+                                style={{ background: 'rgba(212,133,74,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+                                Panel
+                              </button>
+                              <button onClick={() => promoteCoHost(mem)}
+                                className="text-[11px] px-1.5 py-0.5 rounded"
+                                style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                                Co-host
+                              </button>
+                            </>
                           )}
                           <button onClick={() => kickMember(mem)}
-                            className="text-[8px] px-1.5 py-0.5 rounded"
+                            className="text-[11px] px-1.5 py-0.5 rounded"
                             style={{ background: 'rgba(255,21,100,0.08)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.2)', ...T }}
                             title="Remove from broadcast">
                             Kick
