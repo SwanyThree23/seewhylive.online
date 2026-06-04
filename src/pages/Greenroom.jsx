@@ -15,17 +15,17 @@ const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
 const DEST_COLORS = {
-  room:        { label: 'ROOM',        bg: 'rgba(212,175,55,0.15)',  color: GOLD,     border: 'rgba(212,175,55,0.35)' },
-  panel:       { label: 'PANEL',       bg: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: 'rgba(139,92,246,0.35)' },
-  watch_party: { label: 'WATCH PARTY', bg: 'rgba(0,245,255,0.1)',   color: '#00F5FF', border: 'rgba(0,245,255,0.25)' },
-  new_room:    { label: 'NEW ROOM',    bg: 'rgba(0,255,136,0.1)',   color: '#00FF88', border: 'rgba(0,255,136,0.25)' },
+  room:        { label: 'ROOM',        bg: 'rgba(212,175,55,0.15)',  color: GOLD,      border: 'rgba(212,175,55,0.35)' },
+  panel:       { label: 'PANEL',       bg: 'rgba(212,133,74,0.15)', color: '#D4854A', border: 'rgba(212,133,74,0.35)' },
+  watch_party: { label: 'WATCH PARTY', bg: 'rgba(128,0,32,0.15)',   color: '#C0395A', border: 'rgba(128,0,32,0.35)' },
+  new_room:    { label: 'NEW ROOM',    bg: 'rgba(201,168,76,0.12)', color: GOLD,      border: 'rgba(201,168,76,0.3)' },
 };
 
 const ROLES = ['audience', 'speaker', 'guest', 'co-host'];
 
 function PermissionPill({ label, status }) {
   const cfg = {
-    granted: { color: '#00FF88', border: 'rgba(0,255,136,0.3)', icon: '✓' },
+    granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
     denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
     prompt:  { color: '#FFD700', border: 'rgba(255,215,0,0.3)',  icon: '…' },
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
