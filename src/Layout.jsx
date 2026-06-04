@@ -6,8 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
-  Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart
+  Trophy, Eye, X, User, ChevronRight,
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Tv
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -43,16 +43,18 @@ var DRAWER_WATCH = [
 ];
 
 var DRAWER_CREATE = [
-  { name: 'Go Live',     icon: Radio,          href: createPageUrl('GoLive') },
-  { name: 'Green Room',  icon: Video,          href: createPageUrl('GreenroomEnhanced') },
-  { name: 'Monetize',   icon: DollarSign,     href: createPageUrl('Monetization') },
-  { name: 'Dashboard',  icon: LayoutDashboard,href: createPageUrl('CreatorDashboard') },
-  { name: 'AI Hub',           icon: Sparkles,       href: createPageUrl('AIHub') },
-  { name: 'INS Forge',        icon: Sparkles,       href: createPageUrl('INSForge') },
-  { name: 'AI Music Studio',  icon: Radio,          href: createPageUrl('AIMusic') },
-  { name: 'Podcast Studio',   icon: Mic2,           href: createPageUrl('PodcastStudio') },
-  { name: 'Multi-Platform',   icon: Globe,          href: createPageUrl('MultiPlatform') },
-  { name: 'Messages',         icon: MessageSquare,  href: createPageUrl('Messages') },
+  { name: 'Go Live',          icon: Radio,           href: createPageUrl('GoLive') },
+  { name: 'LIVE Studio v36',  icon: Tv,              href: '/SeeWhyLIVEv36' },
+  { name: 'Broadcast Studio', icon: Video,           href: createPageUrl('BroadcastStudio') },
+  { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
+  { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
+  { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
+  { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },
+  { name: 'AI Music Studio',  icon: Radio,           href: createPageUrl('AIMusic') },
+  { name: 'Podcast Studio',   icon: Mic2,            href: createPageUrl('PodcastStudio') },
+  { name: 'Multi-Platform',   icon: Globe,           href: createPageUrl('MultiPlatform') },
+  { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 
 var DRAWER_ACCOUNT = [
