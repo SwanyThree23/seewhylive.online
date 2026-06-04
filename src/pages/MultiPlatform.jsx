@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
 
-const BG     = '#080B18';
-const BG2    = 'rgba(13,6,24,0.9)';
+const BG     = '#0E0C09';
+const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK   = '#FF1564';
-const CYAN   = '#00d4ff';
-const PURPLE = '#a78bfa';
-const GREEN  = '#22c55e';
+const CYAN   = '#D4854A';
+const PURPLE = '#8B44B0';
+const GREEN  = '#5A7A4A';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PLATFORMS = [
@@ -38,7 +36,7 @@ const OVERLAY_PRESETS = [
 ];
 
 const VIRTUAL_BGS = [
-  { id:'dark',    label:'Dark Studio',   color:'#080B18' },
+  { id:'dark',    label:'Dark Studio',   color:'#0E0C09' },
   { id:'crimson', label:'Crimson Stage', color:'#800020' },
   { id:'gold',    label:'Gold Club',     color:'#D4AF37' },
   { id:'neon',    label:'Neon Blue',     color:'#001a2e' },
@@ -52,7 +50,7 @@ function Toast({ message }) {
           initial={{ opacity:0, y:20, scale:0.95 }}
           animate={{ opacity:1, y:0, scale:1 }}
           exit={{ opacity:0, y:20, scale:0.95 }}
-          style={{ position:'fixed', bottom:100, left:'50%', transform:'translateX(-50%)', background:'rgba(13,6,24,0.97)', border:`1px solid ${GOLD}55`, borderRadius:12, padding:'12px 22px', color:'#fff', fontSize:14, ...T, fontWeight:700, letterSpacing:'0.04em', boxShadow:`0 8px 32px rgba(0,0,0,0.5)`, zIndex:9999, whiteSpace:'nowrap' }}
+          style={{ position:'fixed', bottom:100, left:'50%', transform:'translateX(-50%)', background:'rgba(14,12,9,0.97)', border:`1px solid ${GOLD}55`, borderRadius:12, padding:'12px 22px', color:'#fff', fontSize:14, ...T, fontWeight:700, letterSpacing:'0.04em', boxShadow:`0 8px 32px rgba(0,0,0,0.5)`, zIndex:9999, whiteSpace:'nowrap' }}
         >{message}</motion.div>
       )}
     </AnimatePresence>
