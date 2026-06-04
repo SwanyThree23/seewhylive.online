@@ -887,6 +887,9 @@ Return ONLY valid JSON (no markdown, no backticks):
         borderBottom: '1px solid rgba(212,175,55,0.12)',
         background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(14px)',
       }}>
+        <a href="/AIHub" style={{ display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', flexShrink: 0, paddingRight: 4 }} aria-label="Back to AI Hub">
+          ← AI Hub
+        </a>
         <div style={{
           width: 42, height: 42, borderRadius: 12, flexShrink: 0,
           background: `linear-gradient(135deg, ${CRIMSON}, ${AMBER})`,

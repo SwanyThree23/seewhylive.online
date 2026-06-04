@@ -180,6 +180,7 @@ export default function GuardianAI() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <a href="/AIHub" style={{ display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginRight: 4, flexShrink: 0 }} aria-label="Back to AI Hub">← AI Hub</a>
           <div style={{
             width: 40, height: 40, borderRadius: 10,
             background: `linear-gradient(135deg, ${GOLD}22, ${GOLDD}11)`,
