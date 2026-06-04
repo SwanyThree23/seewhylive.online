@@ -768,7 +768,31 @@ export default function AIHub() {
           </Link>
         </Card>
 
-        {/* ── Section 9: State vs State ── */}
+        {/* ── Section 9: INS Forge ── */}
+        <Card accentColor={AMBER}>
+          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚡ INS Forge</p>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
+            AI creative brief generator — forge branded assets for tournaments, tributes, overlays, podcast covers, and music promos.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+            <FeatureItem icon="⚔️" label="SVS bracket graphics" />
+            <FeatureItem icon="🕊️" label="Tribute memorial cards" />
+            <FeatureItem icon="🎥" label="Stream overlay packs" />
+            <FeatureItem icon="🏆" label="Tournament flyers & promos" />
+          </div>
+          <Link to={createPageUrl('INSForge')} style={{ textDecoration: 'none', display: 'block' }}>
+            <motion.div whileTap={{ scale: 0.97 }} style={{
+              ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
+              background: `linear-gradient(90deg, ${AMBER}, #E55100)`,
+              color: '#000', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+              textTransform: 'uppercase', cursor: 'pointer',
+            }}>
+              Open INS Forge →
+            </motion.div>
+          </Link>
+        </Card>
+
+        {/* ── Section 10: State vs State ── */}
         <Card accentColor="#1565C0">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
