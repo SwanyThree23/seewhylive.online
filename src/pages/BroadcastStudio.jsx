@@ -193,6 +193,65 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
   );
 }
 
+// ── Gallery stage — all participant streams in a responsive grid ──────────
+function GalleryStage({ slots, theaterMode }) {
+  const count = slots.length || 1;
+  const cols = count <= 1 ? 1 : count <= 4 ? 2 : count <= 9 ? 3 : 4;
+  return (
+    <div
+      className="w-full h-full"
+      style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4, padding: 4, background: '#000' }}
+    >
+      {slots.map((slot, i) => (
+        <GalleryTile key={i} slot={slot} isFirst={i === 0} />
+      ))}
+      {slots.length === 0 && (
+        <div className="flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>
+          No active streams
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GalleryTile({ slot, isFirst }) {
+  const videoRef = useRef(null);
+  useEffect(() => {
+    if (videoRef.current && slot.stream) videoRef.current.srcObject = slot.stream;
+  }, [slot.stream]);
+
+  return (
+    <div className="relative rounded-lg overflow-hidden bg-[#0d0618]" style={{ border: '1px solid rgba(212,175,55,0.12)' }}>
+      {slot.stream ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={isFirst}
+          className="w-full h-full object-cover"
+          style={{ minHeight: 60 }}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 60 }}>
+          <span className="text-white/20 text-xs" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {slot.label}
+          </span>
+        </div>
+      )}
+      <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
+        <span className="text-[10px] font-bold truncate"
+          style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif',
+            background: 'rgba(0,0,0,0.6)', padding: '1px 4px', borderRadius: 3 }}>
+          {slot.label}
+        </span>
+        {slot.stream?.active && (
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00FF88', flexShrink: 0, boxShadow: '0 0 4px rgba(0,255,136,0.6)' }} />
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Create screen ────────────────────────────────────────────────────────────
 function CreateScreen({ onSubmit, isPending }) {
   const [title, setTitle] = useState('');
@@ -203,6 +262,7 @@ function CreateScreen({ onSubmit, isPending }) {
     { id: 'hybrid',  icon: '⚡', label: 'Hybrid',    desc: 'Video + live panel' },
     { id: 'watch',   icon: '🎬', label: 'Watch Party',desc: 'Sync video for everyone' },
     { id: 'live',    icon: '🎙️', label: 'Live Panel', desc: 'Camera-only broadcast' },
+    { id: 'gallery', icon: '⊞', label: 'Gallery',    desc: 'All cameras in a grid' },
   ];
 
   return (
@@ -704,9 +764,10 @@ export default function BroadcastStudio() {
           <span className="text-[10px] font-bold shrink-0" style={{ color: GOLD, ...T }}>{members.length}/20</span>
           <div className="flex items-center gap-1 ml-1">
             {[
-              { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
-              { id: 'watch',  icon: '🎬', label: 'Watch' },
-              { id: 'live',   icon: '🎙', label: 'Live' },
+              { id: 'hybrid',  icon: '⚡', label: 'Hybrid' },
+              { id: 'watch',   icon: '🎬', label: 'Watch' },
+              { id: 'live',    icon: '🎙', label: 'Live' },
+              { id: 'gallery', icon: '⊞',  label: 'Gallery' },
             ].map(mod => (
               <button key={mod.id} onClick={() => setStudioMode(mod.id)}
                 className="text-[11px] px-2 py-0.5 rounded-full font-black uppercase transition-all active:scale-95"
@@ -840,6 +901,8 @@ export default function BroadcastStudio() {
                   onStateChange={pushState}
                 />
               )
+            ) : studioMode === 'gallery' ? (
+              <GalleryStage slots={compositorSlots} theaterMode={theaterMode} />
             ) : (
               <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} />
             )}
