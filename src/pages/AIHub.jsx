@@ -536,19 +536,34 @@ export default function AIHub() {
             <FeatureItem icon="🌐" label="Multi-language detection" />
           </div>
 
-          <Link to={createPageUrl('AIModeration')} style={{ textDecoration: 'none', display: 'block' }}>
-            <motion.div
-              whileTap={{ scale: 0.97 }}
-              style={{
-                ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
-                background: 'rgba(255,21,100,0.12)', border: `1px solid ${PINK}40`,
-                color: PINK, fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
-                textTransform: 'uppercase', cursor: 'pointer',
-              }}
-            >
-              Configure Guardian →
-            </motion.div>
-          </Link>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Link to={createPageUrl('GuardianAI')} style={{ textDecoration: 'none', flex: 1 }}>
+              <motion.div
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
+                  background: 'rgba(255,21,100,0.12)', border: `1px solid ${PINK}40`,
+                  color: PINK, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em',
+                  textTransform: 'uppercase', cursor: 'pointer',
+                }}
+              >
+                Set Thresholds →
+              </motion.div>
+            </Link>
+            <Link to={createPageUrl('AIModeration')} style={{ textDecoration: 'none', flex: 1 }}>
+              <motion.div
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
+                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 900, letterSpacing: '0.06em',
+                  textTransform: 'uppercase', cursor: 'pointer',
+                }}
+              >
+                Review Queue →
+              </motion.div>
+            </Link>
+          </div>
         </Card>
 
         {/* ── Section 4: AI Stage Director ── */}
@@ -840,16 +855,16 @@ export default function AIHub() {
           </Link>
         </Card>
 
-        {/* ── Section 12: Guardian AI ── */}
+        {/* ── Section 12: AI Content Review ── */}
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🛡️ Guardian AI</p>
-            <span style={{ ...T, fontSize: 11, color: '#FF1564', fontWeight: 700, letterSpacing: '0.05em' }}>MODERATION</span>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📋 Content Review Queue</p>
+            <span style={{ ...T, fontSize: 11, color: '#FF1564', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN TOOL</span>
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
-            Real-time AI chat moderation. Set risk thresholds for auto-flag, mute, and ban. Powered by Claude Haiku.
+            Review AI-flagged messages, approve or dismiss violations, and track moderation history for your streams.
           </p>
-          <Link to={createPageUrl('GuardianAI')} style={{ textDecoration: 'none', display: 'block' }}>
+          <Link to={createPageUrl('AIModeration')} style={{ textDecoration: 'none', display: 'block' }}>
             <div style={{
               margin: '0 16px 16px',
               background: 'rgba(255,21,100,0.08)',
@@ -857,14 +872,14 @@ export default function AIHub() {
               padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🛡️</div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
                 <div>
-                  <div style={{ ...T, fontSize: 12, color: '#FF1564', fontWeight: 900 }}>OPEN GUARDIAN</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>CLAUDE HAIKU · REAL-TIME</div>
+                  <div style={{ ...T, fontSize: 12, color: '#FF1564', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>AI MODERATION · ADMIN</div>
                 </div>
               </div>
               <span style={{ ...T, fontSize: 13, color: '#FF1564', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-                Set Up →
+                Review →
               </span>
             </div>
           </Link>
