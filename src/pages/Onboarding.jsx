@@ -372,14 +372,32 @@ function CompletionScreen() {
     import('canvas-confetti').then(m => m.default({ particleCount: 150, spread: 70, colors: ['#D4AF37','#800020','#D4AF37','#fff'] }));
   }, []);
   return (
-    <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-      <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, marginBottom:8 }}>YOU'RE LIVE-READY!</h2>
-      <p style={{ color:C.gray, fontSize:13, marginBottom:24 }}>Your creator profile is set up and ready to go. Time to go live!</p>
+    <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+      <div style={{ fontSize: 56, marginBottom: 12 }}>🎉</div>
+      <h2 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, marginBottom:6 }}>YOU'RE LIVE-READY!</h2>
+      <p style={{ color:C.gray, fontSize:13, marginBottom:20 }}>Your creator profile is set up. Time to go live!</p>
       <button onClick={() => nav('/CreatorDashboard')}
-        style={{ padding:'12px 28px', background:`linear-gradient(90deg, ${C.burg}, ${C.gold})`, border:'none', borderRadius:8, color:'#000', fontFamily:'Barlow Condensed', fontSize:14, fontWeight:700, letterSpacing:1, cursor:'pointer' }}>
+        style={{ padding:'12px 28px', background:`linear-gradient(90deg, ${C.burg}, ${C.gold})`, border:'none', borderRadius:8, color:'#000', fontFamily:'Barlow Condensed', fontSize:14, fontWeight:700, letterSpacing:1, cursor:'pointer', marginBottom:24 }}>
         GO TO DASHBOARD →
       </button>
+      <div style={{ borderTop:'1px solid rgba(212,175,55,0.1)', paddingTop:20 }}>
+        <p style={{ fontFamily:'Barlow Condensed', fontSize:10, color:'rgba(255,255,255,0.25)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:12 }}>Explore Platform Features</p>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+          {[
+            { emoji:'🤖', label:'Joyce AI', href:'/JoyceAI' },
+            { emoji:'⚔️', label:'State vs State', href:'/StateVsState' },
+            { emoji:'🎙️', label:'Podcast Studio', href:'/PodcastStudio' },
+            { emoji:'⚡', label:'INS Forge', href:'/INSForge' },
+            { emoji:'🎵', label:'AI Music', href:'/AIMusic' },
+            { emoji:'🛡️', label:'Guardian AI', href:'/GuardianAI' },
+          ].map(f => (
+            <a key={f.href} href={f.href} style={{ textDecoration:'none', padding:'10px 8px', background:'rgba(212,175,55,0.05)', border:'1px solid rgba(212,175,55,0.12)', borderRadius:10, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+              <span style={{ fontSize:20 }}>{f.emoji}</span>
+              <span style={{ fontFamily:'Barlow Condensed', fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.7)', letterSpacing:'0.04em', textAlign:'center' }}>{f.label}</span>
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
