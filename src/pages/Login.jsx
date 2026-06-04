@@ -18,8 +18,10 @@ export default function Login() {
   const [resetLoading, setResetLoading] = useState(false);
 
   // from_url param — where to redirect after successful login
+  // Reject any auth-path from_url to prevent infinite redirect loops
   const params = new URLSearchParams(window.location.search);
-  const fromUrl = params.get('from_url') || appParams.fromUrl || '/';
+  const rawFromUrl = params.get('from_url') || appParams.fromUrl || '/';
+  const fromUrl = /\/(api\/apps\/auth|login)/i.test(rawFromUrl) ? '/' : rawFromUrl;
 
   // If an access_token lands in the URL (OAuth callback), the SDK already
   // stored it via app-params; just navigate home.
