@@ -33,7 +33,7 @@ var MOCK_LOGS = [
 var SYSTEM_STATS = [
   { label: 'CPU USAGE',  val: '18%',     bar: 18,  color: '#C9A84C' },
   { label: 'MEMORY',     val: '19.4 MB', bar: 22,  color: '#C9A84C' },
-  { label: 'DISK USED',  val: '12%',     bar: 12,  color: '#C084FC' },
+  { label: 'DISK USED',  val: '12%',     bar: 12,  color: '#C9A84C' },
   { label: 'NETWORK RX', val: '1.2 MB/s',bar: 35,  color: '#C9A84C' },
   { label: 'UPTIME',     val: '7d 14h',  bar: 100, color: '#C9A84C' },
 ];
@@ -275,7 +275,7 @@ export default function InsForgeTab({ addToast, isLive }) {
   var VPS_ACTIONS = [
     { id: 'pm2restart',  label: 'RESTART PM2',     icon: '🔄', cmd: 'pm2 restart seewhylive-backend',  color: '#C9A84C' },
     { id: 'pm2logs',     label: 'TAIL PM2 LOGS',   icon: '📋', cmd: 'pm2 logs --lines 50',              color: '#C9A84C' },
-    { id: 'nginxtest',   label: 'TEST NGINX CFG',  icon: '⚡', cmd: 'nginx -t',                         color: '#C084FC' },
+    { id: 'nginxtest',   label: 'TEST NGINX CFG',  icon: '⚡', cmd: 'nginx -t',                         color: '#C9A84C' },
     { id: 'nginxreload', label: 'RELOAD NGINX',    icon: '🔃', cmd: 'nginx -s reload',                  color: '#C9A84C' },
     { id: 'diskcheck',   label: 'DISK USAGE',      icon: '💾', cmd: 'df -h /opt/seewhy',                color: '#C9A84C' },
     { id: 'memcheck',    label: 'MEMORY',          icon: '🧠', cmd: 'free -h',                          color: '#FF6B35' },
@@ -321,7 +321,7 @@ export default function InsForgeTab({ addToast, isLive }) {
           style={{ width: '100%', padding: '8px', background: refreshing ? 'rgba(201,168,76,.1)' : 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.7 : 1 }}>
           {refreshing ? '🔄 REFRESHING...' : '🔄 REFRESH NOW'}
         </button>
-        {lastRefresh && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', textAlign: 'center', marginTop: 4 }}>Last: {lastRefresh}</div>}
+        {lastRefresh && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020', textAlign: 'center', marginTop: 4 }}>Last: {lastRefresh}</div>}
       </div>
 
       {/* Sub-tabs */}
@@ -374,7 +374,7 @@ export default function InsForgeTab({ addToast, isLive }) {
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2 }}>LIVE LOG STREAM</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C9A84C', boxShadow: '0 0 4px #C9A84C' }} />
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450' }}>LIVE · {liveLogs.length} entries</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020' }}>LIVE · {liveLogs.length} entries</span>
             </div>
           </div>
           {liveLogs.map(function(log, i) {
@@ -384,7 +384,7 @@ export default function InsForgeTab({ addToast, isLive }) {
                 <span style={{ background: lc + '18', border: '1px solid ' + lc + '33', borderRadius: 4, padding: '1px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: lc, letterSpacing: 1, flexShrink: 0, marginTop: 1 }}>{log.level}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: i === 0 ? '#F0E8D4' : '#A899BE', lineHeight: 1.4, wordBreak: 'break-word' }}>{log.msg}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', marginTop: 2 }}>{fmtTs(log.ts)}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', marginTop: 2 }}>{fmtTs(log.ts)}</div>
                 </div>
               </div>
             );
@@ -452,7 +452,7 @@ export default function InsForgeTab({ addToast, isLive }) {
                   style={{ background: isRunning ? a.color + '18' : 'rgba(26,21,16,.8)', border: '1px solid ' + (isRunning ? a.color + '55' : '#3D3020'), borderRadius: 10, padding: '10px 8px', cursor: running !== null ? 'not-allowed' : 'pointer', opacity: running && !isRunning ? 0.5 : 1, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div style={{ fontSize: 18 }}>{a.icon}</div>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: isRunning ? a.color : '#F0E8D4', letterSpacing: 1 }}>{isRunning ? '...' : a.label}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', wordBreak: 'break-all' }}>{a.cmd}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', wordBreak: 'break-all' }}>{a.cmd}</div>
                 </button>
               );
             })}
@@ -463,7 +463,7 @@ export default function InsForgeTab({ addToast, isLive }) {
               <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 2, marginBottom: 6 }}>ACTION LOG</div>
               {actionLog.map(function(entry, i) {
                 return (
-                  <div key={i} style={{ marginBottom: 8, borderBottom: i < actionLog.length - 1 ? '1px solid #1A1428' : 'none', paddingBottom: i < actionLog.length - 1 ? 8 : 0 }}>
+                  <div key={i} style={{ marginBottom: 8, borderBottom: i < actionLog.length - 1 ? '1px solid #1A1510' : 'none', paddingBottom: i < actionLog.length - 1 ? 8 : 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
                       <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4' }}>{entry.label}</span>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: entry.status === 'done' ? '#C9A84C' : '#C9A84C' }}>{entry.status === 'done' ? 'DONE' : 'RUNNING...'}</span>
@@ -471,7 +471,7 @@ export default function InsForgeTab({ addToast, isLive }) {
                     {entry.output && (
                       <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#C9A84C', wordBreak: 'break-word', lineHeight: 1.5 }}>{entry.output}</div>
                     )}
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3450', marginTop: 2 }}>{fmtTs(entry.ts)}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020', marginTop: 2 }}>{fmtTs(entry.ts)}</div>
                   </div>
                 );
               })}

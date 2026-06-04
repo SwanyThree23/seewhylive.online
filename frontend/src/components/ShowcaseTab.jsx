@@ -427,7 +427,7 @@ export default function ShowcaseTab(p) {
                         🔗 SHARE
                       </button>
                     </div>
-                    <div style={{ color: '#4A4060', fontSize: 12 }}>›</div>
+                    <div style={{ color: '#3D3020', fontSize: 12 }}>›</div>
                   </div>
                 </div>
               );
@@ -458,7 +458,7 @@ export default function ShowcaseTab(p) {
                 return (
                   <div key={s[0]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8, padding: '8px 4px', textAlign: 'center' }}>
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: s[2], lineHeight: 1 }}>{s[1]}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#4A4060', marginTop: 2 }}>{s[0]}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3020', marginTop: 2 }}>{s[0]}</div>
                   </div>
                 );
               })}
@@ -528,7 +528,7 @@ export default function ShowcaseTab(p) {
                 <div key={match.id} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid ' + (isL ? 'rgba(255,26,60,.5)' : 'rgba(255,255,255,.07)'), borderRadius: 10, padding: '12px', marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <div style={{ background: isL ? 'rgba(192,24,56,.22)' : 'transparent', border: '1px solid ' + (isL ? '#C01838' : 'rgba(255,255,255,.07)'), borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: isL ? '#FF6B81' : '#9A90AA', letterSpacing: 1 }}>{isL ? '🔴 LIVE' : match.date}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#4A4060' }}>PPV ${price.toFixed(2)}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020' }}>PPV ${price.toFixed(2)}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
@@ -620,8 +620,8 @@ export default function ShowcaseTab(p) {
                       <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#E8FF47', lineHeight: 1 }}>{r.sa}</div>
                     </div>
                     <div style={{ width: 40, textAlign: 'center', flexShrink: 0 }}>
-                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#4A4060', letterSpacing: 1 }}>FINAL</div>
-                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#4A4060', marginTop: 2 }}>Δ{Math.abs(r.ta - r.tb)}T</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020', letterSpacing: 1 }}>FINAL</div>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020', marginTop: 2 }}>Δ{Math.abs(r.ta - r.tb)}T</div>
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                       <StateBadge state={stB} sz={44} />
@@ -634,8 +634,8 @@ export default function ShowcaseTab(p) {
                     <div style={{ flex: 1, background: 'linear-gradient(90deg,' + stB.cp + ',' + stB.cs + ')' }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#4A4060' }}>{r.ta} tiles</span>
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#4A4060' }}>{r.tb} tiles</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020' }}>{r.ta} tiles</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: '#3D3020' }}>{r.tb} tiles</span>
                   </div>
                 </div>
               );
@@ -714,7 +714,7 @@ export default function ShowcaseTab(p) {
                 {!battleOn && (
                   <button onClick={function() { if (battleSt) { setBattleOn(true); setBlue(0); setRed(0); setTimer(300); if (addToast) addToast('State Battle LIVE! ⚡', 'success'); } }}
                     disabled={!battleSt}
-                    style={{ padding: '9px 20px', background: battleSt ? 'rgba(0,255,255,.08)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (battleSt ? 'rgba(0,255,255,.3)' : 'rgba(255,255,255,.07)'), borderRadius: 8, color: battleSt ? '#00FFFF' : '#4A4060', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3, cursor: battleSt ? 'pointer' : 'not-allowed' }}>
+                    style={{ padding: '9px 20px', background: battleSt ? 'rgba(0,255,255,.08)' : 'rgba(26,21,16,.5)', border: '1px solid ' + (battleSt ? 'rgba(0,255,255,.3)' : 'rgba(255,255,255,.07)'), borderRadius: 8, color: battleSt ? '#00FFFF' : '#3D3020', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3, cursor: battleSt ? 'pointer' : 'not-allowed' }}>
                     ▶ START BATTLE
                   </button>
                 )}
@@ -785,7 +785,7 @@ export default function ShowcaseTab(p) {
                   <div key={k[1]} style={{ background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 9, padding: '8px 6px', textAlign: 'center' }}>
                     <div style={{ fontSize: 14, marginBottom: 2 }}>{k[2]}</div>
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: k[3], lineHeight: 1 }}>{k[0]}</div>
-                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#4A4060', marginTop: 2 }}>{k[1]}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#3D3020', marginTop: 2 }}>{k[1]}</div>
                   </div>
                 );
               })}
@@ -813,7 +813,7 @@ export default function ShowcaseTab(p) {
                       </div>
                       <div>
                         <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#9A90AA' }}>{fs.name}</div>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#4A4060' }}>{fs.region} · QUALIFYING</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020' }}>{fs.region} · QUALIFYING</div>
                       </div>
                     </div>
                   </div>

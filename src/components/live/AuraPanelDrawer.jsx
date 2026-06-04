@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#C8FF00', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
+const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 
 const PERSONAS = [
   { key:'hype', label:'Hype', emoji:'🔥', desc:'High energy, celebrates every moment' },
@@ -68,7 +68,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
     upd({ last_message: res, last_message_at: new Date().toISOString(), interventions_count:(aura?.interventions_count||0)+1 });
   };
 
-  const statusColor = { active:'#00FF88', idle:'#666', paused:'#FFB800', ended:'#ff6666' };
+  const statusColor = { active:'#6DBF7E', idle:'#666', paused:'#FFB800', ended:'#ff6666' };
   const st = aura?.status || 'idle';
 
   return (
@@ -155,7 +155,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
           </div>
         )}
         {/* AI response */}
-        {aiResponse && <div style={{ marginBottom:14, padding:10, borderRadius:8, background:'rgba(0,255,136,0.05)', border:'1px solid rgba(0,255,136,0.15)', fontSize:12, color:'#00FF88', lineHeight:1.5 }}>{aiResponse}</div>}
+        {aiResponse && <div style={{ marginBottom:14, padding:10, borderRadius:8, background:'rgba(109,191,126,0.05)', border:'1px solid rgba(109,191,126,0.15)', fontSize:12, color:'#6DBF7E', lineHeight:1.5 }}>{aiResponse}</div>}
         {/* Ask modal */}
         {showAsk && (
           <div style={{ marginBottom:14 }}>
@@ -176,7 +176,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
       </div>
       {/* Session controls */}
       <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.06)', display:'flex', gap:6, flexShrink:0 }}>
-        <button onClick={()=>upd({status:'active'})} style={{ flex:1, padding:'8px', background:st==='active'?'rgba(0,255,136,0.1)':'rgba(255,255,255,0.03)', border:`1px solid ${st==='active'?'#00FF88':'#333'}`, borderRadius:6, color:st==='active'?'#00FF88':C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>▶ START</button>
+        <button onClick={()=>upd({status:'active'})} style={{ flex:1, padding:'8px', background:st==='active'?'rgba(109,191,126,0.1)':'rgba(255,255,255,0.03)', border:`1px solid ${st==='active'?'#6DBF7E':'#333'}`, borderRadius:6, color:st==='active'?'#6DBF7E':C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>▶ START</button>
         <button onClick={()=>upd({status:'paused'})} style={{ flex:1, padding:'8px', background:'rgba(255,255,255,0.03)', border:'1px solid #333', borderRadius:6, color:C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>⏸ PAUSE</button>
         <button onClick={()=>{upd({status:'ended'});onClose();}} style={{ flex:1, padding:'8px', background:'rgba(128,0,32,0.1)', border:`1px solid rgba(128,0,32,0.3)`, borderRadius:6, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>■ END</button>
       </div>

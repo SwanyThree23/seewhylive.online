@@ -120,13 +120,13 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
   }
 
   return (
-    <div style={{ borderRadius: 12, background: done ? 'rgba(0,255,136,0.07)' : 'rgba(212,175,55,0.06)', border: `1px solid ${done ? 'rgba(0,255,136,0.3)' : 'rgba(212,175,55,0.2)'}`, padding: '10px 12px' }}>
+    <div style={{ borderRadius: 12, background: done ? 'rgba(109,191,126,0.07)' : 'rgba(212,175,55,0.06)', border: `1px solid ${done ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.2)'}`, padding: '10px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-        {done ? <Check style={{ width: 13, height: 13, color: '#00FF88' }} /> : <Target style={{ width: 13, height: 13, color: '#D4AF37' }} />}
-        <span style={{ flex: 1, fontSize: 11, fontWeight: 900, color: done ? '#00FF88' : '#D4AF37', ...F }}>
+        {done ? <Check style={{ width: 13, height: 13, color: '#6DBF7E' }} /> : <Target style={{ width: 13, height: 13, color: '#D4AF37' }} />}
+        <span style={{ flex: 1, fontSize: 11, fontWeight: 900, color: done ? '#6DBF7E' : '#D4AF37', ...F }}>
           {goal.label}
         </span>
-        <span style={{ fontSize: 11, fontWeight: 900, color: done ? '#00FF88' : 'rgba(255,255,255,0.5)', ...F }}>
+        <span style={{ fontSize: 11, fontWeight: 900, color: done ? '#6DBF7E' : 'rgba(255,255,255,0.5)', ...F }}>
           {goal.type === 'tips' ? `$${current.toFixed(2)}` : current} / {goal.type === 'tips' ? `$${goal.target}` : goal.target}
         </span>
         <button onClick={() => setEditing(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
@@ -139,12 +139,12 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
         <motion.div
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          style={{ height: '100%', borderRadius: 99, background: done ? '#00FF88' : 'linear-gradient(90deg, #D4AF37, #FF1564)' }}
+          style={{ height: '100%', borderRadius: 99, background: done ? '#6DBF7E' : 'linear-gradient(90deg, #D4AF37, #FF1564)' }}
         />
       </div>
 
       {done && (
-        <div style={{ marginTop: 6, fontSize: 10, color: '#00FF88', fontWeight: 900, textAlign: 'center', ...F }}>
+        <div style={{ marginTop: 6, fontSize: 10, color: '#6DBF7E', fontWeight: 900, textAlign: 'center', ...F }}>
           🎉 Goal reached! Set a new one!
         </div>
       )}

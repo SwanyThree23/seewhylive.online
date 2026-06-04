@@ -4,8 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#C8FF00', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
-const TYPE_COLORS = { member:C.gold, content:'#00F5FF', achievement:C.volt, stream:'#ff6666' };
+const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
+const TYPE_COLORS = { member:C.gold, content:'#C9A84C', achievement:C.volt, stream:'#ff6666' };
 
 function AddSpotlightModal({ communityId, onClose }) {
   const qc = useQueryClient();

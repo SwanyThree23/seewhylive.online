@@ -191,7 +191,7 @@ function WinnerOverlay({ battle, onClose }) {
           <Button
             onClick={function() { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
             className="flex-1 gap-1.5 text-xs"
-            style={{ background: 'rgba(0,245,255,0.12)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.25)' }}
+            style={{ background: 'rgba(201,168,76,0.12)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.25)' }}
           >
             <Share2 className="w-3 h-3" /> Share
           </Button>
@@ -267,7 +267,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
 
   var statusStyle = {
     pending: { bg: 'rgba(212,175,55,0.1)', color: '#d4af37', border: 'rgba(212,175,55,0.25)' },
-    accepted: { bg: 'rgba(0,255,136,0.1)', color: '#00FF88', border: 'rgba(0,255,136,0.25)' },
+    accepted: { bg: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: 'rgba(109,191,126,0.25)' },
     active: { bg: 'rgba(255,21,100,0.1)', color: '#FF1564', border: 'rgba(255,21,100,0.25)' },
     ended: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'rgba(255,255,255,0.1)' },
     declined: { bg: 'rgba(255,21,100,0.05)', color: 'rgba(255,21,100,0.5)', border: 'rgba(255,21,100,0.1)' },
@@ -302,7 +302,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                       size="sm"
                       onClick={function() { respondMutation.mutate({ id: b.id, status: 'accepted' }); }}
                       className="h-8 text-xs gap-1 font-bold"
-                      style={{ background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)' }}
+                      style={{ background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)' }}
                     >
                       <CheckCircle className="w-3 h-3" /> Accept
                     </Button>
@@ -563,8 +563,8 @@ function HistoryTab({ battles, user }) {
     <div className="space-y-4">
       {/* Summary stats */}
       <div className="grid grid-cols-4 gap-3">
-        <StatChip label="Battles" value={String(ended.length)} color="#00F5FF" />
-        <StatChip label="Wins" value={String(wins.length)} color="#00FF88" />
+        <StatChip label="Battles" value={String(ended.length)} color="#C9A84C" />
+        <StatChip label="Wins" value={String(wins.length)} color="#6DBF7E" />
         <StatChip label="Losses" value={String(losses.length)} color="#FF1564" />
         <StatChip label="Pts Earned" value={totalPts.toLocaleString()} color="#d4af37" />
       </div>
@@ -574,14 +574,14 @@ function HistoryTab({ battles, user }) {
         <div className="rounded-xl p-4" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-white/50 uppercase font-bold">Win Rate</span>
-            <span className="text-sm font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#00FF88' }}>
+            <span className="text-sm font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#6DBF7E' }}>
               {Math.round((wins.length / ended.length) * 100)}%
             </span>
           </div>
           <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,21,100,0.2)' }}>
             <div
               className="h-full rounded-full transition-all duration-700"
-              style={{ width: Math.round((wins.length / ended.length) * 100) + '%', background: 'linear-gradient(90deg, #00FF88, #00F5FF)' }}
+              style={{ width: Math.round((wins.length / ended.length) * 100) + '%', background: 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }}
             />
           </div>
         </div>

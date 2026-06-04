@@ -32,7 +32,7 @@ const BADGE_TYPES = {
   admin: { color: '#FF8C00', label: 'Admin', icon: '👑' },
   moderator: { color: '#6B5CF6', label: 'Mod', icon: '🛡️' },
   subscriber: { color: '#d4af37', label: 'Sub', icon: '⭐' },
-  verified: { color: '#00F5FF', label: 'VIP', icon: '✓' }
+  verified: { color: '#C9A84C', label: 'VIP', icon: '✓' }
 };
 
 const filterMessage = (text) => {
@@ -74,7 +74,7 @@ const ChatMessage = ({ message, isOwn }) => {
       {!isOwn && (
         <div className="w-6 h-6 rounded-full flex-shrink-0"
           style={{
-            background: `linear-gradient(135deg, ${message.user_color || '#8B5CF6'}, ${message.user_color || '#6B4423'})`
+            background: `linear-gradient(135deg, ${message.user_color || '#D4AF37'}, ${message.user_color || '#6B4423'})`
           }} />
       )}
       <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>

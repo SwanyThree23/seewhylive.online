@@ -17,7 +17,7 @@ var BORDER = 'rgba(201,168,76,.12)';
 var CHANNELS = [
   { id: 'c1', name: 'Domino Entertainment',  handle: '@dominoent', thumb: '🎲', color: GOLD,     status: 'live'   },
   { id: 'c2', name: 'SeeWhy LIVE',           handle: '@seewhylive',thumb: '🔴', color: '#FF1564', status: 'live'   },
-  { id: 'c3', name: 'AI Verse Podcast',      handle: '@aiverse',   thumb: '🎙', color: '#C084FC', status: 'online' },
+  { id: 'c3', name: 'AI Verse Podcast',      handle: '@aiverse',   thumb: '🎙', color: '#C9A84C', status: 'online' },
   { id: 'c4', name: 'Memoirs of a Shy Girl', handle: '@shygirl',   thumb: '📖', color: '#FF6B9D', status: 'online' },
   { id: 'c5', name: 'SwanyBot LIVE',         handle: '@swanybot',  thumb: '🤖', color: TEAL,      status: 'online' },
   { id: 'c6', name: 'Washington Classic',    handle: '@dcdominos', thumb: '🎯', color: '#C9A84C', status: 'online' },

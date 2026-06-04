@@ -234,13 +234,13 @@ export default function OverlayBuilderPage() {
           {selectedLayout && (
             <button onClick={() => toggleActiveMut.mutate(selectedLayout)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-              style={{ background: activeLayout?.id === selectedLayout ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.06)', color: activeLayout?.id === selectedLayout ? '#00FF88' : CREAM + '60', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
+              style={{ background: activeLayout?.id === selectedLayout ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.06)', color: activeLayout?.id === selectedLayout ? '#6DBF7E' : CREAM + '60', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
               {activeLayout?.id === selectedLayout ? '● Active' : 'Set Active'}
             </button>
           )}
           <button onClick={() => { navigator.clipboard.writeText(obsUrl); toast.success('OBS URL copied!'); }}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-            style={{ background: 'rgba(0,245,255,0.08)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.2)', ...T }}>
+            style={{ background: 'rgba(201,168,76,0.08)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.2)', ...T }}>
             <Copy className="w-3 h-3" /> OBS URL
           </button>
         </div>

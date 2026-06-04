@@ -14,7 +14,7 @@ const BG      = '#080B18';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#FF1564';
-const GREEN   = '#00FF88';
+const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── tiny helpers ─────────────────────────────────────────────────────── */
@@ -262,8 +262,8 @@ export default function PayoutsPage() {
               display: 'inline-flex', alignItems: 'center', gap: 5,
               fontSize: 13, fontWeight: 700,
               color: isConnected ? GREEN : '#FF9900',
-              background: isConnected ? 'rgba(0,255,136,0.1)' : 'rgba(255,153,0,0.1)',
-              border: `1px solid ${isConnected ? 'rgba(0,255,136,0.25)' : 'rgba(255,153,0,0.25)'}`,
+              background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(255,153,0,0.1)',
+              border: `1px solid ${isConnected ? 'rgba(109,191,126,0.25)' : 'rgba(255,153,0,0.25)'}`,
               borderRadius: 20, padding: '3px 10px',
             }}>
               {isConnected
@@ -351,8 +351,8 @@ export default function PayoutsPage() {
               display: 'inline-flex', alignItems: 'center', gap: 5,
               fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
               color: isConnected ? GREEN : '#FF9900',
-              background: isConnected ? 'rgba(0,255,136,0.1)' : 'rgba(255,153,0,0.08)',
-              border: `1px solid ${isConnected ? 'rgba(0,255,136,0.3)' : 'rgba(255,153,0,0.3)'}`,
+              background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(255,153,0,0.08)',
+              border: `1px solid ${isConnected ? 'rgba(109,191,126,0.3)' : 'rgba(255,153,0,0.3)'}`,
               borderRadius: 20, padding: '3px 10px',
             }}>
               {isConnected ? <><CheckCircle size={10} /> Connected</> : <><AlertCircle size={10} /> Not Connected</>}
@@ -490,12 +490,12 @@ export default function PayoutsPage() {
           ) : (
             <div>
               <div style={{
-                background: 'rgba(0,255,136,0.05)',
-                border: '1px solid rgba(0,255,136,0.2)',
+                background: 'rgba(109,191,126,0.05)',
+                border: '1px solid rgba(109,191,126,0.2)',
                 borderRadius: 10, padding: '14px 16px',
                 marginBottom: 14,
               }}>
-                <div style={{ fontSize: 12, color: 'rgba(0,255,136,0.7)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>
+                <div style={{ fontSize: 12, color: 'rgba(109,191,126,0.7)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>
                   Available to Pay Out
                 </div>
                 <div style={{ fontSize: 32, fontWeight: 800, color: GREEN, lineHeight: 1 }}>
@@ -568,8 +568,8 @@ export default function PayoutsPage() {
                       letterSpacing: '0.06em', textTransform: 'uppercase',
                       borderRadius: 20, padding: '2px 8px',
                       color: t.status === 'paid_out' ? GREEN : GOLD,
-                      background: t.status === 'paid_out' ? 'rgba(0,255,136,0.1)' : 'rgba(212,175,55,0.1)',
-                      border: `1px solid ${t.status === 'paid_out' ? 'rgba(0,255,136,0.3)' : 'rgba(212,175,55,0.3)'}`,
+                      background: t.status === 'paid_out' ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)',
+                      border: `1px solid ${t.status === 'paid_out' ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'}`,
                     }}>
                       {t.status || 'pending'}
                     </span>

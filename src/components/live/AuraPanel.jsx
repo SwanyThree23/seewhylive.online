@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 const MODES = [
   { id: 'SASSY', label: 'Sassy', emoji: '💅', color: '#FF1564', desc: 'Sharp & witty' },
   { id: 'HYPE', label: 'Hype', emoji: '🔥', color: '#FF8C00', desc: 'High energy' },
-  { id: 'CALM', label: 'Calm', emoji: '🧠', color: '#00F5FF', desc: 'Analytical' },
-  { id: 'KIND', label: 'Kind', emoji: '💜', color: '#8B5CF6', desc: 'Warm & uplifting' },
+  { id: 'CALM', label: 'Calm', emoji: '🧠', color: '#C9A84C', desc: 'Analytical' },
+  { id: 'KIND', label: 'Kind', emoji: '💜', color: '#D4AF37', desc: 'Warm & uplifting' },
 ];
 
 const MODE_PROMPTS = {
@@ -107,19 +107,19 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
   const currentMode = MODES.find(m => m.id === mode);
 
   return (
-    <div className="border border-[#8B5CF6]/30 rounded-xl bg-[#0B0B18] overflow-hidden">
+    <div className="border border-[#D4AF37]/30 rounded-xl bg-[#0B0B18] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-[#8B5CF6]/10 bg-[#07070F]">
-        <div className="w-5 h-5 rounded-full bg-[#8B5CF6]/20 flex items-center justify-center">
-          <Sparkles className="w-3 h-3 text-[#8B5CF6]" />
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-[#D4AF37]/10 bg-[#07070F]">
+        <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center">
+          <Sparkles className="w-3 h-3 text-[#D4AF37]" />
         </div>
-        <span className="text-[10px] font-bold text-[#8B5CF6] uppercase tracking-wider">AURA AI</span>
+        <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider">AURA AI</span>
         {isGenerating && (
           <div className="flex gap-0.5 ml-1">
             {[0, 1, 2].map(i => (
               <motion.div
                 key={i}
-                className="w-1 h-1 rounded-full bg-[#8B5CF6]"
+                className="w-1 h-1 rounded-full bg-[#D4AF37]"
                 animate={{ opacity: [0.3, 1, 0.3] }}
                 transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
               />
@@ -131,7 +131,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
           <button
             onClick={() => setEnabled(v => !v)}
             className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-              enabled ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'bg-white/5 text-white/30'
+              enabled ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'bg-white/5 text-white/30'
             }`}
           >
             {enabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
@@ -147,7 +147,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
             onClick={() => setMode(m.id)}
             className={`flex-1 py-1 rounded text-[11px] font-bold transition-all border ${
               mode === m.id
-                ? 'border-[#8B5CF6] text-[#8B5CF6] bg-[#8B5CF6]/10'
+                ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10'
                 : 'border-white/10 text-white/30 hover:border-white/20'
             }`}
             title={m.desc}
@@ -172,7 +172,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
                 animate={{ opacity: 1, x: 0 }}
                 className="flex gap-2 text-xs"
               >
-                <span className="text-[#8B5CF6] shrink-0">✦</span>
+                <span className="text-[#D4AF37] shrink-0">✦</span>
                 <p className="text-white/70 leading-relaxed">{msg.text}</p>
               </motion.div>
             ))}
@@ -187,7 +187,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
           <button
             onClick={() => generateAuraMessage('stream_start', { title: streamTitle, viewers: viewerCount })}
             disabled={isGenerating || !enabled || callCount >= CAP}
-            style={{ width: '100%', height: 24, fontSize: 11, color: '#8B5CF6', background: 'transparent', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ width: '100%', height: 24, fontSize: 11, color: '#D4AF37', background: 'transparent', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             <RefreshCw className="w-2.5 h-2.5" style={{ marginRight: 2 }} /> Trigger AURA
           </button>

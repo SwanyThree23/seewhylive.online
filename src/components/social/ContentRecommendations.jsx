@@ -78,7 +78,7 @@ export default function ContentRecommendations() {
             transition={{ delay: i * 0.05 }}
             whileHover={{ scale: 1.02 }}
             className="flex gap-2 p-2 rounded-lg transition-all group"
-            style={{ background: 'rgba(0,245,255,0.05)', border: '1px solid rgba(0,245,255,0.15)' }}
+            style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.15)' }}
           >
             {/* Thumbnail */}
             <div className="relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-black">

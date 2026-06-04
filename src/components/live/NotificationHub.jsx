@@ -33,7 +33,7 @@ const CATEGORY_TYPES = {
 
 const PRIORITY_COLORS = {
   low: 'rgba(100,116,139,0.1)',
-  normal: 'rgba(139,92,246,0.1)',
+  normal: 'rgba(212,175,55,0.1)',
   high: 'rgba(255,140,0,0.15)',
   urgent: 'rgba(239,68,68,0.15)',
 };

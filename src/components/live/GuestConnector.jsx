@@ -25,16 +25,16 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
     {
       name: 'Audio Only',
       url: `https://vdo.ninja/?view=Swan23&room=AUDIO-${roomId?.slice(0, 8) || 'DEMO'}&audioonly`,
-      color: 'bg-[rgba(139,92,246,0.08)]',
-      textColor: '#8B5CF6',
+      color: 'bg-[rgba(212,175,55,0.08)]',
+      textColor: '#D4AF37',
       icon: '🎙️',
       description: 'Audio stream only',
     },
     {
       name: 'Screen Share',
       url: `https://vdo.ninja/?view=Swan23&room=SCREEN-${roomId?.slice(0, 8) || 'DEMO'}&screen`,
-      color: 'bg-[rgba(0,245,255,0.08)]',
-      textColor: '#00F5FF',
+      color: 'bg-[rgba(201,168,76,0.08)]',
+      textColor: '#C9A84C',
       icon: '🖥️',
       description: 'Screen sharing mode',
     },
@@ -152,9 +152,9 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
                   }}
                   className="flex-1 px-2 py-1.5 rounded text-[10px] font-bold uppercase transition-all"
                   style={{
-                    background: 'rgba(139,92,246,0.12)',
-                    color: '#8B5CF6',
-                    border: '1px solid rgba(139,92,246,0.25)',
+                    background: 'rgba(212,175,55,0.12)',
+                    color: '#D4AF37',
+                    border: '1px solid rgba(212,175,55,0.25)',
                   }}
                 >
                   <Copy className="inline w-3 h-3 mr-1" />

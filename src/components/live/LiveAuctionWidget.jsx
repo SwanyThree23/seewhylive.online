@@ -10,10 +10,10 @@ const BURGUNDY = '#800020';
 
 const TYPE_COLORS = {
   item:       { color: GOLD,     label: 'ITEM' },
-  one_on_one: { color: '#00F5FF', label: '1:1' },
-  shoutout:   { color: '#8B5CF6', label: 'SHOUTOUT' },
+  one_on_one: { color: '#C9A84C', label: '1:1' },
+  shoutout:   { color: '#D4AF37', label: 'SHOUTOUT' },
   custom_art: { color: '#FF6B00', label: 'ART' },
-  coaching:   { color: '#00FF88', label: 'COACHING' },
+  coaching:   { color: '#6DBF7E', label: 'COACHING' },
   experience: { color: '#FF1564', label: 'EXPERIENCE' },
 };
 
@@ -235,7 +235,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
               toast.success('+5 min added');
             }}
               className="flex-1 py-1 rounded text-[11px] font-black uppercase"
-              style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               +5 min
             </button>
             <button onClick={() => onEnd(auction)}

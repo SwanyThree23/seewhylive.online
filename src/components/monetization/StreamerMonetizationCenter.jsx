@@ -31,9 +31,9 @@ const StreamerMonetizationCenter = () => {
 
   const revenueBreakdown = [
     { label: 'Tips', amount: 1250, growth: 35, color: '#FF1564' },
-    { label: 'Subscriptions', amount: 3420, growth: 22, color: '#00F5FF' },
+    { label: 'Subscriptions', amount: 3420, growth: 22, color: '#C9A84C' },
     { label: 'Virtual Goods', amount: 890, growth: 15, color: GOLD },
-    { label: 'Sponsorships', amount: 2100, growth: 48, color: '#8B5CF6' }
+    { label: 'Sponsorships', amount: 2100, growth: 48, color: '#D4AF37' }
   ];
 
   const subscriptionTiers = [
@@ -66,7 +66,7 @@ const StreamerMonetizationCenter = () => {
       </div>
 
       {/* Total Revenue Banner */}
-      <div style={{ background: 'linear-gradient(to right, rgba(212,175,55,0.2), rgba(139,92,246,0.2))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, padding: 16 }}>
+      <div style={{ background: 'linear-gradient(to right, rgba(212,175,55,0.2), rgba(212,175,55,0.2))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 4px', ...T }}>Total This Month</p>

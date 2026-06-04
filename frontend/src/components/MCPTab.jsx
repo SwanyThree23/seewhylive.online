@@ -6,8 +6,8 @@ var BURG   = '#800020';
 var BURG_H = '#C01838';
 var TEAL   = '#C9A84C';
 var TEAL_H = '#C9A84C';
-var PURP   = '#9B4DCA';
-var PURP_H = '#C084FC';
+var PURP   = '#800020';
+var PURP_H = '#C9A84C';
 var LIME   = '#C9A84C';
 var MUTED  = '#6B5F82';
 var TEXT   = '#EDE8F4';
@@ -221,8 +221,8 @@ export default function MCPTab({ addToast, isLive }) {
             <button
               onClick={function() { setLogView(function(v) { return !v; }); }}
               style={{
-                background: logView ? 'linear-gradient(135deg,' + PURP + ',' + PURP_H + ')' : 'rgba(155,77,202,.12)',
-                border: '1px solid ' + (logView ? PURP : 'rgba(155,77,202,.3)'),
+                background: logView ? 'linear-gradient(135deg,' + PURP + ',' + PURP_H + ')' : 'rgba(128,0,32,.12)',
+                border: '1px solid ' + (logView ? PURP : 'rgba(128,0,32,.3)'),
                 borderRadius: 7,
                 padding: '6px 10px',
                 color: logView ? BG0 : PURP,

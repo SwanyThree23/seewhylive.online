@@ -45,7 +45,7 @@ const FEATURE_STATUS = [
 ];
 
 const STATUS_STYLE = {
-  live:    { bg: 'rgba(0,255,136,0.08)',  border: 'rgba(0,255,136,0.25)',  color: '#00ff88', dot: '#00ff88' },
+  live:    { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)',  color: '#00ff88', dot: '#00ff88' },
   beta:    { bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD,      dot: GOLD },
   planned: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', dot: 'rgba(255,255,255,0.2)' },
 };
@@ -87,7 +87,7 @@ export default function BetaStatusPage() {
             { label: 'Features Live', value: liveCount, color: '#00ff88' },
             { label: 'In Beta Preview', value: betaCount, color: GOLD },
             { label: 'Live Rooms Now', value: liveRooms, color: '#00d4ff' },
-            { label: 'Revenue Split', value: '90/10', color: '#8B5CF6' },
+            { label: 'Revenue Split', value: '90/10', color: '#D4AF37' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>

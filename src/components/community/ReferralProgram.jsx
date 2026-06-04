@@ -61,7 +61,7 @@ export default function ReferralProgram({ communityId }) {
         </div>
         <div className="p-2.5 rounded" style={{ background: 'rgba(255,255,255,0.03)' }}>
           <p className="text-[10px] text-white/60 mb-1">Potential</p>
-          <p className="text-lg font-black" style={{ color: '#00F5FF' }}>
+          <p className="text-lg font-black" style={{ color: '#C9A84C' }}>
             {(referrals?.length || 0) - completedReferrals.length}
           </p>
         </div>

@@ -18,7 +18,7 @@ var G = {
   black:"#080808",darkBg:"#0D0D0D",cardBg:"#111111",
   surfaceBg:"#161616",crimson:"#8B0000",crimsonBright:"#C41E3A",
   gold:"#D4AF37",goldBright:"#FFD700",cyan:"#00E5FF",
-  volt:"#C8FF00",white:"#FFFFFF",gray:"#888888",
+  volt:"#D4AF37",white:"#FFFFFF",gray:"#888888",
   grayDim:"#444444",red:"#FF3B30",green:"#30D158",
   purple:"#BF5FFF",orange:"#FF9500",
   fOrb:"'Orbitron',sans-serif",fRaj:"'Rajdhani',sans-serif",
@@ -79,19 +79,19 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .nav-btn.on{color:#D4AF37}.nav-ico{font-size:19px;line-height:1}
 .notif-dot{position:absolute;top:6px;right:calc(50% - 18px);width:14px;height:14px;border-radius:50%;background:#C41E3A;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-weight:700}
 .card{background:#111;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden}
-.card-r{border-color:#8B0000}.card-g{border-color:#D4AF37}.card-c{border-color:#00E5FF}.card-v{border-color:#C8FF00}.card-p{border-color:#BF5FFF}
+.card-r{border-color:#8B0000}.card-g{border-color:#D4AF37}.card-c{border-color:#00E5FF}.card-v{border-color:#D4AF37}.card-p{border-color:#BF5FFF}
 .sec-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;color:#D4AF37;letter-spacing:3px;padding:14px 16px 6px;text-transform:uppercase}
 .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:.5px}
 .pill-r{background:rgba(196,30,58,.2);border:1px solid #C41E3A;color:#FF6B6B}
 .pill-g{background:rgba(212,175,55,.2);border:1px solid #D4AF37;color:#FFD700}
 .pill-c{background:rgba(0,229,255,.15);border:1px solid #00E5FF;color:#00E5FF}
-.pill-v{background:rgba(200,255,0,.12);border:1px solid #C8FF00;color:#C8FF00}
+.pill-v{background:rgba(200,255,0,.12);border:1px solid #D4AF37;color:#D4AF37}
 .pill-p{background:rgba(191,95,255,.15);border:1px solid #BF5FFF;color:#BF5FFF}
 .btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:1px;transition:all .2s}
 .btn-r{background:#8B0000;color:#D4AF37;border:1px solid #C41E3A}.btn-r:hover{background:#C41E3A}
 .btn-g{background:linear-gradient(135deg,#8B0000,#D4AF37);color:#000}
 .btn-outline{background:none;color:#D4AF37;border:1px solid #D4AF37}.btn-outline:hover{background:rgba(212,175,55,.1)}
-.btn-v{background:#C8FF00;color:#080808;font-weight:900}
+.btn-v{background:#D4AF37;color:#080808;font-weight:900}
 .inp{width:100%;padding:10px 14px;background:#161616;border:1px solid #333;border-radius:8px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none}
 .inp:focus{border-color:#D4AF37}.inp::placeholder{color:#444}
 .tab-bar{display:flex;border-bottom:1px solid #1a1a1a;background:#0D0D0D;overflow-x:auto}
@@ -100,7 +100,7 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .tab-item.on{color:#D4AF37;border-bottom-color:#D4AF37}
 .live-ring{animation:liveRing 1.5s ease-in-out infinite}
 @keyframes liveRing{0%,100%{box-shadow:0 0 0 0 rgba(196,30,58,.5)}50%{box-shadow:0 0 0 8px rgba(196,30,58,0)}}
-.volt-glow{text-shadow:0 0 12px #C8FF00,0 0 24px #C8FF0066}
+.volt-glow{text-shadow:0 0 12px #D4AF37,0 0 24px #D4AF3766}
 .gold-glow{text-shadow:0 0 12px #D4AF37,0 0 24px #D4AF3766}
 .pulse{animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
@@ -117,7 +117,7 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .panel-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:6px}
 .panel-tile{aspect-ratio:9/14;position:relative;border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;background:#161616;border:1px solid #1a1a1a}
 .panel-tile:hover{transform:scale(1.04)}
-.panel-tile.focused{border:2px solid #C8FF00;box-shadow:0 0 12px #C8FF0066;z-index:2}
+.panel-tile.focused{border:2px solid #D4AF37;box-shadow:0 0 12px #D4AF3766;z-index:2}
 .panel-tile.speaking{border:2px solid #00E5FF;box-shadow:0 0 8px #00E5FF55}
 .panel-tile.muted{opacity:.7}
 .pt-avatar{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
@@ -128,19 +128,19 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 @keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}
 /* ── Bigo Expanded Tile ── */
 .bigo-expanded{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-.bigo-main-oct{width:200px;height:200px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:3px solid #C8FF00;box-shadow:0 0 30px #C8FF0066}
+.bigo-main-oct{width:200px;height:200px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:3px solid #D4AF37;box-shadow:0 0 30px #D4AF3766}
 .bigo-mini-ring{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;max-width:340px}
 .bigo-mini-oct{width:60px;height:60px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:2px solid #333;cursor:pointer;transition:border-color .2s}
-.bigo-mini-oct.on{border-color:#C8FF00}
+.bigo-mini-oct.on{border-color:#D4AF37}
 .bigo-mini-oct:hover{border-color:#D4AF37}
 /* old grid kept for compat */
 .oct-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px}
 .oct-tile{aspect-ratio:1;position:relative;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;cursor:pointer;transition:transform .2s}
 .oct-tile:hover{transform:scale(1.05)}
-.oct-tile.active{outline:2px solid #C8FF00}
+.oct-tile.active{outline:2px solid #D4AF37}
 .snd-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 6px;border-radius:10px;border:1px solid #222;background:#161616;cursor:pointer;transition:all .15s;gap:4px}
 .snd-btn:active{transform:scale(.94);background:#1a1a1a}
-.snd-btn.playing{border-color:#C8FF00;background:rgba(200,255,0,.08)}
+.snd-btn.playing{border-color:#D4AF37;background:rgba(200,255,0,.08)}
 .lb-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#161616;border:1px solid #1a1a1a;margin-bottom:6px}
 .guest-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#161616;border-radius:8px;margin-bottom:6px;border:1px solid #1a1a1a}
 .notif-item{padding:10px 12px;border-left:3px solid;border-radius:0 8px 8px 0;background:#161616;margin-bottom:6px}
@@ -255,7 +255,7 @@ function BigoExpandedView({ participants, focusedIdx, onChangeFocus, onClose }) 
     <div className="bigo-expanded" onClick={onClose}>
       <div style={{textAlign:"center",marginBottom:12}}>
         <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:3}}>⬡ BIGO LIVE VIEW</span>
-        <span style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,marginLeft:10}}>tap outside to close</span>
+        <span style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginLeft:10}}>tap outside to close</span>
       </div>
       {/* Main focus octagon */}
       <div style={{position:"relative"}} onClick={function(e){e.stopPropagation();}}>
@@ -263,7 +263,7 @@ function BigoExpandedView({ participants, focusedIdx, onChangeFocus, onClose }) 
           <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
             <span style={{fontSize:56}}>{main ? main.avatar : "👤"}</span>
             <span style={{fontFamily:G.fBeb,fontSize:20,color:color}}>{main ? main.name : ""}</span>
-            <span style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>{main&&main.isHost?"HOST ·":""} {main&&main.micOn?"🎙️ LIVE":"🔇 MUTED"}</span>
+            <span style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>{main&&main.isHost?"HOST ·":""} {main&&main.micOn?"🎙️ LIVE":"🔇 MUTED"}</span>
           </div>
         </div>
         {/* Speaking ring */}
@@ -281,7 +281,7 @@ function BigoExpandedView({ participants, focusedIdx, onChangeFocus, onClose }) 
                 <span style={{fontSize:20}}>{p.avatar}</span>
                 <span style={{fontFamily:G.fMon,fontSize:6,color:c}}>{p.name.split(" ")[0].slice(0,6)}</span>
               </div>
-              {!p.micOn && <div style={{position:"absolute",top:2,right:2,fontSize:11}}>🔇</div>}
+              {!p.micOn && <div style={{position:"absolute",top:2,right:2,fontSize:8}}>🔇</div>}
             </div>
           );
         })}
@@ -413,8 +413,8 @@ function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
             <span className="pill pill-c">{liveCount} ACTIVE</span>
           </div>
           <div style={{display:"flex",gap:6}}>
-            <button onClick={function(){setBigoOpen(true);}} style={{padding:"3px 8px",background:"rgba(200,255,0,0.1)",border:"1px solid "+G.volt,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:11,color:G.volt}}>⬡ BIGO</button>
-            <button onClick={function(){setViewMode(viewMode==="panel"?"mini":"panel");}} style={{padding:"3px 8px",background:"rgba(0,229,255,0.08)",border:"1px solid "+G.cyan,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:11,color:G.cyan}}>
+            <button onClick={function(){setBigoOpen(true);}} style={{padding:"3px 8px",background:"rgba(200,255,0,0.1)",border:"1px solid "+G.volt,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:G.volt}}>⬡ BIGO</button>
+            <button onClick={function(){setViewMode(viewMode==="panel"?"mini":"panel");}} style={{padding:"3px 8px",background:"rgba(0,229,255,0.08)",border:"1px solid "+G.cyan,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:G.cyan}}>
               {viewMode==="panel"?"▦ MINI":"▤ FULL"}
             </button>
           </div>
@@ -433,14 +433,14 @@ function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
             <span style={{fontSize:22}}>{participants[focusedIdx].avatar}</span>
             <div style={{flex:1}}>
               <div style={{fontFamily:G.fBeb,fontSize:16,color:G.volt}}>{participants[focusedIdx].name}</div>
-              <div style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>
+              <div style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>
                 {participants[focusedIdx].isHost?"👑 HOST · ":""}
                 {participants[focusedIdx].isCoHost?"🥈 CO-HOST · ":""}
                 {participants[focusedIdx].micOn?"🎙️ MIC ON":"🔇 MUTED"}
                 {participants[focusedIdx].speaking?" · 🔊 SPEAKING":""}
               </div>
             </div>
-            <button onClick={function(){toggleMic(focusedIdx);}} style={{padding:"4px 10px",background:participants[focusedIdx].micOn?"rgba(139,0,0,0.4)":"rgba(0,229,255,0.1)",border:"1px solid "+(participants[focusedIdx].micOn?G.crimsonBright:G.cyan),borderRadius:6,cursor:"pointer",fontFamily:G.fMon,fontSize:11,color:participants[focusedIdx].micOn?G.crimsonBright:G.cyan}}>
+            <button onClick={function(){toggleMic(focusedIdx);}} style={{padding:"4px 10px",background:participants[focusedIdx].micOn?"rgba(139,0,0,0.4)":"rgba(0,229,255,0.1)",border:"1px solid "+(participants[focusedIdx].micOn?G.crimsonBright:G.cyan),borderRadius:6,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:participants[focusedIdx].micOn?G.crimsonBright:G.cyan}}>
               {participants[focusedIdx].micOn?"MUTE":"UNMUTE"}
             </button>
           </div>
@@ -500,7 +500,7 @@ function Soundboard() {
           return (
             <button key={snd.id} className="snd-btn">
               <span style={{fontSize:24}}>{snd.emoji}</span>
-              <span style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>{snd.label}</span>
+              <span style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>{snd.label}</span>
             </button>
           );
         })}
@@ -569,7 +569,7 @@ function NotificationsHub({ onClose }) {
           return (
             <div key={n.id} className="notif-item" style={{borderLeftColor:n.color}}>
               <div style={{fontFamily:G.fRaj,fontSize:13,color:G.white}}>{n.msg}</div>
-              <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim}}>{n.time}</div>
+              <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim}}>{n.time}</div>
             </div>
           );
         })}
@@ -595,7 +595,7 @@ function GuestControls() {
           return (
             <div key={g.id} className="guest-row">
               <div style={{flex:1}}>{g.name}</div>
-              <span style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>{g.role}</span>
+              <span style={{fontFamily:G.fMon,fontSize:9,color:G.gray}}>{g.role}</span>
             </div>
           );
         })}
@@ -623,7 +623,7 @@ function VODLibrary() {
               <div className="vod-thumb">{v.title}</div>
               <div style={{padding:"8px 10px"}}>
                 <div style={{fontFamily:G.fRaj,fontSize:11}}>{v.title}</div>
-                <div style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>{v.duration} • {v.views} views</div>
+                <div style={{fontFamily:G.fMon,fontSize:8,color:G.gray}}>{v.duration} • {v.views} views</div>
               </div>
             </div>
           );
@@ -891,7 +891,7 @@ function PKBattleEngine({ myName, onEnd }) {
           <div style={{fontFamily:G.fMon,fontSize:13,color:timeLeft <= 10 ? G.red : G.gold}} className={timeLeft <= 10 ? "pulse" : ""}>
             {fmtTime(timeLeft)}
           </div>
-          <button onClick={endBattle} style={{fontFamily:G.fMon,fontSize:11,color:G.gray,background:"none",border:"1px solid #333",borderRadius:4,padding:"2px 6px",cursor:"pointer"}}>END</button>
+          <button onClick={endBattle} style={{fontFamily:G.fMon,fontSize:9,color:G.gray,background:"none",border:"1px solid #333",borderRadius:4,padding:"2px 6px",cursor:"pointer"}}>END</button>
         </div>
       </div>
 
@@ -921,22 +921,22 @@ function PKBattleEngine({ myName, onEnd }) {
 
       {/* Who's winning banner */}
       <div style={{textAlign:"center",marginBottom:10}}>
-        <span className="pill" style={{background:meWinning?"rgba(139,0,0,0.3)":"rgba(0,229,255,0.1)",border:"1px solid "+(meWinning?G.crimsonBright:G.cyan),color:meWinning?G.crimsonBright:G.cyan,fontFamily:G.fOrb,fontSize:11,letterSpacing:2}}>
+        <span className="pill" style={{background:meWinning?"rgba(139,0,0,0.3)":"rgba(0,229,255,0.1)",border:"1px solid "+(meWinning?G.crimsonBright:G.cyan),color:meWinning?G.crimsonBright:G.cyan,fontFamily:G.fOrb,fontSize:9,letterSpacing:2}}>
           {meWinning ? "🔴 "+( myName||"YOU")+" LEADING" : "🔵 "+opponentName+" LEADING"}
         </span>
       </div>
 
       {/* Gift buttons */}
       <div style={{padding:"0 14px 10px"}}>
-        <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,marginBottom:6,letterSpacing:1}}>SEND GIFT TO SUPPORT YOUR STREAM</div>
+        <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginBottom:6,letterSpacing:1}}>SEND GIFT TO SUPPORT YOUR STREAM</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
           {PK_GIFTS.map(function(gift) {
             return (
               <button key={gift.id} className="snd-btn" onClick={function(){addEvent("me",gift);}}
                 style={{padding:"8px 4px"}}>
                 <span style={{fontSize:20}}>{gift.emoji}</span>
-                <span style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>💎{gift.gems}</span>
-                <span style={{fontFamily:G.fRaj,fontSize:11,color:G.gray}}>{gift.label}</span>
+                <span style={{fontFamily:G.fMon,fontSize:8,color:G.gold}}>💎{gift.gems}</span>
+                <span style={{fontFamily:G.fRaj,fontSize:9,color:G.gray}}>{gift.label}</span>
               </button>
             );
           })}
@@ -945,7 +945,7 @@ function PKBattleEngine({ myName, onEnd }) {
 
       {/* Live event feed */}
       <div style={{margin:"0 14px 14px",borderTop:"1px solid #1a1a1a",paddingTop:8}}>
-        <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,marginBottom:6,letterSpacing:1}}>LIVE GIFT FEED</div>
+        <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginBottom:6,letterSpacing:1}}>LIVE GIFT FEED</div>
         <div ref={eventListRef} style={{maxHeight:120,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
           {events.length === 0 && <div style={{fontFamily:G.fMon,fontSize:10,color:G.grayDim,textAlign:"center",padding:"8px 0"}}>Waiting for gifts…</div>}
           {events.map(function(ev) {
@@ -954,8 +954,8 @@ function PKBattleEngine({ myName, onEnd }) {
               <div key={ev.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 6px",borderRadius:6,background:isMe?"rgba(139,0,0,0.15)":"rgba(0,229,255,0.07)",borderLeft:"2px solid "+(isMe?G.crimsonBright:G.cyan)}}>
                 <span style={{fontSize:14}}>{ev.gift.emoji}</span>
                 <span style={{fontFamily:G.fRaj,fontSize:11,color:isMe?G.crimsonBright:G.cyan,flex:1}}>{ev.name}</span>
-                <span style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>+💎{ev.gift.gems}</span>
-                <span style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim}}>{ev.ts}</span>
+                <span style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>+💎{ev.gift.gems}</span>
+                <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{ev.ts}</span>
               </div>
             );
           })}
@@ -973,7 +973,7 @@ function LiveChat() {
   return (
     <div className="card" style={{margin:"0 16px 14px",border:"1px solid #1a1a1a"}}>
       <div style={{padding:"10px 14px",borderBottom:"1px solid #1a1a1a"}}>
-        <span style={{fontFamily:G.fOrb,fontSize:11,color:G.white,letterSpacing:2}}>💬 UNIVERSAL CHAT</span>
+        <span style={{fontFamily:G.fOrb,fontSize:9,color:G.white,letterSpacing:2}}>💬 UNIVERSAL CHAT</span>
       </div>
       <div style={{height:150,overflowY:"auto",padding:"8px"}}>
         {msgs.map(function(m) {
@@ -1032,14 +1032,14 @@ function DMWhisper({ localName }) {
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <span style={{fontSize:14}}>💬</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.purple,letterSpacing:2}}>DM / WHISPER</span>
-          {totalUnread>0&&<span style={{background:G.crimsonBright,color:"#fff",borderRadius:10,padding:"1px 6px",fontFamily:G.fMon,fontSize:11,fontWeight:700}}>{totalUnread}</span>}
+          {totalUnread>0&&<span style={{background:G.crimsonBright,color:"#fff",borderRadius:10,padding:"1px 6px",fontFamily:G.fMon,fontSize:9,fontWeight:700}}>{totalUnread}</span>}
           <span className="pill pill-r" style={{fontSize:7}}>PANELISTS ONLY</span>
         </div>
         <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
       </div>
       {open && view==="list" && (
         <div>
-          <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,padding:"6px 14px",letterSpacing:1}}>WHISPER=private · DM=seen after stream</div>
+          <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,padding:"6px 14px",letterSpacing:1}}>WHISPER=private · DM=seen after stream</div>
           {DM_PANELISTS.map(function(p){
             var msgs=threads[p.id]||[];var last=msgs.length?msgs[msgs.length-1]:null;var unread=unreadCount(p.id);
             return (
@@ -1051,11 +1051,11 @@ function DMWhisper({ localName }) {
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",justifyContent:"space-between"}}>
                     <span style={{fontFamily:G.fRaj,fontSize:13,fontWeight:700,color:G.white}}>{p.name}</span>
-                    <span style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim}}>{p.role}</span>
+                    <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{p.role}</span>
                   </div>
                   <div style={{fontFamily:G.fRaj,fontSize:11,color:G.gray,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{last?(last.whisper?"🤫 ":"")+last.text:"No messages yet"}</div>
                 </div>
-                {unread>0&&<div style={{width:17,height:17,borderRadius:"50%",background:G.crimsonBright,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:11,color:"#fff"}}>{unread}</div>}
+                {unread>0&&<div style={{width:17,height:17,borderRadius:"50%",background:G.crimsonBright,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:8,color:"#fff"}}>{unread}</div>}
               </div>
             );
           })}
@@ -1068,10 +1068,10 @@ function DMWhisper({ localName }) {
             <div style={{width:28,height:28,borderRadius:"50%",background:"radial-gradient(circle,"+selected.color+"33,#080808)",border:"2px solid "+selected.color,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fOrb,fontSize:11,color:selected.color}}>{selected.name[0]}</div>
             <div style={{flex:1}}>
               <div style={{fontFamily:G.fRaj,fontSize:13,fontWeight:700,color:G.white}}>{selected.name}</div>
-              <div style={{fontFamily:G.fMon,fontSize:11,color:G.gray}}>{selected.online?"● online":"○ offline"}</div>
+              <div style={{fontFamily:G.fMon,fontSize:8,color:G.gray}}>{selected.online?"● online":"○ offline"}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:5}}>
-              <span style={{fontFamily:G.fMon,fontSize:11,color:isWhisper?G.purple:G.gray}}>WHISPER</span>
+              <span style={{fontFamily:G.fMon,fontSize:8,color:isWhisper?G.purple:G.gray}}>WHISPER</span>
               <div onClick={function(){setIsWhisper(function(w){return !w;});}} style={{width:26,height:15,borderRadius:8,background:isWhisper?G.purple:G.grayDim,position:"relative",cursor:"pointer",transition:"background .2s"}}>
                 <div style={{position:"absolute",top:2,left:isWhisper?13:2,width:11,height:11,borderRadius:"50%",background:G.white,transition:"left .18s"}} />
               </div>
@@ -1123,7 +1123,7 @@ function GiftAnimationLayer({ gifts }) {
           <div key={g.id} className="gift-fly" style={{left:(g.x||gx)+"%",bottom:0,textAlign:"center"}}>
             <div style={{fontSize:(g.scale||1)*26+"px",filter:"drop-shadow(0 0 12px "+(g.color||G.gold)+")"}}>{g.emoji}</div>
             <div style={{fontFamily:G.fBeb,fontSize:(g.scale||1)*9+"px",color:g.color||G.gold}}>{g.name}</div>
-            {g.sender&&<div style={{fontFamily:G.fMon,fontSize:11,color:"rgba(255,255,255,0.7)"}}>{g.sender}</div>}
+            {g.sender&&<div style={{fontFamily:G.fMon,fontSize:8,color:"rgba(255,255,255,0.7)"}}>{g.sender}</div>}
           </div>
         );
       })}
@@ -1152,14 +1152,14 @@ function GiftShop({ onSend, gemBalance }) {
           <span style={{fontSize:14}}>🎁</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.gold,letterSpacing:2}}>GIFT SHOP</span>
           <span className="pill pill-g">ANIMATED</span>
-          <span style={{fontFamily:G.fMon,fontSize:11,color:G.purple}}>💎{bal}</span>
+          <span style={{fontFamily:G.fMon,fontSize:9,color:G.purple}}>💎{bal}</span>
         </div>
         <span style={{color:G.grayDim,fontSize:12}}>{open?"▲":"▼"}</span>
       </div>
       {open && (
         <div style={{padding:"10px"}}>
           {recentGift&&<div className="coin-spin" style={{textAlign:"center",padding:"6px",background:"rgba(212,175,55,.1)",marginBottom:8,borderRadius:8}}><span style={{fontFamily:G.fBeb,fontSize:14,color:G.gold}}>✨ {recentGift} SENT!</span></div>}
-          <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:8}}>90% OF GEM VALUE → REAL TIP TO CREATOR</div>
+          <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,letterSpacing:1,marginBottom:8}}>90% OF GEM VALUE → REAL TIP TO CREATOR</div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
             {GIFT_CATALOG.map(function(g){
               var ok = bal >= g.gems;
@@ -1170,7 +1170,7 @@ function GiftShop({ onSend, gemBalance }) {
                   style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 4px",borderRadius:10,border:"1px solid "+(isSending?g.color:ok?g.color+"44":"#111"),background:isSending?"rgba(255,255,255,0.08)":ok?G.surfaceBg:"#0a0a0a",cursor:ok?"pointer":"not-allowed",opacity:ok?1:.4,transition:"all .15s",transform:isSending?"scale(0.9)":"scale(1)"}}>
                   <span style={{fontSize:(g.scale||1)*14+"px",lineHeight:1,filter:ok?"drop-shadow(0 0 6px "+g.color+")":"none"}}>{g.emoji}</span>
                   <span style={{fontFamily:G.fMon,fontSize:7,color:ok?g.color:G.grayDim}}>{g.name}</span>
-                  <span style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>💎{g.gems}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:8,color:G.gold}}>💎{g.gems}</span>
                   <span style={{fontFamily:G.fMon,fontSize:7,color:G.green}}>≈${split.creator.toFixed(2)}</span>
                 </button>
               );
@@ -1200,22 +1200,22 @@ function StreamControls({ camOn, setCamOn, micOn, setMicOn, bitrate, fps, latenc
           <button onClick={function(){setCamOn(!camOn);}}
             style={{padding:"10px",borderRadius:8,border:"1px solid "+(camOn?G.cyan:"#333"),background:camOn?"rgba(0,229,255,0.1)":"#161616",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
             <span style={{fontSize:22}}>{camOn?"📷":"📵"}</span>
-            <span style={{fontFamily:G.fMon,fontSize:11,color:camOn?G.cyan:G.grayDim}}>CAM {camOn?"ON":"OFF"}</span>
+            <span style={{fontFamily:G.fMon,fontSize:9,color:camOn?G.cyan:G.grayDim}}>CAM {camOn?"ON":"OFF"}</span>
           </button>
           <button onClick={function(){setMicOn(!micOn);}}
             style={{padding:"10px",borderRadius:8,border:"1px solid "+(micOn?G.green:"#333"),background:micOn?"rgba(48,209,88,0.1)":"#161616",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
             <span style={{fontSize:22}}>{micOn?"🎙️":"🔇"}</span>
-            <span style={{fontFamily:G.fMon,fontSize:11,color:micOn?G.green:G.grayDim}}>MIC {micOn?"ON":"OFF"}</span>
+            <span style={{fontFamily:G.fMon,fontSize:9,color:micOn?G.green:G.grayDim}}>MIC {micOn?"ON":"OFF"}</span>
           </button>
         </div>
         {/* Quality */}
         <div>
-          <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,marginBottom:5,letterSpacing:1}}>VIDEO QUALITY</div>
+          <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,marginBottom:5,letterSpacing:1}}>VIDEO QUALITY</div>
           <div style={{display:"flex",gap:5}}>
             {["480p","720p","1080p","4K"].map(function(q){
               return (
                 <button key={q} onClick={function(){setQuality(q);}}
-                  style={{flex:1,padding:"5px 0",borderRadius:6,border:"1px solid "+(quality===q?G.cyan:"#333"),background:quality===q?"rgba(0,229,255,0.1)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:11,color:quality===q?G.cyan:G.grayDim}}>
+                  style={{flex:1,padding:"5px 0",borderRadius:6,border:"1px solid "+(quality===q?G.cyan:"#333"),background:quality===q?"rgba(0,229,255,0.1)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:quality===q?G.cyan:G.grayDim}}>
                   {q}
                 </button>
               );
@@ -1225,11 +1225,11 @@ function StreamControls({ camOn, setCamOn, micOn, setMicOn, bitrate, fps, latenc
         {/* Audio enhancements */}
         <div style={{display:"flex",gap:8}}>
           <button onClick={function(){setNoiseCancel(!noiseCancel);}}
-            style={{flex:1,padding:"6px 4px",borderRadius:7,border:"1px solid "+(noiseCancel?G.green:"#333"),background:noiseCancel?"rgba(48,209,88,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:11,color:noiseCancel?G.green:G.grayDim}}>
+            style={{flex:1,padding:"6px 4px",borderRadius:7,border:"1px solid "+(noiseCancel?G.green:"#333"),background:noiseCancel?"rgba(48,209,88,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:8,color:noiseCancel?G.green:G.grayDim}}>
             🎚️ NOISE CANCEL {noiseCancel?"ON":"OFF"}
           </button>
           <button onClick={function(){setEcho(!echo);}}
-            style={{flex:1,padding:"6px 4px",borderRadius:7,border:"1px solid "+(echo?G.green:"#333"),background:echo?"rgba(48,209,88,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:11,color:echo?G.green:G.grayDim}}>
+            style={{flex:1,padding:"6px 4px",borderRadius:7,border:"1px solid "+(echo?G.green:"#333"),background:echo?"rgba(48,209,88,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:8,color:echo?G.green:G.grayDim}}>
             🔊 ECHO CANCEL {echo?"ON":"OFF"}
           </button>
         </div>
@@ -1301,7 +1301,7 @@ function MonetizationWidget({ onTipAlert }) {
         <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:12}}>
           {/* Tip form */}
           <div>
-            <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:6}}>SEND TIP</div>
+            <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:6}}>SEND TIP</div>
             <form onSubmit={sendTip} style={{display:"flex",flexDirection:"column",gap:6}}>
               <div style={{display:"flex",gap:5}}>
                 {[1,5,10,20,50].map(function(v){
@@ -1315,7 +1315,7 @@ function MonetizationWidget({ onTipAlert }) {
           </div>
           {/* Sub tiers */}
           <div>
-            <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:6,cursor:"pointer",display:"flex",justifyContent:"space-between"}} onClick={function(){setSubOpen(!subOpen);}}>
+            <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:6,cursor:"pointer",display:"flex",justifyContent:"space-between"}} onClick={function(){setSubOpen(!subOpen);}}>
               SUBSCRIPTION TIERS <span>{subOpen?"▲":"▼"}</span>
             </div>
             {subOpen && SUB_TIERS.map(function(t){
@@ -1323,11 +1323,11 @@ function MonetizationWidget({ onTipAlert }) {
                 <div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:8,border:"1px solid "+t.color+"44",background:t.color+"0A",marginBottom:6}}>
                   <div style={{flex:1}}>
                     <div style={{fontFamily:G.fBeb,fontSize:16,color:t.color}}>{t.label}</div>
-                    <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim}}>{t.perks.join(" · ")}</div>
+                    <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{t.perks.join(" · ")}</div>
                   </div>
                   <div>
-                    <div style={{fontFamily:G.fBeb,fontSize:16,color:G.gold}}>${t.price}<span style={{fontSize:11,color:G.grayDim}}>/mo</span></div>
-                    <button style={{padding:"3px 8px",background:t.color+"22",border:"1px solid "+t.color,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:11,color:t.color}}>JOIN</button>
+                    <div style={{fontFamily:G.fBeb,fontSize:16,color:G.gold}}>${t.price}<span style={{fontSize:9,color:G.grayDim}}>/mo</span></div>
+                    <button style={{padding:"3px 8px",background:t.color+"22",border:"1px solid "+t.color,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:8,color:t.color}}>JOIN</button>
                   </div>
                 </div>
               );
@@ -1335,14 +1335,14 @@ function MonetizationWidget({ onTipAlert }) {
           </div>
           {/* Recent subs */}
           <div>
-            <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,letterSpacing:1,marginBottom:6}}>RECENT SUBSCRIBERS</div>
+            <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:6}}>RECENT SUBSCRIBERS</div>
             {recentSubs.map(function(s,i){
               return (
                 <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                   <span style={{fontSize:14}}>⭐</span>
                   <span style={{fontFamily:G.fRaj,fontSize:12,color:G.white,flex:1}}>{s.name}</span>
-                  <span style={{fontFamily:G.fMon,fontSize:11,color:G.gold}}>{s.tier}</span>
-                  <span style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim}}>{s.ts}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>{s.tier}</span>
+                  <span style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim}}>{s.ts}</span>
                 </div>
               );
             })}
@@ -1411,14 +1411,14 @@ function LiveAnalytics() {
                     <span style={{fontFamily:G.fMon,fontSize:7,color:G.grayDim,letterSpacing:1}}>{s.label}</span>
                   </div>
                   <div style={{fontFamily:G.fBeb,fontSize:22,color:s.color,lineHeight:1}}>{s.value}</div>
-                  <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,marginTop:2}}>{s.sub}</div>
+                  <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,marginTop:2}}>{s.sub}</div>
                 </div>
               );
             })}
           </div>
           {/* Sparkline chart */}
           <div>
-            <div style={{fontFamily:G.fMon,fontSize:11,color:G.grayDim,marginBottom:5,letterSpacing:1}}>VIEWER TREND (LIVE)</div>
+            <div style={{fontFamily:G.fMon,fontSize:8,color:G.grayDim,marginBottom:5,letterSpacing:1}}>VIEWER TREND (LIVE)</div>
             <div style={{display:"flex",alignItems:"flex-end",gap:3,height:40,background:"#0D0D0D",borderRadius:6,padding:"4px 6px",border:"1px solid #1a1a1a"}}>
               {history.map(function(v,i){
                 return (
@@ -1490,7 +1490,7 @@ function TipAlertBanner({ alert, onDismiss }) {
           <div style={{fontFamily:G.fOrb,fontSize:10,color:color,letterSpacing:2}}>TIP RECEIVED!</div>
           <div style={{fontFamily:G.fBeb,fontSize:18,color:G.white,lineHeight:1}}>{alert.name} {isTip?"sent a tip":"subscribed"}{alert.tier?" · "+alert.tier:""}</div>
           {isTip&&alert.msg&&<div style={{fontFamily:G.fRaj,fontSize:12,color:"rgba(255,255,255,0.7)"}}>{alert.msg}</div>}
-          {split&&<div style={{fontFamily:G.fMon,fontSize:11,color:G.green,marginTop:2}}>+{fmtMoney(split.creator)} to you · {fmtMoney(split.platform)} platform</div>}
+          {split&&<div style={{fontFamily:G.fMon,fontSize:9,color:G.green,marginTop:2}}>+{fmtMoney(split.creator)} to you · {fmtMoney(split.platform)} platform</div>}
         </div>
         {isTip&&alert.amount&&<div style={{fontFamily:G.fBeb,fontSize:22,color:color}}>{fmtMoney(parseFloat(alert.amount)||0)}</div>}
       </div>
@@ -1675,18 +1675,18 @@ function StreamTab({ autoStart, currentUser }) {
           {/* Host control bar */}
           {isHost && (
             <div style={{display:"flex",gap:6,padding:"8px 16px",overflowX:"auto"}}>
-              <button onClick={function(){ setShowZEGOSettings(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:11,cursor:"pointer",flexShrink:0}}>⚙️ SETTINGS</button>
-              <button onClick={function(){ setShowAura(true); }} style={{padding:"6px 12px",background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:6,color:"#8B5CF6",fontFamily:G.fMon,fontSize:11,cursor:"pointer",flexShrink:0}}>🤖 AURA</button>
-              <button onClick={function(){ setShowClip(true); }} style={{padding:"6px 12px",background:"rgba(200,255,0,0.06)",border:"1px solid rgba(200,255,0,0.2)",borderRadius:6,color:"#C8FF00",fontFamily:G.fMon,fontSize:11,cursor:"pointer",flexShrink:0}}>✂️ CLIP</button>
-              <button onClick={function(){ setShopPinned(function(v){ return !v; }); }} style={{padding:"6px 12px",background:shopPinned?"rgba(128,0,32,0.3)":"rgba(255,255,255,0.04)",border:"1px solid "+(shopPinned?"#800020":"#333"),borderRadius:6,color:shopPinned?G.gold:G.gray,fontFamily:G.fMon,fontSize:11,cursor:"pointer",flexShrink:0}}>📦 {shopPinned?"CLOSE SHOP":"OPEN SHOP"}</button>
+              <button onClick={function(){ setShowZEGOSettings(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>⚙️ SETTINGS</button>
+              <button onClick={function(){ setShowAura(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:"#D4AF37",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>🤖 AURA</button>
+              <button onClick={function(){ setShowClip(true); }} style={{padding:"6px 12px",background:"rgba(200,255,0,0.06)",border:"1px solid rgba(200,255,0,0.2)",borderRadius:6,color:"#D4AF37",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>✂️ CLIP</button>
+              <button onClick={function(){ setShopPinned(function(v){ return !v; }); }} style={{padding:"6px 12px",background:shopPinned?"rgba(128,0,32,0.3)":"rgba(255,255,255,0.04)",border:"1px solid "+(shopPinned?"#800020":"#333"),borderRadius:6,color:shopPinned?G.gold:G.gray,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>📦 {shopPinned?"CLOSE SHOP":"OPEN SHOP"}</button>
               <SubscribeButton creatorId={currentUser?.id} roomId={roomId} currentUser={currentUser} />
             </div>
           )}
 
           {/* Viewer controls bar */}
           <div style={{display:"flex",gap:6,padding:"4px 16px 8px",overflowX:"auto"}}>
-            <button onClick={function(){ setShowViewerControls(true); }} style={{padding:"6px 12px",background:"rgba(255,255,255,0.04)",border:"1px solid #333",borderRadius:6,color:G.gray,fontFamily:G.fMon,fontSize:11,cursor:"pointer",flexShrink:0}}>⚙️ CONTROLS</button>
-            <button onClick={function(){ setShowTipModal(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:11,cursor:"pointer",flexShrink:0}}>💰 TIP NOW</button>
+            <button onClick={function(){ setShowViewerControls(true); }} style={{padding:"6px 12px",background:"rgba(255,255,255,0.04)",border:"1px solid #333",borderRadius:6,color:G.gray,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>⚙️ CONTROLS</button>
+            <button onClick={function(){ setShowTipModal(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>💰 TIP NOW</button>
           </div>
 
           <EngagementDashboardV2 />
@@ -1724,7 +1724,7 @@ function DashboardTab({ currentUser }) {
       <div style={{display:"flex",gap:0,margin:"12px 0",borderBottom:"1px solid #1a1a1a"}}>
         {["overview","shop"].map(function(t){
           return (
-            <button key={t} onClick={function(){setDashTab(t);}} style={{padding:"7px 14px",background:"none",border:"none",borderBottom:"2px solid "+(dashTab===t?G.gold:"transparent"),cursor:"pointer",fontFamily:G.fMon,fontSize:11,letterSpacing:1,color:dashTab===t?G.gold:G.gray}}>
+            <button key={t} onClick={function(){setDashTab(t);}} style={{padding:"7px 14px",background:"none",border:"none",borderBottom:"2px solid "+(dashTab===t?G.gold:"transparent"),cursor:"pointer",fontFamily:G.fMon,fontSize:9,letterSpacing:1,color:dashTab===t?G.gold:G.gray}}>
               {t.toUpperCase()}
             </button>
           );
@@ -1810,7 +1810,7 @@ export default function SeeWhyLIVEv17() {
           <Link to="/messages" style={{position:"relative",textDecoration:"none"}}>
             <div style={{width:32,height:32,borderRadius:8,background:"rgba(128,0,32,0.2)",border:"1px solid rgba(212,175,55,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,cursor:"pointer"}}>💬</div>
             {unreadDMs.length > 0 && (
-              <div style={{position:"absolute",top:-4,right:-4,background:"#C41E3A",borderRadius:"50%",width:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:11,color:"#fff",fontWeight:700}}>{unreadDMs.length}</div>
+              <div style={{position:"absolute",top:-4,right:-4,background:"#C41E3A",borderRadius:"50%",width:15,height:15,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.fMon,fontSize:8,color:"#fff",fontWeight:700}}>{unreadDMs.length}</div>
             )}
           </Link>
         </div>

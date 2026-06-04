@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Volume2, Trash2, Play } from 'lucide-react';
+import SelectSheet from '@/components/shared/SelectSheet';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
@@ -82,16 +83,16 @@ export default function AlertConfig({ creatorId }) {
           />
 
           <div className="grid grid-cols-2 gap-2">
-            <select
+            <SelectSheet
+              label="Trigger Type"
               value={formData.trigger_type}
-              onChange={(e) => setFormData({ ...formData, trigger_type: e.target.value })}
-              className="px-3 py-2 rounded text-sm outline-none"
-              style={{ background: '#0A0710', border: `1px solid ${BORDER}`, color: 'white' }}
-            >
-              <option value="donation_amount">Donation Amount</option>
-              <option value="new_subscriber">New Subscriber</option>
-              <option value="custom">Custom Event</option>
-            </select>
+              onChange={(v) => setFormData({ ...formData, trigger_type: v })}
+              options={[
+                { value: 'donation_amount', label: 'Donation Amount' },
+                { value: 'new_subscriber', label: 'New Subscriber' },
+                { value: 'custom', label: 'Custom Event' },
+              ]}
+            />
             <input
               type="number"
               placeholder="Trigger value"
@@ -102,18 +103,12 @@ export default function AlertConfig({ creatorId }) {
             />
           </div>
 
-          <select
+          <SelectSheet
+            label="Sound Preset"
             value={formData.sound_preset}
-            onChange={(e) => setFormData({ ...formData, sound_preset: e.target.value })}
-            className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0A0710', border: `1px solid ${BORDER}`, color: 'white' }}
-          >
-            {SOUND_PRESETS.map((preset) => (
-              <option key={preset} value={preset}>
-                🔊 {preset.replace('_', ' ')}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setFormData({ ...formData, sound_preset: v })}
+            options={SOUND_PRESETS.map((preset) => ({ value: preset, label: '🔊 ' + preset.replace(/_/g, ' ') }))}
+          />
 
           <div className="flex gap-2 items-center">
             <Volume2 className="w-4 h-4 text-white/60" />

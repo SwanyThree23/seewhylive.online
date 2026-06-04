@@ -1340,8 +1340,8 @@ export default function App() {
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
               </div>
-              <div style={{ background: 'rgba(90,143,255,.08)', border: '1px solid rgba(90,143,255,.2)', borderRadius: 10, padding: '12px 8px' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#7AAEFF', letterSpacing: 1 }}>
+              <div style={{ background: 'rgba(212,133,74,.08)', border: '1px solid rgba(212,133,74,.2)', borderRadius: 10, padding: '12px 8px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#D4854A', letterSpacing: 1 }}>
                   {streamRecap.durationSecs >= 3600
                     ? Math.floor(streamRecap.durationSecs / 3600) + 'h ' + Math.floor((streamRecap.durationSecs % 3600) / 60) + 'm'
                     : Math.floor(streamRecap.durationSecs / 60) + 'm ' + (streamRecap.durationSecs % 60) + 's'}
