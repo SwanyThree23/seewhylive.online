@@ -133,9 +133,15 @@ export default function SettingsPage() {
     { label: 'Stream Scheduler',  href: 'StreamScheduler' },
     { label: 'Monetization',      href: 'Monetization' },
     { label: 'Analytics',         href: 'Analytics' },
+    { label: 'AI Hub',            href: 'AIHub' },
+    { label: 'Joyce AI',          href: 'JoyceAI' },
+    { label: 'INS Forge',         href: 'INSForge' },
+    { label: 'Podcast Studio',    href: 'PodcastStudio' },
+    { label: 'AI Music Studio',   href: 'AIMusic' },
     { label: 'Overlay Editor',    href: 'OverlayEditor' },
     { label: 'Scene Templates',   href: 'SceneTemplates' },
     { label: 'Stream Alerts',     href: 'StreamAlerts' },
+    { label: 'Platform Showcase', href: 'PlatformShowcase' },
   ];
 
   return (
