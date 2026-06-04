@@ -14,7 +14,7 @@ const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const COLORS = [GOLD, CRIMSON, '#8B5CF6', '#00F5FF', '#00FF88'];
+const COLORS = [GOLD, CRIMSON, '#D4AF37', '#C9A84C', '#6DBF7E'];
 
 const CHART_THEME = {
   cartesian: { stroke: 'rgba(255,255,255,0.06)' },
@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
         {isAdmin && (
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa', ...T }}>
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#a78bfa', ...T }}>
             Admin View
           </span>
         )}
@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <StatCard label="Total Views" value={totalViews} icon={Eye} color="#4fc3f7" />
           <StatCard label="Avg Viewers" value={avgViewers} icon={Users} color="#a78bfa" />
-          <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="#00FF88" />
+          <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="#6DBF7E" />
           <StatCard label="Rooms" value={rooms.length} icon={Radio} color={GOLD} />
           <StatCard label="Live Now" value={liveRooms} icon={Zap} color="#FF1564" sub="currently live" />
           <StatCard label="Subscribers" value={activeSubscriptions} icon={Star} color={GOLD} sub="active" />
@@ -188,7 +188,7 @@ export default function AnalyticsPage() {
                           <p className="text-xs font-black text-white" style={T}>{t.sender_name || 'Anonymous'}</p>
                           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{new Date(t.created_date).toLocaleDateString()}</p>
                         </div>
-                        <span className="text-sm font-black" style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>+${(t.amount || 0).toFixed(2)}</span>
+                        <span className="text-sm font-black" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>+${(t.amount || 0).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
             <DarkCard title="Subscription Summary">
               <div className="grid grid-cols-3 gap-4 text-center">
                 {[
-                  { status: 'active', color: '#00FF88', bg: 'rgba(0,255,136,0.06)' },
+                  { status: 'active', color: '#6DBF7E', bg: 'rgba(109,191,126,0.06)' },
                   { status: 'cancelled', color: '#FF1564', bg: 'rgba(255,21,100,0.06)' },
                   { status: 'expired', color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.03)' },
                 ].map(({ status, color, bg }) => {
@@ -305,7 +305,7 @@ export default function AnalyticsPage() {
                     <XAxis dataKey="name" tick={CHART_THEME.tick} />
                     <YAxis tick={CHART_THEME.tick} />
                     <Tooltip {...CHART_THEME.tooltip} />
-                    <Bar dataKey="count" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill="#D4AF37" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -324,7 +324,7 @@ export default function AnalyticsPage() {
                     <XAxis dataKey="month" tick={CHART_THEME.tick} />
                     <YAxis tick={CHART_THEME.tick} />
                     <Tooltip {...CHART_THEME.tooltip} />
-                    <Line type="monotone" dataKey="count" stroke="#00FF88" strokeWidth={2} dot={{ r: 4, fill: '#00FF88' }} />
+                    <Line type="monotone" dataKey="count" stroke="#6DBF7E" strokeWidth={2} dot={{ r: 4, fill: '#6DBF7E' }} />
                   </LineChart>
                 </ResponsiveContainer>
               )}

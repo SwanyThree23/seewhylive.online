@@ -69,6 +69,7 @@ export default function Layout({ children, currentPageName }) {
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
   var navigate = useNavigate();
+  var scrollPositions = React.useRef({});
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab
   var scrollPositions = React.useRef({});
@@ -114,6 +115,17 @@ export default function Layout({ children, currentPageName }) {
     window.addEventListener('keydown', handler);
     return function() { window.removeEventListener('keydown', handler); };
   }, []);
+
+  useEffect(function() {
+    var path = location.pathname;
+    var saved = scrollPositions.current[path];
+    if (saved !== undefined) {
+      window.requestAnimationFrame(function() { window.scrollTo({ top: saved, behavior: 'instant' }); });
+    }
+    return function() {
+      scrollPositions.current[path] = window.scrollY;
+    };
+  }, [location.pathname]);
 
   function isActive(href) {
     var path = location.pathname;
@@ -264,8 +276,8 @@ export default function Layout({ children, currentPageName }) {
             <motion.div
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed top-0 left-0 bottom-0 z-[91] flex flex-col overflow-y-auto"
-              style={{ width: '80vw', maxWidth: 320, background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)' }}>
+              className="fixed top-0 left-0 bottom-0 z-[91] flex flex-col overflow-y-auto w-full sm:w-[80vw] sm:max-w-[320px]"
+              style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)' }}>
 
               {/* Drawer header */}
               <div className="flex items-center justify-between px-4 pt-10 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>

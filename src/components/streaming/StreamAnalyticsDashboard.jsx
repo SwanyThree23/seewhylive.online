@@ -8,7 +8,7 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 // ── Real-time metric tile ───────────────────────────────────────────────────
 function MetricTile({ icon: Icon, label, value, unit, color, trend, sparkData }) {
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  const trendColor = trend === 'up' ? '#00FF88' : trend === 'down' ? '#FF1564' : 'rgba(255,255,255,0.3)';
+  const trendColor = trend === 'up' ? '#6DBF7E' : trend === 'down' ? '#FF1564' : 'rgba(255,255,255,0.3)';
   return (
     <div className="rounded-xl p-3 space-y-2 relative overflow-hidden"
       style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${color}20` }}>
@@ -41,7 +41,7 @@ function MetricTile({ icon: Icon, label, value, unit, color, trend, sparkData })
 // ── Status badge for RTMP destinations ─────────────────────────────────────
 function DestinationStatus({ platform, status }) {
   const cfg = {
-    live:       { color: '#00FF88', dot: true,  label: 'LIVE' },
+    live:       { color: '#6DBF7E', dot: true,  label: 'LIVE' },
     connecting: { color: '#FFB800', dot: true,  label: 'Connecting' },
     error:      { color: '#FF1564', dot: false, label: 'Error' },
     offline:    { color: 'rgba(255,255,255,0.2)', dot: false, label: 'Idle' },
@@ -63,7 +63,7 @@ function DestinationStatus({ platform, status }) {
 function NetworkGauge({ qualityScore }) {
   const segments = 10;
   const filled = Math.round((qualityScore / 100) * segments);
-  const color = qualityScore >= 80 ? '#00FF88' : qualityScore >= 50 ? '#FFB800' : '#FF1564';
+  const color = qualityScore >= 80 ? '#6DBF7E' : qualityScore >= 50 ? '#FFB800' : '#FF1564';
   const label = qualityScore >= 80 ? 'Excellent' : qualityScore >= 50 ? 'Fair' : 'Poor';
   return (
     <div className="flex items-center gap-2">
@@ -187,8 +187,8 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#00F5FF]" />
-          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#00F5FF', letterSpacing: '0.08em' }}>
+          <Activity className="w-4 h-4 text-[#C9A84C]" />
+          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#C9A84C', letterSpacing: '0.08em' }}>
             Stream Analytics
           </span>
         </div>
@@ -206,17 +206,17 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
 
       {/* Metric grid */}
       <div className="grid grid-cols-2 gap-2">
-        <MetricTile icon={Users} label="Viewers" value={metrics.viewers} color="#00F5FF" trend={getTrend('viewers')} sparkData={viewerSparkData} />
-        <MetricTile icon={MessageSquare} label="Chat/min" value={metrics.messages} color="#8B5CF6" trend={getTrend('messages')} />
+        <MetricTile icon={Users} label="Viewers" value={metrics.viewers} color="#C9A84C" trend={getTrend('viewers')} sparkData={viewerSparkData} />
+        <MetricTile icon={MessageSquare} label="Chat/min" value={metrics.messages} color="#D4AF37" trend={getTrend('messages')} />
         <MetricTile icon={Radio} label="Bitrate" value={metrics.bitrate > 0 ? `${(metrics.bitrate/1000).toFixed(1)}` : '—'} unit="Mbps" color="#d4af37" trend={getTrend('bitrate')} sparkData={bitrateSparkData} />
-        <MetricTile icon={Zap} label="FPS" value={metrics.fps || '—'} color="#00FF88" trend="stable" />
+        <MetricTile icon={Zap} label="FPS" value={metrics.fps || '—'} color="#6DBF7E" trend="stable" />
         <MetricTile icon={Activity} label="Latency" value={metrics.latency || '—'} unit="ms" color={metrics.latency > 100 ? '#FF1564' : '#FFB800'} trend={getTrend('latency')} />
         <MetricTile icon={Eye} label="Peak Viewers" value={Math.max(metrics.viewers, ...history.map(h => h.viewers || 0))} color="#FF1564" trend="stable" />
       </div>
 
       {/* Network quality bar */}
       <div className="rounded-xl px-3 py-2.5 space-y-1.5"
-        style={{ background: 'rgba(0,245,255,0.04)', border: '1px solid rgba(0,245,255,0.1)' }}>
+        style={{ background: 'rgba(201,168,76,0.04)', border: '1px solid rgba(201,168,76,0.1)' }}>
         <span className="text-[11px] font-bold uppercase text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Network Quality</span>
         <NetworkGauge qualityScore={metrics.networkQuality} />
       </div>
@@ -242,17 +242,17 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
               <AreaChart data={history} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
                 <defs>
                   <linearGradient id="viewerGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00F5FF" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#00F5FF" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#C9A84C" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="t" hide />
                 <Tooltip
-                  contentStyle={{ background: '#0d0618', border: '1px solid rgba(0,245,255,0.2)', borderRadius: 8, fontSize: 10 }}
+                  contentStyle={{ background: '#0d0618', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, fontSize: 10 }}
                   labelStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
                   formatter={(v) => [v, 'Viewers']}
                 />
-                <Area type="monotone" dataKey="viewers" stroke="#00F5FF" fill="url(#viewerGrad)" strokeWidth={1.5} dot={false} />
+                <Area type="monotone" dataKey="viewers" stroke="#C9A84C" fill="url(#viewerGrad)" strokeWidth={1.5} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

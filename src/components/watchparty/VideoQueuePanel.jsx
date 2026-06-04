@@ -23,11 +23,11 @@ function getYtThumb(url) {
 function StatusBadge({ status }) {
   const cfg = {
     queued:   { label: 'Queued',   bg: `rgba(212,175,55,0.15)`,  color: GOLD,     border: `rgba(212,175,55,0.3)` },
-    playing:  { label: 'Playing',  bg: `rgba(0,255,136,0.12)`,   color: '#00FF88', border: `rgba(0,255,136,0.3)`, pulse: true },
+    playing:  { label: 'Playing',  bg: `rgba(109,191,126,0.12)`,   color: '#6DBF7E', border: `rgba(109,191,126,0.3)`, pulse: true },
     played:   { label: 'Played',   bg: `rgba(255,255,255,0.05)`, color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' },
     skipped:  { label: 'Skipped',  bg: `rgba(128,0,32,0.2)`,     color: '#ff6680', border: `rgba(128,0,32,0.4)` },
     removed:  { label: 'Removed',  bg: `rgba(128,0,32,0.15)`,    color: '#ff6680', border: `rgba(128,0,32,0.3)` },
-    pending:  { label: 'Pending ✓',bg: `rgba(139,92,246,0.15)`,  color: '#8B5CF6', border: `rgba(139,92,246,0.3)` },
+    pending:  { label: 'Pending ✓',bg: `rgba(212,175,55,0.15)`,  color: '#D4AF37', border: `rgba(212,175,55,0.3)` },
   }[status] || { label: status, bg: 'transparent', color: 'gray', border: 'gray' };
 
   return (
@@ -136,8 +136,8 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
     <motion.div layout initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
       className="flex items-center gap-2 rounded-lg p-2 group"
       style={{
-        background: isPlaying ? 'rgba(212,175,55,0.08)' : isPending ? 'rgba(139,92,246,0.07)' : 'rgba(255,255,255,0.03)',
-        border: isPlaying ? `1px solid rgba(212,175,55,0.35)` : isPending ? '1px solid rgba(139,92,246,0.2)' : '1px solid rgba(255,255,255,0.07)',
+        background: isPlaying ? 'rgba(212,175,55,0.08)' : isPending ? 'rgba(212,175,55,0.07)' : 'rgba(255,255,255,0.03)',
+        border: isPlaying ? `1px solid rgba(212,175,55,0.35)` : isPending ? '1px solid rgba(212,175,55,0.2)' : '1px solid rgba(255,255,255,0.07)',
         borderLeft: isPlaying ? `3px solid ${GOLD}` : undefined,
       }}>
 
@@ -173,7 +173,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
             <button disabled={alreadyVoted}
               onClick={() => voteMut.mutate({ dir: 'up' })}
               className="flex items-center gap-0.5 px-1.5 py-1 rounded text-[11px] font-bold transition-all"
-              style={{ background: 'rgba(0,255,136,0.1)', color: alreadyVoted ? 'rgba(255,255,255,0.2)' : '#00FF88', border: '1px solid rgba(0,255,136,0.2)' }}>
+              style={{ background: 'rgba(109,191,126,0.1)', color: alreadyVoted ? 'rgba(255,255,255,0.2)' : '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)' }}>
               <ThumbsUp className="w-2.5 h-2.5" />{item.votes_up || 0}
             </button>
             <button disabled={alreadyVoted}
@@ -189,7 +189,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
             {isPending && (
               <button onClick={() => actionMut.mutate({ host_approved: true })}
                 className="w-6 h-6 rounded flex items-center justify-center"
-                style={{ background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.3)' }}>
+                style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)' }}>
                 <CheckCircle className="w-3 h-3 text-green-400" />
               </button>
             )}

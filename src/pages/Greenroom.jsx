@@ -9,22 +9,23 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import SelectSheet from '../components/shared/SelectSheet';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
 const DEST_COLORS = {
-  room:        { label: 'ROOM',        bg: 'rgba(212,175,55,0.15)',  color: GOLD,     border: 'rgba(212,175,55,0.35)' },
-  panel:       { label: 'PANEL',       bg: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: 'rgba(139,92,246,0.35)' },
-  watch_party: { label: 'WATCH PARTY', bg: 'rgba(0,245,255,0.1)',   color: '#00F5FF', border: 'rgba(0,245,255,0.25)' },
-  new_room:    { label: 'NEW ROOM',    bg: 'rgba(0,255,136,0.1)',   color: '#00FF88', border: 'rgba(0,255,136,0.25)' },
+  room:        { label: 'ROOM',        bg: 'rgba(212,175,55,0.15)',  color: GOLD,      border: 'rgba(212,175,55,0.35)' },
+  panel:       { label: 'PANEL',       bg: 'rgba(212,133,74,0.15)', color: '#D4854A', border: 'rgba(212,133,74,0.35)' },
+  watch_party: { label: 'WATCH PARTY', bg: 'rgba(128,0,32,0.15)',   color: '#C0395A', border: 'rgba(128,0,32,0.35)' },
+  new_room:    { label: 'NEW ROOM',    bg: 'rgba(201,168,76,0.12)', color: GOLD,      border: 'rgba(201,168,76,0.3)' },
 };
 
 const ROLES = ['audience', 'speaker', 'guest', 'co-host'];
 
 function PermissionPill({ label, status }) {
   const cfg = {
-    granted: { color: '#00FF88', border: 'rgba(0,255,136,0.3)', icon: '✓' },
+    granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
     denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
     prompt:  { color: '#FFD700', border: 'rgba(255,215,0,0.3)',  icon: '…' },
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
@@ -422,11 +423,12 @@ export default function GreenroomPage() {
                     style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Join As
                   </label>
-                  <select value={roleRequested} onChange={e => setRoleRequested(e.target.value)}
-                    className="w-full h-8 px-2 rounded text-[10px]"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}>
-                    {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
-                  </select>
+                  <SelectSheet
+                    label="Join As"
+                    value={roleRequested}
+                    onChange={function(v) { setRoleRequested(v); }}
+                    options={ROLES.map(function(r) { return { value: r, label: r.charAt(0).toUpperCase() + r.slice(1) }; })}
+                  />
                 </div>
                 <div>
                   <label className="text-[11px] font-black uppercase block mb-1"
@@ -543,9 +545,9 @@ export default function GreenroomPage() {
               {deviceCheckPassed && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                  style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)' }}>
+                  style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)' }}>
                   <CheckCircle className="w-4 h-4 text-green-400" />
-                  <span className="text-[10px] font-black uppercase" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <span className="text-[10px] font-black uppercase" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Device Check ✓
                   </span>
                 </motion.div>

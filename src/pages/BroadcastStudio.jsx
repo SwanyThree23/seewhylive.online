@@ -41,33 +41,33 @@ const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Video sync engine ────────────────────────────────────────────────────────
-function useSyncEngine({ party, isHost, onTimeSync }) {
+function useSyncEngine({ party, isController, onTimeSync }) {
   const qc = useQueryClient();
 
   const pushState = useCallback(async (playerState) => {
-    if (!isHost || !party?.id) return;
+    if (!isController || !party?.id) return;
     await base44.entities.WatchParty.update(party.id, {
       playback_state: playerState.playing ? 'playing' : 'paused',
       current_time: playerState.currentTime,
       updated_at_ms: Date.now(),
     });
-  }, [isHost, party?.id]);
+  }, [isController, party?.id]);
 
   useEffect(() => {
     if (!party?.id) return;
     const unsub = base44.entities.WatchParty.subscribe((event) => {
       if (event.id !== party.id) return;
-      if (!isHost && event.data) onTimeSync(event.data);
+      if (!isController && event.data) onTimeSync(event.data);
       qc.invalidateQueries(['broadcast-party', party.id]);
     });
     return unsub;
-  }, [party?.id, isHost, onTimeSync, qc]);
+  }, [party?.id, isController, onTimeSync, qc]);
 
   return { pushState };
 }
 
 // ── YouTube player ───────────────────────────────────────────────────────────
-function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
+function YouTubeEmbed({ videoId, isController, syncData, onStateChange }) {
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
 
@@ -79,10 +79,10 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
     window.onYouTubeIframeAPIReady = () => {
       playerRef.current = new window.YT.Player(iframeRef.current, {
         videoId,
-        playerVars: { autoplay: 0, controls: isHost ? 1 : 0 },
+        playerVars: { autoplay: 0, controls: isController ? 1 : 0 },
         events: {
           onStateChange: (e) => {
-            if (!isHost) return;
+            if (!isController) return;
             const s = e.data;
             if (s === window.YT.PlayerState.PLAYING || s === window.YT.PlayerState.PAUSED) {
               onStateChange({ playing: s === window.YT.PlayerState.PLAYING, currentTime: playerRef.current?.getCurrentTime() || 0 });
@@ -95,7 +95,7 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
 
   // Push every 3s during playback so viewers stay in sync
   useEffect(() => {
-    if (!isHost) return;
+    if (!isController) return;
     const iv = setInterval(() => {
       if (!playerRef.current?.getPlayerState) return;
       if (playerRef.current.getPlayerState() === window.YT?.PlayerState?.PLAYING) {
@@ -103,54 +103,54 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
       }
     }, 3000);
     return () => clearInterval(iv);
-  }, [isHost, onStateChange]);
+  }, [isController, onStateChange]);
 
   useEffect(() => {
-    if (isHost || !playerRef.current || !syncData) return;
+    if (isController || !playerRef.current || !syncData) return;
     const lag = Date.now() - (syncData.updated_at_ms || Date.now());
     const adj = (syncData.current_time || 0) + lag / 1000;
     const cur = playerRef.current.getCurrentTime?.() || 0;
     if (Math.abs(cur - adj) > 2) playerRef.current.seekTo?.(adj, true);
     if (syncData.playback_state === 'playing') playerRef.current.playVideo?.();
     else playerRef.current.pauseVideo?.();
-  }, [syncData, isHost]);
+  }, [syncData, isController]);
 
   return <div ref={iframeRef} className="w-full h-full" />;
 }
 
 // ── Direct video player ──────────────────────────────────────────────────────
-function DirectPlayer({ url, isHost, syncData, onStateChange }) {
+function DirectPlayer({ url, isController, syncData, onStateChange }) {
   const videoRef = useRef(null);
 
   const handleEvent = () => {
-    if (!isHost || !videoRef.current) return;
+    if (!isController || !videoRef.current) return;
     onStateChange({ playing: !videoRef.current.paused, currentTime: videoRef.current.currentTime });
   };
 
   useEffect(() => {
-    if (!isHost) return;
+    if (!isController) return;
     const iv = setInterval(() => {
       if (!videoRef.current || videoRef.current.paused) return;
       onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
     }, 3000);
     return () => clearInterval(iv);
-  }, [isHost, onStateChange]);
+  }, [isController, onStateChange]);
 
   useEffect(() => {
-    if (isHost || !videoRef.current || !syncData) return;
+    if (isController || !videoRef.current || !syncData) return;
     const v = videoRef.current;
     const lag = Date.now() - (syncData.updated_at_ms || Date.now());
     const adj = (syncData.current_time || 0) + lag / 1000;
     if (Math.abs(v.currentTime - adj) > 2) v.currentTime = adj;
     if (syncData.playback_state === 'playing') v.play().catch(() => {});
     else v.pause();
-  }, [syncData, isHost]);
+  }, [syncData, isController]);
 
   return (
     <video
       ref={videoRef}
       src={url}
-      controls={isHost}
+      controls={isController}
       className="w-full h-full object-contain bg-black"
       onPlay={handleEvent}
       onPause={handleEvent}
@@ -193,65 +193,6 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
   );
 }
 
-// ── Gallery stage — all participant streams in a responsive grid ──────────
-function GalleryStage({ slots, theaterMode }) {
-  const count = slots.length || 1;
-  const cols = count <= 1 ? 1 : count <= 4 ? 2 : count <= 9 ? 3 : 4;
-  return (
-    <div
-      className="w-full h-full"
-      style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4, padding: 4, background: '#000' }}
-    >
-      {slots.map((slot, i) => (
-        <GalleryTile key={i} slot={slot} isFirst={i === 0} />
-      ))}
-      {slots.length === 0 && (
-        <div className="flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>
-          No active streams
-        </div>
-      )}
-    </div>
-  );
-}
-
-function GalleryTile({ slot, isFirst }) {
-  const videoRef = useRef(null);
-  useEffect(() => {
-    if (videoRef.current && slot.stream) videoRef.current.srcObject = slot.stream;
-  }, [slot.stream]);
-
-  return (
-    <div className="relative rounded-lg overflow-hidden bg-[#0d0618]" style={{ border: '1px solid rgba(212,175,55,0.12)' }}>
-      {slot.stream ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted={isFirst}
-          className="w-full h-full object-cover"
-          style={{ minHeight: 60 }}
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 60 }}>
-          <span className="text-white/20 text-xs" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {slot.label}
-          </span>
-        </div>
-      )}
-      <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between">
-        <span className="text-[10px] font-bold truncate"
-          style={{ color: 'rgba(255,255,255,0.7)', fontFamily: 'Barlow Condensed, sans-serif',
-            background: 'rgba(0,0,0,0.6)', padding: '1px 4px', borderRadius: 3 }}>
-          {slot.label}
-        </span>
-        {slot.stream?.active && (
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00FF88', flexShrink: 0, boxShadow: '0 0 4px rgba(0,255,136,0.6)' }} />
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Create screen ────────────────────────────────────────────────────────────
 function CreateScreen({ onSubmit, isPending }) {
   const [title, setTitle] = useState('');
@@ -262,7 +203,6 @@ function CreateScreen({ onSubmit, isPending }) {
     { id: 'hybrid',  icon: '⚡', label: 'Hybrid',    desc: 'Video + live panel' },
     { id: 'watch',   icon: '🎬', label: 'Watch Party',desc: 'Sync video for everyone' },
     { id: 'live',    icon: '🎙️', label: 'Live Panel', desc: 'Camera-only broadcast' },
-    { id: 'gallery', icon: '⊞', label: 'Gallery',    desc: 'All cameras in a grid' },
   ];
 
   return (
@@ -497,7 +437,9 @@ export default function BroadcastStudio() {
   const isHost = party?.host_id === user?.id;
   const myMember = members.find(m => m.user_id === user?.id);
   const isCoHost = myMember?.role === 'cohost';
+  const isSpeaker = myMember?.role === 'speaker';
   const canManage = isHost || isCoHost;
+  const canStream = isHost || isCoHost || isSpeaker;
 
   const speakingName = members.find(m => m.is_audio_enabled && m.user_id !== user?.id)?.user_name || null;
 
@@ -513,7 +455,7 @@ export default function BroadcastStudio() {
   });
 
   const onTimeSync = useCallback((data) => setSyncData(data), []);
-  const { pushState } = useSyncEngine({ party, isHost, onTimeSync });
+  const { pushState } = useSyncEngine({ party, isController: canManage, onTimeSync });
 
   // Auto-join as member
   useEffect(() => {
@@ -577,6 +519,12 @@ export default function BroadcastStudio() {
     qc.invalidateQueries(['broadcast-members', partyId]);
   };
 
+  const promoteSpeaker = async (member) => {
+    await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
+    toast.success(`${member.user_name} added to panel`);
+    qc.invalidateQueries(['broadcast-members', partyId]);
+  };
+
   const demoteToAudience = async (member) => {
     await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
     qc.invalidateQueries(['broadcast-members', partyId]);
@@ -615,7 +563,8 @@ export default function BroadcastStudio() {
   const compositorSlots = React.useMemo(() => {
     const slots = [];
     if (localStream) {
-      slots.push({ stream: localStream, label: user?.full_name || user?.email || 'You (Host)' });
+      const roleLabel = isHost ? 'Host' : isCoHost ? 'Co-Host' : isSpeaker ? 'Panel' : 'You';
+      slots.push({ stream: localStream, label: user?.full_name || user?.email || `You (${roleLabel})` });
     }
     if (remoteStreams) {
       remoteStreams.forEach((stream, peerId) => {
@@ -726,20 +675,20 @@ export default function BroadcastStudio() {
                 }}
               />
             )}
-            {isHost && (
+            {canStream && (
               <CompositorOverlay
                 layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
                 slots={compositorSlots}
                 overlayConfig={compositorOverlay}
                 userId={user?.id}
-                onScreenCapture={studioMode === 'watch' ? async () => {
+                onScreenCapture={(studioMode === 'watch' || studioMode === 'hybrid') ? async () => {
                   const s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
                   return s;
                 } : undefined}
-                isHost={isHost}
+                isHost={canStream}
               />
             )}
-            {isHost && (
+            {canStream && (
               <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} />
             )}
             {isHost && (
@@ -764,10 +713,9 @@ export default function BroadcastStudio() {
           <span className="text-[10px] font-bold shrink-0" style={{ color: GOLD, ...T }}>{members.length}/20</span>
           <div className="flex items-center gap-1 ml-1">
             {[
-              { id: 'hybrid',  icon: '⚡', label: 'Hybrid' },
-              { id: 'watch',   icon: '🎬', label: 'Watch' },
-              { id: 'live',    icon: '🎙', label: 'Live' },
-              { id: 'gallery', icon: '⊞',  label: 'Gallery' },
+              { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
+              { id: 'watch',  icon: '🎬', label: 'Watch' },
+              { id: 'live',   icon: '🎙', label: 'Live' },
             ].map(mod => (
               <button key={mod.id} onClick={() => setStudioMode(mod.id)}
                 className="text-[11px] px-2 py-0.5 rounded-full font-black uppercase transition-all active:scale-95"
@@ -788,8 +736,14 @@ export default function BroadcastStudio() {
           )}
           {isCoHost && !isHost && (
             <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
-              style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)', ...T }}>
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
               Co-Host
+            </span>
+          )}
+          {isSpeaker && !isHost && !isCoHost && (
+            <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(212,133,74,0.12)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+              Panel
             </span>
           )}
           {speakingName && (
@@ -889,20 +843,18 @@ export default function BroadcastStudio() {
               party.video_type === 'youtube' && ytId ? (
                 <YouTubeEmbed
                   videoId={ytId}
-                  isHost={isHost}
-                  syncData={isHost ? null : (syncData || party)}
+                  isController={canManage}
+                  syncData={canManage ? null : (syncData || party)}
                   onStateChange={pushState}
                 />
               ) : (
                 <DirectPlayer
                   url={safeVideoUrl}
-                  isHost={isHost}
-                  syncData={isHost ? null : (syncData || party)}
+                  isController={canManage}
+                  syncData={canManage ? null : (syncData || party)}
                   onStateChange={pushState}
                 />
               )
-            ) : studioMode === 'gallery' ? (
-              <GalleryStage slots={compositorSlots} theaterMode={theaterMode} />
             ) : (
               <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} />
             )}
@@ -912,8 +864,8 @@ export default function BroadcastStudio() {
               <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} />
             )}
 
-            {/* Sync badge for viewers */}
-            {!isHost && (
+            {/* Sync badge for audience viewers */}
+            {!canStream && (
               <div className="absolute top-2 right-2 text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
                 style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)', color: 'white' }}>
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
@@ -1013,7 +965,7 @@ export default function BroadcastStudio() {
                   {[10, 30, 60].map(s => (
                     <button key={s} onClick={() => setSlowModeCooldown(s)}
                       className="text-[11px] px-1.5 py-0.5 rounded-full"
-                      style={{ background: slowModeCooldown === s ? 'rgba(0,245,255,0.2)' : 'rgba(255,255,255,0.05)', color: slowModeCooldown === s ? '#00F5FF' : 'rgba(255,255,255,0.3)', border: slowModeCooldown === s ? '1px solid rgba(0,245,255,0.3)' : '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      style={{ background: slowModeCooldown === s ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.05)', color: slowModeCooldown === s ? '#C9A84C' : 'rgba(255,255,255,0.3)', border: slowModeCooldown === s ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {s}s
                     </button>
                   ))}
@@ -1021,7 +973,7 @@ export default function BroadcastStudio() {
               )}
               <button
                 onClick={() => setSlowMode(v => !v)}
-                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: slowMode ? '#00F5FF' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: slowMode ? '#C9A84C' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
               >
                 <div style={{ position: 'absolute', top: 2, left: slowMode ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </button>
@@ -1150,10 +1102,15 @@ export default function BroadcastStudio() {
                             {(mem?.user_name || '?')[0].toUpperCase()}
                           </div>
                           <span className="flex-1 text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{mem?.user_name || uid}</span>
+                          <button onClick={() => { if (mem) promoteSpeaker(mem); dismissRaisedHand(uid); }}
+                            className="text-[11px] px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(212,133,74,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+                            ✓ Panel
+                          </button>
                           <button onClick={() => { if (mem) promoteCoHost(mem); dismissRaisedHand(uid); }}
                             className="text-[11px] px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(0,255,136,0.1)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
-                            ✓ Allow
+                            style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                            Co-host
                           </button>
                           <button onClick={() => dismissRaisedHand(uid)}
                             className="text-[11px] px-1.5 py-0.5 rounded"
@@ -1170,35 +1127,46 @@ export default function BroadcastStudio() {
                   const isMe = mem.user_id === user?.id;
                   const isHostMem = mem.user_id === party.host_id;
                   const isCoHostMem = mem.role === 'cohost';
+                  const isSpeakerMem = mem.role === 'speaker';
+                  const isOnStage = isHostMem || isCoHostMem || isSpeakerMem;
                   const hasHand = raisedHands.has(mem.user_id);
+                  const avatarBg = isHostMem ? 'rgba(212,175,55,0.2)' : isCoHostMem ? 'rgba(212,175,55,0.12)' : isSpeakerMem ? 'rgba(212,133,74,0.18)' : 'rgba(255,255,255,0.08)';
+                  const avatarColor = isHostMem ? GOLD : isCoHostMem ? GOLD : isSpeakerMem ? '#D4854A' : 'rgba(255,255,255,0.4)';
                   return (
                     <div key={mem.id} className="flex items-center gap-2 p-2 rounded-lg"
                       style={{ background: 'rgba(255,255,255,0.03)', border: hasHand ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.05)' }}>
                       <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs shrink-0 relative"
-                        style={{ background: isHostMem ? 'rgba(212,175,55,0.2)' : isCoHostMem ? 'rgba(0,245,255,0.15)' : 'rgba(139,92,246,0.2)', color: isHostMem ? GOLD : isCoHostMem ? '#00F5FF' : '#8B5CF6' }}>
+                        style={{ background: avatarBg, color: avatarColor }}>
                         {(mem.user_name || '?')[0].toUpperCase()}
                         {hasHand && <span className="absolute -top-1 -right-1 text-[10px]">✋</span>}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-white font-semibold truncate">{mem.user_name}{isMe ? ' (you)' : ''}</p>
+                        <p className="text-[11px] text-white font-semibold truncate">{mem.user_name}{isMe ? ' (you)' : ''}</p>
                         <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                          {isHostMem ? '👑 Host' : isCoHostMem ? '🎙️ Co-host' : 'Audience'}
+                          {isHostMem ? '👑 Host' : isCoHostMem ? '🎙 Co-host' : isSpeakerMem ? '🎤 Panel' : '👁 Audience'}
                         </p>
                       </div>
                       {canManage && !isMe && !isHostMem && (
-                        <div className="flex items-center gap-1">
-                          {isCoHostMem ? (
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {isOnStage ? (
                             <button onClick={() => demoteToAudience(mem)}
                               className="text-[11px] px-1.5 py-0.5 rounded"
                               style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
-                              Demote
+                              Remove
                             </button>
                           ) : (
-                            <button onClick={() => promoteCoHost(mem)}
-                              className="text-[11px] px-1.5 py-0.5 rounded"
-                              style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
-                              Co-host
-                            </button>
+                            <>
+                              <button onClick={() => promoteSpeaker(mem)}
+                                className="text-[11px] px-1.5 py-0.5 rounded"
+                                style={{ background: 'rgba(212,133,74,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+                                Panel
+                              </button>
+                              <button onClick={() => promoteCoHost(mem)}
+                                className="text-[11px] px-1.5 py-0.5 rounded"
+                                style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+                                Co-host
+                              </button>
+                            </>
                           )}
                           <button onClick={() => kickMember(mem)}
                             className="text-[11px] px-1.5 py-0.5 rounded"
@@ -1304,129 +1272,67 @@ export default function BroadcastStudio() {
             {/* 🤖 AI TAB */}
             {activeTab === 'ai' && (
               <div className="p-3 space-y-4">
-                {/* AI Music Stream Queue */}
-                {(() => {
-                  const [queueTracks, setQueueTracks] = React.useState(() => {
-                    try { return JSON.parse(localStorage.getItem('seewhy_stream_queue') || '[]'); } catch { return []; }
-                  });
-                  const [queuePlayingIdx, setQueuePlayingIdx] = React.useState(null);
-
-                  const refreshQueue = () => {
-                    try { setQueueTracks(JSON.parse(localStorage.getItem('seewhy_stream_queue') || '[]')); } catch {}
-                  };
-                  const removeFromQueue = (id) => {
-                    try {
-                      const updated = queueTracks.filter(t => t.id !== id);
-                      localStorage.setItem('seewhy_stream_queue', JSON.stringify(updated));
-                      setQueueTracks(updated);
-                      if (queuePlayingIdx !== null && updated[queuePlayingIdx] === undefined) setQueuePlayingIdx(null);
-                    } catch {}
-                  };
-                  const playNext = () => {
-                    if (!queueTracks.length) return;
-                    setQueuePlayingIdx(prev => prev === null ? 0 : (prev + 1) % queueTracks.length);
-                  };
-
-                  const nowPlaying = queuePlayingIdx !== null ? queueTracks[queuePlayingIdx] : null;
-
-                  return (
-                    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
-                      {/* Header */}
-                      <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: '1px solid rgba(167,139,250,0.12)' }}>
-                        <span className="text-sm">🎵</span>
-                        <span className="text-[11px] font-black uppercase flex-1" style={{ color: '#a78bfa', ...T }}>Stream Music Queue</span>
-                        <button onClick={refreshQueue} className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}>↻</button>
-                        <a href="/AIMusic" target="_blank" rel="noopener noreferrer" className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.08)', ...T }}>Studio →</a>
-                      </div>
-
-                      {/* Now playing bar */}
-                      {nowPlaying ? (
-                        <div className="px-3 py-2" style={{ background: 'rgba(167,139,250,0.12)', borderBottom: '1px solid rgba(167,139,250,0.12)' }}>
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <span style={{ fontSize: 16 }}>{nowPlaying.emoji}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[10px] font-black truncate text-white" style={T}>{nowPlaying.title}</p>
-                              <p className="text-[11px]" style={{ color: 'rgba(167,139,250,0.7)', ...T }}>{nowPlaying.tags?.slice(0,3).join(' · ')}</p>
-                            </div>
-                            <div className="flex items-end gap-px">
-                              {[3,6,4,7,3,5].map((h,i) => (
-                                <motion.div key={i} animate={{ height: [`${h*1.5}px`, `${h*3}px`, `${h*1.5}px`] }} transition={{ duration: 0.5, repeat: Infinity, delay: i*0.1 }}
-                                  style={{ width: 2, borderRadius: 1, background: '#a78bfa' }} />
-                              ))}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => setAiMusicPlaying(v => !v)}
-                              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black"
-                              style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.25)' : 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', ...T }}>
-                              {aiMusicPlaying ? '⏸ Pause' : '▶ Play'}
-                            </button>
-                            <button onClick={playNext} className="px-2 py-1 rounded-lg text-[10px]"
-                              style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.15)' }}>⏭</button>
-                            <button onClick={() => setQueuePlayingIdx(null)} className="px-2 py-1 rounded-lg text-[10px]"
-                              style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}>■</button>
-                            <div className="flex items-center gap-1 ml-auto">
-                              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
-                              <input type="range" min={0} max={100} value={musicVolume} onChange={e => setMusicVolume(+e.target.value)}
-                                className="w-16 h-1 rounded-full appearance-none cursor-pointer" style={{ accentColor: '#a78bfa' }} />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="px-3 py-2" style={{ borderBottom: '1px solid rgba(167,139,250,0.08)' }}>
-                          <p className="text-[11px]" style={{ color: 'rgba(167,139,250,0.5)', ...T }}>No track playing · Add tracks from AI Music Studio</p>
-                        </div>
-                      )}
-
-                      {/* Queue list */}
-                      {queueTracks.length > 0 ? (
-                        <div className="overflow-y-auto" style={{ maxHeight: 160 }}>
-                          {queueTracks.map((t, i) => (
-                            <div key={t.id}
-                              className="flex items-center gap-2 px-3 py-1.5 group transition-all cursor-pointer"
-                              style={{ background: queuePlayingIdx === i ? 'rgba(167,139,250,0.1)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                              onClick={() => setQueuePlayingIdx(i)}
-                            >
-                              <span style={{ fontSize: 14 }}>{t.emoji}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold truncate" style={{ color: queuePlayingIdx === i ? '#a78bfa' : 'rgba(255,255,255,0.7)', ...T }}>{t.title}</p>
-                                <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{t.duration}</p>
-                              </div>
-                              <button onClick={(e) => { e.stopPropagation(); removeFromQueue(t.id); }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}>×</button>
-                            </div>
+                {/* AI Music */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm">🎵</span>
+                    <span className="text-[11px] font-black uppercase" style={{ color: '#a78bfa', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Background Music</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz'].map(g => (
+                      <button key={g}
+                        onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
+                        className="px-2 py-0.5 rounded-full text-[11px] font-bold transition-all"
+                        style={aiMusicGenre === g
+                          ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
+                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setAiMusicPlaying(v => !v)}
+                      className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
+                      style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {aiMusicPlaying ? '⏸ Pause' : '▶ Play'}
+                    </button>
+                    {aiMusicPlaying && (
+                      <button onClick={() => setAiMusicGenre(null)}
+                        className="px-3 py-2 rounded-xl text-[11px] font-black"
+                        style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                        title="Skip track">
+                        ⏭
+                      </button>
+                    )}
+                    <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
+                      className="px-3 py-2 rounded-xl text-[11px] font-black"
+                      style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      Full →
+                    </a>
+                  </div>
+                  {aiMusicPlaying && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.08)' }}>
+                        <div className="flex items-end gap-[2px]">
+                          {[3,6,4,7,3,5].map((h,i) => (
+                            <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
                           ))}
                         </div>
-                      ) : (
-                        <div className="px-3 py-4 text-center">
-                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Queue is empty</p>
-                          <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
-                            className="text-[10px] font-black"
-                            style={{ color: '#a78bfa', ...T }}>Open AI Music Studio → Create &amp; Add tracks</a>
-                        </div>
-                      )}
-
-                      {/* Quick genre fallback */}
-                      {queueTracks.length === 0 && (
-                        <div className="p-3" style={{ borderTop: '1px solid rgba(167,139,250,0.08)' }}>
-                          <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(167,139,250,0.5)', ...T }}>Quick Genre</p>
-                          <div className="flex flex-wrap gap-1">
-                            {['Lo-Fi','Trap','Gospel','R&B','Chill','Hype'].map(g => (
-                              <button key={g} onClick={() => { setAiMusicGenre(prev => prev === g ? null : g); setAiMusicPlaying(true); }}
-                                className="px-2 py-0.5 rounded-full text-[11px] font-bold transition-all"
-                                style={aiMusicGenre === g
-                                  ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
-                                  : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                {g}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                        <span className="text-[11px] flex-1" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
+                        <span className="text-[11px]" style={{ color: 'rgba(167,139,250,0.5)' }}>{musicVolume}%</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-1">
+                        <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
+                        <input type="range" min={0} max={100} value={musicVolume}
+                          onChange={e => setMusicVolume(+e.target.value)}
+                          className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
+                          style={{ accentColor: '#a78bfa' }} />
+                        <span className="text-[11px]" style={{ color: '#a78bfa' }}>🔊</span>
+                      </div>
                     </div>
-                  );
-                })()}
+                  )}
+                </div>
 
                 {/* Guardian AI Moderation */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
@@ -1638,9 +1544,9 @@ export default function BroadcastStudio() {
         <motion.button whileTap={{ scale: 0.92 }} onClick={toggleAudio}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
-            background: audioEnabled ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,68,0.15)',
-            border: audioEnabled ? '1px solid rgba(0,255,136,0.3)' : '1px solid rgba(255,68,68,0.4)',
-            color: audioEnabled ? '#00FF88' : '#FF4444',
+            background: audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.15)',
+            border: audioEnabled ? '1px solid rgba(109,191,126,0.3)' : '1px solid rgba(255,68,68,0.4)',
+            color: audioEnabled ? '#6DBF7E' : '#FF4444',
           }}>
           {audioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
         </motion.button>
@@ -1648,9 +1554,9 @@ export default function BroadcastStudio() {
         <motion.button whileTap={{ scale: 0.92 }} onClick={toggleVideo}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
-            background: videoEnabled ? 'rgba(0,245,255,0.12)' : 'rgba(255,68,68,0.15)',
-            border: videoEnabled ? '1px solid rgba(0,245,255,0.3)' : '1px solid rgba(255,68,68,0.4)',
-            color: videoEnabled ? '#00F5FF' : '#FF4444',
+            background: videoEnabled ? 'rgba(201,168,76,0.12)' : 'rgba(255,68,68,0.15)',
+            border: videoEnabled ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,68,68,0.4)',
+            color: videoEnabled ? '#C9A84C' : '#FF4444',
           }}>
           {videoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
         </motion.button>
@@ -1659,9 +1565,9 @@ export default function BroadcastStudio() {
           title={screenEnabled ? 'Stop screen share' : 'Share screen'}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
-            background: screenEnabled ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.05)',
-            border: screenEnabled ? '1px solid rgba(139,92,246,0.4)' : '1px solid rgba(255,255,255,0.1)',
-            color: screenEnabled ? '#8B5CF6' : 'rgba(255,255,255,0.4)',
+            background: screenEnabled ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+            border: screenEnabled ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)',
+            color: screenEnabled ? '#D4AF37' : 'rgba(255,255,255,0.4)',
           }}>
           <Monitor className="w-4 h-4" />
         </motion.button>

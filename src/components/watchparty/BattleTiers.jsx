@@ -8,8 +8,8 @@ const TIERS = [
   { id: 'bronze',   label: 'Bronze',   emoji: '🥉', color: '#cd7f32', pts: 10,  bg: 'rgba(205,127,50,0.12)',  border: 'rgba(205,127,50,0.3)' },
   { id: 'silver',   label: 'Silver',   emoji: '🥈', color: '#c0c0c0', pts: 25,  bg: 'rgba(192,192,192,0.10)', border: 'rgba(192,192,192,0.25)' },
   { id: 'gold',     label: 'Gold',     emoji: '🥇', color: '#d4af37', pts: 50,  bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)' },
-  { id: 'diamond',  label: 'Diamond',  emoji: '💎', color: '#00F5FF', pts: 100, bg: 'rgba(0,245,255,0.10)',   border: 'rgba(0,245,255,0.3)' },
-  { id: 'legendary',label: 'Legendary',emoji: '👑', color: '#8B5CF6', pts: 250, bg: 'rgba(139,92,246,0.12)',  border: 'rgba(139,92,246,0.35)' },
+  { id: 'diamond',  label: 'Diamond',  emoji: '💎', color: '#C9A84C', pts: 100, bg: 'rgba(201,168,76,0.10)',   border: 'rgba(201,168,76,0.3)' },
+  { id: 'legendary',label: 'Legendary',emoji: '👑', color: '#D4AF37', pts: 250, bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.35)' },
 ];
 
 function FloatingBurst({ tier, onDone }) {

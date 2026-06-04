@@ -13,7 +13,7 @@ const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
 const PINK    = '#FF1564';
-const GREEN   = '#00FF88';
+const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function fmtDuration(seconds) {
@@ -68,8 +68,8 @@ export default function CreatorDashboardPage() {
       icon: Calendar,
       label: 'Schedule',
       href: createPageUrl('StreamScheduler'),
-      gradient: 'linear-gradient(135deg, rgba(139,92,246,0.25), rgba(139,92,246,0.06))',
-      border: 'rgba(139,92,246,0.45)',
+      gradient: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.06))',
+      border: 'rgba(212,175,55,0.45)',
       iconColor: '#a78bfa',
     },
     {

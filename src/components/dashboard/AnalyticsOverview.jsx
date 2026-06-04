@@ -96,8 +96,8 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
       {/* Key Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard icon={Eye} label="Total Viewers" value={stats.totalViewers} unit="" color={G} />
-        <StatCard icon={Users} label="Avg Viewers" value={stats.avgViewers} unit="" color="#00F5FF" />
-        <StatCard icon={DollarSign} label="Revenue" value={stats.totalRevenue} unit="$" color="#00FF88" />
+        <StatCard icon={Users} label="Avg Viewers" value={stats.avgViewers} unit="" color="#C9A84C" />
+        <StatCard icon={DollarSign} label="Revenue" value={stats.totalRevenue} unit="$" color="#6DBF7E" />
         <StatCard icon={TrendingUp} label="Engagement" value={stats.avgEngagement} unit="%" color="#FF8C00" />
       </div>
 
@@ -121,7 +121,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
       {/* Earnings Area Chart */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         className="p-4 rounded-lg" style={{ background: PANEL, border: `1px solid ${BORDER}` }}>
-        <h3 className="text-xs font-bold mb-4" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <h3 className="text-xs font-bold mb-4" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
           💰 Earnings Breakdown ({timeRange})
         </h3>
         <ResponsiveContainer width="100%" height={180}>
@@ -132,8 +132,8 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
                 <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gradSubs" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#00FF88" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#00FF88" stopOpacity={0} />
+                <stop offset="5%" stopColor="#6DBF7E" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#6DBF7E" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -141,11 +141,11 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" tickFormatter={v => `$${v}`} />
             <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v, name) => [`$${v}`, name === 'tips' ? 'Tips' : 'Subscriptions']} />
             <Area type="monotone" dataKey="tips" stroke={G} fill="url(#gradTips)" strokeWidth={2} />
-            <Area type="monotone" dataKey="subs" stroke="#00FF88" fill="url(#gradSubs)" strokeWidth={2} />
+            <Area type="monotone" dataKey="subs" stroke="#6DBF7E" fill="url(#gradSubs)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
         <div className="flex gap-4 mt-2">
-          {[['Tips', G], ['Subscriptions', '#00FF88']].map(([label, color]) => (
+          {[['Tips', G], ['Subscriptions', '#6DBF7E']].map(([label, color]) => (
             <div key={label} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ background: color }} />
               <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</span>
@@ -157,7 +157,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
       {/* Subscriber Growth Bar Chart */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
         className="p-4 rounded-lg" style={{ background: PANEL, border: `1px solid ${BORDER}` }}>
-        <h3 className="text-xs font-bold mb-4" style={{ color: '#00F5FF', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <h3 className="text-xs font-bold mb-4" style={{ color: '#C9A84C', fontFamily: 'Barlow Condensed, sans-serif' }}>
           📈 Subscriber Growth ({timeRange})
         </h3>
         <ResponsiveContainer width="100%" height={160}>
@@ -166,7 +166,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v, 'Subscribers']} />
-            <Bar dataKey="subscribers" fill="rgba(0,245,255,0.7)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="subscribers" fill="rgba(201,168,76,0.7)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </motion.div>

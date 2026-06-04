@@ -54,7 +54,7 @@ var PLATFORMS = [
     name: 'Zelle',
     emoji: '💜',
     color: '#6D1ED4',
-    accent: '#9B4DCA',
+    accent: '#800020',
     placeholder: 'Email or phone for Zelle',
     buildUrl: function(handle) { return null; },
     note: 'Viewers open Zelle app and pay this address'

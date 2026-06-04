@@ -35,7 +35,7 @@ var GENRE_COLORS = {
 var CATEGORIES = ['ALL', 'MUSIC', 'GAMING', 'TECH', 'EDUCATION', 'BUSINESS', 'SPORTS', 'LIFESTYLE'];
 
 var TRENDING_CHANNELS = [
-  { id: 'tc1', name: 'AI Verse Podcast',      handle: '@aiverse',   emoji: '🎙', color: '#C084FC', live: false },
+  { id: 'tc1', name: 'AI Verse Podcast',      handle: '@aiverse',   emoji: '🎙', color: '#C9A84C', live: false },
   { id: 'tc2', name: 'Memoirs of a Shy Girl', handle: '@shygirl',   emoji: '📖', color: '#FF6B9D', live: false },
   { id: 'tc3', name: 'Domino Entertainment',  handle: '@dominoent', emoji: '🎲', color: '#C9A84C', live: true  },
 ];
@@ -44,7 +44,7 @@ var QUICK_ACTIONS = [
   { id: 'golive',  label: 'Go Live',      icon: '📡', color: '#FF1564' },
   { id: 'watch',   label: 'Watch Party',  icon: '📺', color: '#C9A84C' },
   { id: 'battles', label: 'PK Battles',   icon: '⚡', color: '#C9A84C' },
-  { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C084FC' },
+  { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C9A84C' },
   { id: 'create',  label: 'Create Room',  icon: '➕', color: '#8A7A62' },
 ];
 
@@ -278,7 +278,7 @@ export default function DiscoverTab(props) {
       {
         style: {
           background: 'rgba(138,122,98,.12)',
-          border: '1px solid rgba(122,111,144,.3)',
+          border: '1px solid rgba(61,48,32,.3)',
           borderRadius: 4,
           padding: '1px 6px',
           fontFamily: "'DM Mono',monospace",
@@ -935,7 +935,7 @@ export default function DiscoverTab(props) {
           {
             style: {
               background: 'rgba(138,122,98,.1)',
-              border: '1px solid rgba(122,111,144,.25)',
+              border: '1px solid rgba(61,48,32,.25)',
               borderRadius: 6,
               padding: '4px 12px',
               fontFamily: "'Barlow Condensed',sans-serif",
@@ -952,7 +952,7 @@ export default function DiscoverTab(props) {
           {
             style: {
               background: 'rgba(138,122,98,.1)',
-              border: '1px solid rgba(122,111,144,.25)',
+              border: '1px solid rgba(61,48,32,.25)',
               borderRadius: 6,
               padding: '4px 12px',
               fontFamily: "'Barlow Condensed',sans-serif",

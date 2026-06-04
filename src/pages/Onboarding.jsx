@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const C = { burg: '#800020', gold: '#D4AF37', volt: '#C8FF00', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
+const C = { burg: '#800020', gold: '#D4AF37', volt: '#D4AF37', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
 
 const STEPS = [
   { id: 1, label: 'Profile', key: 'step_1_profile' },
@@ -20,9 +20,9 @@ const AVATARS = ['🎲','🎙','✍️','🤖','🎮','🎵'];
 const CATEGORIES = ['Gaming','Talk','Tech','Music','Sports','Art','Other'];
 const THEMES = [
   { name: 'Domino Noir', primary: '#DC143C', secondary: '#D4AF37', preview: ['#1a0a0a','#DC143C','#D4AF37'] },
-  { name: 'Broadcast Blue', primary: '#003580', secondary: '#00F5FF', preview: ['#00152b','#003580','#00F5FF'] },
+  { name: 'Broadcast Blue', primary: '#003580', secondary: '#C9A84C', preview: ['#00152b','#003580','#C9A84C'] },
   { name: 'Creator Gold', primary: '#0D0D0D', secondary: '#D4AF37', preview: ['#0D0D0D','#1a1a1a','#D4AF37'] },
-  { name: 'Volt Green', primary: '#0D0D0D', secondary: '#C8FF00', preview: ['#0D0D0D','#111','#C8FF00'] },
+  { name: 'Volt Green', primary: '#0D0D0D', secondary: '#D4AF37', preview: ['#0D0D0D','#111','#D4AF37'] },
 ];
 const FONTS = [
   { name: 'Broadcast', sample: 'Orbitron + Rajdhani' },
@@ -369,7 +369,7 @@ function CompletionScreen() {
   const nav = useNavigate();
   useEffect(() => {
     // Canvas confetti
-    import('canvas-confetti').then(m => m.default({ particleCount: 150, spread: 70, colors: ['#D4AF37','#800020','#C8FF00','#fff'] }));
+    import('canvas-confetti').then(m => m.default({ particleCount: 150, spread: 70, colors: ['#D4AF37','#800020','#D4AF37','#fff'] }));
   }, []);
   return (
     <div style={{ padding: '40px 20px', textAlign: 'center' }}>

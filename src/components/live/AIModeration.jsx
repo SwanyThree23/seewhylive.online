@@ -72,9 +72,9 @@ export default function AIModeration({ roomId, isHost = false }) {
         onClick={() => setIsActive(!isActive)}
         className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg font-bold text-sm transition-all"
         style={{
-          background: isActive ? `linear-gradient(135deg, #8B5CF6, ${G})` : 'rgba(255,255,255,0.05)',
+          background: isActive ? `linear-gradient(135deg, #D4AF37, ${G})` : 'rgba(255,255,255,0.05)',
           color: isActive ? '#fff' : 'rgba(255,255,255,0.5)',
-          border: isActive ? `1px solid #8B5CF6` : '1px solid rgba(255,255,255,0.1)',
+          border: isActive ? `1px solid #D4AF37` : '1px solid rgba(255,255,255,0.1)',
         }}
       >
         <Shield className="w-4 h-4" />

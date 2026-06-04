@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
 const PINK  = '#FF1564';
-const GREEN = '#00FF88';
+const GREEN = '#6DBF7E';
 const FONT  = 'Barlow Condensed, sans-serif';
 
 const DEFAULT_TIERS = [
@@ -478,7 +478,7 @@ function MySubscriptionsView({ user }) {
             <div style={{
               fontSize: 11, fontWeight: 900, fontFamily: FONT,
               padding: '1px 6px', borderRadius: 999,
-              background: 'rgba(0,255,136,0.12)', border: '1px solid rgba(0,255,136,0.25)',
+              background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)',
               color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase',
             }}>
               Active

@@ -6,7 +6,7 @@ const BG2    = '#0D0620';
 const GOLD   = '#D4AF37';
 const CRIMSON= '#800020';
 const PINK   = '#FF1564';
-const GREEN  = '#00FF88';
+const GREEN  = '#6DBF7E';
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 const PALETTE = ['#D4AF37','#FF1564','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#EC4899'];

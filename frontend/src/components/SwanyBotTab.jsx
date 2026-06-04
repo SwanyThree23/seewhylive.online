@@ -284,7 +284,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: r.enabled ? '#F0E8D4' : '#8A7A62' }}>{r.label}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: r.enabled ? '#C9A84C' : '#3D3450', letterSpacing: 1 }}>{r.enabled ? 'ACTIVE' : 'DISABLED'}</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: r.enabled ? '#C9A84C' : '#3D3020', letterSpacing: 1 }}>{r.enabled ? 'ACTIVE' : 'DISABLED'}</div>
                 </div>
                 <div
                   onClick={function() { toggleRule(r.id); }}
@@ -336,13 +336,13 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                     ✕ REMOVE
                   </button>
                 </div>
-                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', lineHeight: 1.35, wordBreak: 'break-word' }}>{t.response}</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', lineHeight: 1.35, wordBreak: 'break-word' }}>{t.response}</div>
               </div>
             );
           })}
 
           {triggers.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 20, fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>No triggers yet — add one below</div>
+            <div style={{ textAlign: 'center', padding: 20, fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>No triggers yet — add one below</div>
           )}
 
           <button
@@ -414,7 +414,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                         <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4' }}>{opt}</span>
                         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' }}>{pct}% · {votes}</span>
                       </div>
-                      <div style={{ height: 8, borderRadius: 4, background: '#1A1428', overflow: 'hidden' }}>
+                      <div style={{ height: 8, borderRadius: 4, background: '#1A1510', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: pct + '%', background: 'linear-gradient(90deg,#800020,#C9A84C)', borderRadius: 4, transition: 'width .4s ease' }} />
                       </div>
                     </div>
@@ -445,7 +445,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                         <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: isWinner ? '#C9A84C' : '#A89CC8', fontWeight: isWinner ? 700 : 400 }}>{isWinner ? '🏆 ' : ''}{opt}</span>
                         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: isWinner ? '#C9A84C' : '#8A7A62' }}>{pct}%</span>
                       </div>
-                      <div style={{ height: 7, borderRadius: 4, background: '#1A1428', overflow: 'hidden' }}>
+                      <div style={{ height: 7, borderRadius: 4, background: '#1A1510', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: pct + '%', background: isWinner ? 'linear-gradient(90deg,#C9A84C,#C9A84C)' : 'rgba(201,168,76,.35)', borderRadius: 4 }} />
                       </div>
                     </div>
@@ -517,8 +517,8 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                       return (
                         <div key={oi} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                           <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: isW ? '#C9A84C' : '#8A7A62', minWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{isW ? '🏆 ' : ''}{opt}</span>
-                          <div style={{ flex: 1, height: 4, borderRadius: 2, background: '#1A1428', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: pct + '%', background: isW ? '#C9A84C' : '#3D3450', borderRadius: 2 }} />
+                          <div style={{ flex: 1, height: 4, borderRadius: 2, background: '#1A1510', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: pct + '%', background: isW ? '#C9A84C' : '#3D3020', borderRadius: 2 }} />
                           </div>
                           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', minWidth: 26, textAlign: 'right' }}>{pct}%</span>
                         </div>
@@ -545,7 +545,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
                 <div style={{ width: 32, height: 32, borderRadius: 7, background: 'rgba(200,255,0,.06)', border: '1px solid rgba(200,255,0,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{c.icon}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ background: 'rgba(200,255,0,.08)', border: '1px solid rgba(200,255,0,.2)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C', display: 'inline-block', marginBottom: 4 }}>{c.cmd}</div>
-                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', lineHeight: 1.35 }}>{c.desc}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', lineHeight: 1.35 }}>{c.desc}</div>
                 </div>
               </div>
             );
@@ -553,7 +553,7 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
 
           <div style={{ background: 'rgba(128,0,32,.06)', border: '1px solid rgba(128,0,32,.2)', borderRadius: 10, padding: '10px 12px', marginTop: 4 }}>
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 2, marginBottom: 5 }}>CUSTOM TRIGGERS</div>
-            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', lineHeight: 1.5 }}>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', lineHeight: 1.5 }}>
               Add your own keyword → response pairs in the <span style={{ color: '#C9A84C' }}>⚡ TRIGGERS</span> tab. Custom triggers are managed in SwanyBot and fire alongside these built-ins.
             </div>
           </div>
@@ -571,12 +571,12 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
           </div>
           <div style={{ background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 10, padding: '8px', height: 300, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
             {isLive && botLogs.length === 0 && simLog.length === 0 && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>
                 Waiting for events...
               </div>
             )}
             {!isLive && botLogs.length === 0 && (
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3450' }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#3D3020' }}>
                 Waiting for events...
               </div>
             )}
@@ -588,11 +588,11 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
             {displayLogs.map(function(log) {
               return (
                 <div key={log.id || Math.random()} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '5px 7px', background: 'rgba(26,21,16,.5)', borderRadius: 6, borderLeft: '2px solid rgba(201,168,76,.25)' }}>
-                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3450', flexShrink: 0, marginTop: 2 }}>{formatTime(log.ts)}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#3D3020', flexShrink: 0, marginTop: 2 }}>{formatTime(log.ts)}</span>
                   <span style={{ fontSize: 13, flexShrink: 0, lineHeight: 1.1 }}>{getLogIcon(log.event)}</span>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: 1 }}>{log.event || 'event'}</div>
-                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#9A8FAC', wordBreak: 'break-word' }}>{log.message || ''}</div>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: '#8A7A62', wordBreak: 'break-word' }}>{log.message || ''}</div>
                   </div>
                 </div>
               );

@@ -259,14 +259,14 @@ export default function ViewerDashboard() {
                 ? <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No active subscriptions</p>
                 : mySubscriptions.map(s => (
                   <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl mb-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(139,92,246,0.15)' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.15)' }}>
                       <Star className="w-4 h-4" style={{ color: '#a78bfa' }} />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-black text-white" style={T}>{s.tier_name || 'Subscription'}</p>
                       <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>${s.price}/mo · since {s.start_date ? new Date(s.start_date).toLocaleDateString() : new Date(s.created_date).toLocaleDateString()}</p>
                     </div>
-                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00ff88', ...T }}>Active</span>
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#00ff88', ...T }}>Active</span>
                   </div>
                 ))
               }

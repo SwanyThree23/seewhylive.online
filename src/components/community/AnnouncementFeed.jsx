@@ -42,8 +42,8 @@ export default function AnnouncementFeed({ communityId }) {
         <div
           key={announcement.id}
           style={{
-            background: announcement.is_pinned ? 'rgba(139,92,246,0.07)' : 'rgba(255,255,255,0.04)',
-            border: `1px solid ${announcement.is_pinned ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            background: announcement.is_pinned ? 'rgba(212,175,55,0.07)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${announcement.is_pinned ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`,
             borderRadius: 12,
             padding: 16,
           }}
@@ -51,7 +51,7 @@ export default function AnnouncementFeed({ communityId }) {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <div style={{
               width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: announcement.priority === 'urgent' ? 'rgba(239,68,68,0.15)' : 'rgba(139,92,246,0.15)',
+              background: announcement.priority === 'urgent' ? 'rgba(239,68,68,0.15)' : 'rgba(212,175,55,0.15)',
               flexShrink: 0,
             }}>
               {announcement.is_pinned ? (

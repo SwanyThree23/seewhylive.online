@@ -176,7 +176,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
       {/* Header */}
       <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <div style={{ fontFamily: fD, fontSize: 20, color: '#C084FC', letterSpacing: 3 }}>📡 SOCIAL SHARE</div>
+          <div style={{ fontFamily: fD, fontSize: 20, color: '#C9A84C', letterSpacing: 3 }}>📡 SOCIAL SHARE</div>
           {isLive && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '3px 10px' }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 6px #FF1A3C' }} />
@@ -193,7 +193,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
             var active = mainView === t[0];
             return (
               <button key={t[0]} onClick={function() { setMainView(t[0]); }}
-                style={{ flex: 1, background: active ? 'rgba(192,132,252,.14)' : 'transparent', border: 'none', borderRadius: 6, padding: '6px 0', color: active ? '#C084FC' : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                style={{ flex: 1, background: active ? 'rgba(201,168,76,.14)' : 'transparent', border: 'none', borderRadius: 6, padding: '6px 0', color: active ? '#C9A84C' : MUTED, fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
                 {t[1]}
               </button>
             );
@@ -206,7 +206,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontFamily: fM, fontSize: 7, color: MUTED, letterSpacing: 2, marginBottom: 2 }}>INVITE TO YOUR STREAM</div>
           {COMMUNITY_MEMBERS.map(function(m) {
-            var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#C9A84C' : '#3D3450';
+            var statusColor = m.status === 'LIVE' ? '#FF1A3C' : m.status === 'ONLINE' ? '#C9A84C' : '#3D3020';
             var wasInvited = Boolean(invitedIds[m.id]);
             return (
               <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: wasInvited ? 'rgba(201,168,76,.06)' : 'rgba(26,21,16,.8)', border: '1px solid ' + (wasInvited ? 'rgba(201,168,76,.25)' : BORDER), borderRadius: 10, padding: '10px 12px' }}>
@@ -218,12 +218,12 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, boxShadow: m.status !== 'OFFLINE' ? '0 0 5px ' + statusColor : 'none', flexShrink: 0 }} />
                     <span style={{ fontFamily: fM, fontSize: 7.5, color: statusColor, letterSpacing: 1 }}>{m.status}</span>
-                    {m.mutual && <span style={{ fontFamily: fM, fontSize: 7, color: '#C084FC', marginLeft: 4 }}>· MUTUAL</span>}
+                    {m.mutual && <span style={{ fontFamily: fM, fontSize: 7, color: '#C9A84C', marginLeft: 4 }}>· MUTUAL</span>}
                   </div>
                 </div>
                 <button
                   onClick={function() { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); if (addToast) addToast('📨 Invite sent to ' + m.name, 'success'); }}
-                  style={{ background: wasInvited ? 'rgba(201,168,76,.15)' : 'rgba(192,132,252,.12)', border: '1px solid ' + (wasInvited ? 'rgba(201,168,76,.4)' : 'rgba(192,132,252,.35)'), borderRadius: 7, padding: '6px 12px', color: wasInvited ? '#C9A84C' : '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: wasInvited ? 'default' : 'pointer', flexShrink: 0, minWidth: 66, textAlign: 'center', letterSpacing: 1 }}>
+                  style={{ background: wasInvited ? 'rgba(201,168,76,.15)' : 'rgba(201,168,76,.12)', border: '1px solid ' + (wasInvited ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.35)'), borderRadius: 7, padding: '6px 12px', color: wasInvited ? '#C9A84C' : '#C9A84C', fontFamily: fU, fontWeight: 700, fontSize: 10, cursor: wasInvited ? 'default' : 'pointer', flexShrink: 0, minWidth: 66, textAlign: 'center', letterSpacing: 1 }}>
                   {wasInvited ? '✓ SENT' : 'INVITE'}
                 </button>
               </div>
@@ -232,7 +232,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
 
           <button
             onClick={function() { COMMUNITY_MEMBERS.forEach(function(m) { if (m.status !== 'OFFLINE') { setInvitedIds(function(prev) { var next = Object.assign({}, prev); next[m.id] = true; return next; }); } }); if (addToast) addToast('📨 Invites sent to all online members!', 'success'); }}
-            style={{ marginTop: 4, background: 'linear-gradient(135deg,rgba(192,132,252,.2),rgba(155,77,202,.12))', border: '1px solid rgba(192,132,252,.4)', borderRadius: 10, padding: '12px 0', color: '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 2, textAlign: 'center' }}>
+            style={{ marginTop: 4, background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(128,0,32,.12))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '12px 0', color: '#C9A84C', fontFamily: fU, fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 2, textAlign: 'center' }}>
             📨 INVITE ALL ONLINE
           </button>
         </div>
@@ -242,15 +242,15 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {/* Stream link card */}
-        <div style={{ background: 'rgba(192,132,252,.06)', border: '1px solid rgba(192,132,252,.25)', borderRadius: 12, padding: '12px 14px' }}>
+        <div style={{ background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 12, padding: '12px 14px' }}>
           <div style={{ fontFamily: fM, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 6 }}>YOUR STREAM LINK</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ flex: 1, fontFamily: fM, fontSize: 9, color: '#C084FC', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(192,132,252,.2)', borderRadius: 7, padding: '8px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ flex: 1, fontFamily: fM, fontSize: 9, color: '#C9A84C', background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 7, padding: '8px 10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {streamUrl}
             </div>
             <button
               onClick={function() { copyToClipboard(streamUrl, 'Stream link'); }}
-              style={{ background: copied === 'Stream link' ? 'rgba(201,168,76,.2)' : 'rgba(192,132,252,.12)', border: '1px solid ' + (copied === 'Stream link' ? 'rgba(201,168,76,.4)' : 'rgba(192,132,252,.35)'), borderRadius: 8, padding: '8px 14px', color: copied === 'Stream link' ? '#C9A84C' : '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+              style={{ background: copied === 'Stream link' ? 'rgba(201,168,76,.2)' : 'rgba(201,168,76,.12)', border: '1px solid ' + (copied === 'Stream link' ? 'rgba(201,168,76,.4)' : 'rgba(201,168,76,.35)'), borderRadius: 8, padding: '8px 14px', color: copied === 'Stream link' ? '#C9A84C' : '#C9A84C', fontFamily: fU, fontWeight: 700, fontSize: 11, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
               {copied === 'Stream link' ? '✓ COPIED' : '📋 COPY'}
             </button>
           </div>
@@ -278,7 +278,7 @@ export default function SocialShareTab({ addToast, isLive, roomId, username }) {
         {/* Native share (mobile) */}
         <button
           onClick={shareNative}
-          style={{ background: 'linear-gradient(135deg,rgba(192,132,252,.2),rgba(155,77,202,.12))', border: '1px solid rgba(192,132,252,.4)', borderRadius: 10, padding: '13px 0', color: '#C084FC', fontFamily: fU, fontWeight: 700, fontSize: 15, cursor: 'pointer', letterSpacing: 2, textAlign: 'center' }}>
+          style={{ background: 'linear-gradient(135deg,rgba(201,168,76,.2),rgba(128,0,32,.12))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 10, padding: '13px 0', color: '#C9A84C', fontFamily: fU, fontWeight: 700, fontSize: 15, cursor: 'pointer', letterSpacing: 2, textAlign: 'center' }}>
           📤 SHARE NOW (ALL APPS)
         </button>
 

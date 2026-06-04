@@ -11,10 +11,10 @@ const CREAM = '#F5E6D3';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_COLORS = {
-  attendance:  { color: '#00F5FF', label: 'ATTENDANCE' },
+  attendance:  { color: '#C9A84C', label: 'ATTENDANCE' },
   engagement:  { color: GOLD,      label: 'ENGAGEMENT' },
-  content:     { color: '#8B5CF6', label: 'CONTENT' },
-  referral:    { color: '#00FF88', label: 'REFERRAL' },
+  content:     { color: '#D4AF37', label: 'CONTENT' },
+  referral:    { color: '#6DBF7E', label: 'REFERRAL' },
 };
 
 function ChallengeCountdown({ endDate }) {
@@ -99,7 +99,7 @@ function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderb
                 </span>
               )}
               <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
-                style={{ background: challenge.status === 'active' ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.06)', color: challenge.status === 'active' ? '#00FF88' : CREAM + '40', ...T }}>
+                style={{ background: challenge.status === 'active' ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.06)', color: challenge.status === 'active' ? '#6DBF7E' : CREAM + '40', ...T }}>
                 {challenge.status}
               </span>
             </div>
@@ -138,7 +138,7 @@ function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderb
           )}
           {hasJoined && (
             <div className="flex-1 py-2 rounded-xl text-center font-black uppercase text-[11px]"
-              style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
+              style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)', ...T }}>
               ✓ Joined · {myParticipation.progress || 0} progress
             </div>
           )}
@@ -248,13 +248,13 @@ export default function ChallengesHubPage() {
                     const progress = Math.min(100, Math.round(((p.progress || 0) / goalValue) * 100));
                     return (
                       <div key={p.id} className="rounded-xl p-4 space-y-2"
-                        style={{ background: 'rgba(13,6,24,0.97)', border: p.completed ? `1px solid rgba(0,255,136,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
+                        style={{ background: 'rgba(13,6,24,0.97)', border: p.completed ? `1px solid rgba(109,191,126,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
                         <div className="flex items-center justify-between">
                           <p className="font-bold text-[11px] text-white">{challenge?.title || `Challenge ${p.challenge_id?.slice(0,8)}`}</p>
                           <div className="flex items-center gap-1.5">
                             {p.completed && (
                               <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
-                                style={{ background: 'rgba(0,255,136,0.12)', color: '#00FF88', ...T }}>✓ DONE</span>
+                                style={{ background: 'rgba(109,191,126,0.12)', color: '#6DBF7E', ...T }}>✓ DONE</span>
                             )}
                             <span className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{p.score || 0}</span>
                           </div>
@@ -309,10 +309,10 @@ export default function ChallengesHubPage() {
                   ? <p className="text-center py-10 text-[11px]" style={{ color: CREAM + '25' }}>No completed challenges yet</p>
                   : myCompleted.map(p => (
                     <div key={p.id} className="rounded-xl p-4 flex items-center gap-3"
-                      style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid rgba(0,255,136,0.2)` }}>
+                      style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid rgba(109,191,126,0.2)` }}>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                        style={{ background: 'rgba(0,255,136,0.12)', border: '1px solid rgba(0,255,136,0.25)' }}>
-                        <Check className="w-4 h-4" style={{ color: '#00FF88' }} />
+                        style={{ background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)' }}>
+                        <Check className="w-4 h-4" style={{ color: '#6DBF7E' }} />
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-[11px] text-white">Challenge {p.challenge_id?.slice(0, 8)}</p>

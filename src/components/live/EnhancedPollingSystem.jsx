@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveCo
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, X, RotateCcw, Zap, Plus, Copy } from 'lucide-react';
 
-const COLORS = ['#d4af37', '#FF1564', '#00F5FF', '#8B5CF6', '#00FF88'];
+const COLORS = ['#d4af37', '#FF1564', '#C9A84C', '#D4AF37', '#6DBF7E'];
 
 export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
   const [showCreate, setShowCreate] = useState(false);
@@ -156,7 +156,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
                         key={t.id}
                         onClick={() => createFromTemplate(t)}
                         className="p-2 text-left text-xs rounded-lg transition-all"
-                        style={{ background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.3)' }}
+                        style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.3)' }}
                       >
                         <Copy className="w-3 h-3 mb-1" />
                         {t.name}
@@ -268,7 +268,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
       {/* Re-vote notice */}
       {activePoll.allow_re_vote && userVotes[activePoll.id] !== undefined && (
-        <div className="flex items-center gap-2 text-xs text-cyan-400" style={{ color: '#00F5FF' }}>
+        <div className="flex items-center gap-2 text-xs text-cyan-400" style={{ color: '#C9A84C' }}>
           <RotateCcw className="w-3 h-3" />
           You can change your vote anytime
         </div>
