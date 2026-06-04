@@ -12,6 +12,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { Link } from 'react-router-dom';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -344,6 +345,16 @@ export default function AdminDashboard() {
         {/* SECURITY */}
         {activeTab === 'security' && (
           <div className="space-y-4">
+            {/* Guardian AI shortcut */}
+            <Link to="/GuardianAI" style={{ display: 'block', textDecoration: 'none' }}>
+              <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', cursor: 'pointer' }}>
+                <span style={{ fontSize: 24 }}>🛡️</span>
+                <div>
+                  <p className="font-black text-sm uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI Moderation</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Set risk thresholds · Real-time scan · Auto flag/mute/ban →</p>
+                </div>
+              </div>
+            </Link>
             {/* IP Ban */}
             <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(255,68,68,0.15)' }}>
               <div className="flex items-center gap-2 mb-3">
