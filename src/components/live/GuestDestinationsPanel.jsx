@@ -51,12 +51,12 @@ function DestRow({ dest, userId }) {
       opacity: dest.is_enabled ? 1 : 0.5,
     }}>
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="w-5 h-5 rounded text-[9px] font-bold text-white flex items-center justify-center shrink-0"
+        <div className="w-5 h-5 rounded text-[11px] font-bold text-white flex items-center justify-center shrink-0"
           style={{ background: platform.color + '25', border: '1px solid ' + platform.color + '50' }}>
           {platform.label.charAt(0)}
         </div>
         <span className="text-[11px] font-semibold text-white flex-1 truncate">{dest.label}</span>
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: platform.color + '15', color: platform.color }}>
+        <span className="text-[11px] font-bold px-1.5 py-0.5 rounded" style={{ background: platform.color + '15', color: platform.color }}>
           {platform.label}
         </span>
         {validState === 'ok' && <CheckCircle className="w-3 h-3 text-green-400" />}
@@ -82,7 +82,7 @@ function DestRow({ dest, userId }) {
           {showKey ? <EyeOff className="w-2.5 h-2.5" /> : <Eye className="w-2.5 h-2.5" />}
         </button>
         <button onClick={validate} disabled={validating}
-          style={{ height: 24, padding: '0 8px', fontSize: 9, display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(139,111,71,0.2)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ height: 24, padding: '0 8px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(139,111,71,0.2)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {validating ? <RefreshCw className="w-2 h-2 animate-spin" /> : <Wifi className="w-2 h-2" />}
           {validating ? '…' : 'Test'}
         </button>
@@ -90,7 +90,7 @@ function DestRow({ dest, userId }) {
           updateMut.mutate({ stream_key_encrypted: localKey, server_url: localUrl });
           toast.success('Saved');
         }}
-          style={{ height: 24, padding: '0 8px', fontSize: 9, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+          style={{ height: 24, padding: '0 8px', fontSize: 11, background: '#d4af37', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
           Save
         </button>
       </div>
@@ -157,7 +157,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
           {guestName} — Stream Destinations
         </span>
         {destinations.length > 0 && !expanded && (
-          <span className="text-[9px] text-white/30">{destinations.length} dest.</span>
+          <span className="text-[11px] text-white/30">{destinations.length} dest.</span>
         )}
         {expanded ? <ChevronUp className="w-3 h-3 text-white/30" /> : <ChevronDown className="w-3 h-3 text-white/30" />}
       </button>
@@ -173,7 +173,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
               <div className="flex justify-end">
                 <button
                   onClick={function() { setShowAdd(function(v) { return !v; }); }}
-                  className="flex items-center gap-1 text-[9px] px-2 py-1 rounded border transition-colors"
+                  className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border transition-colors"
                   style={{ borderColor: 'rgba(212,175,55,0.3)', color: '#d4af37' }}
                 >
                   <Plus className="w-2.5 h-2.5" /> Add Platform
@@ -189,7 +189,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
                           return (
                             <button key={p.id}
                               onClick={function() { setSelectedPreset(p.id); }}
-                              className="py-1 px-1 rounded text-[9px] font-semibold transition-all border"
+                              className="py-1 px-1 rounded text-[11px] font-semibold transition-all border"
                               style={selectedPreset === p.id
                                 ? { borderColor: p.color, color: p.color, background: p.color + '15' }
                                 : { borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' }}

@@ -213,7 +213,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
 
                   <div className="bg-white/5 border border-white/10 rounded p-2">
                     <p className="text-[10px] font-semibold text-white mb-1">Per-Guest Controls:</p>
-                    <ul className="text-[9px] text-white/60 space-y-0.5">
+                    <ul className="text-[11px] text-white/60 space-y-0.5">
                       <li>✓ Real-time bitrate/latency monitoring</li>
                       <li>✓ Adaptive bitrate with fallback</li>
                       <li>✓ Multi-destination support (5+ platforms)</li>

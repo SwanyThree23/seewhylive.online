@@ -31,7 +31,7 @@ function PermissionPill({ label, status }) {
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
 
   return (
-    <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-black uppercase"
+    <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-black uppercase"
       style={{ background: `${cfg.color}15`, border: `1px solid ${cfg.border}`, color: cfg.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
       {cfg.icon} {label}
     </span>
@@ -131,7 +131,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
             <div className="font-black text-xl" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
               #{waitlistEntry.position}
             </div>
-            <div className="text-[8px] uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>in queue</div>
+            <div className="text-[11px] uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>in queue</div>
           </div>
         )}
         <div className="px-3 py-2 rounded-xl text-center"
@@ -139,7 +139,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
           <div className="font-black text-xl font-mono" style={{ color: GOLD }}>
             {fmt(elapsed)}
           </div>
-          <div className="text-[8px] uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>wait time</div>
+          <div className="text-[11px] uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>wait time</div>
         </div>
       </div>
 
@@ -335,7 +335,7 @@ export default function GreenroomPage() {
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Layers className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
             <span className="font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.04em' }}>Greenroom</span>
-            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase shrink-0"
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-black uppercase shrink-0"
               style={{ background: destCfg.bg, color: destCfg.color, border: `1px solid ${destCfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {destCfg.label}
             </span>
@@ -364,7 +364,7 @@ export default function GreenroomPage() {
             style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
             {destType === 'new_room' ? (
               <div className="space-y-2">
-                <p className="text-[8px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>New Room</p>
+                <p className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>New Room</p>
                 <input placeholder="Room title..." value={newRoomTitle} onChange={e => setNewRoomTitle(e.target.value)}
                   style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box' }} />
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -389,11 +389,11 @@ export default function GreenroomPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-black text-sm text-white truncate">{room.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded"
+                    <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded"
                       style={{ background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#FF1564' : 'rgba(255,255,255,0.4)' }}>
                       {room.status}
                     </span>
-                    <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       <Users className="w-2.5 h-2.5 inline mr-0.5" />{room.viewer_count || 0}
                     </span>
                   </div>
@@ -408,7 +408,7 @@ export default function GreenroomPage() {
           <div className="rounded-xl p-4 space-y-3"
             style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div>
-              <label className="text-[8px] font-black uppercase block mb-1"
+              <label className="text-[11px] font-black uppercase block mb-1"
                 style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Display Name
               </label>
@@ -419,7 +419,7 @@ export default function GreenroomPage() {
             {!isHost && (
               <>
                 <div>
-                  <label className="text-[8px] font-black uppercase block mb-1"
+                  <label className="text-[11px] font-black uppercase block mb-1"
                     style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Join As
                   </label>
@@ -431,7 +431,7 @@ export default function GreenroomPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[8px] font-black uppercase block mb-1"
+                  <label className="text-[11px] font-black uppercase block mb-1"
                     style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Message to Host <span style={{ color: 'rgba(255,255,255,0.2)' }}>(optional)</span>
                   </label>
@@ -440,7 +440,7 @@ export default function GreenroomPage() {
                     placeholder="Say hi to the host..." rows={2}
                     className="w-full px-3 py-2 rounded-lg resize-none text-[11px]"
                     style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', outline: 'none' }} />
-                  <p className="text-right text-[8px] mt-0.5" style={{ color: 'rgba(255,255,255,0.2)' }}>{joinMessage.length}/140</p>
+                  <p className="text-right text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.2)' }}>{joinMessage.length}/140</p>
                 </div>
               </>
             )}
@@ -466,14 +466,14 @@ export default function GreenroomPage() {
                   className="overflow-hidden">
                   <div className="px-4 pb-4 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     <div className="pt-3">
-                      <label className="text-[8px] font-black uppercase block mb-1"
+                      <label className="text-[11px] font-black uppercase block mb-1"
                         style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                         Video Quality
                       </label>
                       <div className="flex gap-1.5">
                         {['360p', '480p', '720p', '1080p'].map(q => (
                           <button key={q} onClick={() => setVideoQuality(q)}
-                            className="flex-1 py-1.5 rounded text-[9px] font-black uppercase transition-all"
+                            className="flex-1 py-1.5 rounded text-[11px] font-black uppercase transition-all"
                             style={{
                               background: videoQuality === q ? `rgba(212,175,55,0.15)` : 'rgba(255,255,255,0.04)',
                               border: videoQuality === q ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
@@ -504,13 +504,13 @@ export default function GreenroomPage() {
 
                     {bgBlur && (
                       <div>
-                        <p className="text-[8px] mb-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>Background</p>
+                        <p className="text-[11px] mb-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>Background</p>
                         <div className="flex gap-2">
                           {['#0D0D0D', BURGUNDY, '#0A0A2E'].map(c => (
                             <button key={c} className="w-8 h-8 rounded-lg border transition-all"
                               style={{ background: c, border: `2px solid rgba(212,175,55,0.3)` }} />
                           ))}
-                          <button className="flex-1 h-8 rounded-lg text-[8px] font-bold"
+                          <button className="flex-1 h-8 rounded-lg text-[11px] font-bold"
                             style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.3)' }}>
                             Upload
                           </button>
@@ -526,7 +526,7 @@ export default function GreenroomPage() {
           {/* Permissions */}
           <div className="rounded-xl p-4 space-y-3"
             style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <p className="text-[8px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <p className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Permissions
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -535,7 +535,7 @@ export default function GreenroomPage() {
               <PermissionPill label="Speakers" status={permissions.speaker} />
             </div>
             {(permissions.camera === 'denied' || permissions.mic === 'denied') && (
-              <p className="text-[9px]" style={{ color: 'rgba(255,100,100,0.8)' }}>
+              <p className="text-[11px]" style={{ color: 'rgba(255,100,100,0.8)' }}>
                 Some permissions are blocked — check browser settings or use "Join without audio/video" below.
               </p>
             )}
@@ -545,9 +545,9 @@ export default function GreenroomPage() {
               {deviceCheckPassed && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                  style={{ background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)' }}>
+                  style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)' }}>
                   <CheckCircle className="w-4 h-4 text-green-400" />
-                  <span className="text-[10px] font-black uppercase" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <span className="text-[10px] font-black uppercase" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Device Check ✓
                   </span>
                 </motion.div>

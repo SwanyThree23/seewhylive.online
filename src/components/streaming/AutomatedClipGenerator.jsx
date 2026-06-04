@@ -78,7 +78,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
       <div className="space-y-3">
         {/* Triggers */}
         <div>
-          <label className="text-[9px] text-white/60 uppercase block mb-2 font-semibold">Auto Triggers</label>
+          <label className="text-[11px] text-white/60 uppercase block mb-2 font-semibold">Auto Triggers</label>
           <div className="grid grid-cols-1 gap-1.5">
             {CLIP_TRIGGERS.map(trigger => (
               <button
@@ -90,7 +90,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                       : [...prev, trigger.value]
                   )
                 }
-                className={`p-2 rounded-lg text-left transition-all border text-[9px] ${
+                className={`p-2 rounded-lg text-left transition-all border text-[11px] ${
                   selectedTriggers.includes(trigger.value)
                     ? 'bg-[#d4af37]/20 border-[#d4af37]/50 text-white'
                     : 'bg-white/5 border-white/10 text-white/60 hover:border-white/20'
@@ -130,7 +130,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
         {/* Recent Clips */}
         {clips.length > 0 && (
           <div className="space-y-2 pt-3 border-t border-white/10">
-            <p className="text-[9px] text-white/60 uppercase font-semibold">Recent Clips</p>
+            <p className="text-[11px] text-white/60 uppercase font-semibold">Recent Clips</p>
             <div className="space-y-1.5 max-h-48 overflow-y-auto">
               {clips.map(clip => (
                 <motion.div
@@ -140,11 +140,11 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                   className="bg-white/5 border border-white/10 rounded p-2"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-semibold text-white truncate">{clip.title}</span>
+                    <span className="text-[11px] font-semibold text-white truncate">{clip.title}</span>
                     {clip.status === 'ready' && <Check className="w-3 h-3 text-green-400" />}
                     {clip.status === 'generating' && <Loader2 className="w-3 h-3 animate-spin text-blue-400" />}
                   </div>
-                  <div className="flex items-center gap-1 text-[8px] text-white/50 mb-1.5">
+                  <div className="flex items-center gap-1 text-[11px] text-white/50 mb-1.5">
                     <span>{clip.duration_seconds}s</span>
                     <span>•</span>
                     <span>{clip.view_count} views</span>
@@ -152,7 +152,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                   {clip.status === 'ready' && (
                     <button
                       onClick={() => handleCopyUrl(clip.clip_url)}
-                      className="w-full flex items-center justify-center gap-1 text-[8px] bg-white/10 hover:bg-white/20 rounded px-2 py-1"
+                      className="w-full flex items-center justify-center gap-1 text-[11px] bg-white/10 hover:bg-white/20 rounded px-2 py-1"
                     >
                       {copied === clip.clip_url ? (
                         <>

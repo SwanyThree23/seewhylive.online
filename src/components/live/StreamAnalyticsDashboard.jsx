@@ -10,7 +10,7 @@ const BG = '#0A0710';
 const PANEL = '#0F0B1A';
 const BORDER = 'rgba(212,175,55,0.18)';
 
-const COLORS = ['#D4AF37', '#00F5FF', '#8B5CF6', '#FF8C00', '#00FF88'];
+const COLORS = ['#D4AF37', '#C9A84C', '#D4AF37', '#FF8C00', '#6DBF7E'];
 
 export default function StreamAnalyticsDashboard({ roomId }) {
   // Fetch room analytics
@@ -71,10 +71,10 @@ export default function StreamAnalyticsDashboard({ roomId }) {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
         <StatCard icon={Eye} label="Viewers" value={latestAnalytics?.viewer_count || 0} unit="" color={G} />
-        <StatCard icon={Users} label="Peak" value={latestAnalytics?.peak_viewers || 0} unit="" color="#00F5FF" />
-        <StatCard icon={MessageSquare} label="Chat" value={latestAnalytics?.chat_messages || 0} unit="" color="#8B5CF6" />
+        <StatCard icon={Users} label="Peak" value={latestAnalytics?.peak_viewers || 0} unit="" color="#C9A84C" />
+        <StatCard icon={MessageSquare} label="Chat" value={latestAnalytics?.chat_messages || 0} unit="" color="#D4AF37" />
         <StatCard icon={Zap} label="Tips" value={latestAnalytics?.tips_received || 0} unit="$" color="#FF8C00" />
-        <StatCard icon={Heart} label="Engagement" value={latestAnalytics?.engagement_rate || 0} unit="%" color="#00FF88" />
+        <StatCard icon={Heart} label="Engagement" value={latestAnalytics?.engagement_rate || 0} unit="%" color="#6DBF7E" />
       </div>
 
       {/* Charts */}
@@ -122,7 +122,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
               <Tooltip
                 contentStyle={{ background: PANEL, border: `1px solid ${BORDER}`, borderRadius: '8px' }}
               />
-              <Bar dataKey="messages" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="messages" fill="#D4AF37" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
@@ -147,11 +147,11 @@ export default function StreamAnalyticsDashboard({ roomId }) {
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }} className="p-2.5 rounded">
               <p className="text-white/60 mb-1">Avg Watch</p>
-              <p className="font-bold" style={{ color: '#00F5FF' }}>{Math.round(latestAnalytics.average_watch_time || 0)}m</p>
+              <p className="font-bold" style={{ color: '#C9A84C' }}>{Math.round(latestAnalytics.average_watch_time || 0)}m</p>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }} className="p-2.5 rounded">
               <p className="text-white/60 mb-1">New Followers</p>
-              <p className="font-bold" style={{ color: '#00FF88' }}>{latestAnalytics.new_followers || 0}</p>
+              <p className="font-bold" style={{ color: '#6DBF7E' }}>{latestAnalytics.new_followers || 0}</p>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }} className="p-2.5 rounded">
               <p className="text-white/60 mb-1">Engagement</p>

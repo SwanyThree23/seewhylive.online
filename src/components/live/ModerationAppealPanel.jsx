@@ -35,13 +35,13 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="p-4 rounded-lg"
-        style={{ background: result.appeal_approved ? 'rgba(0,255,136,0.1)' : 'rgba(255,100,100,0.1)' }}
+        style={{ background: result.appeal_approved ? 'rgba(109,191,126,0.1)' : 'rgba(255,100,100,0.1)' }}
       >
-        <p className="text-xs font-bold mb-2" style={{ color: result.appeal_approved ? '#00FF88' : '#FF1564' }}>
+        <p className="text-xs font-bold mb-2" style={{ color: result.appeal_approved ? '#6DBF7E' : '#FF1564' }}>
           {result.appeal_approved ? '✓ Appeal Approved' : '✗ Appeal Denied'}
         </p>
         <p className="text-[10px] text-white/70">{result.reason}</p>
-        <p className="text-[9px] text-white/40 mt-2">Confidence: {Math.round(result.confidence * 100)}%</p>
+        <p className="text-[11px] text-white/40 mt-2">Confidence: {Math.round(result.confidence * 100)}%</p>
         <button
           onClick={onClose}
           className="mt-3 w-full px-2 py-1.5 rounded text-xs font-bold"

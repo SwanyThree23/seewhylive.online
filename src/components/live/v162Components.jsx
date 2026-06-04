@@ -3,7 +3,7 @@ var G = {
   black:"#080808", darkBg:"#0D0D0D", cardBg:"#111111",
   surfaceBg:"#161616", crimson:"#8B0000", crimsonBright:"#C41E3A",
   gold:"#D4AF37", goldBright:"#FFD700", cyan:"#00E5FF",
-  volt:"#C8FF00", white:"#FFFFFF", gray:"#888888",
+  volt:"#D4AF37", white:"#FFFFFF", gray:"#888888",
   grayDim:"#444444", red:"#FF3B30", green:"#30D158",
   purple:"#BF5FFF", orange:"#FF9500",
   fOrb:"'Orbitron',sans-serif", fRaj:"'Rajdhani',sans-serif",
@@ -28,7 +28,7 @@ var MERCH_ITEMS = [
   {id:"m3",name:"SeeWhy LIVE Hoodie",price:54.99,icon:"🧥",category:"Apparel",color:"#BF5FFF",desc:"Heavy fleece · logo back print"},
   {id:"m4",name:"Domino Set (Full)",price:39.99,icon:"🎲",category:"Games",color:"#00E5FF",desc:"Double-6 · laser engraved tiles"},
   {id:"m5",name:"VibeN'Bones Mug",price:14.99,icon:"☕",category:"Lifestyle",color:"#FF9500",desc:"15oz ceramic · microwave safe"},
-  {id:"m6",name:"Washington Classic Poster",price:19.99,icon:"🖼️",category:"Art",color:"#C8FF00",desc:"18×24 · glossy · tournament art"},
+  {id:"m6",name:"Washington Classic Poster",price:19.99,icon:"🖼️",category:"Art",color:"#D4AF37",desc:"18×24 · glossy · tournament art"},
 ];
 
 export function MerchShopV2({ onClose }) {
@@ -148,7 +148,7 @@ export function ViewerControlsV2({ onClose }) {
           <button onClick={function(){setHandRaised(function(h){return !h;});}} style={{padding:"8px",borderRadius:7,border:"1px solid "+(handRaised?G.orange:G.grayDim),background:handRaised?"rgba(255,149,0,.1)":"none",color:handRaised?G.orange:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{handRaised?"✋ LOWER":"✋ RAISE"}</button>
         </div>
         <div style={{padding:"6px 8px",background:G.surfaceBg,borderRadius:6,border:"1px solid #222",display:"flex",gap:5,flexWrap:"wrap"}}>
-          <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #C8FF00",color:"#C8FF00"}}>{quality}</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #D4AF37",color:"#D4AF37"}}>{quality}</span>
           <span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(255,149,0,.1)",border:"1px solid "+G.orange,color:G.orange,fontFamily:G.fMon,fontWeight:700}}>{volume}% vol</span>
           {muted&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(196,30,58,.2)",border:"1px solid #C41E3A",color:"#FF6B6B",fontFamily:G.fMon,fontWeight:700}}>MUTED</span>}
           {pip&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(0,229,255,.15)",border:"1px solid #00E5FF",color:"#00E5FF",fontFamily:G.fMon,fontWeight:700}}>PIP</span>}
@@ -229,7 +229,7 @@ export function TipAlertConfig() {
           <div style={{fontFamily:G.fMon,fontSize:9,color:G.grayDim,letterSpacing:1,marginBottom:3}}>DURATION: {config.duration}s</div>
           <input type="range" min={2} max={10} step={1} value={config.duration} onChange={function(e){setConfig(function(c){return Object.assign({},c,{duration:parseInt(e.target.value)});});}} style={{accentColor:G.gold,width:"100%"}} />
         </div>
-        <button style={{width:"100%",fontSize:12,padding:"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:saved?"#C8FF00":"#8B0000",color:saved?"#080808":"#D4AF37"}} onClick={save}>{saved?"✓ SAVED":"SAVE ALERT CONFIG"}</button>
+        <button style={{width:"100%",fontSize:12,padding:"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontFamily:G.fRaj,fontWeight:700,letterSpacing:1,background:saved?"#D4AF37":"#8B0000",color:saved?"#080808":"#D4AF37"}} onClick={save}>{saved?"✓ SAVED":"SAVE ALERT CONFIG"}</button>
       </div>
     </div>
   );
@@ -261,7 +261,7 @@ export function EngagementDashboardV2() {
         <div style={{display:"flex",alignItems:"center",gap:7}}>
           <span style={{fontSize:13}}>📈</span>
           <span style={{fontFamily:G.fOrb,fontSize:10,color:G.volt,letterSpacing:2}}>ENGAGEMENT</span>
-          {live&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #C8FF00",color:"#C8FF00",animation:"pulse 2s infinite"}}>● LIVE</span>}
+          {live&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #D4AF37",color:"#D4AF37",animation:"pulse 2s infinite"}}>● LIVE</span>}
         </div>
         <button onClick={function(){setLive(function(l){return !l;});}} style={{fontFamily:G.fMon,fontSize:8,color:live?G.orange:G.green,background:"none",border:"none",cursor:"pointer"}}>{live?"PAUSE":"RESUME"}</button>
       </div>
@@ -286,7 +286,7 @@ export function EngagementDashboardV2() {
         <div style={{marginBottom:8}}>
           <div style={{fontFamily:G.fMon,fontSize:7,color:G.grayDim,marginBottom:3}}>VIEWER TREND</div>
           <div style={{display:"flex",alignItems:"flex-end",height:44,gap:2,background:G.surfaceBg,borderRadius:5,padding:"4px 6px"}}>
-            {data.heatmap.map(function(v,i){return <div key={i} style={{flex:1,background:"linear-gradient(to top,#C8FF00,#C8FF0033)",borderRadius:2,height:(v/maxH*100)+"%",minHeight:2,transition:"height .8s"}} />;}) }
+            {data.heatmap.map(function(v,i){return <div key={i} style={{flex:1,background:"linear-gradient(to top,#D4AF37,#D4AF3733)",borderRadius:2,height:(v/maxH*100)+"%",minHeight:2,transition:"height .8s"}} />;}) }
           </div>
         </div>
         <div style={{marginBottom:8}}>

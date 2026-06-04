@@ -56,7 +56,7 @@ function downloadPDF(title, data) {
 
 const EXPORT_SETS = [
   { id: 'activity', label: 'Activity History', description: 'All your platform activities and events', entity: 'Activity', filterKey: 'user_id', accentColor: '#00d4ff' },
-  { id: 'subscriptions', label: 'My Subscriptions', description: 'Your active and past creator subscriptions', entity: 'Subscription', filterKey: 'user_id', accentColor: '#8B5CF6' },
+  { id: 'subscriptions', label: 'My Subscriptions', description: 'Your active and past creator subscriptions', entity: 'Subscription', filterKey: 'user_id', accentColor: '#D4AF37' },
   { id: 'notifications', label: 'Notifications', description: 'Your notification history', entity: 'Notification', filterKey: 'user_id', accentColor: GOLD },
   { id: 'transactions', label: 'Transactions', description: 'All tips, purchases, and payments', entity: 'Transaction', filterKey: 'user_id', accentColor: '#00ff88' },
 ];
@@ -106,7 +106,7 @@ export default function DataExportPage() {
                 <p className="font-black text-sm text-white" style={T}>{set.label}</p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{set.description}</p>
               </div>
-              <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                 style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }}>
                 Personal Data
               </span>

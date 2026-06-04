@@ -64,7 +64,7 @@ export default function CoverPage() {
             <div className="w-12 h-12 rounded-full bg-[#d4af37]/20 flex items-center justify-center mb-1">
               <Plus className="w-6 h-6 text-[#d4af37]" />
             </div>
-            <span className="text-[9px] text-white/60 text-center">You</span>
+            <span className="text-[11px] text-white/60 text-center">You</span>
           </motion.div>
 
           {/* Live Rooms */}
@@ -81,7 +81,7 @@ export default function CoverPage() {
                   <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
                   <span className="text-[7px] font-bold text-white">LIVE</span>
                 </div>
-                <p className="text-[8px] text-white mt-1 truncate">{room.host_name}</p>
+                <p className="text-[11px] text-white mt-1 truncate">{room.host_name}</p>
               </div>
             </motion.div>
           ))}

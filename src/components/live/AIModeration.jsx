@@ -72,9 +72,9 @@ export default function AIModeration({ roomId, isHost = false }) {
         onClick={() => setIsActive(!isActive)}
         className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg font-bold text-sm transition-all"
         style={{
-          background: isActive ? `linear-gradient(135deg, #8B5CF6, ${G})` : 'rgba(255,255,255,0.05)',
+          background: isActive ? `linear-gradient(135deg, #D4AF37, ${G})` : 'rgba(255,255,255,0.05)',
           color: isActive ? '#fff' : 'rgba(255,255,255,0.5)',
-          border: isActive ? `1px solid #8B5CF6` : '1px solid rgba(255,255,255,0.1)',
+          border: isActive ? `1px solid #D4AF37` : '1px solid rgba(255,255,255,0.1)',
         }}
       >
         <Shield className="w-4 h-4" />
@@ -105,7 +105,7 @@ export default function AIModeration({ roomId, isHost = false }) {
                   <div className="flex-1">
                     <p className="font-bold text-white/80">{flag.user}</p>
                     <p className="text-white/50">{flag.content}...</p>
-                    <p className="text-[9px] text-white/40 mt-1">Reason: {flag.reason}</p>
+                    <p className="text-[11px] text-white/40 mt-1">Reason: {flag.reason}</p>
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     <button
@@ -130,7 +130,7 @@ export default function AIModeration({ roomId, isHost = false }) {
 
       {/* Status */}
       {isActive && (
-        <div className="text-[9px] text-white/30 text-center">
+        <div className="text-[11px] text-white/30 text-center">
           {processing ? 'Scanning...' : 'Active · Real-time content scanning'}
         </div>
       )}

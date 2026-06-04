@@ -196,7 +196,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
               />
             )}
           </div>
-          <div className="flex items-center gap-1 text-[9px]" style={{ ...T }}>
+          <div className="flex items-center gap-1 text-[11px]" style={{ ...T }}>
             <Clock className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
             {activePoll.ends_at
               ? <PollCountdown endsAt={activePoll.ends_at} onExpire={() => {}} />
@@ -255,7 +255,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
                       key={`${i}-${pct}`}
                       initial={{ opacity: 0, x: 4 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="text-[9px] font-black shrink-0 ml-1"
+                      className="text-[11px] font-black shrink-0 ml-1"
                       style={{ color: isWinner ? G : 'rgba(255,255,255,0.4)', ...T }}
                     >
                       {pct}%
@@ -270,17 +270,17 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
         {/* Footer */}
         <div className="flex items-center justify-between px-3 py-1.5"
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>
+          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>
             {activePoll.total_votes || 0} {activePoll.total_votes === 1 ? 'vote' : 'votes'}
           </span>
           {myVote === null && !ended && !isHost && (
-            <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Tap to vote</span>
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Tap to vote</span>
           )}
           {myVote !== null && !ended && (
-            <span className="text-[8px]" style={{ color: '#4ADE80', ...T }}>✓ Voted</span>
+            <span className="text-[11px]" style={{ color: '#4ADE80', ...T }}>✓ Voted</span>
           )}
           {ended && (
-            <span className="text-[8px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Final</span>
+            <span className="text-[11px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Final</span>
           )}
         </div>
       </motion.div>

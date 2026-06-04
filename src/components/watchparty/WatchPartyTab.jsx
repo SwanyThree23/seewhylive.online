@@ -64,7 +64,7 @@ function StatsBadge({ label, value, color }) {
       display: 'inline-flex',
       alignItems: 'center',
       gap: 4,
-      fontSize: 9,
+      fontSize: 11,
       fontWeight: 900,
       fontFamily: 'Barlow Condensed, sans-serif',
       textTransform: 'uppercase',
@@ -291,7 +291,7 @@ function ScreenShareMode({ user, party }) {
           {streamSettings.frameRate && (
             <StatsBadge label={'FPS'} value={Math.round(streamSettings.frameRate)} />
           )}
-          <StatsBadge label={'Track'} value={screenStream.getVideoTracks().length > 0 ? 'Active' : 'None'} color="#00FF88" />
+          <StatsBadge label={'Track'} value={screenStream.getVideoTracks().length > 0 ? 'Active' : 'None'} color="#6DBF7E" />
         </div>
       )}
     </div>
@@ -467,7 +467,7 @@ function WatchTogetherMode({ user, party, members, onSyncEvent, syncEvent }) {
               <ActionButton onClick={handlePause} disabled={!playing}>
                 <Pause style={{ width: 12, height: 12 }} /> Pause
               </ActionButton>
-              <ActionButton onClick={handleSyncAll} style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.3)', color: '#00FF88' }}>
+              <ActionButton onClick={handleSyncAll} style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E' }}>
                 <RefreshCw style={{ width: 12, height: 12 }} /> Sync All
               </ActionButton>
             </>
@@ -482,7 +482,7 @@ function WatchTogetherMode({ user, party, members, onSyncEvent, syncEvent }) {
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {syncEvent && (
             synced ? (
-              <StatsBadge label="SYNCED ✓" color="#00FF88" />
+              <StatsBadge label="SYNCED ✓" color="#6DBF7E" />
             ) : (
               <StatsBadge label="DRIFTED" color="#D4AF37" value={Math.round(syncDrift / 1000) + 's'} />
             )
@@ -587,7 +587,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
   var qualityLabel = function() {
     if (!streamSettings) return null;
     var w = streamSettings.width || 0;
-    if (w >= 3840) return { label: '4K ✓', color: '#00FF88' };
+    if (w >= 3840) return { label: '4K ✓', color: '#6DBF7E' };
     if (w >= 1280) return { label: 'HD', color: '#D4AF37' };
     return { label: 'SD', color: 'rgba(255,255,255,0.3)' };
   };
@@ -648,7 +648,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
             </ActionButton>
             <ActionButton
               onClick={apply4K}
-              style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.3)', color: '#00FF88' }}
+              style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E' }}
             >
               Apply 4K
             </ActionButton>
@@ -666,7 +666,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
 
       {remoteList.length > 0 && (
         <div>
-          <div style={{ fontSize: 9, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
             Remote Feeds
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 120px)', gap: 8 }}>
@@ -724,7 +724,7 @@ function RemoteTile({ peerId, stream, members }) {
         </div>
       </div>
       {member && (
-        <div style={{ marginTop: 4, fontSize: 9, textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', truncate: true, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ marginTop: 4, fontSize: 11, textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', truncate: true, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {member.user_name}
         </div>
       )}

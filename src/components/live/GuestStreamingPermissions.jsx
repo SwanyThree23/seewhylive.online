@@ -59,7 +59,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                 </button>
               </div>
               {permissions.canMultistream && (
-                <p className="text-[9px] text-green-400/70 ml-6">✓ Guest can send to YouTube, Twitch, etc.</p>
+                <p className="text-[11px] text-green-400/70 ml-6">✓ Guest can send to YouTube, Twitch, etc.</p>
               )}
             </div>
 

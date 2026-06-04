@@ -7,8 +7,8 @@ const TIER_CONFIG = {
   bronze:   { color: '#CD7F32', glow: 'rgba(205,127,50,0.3)',   bg: 'rgba(205,127,50,0.08)',  label: 'Bronze',    next: 500 },
   silver:   { color: '#C0C0C0', glow: 'rgba(192,192,192,0.3)', bg: 'rgba(192,192,192,0.08)', label: 'Silver',    next: 2000 },
   gold:     { color: '#d4af37', glow: 'rgba(212,175,55,0.4)',  bg: 'rgba(212,175,55,0.1)',   label: 'Gold',      next: 7500 },
-  platinum: { color: '#00F5FF', glow: 'rgba(0,245,255,0.3)',   bg: 'rgba(0,245,255,0.08)',   label: 'Platinum',  next: 20000 },
-  diamond:  { color: '#8B5CF6', glow: 'rgba(139,92,246,0.4)', bg: 'rgba(139,92,246,0.1)',   label: 'Diamond ♦', next: null },
+  platinum: { color: '#C9A84C', glow: 'rgba(201,168,76,0.3)',   bg: 'rgba(201,168,76,0.08)',   label: 'Platinum',  next: 20000 },
+  diamond:  { color: '#D4AF37', glow: 'rgba(212,175,55,0.4)', bg: 'rgba(212,175,55,0.1)',   label: 'Diamond ♦', next: null },
 };
 
 const TIER_THRESHOLDS = { bronze: 0, silver: 500, gold: 2000, platinum: 7500, diamond: 20000 };
@@ -43,7 +43,7 @@ export default function ViewerLoyaltyCard({ userId, creatorId, compact = false }
         style={{ background: cfg.bg, border: `1px solid ${cfg.color}30` }}>
         <Zap className="w-3 h-3" style={{ color: cfg.color }} />
         <span className="text-[10px] font-bold font-mono" style={{ color: cfg.color }}>{pts.toLocaleString()}</span>
-        <span className="text-[9px]" style={{ color: `${cfg.color}80` }}>{cfg.label}</span>
+        <span className="text-[11px]" style={{ color: `${cfg.color}80` }}>{cfg.label}</span>
       </div>
     );
   }
@@ -67,7 +67,7 @@ export default function ViewerLoyaltyCard({ userId, creatorId, compact = false }
 
       {nextThreshold && (
         <div className="space-y-1">
-          <div className="flex justify-between text-[9px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <div className="flex justify-between text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
             <span>Progress to next tier</span>
             <span>{pts.toLocaleString()} / {nextThreshold.toLocaleString()}</span>
           </div>
@@ -86,7 +86,7 @@ export default function ViewerLoyaltyCard({ userId, creatorId, compact = false }
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2" style={{ background: 'rgba(0,0,0,0.2)' }}>
             <p className="text-[11px] font-bold text-white/80">{s.value}</p>
-            <p className="text-[8px] text-white/30 uppercase">{s.label}</p>
+            <p className="text-[11px] text-white/30 uppercase">{s.label}</p>
           </div>
         ))}
       </div>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const C = { burg: '#800020', gold: '#D4AF37', volt: '#C8FF00', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
+const C = { burg: '#800020', gold: '#D4AF37', volt: '#D4AF37', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
 
 const STEPS = [
   { id: 1, label: 'Profile', key: 'step_1_profile' },
@@ -20,9 +20,9 @@ const AVATARS = ['🎲','🎙','✍️','🤖','🎮','🎵'];
 const CATEGORIES = ['Gaming','Talk','Tech','Music','Sports','Art','Other'];
 const THEMES = [
   { name: 'Domino Noir', primary: '#DC143C', secondary: '#D4AF37', preview: ['#1a0a0a','#DC143C','#D4AF37'] },
-  { name: 'Broadcast Blue', primary: '#003580', secondary: '#00F5FF', preview: ['#00152b','#003580','#00F5FF'] },
+  { name: 'Broadcast Blue', primary: '#003580', secondary: '#C9A84C', preview: ['#00152b','#003580','#C9A84C'] },
   { name: 'Creator Gold', primary: '#0D0D0D', secondary: '#D4AF37', preview: ['#0D0D0D','#1a1a1a','#D4AF37'] },
-  { name: 'Volt Green', primary: '#0D0D0D', secondary: '#C8FF00', preview: ['#0D0D0D','#111','#C8FF00'] },
+  { name: 'Volt Green', primary: '#0D0D0D', secondary: '#D4AF37', preview: ['#0D0D0D','#111','#D4AF37'] },
 ];
 const FONTS = [
   { name: 'Broadcast', sample: 'Orbitron + Rajdhani' },
@@ -144,7 +144,7 @@ function Step2({ onboarding, onDone }) {
           <button key={f.name} onClick={() => setFont(i)}
             style={{ flex: 1, padding: '8px', borderRadius: 8, border: `2px solid ${font===i?C.gold:'#333'}`, background: 'rgba(13,6,24,0.9)', cursor: 'pointer' }}>
             <div style={{ fontFamily: 'Barlow Condensed', fontSize: 13, color: font===i?C.gold:C.gray }}>{f.name}</div>
-            <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>{f.sample}</div>
+            <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{f.sample}</div>
           </button>
         ))}
       </div>
@@ -155,8 +155,8 @@ function Step2({ onboarding, onDone }) {
           <div style={{ fontFamily: 'Barlow Condensed', fontSize: 16, color: T.secondary, letterSpacing: 2 }}>YOUR CHANNEL</div>
           <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>● LIVE NOW · 1,247 viewers</div>
           <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
-            <div style={{ padding: '4px 10px', background: T.primary, borderRadius: 4, fontSize: 9, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>SUBSCRIBE</div>
-            <div style={{ padding: '4px 10px', background: `${T.secondary}20`, borderRadius: 4, fontSize: 9, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>TIP</div>
+            <div style={{ padding: '4px 10px', background: T.primary, borderRadius: 4, fontSize: 11, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>SUBSCRIBE</div>
+            <div style={{ padding: '4px 10px', background: `${T.secondary}20`, borderRadius: 4, fontSize: 11, color: T.secondary, fontFamily: 'Barlow Condensed', letterSpacing: 1 }}>TIP</div>
           </div>
         </div>
       </div>
@@ -369,7 +369,7 @@ function CompletionScreen() {
   const nav = useNavigate();
   useEffect(() => {
     // Canvas confetti
-    import('canvas-confetti').then(m => m.default({ particleCount: 150, spread: 70, colors: ['#D4AF37','#800020','#C8FF00','#fff'] }));
+    import('canvas-confetti').then(m => m.default({ particleCount: 150, spread: 70, colors: ['#D4AF37','#800020','#D4AF37','#fff'] }));
   }, []);
   return (
     <div style={{ padding: '40px 20px', textAlign: 'center' }}>

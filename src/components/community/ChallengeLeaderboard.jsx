@@ -62,8 +62,8 @@ export default function ChallengeLeaderboard({ challengeId }) {
               key={participant.id}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8,
-                background: rank <= 3 ? 'rgba(139,92,246,0.08)' : 'rgba(255,255,255,0.03)',
-                border: rank <= 3 ? '1px solid rgba(139,92,246,0.2)' : '1px solid transparent',
+                background: rank <= 3 ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)',
+                border: rank <= 3 ? '1px solid rgba(212,175,55,0.2)' : '1px solid transparent',
               }}
             >
               {/* Rank */}

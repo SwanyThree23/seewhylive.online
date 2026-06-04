@@ -8,8 +8,8 @@ const TABS = [
   { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF0000' },
   { id: 'device',  label: 'Device',  icon: Upload,   color: '#d4af37' },
   { id: 'url',     label: 'URL',     icon: LinkIcon,  color: '#00d4ff' },
-  { id: 'stream',  label: 'Stream',  icon: Radio,     color: '#00FF88' },
-  { id: 'playlist',label: 'Playlist',icon: List,      color: '#8B5CF6' },
+  { id: 'stream',  label: 'Stream',  icon: Radio,     color: '#6DBF7E' },
+  { id: 'playlist',label: 'Playlist',icon: List,      color: '#D4AF37' },
 ];
 
 export function getYouTubeId(url) {
@@ -149,7 +149,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                 const active = tab === t.id;
                 return (
                   <button key={t.id} onClick={() => setTab(t.id)}
-                    className="flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-black uppercase transition-all"
+                    className="flex-1 flex flex-col items-center gap-0.5 py-2 text-[11px] font-black uppercase transition-all"
                     style={{
                       fontFamily: 'Barlow Condensed, sans-serif',
                       color: active ? t.color : 'rgba(255,255,255,0.3)',
@@ -230,9 +230,9 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                     value={streamUrl}
                     onChange={e => setStreamUrl(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submitStream()}
-                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(0,255,136,0.05)', border: '1px solid rgba(0,255,136,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(109,191,126,0.05)', border: '1px solid rgba(109,191,126,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
                   />
-                  <button onClick={submitStream} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(0,255,136,0.15)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.3)', borderRadius: 8, cursor: 'pointer' }}>
+                  <button onClick={submitStream} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', borderRadius: 8, cursor: 'pointer' }}>
                     <Radio className="w-3.5 h-3.5" /> Play Stream
                   </button>
                 </>
@@ -246,7 +246,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                       placeholder="Video URL (YouTube or direct)"
                       value={newPlaylistUrl}
                       onChange={e => setNewPlaylistUrl(e.target.value)}
-                      style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 12, background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
+                      style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 12, background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
                     />
                     <div className="flex gap-2">
                       <input
@@ -255,7 +255,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                         onChange={e => setNewPlaylistTitle(e.target.value)}
                         style={{ flex: 1, height: 32, padding: '0 10px', fontSize: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
                       />
-                      <button onClick={addToPlaylist} style={{ height: 32, padding: '0 12px', background: 'rgba(139,92,246,0.2)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 6, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                      <button onClick={addToPlaylist} style={{ height: 32, padding: '0 12px', background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>

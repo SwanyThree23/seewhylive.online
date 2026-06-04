@@ -32,7 +32,7 @@ export default function PartyHypeMeter({ partyId, memberCount, onHypeChange }) {
     onHypeChange?.(rounded);
   }, [reactions.length, memberCount]);
 
-  const hypeColor = hypeLevel >= 80 ? '#FF1564' : hypeLevel >= 50 ? '#FF8C00' : hypeLevel >= 25 ? '#d4af37' : '#8B5CF6';
+  const hypeColor = hypeLevel >= 80 ? '#FF1564' : hypeLevel >= 50 ? '#FF8C00' : hypeLevel >= 25 ? '#d4af37' : '#D4AF37';
   const hypeLabel = hypeLevel >= 80 ? '🔥 ON FIRE' : hypeLevel >= 50 ? '⚡ HYPED' : hypeLevel >= 25 ? '📈 Building' : '😴 Chill';
 
   return (
@@ -41,10 +41,10 @@ export default function PartyHypeMeter({ partyId, memberCount, onHypeChange }) {
       <Flame className="w-4 h-4 shrink-0" style={{ color: hypeColor }} />
       <div className="flex-1 space-y-1">
         <div className="flex justify-between items-center">
-          <span className="text-[9px] font-black uppercase" style={{ color: hypeColor, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <span className="text-[11px] font-black uppercase" style={{ color: hypeColor, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {hypeLabel}
           </span>
-          <span className="text-[9px] font-mono text-white/30">{hypeLevel}%</span>
+          <span className="text-[11px] font-mono text-white/30">{hypeLevel}%</span>
         </div>
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
           <motion.div

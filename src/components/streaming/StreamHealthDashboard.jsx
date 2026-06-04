@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, AlertCircle, CheckCircle2 } from 'lucide-reac
 
 const HealthMetric = ({ label, value, unit, status, trend }) => {
   const statusColor = {
-    excellent: '#00FF88',
+    excellent: '#6DBF7E',
     good: '#d4af37',
     warning: '#FFB800',
     critical: '#FF1564'
@@ -17,7 +17,7 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
       className="bg-white/5 border border-white/10 rounded-lg p-2.5"
     >
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[9px] text-white/60 font-semibold uppercase">{label}</span>
+        <span className="text-[11px] text-white/60 font-semibold uppercase">{label}</span>
         <div className="flex items-center gap-1">
           {trend === 'up' ? (
             <TrendingUp className="w-3 h-3 text-green-400" />
@@ -28,14 +28,14 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-lg font-bold text-white">{value}</span>
-        <span className="text-[9px] text-white/50">{unit}</span>
+        <span className="text-[11px] text-white/50">{unit}</span>
       </div>
       <div className="flex items-center gap-1.5 mt-1.5">
         <div
           className="h-1.5 w-1.5 rounded-full"
           style={{ background: statusColor[status] }}
         />
-        <span className="text-[8px] text-white/40 capitalize">{status}</span>
+        <span className="text-[11px] text-white/40 capitalize">{status}</span>
       </div>
     </motion.div>
   );
@@ -72,7 +72,7 @@ export default function StreamHealthDashboard({ isLive }) {
     return (
       <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
         <AlertCircle className="w-5 h-5 text-white/30 mx-auto mb-2" />
-        <p className="text-[9px] text-white/40">Stream not live</p>
+        <p className="text-[11px] text-white/40">Stream not live</p>
       </div>
     );
   }

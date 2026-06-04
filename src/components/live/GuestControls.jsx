@@ -25,7 +25,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Guest Controls</span>
-          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-purple-900/30 text-purple-300">
+          <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-purple-900/30 text-purple-300">
             {participants.length}
           </span>
         </div>
@@ -59,7 +59,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
                             <Shield className="w-3 h-3 text-[#d4af37] shrink-0" />
                           )}
                         </div>
-                        <p className="text-[8px] text-white/40 capitalize">{guest.role}</p>
+                        <p className="text-[11px] text-white/40 capitalize">{guest.role}</p>
                       </div>
 
                       {/* Controls */}

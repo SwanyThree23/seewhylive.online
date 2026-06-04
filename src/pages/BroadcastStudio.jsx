@@ -177,7 +177,7 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
           <span className="text-xs">Camera off</span>
         </div>
       )}
-      <div className="absolute top-3 left-3 flex items-center gap-1 text-[9px] px-2 py-1 rounded"
+      <div className="absolute top-3 left-3 flex items-center gap-1 text-[11px] px-2 py-1 rounded"
         style={{ background: 'rgba(255,21,100,0.2)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
@@ -231,7 +231,7 @@ function CreateScreen({ onSubmit, isPending }) {
           />
 
           <div>
-            <p className="text-[9px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Mode</p>
+            <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Mode</p>
             <div className="grid grid-cols-3 gap-2">
               {MODES.map(mod => (
                 <button key={mod.id} onClick={() => setMode(mod.id)}
@@ -241,8 +241,8 @@ function CreateScreen({ onSubmit, isPending }) {
                     border: mode === mod.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)',
                   }}>
                   <span className="text-xl">{mod.icon}</span>
-                  <span className="text-[9px] font-black uppercase" style={{ color: mode === mod.id ? GOLD : 'rgba(255,255,255,0.4)', ...T }}>{mod.label}</span>
-                  <span className="text-[8px] text-center leading-tight" style={{ color: 'rgba(255,255,255,0.25)' }}>{mod.desc}</span>
+                  <span className="text-[11px] font-black uppercase" style={{ color: mode === mod.id ? GOLD : 'rgba(255,255,255,0.4)', ...T }}>{mod.label}</span>
+                  <span className="text-[11px] text-center leading-tight" style={{ color: 'rgba(255,255,255,0.25)' }}>{mod.desc}</span>
                 </button>
               ))}
             </div>
@@ -627,17 +627,17 @@ export default function BroadcastStudio() {
 
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</span>
-            <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+            <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
               style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', ...T }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isExclusive && (
-              <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+              <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
                 style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: `1px solid rgba(212,175,55,0.5)`, ...T }}>
                 🔐 EXCLUSIVE
               </span>
             )}
-            <span className="shrink-0 text-[9px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
+            <span className="shrink-0 text-[11px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
               style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
               SeeWhy LIVE
             </span>
@@ -693,7 +693,7 @@ export default function BroadcastStudio() {
             )}
             {isHost && (
               <button onClick={() => endMut.mutate()}
-                className="flex items-center gap-1 text-[9px] px-2.5 py-1.5 rounded-xl transition-all active:scale-95"
+                className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-xl transition-all active:scale-95"
                 style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
                 <LogOut className="w-3 h-3" /> End
               </button>
@@ -703,7 +703,7 @@ export default function BroadcastStudio() {
 
         {/* Row 2: host avatar + name | member count | mode pills | speaking indicator */}
         <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black text-white"
+          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[11px] font-black text-white"
             style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
             {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
           </div>
@@ -718,7 +718,7 @@ export default function BroadcastStudio() {
               { id: 'live',   icon: '🎙', label: 'Live' },
             ].map(mod => (
               <button key={mod.id} onClick={() => setStudioMode(mod.id)}
-                className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase transition-all active:scale-95"
+                className="text-[11px] px-2 py-0.5 rounded-full font-black uppercase transition-all active:scale-95"
                 style={{
                   background: studioMode === mod.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
                   border: studioMode === mod.id ? '1px solid rgba(212,175,55,0.35)' : '1px solid rgba(255,255,255,0.07)',
@@ -729,7 +729,7 @@ export default function BroadcastStudio() {
             ))}
           </div>
           {isHost && (
-            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+            <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
               style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, ...T }}>
               Host
             </span>
@@ -806,20 +806,20 @@ export default function BroadcastStudio() {
                   const overflow = audienceMembers.length - 15;
                   return (
                     <div className="px-2 pt-2 pb-3">
-                      <p className="text-[9px] uppercase font-bold mb-2 tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>Others in the Room</p>
+                      <p className="text-[11px] uppercase font-bold mb-2 tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>Others in the Room</p>
                       <div className="flex flex-wrap gap-1.5">
                         {shown.map(m => (
                           <div key={m.id} className="flex flex-col items-center gap-0.5">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-black text-white"
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black text-white"
                               style={{ background: 'rgba(255,255,255,0.08)' }}>
                               {(m.user_name || '?')[0].toUpperCase()}
                             </div>
-                            <span className="text-[8px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 32 }}>{m.user_name?.split(' ')[0]}</span>
+                            <span className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 32 }}>{m.user_name?.split(' ')[0]}</span>
                           </div>
                         ))}
                         {overflow > 0 && (
                           <div className="flex flex-col items-center gap-0.5">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[9px] font-bold"
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
                               style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>
                               +{overflow}
                             </div>
@@ -964,8 +964,8 @@ export default function BroadcastStudio() {
                 <div className="flex items-center gap-1 mr-2">
                   {[10, 30, 60].map(s => (
                     <button key={s} onClick={() => setSlowModeCooldown(s)}
-                      className="text-[8px] px-1.5 py-0.5 rounded-full"
-                      style={{ background: slowModeCooldown === s ? 'rgba(0,245,255,0.2)' : 'rgba(255,255,255,0.05)', color: slowModeCooldown === s ? '#00F5FF' : 'rgba(255,255,255,0.3)', border: slowModeCooldown === s ? '1px solid rgba(0,245,255,0.3)' : '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      className="text-[11px] px-1.5 py-0.5 rounded-full"
+                      style={{ background: slowModeCooldown === s ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.05)', color: slowModeCooldown === s ? '#C9A84C' : 'rgba(255,255,255,0.3)', border: slowModeCooldown === s ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {s}s
                     </button>
                   ))}
@@ -973,7 +973,7 @@ export default function BroadcastStudio() {
               )}
               <button
                 onClick={() => setSlowMode(v => !v)}
-                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: slowMode ? '#00F5FF' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
+                style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: slowMode ? '#C9A84C' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
               >
                 <div style={{ position: 'absolute', top: 2, left: slowMode ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
               </button>
@@ -990,7 +990,7 @@ export default function BroadcastStudio() {
                   background: activeTab === tab.id ? 'rgba(212,175,55,0.06)' : 'transparent',
                   borderBottom: activeTab === tab.id ? `2px solid ${GOLD}` : '2px solid transparent',
                 }}>
-                <span className="text-[9px] font-black uppercase" style={T}>{tab.label}</span>
+                <span className="text-[11px] font-black uppercase" style={T}>{tab.label}</span>
               </button>
             ))}
           </div>
@@ -1052,7 +1052,7 @@ export default function BroadcastStudio() {
                   </div>
                   <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
                   <div className="rounded-xl p-3 mt-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       Award tiers to panelists in real time. Points accumulate during the broadcast and reset each session.
                     </p>
                   </div>
@@ -1075,10 +1075,10 @@ export default function BroadcastStudio() {
             {activeTab === 'viewers' && (
               <div className="p-2 space-y-2">
                 <div className="flex items-center justify-between mb-1 px-1">
-                  <span className="text-[9px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+                  <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
                     {members.length} / 20 panelists
                   </span>
-                  <button onClick={copyLink} className="text-[8px] px-2 py-0.5 rounded"
+                  <button onClick={copyLink} className="text-[11px] px-2 py-0.5 rounded"
                     style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
                     + Invite
                   </button>
@@ -1089,7 +1089,7 @@ export default function BroadcastStudio() {
                   <div className="rounded-xl p-2 mb-1" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
                     <div className="flex items-center gap-1 mb-1.5">
                       <Hand className="w-3 h-3" style={{ color: GOLD }} />
-                      <span className="text-[9px] font-black uppercase" style={{ color: GOLD, ...T }}>
+                      <span className="text-[11px] font-black uppercase" style={{ color: GOLD, ...T }}>
                         Raised Hands ({raisedHands.size})
                       </span>
                     </div>
@@ -1097,11 +1097,11 @@ export default function BroadcastStudio() {
                       const mem = members.find(m => m.user_id === uid);
                       return (
                         <div key={uid} className="flex items-center gap-2 py-1">
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black"
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
                             style={{ background: 'rgba(212,175,55,0.2)', color: GOLD }}>
                             {(mem?.user_name || '?')[0].toUpperCase()}
                           </div>
-                          <span className="flex-1 text-[9px] truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{mem?.user_name || uid}</span>
+                          <span className="flex-1 text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{mem?.user_name || uid}</span>
                           <button onClick={() => { if (mem) promoteSpeaker(mem); dismissRaisedHand(uid); }}
                             className="text-[11px] px-1.5 py-0.5 rounded"
                             style={{ background: 'rgba(212,133,74,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
@@ -1113,7 +1113,7 @@ export default function BroadcastStudio() {
                             Co-host
                           </button>
                           <button onClick={() => dismissRaisedHand(uid)}
-                            className="text-[8px] px-1.5 py-0.5 rounded"
+                            className="text-[11px] px-1.5 py-0.5 rounded"
                             style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
                             ✕
                           </button>
@@ -1194,13 +1194,13 @@ export default function BroadcastStudio() {
 
                 {/* Stream goal */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-[9px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
+                  <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
                   <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={0} />
                 </div>
 
                 {/* Pinned message */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-[9px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>📌 Pinned Message</p>
+                  <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>📌 Pinned Message</p>
                   {pinnedMessage ? (
                     <div className="rounded-lg p-2 mb-2 flex items-start gap-2" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
                       <span className="text-[10px] flex-1" style={{ color: 'rgba(255,255,255,0.8)' }}>{pinnedMessage}</span>
@@ -1208,7 +1208,7 @@ export default function BroadcastStudio() {
                         style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, lineHeight: 1 }}>×</button>
                     </div>
                   ) : (
-                    <p className="text-[9px] mb-2" style={{ color: 'rgba(255,255,255,0.2)' }}>No pinned message</p>
+                    <p className="text-[11px] mb-2" style={{ color: 'rgba(255,255,255,0.2)' }}>No pinned message</p>
                   )}
                   <div className="flex gap-2">
                     <input
@@ -1227,7 +1227,7 @@ export default function BroadcastStudio() {
 
                 {/* Video source changer */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <p className="text-[9px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Video Source</p>
+                  <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Video Source</p>
                   <VideoSourcePicker
                     isHost={isHost}
                     isCoHost={isCoHost}
@@ -1251,7 +1251,7 @@ export default function BroadcastStudio() {
                 {/* Danger zone */}
                 {isHost && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)' }}>
-                    <p className="text-[9px] font-black uppercase mb-2" style={{ color: '#FF6680', ...T }}>End Broadcast</p>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#FF6680', ...T }}>End Broadcast</p>
                     <button onClick={() => endMut.mutate()}
                       className="w-full py-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1"
                       style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>
@@ -1282,7 +1282,7 @@ export default function BroadcastStudio() {
                     {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz'].map(g => (
                       <button key={g}
                         onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
-                        className="px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
+                        className="px-2 py-0.5 rounded-full text-[11px] font-bold transition-all"
                         style={aiMusicGenre === g
                           ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
                           : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -1319,16 +1319,16 @@ export default function BroadcastStudio() {
                             <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
                           ))}
                         </div>
-                        <span className="text-[9px] flex-1" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
-                        <span className="text-[9px]" style={{ color: 'rgba(167,139,250,0.5)' }}>{musicVolume}%</span>
+                        <span className="text-[11px] flex-1" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
+                        <span className="text-[11px]" style={{ color: 'rgba(167,139,250,0.5)' }}>{musicVolume}%</span>
                       </div>
                       <div className="flex items-center gap-2 px-1">
-                        <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
+                        <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
                         <input type="range" min={0} max={100} value={musicVolume}
                           onChange={e => setMusicVolume(+e.target.value)}
                           className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
                           style={{ accentColor: '#a78bfa' }} />
-                        <span className="text-[8px]" style={{ color: '#a78bfa' }}>🔊</span>
+                        <span className="text-[11px]" style={{ color: '#a78bfa' }}>🔊</span>
                       </div>
                     </div>
                   )}
@@ -1348,7 +1348,7 @@ export default function BroadcastStudio() {
                         style={{ left: guardianEnabled ? '17px' : '2px' }} />
                     </button>
                   </div>
-                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                     {guardianEnabled ? '✓ Auto-removing hate speech, spam, and toxic messages' : 'Enable to auto-moderate chat in real time'}
                   </p>
                   {guardianEnabled && (
@@ -1357,22 +1357,22 @@ export default function BroadcastStudio() {
                         {[['Blocked', guardianStats.blocked + guardianWords.length], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
                           <div key={l} className="flex-1">
                             <div className="text-sm font-black" style={{ color: '#22c55e' }}>{v}</div>
-                            <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
+                            <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
                           </div>
                         ))}
                       </div>
                       <div>
-                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Blocked words</div>
+                        <div className="text-[11px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Blocked words</div>
                         <div className="flex flex-wrap gap-1 mb-1.5">
                           {guardianWords.map(w => (
-                            <span key={w} className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full"
+                            <span key={w} className="flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full"
                               style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                               {w}
                               <button onClick={() => setGuardianWords(ws => ws.filter(x => x !== w))} style={{ lineHeight: 1 }}>×</button>
                             </span>
                           ))}
                           {guardianWords.length === 0 && (
-                            <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None added yet</span>
+                            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None added yet</span>
                           )}
                         </div>
                         <div className="flex gap-1">
@@ -1419,17 +1419,17 @@ export default function BroadcastStudio() {
                         style={{ left: ariaEnabled ? '17px' : '2px' }} />
                     </button>
                   </div>
-                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                     {ariaEnabled ? '✓ ARIA is answering questions and keeping chat active' : 'Enable ARIA to engage your audience automatically'}
                   </p>
                   {ariaEnabled && (
                     <div className="mt-2 space-y-2">
                       <div>
-                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending topics</div>
+                        <div className="text-[11px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending topics</div>
                         <div className="flex flex-wrap gap-1">
                           {['🎵 Music', '💬 Q&A', '🔥 Hype', '🎁 Gifts'].map((t, i) => (
                             <button key={t} onClick={() => setAriaTopicIdx(i)}
-                              className="text-[9px] px-2 py-0.5 rounded-full font-bold"
+                              className="text-[11px] px-2 py-0.5 rounded-full font-bold"
                               style={{
                                 background: ariaTopicIdx === i ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
                                 color: ariaTopicIdx === i ? GOLD : 'rgba(255,255,255,0.35)',
@@ -1442,11 +1442,11 @@ export default function BroadcastStudio() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-[8px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Suggested responses</div>
+                        <div className="text-[11px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Suggested responses</div>
                         <div className="space-y-1">
                           {ariaSuggestions.map((s, i) => (
                             <button key={i}
-                              className="w-full text-left text-[9px] px-2 py-1.5 rounded-lg transition-all hover:opacity-80"
+                              className="w-full text-left text-[11px] px-2 py-1.5 rounded-lg transition-all hover:opacity-80"
                               style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
                               onClick={() => toast.success('ARIA sent: ' + s)}>
                               💬 {s}
@@ -1503,7 +1503,7 @@ export default function BroadcastStudio() {
                       <span className="text-base">{p.emoji}</span>
                       <div>
                         <div className="text-[10px] font-bold text-white">{p.name}</div>
-                        {p.note && <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{p.note}</div>}
+                        {p.note && <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{p.note}</div>}
                       </div>
                     </button>
                   ))}
@@ -1521,12 +1521,12 @@ export default function BroadcastStudio() {
 
                 {/* Embed code */}
                 <div className="rounded-xl p-2.5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div className="text-[9px] font-bold uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Embed Code</div>
-                  <code className="text-[8px] break-all" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  <div className="text-[11px] font-bold uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Embed Code</div>
+                  <code className="text-[11px] break-all" style={{ color: 'rgba(255,255,255,0.3)' }}>
                     {`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`}
                   </code>
                   <button onClick={() => { navigator.clipboard.writeText(`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`); }}
-                    className="mt-1.5 text-[8px] px-2 py-0.5 rounded"
+                    className="mt-1.5 text-[11px] px-2 py-0.5 rounded"
                     style={{ background: 'rgba(212,175,55,0.08)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Copy Embed
                   </button>
@@ -1544,9 +1544,9 @@ export default function BroadcastStudio() {
         <motion.button whileTap={{ scale: 0.92 }} onClick={toggleAudio}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
-            background: audioEnabled ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,68,0.15)',
-            border: audioEnabled ? '1px solid rgba(0,255,136,0.3)' : '1px solid rgba(255,68,68,0.4)',
-            color: audioEnabled ? '#00FF88' : '#FF4444',
+            background: audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.15)',
+            border: audioEnabled ? '1px solid rgba(109,191,126,0.3)' : '1px solid rgba(255,68,68,0.4)',
+            color: audioEnabled ? '#6DBF7E' : '#FF4444',
           }}>
           {audioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
         </motion.button>
@@ -1554,9 +1554,9 @@ export default function BroadcastStudio() {
         <motion.button whileTap={{ scale: 0.92 }} onClick={toggleVideo}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
-            background: videoEnabled ? 'rgba(0,245,255,0.12)' : 'rgba(255,68,68,0.15)',
-            border: videoEnabled ? '1px solid rgba(0,245,255,0.3)' : '1px solid rgba(255,68,68,0.4)',
-            color: videoEnabled ? '#00F5FF' : '#FF4444',
+            background: videoEnabled ? 'rgba(201,168,76,0.12)' : 'rgba(255,68,68,0.15)',
+            border: videoEnabled ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,68,68,0.4)',
+            color: videoEnabled ? '#C9A84C' : '#FF4444',
           }}>
           {videoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
         </motion.button>
@@ -1565,9 +1565,9 @@ export default function BroadcastStudio() {
           title={screenEnabled ? 'Stop screen share' : 'Share screen'}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
-            background: screenEnabled ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.05)',
-            border: screenEnabled ? '1px solid rgba(139,92,246,0.4)' : '1px solid rgba(255,255,255,0.1)',
-            color: screenEnabled ? '#8B5CF6' : 'rgba(255,255,255,0.4)',
+            background: screenEnabled ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+            border: screenEnabled ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)',
+            color: screenEnabled ? '#D4AF37' : 'rgba(255,255,255,0.4)',
           }}>
           <Monitor className="w-4 h-4" />
         </motion.button>
@@ -1585,7 +1585,7 @@ export default function BroadcastStudio() {
 
         <div className="w-px h-6" style={{ background: 'rgba(255,255,255,0.1)' }} />
 
-        <span className="text-[9px] px-2 py-1 rounded font-black uppercase"
+        <span className="text-[11px] px-2 py-1 rounded font-black uppercase"
           style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
           {studioMode === 'watch' ? '🎬 Watch' : studioMode === 'live' ? '🎙️ Live' : '⚡ Hybrid'}
         </span>

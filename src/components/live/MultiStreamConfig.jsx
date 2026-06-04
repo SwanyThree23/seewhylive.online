@@ -131,7 +131,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-white capitalize">{dest.platform}</p>
-                    <p className="text-[9px] text-white/40 mt-0.5">
+                    <p className="text-[11px] text-white/40 mt-0.5">
                       {platforms.find(p => p.id === dest.platform)?.label}
                     </p>
                   </div>
@@ -143,7 +143,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                     <Trash2 className="w-3 h-3" />
                   </motion.button>
                 </div>
-                <div className="space-y-1.5 text-[9px]">
+                <div className="space-y-1.5 text-[11px]">
                   <div className="flex items-center gap-2">
                     <span className="text-white/40 min-w-fit">RTMP URL:</span>
                     <code className="text-white/60 flex-1 truncate font-mono">{dest.rtmpUrl}</code>
@@ -193,7 +193,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                   ))}
                 </select>
                 {formData.platform && (
-                  <p className="text-[8px] text-white/40 px-1">
+                  <p className="text-[11px] text-white/40 px-1">
                     {platforms.find(p => p.id === formData.platform)?.guide}
                   </p>
                 )}

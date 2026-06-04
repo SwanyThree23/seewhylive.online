@@ -73,9 +73,9 @@ export default function BattleScoreboard({ roomId }) {
             style={{ background: leading === 'host' ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)', border: `1px solid ${leading === 'host' ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)'}` }}>
             👑
           </div>
-          <p className="text-[9px] text-white/50 truncate w-full text-center">{battle.host_name || 'Host'}</p>
+          <p className="text-[11px] text-white/50 truncate w-full text-center">{battle.host_name || 'Host'}</p>
           <motion.p
-            animate={bumps.host_score ? { scale: [1, 1.4, 1], color: ['#d4af37', '#00FF88', '#d4af37'] } : {}}
+            animate={bumps.host_score ? { scale: [1, 1.4, 1], color: ['#d4af37', '#6DBF7E', '#d4af37'] } : {}}
             transition={{ duration: 0.5 }}
             className="text-2xl font-black tabular-nums"
             style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -95,7 +95,7 @@ export default function BattleScoreboard({ roomId }) {
               style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755)' }}
             />
           </div>
-          <div className="flex justify-between w-full text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <div className="flex justify-between w-full text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
             <span>{hostPct}%</span><span>{chalPct}%</span>
           </div>
         </div>
@@ -106,9 +106,9 @@ export default function BattleScoreboard({ roomId }) {
             style={{ background: leading === 'challenger' ? 'rgba(204,119,85,0.25)' : 'rgba(255,255,255,0.06)', border: `1px solid ${leading === 'challenger' ? 'rgba(204,119,85,0.5)' : 'rgba(255,255,255,0.1)'}` }}>
             ⚔️
           </div>
-          <p className="text-[9px] text-white/50 truncate w-full text-center">{battle.challenger_name || 'Challenger'}</p>
+          <p className="text-[11px] text-white/50 truncate w-full text-center">{battle.challenger_name || 'Challenger'}</p>
           <motion.p
-            animate={bumps.challenger_score ? { scale: [1, 1.4, 1], color: ['#CC7755', '#00FF88', '#CC7755'] } : {}}
+            animate={bumps.challenger_score ? { scale: [1, 1.4, 1], color: ['#CC7755', '#6DBF7E', '#CC7755'] } : {}}
             transition={{ duration: 0.5 }}
             className="text-2xl font-black tabular-nums"
             style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>

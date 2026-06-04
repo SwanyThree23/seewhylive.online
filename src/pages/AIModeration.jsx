@@ -14,7 +14,7 @@ const VIOLATION_STYLE = {
   harassment:   { bg: 'rgba(255,100,0,0.1)',   border: 'rgba(255,100,0,0.3)',   color: '#ff6400' },
   hate_speech:  { bg: 'rgba(255,21,100,0.1)',  border: 'rgba(255,21,100,0.3)',  color: '#FF1564' },
   inappropriate:{ bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD },
-  safe:         { bg: 'rgba(0,255,136,0.08)',  border: 'rgba(0,255,136,0.25)', color: '#00ff88' },
+  safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#00ff88' },
 };
 
 const TABS = ['pending', 'reviewed', 'insights'];
@@ -87,7 +87,7 @@ export default function AIModerationPage() {
   function ViolationBadge({ type }) {
     const s = VIOLATION_STYLE[type] || VIOLATION_STYLE.safe;
     return (
-      <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+      <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
         style={{ ...T, background: s.bg, border: `1px solid ${s.border}`, color: s.color }}>
         {type?.replace('_', ' ')}
       </span>
@@ -179,11 +179,11 @@ export default function AIModerationPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <ViolationBadge type={mod.violation_type} />
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                           style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' }}>
                           {((mod.ai_confidence || 0) * 100).toFixed(0)}% confidence
                         </span>
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                           style={{ ...T, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}>
                           {mod.content_type}
                         </span>
@@ -199,7 +199,7 @@ export default function AIModerationPage() {
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'upheld', action: 'hidden' })}
                         disabled={reviewMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.25)', color: '#00ff88', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer' }}>
                         <CheckCircle className="w-3.5 h-3.5" /> Uphold
                       </button>
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'reversed', action: 'none' })}
@@ -230,8 +230,8 @@ export default function AIModerationPage() {
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <div className="flex items-center gap-2 flex-wrap">
                     <ViolationBadge type={mod.violation_type} />
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
-                      style={{ ...T, background: mod.override_decision === 'upheld' ? 'rgba(0,255,136,0.08)' : 'rgba(255,255,255,0.06)', border: `1px solid ${mod.override_decision === 'upheld' ? 'rgba(0,255,136,0.25)' : 'rgba(255,255,255,0.12)'}`, color: mod.override_decision === 'upheld' ? '#00ff88' : 'rgba(255,255,255,0.45)' }}>
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
+                      style={{ ...T, background: mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.06)', border: `1px solid ${mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.12)'}`, color: mod.override_decision === 'upheld' ? '#00ff88' : 'rgba(255,255,255,0.45)' }}>
                       {mod.override_decision}
                     </span>
                     <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>

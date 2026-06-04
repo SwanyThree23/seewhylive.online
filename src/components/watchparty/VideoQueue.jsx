@@ -43,7 +43,7 @@ function QueueItem({ item, index, total, isHost, isCurrent, onRemove, onMoveUp, 
           {item.type === 'youtube'
             ? <Youtube className="w-2.5 h-2.5 text-red-400" />
             : <Video className="w-2.5 h-2.5 text-white/30" />}
-          <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
             Added by {item.addedBy}
           </span>
         </div>
@@ -160,7 +160,7 @@ export default function VideoQueue({ isHost, currentUser, currentVideoUrl, onPla
             Video Queue
           </span>
           {queue.length > 0 && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full"
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full"
               style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.25)' }}>
               {queue.length}
             </span>
@@ -168,7 +168,7 @@ export default function VideoQueue({ isHost, currentUser, currentVideoUrl, onPla
         </div>
         {isHost && (
           <button onClick={() => setShowAdd(v => !v)}
-            className="flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded"
+            className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded"
             style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37' }}>
             <Plus className="w-2.5 h-2.5" /> Add
           </button>

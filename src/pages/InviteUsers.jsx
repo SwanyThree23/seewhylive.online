@@ -61,7 +61,7 @@ export default function InviteUsersPage() {
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Invite users to join SeeWhy LIVE beta testing</p>
           </div>
         </div>
-        <span className="text-[9px] font-black px-3 py-1 rounded-full uppercase"
+        <span className="text-[11px] font-black px-3 py-1 rounded-full uppercase"
           style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD }}>
           BETA
         </span>
@@ -141,7 +141,7 @@ export default function InviteUsersPage() {
             />
             <button onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-black uppercase text-xs"
-              style={{ ...T, background: copiedLink ? 'rgba(0,255,136,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${copiedLink ? 'rgba(0,255,136,0.3)' : 'rgba(255,255,255,0.12)'}`, color: copiedLink ? '#00ff88' : 'rgba(255,255,255,0.5)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              style={{ ...T, background: copiedLink ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${copiedLink ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.12)'}`, color: copiedLink ? '#00ff88' : 'rgba(255,255,255,0.5)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {copiedLink ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
             </button>
           </div>
@@ -157,13 +157,13 @@ export default function InviteUsersPage() {
             <div className="space-y-2">
               {invitedList.map((inv, i) => (
                 <div key={i} className="flex items-center justify-between p-3 rounded-xl"
-                  style={{ background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.15)' }}>
+                  style={{ background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.15)' }}>
                   <div className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5" style={{ color: '#00ff88' }} />
                     <span className="text-sm font-black text-white" style={T}>{inv.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase capitalize"
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase capitalize"
                       style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' }}>
                       {inv.role}
                     </span>

@@ -229,7 +229,7 @@ export default function LoyaltyProgram() {
                         <div className="flex items-center gap-2">
                           <p className="font-black text-sm text-white" style={T}>{r.name}</p>
                           {!r.is_active && (
-                            <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                            <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                               style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' }}>
                               Inactive
                             </span>

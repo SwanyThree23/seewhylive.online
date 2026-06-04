@@ -104,7 +104,7 @@ export default function NewsletterPage() {
         </div>
         <button onClick={generateWithAI} disabled={generating || !selectedCommunity}
           className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-          style={{ background: generating || !selectedCommunity ? 'rgba(200,255,0,0.04)' : 'rgba(200,255,0,0.1)', border: '1px solid rgba(200,255,0,0.2)', color: '#C8FF00', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
+          style={{ background: generating || !selectedCommunity ? 'rgba(200,255,0,0.04)' : 'rgba(200,255,0,0.1)', border: '1px solid rgba(200,255,0,0.2)', color: '#D4AF37', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
           <Sparkles className="w-3.5 h-3.5" />
           {generating ? 'Generating…' : 'AI Generate'}
         </button>
@@ -183,8 +183,8 @@ export default function NewsletterPage() {
                         <p className="font-black text-xs text-white truncate" style={T}>{nl.title}</p>
                         <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{new Date(nl.created_date).toLocaleDateString()}</p>
                       </div>
-                      <span className="text-[9px] font-black px-2 py-0.5 rounded-full shrink-0 uppercase"
-                        style={{ ...T, background: nl.status === 'sent' ? 'rgba(0,255,136,0.1)' : 'rgba(212,175,55,0.1)', border: `1px solid ${nl.status === 'sent' ? 'rgba(0,255,136,0.25)' : 'rgba(212,175,55,0.2)'}`, color: nl.status === 'sent' ? '#00ff88' : GOLD }}>
+                      <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 uppercase"
+                        style={{ ...T, background: nl.status === 'sent' ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: `1px solid ${nl.status === 'sent' ? 'rgba(109,191,126,0.25)' : 'rgba(212,175,55,0.2)'}`, color: nl.status === 'sent' ? '#00ff88' : GOLD }}>
                         {nl.status}
                       </span>
                     </div>

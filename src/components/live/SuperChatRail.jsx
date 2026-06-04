@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign } from 'lucide-react';
 
 const TIER_COLORS = {
-  1:  { bg: 'rgba(0,245,255,0.12)',  border: 'rgba(0,245,255,0.3)',  text: '#00F5FF'  },
+  1:  { bg: 'rgba(201,168,76,0.12)',  border: 'rgba(201,168,76,0.3)',  text: '#C9A84C'  },
   5:  { bg: 'rgba(212,175,55,0.15)', border: 'rgba(212,175,55,0.4)', text: '#D4AF37'  },
   10: { bg: 'rgba(128,0,32,0.25)',   border: 'rgba(255,21,100,0.5)', text: '#FF1564'  },
-  20: { bg: 'rgba(139,92,246,0.25)', border: 'rgba(139,92,246,0.5)', text: '#8B5CF6'  },
+  20: { bg: 'rgba(212,175,55,0.25)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37'  },
 };
 
 function getTierStyle(amount) {
@@ -39,7 +39,7 @@ export default function SuperChatRail({ superchats = [] }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 12, marginBottom: 5 }}>
         <DollarSign style={{ width: 10, height: 10, color: '#D4AF37' }} />
-        <span style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#D4AF37', ...F }}>
+        <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#D4AF37', ...F }}>
           Super Chats
         </span>
       </div>

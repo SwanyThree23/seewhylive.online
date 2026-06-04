@@ -103,7 +103,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: sb.bg, color: sb.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: sb.bg, color: sb.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {sb.text}
               </span>
               <p style={{ fontWeight: 700, color: '#fff', margin: 0 }}>{auction.title}</p>
@@ -131,7 +131,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
               <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{isEnded ? '🏆 Winner' : '👑 Leading'}</p>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '2px 0' }}>{auction.current_winner_name}</p>
               {isWinning && (
-                <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   That's you!
                 </span>
               )}
@@ -318,7 +318,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         <h3 style={{ fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
           <Gavel className="w-4 h-4" style={{ color: GOLD }} /> Live Auctions
           {activeAuctions.length > 0 && (
-            <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(153,27,27,0.4)', color: '#f87171', border: '1px solid rgba(153,27,27,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(153,27,27,0.4)', color: '#f87171', border: '1px solid rgba(153,27,27,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {activeAuctions.length} LIVE
             </span>
           )}
