@@ -406,11 +406,20 @@ export default function Home() {
       <div className="flex items-center justify-between px-4"
         style={{ height: 48, background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.10)' }}>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
-          <span className="text-sm font-black"
-            style={{ fontFamily: 'Barlow Condensed, sans-serif', color: liveCount > 0 ? '#CC7755' : 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>
-            {liveCount > 0 ? `${liveCount} Live Now` : 'No streams yet'}
-          </span>
+          {liveCount > 0 ? (
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
+              <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Space Mono, monospace' }}>
+                {liveCount} LIVE
+              </span>
+            </span>
+          ) : (
+            <span className="text-sm font-black"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
+              No streams yet
+            </span>
+          )}
         </div>
         <Link to={createPageUrl('GoLive')}>
           <motion.div whileTap={{ scale: 0.93 }}
