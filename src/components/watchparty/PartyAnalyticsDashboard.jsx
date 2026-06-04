@@ -28,7 +28,7 @@ const REACTION_COLORS = {
   superchat: '#00BFFF',
   hype:     '#FF6B00',
   lol:      '#FFD700',
-  wow:      '#9B59B6',
+  wow:      '#D4AF37',
   rage:     BURGUNDY,
   standard: 'rgba(255,255,255,0.4)',
 };
@@ -44,7 +44,7 @@ function StatCard({ icon: IconComp, label, value, color = GOLD }) {
       </div>
       <div>
         <div className="font-black text-lg leading-tight" style={{ color, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</div>
-        <div className="text-[9px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</div>
+        <div className="text-[11px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</div>
       </div>
     </div>
   );
@@ -131,22 +131,22 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-2">
         <StatCard icon={TrendingUp} label="Peak Viewers"       value={analytics.peak_concurrent_viewers || 0} color={GOLD} />
-        <StatCard icon={Users}      label="Total Joined"       value={analytics.total_members_joined || 0}    color="#00FF88" />
+        <StatCard icon={Users}      label="Total Joined"       value={analytics.total_members_joined || 0}    color="#6DBF7E" />
         <StatCard icon={Zap}        label="Total Reactions"    value={analytics.total_reactions || 0}          color="#FF6B00" />
         <StatCard icon={DollarSign} label="Tips Collected"     value={tipsUSD}                                  color={GOLD} />
-        <StatCard icon={Clock}      label="Avg Watch Duration" value={fmt(analytics.avg_watch_duration_seconds)} color="#00F5FF" />
-        <StatCard icon={UserPlus}   label="New Followers"      value={analytics.new_followers_from_party || 0} color="#8B5CF6" />
+        <StatCard icon={Clock}      label="Avg Watch Duration" value={fmt(analytics.avg_watch_duration_seconds)} color="#C9A84C" />
+        <StatCard icon={UserPlus}   label="New Followers"      value={analytics.new_followers_from_party || 0} color="#D4AF37" />
       </div>
 
       {/* Queue performance */}
       <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="text-[8px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <div className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Queue Performance
         </div>
         <div className="flex gap-2">
           {[
             { icon: ListVideo,   label: 'Queued', value: analytics.total_videos_queued || 0,       color: GOLD },
-            { icon: Play,        label: 'Played', value: analytics.total_queue_items_played || 0,  color: '#00FF88' },
+            { icon: Play,        label: 'Played', value: analytics.total_queue_items_played || 0,  color: '#6DBF7E' },
             { icon: SkipForward, label: 'Skipped', value: analytics.videos_skipped || 0,           color: '#ff6680' },
           ].map(({ icon: IconComp, label, value, color }) => {
             const Icon = IconComp;
@@ -155,7 +155,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
                 style={{ background: `${color}12`, border: `1px solid ${color}25` }}>
                 <Icon className="w-3.5 h-3.5 mx-auto mb-0.5" style={{ color }} />
                 <div className="font-black text-sm" style={{ color, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</div>
-                <div className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{label}</div>
+                <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{label}</div>
               </div>
             );
           })}
@@ -165,7 +165,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
       {/* Viewer timeline */}
       {viewerTimeline.length > 1 && (
         <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="text-[8px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <div className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Viewer Timeline
           </div>
           <ResponsiveContainer width="100%" height={80}>
@@ -182,7 +182,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
       {/* Reaction breakdown */}
       {reactionBars.length > 0 && (
         <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="text-[8px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <div className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Reaction Breakdown
           </div>
           <div className="space-y-1.5">
@@ -197,7 +197,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, background: color }} />
                   </div>
-                  <span className="text-[9px] font-black w-8 text-right" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <span className="text-[11px] font-black w-8 text-right" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {count}
                   </span>
                 </div>
@@ -217,7 +217,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
               Most Reacted Moment
             </div>
             <div className="text-[12px] font-bold text-white">{mostReacted} into the video</div>
-            <div className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Highest reaction spike</div>
+            <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Highest reaction spike</div>
           </div>
         </div>
       )}

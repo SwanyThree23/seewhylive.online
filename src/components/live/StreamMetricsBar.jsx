@@ -39,9 +39,9 @@ export default function StreamMetricsBar({ startTime, memberCount = 0, tipTotal 
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10 }}>
         <span style={{ fontSize: 10 }}>👁</span>
         <span style={{ fontSize: 12, fontWeight: 900, color: 'rgba(255,255,255,0.8)', ...F }}>{memberCount}</span>
-        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', ...F }}>live</span>
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', ...F }}>live</span>
         {peak > memberCount && (
-          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', ...F }}>· {peak} peak</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', ...F }}>· {peak} peak</span>
         )}
       </div>
 
@@ -50,7 +50,7 @@ export default function StreamMetricsBar({ startTime, memberCount = 0, tipTotal 
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10 }}>
           <span style={{ fontSize: 10 }}>💰</span>
           <span style={{ fontSize: 12, fontWeight: 900, color: '#D4AF37', ...F }}>${tipTotal.toFixed(2)}</span>
-          <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', ...F }}>earned</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', ...F }}>earned</span>
         </div>
       )}
 
@@ -60,9 +60,9 @@ export default function StreamMetricsBar({ startTime, memberCount = 0, tipTotal 
       {/* Signal bars */}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
         {[4, 6, 8, 10].map((h, i) => (
-          <div key={i} style={{ width: 3, height: h, borderRadius: 1, background: i < 3 ? '#00FF88' : 'rgba(255,255,255,0.15)' }} />
+          <div key={i} style={{ width: 3, height: h, borderRadius: 1, background: i < 3 ? '#6DBF7E' : 'rgba(255,255,255,0.15)' }} />
         ))}
-        <span style={{ fontSize: 8, color: '#00FF88', marginLeft: 3, ...F }}>HD</span>
+        <span style={{ fontSize: 11, color: '#6DBF7E', marginLeft: 3, ...F }}>HD</span>
       </div>
     </div>
   );

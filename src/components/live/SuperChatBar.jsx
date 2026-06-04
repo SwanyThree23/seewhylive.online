@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 
 const SUPER_AMOUNTS = [
   { value: 2, label: '$2', color: '#5A5A7A', emoji: '💬' },
-  { value: 5, label: '$5', color: '#00F5FF', emoji: '💙' },
-  { value: 10, label: '$10', color: '#00FF88', emoji: '💚' },
+  { value: 5, label: '$5', color: '#C9A84C', emoji: '💙' },
+  { value: 10, label: '$10', color: '#6DBF7E', emoji: '💚' },
   { value: 20, label: '$20', color: '#FFB800', emoji: '⭐' },
   { value: 50, label: '$50', color: '#FF8C00', emoji: '🔥' },
   { value: 100, label: '$100', color: '#FF1564', emoji: '👑' },
@@ -132,7 +132,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                   <button
                     key={a.value}
                     onClick={() => setSelectedAmount(a)}
-                    className={`py-1.5 rounded text-[9px] font-bold transition-all border ${
+                    className={`py-1.5 rounded text-[11px] font-bold transition-all border ${
                       selectedAmount.value === a.value
                         ? 'border-current'
                         : 'border-white/10 text-white/40 hover:border-white/20'
@@ -181,7 +181,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                     title={`${gift.name} — $${gift.price}`}
                   >
                     <span className="text-base">{gift.emoji}</span>
-                    <span className="text-[8px] text-white/30 mt-0.5">${gift.price}</span>
+                    <span className="text-[11px] text-white/30 mt-0.5">${gift.price}</span>
                   </button>
                 ))}
               </div>

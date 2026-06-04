@@ -294,7 +294,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             </span>
             {track.streamReady && (
               <span style={{
-                ...T, fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
+                ...T, fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
                 padding: '2px 7px', borderRadius: 999,
                 background: GREEN + '22', border: `1px solid ${GREEN}55`, color: GREEN,
                 textTransform: 'uppercase',

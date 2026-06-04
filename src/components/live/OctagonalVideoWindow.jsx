@@ -64,7 +64,7 @@ export default function OctagonalVideoWindow({
         {points > 0 && (
           <div className="absolute top-3 right-3 bg-[#d4af37]/20 border border-[#d4af37] rounded-lg px-2 py-1">
             <p className="text-xs font-bold text-[#d4af37]">{points}</p>
-            <p className="text-[8px] text-[#d4af37]/70">POINTS</p>
+            <p className="text-[11px] text-[#d4af37]/70">POINTS</p>
           </div>
         )}
 

@@ -68,7 +68,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
   const cfg = element.config || DEFAULT_CONFIG[element.type] || {};
   const field = (key, label, type = 'text', opts = []) => (
     <div key={key}>
-      <label className="text-[8px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>{label}</label>
+      <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>{label}</label>
       {type === 'bool'
         ? <button onClick={() => onChange({ config: { ...cfg, [key]: !cfg[key] } })}
             className="w-8 h-4 rounded-full relative" style={{ background: cfg[key] ? GOLD : 'rgba(255,255,255,0.1)' }}>
@@ -77,16 +77,16 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
           </button>
         : type === 'select'
         ? <select value={cfg[key] || ''} onChange={e => onChange({ config: { ...cfg, [key]: e.target.value } })}
-            className="w-full px-2 py-1 rounded text-[9px] outline-none"
+            className="w-full px-2 py-1 rounded text-[11px] outline-none"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
             {opts.map(o => <option key={o} value={o}>{o}</option>)}
           </select>
         : type === 'number'
         ? <input type="number" value={cfg[key] || 0} onChange={e => onChange({ config: { ...cfg, [key]: Number(e.target.value) } })}
-            className="w-full px-2 py-1 rounded text-[9px] outline-none"
+            className="w-full px-2 py-1 rounded text-[11px] outline-none"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />
         : <input value={cfg[key] || ''} onChange={e => onChange({ config: { ...cfg, [key]: e.target.value } })}
-            className="w-full px-2 py-1 rounded text-[9px] outline-none"
+            className="w-full px-2 py-1 rounded text-[11px] outline-none"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />
       }
     </div>
@@ -109,7 +109,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
         <p className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>
           {ELEMENT_TYPES.find(t => t.id === element.type)?.label}
         </p>
-        <button onClick={onRemove} className="text-[8px] px-1.5 py-0.5 rounded font-black uppercase"
+        <button onClick={onRemove} className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
           style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>Remove</button>
       </div>
       <div className="space-y-2">
@@ -120,7 +120,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
           <div key={key}>
             <label className="text-[7px] uppercase" style={{ color: CREAM + '30', ...T }}>{label}</label>
             <input type="number" value={element[key] || 0} onChange={e => onChange({ [key]: Number(e.target.value) })}
-              className="w-full px-2 py-1 rounded text-[9px] outline-none"
+              className="w-full px-2 py-1 rounded text-[11px] outline-none"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
           </div>
         ))}
@@ -234,13 +234,13 @@ export default function OverlayBuilderPage() {
           {selectedLayout && (
             <button onClick={() => toggleActiveMut.mutate(selectedLayout)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-              style={{ background: activeLayout?.id === selectedLayout ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.06)', color: activeLayout?.id === selectedLayout ? '#00FF88' : CREAM + '60', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
+              style={{ background: activeLayout?.id === selectedLayout ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.06)', color: activeLayout?.id === selectedLayout ? '#6DBF7E' : CREAM + '60', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
               {activeLayout?.id === selectedLayout ? '● Active' : 'Set Active'}
             </button>
           )}
           <button onClick={() => { navigator.clipboard.writeText(obsUrl); toast.success('OBS URL copied!'); }}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-            style={{ background: 'rgba(0,245,255,0.08)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.2)', ...T }}>
+            style={{ background: 'rgba(201,168,76,0.08)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.2)', ...T }}>
             <Copy className="w-3 h-3" /> OBS URL
           </button>
         </div>
@@ -251,14 +251,14 @@ export default function OverlayBuilderPage() {
         {/* Left: Element Palette */}
         <div className="w-44 shrink-0 overflow-y-auto p-3 space-y-2"
           style={{ background: '#161616', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-          <p className="text-[8px] font-black uppercase mb-2" style={{ color: CREAM + '35', ...T }}>Elements</p>
+          <p className="text-[11px] font-black uppercase mb-2" style={{ color: CREAM + '35', ...T }}>Elements</p>
           {ELEMENT_TYPES.map(t => (
             <button key={t.id} onClick={() => addElement(t.id)}
               className="w-full flex items-center gap-2 p-2 rounded-xl transition-all text-left"
               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <span className="text-lg shrink-0">{t.icon}</span>
               <div>
-                <p className="text-[9px] font-black" style={{ color: CREAM + '80', ...T }}>{t.label}</p>
+                <p className="text-[11px] font-black" style={{ color: CREAM + '80', ...T }}>{t.label}</p>
                 <p className="text-[7px]" style={{ color: CREAM + '30' }}>{t.desc}</p>
               </div>
             </button>
@@ -289,7 +289,7 @@ export default function OverlayBuilderPage() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   <p className="text-[12px] font-black uppercase" style={{ color: GOLD + '30', ...T }}>Canvas Empty</p>
-                  <p className="text-[9px] mt-1" style={{ color: CREAM + '20' }}>Add elements from the palette or load a preset</p>
+                  <p className="text-[11px] mt-1" style={{ color: CREAM + '20' }}>Add elements from the palette or load a preset</p>
                 </div>
               </div>
             )}

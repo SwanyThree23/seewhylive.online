@@ -39,7 +39,7 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
       >
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Audio Mixer</span>
-          {micMuted && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#f87171', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
+          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#f87171', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>

@@ -119,7 +119,7 @@ export default function GuestJoin() {
                 <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
                 <p className="text-[10px] capitalize" style={{ color: 'rgba(255,255,255,0.35)' }}>{room.status}</p>
               </div>
-              <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
                 style={{ ...T, background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#FF1564' : '#ffc800' }}>
                 {room.status === 'live' ? '● LIVE' : 'Scheduled'}
               </span>
@@ -162,8 +162,8 @@ export default function GuestJoin() {
                     {name.charAt(0).toUpperCase()}
                   </div>
                   <h2 className="text-base font-black text-white" style={T}>{name}</h2>
-                  <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${readyState ? '' : 'animate-pulse'}`}
-                    style={{ ...T, background: readyState ? 'rgba(0,255,136,0.12)' : 'rgba(255,200,0,0.12)', border: `1px solid ${readyState ? 'rgba(0,255,136,0.3)' : 'rgba(255,200,0,0.3)'}`, color: readyState ? '#00ff88' : '#ffc800' }}>
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${readyState ? '' : 'animate-pulse'}`}
+                    style={{ ...T, background: readyState ? 'rgba(109,191,126,0.12)' : 'rgba(255,200,0,0.12)', border: `1px solid ${readyState ? 'rgba(109,191,126,0.3)' : 'rgba(255,200,0,0.3)'}`, color: readyState ? '#00ff88' : '#ffc800' }}>
                     {readyState ? <><CheckCircle className="w-2.5 h-2.5" /> Ready</> : <><Clock className="w-2.5 h-2.5" /> Waiting</>}
                   </span>
                   <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -199,17 +199,17 @@ export default function GuestJoin() {
 
           {status === 'admitted' && (
             <motion.div key="admitted" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-              <div style={{ ...card, borderColor: 'rgba(0,255,136,0.35)', textAlign: 'center' }}>
+              <div style={{ ...card, borderColor: 'rgba(109,191,126,0.35)', textAlign: 'center' }}>
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.1 }}
                   className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3"
-                  style={{ background: 'rgba(0,255,136,0.12)', border: '2px solid rgba(0,255,136,0.5)' }}>
+                  style={{ background: 'rgba(109,191,126,0.12)', border: '2px solid rgba(109,191,126,0.5)' }}>
                   <CheckCircle className="w-8 h-8" style={{ color: '#00ff88' }} />
                 </motion.div>
                 <h2 className="text-xl font-black mb-1" style={{ ...T, color: '#00ff88' }}>You're Live!</h2>
                 <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>The director has admitted you to the stage</p>
                 <Link to={`${createPageUrl('LiveRoom')}?id=${roomId}`}>
                   <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-black uppercase text-xs"
-                    style={{ ...T, background: 'rgba(0,255,136,0.15)', border: '1px solid rgba(0,255,136,0.4)', color: '#00ff88', cursor: 'pointer' }}>
+                    style={{ ...T, background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.4)', color: '#00ff88', cursor: 'pointer' }}>
                     <Radio className="w-4 h-4 animate-pulse" />
                     Enter the Live Room
                   </button>

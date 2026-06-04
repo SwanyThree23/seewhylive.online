@@ -77,7 +77,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
     ? 'rgba(212,175,55,0.35)'
     : 'rgba(255,255,255,0.12)';
 
-  var connDotColor = stream && stream.active ? '#00FF88' : member ? '#FFD700' : 'rgba(255,255,255,0.25)';
+  var connDotColor = stream && stream.active ? '#6DBF7E' : member ? '#FFD700' : 'rgba(255,255,255,0.25)';
 
   var roleBadge = null;
   if (member.role === 'host') {
@@ -154,7 +154,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
         >
           <div className="flex items-center gap-0.5">
             {isHostMember && <Crown className="w-2 h-2 shrink-0" style={{ color: '#d4af37' }} />}
-            <span className="text-[8px] text-white font-semibold truncate flex-1">{member.user_name}</span>
+            <span className="text-[11px] text-white font-semibold truncate flex-1">{member.user_name}</span>
             {roleBadge && (
               <span className="text-[6px] px-0.5 rounded font-bold shrink-0"
                 style={{ background: roleBadge.bg, color: roleBadge.color }}>
@@ -242,7 +242,7 @@ function SpotlitView({ member, hostId, stream, isLocal, onUnpin }) {
       )}
       <button
         onClick={onUnpin}
-        className="absolute top-2 right-2 text-[9px] px-2 py-1 rounded"
+        className="absolute top-2 right-2 text-[11px] px-2 py-1 rounded"
         style={{ background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
       >
         ✕ Unpin
@@ -367,14 +367,14 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
   return (
     <div className="flex flex-col h-full" style={{ background: '#0d0618' }}>
       <div className="flex items-center gap-2 px-2 py-1.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <span style={{ fontSize: 9, background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 99, padding: '2px 8px' }}>
+        <span style={{ fontSize: 11, background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 99, padding: '2px 8px' }}>
           {members.length}/{maxSlots} panelists
         </span>
         <div className="flex gap-1 ml-auto">
           {SLOT_OPTIONS.map(function(n) {
             return (
               <button key={n} onClick={function() { setSlots(n); }}
-                className="text-[9px] w-6 h-5 rounded border transition-all"
+                className="text-[11px] w-6 h-5 rounded border transition-all"
                 style={slots === n
                   ? { borderColor: '#d4af37', color: '#d4af37', background: 'rgba(212,175,55,0.1)' }
                   : { borderColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' }}>
@@ -384,7 +384,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
           })}
         </div>
         {isHost && (
-          <button onClick={onInvite} className="flex items-center gap-1 text-[9px] px-2 py-1 rounded transition-all"
+          <button onClick={onInvite} className="flex items-center gap-1 text-[11px] px-2 py-1 rounded transition-all"
             style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#d4af37' }}>
             <UserPlus className="w-2.5 h-2.5" /> Invite
           </button>

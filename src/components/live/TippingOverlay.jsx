@@ -118,7 +118,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
             </div>
 
             {/* Info */}
-            <p className="text-[9px] text-white/30 mt-2 text-center">
+            <p className="text-[11px] text-white/30 mt-2 text-center">
               💳 Secure payment · Creator receives 75%
             </p>
           </motion.div>

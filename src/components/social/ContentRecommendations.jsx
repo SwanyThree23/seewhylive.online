@@ -78,7 +78,7 @@ export default function ContentRecommendations() {
             transition={{ delay: i * 0.05 }}
             whileHover={{ scale: 1.02 }}
             className="flex gap-2 p-2 rounded-lg transition-all group"
-            style={{ background: 'rgba(0,245,255,0.05)', border: '1px solid rgba(0,245,255,0.15)' }}
+            style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.15)' }}
           >
             {/* Thumbnail */}
             <div className="relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-black">
@@ -98,11 +98,11 @@ export default function ContentRecommendations() {
             {/* Content */}
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-bold text-white truncate">{rec.title}</h4>
-              <p className="text-[9px] text-white/60">{rec.channel}</p>
+              <p className="text-[11px] text-white/60">{rec.channel}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[8px] text-cyan-400/70">{rec.duration}</span>
-                <span className="text-[8px] text-white/40">•</span>
-                <span className="text-[8px] text-white/40">{rec.views} views</span>
+                <span className="text-[11px] text-cyan-400/70">{rec.duration}</span>
+                <span className="text-[11px] text-white/40">•</span>
+                <span className="text-[11px] text-white/40">{rec.views} views</span>
               </div>
             </div>
 

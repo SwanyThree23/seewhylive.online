@@ -141,8 +141,8 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                 />
               </div>
               <div className="flex justify-between mt-0.5">
-                <span className="text-[9px] text-[#d4af37]/60">{myPct}%</span>
-                <span className="text-[9px] text-red-400/60">{theirPct}%</span>
+                <span className="text-[11px] text-[#d4af37]/60">{myPct}%</span>
+                <span className="text-[11px] text-red-400/60">{theirPct}%</span>
               </div>
 
               {/* Gift buttons (host) */}

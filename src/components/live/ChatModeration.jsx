@@ -36,7 +36,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
         <div className="flex items-center gap-2">
           <Shield className="w-3 h-3 text-[#00d4ff]" />
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Auto-Moderation</span>
-          <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
+          <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
             {stats.blocks + stats.timeouts + stats.deletes} today
           </span>
         </div>
@@ -77,7 +77,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
             </div>
             <div className="flex flex-wrap gap-1">
               {blockedWords.map(w => (
-                <span key={w} style={{ fontSize: 9, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(185,28,28,0.3)', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span key={w} style={{ fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, background: 'rgba(127,29,29,0.3)', border: '1px solid rgba(185,28,28,0.3)', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: 4 }}>
                   {w}
                   <button onClick={() => setBlockedWords(prev => prev.filter(x => x !== w))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit', display: 'flex', alignItems: 'center' }}>
                     <X className="w-2 h-2" />
@@ -106,7 +106,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
                   <input
                     type="number" value={accountAge}
                     onChange={(e) => setAccountAge(Number(e.target.value))}
-                    style={{ width: 40, height: 20, fontSize: 9, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 4, color: '#fff', textAlign: 'center', padding: 0, outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: 40, height: 20, fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 4, color: '#fff', textAlign: 'center', padding: 0, outline: 'none', boxSizing: 'border-box' }}
                   />
                 )}
                 <div onClick={() => setNewAccountGate(v => !v)} style={{ width: 40, height: 22, borderRadius: 99, background: newAccountGate ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: newAccountGate ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>

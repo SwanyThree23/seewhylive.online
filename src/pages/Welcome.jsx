@@ -135,11 +135,11 @@ export default function WelcomePage() {
               <p className="text-sm text-white/60">Creators</p>
             </div>
             <div>
-              <p className="text-3xl font-black" style={{ color: '#00F5FF' }}>{liveCount || 3}</p>
+              <p className="text-3xl font-black" style={{ color: '#C9A84C' }}>{liveCount || 3}</p>
               <p className="text-sm text-white/60">Live Now</p>
             </div>
             <div>
-              <p className="text-3xl font-black" style={{ color: '#00FF88' }}>90%</p>
+              <p className="text-3xl font-black" style={{ color: '#6DBF7E' }}>90%</p>
               <p className="text-sm text-white/60">Creator Cut</p>
             </div>
           </motion.div>

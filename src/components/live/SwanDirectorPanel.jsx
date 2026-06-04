@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const C = { burg:'#800020', gold:'#D4AF37', volt:'#C8FF00', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
+const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 const LAYOUTS = [
   { key:'grid', label:'Grid', emoji:'🔲', desc:'All guests equal' },
   { key:'spotlight', label:'Spotlight', emoji:'👑', desc:'One guest featured' },
@@ -11,7 +11,7 @@ const LAYOUTS = [
   { key:'pip', label:'PiP', emoji:'🖼', desc:'Picture-in-picture' },
   { key:'theater', label:'Theater', emoji:'🎭', desc:'Full-width content' },
 ];
-const ACTION_COLORS = { switch_layout:'#00F5FF', spotlight:'#D4AF37', break_silence:'#8B5CF6', default:'#666' };
+const ACTION_COLORS = { switch_layout:'#C9A84C', spotlight:'#D4AF37', break_silence:'#D4AF37', default:'#666' };
 
 export function SwanDirectorHUD({ roomId, hostId, onOpenPanel }) {
   const { data: swan } = useQuery({
@@ -23,7 +23,7 @@ export function SwanDirectorHUD({ roomId, hostId, onOpenPanel }) {
     refetchInterval: 10000,
   });
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#00FF88';
+  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#6DBF7E';
   return (
     <div style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 12px', background:'rgba(0,0,0,0.4)', borderTop:'1px solid rgba(255,255,255,0.06)', overflow:'hidden' }}>
       {/* Layout badge */}
@@ -76,7 +76,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
   };
 
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#00FF88';
+  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#6DBF7E';
   const decisions = (swan?.decisions_log || []).slice().reverse().slice(0,10);
   const engHistory = useMemo(() => Array.from({length:10},(_,i) => Math.floor(Math.random()*60+30)), []);
 
@@ -101,7 +101,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
           <div style={{ display:'flex', justifyContent:'space-between', marginTop:4 }}>
             <span style={{ fontSize:9, color:'#ff4444' }}>0 COLD</span>
             <span style={{ fontSize:9, color:'#FFB800' }}>40</span>
-            <span style={{ fontSize:9, color:'#00FF88' }}>70 HOT 100</span>
+            <span style={{ fontSize:9, color:'#6DBF7E' }}>70 HOT 100</span>
           </div>
         </div>
         {/* Layout controls */}

@@ -10,10 +10,10 @@ const BURGUNDY = '#800020';
 
 const TYPE_COLORS = {
   item:       { color: GOLD,     label: 'ITEM' },
-  one_on_one: { color: '#00F5FF', label: '1:1' },
-  shoutout:   { color: '#8B5CF6', label: 'SHOUTOUT' },
+  one_on_one: { color: '#C9A84C', label: '1:1' },
+  shoutout:   { color: '#D4AF37', label: 'SHOUTOUT' },
   custom_art: { color: '#FF6B00', label: 'ART' },
-  coaching:   { color: '#00FF88', label: 'COACHING' },
+  coaching:   { color: '#6DBF7E', label: 'COACHING' },
   experience: { color: '#FF1564', label: 'EXPERIENCE' },
 };
 
@@ -72,8 +72,8 @@ function BidHistoryDrawer({ auctionId, open, onClose }) {
                   style={{ background: i === 0 ? `rgba(212,175,55,0.08)` : 'rgba(255,255,255,0.03)', border: i === 0 ? `1px solid rgba(212,175,55,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
                     <span className="text-[10px] font-bold text-white">{bid.bidder_name}</span>
-                    {bid.is_buyout && <span className="ml-1 text-[8px] px-1 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>BUY NOW</span>}
-                    {bid.message && <p className="text-[8px] text-white/40">"{bid.message}"</p>}
+                    {bid.is_buyout && <span className="ml-1 text-[11px] px-1 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>BUY NOW</span>}
+                    {bid.message && <p className="text-[11px] text-white/40">"{bid.message}"</p>}
                   </div>
                   <span className="font-black text-[13px]" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>${bid.amount}</span>
                 </div>
@@ -151,19 +151,19 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
-              <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+              <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
                 style={{ background: `${typeCfg.color}15`, color: typeCfg.color, border: `1px solid ${typeCfg.color}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {typeCfg.label}
               </span>
               {isEndingSoon && (
-                <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded animate-pulse"
+                <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded animate-pulse"
                   style={{ background: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.3)' }}>
                   🔥 ENDING SOON
                 </span>
               )}
             </div>
             <h4 className="text-[12px] font-bold text-white leading-snug">{auction.title}</h4>
-            {auction.description && <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{auction.description}</p>}
+            {auction.description && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{auction.description}</p>}
           </div>
           <div className="text-right shrink-0">
             <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Current Bid</div>
@@ -179,13 +179,13 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
             {auction.current_winner_name && (
               <div className="flex items-center gap-1">
                 <Crown className="w-3 h-3" style={{ color: GOLD }} />
-                <span className="text-[9px] font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>
                   Leading: {auction.current_winner_name}
                 </span>
               </div>
             )}
             <button onClick={() => setShowBids(true)}
-              className="text-[8px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', textDecoration: 'underline' }}>
+              className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', textDecoration: 'underline' }}>
               {auction.bid_count || 0} bids
             </button>
           </div>
@@ -212,7 +212,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
                 bidMut.mutate(amt);
               }}
               disabled={bidMut.isPending}
-              className="px-3 h-8 rounded-lg font-black uppercase text-[9px] shrink-0"
+              className="px-3 h-8 rounded-lg font-black uppercase text-[11px] shrink-0"
               style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
               BID
             </button>
@@ -234,12 +234,12 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
               qc.invalidateQueries(['auctions', auction.room_id]);
               toast.success('+5 min added');
             }}
-              className="flex-1 py-1 rounded text-[8px] font-black uppercase"
-              style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              className="flex-1 py-1 rounded text-[11px] font-black uppercase"
+              style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               +5 min
             </button>
             <button onClick={() => onEnd(auction)}
-              className="flex-1 py-1 rounded text-[8px] font-black uppercase"
+              className="flex-1 py-1 rounded text-[11px] font-black uppercase"
               style={{ background: 'rgba(255,68,68,0.08)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Cancel
             </button>
@@ -375,7 +375,7 @@ export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
               Live Auctions
             </span>
             {active.length > 0 && (
-              <span className="text-[8px] px-1.5 py-0.5 rounded-full font-black"
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full font-black"
                 style={{ background: BURGUNDY, color: GOLD }}>{active.length}</span>
             )}
           </div>

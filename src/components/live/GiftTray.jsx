@@ -135,7 +135,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
               <div className="flex overflow-x-auto gap-1.5 px-4 py-2 shrink-0 scrollbar-hide" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 {CATS.map(c => (
                   <button key={c} onClick={() => setCat(c)}
-                    className="shrink-0 px-3 py-1 rounded-full text-[9px] font-black uppercase"
+                    className="shrink-0 px-3 py-1 rounded-full text-[11px] font-black uppercase"
                     style={{ background: cat === c ? `${G}20` : 'rgba(255,255,255,0.05)', color: cat === c ? G : 'rgba(255,255,255,0.35)', border: cat === c ? `1px solid ${G}40` : '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {c}
                   </button>
@@ -156,7 +156,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                             className="rounded-xl p-2.5 flex flex-col items-center gap-1.5 active:scale-95 transition-all"
                             style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${rarity.color}25`, boxShadow: rarity.shimmer ? `0 0 12px ${G}20` : undefined }}>
                             <div className="text-3xl">{gift.emoji || '🎁'}</div>
-                            <p className="text-[8px] font-bold text-center leading-tight" style={{ color: CREAM }}>{gift.name}</p>
+                            <p className="text-[11px] font-bold text-center leading-tight" style={{ color: CREAM }}>{gift.name}</p>
                             <div className="flex flex-col items-center gap-0.5">
                               <span className="text-[7px] font-black uppercase" style={{ color: rarity.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{rarity.label}</span>
                               {gift.is_limited && <span className="text-[6px] px-1 py-0.5 rounded font-black uppercase" style={{ background: 'rgba(255,21,100,0.2)', color: '#FF1564' }}>LIMITED</span>}
@@ -174,13 +174,13 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                   <div className="mt-4">
                     <div className="flex items-center gap-1.5 mb-2">
                       <Trophy className="w-3.5 h-3.5" style={{ color: G }} />
-                      <span className="text-[8px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Top Senders</span>
+                      <span className="text-[11px] uppercase tracking-widest font-bold" style={{ color: 'rgba(245,230,211,0.4)', fontFamily: 'IBM Plex Mono, monospace' }}>Top Senders</span>
                     </div>
                     {senderRank.map(([name, total], i) => (
                       <div key={name} className="flex items-center justify-between px-2 py-1.5 rounded mb-1" style={{ background: 'rgba(255,255,255,0.03)' }}>
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{['🥇','🥈','🥉'][i] || `#${i+1}`}</span>
-                          <span className="text-[9px] font-bold" style={{ color: CREAM }}>{name}</span>
+                          <span className="text-[11px] font-bold" style={{ color: CREAM }}>{name}</span>
                         </div>
                         <span className="font-black text-[10px]" style={{ color: G, fontFamily: 'IBM Plex Mono, monospace' }}>${total.toFixed(2)}</span>
                       </div>

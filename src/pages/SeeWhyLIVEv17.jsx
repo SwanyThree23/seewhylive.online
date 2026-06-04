@@ -18,7 +18,7 @@ var G = {
   black:"#080808",darkBg:"#0D0D0D",cardBg:"#111111",
   surfaceBg:"#161616",crimson:"#8B0000",crimsonBright:"#C41E3A",
   gold:"#D4AF37",goldBright:"#FFD700",cyan:"#00E5FF",
-  volt:"#C8FF00",white:"#FFFFFF",gray:"#888888",
+  volt:"#D4AF37",white:"#FFFFFF",gray:"#888888",
   grayDim:"#444444",red:"#FF3B30",green:"#30D158",
   purple:"#BF5FFF",orange:"#FF9500",
   fOrb:"'Orbitron',sans-serif",fRaj:"'Rajdhani',sans-serif",
@@ -79,19 +79,19 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .nav-btn.on{color:#D4AF37}.nav-ico{font-size:19px;line-height:1}
 .notif-dot{position:absolute;top:6px;right:calc(50% - 18px);width:14px;height:14px;border-radius:50%;background:#C41E3A;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-weight:700}
 .card{background:#111;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden}
-.card-r{border-color:#8B0000}.card-g{border-color:#D4AF37}.card-c{border-color:#00E5FF}.card-v{border-color:#C8FF00}.card-p{border-color:#BF5FFF}
+.card-r{border-color:#8B0000}.card-g{border-color:#D4AF37}.card-c{border-color:#00E5FF}.card-v{border-color:#D4AF37}.card-p{border-color:#BF5FFF}
 .sec-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;color:#D4AF37;letter-spacing:3px;padding:14px 16px 6px;text-transform:uppercase}
 .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:.5px}
 .pill-r{background:rgba(196,30,58,.2);border:1px solid #C41E3A;color:#FF6B6B}
 .pill-g{background:rgba(212,175,55,.2);border:1px solid #D4AF37;color:#FFD700}
 .pill-c{background:rgba(0,229,255,.15);border:1px solid #00E5FF;color:#00E5FF}
-.pill-v{background:rgba(200,255,0,.12);border:1px solid #C8FF00;color:#C8FF00}
+.pill-v{background:rgba(200,255,0,.12);border:1px solid #D4AF37;color:#D4AF37}
 .pill-p{background:rgba(191,95,255,.15);border:1px solid #BF5FFF;color:#BF5FFF}
 .btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:1px;transition:all .2s}
 .btn-r{background:#8B0000;color:#D4AF37;border:1px solid #C41E3A}.btn-r:hover{background:#C41E3A}
 .btn-g{background:linear-gradient(135deg,#8B0000,#D4AF37);color:#000}
 .btn-outline{background:none;color:#D4AF37;border:1px solid #D4AF37}.btn-outline:hover{background:rgba(212,175,55,.1)}
-.btn-v{background:#C8FF00;color:#080808;font-weight:900}
+.btn-v{background:#D4AF37;color:#080808;font-weight:900}
 .inp{width:100%;padding:10px 14px;background:#161616;border:1px solid #333;border-radius:8px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none}
 .inp:focus{border-color:#D4AF37}.inp::placeholder{color:#444}
 .tab-bar{display:flex;border-bottom:1px solid #1a1a1a;background:#0D0D0D;overflow-x:auto}
@@ -100,7 +100,7 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .tab-item.on{color:#D4AF37;border-bottom-color:#D4AF37}
 .live-ring{animation:liveRing 1.5s ease-in-out infinite}
 @keyframes liveRing{0%,100%{box-shadow:0 0 0 0 rgba(196,30,58,.5)}50%{box-shadow:0 0 0 8px rgba(196,30,58,0)}}
-.volt-glow{text-shadow:0 0 12px #C8FF00,0 0 24px #C8FF0066}
+.volt-glow{text-shadow:0 0 12px #D4AF37,0 0 24px #D4AF3766}
 .gold-glow{text-shadow:0 0 12px #D4AF37,0 0 24px #D4AF3766}
 .pulse{animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
@@ -117,7 +117,7 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .panel-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:6px}
 .panel-tile{aspect-ratio:9/14;position:relative;border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;background:#161616;border:1px solid #1a1a1a}
 .panel-tile:hover{transform:scale(1.04)}
-.panel-tile.focused{border:2px solid #C8FF00;box-shadow:0 0 12px #C8FF0066;z-index:2}
+.panel-tile.focused{border:2px solid #D4AF37;box-shadow:0 0 12px #D4AF3766;z-index:2}
 .panel-tile.speaking{border:2px solid #00E5FF;box-shadow:0 0 8px #00E5FF55}
 .panel-tile.muted{opacity:.7}
 .pt-avatar{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
@@ -128,19 +128,19 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 @keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-30px)}}
 /* ── Bigo Expanded Tile ── */
 .bigo-expanded{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-.bigo-main-oct{width:200px;height:200px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:3px solid #C8FF00;box-shadow:0 0 30px #C8FF0066}
+.bigo-main-oct{width:200px;height:200px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:3px solid #D4AF37;box-shadow:0 0 30px #D4AF3766}
 .bigo-mini-ring{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;max-width:340px}
 .bigo-mini-oct{width:60px;height:60px;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;position:relative;border:2px solid #333;cursor:pointer;transition:border-color .2s}
-.bigo-mini-oct.on{border-color:#C8FF00}
+.bigo-mini-oct.on{border-color:#D4AF37}
 .bigo-mini-oct:hover{border-color:#D4AF37}
 /* old grid kept for compat */
 .oct-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px}
 .oct-tile{aspect-ratio:1;position:relative;clip-path:polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%);background:#161616;overflow:hidden;cursor:pointer;transition:transform .2s}
 .oct-tile:hover{transform:scale(1.05)}
-.oct-tile.active{outline:2px solid #C8FF00}
+.oct-tile.active{outline:2px solid #D4AF37}
 .snd-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 6px;border-radius:10px;border:1px solid #222;background:#161616;cursor:pointer;transition:all .15s;gap:4px}
 .snd-btn:active{transform:scale(.94);background:#1a1a1a}
-.snd-btn.playing{border-color:#C8FF00;background:rgba(200,255,0,.08)}
+.snd-btn.playing{border-color:#D4AF37;background:rgba(200,255,0,.08)}
 .lb-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#161616;border:1px solid #1a1a1a;margin-bottom:6px}
 .guest-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#161616;border-radius:8px;margin-bottom:6px;border:1px solid #1a1a1a}
 .notif-item{padding:10px 12px;border-left:3px solid;border-radius:0 8px 8px 0;background:#161616;margin-bottom:6px}
@@ -1676,8 +1676,8 @@ function StreamTab({ autoStart, currentUser }) {
           {isHost && (
             <div style={{display:"flex",gap:6,padding:"8px 16px",overflowX:"auto"}}>
               <button onClick={function(){ setShowZEGOSettings(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>⚙️ SETTINGS</button>
-              <button onClick={function(){ setShowAura(true); }} style={{padding:"6px 12px",background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:6,color:"#8B5CF6",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>🤖 AURA</button>
-              <button onClick={function(){ setShowClip(true); }} style={{padding:"6px 12px",background:"rgba(200,255,0,0.06)",border:"1px solid rgba(200,255,0,0.2)",borderRadius:6,color:"#C8FF00",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>✂️ CLIP</button>
+              <button onClick={function(){ setShowAura(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:"#D4AF37",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>🤖 AURA</button>
+              <button onClick={function(){ setShowClip(true); }} style={{padding:"6px 12px",background:"rgba(200,255,0,0.06)",border:"1px solid rgba(200,255,0,0.2)",borderRadius:6,color:"#D4AF37",fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>✂️ CLIP</button>
               <button onClick={function(){ setShopPinned(function(v){ return !v; }); }} style={{padding:"6px 12px",background:shopPinned?"rgba(128,0,32,0.3)":"rgba(255,255,255,0.04)",border:"1px solid "+(shopPinned?"#800020":"#333"),borderRadius:6,color:shopPinned?G.gold:G.gray,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>📦 {shopPinned?"CLOSE SHOP":"OPEN SHOP"}</button>
               <SubscribeButton creatorId={currentUser?.id} roomId={roomId} currentUser={currentUser} />
             </div>

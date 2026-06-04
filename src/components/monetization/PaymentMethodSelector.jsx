@@ -67,7 +67,7 @@ export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComp
               }}
             >
               <div className="text-lg">{method.icon}</div>
-              <div className="text-[8px]">{method.name}</div>
+              <div className="text-[11px]">{method.name}</div>
             </button>
           ))}
         </div>

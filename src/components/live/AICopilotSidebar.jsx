@@ -6,21 +6,21 @@ import { Sparkles, MessageSquare, Zap, TrendingUp, Heart, AlertTriangle, Copy, R
 import { toast } from 'sonner';
 
 const INSIGHT_CONFIG = {
-  conversation_starter: { icon: MessageSquare, color: '#00F5FF', label: 'Talk About',  bg: 'rgba(0,245,255,0.08)' },
+  conversation_starter: { icon: MessageSquare, color: '#C9A84C', label: 'Talk About',  bg: 'rgba(201,168,76,0.08)' },
   thank_you:            { icon: Heart,          color: '#FF1564', label: 'Thank You',   bg: 'rgba(255,21,100,0.08)' },
   chat_spike:           { icon: Zap,            color: '#FFB800', label: '⚡ Spike',    bg: 'rgba(255,184,0,0.08)' },
-  trending_topic:       { icon: TrendingUp,     color: '#8B5CF6', label: 'Trending',    bg: 'rgba(139,92,246,0.08)' },
-  performance_tip:      { icon: TrendingUp,     color: '#00FF88', label: 'Pro Tip',     bg: 'rgba(0,255,136,0.08)' },
+  trending_topic:       { icon: TrendingUp,     color: '#D4AF37', label: 'Trending',    bg: 'rgba(212,175,55,0.08)' },
+  performance_tip:      { icon: TrendingUp,     color: '#6DBF7E', label: 'Pro Tip',     bg: 'rgba(109,191,126,0.08)' },
   sentiment_shift:      { icon: AlertTriangle,  color: '#FF8C00', label: 'Mood Shift',  bg: 'rgba(255,140,0,0.08)' },
 };
 
 function SentimentMeter({ score }) {
-  const color = score >= 70 ? '#00FF88' : score >= 40 ? '#FFB800' : '#FF1564';
+  const color = score >= 70 ? '#6DBF7E' : score >= 40 ? '#FFB800' : '#FF1564';
   const label = score >= 70 ? 'Positive' : score >= 40 ? 'Neutral' : 'Negative';
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between items-center">
-        <span className="text-[9px] font-bold uppercase text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+        <span className="text-[11px] font-bold uppercase text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
           Chat Sentiment
         </span>
         <span className="text-[10px] font-black" style={{ color }}>{label} {score}</span>
@@ -49,7 +49,7 @@ function InsightCard({ insight, onDismiss, onCopy }) {
           <Icon className="w-3 h-3" style={{ color: cfg.color }} />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-[9px] font-black uppercase" style={{ color: cfg.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+          <span className="text-[11px] font-black uppercase" style={{ color: cfg.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
             {cfg.label}
           </span>
           <p className="text-[11px] text-white/80 leading-relaxed mt-0.5">{insight.content}</p>
@@ -68,7 +68,7 @@ function InsightCard({ insight, onDismiss, onCopy }) {
       {insight.urgency === 'high' && (
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: cfg.color }} />
-          <span className="text-[8px] font-bold uppercase" style={{ color: cfg.color, opacity: 0.7 }}>Act Now</span>
+          <span className="text-[11px] font-bold uppercase" style={{ color: cfg.color, opacity: 0.7 }}>Act Now</span>
         </div>
       )}
     </motion.div>
@@ -124,19 +124,19 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
   if (!isHost) return null;
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(11,11,24,0.95)', border: '1px solid rgba(139,92,246,0.2)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(11,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}>
       <button onClick={() => setCollapsed(v => !v)}
         className="w-full flex items-center justify-between px-3 py-2.5 transition-all hover:bg-white/5">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(0,245,255,0.3))' }}>
+            style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.3), rgba(201,168,76,0.3))' }}>
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
           </div>
-          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#8B5CF6', letterSpacing: '0.08em' }}>
+          <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#D4AF37', letterSpacing: '0.08em' }}>
             AI Copilot
           </span>
           {visibleInsights.length > 0 && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(139,92,246,0.2)', color: '#8B5CF6' }}>
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37' }}>
               {visibleInsights.length}
             </span>
           )}
@@ -145,8 +145,8 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
           <button
             onClick={(e) => { e.stopPropagation(); analyzeMutation.mutate(); }}
             disabled={analyzeMutation.isPending || recentMessages.length < 3}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-bold transition-all disabled:opacity-40"
-            style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)' }}>
+            className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-40"
+            style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)' }}>
             <RefreshCw className={`w-2.5 h-2.5 ${analyzeMutation.isPending ? 'animate-spin' : ''}`} />
             Analyze
           </button>
@@ -162,8 +162,8 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
               {trendingTopics.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {trendingTopics.map(t => (
-                    <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full font-bold"
-                      style={{ background: 'rgba(139,92,246,0.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)' }}>
+                    <span key={t} className="text-[11px] px-1.5 py-0.5 rounded-full font-bold"
+                      style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)' }}>
                       #{t}
                     </span>
                   ))}
@@ -185,7 +185,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
                 </div>
               )}
               {lastAnalyzed && (
-                <p className="text-[8px] text-white/20 text-right">Last: {lastAnalyzed.toLocaleTimeString()}</p>
+                <p className="text-[11px] text-white/20 text-right">Last: {lastAnalyzed.toLocaleTimeString()}</p>
               )}
             </div>
           </motion.div>

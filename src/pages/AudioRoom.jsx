@@ -18,7 +18,7 @@ const CRIMSON = '#800020';
 const PINK    = '#FF1564';
 const BG      = '#080B18';
 const BG2     = '#0d0618';
-const GREEN   = '#00FF88';
+const GREEN   = '#6DBF7E';
 
 const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
 
@@ -102,7 +102,7 @@ function AudienceTile({ member }) {
       >
         {(member.user_name || '?').charAt(0).toUpperCase()}
       </div>
-      <p className="text-[9px] truncate" style={{ color: '#888', maxWidth: size + 4 }}>
+      <p className="text-[11px] truncate" style={{ color: '#888', maxWidth: size + 4 }}>
         {(member.user_name || 'Guest').slice(0, 8)}
       </p>
     </div>
@@ -369,7 +369,7 @@ export default function AudioRoom() {
             >
               <Heart className="w-4 h-4 text-red-400" fill="#EF4444" />
             </div>
-            <span className="text-[8px] font-bold" style={{ color: GOLD }}>{loveCount}</span>
+            <span className="text-[11px] font-bold" style={{ color: GOLD }}>{loveCount}</span>
           </button>
 
           <button

@@ -46,7 +46,7 @@ export default function WatchQueue({ isHost, currentIndex = 0, onSelect }) {
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
         <List className="w-3.5 h-3.5 text-[#d4af37]" />
         <span className="text-xs font-semibold text-[#d4af37]">Watch Queue</span>
-        <span style={{ fontSize: 9, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 99, padding: '1px 6px', marginLeft: 'auto' }}>{queue.length} videos</span>
+        <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 99, padding: '1px 6px', marginLeft: 'auto' }}>{queue.length} videos</span>
       </div>
 
       {/* Queue list */}
@@ -82,7 +82,7 @@ export default function WatchQueue({ isHost, currentIndex = 0, onSelect }) {
                           {index === currentIndex && (
                             <div className="flex items-center gap-1">
                               <Play className="w-2.5 h-2.5 text-[#d4af37]" />
-                              <span className="text-[9px] text-[#d4af37]">Now Playing</span>
+                              <span className="text-[11px] text-[#d4af37]">Now Playing</span>
                             </div>
                           )}
                         </div>

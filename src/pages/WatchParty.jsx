@@ -47,7 +47,7 @@ function Input({ value, onChange, placeholder, className = '', style = {}, maxLe
 }
 function Badge({ children, className = '', style = {} }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
+    <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
       style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', ...style }}>
       {children}
     </span>
@@ -269,7 +269,7 @@ function ReactionsPanel({ partyId }) {
             >
               <span style={{ fontSize: 24 }}>{emoji}</span>
               {counts[emoji] > 0 && (
-                <span className="absolute top-1 right-1 text-[9px] font-bold rounded-full px-1"
+                <span className="absolute top-1 right-1 text-[11px] font-bold rounded-full px-1"
                   style={{ background: 'rgba(212,175,55,0.3)', color: '#d4af37' }}>
                   {counts[emoji]}
                 </span>
@@ -603,11 +603,11 @@ export default function WatchPartyPage() {
         <div className="flex items-center gap-2 px-3 h-12">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <h2 className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</h2>
-            <span className="shrink-0 flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase"
+            <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
               style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
-            <span className="shrink-0 text-[9px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
+            <span className="shrink-0 text-[11px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
               style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Watch Party
             </span>
@@ -661,7 +661,7 @@ export default function WatchPartyPage() {
         </div>
 
         <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black text-white"
+          <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[11px] font-black text-white"
             style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
             {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
           </div>
@@ -672,25 +672,25 @@ export default function WatchPartyPage() {
           <Users className="w-3 h-3 shrink-0" style={{ color: '#d4af37' }} />
           <span className="text-[10px] font-bold shrink-0" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{members.length}/20</span>
           {isHost ? (
-            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+            <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
               style={{ background: 'rgba(212,175,55,0.1)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Host
             </span>
           ) : (
-            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+            <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
               style={{ background: 'rgba(107,124,74,0.15)', color: '#6B7C4A', border: '1px solid rgba(107,124,74,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Synced
             </span>
           )}
           {isHost ? (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#00FF88' }} />
-              <span className="text-[9px] font-mono" style={{ color: 'rgba(0,255,136,0.6)' }}>±0ms</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>±0ms</span>
             </span>
           ) : (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#00FF88' }} />
-              <span className="text-[9px] font-mono" style={{ color: 'rgba(0,255,136,0.6)' }}>Live Sync ±{Math.abs(syncDrift)}ms</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>Live Sync ±{Math.abs(syncDrift)}ms</span>
             </span>
           )}
         </div>
@@ -735,7 +735,7 @@ export default function WatchPartyPage() {
           />
         </div>
         {!isHost && (
-          <div className="absolute top-2 right-2 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1"
+          <div className="absolute top-2 right-2 text-white text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
             style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             Live Sync
@@ -792,7 +792,7 @@ export default function WatchPartyPage() {
               { id: 'screen',      label: '🖥️ Screen' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActivePanel(tab.id)}
-                className="flex-1 py-2 text-[9px] font-black uppercase transition-all"
+                className="flex-1 py-2 text-[11px] font-black uppercase transition-all"
                 style={{
                   fontFamily: 'Barlow Condensed, sans-serif',
                   letterSpacing: '0.06em',
@@ -809,12 +809,12 @@ export default function WatchPartyPage() {
             {activePanel === 'chat' && (
               <>
                 <div className="flex items-center justify-between px-1 pt-1">
-                  <span className="text-[9px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Live Chat</span>
+                  <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Live Chat</span>
                   <button
                     onClick={() => {
                       toast.success(`AI Summary: ${members.length} viewers watching. Room has been active for ${Math.round(elapsed / 60)}min. Top reaction: 🔥`);
                     }}
-                    className="text-[9px] px-2 py-0.5 rounded-full font-bold transition-all"
+                    className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all"
                     style={{ border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', fontFamily: 'Barlow Condensed, sans-serif' }}
                   >
                     ✨ AI Summary

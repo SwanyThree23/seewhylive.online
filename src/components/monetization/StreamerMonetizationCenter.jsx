@@ -18,7 +18,7 @@ const RevenueCard = ({ icon: IconComponent, label, amount, growth, color }) => (
       </div>
     </div>
     <p style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: '0 0 4px', ...T }}>${amount.toLocaleString()}</p>
-    <p style={{ fontSize: 9, color: '#4ade80', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
+    <p style={{ fontSize: 11, color: '#4ade80', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
   </motion.div>
 );
 
@@ -31,9 +31,9 @@ const StreamerMonetizationCenter = () => {
 
   const revenueBreakdown = [
     { label: 'Tips', amount: 1250, growth: 35, color: '#FF1564' },
-    { label: 'Subscriptions', amount: 3420, growth: 22, color: '#00F5FF' },
+    { label: 'Subscriptions', amount: 3420, growth: 22, color: '#C9A84C' },
     { label: 'Virtual Goods', amount: 890, growth: 15, color: GOLD },
-    { label: 'Sponsorships', amount: 2100, growth: 48, color: '#8B5CF6' }
+    { label: 'Sponsorships', amount: 2100, growth: 48, color: '#D4AF37' }
   ];
 
   const subscriptionTiers = [
@@ -66,7 +66,7 @@ const StreamerMonetizationCenter = () => {
       </div>
 
       {/* Total Revenue Banner */}
-      <div style={{ background: 'linear-gradient(to right, rgba(212,175,55,0.2), rgba(139,92,246,0.2))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, padding: 16 }}>
+      <div style={{ background: 'linear-gradient(to right, rgba(212,175,55,0.2), rgba(212,175,55,0.2))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 4px', ...T }}>Total This Month</p>
@@ -99,7 +99,7 @@ const StreamerMonetizationCenter = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                fontSize: 9, padding: '6px 4px', borderRadius: 6, border: 'none', cursor: 'pointer', ...T,
+                fontSize: 11, padding: '6px 4px', borderRadius: 6, border: 'none', cursor: 'pointer', ...T,
                 background: activeTab === tab ? 'rgba(255,255,255,0.15)' : 'transparent',
                 color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.6)',
                 fontWeight: activeTab === tab ? 700 : 400,
@@ -122,14 +122,14 @@ const StreamerMonetizationCenter = () => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div>
                   <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, ...T }}>{tier.name} Tier</p>
-                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', margin: 0, ...T }}>${tier.price}/month</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: 0, ...T }}>${tier.price}/month</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, ...T }}>{tier.members}</p>
-                  <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>members</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>members</p>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 9 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
                 <span style={{ color: 'rgba(255,255,255,0.6)', ...T }}>Monthly Revenue:</span>
                 <span style={{ fontWeight: 700, color: GOLD, ...T }}>${tier.revenue}</span>
               </div>
@@ -150,12 +150,12 @@ const StreamerMonetizationCenter = () => {
                 </div>
                 <div>
                   <p style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, ...T }}>{supporter.name}</p>
-                  <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>{supporter.subs} active subs</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>{supporter.subs} active subs</p>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: GOLD, margin: 0, ...T }}>${supporter.tips}</p>
-                <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>tips</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, ...T }}>tips</p>
               </div>
             </motion.div>
           ))}
@@ -170,7 +170,7 @@ const StreamerMonetizationCenter = () => {
                   { label: 'Churn Rate:', value: '3.1%' },
                   { label: 'Lifetime Value:', value: '$285' },
                 ].map(({ label, value }) => (
-                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9 }}>
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                     <span style={{ color: 'rgba(255,255,255,0.6)', ...T }}>{label}</span>
                     <span style={{ fontWeight: 700, color: '#fff', ...T }}>{value}</span>
                   </div>
@@ -186,7 +186,7 @@ const StreamerMonetizationCenter = () => {
         <p style={{ fontSize: 10, color: '#93c5fd', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 11, color: '#bfdbfe', ...T }}>$3,847 on May 31, 2026</span>
-          <span style={{ fontSize: 9, background: 'rgba(59,130,246,0.3)', color: '#93c5fd', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
+          <span style={{ fontSize: 11, background: 'rgba(59,130,246,0.3)', color: '#93c5fd', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
         </div>
       </div>
     </motion.div>

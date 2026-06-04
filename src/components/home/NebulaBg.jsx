@@ -19,7 +19,7 @@ export default function NebulaBg() {
       }} />
       {/* Cyan accent */}
       <div className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full" style={{
-        background: 'radial-gradient(circle, rgba(0,245,255,0.05) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%)',
         filter: 'blur(40px)',
       }} />
     </div>

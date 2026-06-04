@@ -36,14 +36,14 @@ function fmt(ms) {
 
 function StatusBadge({ status }) {
   const cfg = {
-    live:        { label: 'LIVE',        bg: 'rgba(0,255,136,0.12)', color: '#00FF88', border: 'rgba(0,255,136,0.3)', pulse: true },
+    live:        { label: 'LIVE',        bg: 'rgba(109,191,126,0.12)', color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', pulse: true },
     connecting:  { label: 'CONNECTING',  bg: `rgba(212,175,55,0.12)`, color: GOLD, border: `rgba(212,175,55,0.3)`, spin: true },
     offline:     { label: 'OFFLINE',     bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' },
     error:       { label: 'ERROR',       bg: 'rgba(255,50,50,0.12)', color: '#FF4444', border: 'rgba(255,50,50,0.3)', flash: true },
   }[status] || { label: status?.toUpperCase(), bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' };
 
   return (
-    <span className="flex items-center gap-1 text-[8px] font-black uppercase px-1.5 py-0.5 rounded"
+    <span className="flex items-center gap-1 text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
       {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
       {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
@@ -54,7 +54,7 @@ function StatusBadge({ status }) {
 }
 
 function BitrateSparkline({ data, degraded }) {
-  if (!data?.length) return <div className="h-8 opacity-20 flex items-center justify-center text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No data</div>;
+  if (!data?.length) return <div className="h-8 opacity-20 flex items-center justify-center text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No data</div>;
   const chartData = data.map((v, i) => ({ v, i }));
   return (
     <ResponsiveContainer width="100%" height={28}>
@@ -66,11 +66,11 @@ function BitrateSparkline({ data, degraded }) {
 }
 
 function StatPill({ label, value, color }) {
-  const c = color || (value === 'OK' ? '#00FF88' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#FF4444' : GOLD);
+  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#FF4444' : GOLD);
   return (
     <div className="flex flex-col items-center px-2 py-1 rounded"
       style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
-      <span className="text-[9px] font-black" style={{ color: c, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</span>
+      <span className="text-[11px] font-black" style={{ color: c, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</span>
       <span className="text-[7px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{label}</span>
     </div>
   );
@@ -110,7 +110,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
         </div>
         <div className="flex items-center gap-1.5">
           {(dest.reconnect_count || 0) > 0 && (
-            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold"
+            <span className="text-[11px] px-1.5 py-0.5 rounded font-bold"
               style={{ background: 'rgba(255,165,0,0.15)', color: '#FFA500', border: '1px solid rgba(255,165,0,0.3)' }}>
               ⚠ {dest.reconnect_count} reconnects
             </span>
@@ -130,7 +130,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="text-[7px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>BITRATE</span>
-          <span className="text-[8px] font-bold" style={{ color: bitrateDegraded ? '#FF4444' : GOLD }}>
+          <span className="text-[11px] font-bold" style={{ color: bitrateDegraded ? '#FF4444' : GOLD }}>
             {bitrate.toLocaleString()} / {target.toLocaleString()} kbps
           </span>
         </div>
@@ -147,14 +147,14 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
 
       {/* Stats */}
       <div className="flex gap-1.5">
-        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#00FF88' : fps >= 24 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#00FF88' : latency < 300 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#00FF88' : dropped < 2 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#FF4444'} />
       </div>
 
       {/* Force reconnect */}
       <button onClick={() => onReconnect(dest)}
-        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all"
+        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black uppercase transition-all"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
         <RefreshCw className="w-3 h-3" /> Force Reconnect
       </button>
@@ -276,7 +276,7 @@ export default function ControlRoomPage() {
   const hasError = destinations.some(d => d.status === 'error');
   const hasDegraded = destinations.some(d => d.status !== 'live' && d.is_enabled);
   const overallHealth = hasError ? 'CRITICAL' : hasDegraded ? 'DEGRADED' : 'ALL HEALTHY';
-  const healthColor = overallHealth === 'ALL HEALTHY' ? '#00FF88' : overallHealth === 'DEGRADED' ? GOLD : '#FF4444';
+  const healthColor = overallHealth === 'ALL HEALTHY' ? '#6DBF7E' : overallHealth === 'DEGRADED' ? GOLD : '#FF4444';
   const streamKey = session?.stream_key || 'sk-live-XXXXXXXXXXXX';
   const isLive = room?.status === 'live';
 
@@ -336,13 +336,13 @@ export default function ControlRoomPage() {
             <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
               <div className="h-full rounded-full" style={{ width: `${latestHealth.cpu_usage_pct}%`, background: latestHealth.cpu_usage_pct > 85 ? '#FF4444' : GOLD }} />
             </div>
-            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
           </div>
         )}
         {/* Stream key */}
         <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <span className="text-[9px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
             {showStreamKey ? streamKey : '●'.repeat(Math.min(streamKey.length, 16))}
           </span>
           <button onClick={() => setShowStreamKey(s => !s)}>

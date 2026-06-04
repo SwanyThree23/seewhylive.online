@@ -79,7 +79,7 @@ export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized })
                 <button
                   key={style}
                   onClick={() => setPersonaStyle(style)}
-                  className="px-2 py-1.5 rounded text-[9px] font-bold transition-all capitalize"
+                  className="px-2 py-1.5 rounded text-[11px] font-bold transition-all capitalize"
                   style={{
                     background: personaStyle === style ? G : 'rgba(255,255,255,0.05)',
                     color: personaStyle === style ? '#000' : 'rgba(255,255,255,0.5)',
@@ -98,7 +98,7 @@ export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized })
                 <button
                   key={avatar}
                   onClick={() => setAvatarPreset(avatar)}
-                  className="px-2 py-1.5 rounded text-[9px] font-bold transition-all capitalize"
+                  className="px-2 py-1.5 rounded text-[11px] font-bold transition-all capitalize"
                   style={{
                     background: avatarPreset === avatar ? G : 'rgba(255,255,255,0.05)',
                     color: avatarPreset === avatar ? '#000' : 'rgba(255,255,255,0.5)',

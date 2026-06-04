@@ -112,10 +112,10 @@ export default function HybridStreamRoom() {
           </button>
           <h1 className="flex-1 font-black text-white text-sm leading-none truncate">{room.title}</h1>
           {room.status === 'live' && (
-            <span className="shrink-0 px-2 py-0.5 rounded-md text-white font-black text-[9px] uppercase animate-pulse"
+            <span className="shrink-0 px-2 py-0.5 rounded-md text-white font-black text-[11px] uppercase animate-pulse"
               style={{ background: '#FF1564' }}>LIVE</span>
           )}
-          <span className="shrink-0 px-2 py-0.5 rounded-md font-black text-[9px] uppercase"
+          <span className="shrink-0 px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
             style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.35)', color: '#D4AF37' }}>
             Hybrid
           </span>

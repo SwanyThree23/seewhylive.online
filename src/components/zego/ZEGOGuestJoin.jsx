@@ -49,12 +49,12 @@ export default function ZEGOGuestJoin({ roomId, userId, userName, onJoined }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="rounded-xl p-4 text-center space-y-3"
-      style={{ background: 'rgba(0,245,255,0.08)', border: '1px solid rgba(0,245,255,0.2)' }}>
+      style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)' }}>
       
       {requestSent ? (
         <>
-          <div className="flex items-center justify-center gap-2" style={{ color: '#00FF88' }}>
-            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#00FF88' }} />
+          <div className="flex items-center justify-center gap-2" style={{ color: '#6DBF7E' }}>
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#6DBF7E' }} />
             <span className="text-sm font-black uppercase" style={{ ...T }}>Waiting for Host</span>
           </div>
           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>

@@ -37,7 +37,7 @@ function StatCard({ label, value, icon: Icon, color, badge, sub }) {
           <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
-      {badge && <span className="text-[8px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{badge}</span>}
+      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{badge}</span>}
     </div>
   );
 }
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
   const [suspendUser, setSuspendUser] = useState('');
   const [suspendDuration, setSuspendDuration] = useState('24h');
   const [auditLog, setAuditLog] = useState([
-    { icon: '🛡️', action: 'Guardian AI enabled for all rooms', time: 'Jun 1, 7:00 PM', color: '#00FF88', severity: 'info' },
+    { icon: '🛡️', action: 'Guardian AI enabled for all rooms', time: 'Jun 1, 7:00 PM', color: '#6DBF7E', severity: 'info' },
     { icon: '📋', action: 'Reports dashboard accessed', time: 'Jun 1, 6:45 PM', color: '#D4AF37', severity: 'low' },
     { icon: '⚙️', action: 'Rate limits verified — all healthy', time: 'Jun 1, 6:30 PM', color: '#00C8C8', severity: 'info' },
   ]);
@@ -158,8 +158,8 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(99,102,241,0.8)" sub={`+${todayUsers.length} today`} />
           <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(255,21,100,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
-          <StatCard label="Total Rooms" value={allRooms.length} icon={Globe} color="rgba(139,92,246,0.7)" />
-          <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="rgba(0,255,136,0.6)" />
+          <StatCard label="Total Rooms" value={allRooms.length} icon={Globe} color="rgba(212,175,55,0.7)" />
+          <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="rgba(109,191,126,0.6)" />
           <StatCard label="Messages" value={messages.length} icon={MessageSquare} color="rgba(212,175,55,0.6)" />
           <StatCard label="Open Reports" value={pendingReports.length} icon={AlertTriangle} color={pendingReports.length > 0 ? 'rgba(255,21,100,0.7)' : 'rgba(255,255,255,0.15)'} />
         </div>
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-black text-xs" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{value}</span>
-                        {ok ? <CheckCircle className="w-3 h-3" style={{ color: '#00FF88' }} /> : <AlertTriangle className="w-3 h-3" style={{ color: '#FF1564' }} />}
+                        {ok ? <CheckCircle className="w-3 h-3" style={{ color: '#6DBF7E' }} /> : <AlertTriangle className="w-3 h-3" style={{ color: '#FF1564' }} />}
                       </div>
                     </div>
                   ))}
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
                           <p className="font-black text-xs text-white" style={T}>{t.sender_name || 'Anonymous'} → {t.recipient_name || 'Creator'}</p>
                           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.type} · {format(new Date(t.created_date), 'MMM d, h:mm a')}</p>
                         </div>
-                        <span className="font-black text-sm" style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>+${(t.amount || 0).toFixed(2)}</span>
+                        <span className="font-black text-sm" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>+${(t.amount || 0).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: u.role === 'admin' ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${u.role === 'admin' ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`, color: u.role === 'admin' ? GOLD : 'rgba(255,255,255,0.4)' }}>{u.role}</span>
+                          <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: u.role === 'admin' ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${u.role === 'admin' ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)'}`, color: u.role === 'admin' ? GOLD : 'rgba(255,255,255,0.4)' }}>{u.role}</span>
                           {u.id !== user?.id && (
                             <div style={{ display: 'flex', gap: 3 }}>
                               {['user', 'admin'].map(r => (
@@ -288,10 +288,10 @@ export default function AdminDashboard() {
                         <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{room.type} · {room.viewer_count || 0} viewers · {format(new Date(room.created_date), 'MMM d')}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color }}>{room.status}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: ss.bg, border: `1px solid ${ss.border}`, color: ss.color }}>{room.status}</span>
                         {room.status === 'live' && (
                           <button onClick={() => endRoomMutation.mutate(room.id)}
-                            className="px-2.5 py-1 rounded-lg font-black uppercase text-[9px]"
+                            className="px-2.5 py-1 rounded-lg font-black uppercase text-[11px]"
                             style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', cursor: 'pointer', ...T }}>
                             End
                           </button>
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
           reports.length === 0 ? (
             <DarkCard title="">
               <div className="text-center py-16">
-                <CheckCircle className="w-12 h-12 mx-auto mb-4" style={{ color: '#00FF88' }} />
+                <CheckCircle className="w-12 h-12 mx-auto mb-4" style={{ color: '#6DBF7E' }} />
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>No reports to review</p>
               </div>
             </DarkCard>
@@ -321,15 +321,15 @@ export default function AdminDashboard() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(255,136,0,0.12)' : 'rgba(0,255,136,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.3)' : 'rgba(0,255,136,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#00ff88' }}>{report.status}</span>
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>{report.report_type}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(255,136,0,0.12)' : 'rgba(109,191,126,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.3)' : 'rgba(109,191,126,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#00ff88' }}>{report.status}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>{report.report_type}</span>
                       </div>
                       <p className="text-sm text-white" style={T}>{report.description}</p>
                       <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{format(new Date(report.created_date), 'MMM d, h:mm a')}</p>
                     </div>
                     {report.status === 'pending' && (
                       <button className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] shrink-0"
-                        style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)', color: '#00ff88', cursor: 'pointer', ...T }}
+                        style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer', ...T }}
                         onClick={async () => { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: user?.id, reviewed_at: new Date().toISOString() }); qc.invalidateQueries(['adminReports']); toast.success('Report resolved'); }}>
                         Resolve
                       </button>
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">🚫</span>
                 <span className="text-sm font-black uppercase" style={{ color: '#FF4444', ...T }}>IP Bans</span>
-                <span className="ml-auto text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
+                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
               </div>
               <div className="flex gap-2 mb-3">
                 <input value={newBanIP} onChange={e => setNewBanIP(e.target.value)}
@@ -372,9 +372,9 @@ export default function AdminDashboard() {
                 ) : bannedIPs.map((b, i) => (
                   <div key={i} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(255,68,68,0.05)', border: '1px solid rgba(255,68,68,0.1)' }}>
                     <span className="text-xs font-mono text-white/60 flex-1">{b.ip}</span>
-                    {b.reason && <span className="text-[9px] text-white/30">{b.reason}</span>}
+                    {b.reason && <span className="text-[11px] text-white/30">{b.reason}</span>}
                     <button onClick={() => setBannedIPs(p => p.filter((_, j) => j !== i))}
-                      className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>
+                      className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', ...T }}>
                       Unban
                     </button>
                   </div>
@@ -410,9 +410,9 @@ export default function AdminDashboard() {
               {suspensions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2 p-2 rounded-lg mt-1" style={{ background: 'rgba(255,136,0,0.05)', border: '1px solid rgba(255,136,0,0.1)' }}>
                   <span className="text-xs font-bold text-white/60 flex-1">{s.user}</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(255,136,0,0.15)', color: '#FF8800', ...T }}>{s.duration}</span>
+                  <span className="text-[11px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(255,136,0,0.15)', color: '#FF8800', ...T }}>{s.duration}</span>
                   <button onClick={() => setSuspensions(p => p.filter((_, j) => j !== i))}
-                    className="text-[9px] px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', ...T }}>Lift</button>
+                    className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', ...T }}>Lift</button>
                 </div>
               ))}
             </div>
@@ -452,9 +452,9 @@ export default function AdminDashboard() {
                   { label: 'Room creates/hr', value: '10/user', status: 'ok' },
                 ].map(r => (
                   <div key={r.label} className="p-2 rounded-lg" style={{ background: 'rgba(0,200,200,0.05)', border: '1px solid rgba(0,200,200,0.1)' }}>
-                    <p className="text-[8px] uppercase tracking-wide" style={{ color: 'rgba(0,200,200,0.6)' }}>{r.label}</p>
+                    <p className="text-[11px] uppercase tracking-wide" style={{ color: 'rgba(0,200,200,0.6)' }}>{r.label}</p>
                     <p className="text-sm font-black text-white">{r.value}</p>
-                    <p className="text-[8px]" style={{ color: '#00FF88' }}>● {r.status}</p>
+                    <p className="text-[11px]" style={{ color: '#6DBF7E' }}>● {r.status}</p>
                   </div>
                 ))}
               </div>
@@ -467,7 +467,7 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Admin Audit Log</span>
-              <button onClick={() => setAuditLog([])} className="text-[9px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Clear</button>
+              <button onClick={() => setAuditLog([])} className="text-[11px] px-2 py-0.5 rounded" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Clear</button>
             </div>
             {auditLog.length === 0 ? (
               <div className="text-center py-8 text-white/20 text-xs">No audit entries yet. Actions you take appear here.</div>
@@ -476,9 +476,9 @@ export default function AdminDashboard() {
                 <span className="text-base">{entry.icon}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-white">{entry.action}</p>
-                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{entry.time}</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{entry.time}</p>
                 </div>
-                <span className="text-[8px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0" style={{ background: `${entry.color}18`, color: entry.color, border: `1px solid ${entry.color}33`, ...T }}>{entry.severity}</span>
+                <span className="text-[11px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0" style={{ background: `${entry.color}18`, color: entry.color, border: `1px solid ${entry.color}33`, ...T }}>{entry.severity}</span>
               </div>
             ))}
           </div>
@@ -490,14 +490,14 @@ export default function AdminDashboard() {
             <DarkCard title="Monthly Revenue">
               {revenueChartData.length === 0
                 ? <p className="text-sm text-center py-12" style={{ color: 'rgba(255,255,255,0.25)' }}>No revenue data</p>
-                : <ResponsiveContainer width="100%" height={220}><BarChart data={revenueChartData}><CartesianGrid strokeDasharray="3 3" vertical={false} {...CHART_THEME.cartesian} /><XAxis dataKey="month" tick={CHART_THEME.tick} /><YAxis tick={CHART_THEME.tick} tickFormatter={v => `$${v}`} /><Tooltip {...CHART_THEME.tooltip} formatter={v => [`$${Number(v).toFixed(2)}`, 'Revenue']} /><Bar dataKey="revenue" fill="#00FF88" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
+                : <ResponsiveContainer width="100%" height={220}><BarChart data={revenueChartData}><CartesianGrid strokeDasharray="3 3" vertical={false} {...CHART_THEME.cartesian} /><XAxis dataKey="month" tick={CHART_THEME.tick} /><YAxis tick={CHART_THEME.tick} tickFormatter={v => `$${v}`} /><Tooltip {...CHART_THEME.tooltip} formatter={v => [`$${Number(v).toFixed(2)}`, 'Revenue']} /><Bar dataKey="revenue" fill="#6DBF7E" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
               }
             </DarkCard>
             <DarkCard title="Revenue Summary">
               <div className="space-y-3">
-                <div className="p-5 rounded-xl text-center" style={{ background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.15)' }}>
-                  <p className="text-3xl font-black" style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>${totalRevenue.toFixed(2)}</p>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(0,255,136,0.7)', ...T }}>Total Platform Revenue</p>
+                <div className="p-5 rounded-xl text-center" style={{ background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.15)' }}>
+                  <p className="text-3xl font-black" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>${totalRevenue.toFixed(2)}</p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(109,191,126,0.7)', ...T }}>Total Platform Revenue</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {[

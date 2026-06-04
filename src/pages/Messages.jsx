@@ -161,7 +161,7 @@ export default function Messages() {
             {selectedThread && currentThread ? currentThread.partnerName : "Messages"}
           </h1>
           {!selectedThread && totalUnread > 0 && (
-            <span className="flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-black"
+            <span className="flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-black"
               style={{ background: PINK, color: "#fff", ...T }}>
               {totalUnread}
             </span>
@@ -234,7 +234,7 @@ export default function Messages() {
                         <div style={{
                           position: "absolute", bottom: 1, right: 1,
                           width: 7, height: 7, borderRadius: "50%",
-                          background: "#00FF88",
+                          background: "#6DBF7E",
                           border: "1.5px solid #080B18",
                         }} />
                       )}
@@ -246,7 +246,7 @@ export default function Messages() {
                         <span className="font-black text-[13px] text-white truncate" style={T}>
                           {t.partnerName}
                         </span>
-                        <span className="text-[9px] ml-2 shrink-0" style={{ color: "rgba(255,255,255,0.25)", ...T }}>
+                        <span className="text-[11px] ml-2 shrink-0" style={{ color: "rgba(255,255,255,0.25)", ...T }}>
                           {fmtTime(last?.created_date)}
                         </span>
                       </div>
@@ -267,7 +267,7 @@ export default function Messages() {
 
                     {/* Unread badge */}
                     {t.unread > 0 && (
-                      <div className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[9px] font-black text-white"
+                      <div className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-black text-white"
                         style={{ background: PINK, ...T }}>
                         {t.unread}
                       </div>
@@ -389,11 +389,11 @@ export default function Messages() {
                       </div>
                     )}
                     <div className="flex gap-1.5 mt-0.5 items-center" style={{ marginTop: reaction ? 8 : 2 }}>
-                      <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.2)", ...T }}>
+                      <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.2)", ...T }}>
                         {fmtTime(m.created_date)}
                       </span>
                       {isMe && (
-                        <span style={{ fontSize: 9, color: m.read_at ? GOLD : "rgba(255,255,255,0.4)" }}>
+                        <span style={{ fontSize: 11, color: m.read_at ? GOLD : "rgba(255,255,255,0.4)" }}>
                           {m.read_at ? "✓✓" : "✓"}
                         </span>
                       )}

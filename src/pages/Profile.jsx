@@ -61,7 +61,7 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
     <DarkCard>
       <div className="p-4 flex items-start justify-between gap-2">
         <div>
-          <p className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
+          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
           <p className="text-2xl font-black leading-none" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
         </div>
         {Icon && (
@@ -181,21 +181,21 @@ export default function ProfilePage() {
     subscriptions.length > 0 && {
       id: 'subs',
       icon: TrendingUp,
-      color: '#00F5FF',
+      color: '#C9A84C',
       desc: `${subscriptions.length} active subscription${subscriptions.length !== 1 ? 's' : ''}`,
       time: 'Active now',
     },
     completedReferrals > 0 && {
       id: 'refs',
       icon: Gift,
-      color: '#8B5CF6',
+      color: '#D4AF37',
       desc: `${completedReferrals} completed referral${completedReferrals !== 1 ? 's' : ''}`,
       time: 'Recent',
     },
     inventory.length > 0 && {
       id: 'inv',
       icon: Award,
-      color: '#00FF88',
+      color: '#6DBF7E',
       desc: `${inventory.length} virtual item${inventory.length !== 1 ? 's' : ''} in inventory`,
       time: 'Collected',
     },
@@ -248,15 +248,15 @@ export default function ProfilePage() {
                   </p>
                   {isOnline && (
                     <span className="flex items-center gap-1 text-[10px] font-black"
-                      style={{ color: '#00FF88', ...T }}>
-                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#00FF88' }} />
+                      style={{ color: '#6DBF7E', ...T }}>
+                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#6DBF7E' }} />
                       Online
                     </span>
                   )}
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-2 py-0.5 rounded-md font-black uppercase text-[9px]"
+                <span className="px-2 py-0.5 rounded-md font-black uppercase text-[11px]"
                   style={{ background: user?.role === 'admin' ? 'rgba(128,0,32,0.25)' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                   {user?.role || 'member'}
                 </span>
@@ -322,9 +322,9 @@ export default function ProfilePage() {
         {/* ── stats row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} />
-          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#00F5FF" />
-          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#8B5CF6" />
-          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#00FF88" />
+          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#C9A84C" />
+          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#D4AF37" />
+          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#6DBF7E" />
         </div>
 
         {/* ── section tabs ── */}
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                       <item.icon className="w-4 h-4" style={{ color: item.color }} />
                     </div>
                     <p className="flex-1 font-black text-[12px] text-white" style={T}>{item.desc}</p>
-                    <span className="text-[9px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.time}</span>
+                    <span className="text-[11px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.time}</span>
                   </div>
                 ))}
               </div>
@@ -385,7 +385,7 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#00F5FF' },
+                  { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
                 ].map(item => (
                   <Link key={item.href} to={item.href}>
                     <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110"
@@ -441,7 +441,7 @@ export default function ProfilePage() {
                           {Math.floor((room.duration || 0) / 60)}m
                         </span>
                       )}
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase shrink-0"
+                      <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                         style={{
                           background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)',
                           border: `1px solid ${isLive ? 'rgba(255,21,100,0.3)' : 'rgba(255,255,255,0.1)'}`,
@@ -487,7 +487,7 @@ export default function ProfilePage() {
                         </div>
                       )}
                       {clip.duration != null && (
-                        <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-black"
+                        <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[11px] font-black"
                           style={{ background: 'rgba(0,0,0,0.75)', color: 'rgba(255,255,255,0.85)', ...T }}>
                           {Math.floor((clip.duration || 0) / 60)}:{String((clip.duration || 0) % 60).padStart(2, '0')}
                         </span>
@@ -544,8 +544,8 @@ export default function ProfilePage() {
                           <p className="font-black text-sm text-white" style={T}>{sub.tier_name || 'Subscription'}</p>
                           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>${sub.price}/month</p>
                         </div>
-                        <span className="px-2 py-0.5 rounded-md font-black text-[9px] uppercase"
-                          style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88', ...T }}>
+                        <span className="px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
+                          style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E', ...T }}>
                           Active
                         </span>
                       </div>

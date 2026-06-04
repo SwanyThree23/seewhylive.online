@@ -64,8 +64,8 @@ export default function PKBattleProgress({ battleId }) {
         </div>
         <div className="text-xs px-2 py-1 rounded-full"
           style={{
-            background: isActive ? 'rgba(0,255,136,0.15)' : isEnded ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)',
-            color: isActive ? '#00FF88' : isEnded ? '#FF1564' : G,
+            background: isActive ? 'rgba(109,191,126,0.15)' : isEnded ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)',
+            color: isActive ? '#6DBF7E' : isEnded ? '#FF1564' : G,
             fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 'bold',
           }}>
@@ -157,7 +157,7 @@ export default function PKBattleProgress({ battleId }) {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="h-full rounded-full"
               style={{
-                background: 'linear-gradient(90deg, #8B5CF6, #00F5FF)',
+                background: 'linear-gradient(90deg, #D4AF37, #C9A84C)',
               }}
             />
           </div>
@@ -171,13 +171,13 @@ export default function PKBattleProgress({ battleId }) {
           animate={{ opacity: 1, y: 0 }}
           className="px-4 py-3 text-center"
           style={{
-            background: 'rgba(0,255,136,0.1)',
-            borderTop: '1px solid rgba(0,255,136,0.2)',
+            background: 'rgba(109,191,126,0.1)',
+            borderTop: '1px solid rgba(109,191,126,0.2)',
           }}
         >
           <div className="flex items-center justify-center gap-2 mb-1">
-            <Trophy className="w-4 h-4" style={{ color: '#00FF88' }} />
-            <p className="text-xs font-black" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <Trophy className="w-4 h-4" style={{ color: '#6DBF7E' }} />
+            <p className="text-xs font-black" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {winner === battle.creator_id ? battle.creator_name : battle.challenger_name} WINS
             </p>
           </div>
@@ -202,7 +202,7 @@ export default function PKBattleProgress({ battleId }) {
           <button
             style={{
               fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
-              background: 'rgba(139,92,246,0.2)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.3)',
+              background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)',
             }}
           >
             💜 Tip Challenger

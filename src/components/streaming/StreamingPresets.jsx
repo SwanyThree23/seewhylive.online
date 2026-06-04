@@ -68,20 +68,20 @@ export default function StreamingPresets({ onApply }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold text-white">{preset.name}</p>
-                <p className="text-[8px] text-white/50">{preset.description}</p>
+                <p className="text-[11px] text-white/50">{preset.description}</p>
               </div>
               {selected === preset.name && (
                 <Save className="w-3.5 h-3.5 text-[#d4af37]" />
               )}
             </div>
             <div className="flex gap-2 mt-1.5 flex-wrap">
-              <span className="text-[8px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded">
+              <span className="text-[11px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded">
                 {preset.bitrate} kbps
               </span>
-              <span className="text-[8px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded">
+              <span className="text-[11px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded">
                 {preset.resolution}
               </span>
-              <span className="text-[8px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded">
+              <span className="text-[11px] bg-white/10 text-white/70 px-1.5 py-0.5 rounded">
                 {preset.fps} fps
               </span>
             </div>

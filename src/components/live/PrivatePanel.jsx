@@ -89,7 +89,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                   >
                     <span className="text-base">{type.icon}</span>
                     <p className="text-[10px] font-semibold text-white mt-0.5">{type.label}</p>
-                    <p className="text-[9px] text-white/40">{type.desc}</p>
+                    <p className="text-[11px] text-white/40">{type.desc}</p>
                   </button>
                 ))}
               </div>

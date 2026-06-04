@@ -40,7 +40,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {isComplete && (
-            <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               ✓ Complete!
             </span>
           )}

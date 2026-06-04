@@ -225,7 +225,7 @@ export default function PartyReactionsOverlay({ partyId, currentUser, currentTim
         {/* Total count HUD */}
         <div className="flex items-center gap-1 px-2 py-1 rounded"
           style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)' }}>
-          <span className="text-[9px] font-black" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <span className="text-[11px] font-black" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {totalCount.toLocaleString()} reactions
           </span>
         </div>
@@ -242,8 +242,8 @@ export default function PartyReactionsOverlay({ partyId, currentUser, currentTim
                 style={{ background: r.is_premium ? 'rgba(212,175,55,0.15)' : 'rgba(0,0,0,0.7)', border: r.is_premium ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.08)' }}>
                 <span className="text-sm">{r.emoji}</span>
                 <div className="min-w-0">
-                  <p className="text-[8px] font-bold text-white/60 truncate">{r.user_name}</p>
-                  {r.message && <p className="text-[8px] text-white/40 truncate">{r.message}</p>}
+                  <p className="text-[11px] font-bold text-white/60 truncate">{r.user_name}</p>
+                  {r.message && <p className="text-[11px] text-white/40 truncate">{r.message}</p>}
                 </div>
               </motion.div>
             ))}

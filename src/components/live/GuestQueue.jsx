@@ -18,7 +18,7 @@ import {
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK = '#FF1564';
-const TEAL = '#00F5FF';
+const TEAL = '#C9A84C';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -149,7 +149,7 @@ export default function GuestQueue({ roomId, isHost }) {
             style={{
               background: CRIMSON,
               color: '#fff',
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 800,
               borderRadius: 20,
               padding: '2px 7px',
@@ -185,7 +185,7 @@ export default function GuestQueue({ roomId, isHost }) {
               <span
                 style={{
                   ...T,
-                  fontSize: 8,
+                  fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
@@ -253,7 +253,7 @@ export default function GuestQueue({ roomId, isHost }) {
                         <div
                           style={{
                             ...T,
-                            fontSize: 8,
+                            fontSize: 11,
                             color: 'rgba(255,255,255,0.4)',
                           }}
                         >
@@ -272,7 +272,7 @@ export default function GuestQueue({ roomId, isHost }) {
                         }}
                       >
                         <Clock size={8} />
-                        <span style={{ ...T, fontSize: 8 }}>
+                        <span style={{ ...T, fontSize: 11 }}>
                           {p.created_date ? timeAgo(p.created_date) : '—'}
                         </span>
                       </div>
@@ -291,11 +291,11 @@ export default function GuestQueue({ roomId, isHost }) {
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: 4,
-                          background: 'rgba(0,255,136,0.12)',
-                          border: '1px solid rgba(0,255,136,0.3)',
+                          background: 'rgba(109,191,126,0.12)',
+                          border: '1px solid rgba(109,191,126,0.3)',
                           borderRadius: 6,
-                          color: '#00FF88',
-                          fontSize: 9,
+                          color: '#6DBF7E',
+                          fontSize: 11,
                           fontWeight: 700,
                           padding: '5px 0',
                           cursor: 'pointer',
@@ -323,7 +323,7 @@ export default function GuestQueue({ roomId, isHost }) {
                           border: '1px solid rgba(255,68,68,0.2)',
                           borderRadius: 6,
                           color: '#FF6666',
-                          fontSize: 9,
+                          fontSize: 11,
                           fontWeight: 700,
                           padding: '5px 0',
                           cursor: 'pointer',
@@ -349,11 +349,11 @@ export default function GuestQueue({ roomId, isHost }) {
               <span
                 style={{
                   ...T,
-                  fontSize: 8,
+                  fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
-                  color: `rgba(0,245,255,0.8)`,
+                  color: `rgba(201,168,76,0.8)`,
                   paddingLeft: 2,
                 }}
               >
@@ -369,7 +369,7 @@ export default function GuestQueue({ roomId, isHost }) {
                     transition={{ duration: 0.2 }}
                     style={{
                       background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(0,245,255,0.08)',
+                      border: '1px solid rgba(201,168,76,0.08)',
                       borderRadius: 10,
                       padding: '8px 9px',
                       display: 'flex',
@@ -385,7 +385,7 @@ export default function GuestQueue({ roomId, isHost }) {
                         borderRadius: '50%',
                         background: 'linear-gradient(135deg, #006666, #003333)',
                         border: `1.5px solid ${TEAL}`,
-                        boxShadow: `0 0 8px rgba(0,245,255,0.35)`,
+                        boxShadow: `0 0 8px rgba(201,168,76,0.35)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -417,7 +417,7 @@ export default function GuestQueue({ roomId, isHost }) {
                       <div
                         style={{
                           ...T,
-                          fontSize: 8,
+                          fontSize: 11,
                           color: TEAL,
                         }}
                       >
@@ -482,7 +482,7 @@ export default function GuestQueue({ roomId, isHost }) {
               <span
                 style={{
                   ...T,
-                  fontSize: 9,
+                  fontSize: 11,
                   color: 'rgba(255,255,255,0.15)',
                   textAlign: 'center',
                 }}

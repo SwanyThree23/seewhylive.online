@@ -104,7 +104,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                 <textarea
                   readOnly
                   value={transcription}
-                  className="w-full h-32 bg-white/5 border border-white/10 rounded p-2 text-[9px] text-white/80 resize-none"
+                  className="w-full h-32 bg-white/5 border border-white/10 rounded p-2 text-[11px] text-white/80 resize-none"
                 />
                 <button
                   onClick={() => handleCopy(transcription)}
@@ -124,7 +124,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                 <select
                   value={targetLanguage}
                   onChange={(e) => setTargetLanguage(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[9px] text-white/80"
+                  className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white/80"
                 >
                   {LANGUAGES.map(lang => (
                     <option key={lang.code} value={lang.code}>{lang.name}</option>
@@ -152,7 +152,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                   <textarea
                     readOnly
                     value={translatedText}
-                    className="w-full h-32 bg-white/5 border border-white/10 rounded p-2 text-[9px] text-white/80 resize-none"
+                    className="w-full h-32 bg-white/5 border border-white/10 rounded p-2 text-[11px] text-white/80 resize-none"
                   />
                   <button
                     onClick={() => handleCopy(translatedText)}

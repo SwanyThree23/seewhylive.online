@@ -8,14 +8,14 @@ import { toast } from 'sonner';
 const COIN_PACKS = [
   { coins: 10,  price: 0.99,  label: '10 🪙',  color: '#d4af37' },
   { coins: 50,  price: 3.99,  label: '50 🪙',  color: '#CC7755' },
-  { coins: 100, price: 6.99,  label: '100 🪙', color: '#8B5CF6' },
+  { coins: 100, price: 6.99,  label: '100 🪙', color: '#D4AF37' },
   { coins: 500, price: 29.99, label: '500 🪙', color: '#FF1564' },
 ];
 
 const TIP_AMOUNTS = [
-  { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#00F5FF' },
+  { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#C9A84C' },
   { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#FF8C00' },
-  { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#8B5CF6' },
+  { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#D4AF37' },
   { coins: 100, emoji: '👑', label: 'Royal',    color: '#d4af37' },
   { coins: 200, emoji: '🚀', label: 'Legend',   color: '#FF1564' },
 ];
@@ -177,8 +177,8 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
               className="flex flex-col items-center gap-1 py-2 rounded-xl text-center transition-all disabled:opacity-40"
               style={{ background: `${tip.color}12`, border: `1px solid ${tip.color}30` }}>
               <span className="text-lg">{tip.emoji}</span>
-              <span className="text-[9px] font-bold" style={{ color: tip.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{tip.coins}</span>
-              <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.3)' }}>${(tip.coins / 10).toFixed(2)}</span>
+              <span className="text-[11px] font-bold" style={{ color: tip.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{tip.coins}</span>
+              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>${(tip.coins / 10).toFixed(2)}</span>
             </motion.button>
           ))}
         </div>
@@ -198,7 +198,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
               </button>
             ))}
           </div>
-          <p className="text-[9px] mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>1 coin = $0.10 · 90% goes to creator</p>
+          <p className="text-[11px] mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>1 coin = $0.10 · 90% goes to creator</p>
         </div>
       </div>
     </div>

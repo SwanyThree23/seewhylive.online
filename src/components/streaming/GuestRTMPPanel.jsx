@@ -125,9 +125,9 @@ function DestinationRow({ dest, userId, onRemove }) {
 
         {/* Bitrate + actions */}
         <div className="flex items-center gap-2">
-          <p className="text-[9px] text-white/25 shrink-0">Bitrate</p>
+          <p className="text-[11px] text-white/25 shrink-0">Bitrate</p>
           <input type="range" value={dest.bitrate_kbps || 3000} onChange={e => updateMutation.mutate({ data: { bitrate_kbps: +e.target.value } })} min={500} max={8000} step={500} style={{ flex:1, accentColor:'#D4AF37' }} />
-          <span className="text-[9px] font-mono text-[#d4af37] w-14 text-right shrink-0">{dest.bitrate_kbps || 3000} kbps</span>
+          <span className="text-[11px] font-mono text-[#d4af37] w-14 text-right shrink-0">{dest.bitrate_kbps || 3000} kbps</span>
         </div>
 
         <div className="flex gap-1.5 pt-0.5">
@@ -234,7 +234,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
                     <button
                       key={p.id}
                       onClick={() => setSelectedPreset(p.id)}
-                      className={`py-1.5 px-1 rounded text-[9px] font-semibold transition-all border ${
+                      className={`py-1.5 px-1 rounded text-[11px] font-semibold transition-all border ${
                         selectedPreset === p.id
                           ? 'border-[#d4af37] bg-[#d4af37]/15 text-white'
                           : 'border-white/10 text-white/30 hover:border-white/20 hover:text-white/60'
@@ -293,7 +293,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
 
         {/* FFmpeg fanout notice */}
         {enabledCount > 1 && (
-          <p className="text-[9px] text-white/20 text-center pt-1">
+          <p className="text-[11px] text-white/20 text-center pt-1">
             FFmpeg fanout will simulcast to {enabledCount} platforms when you go live
           </p>
         )}
