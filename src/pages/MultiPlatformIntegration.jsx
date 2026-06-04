@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import {
-  Link2, Zap, Camera, Radio, Globe, Bell, Users, Heart,
-  Copy, Check, Play, Settings, RefreshCw, ChevronRight,
-  AlertCircle, Webhook, Monitor, Smartphone, Rss
+  Link2, Zap, Camera, Radio, Globe, Users, Heart,
+  Copy, Check, RefreshCw,
+  Monitor, Rss
 } from 'lucide-react';
 
 const BG    = '#0E0C09';

@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
-  Mic2, Headphones, RefreshCw, Plus, X, ChevronRight, Zap,
-  Sparkles, Radio, Sliders, Send, Search, Filter
+  Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,
+  Sparkles, Radio, Sliders, Send, Search
 } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
