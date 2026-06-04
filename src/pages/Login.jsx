@@ -37,7 +37,8 @@ export default function Login() {
       if (mode === 'login') {
         await base44.auth.loginViaEmailPassword(email, password);
       } else {
-        await base44.auth.registerViaEmailPassword(email, password);
+        await base44.auth.register({ email, password });
+        await base44.auth.loginViaEmailPassword(email, password);
       }
       window.location.href = fromUrl;
     } catch (err) {
