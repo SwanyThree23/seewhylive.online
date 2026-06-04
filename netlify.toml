@@ -6,6 +6,14 @@
   VITE_BASE44_APP_ID = "6990f5f24823b53e21fcdc9d"
   VITE_BASE44_APP_BASE_URL = "https://seewhylive.online"
 
+# Proxy Base44 API calls — must come before the SPA catch-all
+[[redirects]]
+  from = "/api/*"
+  to = "https://base44.app/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback — serves index.html for all client-side routes
 [[redirects]]
   from = "/*"
   to = "/index.html"
