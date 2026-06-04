@@ -28,7 +28,8 @@ export const PARTNER_CHANNELS = [
     url: 'https://youtube.com/@dominoentertainment5513',
     color: PINK,
     icon: Tv2,
-    desc: 'Live entertainment, events & culture',
+    desc: 'Social Expo · cross-platform events · gaming tournaments · Social Lights weekly show',
+    expoUrl: '/SocialExpo',
   },
 ];
 
