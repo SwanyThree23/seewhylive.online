@@ -95,6 +95,7 @@ const TributeWall         = lazy(() => import('./pages/TributeWall'));
 const INSForge            = lazy(() => import('./pages/INSForge'));
 const JoyceAI             = lazy(() => import('./pages/JoyceAI'));
 const GuardianAI          = lazy(() => import('./pages/GuardianAI'));
+const StreamRefDash       = lazy(() => import('./pages/StreamRefDash'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -183,6 +184,7 @@ export const PAGES = {
     "INSForge": INSForge,
     "JoyceAI": JoyceAI,
     "GuardianAI": GuardianAI,
+    "StreamRefDash": StreamRefDash,
 }
 
 export const pagesConfig = {
