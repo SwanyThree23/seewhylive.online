@@ -32,6 +32,7 @@ import CreatorPublicProfile from './pages/CreatorPublicProfile';
 import BroadcastStudio from './pages/BroadcastStudio';
 import LiveRoom from './pages/LiveRoom';
 import Login from './pages/Login';
+import SocialExpo from './pages/SocialExpo';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -118,6 +119,7 @@ const AuthenticatedApp = () => {
       <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
       <Route path="/BroadcastStudio" element={<BroadcastStudio />} />
       <Route path="/LiveRoom" element={<LiveRoom />} />
+      <Route path="/SocialExpo" element={<LayoutWrapper currentPageName="SocialExpo"><SocialExpo /></LayoutWrapper>} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

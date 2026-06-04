@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter, Tv2, Play, ExternalLink, Mic
+  Zap, Eye, Clock, ChevronRight, Filter, Tv2, Play, ExternalLink, Mic,
+  Globe, Percent, Ticket, ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -382,6 +383,66 @@ export default function DiscoverPage() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Domino Social Expo Banner */}
+              <div>
+                <Link to={createPageUrl('SocialExpo')} style={{ textDecoration: 'none', display: 'block' }}>
+                  <motion.div
+                    whileTap={{ scale: 0.98 }}
+                    className="rounded-2xl overflow-hidden cursor-pointer"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(128,0,32,0.35) 0%, rgba(255,21,100,0.18) 50%, rgba(0,245,255,0.08) 100%)',
+                      border: '1px solid rgba(255,21,100,0.3)',
+                      padding: '20px 22px',
+                      boxShadow: '0 4px 24px rgba(255,21,100,0.1)',
+                    }}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#FF1564] animate-pulse" />
+                          <span className="text-[11px] font-black uppercase tracking-widest"
+                            style={{ color: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                            OFFICIAL INTEGRATION
+                          </span>
+                        </div>
+                        <h3 className="font-black text-white text-lg leading-tight mb-1"
+                          style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                          Domino Social Expo
+                        </h3>
+                        <p className="text-xs text-white/50 mb-3 leading-relaxed">
+                          Cross-platform events · Weekly Social Lights show · 6 platforms · 10% affiliate program
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { icon: Globe, label: '6 Platforms', color: '#00F5FF' },
+                            { icon: Ticket, label: '$0.99–$4.99', color: '#D4AF37' },
+                            { icon: Percent, label: '10% Affiliate', color: '#8B5CF6' },
+                          ].map((chip, i) => {
+                            const Icon = chip.icon;
+                            return (
+                              <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                                style={{ background: `${chip.color}12`, border: `1px solid ${chip.color}28` }}>
+                                <Icon style={{ width: 11, height: 11, color: chip.color }} />
+                                <span className="text-[11px] font-bold" style={{ color: chip.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{chip.label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="shrink-0 flex flex-col items-center justify-center gap-1.5 mt-1">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                          style={{ background: 'rgba(255,21,100,0.18)', border: '1.5px solid rgba(255,21,100,0.4)' }}>
+                          <Tv2 style={{ width: 22, height: 22, color: '#FF1564' }} />
+                        </div>
+                        <div className="flex items-center gap-1"
+                          style={{ color: '#D4AF37', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                          Explore <ArrowRight style={{ width: 11, height: 11 }} />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
               </div>
 
               {/* Featured Videos Grid */}
