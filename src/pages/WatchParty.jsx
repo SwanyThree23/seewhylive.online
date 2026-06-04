@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2 } from 'lucide-react';
+import { Users, Plus, Youtube, Video, VideoOff, LogOut, List, Maximize2, Minimize2, Mic, MicOff } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
@@ -360,8 +360,21 @@ export default function WatchPartyPage() {
 
   const isHost = party?.host_id === user?.id;
 
-  const { localStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(partyId, localStream);
+
+  // Announce into the WebRTC peer mesh once we have media + identity
+  const announceRef = useRef(announceJoin);
+  const leaveRef = useRef(leaveRoom);
+  const announcedRef = useRef(false);
+  useEffect(() => { announceRef.current = announceJoin; }, [announceJoin]);
+  useEffect(() => { leaveRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(() => {
+    if (!localStream || !user?.id || announcedRef.current || !partyId) return;
+    announcedRef.current = true;
+    announceRef.current?.(user.id);
+  }, [localStream, user?.id, partyId]);
+  useEffect(() => () => leaveRef.current?.(), []);
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -915,6 +928,37 @@ export default function WatchPartyPage() {
       </div>
 
       <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+
+      {/* ── LIVE CONTROLS BAR — mic/cam toggles for all panel members ── */}
+      <div className="shrink-0 flex items-center justify-center gap-4 py-2 px-4"
+        style={{ background: 'rgba(8,11,24,0.97)', borderTop: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
+        <button
+          onClick={toggleAudio}
+          className="w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90"
+          style={{ background: audioEnabled ? 'rgba(0,245,255,0.1)' : 'rgba(255,21,100,0.2)', border: `1px solid ${audioEnabled ? 'rgba(0,245,255,0.3)' : 'rgba(255,21,100,0.4)'}` }}
+          title={audioEnabled ? 'Mute mic' : 'Unmute mic'}>
+          {audioEnabled
+            ? <Mic className="w-4 h-4" style={{ color: '#00F5FF' }} />
+            : <MicOff className="w-4 h-4" style={{ color: '#FF1564' }} />}
+        </button>
+        <button
+          onClick={toggleVideo}
+          className="w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90"
+          style={{ background: videoEnabled ? 'rgba(0,245,255,0.1)' : 'rgba(255,21,100,0.2)', border: `1px solid ${videoEnabled ? 'rgba(0,245,255,0.3)' : 'rgba(255,21,100,0.4)'}` }}
+          title={videoEnabled ? 'Stop camera' : 'Start camera'}>
+          {videoEnabled
+            ? <Video className="w-4 h-4" style={{ color: '#00F5FF' }} />
+            : <VideoOff className="w-4 h-4" style={{ color: '#FF1564' }} />}
+        </button>
+        {remoteStreams.size > 0 && (
+          <span className="text-[11px] font-bold" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            ● {remoteStreams.size} cam{remoteStreams.size !== 1 ? 's' : ''} live
+          </span>
+        )}
+        <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          {members.length} in session
+        </span>
+      </div>
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
