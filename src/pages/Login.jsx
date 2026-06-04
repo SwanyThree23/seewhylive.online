@@ -14,6 +14,8 @@ export default function Login() {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   // from_url param — where to redirect after successful login
   const params = new URLSearchParams(window.location.search);
@@ -50,6 +52,23 @@ export default function Login() {
 
   const handleGoogle = () => {
     base44.auth.loginWithProvider('google', fromUrl);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Enter your email address above, then click "Forgot password?"');
+      return;
+    }
+    setError('');
+    setResetLoading(true);
+    try {
+      await base44.auth.resetPasswordRequest(email);
+      setResetSent(true);
+    } catch (err) {
+      setError(err?.response?.data?.detail || err?.message || 'Could not send reset email.');
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   return (
@@ -101,6 +120,15 @@ export default function Login() {
             style={{ height: 46, borderRadius: 10, background: loading ? 'rgba(128,0,32,0.5)' : `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: '1px solid rgba(201,168,76,0.35)', color: GOLD, fontSize: 14, fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', ...T }}>
             {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
+
+          {mode === 'login' && (
+            resetSent
+              ? <p style={{ textAlign: 'center', fontSize: 12, color: '#6DBF7E', ...T }}>Password reset email sent — check your inbox.</p>
+              : <button type="button" onClick={handleForgotPassword} disabled={resetLoading}
+                  style={{ background: 'none', border: 'none', color: 'rgba(201,168,76,0.55)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', padding: 0, alignSelf: 'center', ...T }}>
+                  {resetLoading ? 'Sending…' : 'Forgot password?'}
+                </button>
+          )}
         </form>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '18px 0' }}>
