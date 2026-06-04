@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand, Crown,
   ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
-  Users, LayoutGrid, Send, X,
+  Users, LayoutGrid, Send, X, Video, VideoOff,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -242,8 +242,8 @@ export default function LiveRoom() {
   const roomId    = urlParams.get('id');
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -267,6 +267,19 @@ export default function LiveRoom() {
     queryFn: () => base44.entities.Subscription.filter({ user_id: user.id, creator_id: party.host_id, status: 'active' }),
     enabled: !!user?.id && !!party?.host_id && isExclusiveStream && !isHost,
   });
+
+  // WebRTC peer mesh — announce join once local stream + user are ready
+  const announceRef  = useRef(announceJoin);
+  const leaveRef     = useRef(leaveRoom);
+  const announcedRef = useRef(false);
+  useEffect(() => { announceRef.current = announceJoin; }, [announceJoin]);
+  useEffect(() => { leaveRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(() => {
+    if (!localStream || !user?.id || announcedRef.current || !roomId) return;
+    announcedRef.current = true;
+    announceRef.current?.(user.id);
+  }, [localStream, user?.id, roomId]);
+  useEffect(() => () => leaveRef.current?.(), []);
 
   const isSubscribed = activeSubs.length > 0;
   const showExclusiveGate = isExclusiveStream && !isHost && !isSubscribed && !!party;
@@ -623,6 +636,17 @@ export default function LiveRoom() {
               {!audioEnabled
                 ? <MicOff className="w-4 h-4 text-red-400" />
                 : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
+            </div>
+            <span className="text-[11px] text-white/35"> </span>
+          </button>
+
+          {/* Camera */}
+          <button onClick={toggleVideo} className="flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+              {!videoEnabled
+                ? <VideoOff className="w-4 h-4 text-red-400" />
+                : <Video className="w-4 h-4" style={{ color: GOLD }} />}
             </div>
             <span className="text-[11px] text-white/35"> </span>
           </button>
