@@ -239,8 +239,8 @@ export default function DiscoverPage() {
               return (
                 <button key={t.id} onClick={() => setTab(t.id)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                    tab === t.id ? 'bg-[#CC7755] text-white' : 'text-white/40 hover:text-white/70'
-                  }`} style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                    tab === t.id ? 'text-white' : 'text-white/40 hover:text-white/70'
+                  }`} style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', borderBottom: tab === t.id ? '2px solid #D4AF37' : '2px solid transparent', borderRadius: 0, paddingBottom: 6 }}>
                   <Icon className="w-3.5 h-3.5" />
                   {t.label}
                   {t.id === 'live' && liveRooms.length > 0 && (
