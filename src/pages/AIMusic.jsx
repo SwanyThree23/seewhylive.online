@@ -290,6 +290,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
   const [lyricsOpen, setLyricsOpen] = useState(false);
   const [editingLyrics, setEditingLyrics] = useState(false);
   const [lyricsText, setLyricsText] = useState(track.lyrics || '');
+  const [copiedLyrics, setCopiedLyrics] = useState(false);
   const menuRef = useRef(null);
 
   // close menu on outside click
@@ -535,12 +536,20 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                 <span style={{ ...T, fontSize: 11, color: ROSE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Lyrics
                 </span>
-                <button
-                  onClick={() => setEditingLyrics(e => !e)}
-                  style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: AMBER, fontSize: 11, fontWeight: 700 }}
-                >
-                  {editingLyrics ? 'Done' : 'Edit'}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(lyricsText).then(() => { setCopiedLyrics(true); setTimeout(() => setCopiedLyrics(false), 1800); }); }}
+                    style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: copiedLyrics ? GOLD : 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 700, transition: 'color .2s' }}
+                  >
+                    {copiedLyrics ? '✓ copied' : '📋 copy'}
+                  </button>
+                  <button
+                    onClick={() => setEditingLyrics(e => !e)}
+                    style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: AMBER, fontSize: 11, fontWeight: 700 }}
+                  >
+                    {editingLyrics ? 'Done' : 'Edit'}
+                  </button>
+                </div>
               </div>
               {editingLyrics ? (
                 <textarea
