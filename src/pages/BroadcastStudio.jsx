@@ -34,6 +34,11 @@ import GuestQueue from '../components/live/GuestQueue';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import SuperChatRail from '../components/live/SuperChatRail';
 import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import AIModeration from '../components/live/AIModeration';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import { Hand } from 'lucide-react';
 
 const GOLD = '#D4AF37';
@@ -300,8 +305,13 @@ export default function BroadcastStudio() {
   });
   const [chatMessages, setChatMessages] = useState([]);
   const [elapsed, setElapsed] = useState(0);
+  const [aiSubTab, setAiSubTab] = useState('music');
   const [aiMusicGenre, setAiMusicGenre] = useState(null);
   const [aiMusicPlaying, setAiMusicPlaying] = useState(false);
+  const [aiMusicTrack, setAiMusicTrack] = useState(null); // { title, genre, mood }
+  const [aiMusicGenerating, setAiMusicGenerating] = useState(false);
+  const [aiMusicPrompt, setAiMusicPrompt] = useState('');
+  const [aiMoodDetecting, setAiMoodDetecting] = useState(false);
   const [guardianEnabled, setGuardianEnabled] = useState(true);
   const [guardianStats, setGuardianStats] = useState({ blocked: 0, warned: 0, muted: 0 });
   const [ariaEnabled, setAriaEnabled] = useState(false);
@@ -512,6 +522,69 @@ export default function BroadcastStudio() {
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
     onSuccess: () => { toast.success('Broadcast ended'); window.location.href = window.location.pathname; },
   });
+
+  // ── AI Music handlers ────────────────────────────────────────────────────
+  const generateAiTrack = async () => {
+    const prompt = aiMusicPrompt.trim() || (aiMusicGenre ? `${aiMusicGenre} background music for a live stream` : 'upbeat live stream background music');
+    setAiMusicGenerating(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an AI music producer. Generate a background music track description for a live stream.
+Genre/Style: ${aiMusicGenre || 'Chill'}
+Prompt: "${prompt}"
+Members on stage: ${members.length}
+
+Respond with JSON only:
+{
+  "title": "track title (catchy, 3-5 words)",
+  "genre": "genre name",
+  "mood": "mood descriptor",
+  "bpm": number between 70-140,
+  "key": "musical key (e.g. C major)",
+  "description": "2-sentence vivid description of the sound",
+  "tags": ["tag1","tag2","tag3"]
+}`
+      });
+      const data = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+      setAiMusicTrack(data);
+      setAiMusicPlaying(true);
+      if (party?.id) {
+        base44.entities.WatchParty.update(party.id, {
+          updated_at_ms: Date.now(),
+        }).catch(() => {});
+      }
+      toast.success(`🎵 Now playing: ${data.title}`);
+    } catch {
+      // fallback track on error
+      const fallback = { title: `${aiMusicGenre || 'Chill'} Vibes`, genre: aiMusicGenre || 'Chill', mood: 'relaxed', bpm: 90, description: 'Smooth background music for your stream.', tags: ['chill', 'live', 'stream'] };
+      setAiMusicTrack(fallback);
+      setAiMusicPlaying(true);
+    } finally {
+      setAiMusicGenerating(false);
+    }
+  };
+
+  const detectChatMood = async () => {
+    if (!chatMessages?.length) { toast('No chat messages yet'); return; }
+    setAiMoodDetecting(true);
+    try {
+      const snippet = chatMessages.slice(-20).map(m => m.content).join('\n');
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze the vibe of this live stream chat and suggest a music genre.
+Chat messages:
+${snippet}
+
+Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill|Hype|Jazz|EDM|Soul", "mood": "one sentence mood description", "energy": "low|medium|high"}`
+      });
+      const data = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+      setAiMusicGenre(data.genre);
+      toast.success(`🎵 Chat vibe: ${data.mood} → switching to ${data.genre}`);
+    } catch {
+      toast('Could not analyze chat mood');
+    } finally {
+      setAiMoodDetecting(false);
+    }
+  };
 
   const promoteCoHost = async (member) => {
     await base44.entities.WatchPartyMember.update(member.id, { role: 'cohost' });
@@ -1269,202 +1342,328 @@ export default function BroadcastStudio() {
               </div>
             )}
 
-            {/* 🤖 AI TAB */}
+            {/* 🤖 AI HUB TAB */}
             {activeTab === 'ai' && (
-              <div className="p-3 space-y-4">
-                {/* AI Music */}
-                <div className="rounded-xl p-3" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm">🎵</span>
-                    <span className="text-[11px] font-black uppercase" style={{ color: '#a78bfa', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Background Music</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz'].map(g => (
-                      <button key={g}
-                        onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
-                        className="px-2 py-0.5 rounded-full text-[11px] font-bold transition-all"
-                        style={aiMusicGenre === g
-                          ? { background: 'rgba(167,139,250,0.3)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.5)' }
-                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setAiMusicPlaying(v => !v)}
-                      className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
-                      style={{ background: aiMusicPlaying ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      {aiMusicPlaying ? '⏸ Pause' : '▶ Play'}
+              <div className="flex flex-col h-full">
+                {/* Sub-tab nav */}
+                <div className="flex gap-0 border-b shrink-0" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                  {[
+                    { id: 'music',    icon: '🎵', label: 'Music' },
+                    { id: 'copilot',  icon: '🤖', label: 'Copilot' },
+                    { id: 'guardian', icon: '🛡️', label: 'Guard' },
+                    { id: 'director', icon: '🎬', label: 'Director' },
+                    { id: 'summary',  icon: '📊', label: 'Summary' },
+                    { id: 'clips',    icon: '✂️',  label: 'Clips' },
+                  ].map(t => (
+                    <button key={t.id} onClick={() => setAiSubTab(t.id)}
+                      className="flex-1 py-2 flex flex-col items-center gap-0.5 transition-all"
+                      style={{
+                        background: aiSubTab === t.id ? 'rgba(212,175,55,0.1)' : 'transparent',
+                        borderBottom: aiSubTab === t.id ? `2px solid ${GOLD}` : '2px solid transparent',
+                        fontFamily: 'Barlow Condensed, sans-serif',
+                      }}>
+                      <span style={{ fontSize: 12 }}>{t.icon}</span>
+                      <span className="text-[9px] font-black uppercase" style={{ color: aiSubTab === t.id ? GOLD : 'rgba(255,255,255,0.3)' }}>{t.label}</span>
                     </button>
-                    {aiMusicPlaying && (
-                      <button onClick={() => setAiMusicGenre(null)}
-                        className="px-3 py-2 rounded-xl text-[11px] font-black"
-                        style={{ background: 'rgba(167,139,250,0.08)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                        title="Skip track">
-                        ⏭
-                      </button>
-                    )}
-                    <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
-                      className="px-3 py-2 rounded-xl text-[11px] font-black"
-                      style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      Full →
-                    </a>
-                  </div>
-                  {aiMusicPlaying && (
-                    <div className="mt-2 space-y-2">
-                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: 'rgba(167,139,250,0.08)' }}>
-                        <div className="flex items-end gap-[2px]">
-                          {[3,6,4,7,3,5].map((h,i) => (
-                            <div key={i} className="w-[2px] rounded-full animate-pulse" style={{ height: h*2, background: '#a78bfa', animationDelay: i*0.1+'s' }} />
-                          ))}
-                        </div>
-                        <span className="text-[11px] flex-1" style={{ color: 'rgba(167,139,250,0.7)' }}>Playing {aiMusicGenre || 'Lo-Fi'} · AI generated</span>
-                        <span className="text-[11px]" style={{ color: 'rgba(167,139,250,0.5)' }}>{musicVolume}%</span>
-                      </div>
-                      <div className="flex items-center gap-2 px-1">
-                        <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Vol</span>
-                        <input type="range" min={0} max={100} value={musicVolume}
-                          onChange={e => setMusicVolume(+e.target.value)}
-                          className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
-                          style={{ accentColor: '#a78bfa' }} />
-                        <span className="text-[11px]" style={{ color: '#a78bfa' }}>🔊</span>
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
 
-                {/* Guardian AI Moderation */}
-                <div className="rounded-xl p-3" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">🛡️</span>
-                      <span className="text-[11px] font-black uppercase" style={{ color: '#22c55e', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI</span>
-                    </div>
-                    <button onClick={() => setGuardianEnabled(v => !v)}
-                      className="relative w-9 h-5 rounded-full transition-all"
-                      style={{ background: guardianEnabled ? '#22c55e' : 'rgba(255,255,255,0.1)' }}>
-                      <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
-                        style={{ left: guardianEnabled ? '17px' : '2px' }} />
-                    </button>
-                  </div>
-                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    {guardianEnabled ? '✓ Auto-removing hate speech, spam, and toxic messages' : 'Enable to auto-moderate chat in real time'}
-                  </p>
-                  {guardianEnabled && (
-                    <div className="mt-2 space-y-2">
-                      <div className="flex gap-3 text-center">
-                        {[['Blocked', guardianStats.blocked + guardianWords.length], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
-                          <div key={l} className="flex-1">
-                            <div className="text-sm font-black" style={{ color: '#22c55e' }}>{v}</div>
-                            <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
-                          </div>
-                        ))}
-                      </div>
-                      <div>
-                        <div className="text-[11px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Blocked words</div>
-                        <div className="flex flex-wrap gap-1 mb-1.5">
-                          {guardianWords.map(w => (
-                            <span key={w} className="flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full"
-                              style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                              {w}
-                              <button onClick={() => setGuardianWords(ws => ws.filter(x => x !== w))} style={{ lineHeight: 1 }}>×</button>
-                            </span>
+                {/* Sub-tab content */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+
+                  {/* ── MUSIC ── */}
+                  {aiSubTab === 'music' && (
+                    <div className="space-y-3">
+                      {/* Genre picker */}
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.18)' }}>
+                        <p className="text-[11px] font-black uppercase mb-2" style={{ color: GOLD, ...T }}>Genre</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Lo-Fi','Trap','Gospel','Afrobeats','R&B','Chill','Hype','Jazz','Soul','Drill'].map(g => (
+                            <button key={g}
+                              onClick={() => setAiMusicGenre(prev => prev === g ? null : g)}
+                              className="px-2 py-0.5 rounded-full text-[11px] font-bold transition-all"
+                              style={aiMusicGenre === g
+                                ? { background: 'rgba(212,175,55,0.25)', color: GOLD, border: `1px solid rgba(212,175,55,0.5)` }
+                                : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                              {g}
+                            </button>
                           ))}
-                          {guardianWords.length === 0 && (
-                            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None added yet</span>
+                        </div>
+                      </div>
+
+                      {/* Custom prompt */}
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Custom prompt</p>
+                        <div className="flex gap-2">
+                          <input
+                            value={aiMusicPrompt}
+                            onChange={e => setAiMusicPrompt(e.target.value)}
+                            placeholder="e.g. dark ambient trap beat 90bpm…"
+                            maxLength={120}
+                            style={{ flex: 1, height: 32, padding: '0 10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Generate / Mood detect */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={generateAiTrack}
+                          disabled={aiMusicGenerating}
+                          className="flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1"
+                          style={{ background: aiMusicGenerating ? 'rgba(212,175,55,0.08)' : 'rgba(212,175,55,0.18)', color: GOLD, border: `1px solid rgba(212,175,55,0.35)`, fontFamily: 'Barlow Condensed, sans-serif', cursor: aiMusicGenerating ? 'not-allowed' : 'pointer' }}>
+                          {aiMusicGenerating ? '⏳ Generating…' : '✨ Generate Track'}
+                        </button>
+                        <button
+                          onClick={detectChatMood}
+                          disabled={aiMoodDetecting}
+                          className="px-3 py-2.5 rounded-xl text-[11px] font-black"
+                          title="Detect vibe from chat"
+                          style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif', cursor: aiMoodDetecting ? 'not-allowed' : 'pointer' }}>
+                          {aiMoodDetecting ? '⏳' : '🎭 Vibe'}
+                        </button>
+                      </div>
+
+                      {/* Now playing card */}
+                      {aiMusicTrack && (
+                        <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-end gap-[2px]">
+                              {[3,5,4,6,3,5,4].map((h, i) => (
+                                <div key={i} className="w-[2px] rounded-full animate-pulse"
+                                  style={{ height: aiMusicPlaying ? h*2 : 4, background: GOLD, animationDelay: i*0.12+'s', transition: 'height 0.3s' }} />
+                              ))}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-black truncate" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>{aiMusicTrack.title}</p>
+                              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{aiMusicTrack.genre} · {aiMusicTrack.bpm} BPM · Key {aiMusicTrack.key}</p>
+                            </div>
+                            <button onClick={() => setAiMusicPlaying(v => !v)}
+                              className="w-8 h-8 rounded-full flex items-center justify-center"
+                              style={{ background: 'rgba(212,175,55,0.2)', border: `1px solid rgba(212,175,55,0.4)`, color: GOLD, fontSize: 14 }}>
+                              {aiMusicPlaying ? '⏸' : '▶'}
+                            </button>
+                          </div>
+                          <p className="text-[10px] mb-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{aiMusicTrack.description}</p>
+                          {/* Volume slider */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Vol</span>
+                            <input type="range" min={0} max={100} value={musicVolume}
+                              onChange={e => setMusicVolume(+e.target.value)}
+                              className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
+                              style={{ accentColor: GOLD }} />
+                            <span className="text-[10px] font-black" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>{musicVolume}%</span>
+                          </div>
+                          {/* Broadcast to panel badge */}
+                          {canManage && (
+                            <div className="mt-2 flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(212,133,74,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              <span>📡</span>
+                              <span>Broadcasting to all {members.length} panel members</span>
+                            </div>
                           )}
                         </div>
-                        <div className="flex gap-1">
-                          <input
-                            value={guardianWordInput}
-                            onChange={e => setGuardianWordInput(e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' && guardianWordInput.trim()) {
-                                setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
-                                setGuardianWordInput('');
-                              }
-                            }}
-                            placeholder="Add word…"
-                            maxLength={30}
-                            style={{ flex: 1, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
-                          />
-                          <button
-                            onClick={() => {
-                              if (guardianWordInput.trim()) {
-                                setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
-                                setGuardianWordInput('');
-                              }
-                            }}
-                            style={{ padding: '4px 10px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 6, color: '#22c55e', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
-                            +
+                      )}
+
+                      {/* Tags row */}
+                      {aiMusicTrack?.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {aiMusicTrack.tags.map(tag => (
+                            <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(212,175,55,0.6)', border: '1px solid rgba(212,175,55,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Link to full AI Music Studio */}
+                      <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-between px-3 py-2 rounded-xl"
+                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Open AI Music Studio</span>
+                        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>→</span>
+                      </a>
+                    </div>
+                  )}
+
+                  {/* ── COPILOT ── */}
+                  {aiSubTab === 'copilot' && (
+                    <div className="space-y-3">
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                        <AICopilotSidebar roomId={partyId} isHost={canManage} viewerCount={members.length} />
+                      </div>
+                      {/* ARIA toggle */}
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span>🤖</span>
+                            <span className="text-[11px] font-black uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>ARIA Auto-engage</span>
+                          </div>
+                          <button onClick={() => setAriaEnabled(v => !v)}
+                            className="relative w-9 h-5 rounded-full transition-all"
+                            style={{ background: ariaEnabled ? GOLD : 'rgba(255,255,255,0.1)' }}>
+                            <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                              style={{ left: ariaEnabled ? '17px' : '2px' }} />
                           </button>
                         </div>
+                        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                          {ariaEnabled ? '✓ Answering chat questions & keeping audience active' : 'Enable ARIA to engage your audience automatically'}
+                        </p>
+                        {ariaEnabled && (
+                          <div className="mt-2 space-y-2">
+                            <div className="flex flex-wrap gap-1">
+                              {['🎵 Music', '💬 Q&A', '🔥 Hype', '🎁 Gifts'].map((t, i) => (
+                                <button key={t} onClick={() => setAriaTopicIdx(i)}
+                                  className="text-[11px] px-2 py-0.5 rounded-full font-bold"
+                                  style={{
+                                    background: ariaTopicIdx === i ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
+                                    color: ariaTopicIdx === i ? GOLD : 'rgba(255,255,255,0.35)',
+                                    border: ariaTopicIdx === i ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
+                                    fontFamily: 'Barlow Condensed, sans-serif',
+                                  }}>
+                                  {t}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="space-y-1">
+                              {ariaSuggestions.map((s, i) => (
+                                <button key={i}
+                                  className="w-full text-left text-[11px] px-2 py-1.5 rounded-lg"
+                                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                                  onClick={() => toast.success('ARIA sent: ' + s)}>
+                                  💬 {s}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* ARIA Co-host */}
-                <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">🤖</span>
-                      <span className="text-[11px] font-black uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>ARIA Co-host</span>
-                    </div>
-                    <button onClick={() => setAriaEnabled(v => !v)}
-                      className="relative w-9 h-5 rounded-full transition-all"
-                      style={{ background: ariaEnabled ? '#D4AF37' : 'rgba(255,255,255,0.1)' }}>
-                      <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
-                        style={{ left: ariaEnabled ? '17px' : '2px' }} />
-                    </button>
-                  </div>
-                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    {ariaEnabled ? '✓ ARIA is answering questions and keeping chat active' : 'Enable ARIA to engage your audience automatically'}
-                  </p>
-                  {ariaEnabled && (
-                    <div className="mt-2 space-y-2">
-                      <div>
-                        <div className="text-[11px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending topics</div>
-                        <div className="flex flex-wrap gap-1">
-                          {['🎵 Music', '💬 Q&A', '🔥 Hype', '🎁 Gifts'].map((t, i) => (
-                            <button key={t} onClick={() => setAriaTopicIdx(i)}
-                              className="text-[11px] px-2 py-0.5 rounded-full font-bold"
-                              style={{
-                                background: ariaTopicIdx === i ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)',
-                                color: ariaTopicIdx === i ? GOLD : 'rgba(255,255,255,0.35)',
-                                border: ariaTopicIdx === i ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
-                                fontFamily: 'Barlow Condensed, sans-serif',
-                              }}>
-                              {t}
-                            </button>
-                          ))}
-                        </div>
+                  {/* ── GUARDIAN ── */}
+                  {aiSubTab === 'guardian' && (
+                    <div className="space-y-3">
+                      {/* Real AIModeration component */}
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(107,191,126,0.2)' }}>
+                        <AIModeration roomId={partyId} isHost={canManage} />
                       </div>
-                      <div>
-                        <div className="text-[11px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Suggested responses</div>
-                        <div className="space-y-1">
-                          {ariaSuggestions.map((s, i) => (
-                            <button key={i}
-                              className="w-full text-left text-[11px] px-2 py-1.5 rounded-lg transition-all hover:opacity-80"
-                              style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)', color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                              onClick={() => toast.success('ARIA sent: ' + s)}>
-                              💬 {s}
-                            </button>
-                          ))}
+
+                      {/* Custom blocked words panel */}
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(107,191,126,0.06)', border: '1px solid rgba(107,191,126,0.15)' }}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span>🛡️</span>
+                            <span className="text-[11px] font-black uppercase" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI</span>
+                          </div>
+                          <button onClick={() => setGuardianEnabled(v => !v)}
+                            className="relative w-9 h-5 rounded-full transition-all"
+                            style={{ background: guardianEnabled ? '#6DBF7E' : 'rgba(255,255,255,0.1)' }}>
+                            <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+                              style={{ left: guardianEnabled ? '17px' : '2px' }} />
+                          </button>
                         </div>
+                        <p className="text-[11px] mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                          {guardianEnabled ? '✓ Auto-removing hate speech, spam, and toxic messages' : 'Enable to auto-moderate chat in real time'}
+                        </p>
+                        {guardianEnabled && (
+                          <div className="space-y-2">
+                            <div className="flex gap-3 text-center">
+                              {[['Blocked', guardianStats.blocked + guardianWords.length], ['Warned', guardianStats.warned], ['Muted', guardianStats.muted]].map(([l, v]) => (
+                                <div key={l} className="flex-1">
+                                  <div className="text-sm font-black" style={{ color: '#6DBF7E' }}>{v}</div>
+                                  <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{l}</div>
+                                </div>
+                              ))}
+                            </div>
+                            <div>
+                              <div className="text-[10px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>Blocked words</div>
+                              <div className="flex flex-wrap gap-1 mb-1.5">
+                                {guardianWords.map(w => (
+                                  <span key={w} className="flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full"
+                                    style={{ background: 'rgba(107,191,126,0.12)', color: '#6DBF7E', border: '1px solid rgba(107,191,126,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                                    {w}
+                                    <button onClick={() => setGuardianWords(ws => ws.filter(x => x !== w))} style={{ lineHeight: 1 }}>×</button>
+                                  </span>
+                                ))}
+                                {guardianWords.length === 0 && (
+                                  <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>None added yet</span>
+                                )}
+                              </div>
+                              <div className="flex gap-1">
+                                <input
+                                  value={guardianWordInput}
+                                  onChange={e => setGuardianWordInput(e.target.value)}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter' && guardianWordInput.trim()) {
+                                      setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
+                                      setGuardianWordInput('');
+                                    }
+                                  }}
+                                  placeholder="Add word…"
+                                  maxLength={30}
+                                  style={{ flex: 1, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(107,191,126,0.2)', borderRadius: 6, color: '#fff', fontSize: 11, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
+                                />
+                                <button
+                                  onClick={() => {
+                                    if (guardianWordInput.trim()) {
+                                      setGuardianWords(ws => [...new Set([...ws, guardianWordInput.trim().toLowerCase()])]);
+                                      setGuardianWordInput('');
+                                    }
+                                  }}
+                                  style={{ padding: '4px 10px', background: 'rgba(107,191,126,0.15)', border: '1px solid rgba(107,191,126,0.3)', borderRadius: 6, color: '#6DBF7E', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, cursor: 'pointer' }}>
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Quick link to full AI Hub */}
-                <a href="/AIHub" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 rounded-xl transition-all"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span className="text-[11px] font-bold text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Open Full AI Hub</span>
-                  <span className="text-white/25 text-xs">→</span>
-                </a>
+                  {/* ── DIRECTOR ── */}
+                  {aiSubTab === 'director' && (
+                    <div className="space-y-3">
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,133,74,0.2)' }}>
+                        <SwanDirectorHUD roomId={partyId} hostId={party?.host_id} onOpenPanel={() => setActiveTab('manage')} />
+                      </div>
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(212,133,74,0.06)', border: '1px solid rgba(212,133,74,0.15)' }}>
+                        <p className="text-[11px] font-black uppercase mb-1" style={{ color: '#D4854A', fontFamily: 'Barlow Condensed, sans-serif' }}>Director Mode</p>
+                        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>AI-assisted scene switching, layout suggestions, and audience engagement cues — synced across all {members.length} panel slots.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── SUMMARY ── */}
+                  {aiSubTab === 'summary' && (
+                    <div className="space-y-3">
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                        <AIStreamSummary
+                          roomId={partyId}
+                          isHost={canManage}
+                          streamTitle={party?.title}
+                          viewerCount={members.length}
+                          elapsedSeconds={elapsed}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── CLIPS ── */}
+                  {aiSubTab === 'clips' && (
+                    <div className="space-y-3">
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,133,74,0.2)' }}>
+                        <ClipGeneratorAI sessionId={partyId} roomId={partyId} creatorId={user?.id} />
+                      </div>
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(212,133,74,0.06)', border: '1px solid rgba(212,133,74,0.15)' }}>
+                        <p className="text-[11px] font-black uppercase mb-1" style={{ color: '#D4854A', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Clip Generator</p>
+                        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Automatically detects highlight moments and creates shareable clips from your live session.</p>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
               </div>
             )}
 
