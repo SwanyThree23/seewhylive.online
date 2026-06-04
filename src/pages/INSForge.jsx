@@ -58,6 +58,22 @@ export default function INSForge() {
   const [genStep, setGenStep] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  function copyBrief() {
+    if (!result) return;
+    const text = [
+      `ASSET: ${result.title || selected?.label}`,
+      `HEADLINE: ${result.headline}`,
+      result.subline ? `SUBLINE: ${result.subline}` : '',
+      result.copy_lines?.length ? `COPY:\n${result.copy_lines.map(l => `  • ${l}`).join('\n')}` : '',
+      result.layout_notes ? `LAYOUT: ${result.layout_notes}` : '',
+      result.color_palette?.length ? `PALETTE: ${result.color_palette.join(', ')}` : '',
+      result.cta ? `CTA: ${result.cta}` : '',
+      result.dimensions ? `SIZE: ${result.dimensions}` : '',
+    ].filter(Boolean).join('\n');
+    navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  }
 
   async function generate() {
     if (!selected || !prompt.trim()) return;
@@ -286,14 +302,25 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
             )}
           </div>
 
-          <button onClick={reset} style={{
-            width: '100%', padding: '12px 0', borderRadius: 10, border: `1px solid rgba(255,255,255,0.1)`,
-            background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)',
-            ...T, fontSize: 14, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase',
-            cursor: 'pointer', transition: 'all .15s',
-          }}>
-            ⚡ FORGE ANOTHER
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={copyBrief} style={{
+              flex: 1, padding: '12px 0', borderRadius: 10, border: `1px solid ${selected?.color || GOLD}44`,
+              background: copied ? `${selected?.color || GOLD}18` : 'rgba(255,255,255,0.04)',
+              color: copied ? selected?.color || GOLD : 'rgba(255,255,255,0.5)',
+              ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase',
+              cursor: 'pointer', transition: 'all .2s',
+            }}>
+              {copied ? '✓ COPIED' : '📋 COPY BRIEF'}
+            </button>
+            <button onClick={reset} style={{
+              flex: 1, padding: '12px 0', borderRadius: 10, border: `1px solid rgba(255,255,255,0.1)`,
+              background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)',
+              ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase',
+              cursor: 'pointer', transition: 'all .15s',
+            }}>
+              ⚡ FORGE ANOTHER
+            </button>
+          </div>
         </div>
       )}
 
