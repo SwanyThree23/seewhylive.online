@@ -840,6 +840,40 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Section 12: Joyce AI ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🤖 Joyce AI Co-Host</p>
+            <span style={{ ...T, fontSize: 11, color: '#D4AF37', fontWeight: 700, letterSpacing: '0.05em' }}>LIVE ASSISTANT</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Your AI broadcast co-host. Get tournament intros, tribute scripts, hype lines, and platform guidance — live, in seconds.
+          </p>
+          <Link to={createPageUrl('JoyceAI')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{
+              margin: '0 16px 16px',
+              background: `linear-gradient(135deg, #D4AF3722, #8A6F2E11)`,
+              border: '1px solid #D4AF3744', borderRadius: 10,
+              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, #D4AF37, #8A6F2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🤖</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: '#D4AF37', fontWeight: 900 }}>ASK JOYCE</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>AI ACTIVE · CLAUDE POWERED</div>
+                </div>
+              </div>
+              <span style={{
+                ...T, fontSize: 13,
+                color: '#D4AF37', fontWeight: 900, letterSpacing: '0.07em',
+                textTransform: 'uppercase', cursor: 'pointer',
+              }}>
+                Chat Now →
+              </span>
+            </div>
+          </Link>
+        </Card>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
