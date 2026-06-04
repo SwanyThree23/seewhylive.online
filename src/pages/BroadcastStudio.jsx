@@ -437,7 +437,9 @@ export default function BroadcastStudio() {
   const isHost = party?.host_id === user?.id;
   const myMember = members.find(m => m.user_id === user?.id);
   const isCoHost = myMember?.role === 'cohost';
+  const isSpeaker = myMember?.role === 'speaker';
   const canManage = isHost || isCoHost;
+  const canStream = isHost || isCoHost || isSpeaker;
 
   const speakingName = members.find(m => m.is_audio_enabled && m.user_id !== user?.id)?.user_name || null;
 
@@ -555,7 +557,8 @@ export default function BroadcastStudio() {
   const compositorSlots = React.useMemo(() => {
     const slots = [];
     if (localStream) {
-      slots.push({ stream: localStream, label: user?.full_name || user?.email || 'You (Host)' });
+      const roleLabel = isHost ? 'Host' : isCoHost ? 'Co-Host' : isSpeaker ? 'Panel' : 'You';
+      slots.push({ stream: localStream, label: user?.full_name || user?.email || `You (${roleLabel})` });
     }
     if (remoteStreams) {
       remoteStreams.forEach((stream, peerId) => {
@@ -666,20 +669,20 @@ export default function BroadcastStudio() {
                 }}
               />
             )}
-            {isHost && (
+            {canStream && (
               <CompositorOverlay
                 layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
                 slots={compositorSlots}
                 overlayConfig={compositorOverlay}
                 userId={user?.id}
-                onScreenCapture={studioMode === 'watch' ? async () => {
+                onScreenCapture={(studioMode === 'watch' || studioMode === 'hybrid') ? async () => {
                   const s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
                   return s;
                 } : undefined}
-                isHost={isHost}
+                isHost={canStream}
               />
             )}
-            {isHost && (
+            {canStream && (
               <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} />
             )}
             {isHost && (
@@ -726,9 +729,15 @@ export default function BroadcastStudio() {
             </span>
           )}
           {isCoHost && !isHost && (
-            <span className="ml-1 text-[8px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
-              style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)', ...T }}>
+            <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
               Co-Host
+            </span>
+          )}
+          {isSpeaker && !isHost && !isCoHost && (
+            <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
+              style={{ background: 'rgba(212,133,74,0.12)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+              Panel
             </span>
           )}
           {speakingName && (
@@ -849,9 +858,9 @@ export default function BroadcastStudio() {
               <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} />
             )}
 
-            {/* Sync badge for viewers */}
-            {!isHost && (
-              <div className="absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1"
+            {/* Sync badge for audience viewers */}
+            {!canStream && (
+              <div className="absolute top-2 right-2 text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
                 style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)', color: 'white' }}>
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 Live Sync
