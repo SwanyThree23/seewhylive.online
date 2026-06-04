@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Radio } from 'lucide-react';
+import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -327,16 +327,16 @@ function DominoExpoSection() {
 }
 
 // ── Filter pill labels and logic ───────────────────────────────────────────
-var FILTERS = ['All', 'Panel', 'FadesStage', 'Watch Party', 'Battles'];
+var FILTERS = ['All', 'Live Now', 'Watch Party', 'Battles', 'Panel', 'Communities'];
 
 function applyFilter(rooms, filter) {
-  if (filter === 'All') return rooms;
+  if (filter === 'All' || filter === 'Live Now') return rooms;
   if (filter === 'Panel') {
     return rooms.filter(function(r) {
       return r.room_type === 'panel' || (r.participant_count > 1);
     });
   }
-  if (filter === 'FadesStage' || filter === 'Battles') {
+  if (filter === 'Battles') {
     return rooms.filter(function(r) {
       return r.room_type === 'battle' || r.category === 'battle';
     });
@@ -344,6 +344,11 @@ function applyFilter(rooms, filter) {
   if (filter === 'Watch Party') {
     return rooms.filter(function(r) {
       return r.room_type === 'watch_party';
+    });
+  }
+  if (filter === 'Communities') {
+    return rooms.filter(function(r) {
+      return r.room_type === 'community' || r.category === 'community';
     });
   }
   return rooms;
@@ -453,7 +458,45 @@ export default function Home() {
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
 
+      {/* ── COMMUNITY CARDS (shown when Communities filter is active) ── */}
+      {activeFilter === 'Communities' && (
+        <div className="px-4 pt-4 pb-8">
+          <p className="font-black text-white/50 text-xs uppercase mb-3"
+            style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+            Communities · {communities.length} active
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {communities.map(function(c) {
+              return (
+                <Link key={c.id} to={createPageUrl('Communities')}>
+                  <motion.div whileTap={{ scale: 0.97 }} className="rounded-2xl overflow-hidden"
+                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+                    <div className="h-20 flex items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+                      <Users className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
+                    </div>
+                    <div className="p-2.5">
+                      <p className="font-black text-white text-sm line-clamp-1"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{c.name}</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'rgba(212,175,55,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {(c.member_count || 0).toLocaleString()} members
+                      </p>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+            {communities.length === 0 && (
+              <div className="col-span-2 py-12 text-center">
+                <p className="text-white/30 text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>No communities yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── ROOM CARDS ── */}
+      {activeFilter !== 'Communities' && (
       <div className="px-4 pt-4 pb-8">
         <AnimatePresence mode="wait">
           {loadingLive ? (
@@ -506,6 +549,7 @@ export default function Home() {
           )}
         </AnimatePresence>
       </div>
+      )}
     </div>
   );
 }
