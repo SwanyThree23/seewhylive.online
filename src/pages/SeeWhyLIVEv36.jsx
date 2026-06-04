@@ -4,7 +4,7 @@
 // Multi-Platform Integration | 20-Panel Stage | Watch Party | Guardian AI
 // Joyce AI Co-Host | INS Forge | SwanyBot Automation | Full Nav
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
@@ -1728,9 +1728,9 @@ function InsForgePanel() {
             {selected.icon} {selected.label.toUpperCase()}
           </div>
           <Inp label="Creative Brief" value={prompt} onChange={setPrompt} placeholder={`Describe your ${selected.label}...`}/>
-          
-          variant={loading?"slate":"orange"} size="lg" icon={loading?undefined:"⚡"}
-          onClick={generate} disabled={loading} style={{width:"100%"}}/>
+          <Btn label={loading?"FORGING...":"FORGE ASSET"}
+            variant={loading?"slate":"orange"} size="lg" icon={loading?undefined:"⚡"}
+            onClick={generate} disabled={loading} style={{width:"100%"}}/>
         {loading && (
           <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px",background:C.bg3,borderRadius:R.md}}>
             <ThinkDots/>
