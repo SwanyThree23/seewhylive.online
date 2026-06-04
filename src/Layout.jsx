@@ -205,11 +205,15 @@ export default function Layout({ children, currentPageName }) {
               </div>
               {liveCount > 0 && (
                 <div className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full"
-                  style={{ background: 'rgba(180,50,30,0.25)', border: '1px solid rgba(200,80,30,0.3)' }}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-                  <span className="text-[11px] font-bold text-orange-300">{liveCount}</span>
+                  style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
+                  <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Space Mono, monospace' }}>LIVE</span>
                 </div>
               )}
+              <div className="px-1.5 py-0.5 rounded-full hidden sm:flex items-center"
+                style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                <span className="text-[10px] font-bold" style={{ color: '#d4af37', fontFamily: 'Space Mono, monospace' }}>90/10</span>
+              </div>
             </Link>
           ) : (
             <button onClick={function() { navigate(-1); }}
@@ -234,12 +238,16 @@ export default function Layout({ children, currentPageName }) {
             </div>
             <UserMenu user={user} isAdmin={isAdmin} />
 
-            {/* Hamburger — opens drawer */}
+            {/* Hamburger — animated bars morph to × */}
             <button
               className="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
               onClick={function() { setShowMobileMenu(function(v) { return !v; }); }}>
-              {showMobileMenu ? <X className="w-4 h-4 text-white/50" /> : <Menu className="w-4 h-4 text-white/50" />}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+                <div style={{ width: 16, height: 2, background: showMobileMenu ? '#d4af37' : 'rgba(255,255,255,0.5)', borderRadius: 1, transformOrigin: 'center', transform: showMobileMenu ? 'rotate(45deg) translate(4px, 4px)' : 'none', transition: 'all .2s' }} />
+                <div style={{ width: 16, height: 2, background: showMobileMenu ? '#d4af37' : 'rgba(255,255,255,0.5)', borderRadius: 1, opacity: showMobileMenu ? 0 : 1, transition: 'all .2s' }} />
+                <div style={{ width: 16, height: 2, background: showMobileMenu ? '#d4af37' : 'rgba(255,255,255,0.5)', borderRadius: 1, transformOrigin: 'center', transform: showMobileMenu ? 'rotate(-45deg) translate(4px, -4px)' : 'none', transition: 'all .2s' }} />
+              </div>
             </button>
           </div>
         </div>
@@ -331,6 +339,10 @@ export default function Layout({ children, currentPageName }) {
                 </div>
               )}
 
+              {/* Drawer footer */}
+              <div className="px-4 py-3 text-center" style={{ borderTop: '1px solid rgba(212,175,55,0.1)', background: 'rgba(212,175,55,0.04)', marginTop: 'auto' }}>
+                <span className="text-[10px]" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Space Mono, monospace', letterSpacing: '0.08em' }}>Creator · 90% · Always</span>
+              </div>
               {/* Bottom padding for safe area */}
               <div className="h-20" />
             </motion.div>
@@ -410,15 +422,9 @@ export default function Layout({ children, currentPageName }) {
                 <Link key={item.name} to={item.href}
                   onClick={handleTabPress}
                   className="flex flex-col items-center gap-1 px-3 pb-1 transition-all active:scale-90"
-                  style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', userSelect: 'none', WebkitUserSelect: 'none' }}>
-                  <div className="relative">
-                    <Icon className="w-5 h-5" />
-                    {active && (
-                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                        style={{ background: '#d4af37' }} />
-                    )}
-                  </div>
-                  <span className="text-[11px] uppercase font-bold"
+                  style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', userSelect: 'none', WebkitUserSelect: 'none', borderTop: active ? '2px solid #d4af37' : '2px solid transparent', paddingTop: 6, transition: 'all .15s' }}>
+                  <Icon className="w-5 h-5" />
+                  <span className="text-[10px] uppercase font-bold"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{item.name}</span>
                 </Link>
               );
