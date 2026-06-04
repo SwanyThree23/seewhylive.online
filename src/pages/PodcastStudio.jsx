@@ -110,6 +110,11 @@ export default function PodcastStudio() {
   const [toast, setToast] = useState('');
   const [panelSegIdx, setPanelSegIdx] = useState(0);
   const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
+  const [nlmSources, setNlmSources] = useState(() => JSON.parse(localStorage.getItem('podcast_nlm_sources') || '[]'));
+  const [nlmUrl, setNlmUrl] = useState('');
+  const [nlmLabel, setNlmLabel] = useState('');
+  const [addingNlm, setAddingNlm] = useState(false);
+  const [nlmFetching, setNlmFetching] = useState(false);
 
   function showToast(msg) {
     setToast(msg);
@@ -224,6 +229,51 @@ export default function PodcastStudio() {
     showToast('Episode deleted');
   }
 
+  function parseNlmUrl(url) {
+    try {
+      const m = url.match(/\/notebook\/([^/?#]+)(?:\/artifact\/([^/?#]+))?/);
+      return m ? { notebookId: m[1], artifactId: m[2] || null } : null;
+    } catch { return null; }
+  }
+
+  function addNlmSource() {
+    const trimmed = nlmUrl.trim();
+    if (!trimmed) { showToast('Paste a NotebookLM URL first'); return; }
+    if (!trimmed.includes('notebooklm.google.com')) { showToast('Must be a notebooklm.google.com URL'); return; }
+    const parsed = parseNlmUrl(trimmed);
+    if (!parsed) { showToast('Could not parse NotebookLM URL'); return; }
+    const labelFinal = nlmLabel.trim() || ('NLM Source ' + (nlmSources.length + 1));
+    const src = {
+      id: Date.now(),
+      label: labelFinal,
+      url: trimmed,
+      notebookId: parsed.notebookId,
+      artifactId: parsed.artifactId,
+      addedAt: new Date().toISOString(),
+    };
+    const updated = [src, ...nlmSources].slice(0, 20);
+    setNlmSources(updated);
+    localStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
+    setNlmUrl('');
+    setNlmLabel('');
+    setAddingNlm(false);
+    showToast('NotebookLM source saved!');
+  }
+
+  function removeNlmSource(id) {
+    const updated = nlmSources.filter(s => s.id !== id);
+    setNlmSources(updated);
+    localStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
+    showToast('Source removed');
+  }
+
+  function addNlmToEpisode(src) {
+    if (sources.length >= 5) { showToast('Maximum 5 sources per episode'); return; }
+    setSources(prev => [...prev, { type: 'url', label: src.label.slice(0, 30), content: src.url }]);
+    setTab('create');
+    showToast(`"${src.label}" added to episode`);
+  }
+
   // DJ track for panel tab
   let djTrack = null;
   try { djTrack = JSON.parse(localStorage.getItem('seewhy_dj_track') || 'null'); } catch {}
@@ -264,6 +314,7 @@ export default function PodcastStudio() {
         <TabBtn label="Create" active={tab === 'create'} onClick={() => setTab('create')} />
         <TabBtn label="Script" active={tab === 'script'} onClick={() => setTab('script')} />
         <TabBtn label="Panel Record" active={tab === 'record'} onClick={() => setTab('record')} />
+        <TabBtn label="📓 Sources" active={tab === 'nlm'} onClick={() => setTab('nlm')} />
         <TabBtn label="Library" active={tab === 'library'} onClick={() => setTab('library')} />
       </div>
 
@@ -761,6 +812,169 @@ export default function PodcastStudio() {
                 </Link>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ── Tab: NotebookLM Sources ── */}
+        {tab === 'nlm' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* Intro card */}
+            <div style={{
+              background: BG2, borderRadius: 16, border: '1px solid rgba(212,175,55,0.12)',
+              borderLeft: `3px solid ${PURPLE}`, padding: '18px 18px 14px',
+            }}>
+              <p style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', margin: 0 }}>📓 NotebookLM Sources</p>
+              <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.55 }}>
+                Paste a NotebookLM share URL to save it as a named reference. Then use "Add to Episode" to inject it into your podcast generation as a source.
+              </p>
+            </div>
+
+            {/* Add source form */}
+            <div style={{
+              background: BG2, borderRadius: 16, border: '1px solid rgba(212,175,55,0.12)',
+              borderLeft: `3px solid ${GOLD}`, padding: '18px',
+            }}>
+              {!addingNlm ? (
+                <button
+                  onClick={() => setAddingNlm(true)}
+                  style={{
+                    ...T, width: '100%', padding: '12px 0', borderRadius: 12, border: `1px dashed ${GOLD}50`,
+                    background: 'transparent', color: GOLD, fontSize: 14, fontWeight: 900,
+                    letterSpacing: '0.06em', cursor: 'pointer',
+                  }}
+                >
+                  + Add NotebookLM URL
+                </button>
+              ) : (
+                <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+                >
+                  <div>
+                    <label style={{ ...T, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                      Name / Label
+                    </label>
+                    <input
+                      type="text"
+                      value={nlmLabel}
+                      onChange={e => setNlmLabel(e.target.value)}
+                      placeholder="e.g. Creator Economy Deep Dive"
+                      style={{ ...inputStyle, marginTop: 5 }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ ...T, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+                      NotebookLM Share URL
+                    </label>
+                    <input
+                      type="url"
+                      value={nlmUrl}
+                      onChange={e => setNlmUrl(e.target.value)}
+                      placeholder="https://notebooklm.google.com/notebook/…"
+                      style={{ ...inputStyle, marginTop: 5 }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
+                    <button
+                      onClick={addNlmSource}
+                      style={{
+                        ...T, flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                        background: GOLD, color: '#000', fontSize: 14, fontWeight: 900,
+                      }}
+                    >
+                      Save Source
+                    </button>
+                    <button
+                      onClick={() => { setAddingNlm(false); setNlmUrl(''); setNlmLabel(''); }}
+                      style={{
+                        ...T, padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: 800,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Saved sources list */}
+            {nlmSources.length === 0 ? (
+              <div style={{
+                textAlign: 'center', padding: '40px 20px',
+                background: BG2, borderRadius: 16, border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                <p style={{ fontSize: 36, marginBottom: 10 }}>📓</p>
+                <p style={{ ...T, fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.3)' }}>
+                  No NLM sources saved yet
+                </p>
+              </div>
+            ) : (
+              nlmSources.map(src => (
+                <div key={src.id} style={{
+                  background: BG2, borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)',
+                  borderLeft: `3px solid ${PURPLE}`, padding: '14px 16px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                    <p style={{ ...T, fontSize: 15, fontWeight: 900, color: '#fff', margin: 0, flex: 1 }}>
+                      📓 {src.label}
+                    </p>
+                    <button
+                      onClick={() => removeNlmSource(src.id)}
+                      style={{
+                        background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)',
+                        cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '2px 4px', flexShrink: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
+                    Added {new Date(src.addedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+
+                  {/* ID chips */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                    <span style={{ ...T, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: `${PURPLE}15`, border: `1px solid ${PURPLE}30`, color: PURPLE }}>
+                      NB: {src.notebookId.slice(0, 8)}…
+                    </span>
+                    {src.artifactId && (
+                      <span style={{ ...T, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: `${PURPLE}10`, border: `1px solid ${PURPLE}20`, color: `${PURPLE}cc` }}>
+                        Art: {src.artifactId.slice(0, 8)}…
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => addNlmToEpisode(src)}
+                      style={{
+                        ...T, flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                        background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, color: '#000',
+                        fontSize: 13, fontWeight: 900,
+                      }}
+                    >
+                      + Add to Episode
+                    </button>
+                    <a
+                      href={src.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        ...T, padding: '9px 14px', borderRadius: 10, textDecoration: 'none',
+                        background: `${PURPLE}15`, border: `1px solid ${PURPLE}40`,
+                        color: PURPLE, fontSize: 13, fontWeight: 800,
+                        display: 'flex', alignItems: 'center',
+                      }}
+                    >
+                      Open ↗
+                    </a>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 
