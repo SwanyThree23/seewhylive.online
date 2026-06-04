@@ -213,6 +213,16 @@ export default function AdminDashboard() {
                   </div>
               }
             </DarkCard>
+          {/* Stream Infra Reference shortcut */}
+          <Link to="/StreamRefDash" style={{ display: 'block', textDecoration: 'none', marginTop: 12 }}>
+            <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', cursor: 'pointer' }}>
+              <span style={{ fontSize: 24 }}>📡</span>
+              <div>
+                <p className="font-black text-sm uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Stream Infrastructure Reference</p>
+                <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>RTMP · WebRTC · Webhooks · .env · Supabase · Nginx · Judges →</p>
+              </div>
+            </div>
+          </Link>
           </div>
         )}
 
