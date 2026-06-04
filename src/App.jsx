@@ -37,6 +37,8 @@ import PodcastStudio from './pages/PodcastStudio';
 import MultiPlatform from './pages/MultiPlatform';
 import AIMusic from './pages/AIMusic';
 import SeeWhyLIVEv36 from './pages/SeeWhyLIVEv36';
+import StateVsState from './pages/StateVsState';
+import TributeWall from './pages/TributeWall';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -127,6 +129,8 @@ const AuthenticatedApp = () => {
       <Route path="/PodcastStudio" element={<LayoutWrapper currentPageName="PodcastStudio"><PodcastStudio /></LayoutWrapper>} />
       <Route path="/MultiPlatform" element={<LayoutWrapper currentPageName="MultiPlatform"><MultiPlatform /></LayoutWrapper>} />
       <Route path="/AIMusic" element={<LayoutWrapper currentPageName="AIMusic"><AIMusic /></LayoutWrapper>} />
+      <Route path="/StateVsState" element={<LayoutWrapper currentPageName="StateVsState"><StateVsState /></LayoutWrapper>} />
+      <Route path="/TributeWall" element={<LayoutWrapper currentPageName="TributeWall"><TributeWall /></LayoutWrapper>} />
       <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
