@@ -5,7 +5,7 @@ import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Radio, Swords, Tv2, Mic2,
   Camera, CameraOff, Mic, MicOff, Copy, Check, Lock, Unlock,
-  Tag, Image, AlignLeft, Layers,
+  Tag, Image, AlignLeft, Layers, Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -310,6 +310,8 @@ export default function GoLive() {
   const [launching,   setLaunching]   = useState(false);
   const [countdown,   setCountdown]   = useState(false);
   const [partyId,     setPartyId]     = useState(null);
+  const [titleSuggestions, setTitleSuggestions] = useState([]);
+  const [suggestingTitles, setSuggestingTitles] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -335,6 +337,29 @@ export default function GoLive() {
 
   function removeTag(t) {
     setTags(prev => prev.filter(x => x !== t));
+  }
+
+  async function suggestTitles() {
+    if (suggestingTitles) return;
+    setSuggestingTitles(true);
+    setTitleSuggestions([]);
+    try {
+      const ctx = [
+        format ? `Stream format: ${format.title}` : '',
+        category ? `Category: ${category}` : '',
+        tags.length ? `Tags: ${tags.join(', ')}` : '',
+        title ? `Draft title so far: "${title}"` : '',
+      ].filter(Boolean).join('. ') || 'General live stream on SeeWhy LIVE';
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are Joyce AI, co-host for SeeWhy LIVE — a creator-first live streaming platform (domino tournaments, tributes, talk shows, music, 90/10 revenue split). Generate 5 punchy, broadcast-ready stream title suggestions (max 60 chars each) for this stream context: ${ctx}. Return ONLY a JSON array of 5 title strings, no extra text.`,
+        response_json_schema: { type: 'array', items: { type: 'string' } },
+      });
+      if (Array.isArray(res) && res.length) setTitleSuggestions(res.slice(0, 5));
+      else setTitleSuggestions(['Live & Direct — Let\'s Go!', 'Tonight\'s Main Event 🔥', 'Stream is LIVE — Join Now!', 'No Cap, This Stream Hits Different', 'The Real Ones Know 🏆']);
+    } catch {
+      setTitleSuggestions(['Live & Direct — Let\'s Go!', 'Tonight\'s Main Event 🔥', 'Stream is LIVE — Join Now!']);
+    }
+    setSuggestingTitles(false);
   }
 
   async function handleGoLive() {
@@ -465,7 +490,24 @@ export default function GoLive() {
             <CameraPreview />
 
             <div>
-              <div style={SL}><AlignLeft style={{ width: 10, height: 10 }} /> Stream Title *</div>
+              <div style={{ ...SL, justifyContent: 'space-between' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <AlignLeft style={{ width: 10, height: 10 }} /> Stream Title *
+                </span>
+                <button
+                  onClick={suggestTitles}
+                  disabled={suggestingTitles}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)',
+                    borderRadius: 99, padding: '3px 10px', cursor: 'pointer',
+                    color: GOLD, fontSize: 10, fontFamily: FONT, fontWeight: 900,
+                    letterSpacing: '0.05em', opacity: suggestingTitles ? 0.6 : 1, transition: 'opacity .15s',
+                  }}>
+                  <Sparkles style={{ width: 9, height: 9 }} />
+                  {suggestingTitles ? 'Thinking…' : 'AI Suggest'}
+                </button>
+              </div>
               <input
                 style={{ ...INPUT, fontSize: 16, fontWeight: 700, borderColor: title ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.1)' }}
                 placeholder="What's your stream about?"
@@ -474,6 +516,25 @@ export default function GoLive() {
                 maxLength={80}
               />
               <div style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, marginTop: 3 }}>{title.length}/80</div>
+              {titleSuggestions.length > 0 && (
+                <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {titleSuggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setTitle(s); setTitleSuggestions([]); }}
+                      style={{
+                        textAlign: 'left', padding: '8px 12px', borderRadius: 9, cursor: 'pointer',
+                        background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.18)',
+                        color: 'rgba(255,255,255,0.8)', fontSize: 13, fontFamily: FONT, fontWeight: 700,
+                        transition: 'all .15s',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.12)'; e.currentTarget.style.color = GOLD; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,175,55,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
