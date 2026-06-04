@@ -242,7 +242,12 @@ export default function PodcastStudio() {
     <div style={{ minHeight: '100vh', background: BG, paddingBottom: 80 }}>
 
       {/* Header */}
-      <div style={{ textAlign: 'center', padding: '28px 16px 16px' }}>
+      <div style={{ textAlign: 'center', padding: '16px 16px 0' }}>
+        <a href="/AIHub" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 14 }} aria-label="Back to AI Hub">
+          ← AI Hub
+        </a>
+      </div>
+      <div style={{ textAlign: 'center', padding: '0 16px 16px' }}>
         <h1 style={{ ...T, fontSize: 30, fontWeight: 900, color: GOLD, letterSpacing: '0.04em', margin: 0 }}>
           🎙️ Podcast Studio
         </h1>

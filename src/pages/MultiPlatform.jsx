@@ -149,7 +149,12 @@ export default function MultiPlatform() {
     <div style={{ minHeight:'100vh', background:BG, paddingBottom:80 }}>
 
       {/* Header */}
-      <div style={{ textAlign:'center', padding:'28px 16px 16px' }}>
+      <div style={{ textAlign:'center', padding:'16px 16px 0' }}>
+        <a href="/AIHub" style={{ display:'inline-flex', alignItems:'center', gap:4, textDecoration:'none', color:'rgba(255,255,255,0.35)', fontSize:12, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, letterSpacing:'0.06em', marginBottom:14 }} aria-label="Back to AI Hub">
+          ← AI Hub
+        </a>
+      </div>
+      <div style={{ textAlign:'center', padding:'0 16px 16px' }}>
         <h1 style={{ ...T, fontSize:30, fontWeight:900, color:GOLD, letterSpacing:'0.04em', margin:0 }}>🌐 Multi-Platform Hub</h1>
         <p style={{ ...T, fontSize:13, color:'rgba(255,255,255,0.4)', marginTop:6 }}>Connect every platform · Webhooks · Virtual Camera · Audience Engagement</p>
         <div style={{ display:'inline-flex', alignItems:'center', gap:8, marginTop:10, padding:'5px 14px', borderRadius:999, background:`${GREEN}12`, border:`1px solid ${GREEN}30` }}>

@@ -129,6 +129,9 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
 
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
+        <a href="/AIHub" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 10 }} aria-label="Back to AI Hub">
+          ← AI Hub
+        </a>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <div style={{ fontFamily: "'Bebas Neue', 'Barlow Condensed', sans-serif", fontSize: 28, color: GOLD, letterSpacing: 3 }}>
             ⚡ INS FORGE
