@@ -99,9 +99,9 @@ export default function ZEGOGoLiveFlow({ roomId, userId, onLive, children }) {
 
       {/* Session ID bar — shows after live */}
       {zegoRoomId && !connecting && goLiveMut.isSuccess && (
-        <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(0,245,255,0.15)' }}>
+        <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(201,168,76,0.15)' }}>
           <span className="text-[11px] uppercase font-black" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Stream Session</span>
-          <span className="text-[11px] flex-1 truncate" style={{ color: '#00F5FF', fontFamily: 'Share Tech Mono, monospace' }}>{zegoRoomId}</span>
+          <span className="text-[11px] flex-1 truncate" style={{ color: '#C9A84C', fontFamily: 'Share Tech Mono, monospace' }}>{zegoRoomId}</span>
           <button onClick={() => { navigator.clipboard.writeText(zegoRoomId); toast.success('Copied!'); }}>
             <Copy className="w-3 h-3 text-white/30 hover:text-white/60 transition-colors" />
           </button>

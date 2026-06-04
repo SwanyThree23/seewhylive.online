@@ -6,7 +6,7 @@ import { usePushNotifications } from '../usePushNotifications.js';
 var PLATFORM_TIERS = [
   { id: 'free',    label: 'FREE',    priceCents: 0,     color: '#8A7A62', perks: ['Basic streaming', 'Chat', '1 guest panel', 'Standard quality'] },
   { id: 'creator', label: 'CREATOR', priceCents: 1900,  color: '#C9A84C', perks: ['All Free', 'Up to 4 panels', 'Analytics', 'Gift receipts', '$19/mo'] },
-  { id: 'pro',     label: 'PRO',     priceCents: 4900,  color: '#C084FC', perks: ['All Creator', 'Up to 9 panels', 'AURA AI', 'Paywall', 'Priority support', '$49/mo'] },
+  { id: 'pro',     label: 'PRO',     priceCents: 4900,  color: '#C9A84C', perks: ['All Creator', 'Up to 9 panels', 'AURA AI', 'Paywall', 'Priority support', '$49/mo'] },
   { id: 'studio',  label: 'STUDIO',  priceCents: 14900, color: '#C9A84C', perks: ['All Pro', 'White-label embed', 'Watch Party sync', 'Custom AURA', 'Dedicated support', '$149/mo'] },
 ];
 
@@ -215,8 +215,8 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
           width: 40,
           height: 22,
           borderRadius: 999,
-          background: value ? '#C9A84C' : 'rgba(122,111,144,.25)',
-          border: value ? '1px solid #C9A84C' : '1px solid rgba(122,111,144,.4)',
+          background: value ? '#C9A84C' : 'rgba(61,48,32,.25)',
+          border: value ? '1px solid #C9A84C' : '1px solid rgba(61,48,32,.4)',
           cursor: 'pointer',
           position: 'relative',
           flexShrink: 0,
@@ -638,7 +638,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               onClick={function() { setActiveTab(tab.id); }}
               style={{
                 background: isActive ? '#C9A84C' : 'transparent',
-                border: isActive ? '1px solid #C9A84C' : '1px solid rgba(122,111,144,.3)',
+                border: isActive ? '1px solid #C9A84C' : '1px solid rgba(61,48,32,.3)',
                 borderRadius: 999,
                 padding: '4px 10px',
                 color: isActive ? '#0E0C09' : '#8A7A62',

@@ -49,8 +49,8 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
 
   const engagementData = [
     { name: 'Reactions', value: reactionCount || 0, color: '#d4af37' },
-    { name: 'Polls', value: pollCount || 0, color: '#8B5CF6' },
-    { name: 'Viewers', value: members.length, color: '#00FF88' },
+    { name: 'Polls', value: pollCount || 0, color: '#D4AF37' },
+    { name: 'Viewers', value: members.length, color: '#6DBF7E' },
   ];
 
   const started = party?.started_at || party?.created_date;
@@ -67,10 +67,10 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
 
       {/* Stat grid */}
       <div className="grid grid-cols-2 gap-2">
-        <StatCard icon={Users} label="Current Viewers" value={activeCount} color="#00FF88" />
+        <StatCard icon={Users} label="Current Viewers" value={activeCount} color="#6DBF7E" />
         <StatCard icon={TrendingUp} label="Peak Viewers" value={peakViewers} color="#d4af37" />
-        <StatCard icon={Clock} label="Duration" value={`${durationMin}m`} color="#00F5FF" />
-        <StatCard icon={ThumbsUp} label="Retention" value={`${retentionPct}%`} sub={`${leftCount} left`} color="#8B5CF6" />
+        <StatCard icon={Clock} label="Duration" value={`${durationMin}m`} color="#C9A84C" />
+        <StatCard icon={ThumbsUp} label="Retention" value={`${retentionPct}%`} sub={`${leftCount} left`} color="#D4AF37" />
       </div>
 
       {/* Viewer join timeline */}
@@ -127,7 +127,7 @@ export default function WatchPartyAnalytics({ party, members, pollCount, reactio
               <div key={m.id} className="flex items-center justify-between px-3 py-1.5"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <span className="text-[10px] font-bold text-white/70">{m.user_name}</span>
-                <span className="text-[11px]" style={{ color: m.is_active ? '#00FF88' : 'rgba(255,255,255,0.2)' }}>
+                <span className="text-[11px]" style={{ color: m.is_active ? '#6DBF7E' : 'rgba(255,255,255,0.2)' }}>
                   {m.is_active ? '● Active' : '○ Left'}
                 </span>
               </div>

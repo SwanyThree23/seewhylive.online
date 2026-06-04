@@ -18,7 +18,7 @@ function elapsed(startedAt) {
 }
 
 const STATUS_CFG = {
-  live:       { color: '#00FF88', bg: 'rgba(0,255,136,0.1)',  border: 'rgba(0,255,136,0.25)',  label: 'LIVE' },
+  live:       { color: '#6DBF7E', bg: 'rgba(109,191,126,0.1)',  border: 'rgba(109,191,126,0.25)',  label: 'LIVE' },
   connecting: { color: GOLD,      bg: `rgba(212,175,55,0.1)`, border: `rgba(212,175,55,0.25)`, label: 'CONNECTING' },
   ended:      { color: '#888',    bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', label: 'ENDED' },
   error:      { color: '#FF4444', bg: 'rgba(255,68,68,0.1)',  border: 'rgba(255,68,68,0.25)',  label: 'ERROR' },
@@ -56,14 +56,14 @@ export default function ZEGOStreamHealthCard({ roomId }) {
   const sc = STATUS_CFG[zegoStream.status] || STATUS_CFG.ended;
   const bitrateRatio = zegoStream.avg_bitrate_kbps ? Math.min(1, zegoStream.avg_bitrate_kbps / 4000) : 0;
   const platform = zegoStream.platform?.toUpperCase() === 'REACT_NATIVE' ? 'REACT NATIVE' : (zegoStream.platform?.toUpperCase() || 'WEB');
-  const platformColor = platform === 'REACT NATIVE' ? '#8B5CF6' : '#00F5FF';
+  const platformColor = platform === 'REACT NATIVE' ? '#D4AF37' : '#C9A84C';
 
   return (
-    <div className="rounded-xl p-4 space-y-4" style={{ background: '#1A1A1A', border: `1px solid rgba(0,245,255,0.15)`, boxShadow: zegoStream.status === 'live' ? '0 0 20px rgba(0,245,255,0.06)' : 'none' }}>
+    <div className="rounded-xl p-4 space-y-4" style={{ background: '#1A1A1A', border: `1px solid rgba(201,168,76,0.15)`, boxShadow: zegoStream.status === 'live' ? '0 0 20px rgba(201,168,76,0.06)' : 'none' }}>
       {/* Title row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4" style={{ color: '#00F5FF' }} />
+          <Zap className="w-4 h-4" style={{ color: '#C9A84C' }} />
           <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>ZEGOCLOUD Status</span>
         </div>
         <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
@@ -87,7 +87,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
         )}
         {zegoStream.latency_mode && (
           <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded"
-            style={{ background: 'rgba(0,255,136,0.08)', color: '#00FF88', border: '1px solid rgba(0,255,136,0.2)', ...T }}>
+            style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)', ...T }}>
             {LATENCY_LABELS[zegoStream.latency_mode] || zegoStream.latency_mode}
           </span>
         )}
@@ -107,7 +107,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
           <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div>
               <p className="text-[7px] uppercase font-black" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>ZEGO Room ID</p>
-              <p className="text-[11px]" style={{ color: '#00F5FF', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.zego_room_id}</p>
+              <p className="text-[11px]" style={{ color: '#C9A84C', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.zego_room_id}</p>
             </div>
             <button onClick={() => { navigator.clipboard.writeText(zegoStream.zego_room_id); toast.success('Copied!'); }}>
               <Copy className="w-3 h-3 text-white/30 hover:text-white/60 transition-colors" />
@@ -126,10 +126,10 @@ export default function ZEGOStreamHealthCard({ roomId }) {
           </div>
         </div>
         <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <Activity className="w-3.5 h-3.5" style={{ color: '#00F5FF' }} />
+          <Activity className="w-3.5 h-3.5" style={{ color: '#C9A84C' }} />
           <div>
             <p className="text-[7px] uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>Elapsed</p>
-            <p className="text-sm font-black" style={{ color: '#00F5FF', fontFamily: 'Orbitron, monospace' }}>{elapsed(zegoStream.started_at)}</p>
+            <p className="text-sm font-black" style={{ color: '#C9A84C', fontFamily: 'Orbitron, monospace' }}>{elapsed(zegoStream.started_at)}</p>
           </div>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
             <motion.div className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, #00F5FF, ${GOLD})` }}
+              style={{ background: `linear-gradient(90deg, #C9A84C, ${GOLD})` }}
               animate={{ width: `${bitrateRatio * 100}%` }}
               transition={{ duration: 0.6 }} />
           </div>

@@ -75,7 +75,7 @@ export default function BattleScoreboard({ roomId }) {
           </div>
           <p className="text-[11px] text-white/50 truncate w-full text-center">{battle.host_name || 'Host'}</p>
           <motion.p
-            animate={bumps.host_score ? { scale: [1, 1.4, 1], color: ['#d4af37', '#00FF88', '#d4af37'] } : {}}
+            animate={bumps.host_score ? { scale: [1, 1.4, 1], color: ['#d4af37', '#6DBF7E', '#d4af37'] } : {}}
             transition={{ duration: 0.5 }}
             className="text-2xl font-black tabular-nums"
             style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -108,7 +108,7 @@ export default function BattleScoreboard({ roomId }) {
           </div>
           <p className="text-[11px] text-white/50 truncate w-full text-center">{battle.challenger_name || 'Challenger'}</p>
           <motion.p
-            animate={bumps.challenger_score ? { scale: [1, 1.4, 1], color: ['#CC7755', '#00FF88', '#CC7755'] } : {}}
+            animate={bumps.challenger_score ? { scale: [1, 1.4, 1], color: ['#CC7755', '#6DBF7E', '#CC7755'] } : {}}
             transition={{ duration: 0.5 }}
             className="text-2xl font-black tabular-nums"
             style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>

@@ -254,7 +254,7 @@ export default function CompositorOverlay({
             <button
               onClick={handleScreenCapture}
               className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-black uppercase"
-              style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', color: '#8B5CF6', ...T }}
+              style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', ...T }}
             >
               <Monitor className="w-3.5 h-3.5" /> Select Screen / Tab to Capture
             </button>

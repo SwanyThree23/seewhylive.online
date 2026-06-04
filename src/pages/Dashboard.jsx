@@ -100,8 +100,8 @@ function OverviewTab({ user }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatTile label="Pending Balance" value={`$${Math.floor(payout?.pending_balance || 0)}`} icon={DollarSign} color={GOLD} />
-        <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#00F5FF" />
-        <StatTile label="Hours Streamed" value={`${Math.floor(profile?.total_hours_streamed || 0)}h`} icon={Clock} color="#8B5CF6" />
+        <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#C9A84C" />
+        <StatTile label="Hours Streamed" value={`${Math.floor(profile?.total_hours_streamed || 0)}h`} icon={Clock} color="#D4AF37" />
         <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#FF1564" sub="right now" />
       </div>
 
@@ -143,7 +143,7 @@ function OverviewTab({ user }) {
         {[
           { label: '📡 Go Live', href: createPageUrl('LiveRoom'), color: BURGUNDY },
           { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: `rgba(212,175,55,0.15)` },
-          { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(0,245,255,0.1)` },
+          { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
         ].map(q => (
           <Link key={q.label} to={q.href}>
             <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
@@ -195,15 +195,15 @@ function AnalyticsTab({ user }) {
     viewers: Math.floor(Math.random() * 200 + 50),
   }));
 
-  const COLORS = [GOLD, '#00F5FF', '#8B5CF6', '#FF1564', '#00FF88'];
+  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#FF1564', '#6DBF7E'];
 
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatTile label="Peak Viewers" value={peakViewers.toLocaleString()} icon={Eye} color={GOLD} />
-        <StatTile label="Avg Watch Time" value={`${avgWatch}m`} icon={Clock} color="#00F5FF" />
-        <StatTile label="New Followers" value={follows.length} icon={Users} color="#00FF88" />
-        <StatTile label="Chat Messages" value={messages.length} icon={MessageSquare} color="#8B5CF6" />
+        <StatTile label="Avg Watch Time" value={`${avgWatch}m`} icon={Clock} color="#C9A84C" />
+        <StatTile label="New Followers" value={follows.length} icon={Users} color="#6DBF7E" />
+        <StatTile label="Chat Messages" value={messages.length} icon={MessageSquare} color="#D4AF37" />
         <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#FF1564" />
         <StatTile label="Tips Earned" value={`$${Math.floor(totalTips)}`} icon={DollarSign} color={GOLD} />
       </div>
@@ -230,7 +230,7 @@ function AnalyticsTab({ user }) {
                     <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{r.room_id?.slice(0,8) || '—'}</td>
                     <td className="px-4 py-2" style={{ color: CREAM + '40' }}>{new Date(r.created_date).toLocaleDateString()}</td>
                     <td className="px-4 py-2 font-black" style={{ color: GOLD }}>{r.peak_viewers || 0}</td>
-                    <td className="px-4 py-2" style={{ color: '#00FF88' }}>${Math.floor(r.total_tips || 0)}</td>
+                    <td className="px-4 py-2" style={{ color: '#6DBF7E' }}>${Math.floor(r.total_tips || 0)}</td>
                     <td className="px-4 py-2" style={{ color: CREAM + '50' }}>{Math.floor((r.average_watch_time || 0))}m</td>
                   </tr>
                 ))}
@@ -304,7 +304,7 @@ function ContentTab({ user }) {
   if (sort === 'views') filtered = [...filtered].sort((a, b) => (b.views || 0) - (a.views || 0));
   if (sort === 'longest') filtered = [...filtered].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
 
-  const statusColors = { published: '#00FF88', draft: 'rgba(255,255,255,0.3)', unlisted: GOLD };
+  const statusColors = { published: '#6DBF7E', draft: 'rgba(255,255,255,0.3)', unlisted: GOLD };
 
   return (
     <div className="space-y-4">
@@ -670,8 +670,8 @@ function MonetizationTab({ user }) {
 
   const pieData = [
     { name: 'Tips', value: tipTotal, color: GOLD },
-    { name: 'Subs', value: subTotal, color: '#00F5FF' },
-    { name: 'Gifts', value: giftTotal, color: '#8B5CF6' },
+    { name: 'Subs', value: subTotal, color: '#C9A84C' },
+    { name: 'Gifts', value: giftTotal, color: '#D4AF37' },
   ].filter(d => d.value > 0);
 
   return (
@@ -687,7 +687,7 @@ function MonetizationTab({ user }) {
                   <p className="font-black text-sm" style={{ color: tier.color || GOLD }}>{tier.name}</p>
                   <button onClick={() => toggleTierMut.mutate({ id: tier.id, is_active: !tier.is_active })}
                     className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-                    style={{ background: tier.is_active ? 'rgba(0,255,136,0.1)' : 'rgba(255,255,255,0.06)', color: tier.is_active ? '#00FF88' : CREAM + '40' }}>
+                    style={{ background: tier.is_active ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.06)', color: tier.is_active ? '#6DBF7E' : CREAM + '40' }}>
                     {tier.is_active ? 'ACTIVE' : 'INACTIVE'}
                   </button>
                 </div>
@@ -714,7 +714,7 @@ function MonetizationTab({ user }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-[11px]" style={{ color: CREAM + '40' }}>Pending Balance</p>
-              <p className="text-xl font-black" style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.pending_balance || 0)}</p>
+              <p className="text-xl font-black" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>${Math.floor(payout?.pending_balance || 0)}</p>
             </div>
             <div>
               <p className="text-[11px]" style={{ color: CREAM + '40' }}>Total Paid Out</p>
@@ -723,7 +723,7 @@ function MonetizationTab({ user }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-              style={{ background: payout?.stripe_connected ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#00FF88' : '#FF4444', ...T }}>
+              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#FF4444', ...T }}>
               {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
             {payout?.last_payout_at && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
@@ -755,12 +755,12 @@ function MonetizationTab({ user }) {
             <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>90/10 Creator Split</p>
             <div>
               <div className="flex items-center justify-between text-[11px] mb-1">
-                <span style={{ color: '#00FF88' }}>Creator 90%</span>
-                <span style={{ color: '#00FF88', fontFamily: 'Orbitron, monospace' }}>${creatorShare.toFixed(2)}</span>
+                <span style={{ color: '#6DBF7E' }}>Creator 90%</span>
+                <span style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>${creatorShare.toFixed(2)}</span>
               </div>
               <div className="h-6 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <motion.div className="h-full" animate={{ width: '90%' }} transition={{ duration: 1.2 }}
-                  style={{ background: 'linear-gradient(90deg, #00FF88, #00D4FF)' }} />
+                  style={{ background: 'linear-gradient(90deg, #6DBF7E, #00D4FF)' }} />
                 <div className="h-full flex-1" style={{ background: 'rgba(255,21,100,0.3)' }} />
               </div>
               <div className="flex items-center justify-between text-[11px] mt-1">
@@ -792,7 +792,7 @@ function MonetizationTab({ user }) {
                     <div className="h-full rounded-full" style={{ width: `${progress}%`, background: g.color || GOLD }} />
                   </div>
                   <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
-                    style={{ background: g.status === 'completed' ? 'rgba(0,255,136,0.12)' : `${GOLD}12`, color: g.status === 'completed' ? '#00FF88' : GOLD, ...T }}>
+                    style={{ background: g.status === 'completed' ? 'rgba(109,191,126,0.12)' : `${GOLD}12`, color: g.status === 'completed' ? '#6DBF7E' : GOLD, ...T }}>
                     {g.status}
                   </span>
                 </div>

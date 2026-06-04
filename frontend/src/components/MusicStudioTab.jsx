@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 var BG    = '#0E0C09';
 var SURF  = '#0E0C09';
 var CARD  = '#1A1510';
-var CARD2 = '#211A30';
+var CARD2 = '#241C12';
 var GOLD  = '#C9A84C';
 var BURG  = '#800020';
 var TEAL  = '#C9A84C';
@@ -14,7 +14,7 @@ var MUTED = '#8A7A62';
 var DIM   = '#2E2318';
 var BORD  = 'rgba(255,255,255,.06)';
 var BLUE  = '#C9A84C';
-var PURP  = '#C084FC';
+var PURP  = '#C9A84C';
 
 // ─── Animations ────────────────────────────────────────────────────────────
 var ANIM = [
@@ -45,17 +45,17 @@ var GEN_STEPS = [
 
 var COVER_GRADIENTS = [
   'linear-gradient(135deg,#800020,#C01838)',
-  'linear-gradient(135deg,#1a0533,#7928CA)',
-  'linear-gradient(135deg,#003d4d,#C9A84C)',
-  'linear-gradient(135deg,#1a2a00,#7CB518)',
+  'linear-gradient(135deg,#3D1A00,#C9A84C)',
+  'linear-gradient(135deg,#1A0F00,#D4854A)',
+  'linear-gradient(135deg,#2A1200,#FF6B35)',
   'linear-gradient(135deg,#2d1b00,#C9A84C)',
-  'linear-gradient(135deg,#00104d,#C9A84C)',
-  'linear-gradient(135deg,#2d0033,#FF1A3C)',
-  'linear-gradient(135deg,#001a33,#00A2E8)',
+  'linear-gradient(135deg,#1a0000,#800020)',
+  'linear-gradient(135deg,#2d0a0a,#FF1A3C)',
+  'linear-gradient(135deg,#1a1000,#C9A84C)',
   'linear-gradient(135deg,#1a1000,#FF6B35)',
-  'linear-gradient(135deg,#0d0d1a,#9B59B6)',
-  'linear-gradient(135deg,#001a00,#00C851)',
-  'linear-gradient(135deg,#1a0000,#FF4757)',
+  'linear-gradient(135deg,#1a0a00,#800020)',
+  'linear-gradient(135deg,#1a0a00,#D4854A)',
+  'linear-gradient(135deg,#1a0000,#FF1A3C)',
 ];
 var COVER_EMOJIS = ['🎵','🎸','🎹','🎺','🎻','🥁','🎙','🎤','🎼','🎧','💿','🔊','🎶','👑','🔥'];
 
@@ -94,7 +94,7 @@ var VOCAL_STYLES = [
   { id: 'rnb-silk',      label: 'R&B Silk',       desc: 'Silky runs, whisper falsettos',     color: PURP,         emoji: '✨' },
   { id: 'lyrical-rap',   label: 'Lyrical Rap',    desc: 'Complex flows, internal rhymes',    color: GOLD,         emoji: '🎤' },
   { id: 'soul-church',   label: 'Soul / Church',  desc: 'Full range, powerful gospel belts', color: '#FF6B35',    emoji: '🙏' },
-  { id: 'afro-flow',     label: 'Afro Flow',      desc: 'Percussive cadence, diaspora vibe', color: '#00C851',    emoji: '🌍' },
+  { id: 'afro-flow',     label: 'Afro Flow',      desc: 'Percussive cadence, diaspora vibe', color: '#D4854A',    emoji: '🌍' },
   { id: 'pop-radio',     label: 'Pop Radio',      desc: 'Catchy hooks, clean delivery',      color: BLUE,         emoji: '📻' },
   { id: 'drill-cadence', label: 'Drill Cadence',  desc: 'Menacing flow, UK/Chicago style',   color: RED,          emoji: '🔱' },
   { id: 'lo-fi-chill',   label: 'Lo-Fi Chill',    desc: 'Breathy, intimate, bedroom pop',    color: TEAL,         emoji: '🎧' },
@@ -257,12 +257,30 @@ export default function MusicStudioTab(props) {
   var [playingId,    setPlayingId]   = useState(null);
 
   // ── Beat Maker ──
-  var [grid,        setGrid]        = useState(makeInitGrid);
-  var [beatPlaying, setBeatPlaying] = useState(false);
-  var [beatStep,    setBeatStep]    = useState(-1);
-  var [bpm,         setBpm]         = useState(120);
-  var [beatPreset,  setBeatPreset]  = useState(null);
-  var [padFlash,    setPadFlash]    = useState({});
+  var [grid,           setGrid]           = useState(makeInitGrid);
+  var [beatPlaying,    setBeatPlaying]    = useState(false);
+  var [beatStep,       setBeatStep]       = useState(-1);
+  var [bpm,            setBpm]            = useState(120);
+  var [beatPreset,     setBeatPreset]     = useState(null);
+  var [padFlash,       setPadFlash]       = useState({});
+  var [padVolumes,     setPadVolumes]     = useState(function() {
+    var v = {};
+    PADS.forEach(function(p) { v[p.id] = 80; });
+    return v;
+  });
+  var [showMix,        setShowMix]        = useState(false);
+  var [aiBeating,      setAiBeating]      = useState(false);
+  var [chordKey,       setChordKey]       = useState('C');
+  var [chordStyle,     setChordStyle]     = useState('Hip-Hop');
+  var [chordResult,    setChordResult]    = useState('');
+  var [chordLoading,   setChordLoading]   = useState(false);
+  var [showChords,     setShowChords]     = useState(false);
+  var [savedPresets,   setSavedPresets]   = useState(function() {
+    try { var s = localStorage.getItem('sw_beat_presets'); if (s) return JSON.parse(s); } catch(e) {}
+    return [];
+  });
+  var [presetName,     setPresetName]     = useState('');
+  var [showSavePreset, setShowSavePreset] = useState(false);
   var beatStepRef = useRef(-1);
   var beatPlayRef = useRef(null);
   var gridRef     = useRef(grid);
@@ -566,6 +584,108 @@ export default function MusicStudioTab(props) {
     if (addToast) addToast('Beat settings sent to Generate!', 'success');
   }
 
+  function randomizeBeat() {
+    var probMap = { kick: 0.25, snare: 0.2, clap: 0.15, hihat: 0.5, bass: 0.2, chord: 0.15, lead: 0.12, fx: 0.1 };
+    var newGrid = {};
+    PADS.forEach(function(p) {
+      var prob = probMap[p.id] || 0.2;
+      newGrid[p.id] = Array(GRID_STEPS).fill(null).map(function() { return Math.random() < prob; });
+    });
+    setGrid(newGrid);
+    if (addToast) addToast('Pattern randomized!', 'info');
+  }
+
+  function clearBeat() {
+    var newGrid = {};
+    PADS.forEach(function(p) { newGrid[p.id] = Array(GRID_STEPS).fill(false); });
+    setGrid(newGrid);
+    if (addToast) addToast('Pattern cleared', 'info');
+  }
+
+  function savePreset() {
+    var name = presetName.trim() || ('Pattern ' + (savedPresets.length + 1));
+    var preset = { id: 'p' + Date.now(), name: name, grid: grid, bpm: bpm };
+    setSavedPresets(function(prev) {
+      var next = prev.concat([preset]).slice(-12);
+      try { localStorage.setItem('sw_beat_presets', JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+    setPresetName('');
+    setShowSavePreset(false);
+    if (addToast) addToast('Preset saved: ' + name, 'success');
+  }
+
+  function loadPreset(preset) {
+    setGrid(preset.grid);
+    setBpm(preset.bpm);
+    setBeatPreset(preset.name);
+    if (addToast) addToast('Loaded: ' + preset.name, 'success');
+  }
+
+  function deletePreset(id) {
+    setSavedPresets(function(prev) {
+      var next = prev.filter(function(p) { return p.id !== id; });
+      try { localStorage.setItem('sw_beat_presets', JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+  }
+
+  function aiGenerateBeat() {
+    setAiBeating(true);
+    var style = beatPreset || selStyles[0] || 'Hip-Hop';
+    var system = 'You are a professional music producer AI. When asked for a beat pattern, respond ONLY with valid compact JSON, no markdown, no explanation.';
+    var userMsg = 'Generate a ' + style + ' beat pattern at ' + bpm + ' BPM with 16 steps. ' +
+      'Respond ONLY with this exact JSON structure (1=active, 0=inactive):\n' +
+      '{"kick":[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],"snare":[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],' +
+      '"clap":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"hihat":[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],' +
+      '"bass":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"chord":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],' +
+      '"lead":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"fx":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}\n' +
+      'Make the pattern authentic and musical for ' + style + '. Each array must have exactly 16 values.';
+    callAI(system, userMsg, function(text) {
+      var jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) { setAiBeating(false); if (addToast) addToast('AI returned invalid pattern', 'error'); return; }
+      try {
+        var parsed = JSON.parse(jsonMatch[0]);
+        var newGrid = {};
+        PADS.forEach(function(p) {
+          var arr = parsed[p.id];
+          if (Array.isArray(arr) && arr.length === 16) {
+            newGrid[p.id] = arr.map(function(v) { return Boolean(v); });
+          } else {
+            newGrid[p.id] = Array(GRID_STEPS).fill(false);
+          }
+        });
+        setGrid(newGrid);
+        setAiBeating(false);
+        if (addToast) addToast('AI beat pattern generated!', 'success');
+      } catch(e) {
+        setAiBeating(false);
+        if (addToast) addToast('Could not parse AI pattern', 'error');
+      }
+    }, function() {
+      setAiBeating(false);
+      if (addToast) addToast('AI unavailable — try again', 'error');
+    });
+  }
+
+  function generateChords() {
+    setChordLoading(true);
+    setChordResult('');
+    var system = 'You are a music theory expert. Respond with concise chord progressions only, no lengthy explanation.';
+    var userMsg = 'Generate 3 different chord progressions in the key of ' + chordKey + ' for a ' + chordStyle + ' track. ' +
+      'Format each as a numbered list with Roman numerals and chord names, like:\n' +
+      '1. I - V - vi - IV (C - G - Am - F)\n' +
+      '2. ...\n' +
+      'Keep it brief and practical.';
+    callAI(system, userMsg, function(text) {
+      setChordResult(text.trim());
+      setChordLoading(false);
+    }, function() {
+      setChordResult('AI unavailable. Try: I - IV - V - I / vi - IV - I - V / I - V - vi - iii');
+      setChordLoading(false);
+    });
+  }
+
   var TABS = [
     { id: 'generate', label: '✨ Gen'     },
     { id: 'beat',     label: '🥁 Beat'    },
@@ -737,7 +857,9 @@ export default function MusicStudioTab(props) {
           <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEAL, letterSpacing: 2 }}>Beat Maker</div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD }}>{bpm} BPM</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD }}>{bpm} BPM</div>
+              </div>
             </div>
 
             <div style={{ background: CARD, borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -796,6 +918,146 @@ export default function MusicStudioTab(props) {
                   </div>
                 );
               })}
+            </div>
+
+            {/* ── AI + Pattern controls ── */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button onClick={aiGenerateBeat} disabled={aiBeating}
+                style={{ flex: 2, background: aiBeating ? CARD2 : 'linear-gradient(135deg,rgba(128,0,32,.6),rgba(192,24,56,.4))', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '9px', color: aiBeating ? MUTED : GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: aiBeating ? 'default' : 'pointer', letterSpacing: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                {aiBeating
+                  ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-block', animation: 'spin .8s linear infinite' }}>⟳</span> AI thinking…</span>
+                  : '🤖 AI BEAT'}
+              </button>
+              <button onClick={randomizeBeat}
+                style={{ flex: 1, background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 8, padding: '9px', color: AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                🎲 RANDOM
+              </button>
+              <button onClick={clearBeat}
+                style={{ flex: 1, background: 'rgba(255,26,60,.07)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 8, padding: '9px', color: RED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}>
+                🗑 CLEAR
+              </button>
+            </div>
+
+            {/* ── Mix Panel ── */}
+            <div style={{ background: CARD, borderRadius: 10, padding: '10px 12px' }}>
+              <button onClick={function() { setShowMix(function(v) { return !v; }); }}
+                style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', cursor: 'pointer', padding: 0, marginBottom: showMix ? 10 : 0 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: showMix ? GOLD : MUTED, letterSpacing: 1 }}>🎚 MIX PANEL</span>
+                <span style={{ color: showMix ? GOLD : MUTED, fontSize: 10 }}>{showMix ? '▲' : '▼'}</span>
+              </button>
+              {showMix && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {PADS.map(function(pad) {
+                    var vol = padVolumes[pad.id] !== undefined ? padVolumes[pad.id] : 80;
+                    return (
+                      <div key={pad.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 56, fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: pad.color, flexShrink: 0 }}>{pad.label}</div>
+                        <input type="range" min={0} max={100} value={vol}
+                          onChange={function(e) {
+                            var v = Number(e.target.value);
+                            setPadVolumes(function(prev) { var n = Object.assign({}, prev); n[pad.id] = v; return n; });
+                          }}
+                          style={{ flex: 1, accentColor: pad.color, height: 4 }} />
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, width: 24, textAlign: 'right', flexShrink: 0 }}>{vol}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* ── Chord Progressions ── */}
+            <div style={{ background: CARD, borderRadius: 10, padding: '10px 12px' }}>
+              <button onClick={function() { setShowChords(function(v) { return !v; }); }}
+                style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', cursor: 'pointer', padding: 0, marginBottom: showChords ? 10 : 0 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: showChords ? GOLD : MUTED, letterSpacing: 1 }}>🎹 CHORD PROGRESSIONS</span>
+                <span style={{ color: showChords ? GOLD : MUTED, fontSize: 10 }}>{showChords ? '▲' : '▼'}</span>
+              </button>
+              {showChords && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginBottom: 4, letterSpacing: .5 }}>KEY</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                        {KEYS.slice(0, 6).concat(KEYS.slice(6)).map(function(k) {
+                          return (
+                            <button key={k} onClick={function() { setChordKey(k); }}
+                              style={{ width: 28, height: 26, borderRadius: 5, background: chordKey === k ? BURG : CARD2, border: '1px solid ' + (chordKey === k ? 'rgba(128,0,32,.6)' : DIM), color: chordKey === k ? GOLD : MUTED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, cursor: 'pointer' }}>
+                              {k}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginBottom: 4, letterSpacing: .5 }}>STYLE</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                        {['Hip-Hop','R&B','Soul','Jazz','Trap','Pop'].map(function(s) {
+                          return (
+                            <button key={s} onClick={function() { setChordStyle(s); }}
+                              style={{ padding: '3px 7px', background: chordStyle === s ? 'rgba(201,168,76,.18)' : CARD2, border: '1px solid ' + (chordStyle === s ? 'rgba(201,168,76,.45)' : DIM), borderRadius: 5, color: chordStyle === s ? GOLD : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer' }}>
+                              {s}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={generateChords} disabled={chordLoading}
+                    style={{ background: chordLoading ? CARD2 : 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '8px', color: chordLoading ? MUTED : GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: chordLoading ? 'default' : 'pointer', letterSpacing: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    {chordLoading ? <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-block', animation: 'spin .8s linear infinite' }}>⟳</span> Generating…</span> : '✨ GENERATE PROGRESSIONS'}
+                  </button>
+                  {chordResult ? (
+                    <div style={{ background: CARD2, border: '1px solid rgba(201,168,76,.15)', borderRadius: 8, padding: '10px 12px' }}>
+                      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEXT, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>{chordResult}</div>
+                      <button onClick={function() { navigator.clipboard && navigator.clipboard.writeText(chordResult).then(function() { if (addToast) addToast('Progressions copied!', 'success'); }); }}
+                        style={{ marginTop: 6, background: 'rgba(255,255,255,.05)', border: '1px solid ' + BORD, borderRadius: 5, padding: '3px 10px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>
+                        COPY
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+
+            {/* ── Save / Load Presets ── */}
+            <div style={{ background: CARD, borderRadius: 10, padding: '10px 12px' }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: 1, marginBottom: 8 }}>💾 PATTERNS</div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: savedPresets.length > 0 ? 8 : 0 }}>
+                {showSavePreset ? (
+                  <input value={presetName} onChange={function(e) { setPresetName(e.target.value); }}
+                    onKeyDown={function(e) { if (e.key === 'Enter') savePreset(); if (e.key === 'Escape') setShowSavePreset(false); }}
+                    placeholder="Preset name..."
+                    autoFocus
+                    style={{ flex: 1, background: 'rgba(14,12,9,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 7, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none' }} />
+                ) : null}
+                <button onClick={function() { if (showSavePreset) { savePreset(); } else { setShowSavePreset(true); } }}
+                  style={{ flex: showSavePreset ? 0 : 1, background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 7, padding: '7px 12px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+                  {showSavePreset ? '✓ SAVE' : '+ SAVE'}
+                </button>
+                {showSavePreset && (
+                  <button onClick={function() { setShowSavePreset(false); setPresetName(''); }}
+                    style={{ background: 'none', border: '1px solid ' + DIM, borderRadius: 7, padding: '7px 10px', color: MUTED, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                    ✕
+                  </button>
+                )}
+              </div>
+              {savedPresets.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 130, overflowY: 'auto' }}>
+                  {savedPresets.map(function(p) {
+                    return (
+                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: CARD2, borderRadius: 6, padding: '5px 8px' }}>
+                        <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, flexShrink: 0 }}>{p.bpm} bpm</span>
+                        <button onClick={function() { loadPreset(p); }}
+                          style={{ background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 8px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer' }}>LOAD</button>
+                        <button onClick={function() { deletePreset(p.id); }}
+                          style={{ background: 'none', border: 'none', color: RED, fontSize: 9, cursor: 'pointer', padding: '2px 4px' }}>✕</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <button onClick={beatToGenerate}
@@ -1078,7 +1340,7 @@ export default function MusicStudioTab(props) {
                   var active = vocalFX.indexOf(fx) >= 0;
                   return (
                     <button key={fx} onClick={function() { toggleTag(vocalFX, setVocalFX, fx); }}
-                      style={{ padding: '5px 12px', background: active ? 'rgba(90,143,255,.18)' : CARD2, border: '1px solid ' + (active ? 'rgba(90,143,255,.5)' : DIM), borderRadius: 999, color: active ? BLUE : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 10, cursor: 'pointer', transition: 'all .15s' }}>
+                      style={{ padding: '5px 12px', background: active ? 'rgba(212,133,74,.18)' : CARD2, border: '1px solid ' + (active ? 'rgba(212,133,74,.5)' : DIM), borderRadius: 999, color: active ? BLUE : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 10, cursor: 'pointer', transition: 'all .15s' }}>
                       {fx}
                     </button>
                   );

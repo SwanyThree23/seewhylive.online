@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, AlertCircle, CheckCircle2 } from 'lucide-reac
 
 const HealthMetric = ({ label, value, unit, status, trend }) => {
   const statusColor = {
-    excellent: '#00FF88',
+    excellent: '#6DBF7E',
     good: '#d4af37',
     warning: '#FFB800',
     critical: '#FF1564'

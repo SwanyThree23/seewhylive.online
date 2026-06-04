@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, Youtube, Video, VideoOff, LogOut, List, Maximize2, Minimize2, Mic, MicOff } from 'lucide-react';
+import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
@@ -325,12 +325,9 @@ export default function WatchPartyPage() {
   const partyId = urlParams.get('id');
   const qc = useQueryClient();
 
-  const [videoUrl, setVideoUrl] = useState(urlParams.get('videoUrl') || '');
-  const [partyTitle, setPartyTitle] = useState(urlParams.get('title') || '');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [partyTitle, setPartyTitle] = useState('');
   const [creating, setCreating] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [uploadPct, setUploadPct] = useState(0);
-  const createFileRef = React.useRef(null);
   const [syncData, setSyncData] = useState(null);
   const [activePanel, setActivePanel] = useState('chat');
   const [reactionCount, setReactionCount] = useState(0);
@@ -360,83 +357,11 @@ export default function WatchPartyPage() {
 
   const isHost = party?.host_id === user?.id;
 
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(partyId, localStream);
-
-  // Announce into the WebRTC peer mesh once we have media + identity
-  const announceRef = useRef(announceJoin);
-  const leaveRef = useRef(leaveRoom);
-  const announcedRef = useRef(false);
-  useEffect(() => { announceRef.current = announceJoin; }, [announceJoin]);
-  useEffect(() => { leaveRef.current = leaveRoom; }, [leaveRoom]);
-  useEffect(() => {
-    if (!localStream || !user?.id || announcedRef.current || !partyId) return;
-    announcedRef.current = true;
-    announceRef.current?.(user.id);
-  }, [localStream, user?.id, partyId]);
-  useEffect(() => () => leaveRef.current?.(), []);
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
-  const [pinnedMemberId, setPinnedMemberId] = useState(null);
-  const [pinnedMessage, setPinnedMessage] = useState('');
-  const [slowMode, setSlowMode] = useState(false);
-  const [slowCooldown, setSlowCooldown] = useState(30);
-  const [countdown, setCountdown] = useState(null); // seconds remaining
-  const countdownRef = React.useRef(null);
-
-  const handleSlowMode = (enabled, cooldown) => {
-    setSlowMode(enabled);
-    setSlowCooldown(cooldown);
-  };
-
-  const handleStartCountdown = (secs) => {
-    clearInterval(countdownRef.current);
-    setCountdown(secs);
-    countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev === null || prev <= 1) { clearInterval(countdownRef.current); return null; }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const handleCancelCountdown = () => {
-    clearInterval(countdownRef.current);
-    setCountdown(null);
-  };
-
-  React.useEffect(() => () => clearInterval(countdownRef.current), []);
-
-  const fmtCountdown = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
-
-  const handleMuteMember = async (member) => {
-    if (!isHost) return;
-    try {
-      await base44.entities.WatchPartyMember.update(member.id, { is_audio_enabled: false });
-      qc.invalidateQueries(['watchparty-members', partyId]);
-      toast.success(`${member.user_name} muted`);
-    } catch (_) { toast.error('Could not mute member'); }
-  };
-
-  const handleRemoveMember = async (member) => {
-    if (!isHost) return;
-    try {
-      await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
-      qc.invalidateQueries(['watchparty-members', partyId]);
-      toast.success(`${member.user_name} removed`);
-    } catch (_) { toast.error('Could not remove member'); }
-  };
-
-  const handlePinMember = (member) => {
-    if (!isHost) return;
-    setPinnedMemberId(prev => prev === member.user_id ? null : member.user_id);
-    toast.success(pinnedMemberId === member.user_id ? 'Unpinned' : `${member.user_name} pinned for stream`);
-  };
 
   const handleScreenCapture = async () => {
     if (screenCaptureStream) {
@@ -613,76 +538,40 @@ export default function WatchPartyPage() {
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
           />
           <div className="space-y-2">
-            <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Video Source</p>
-            <div className="grid grid-cols-3 gap-2">
+            <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Video Source</p>
+            <div className="grid grid-cols-2 gap-2">
               {[
-                { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF0000' },
-                { id: 'direct',  label: 'Link/URL', icon: Video,   color: '#00d4ff' },
-                { id: 'device',  label: 'Upload',   icon: Plus,    color: '#d4af37' },
+                { id: 'youtube', label: 'YouTube URL', icon: Youtube, color: '#FF0000', placeholder: 'https://youtube.com/watch?v=...' },
+                { id: 'direct', label: 'Direct URL', icon: Video, color: '#00d4ff', placeholder: 'https://example.com/video.mp4' },
               ].map(opt => (
                 <button key={opt.id}
-                  onClick={() => { setVideoUrl(''); if (opt.id === 'device') createFileRef.current?.click(); }}
-                  className="flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-xl text-xs font-bold transition-all"
-                  style={{ background: `${opt.color}12`, border: `1px solid ${opt.color}30`, color: opt.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  <opt.icon className="w-3.5 h-3.5" /> {opt.label}
+                  onClick={() => { setVideoUrl(''); }}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: `${opt.color}12`, border: `1px solid ${opt.color}30`, color: opt.color }}>
+                  <opt.icon className="w-4 h-4" /> {opt.label}
                 </button>
               ))}
             </div>
-            <input
-              ref={createFileRef}
-              type="file"
-              accept="video/*"
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                setUploadingVideo(true);
-                setUploadPct(0);
-                const prog = setInterval(() => setUploadPct(p => Math.min(p + 10, 88)), 400);
-                try {
-                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                  clearInterval(prog);
-                  setUploadPct(100);
-                  setVideoUrl(file_url);
-                  toast.success(`🎬 ${file.name} ready!`);
-                } catch (_) {
-                  toast.error('Upload failed');
-                } finally {
-                  clearInterval(prog);
-                  setTimeout(() => { setUploadingVideo(false); setUploadPct(0); }, 600);
-                }
-              }}
+            <Input
+              placeholder="YouTube URL or direct video URL"
+              value={videoUrl}
+              onChange={e => setVideoUrl(e.target.value)}
+              className="h-11 text-white placeholder:text-white/30"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
-            {uploadingVideo && (
-              <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin shrink-0" />
-                  <span className="text-xs font-bold" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>Uploading… {uploadPct}%</span>
-                </div>
-                <div style={{ height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
-                  <div style={{ height: '100%', width: uploadPct + '%', background: 'linear-gradient(90deg, #800020, #d4af37)', borderRadius: 2, transition: 'width 0.3s' }} />
-                </div>
-              </div>
-            )}
-            {!uploadingVideo && (
-              <Input
-                placeholder="YouTube URL, video URL, or HLS stream"
-                value={videoUrl}
-                onChange={e => setVideoUrl(e.target.value)}
-                className="h-11 text-white placeholder:text-white/30"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-              />
-            )}
             {videoUrl && (
               <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#00d4ff' }}>
                 {detectType(videoUrl) === 'youtube'
-                  ? <><Youtube className="w-3.5 h-3.5" /> YouTube detected {getYouTubeId(videoUrl) && '✓'}</>
+                  ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
                   : <><Video className="w-3.5 h-3.5" /> Direct video URL</>}
               </div>
             )}
             {videoUrl && getYouTubeId(videoUrl) && (
-              <img src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
-                className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }} alt="preview" />
+              <img
+                src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
+                className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
+                alt="preview"
+              />
             )}
           </div>
           <Button
@@ -711,15 +600,7 @@ export default function WatchPartyPage() {
     <div className={`flex flex-col overflow-hidden transition-all duration-300 ${theaterMode ? 'h-screen fixed inset-0 z-50' : 'h-[calc(100vh-120px)]'}`} style={{ background: '#0B0B18' }}>
       <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
 
-        {/* Row 1: ← back | title + badges | right actions */}
         <div className="flex items-center gap-2 px-3 h-12">
-          <button
-            onClick={() => window.history.back()}
-            className="w-8 h-8 flex items-center justify-center rounded-xl shrink-0 transition-all active:scale-95"
-            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
-            <LogOut className="w-3.5 h-3.5" style={{ transform: 'scaleX(-1)' }} />
-          </button>
-
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <h2 className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</h2>
             <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
@@ -779,24 +660,14 @@ export default function WatchPartyPage() {
           </div>
         </div>
 
-        {/* Row 2: host avatar + name | member count | speaking indicator | sync */}
         <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: 'rgba(0,0,0,0.25)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
           <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[11px] font-black text-white"
             style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
-            {(party.host_name || user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
+            {(user?.full_name || user?.email || 'H').charAt(0).toUpperCase()}
           </div>
           <span className="text-[10px] text-white/50 truncate max-w-[80px]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {party.host_name || user?.full_name || 'Host'}
+            {user?.full_name || 'Host'}
           </span>
-          <span className="text-white/15 mx-0.5">·</span>
-          {(() => {
-            const speaker = members.find(m => m.is_speaking);
-            return speaker ? (
-              <span className="text-[11px] truncate max-w-[90px]" style={{ color: '#00F5FF', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                🎙 {speaker.user_name} speaking
-              </span>
-            ) : null;
-          })()}
           <span className="text-white/15 mx-0.5">·</span>
           <Users className="w-3 h-3 shrink-0" style={{ color: '#d4af37' }} />
           <span className="text-[10px] font-bold shrink-0" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{members.length}/20</span>
@@ -813,13 +684,13 @@ export default function WatchPartyPage() {
           )}
           {isHost ? (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#00FF88' }} />
-              <span className="text-[11px] font-mono" style={{ color: 'rgba(0,255,136,0.6)' }}>±0ms</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>±0ms</span>
             </span>
           ) : (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#00FF88' }} />
-              <span className="text-[11px] font-mono" style={{ color: 'rgba(0,255,136,0.6)' }}>Live Sync ±{Math.abs(syncDrift)}ms</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>Live Sync ±{Math.abs(syncDrift)}ms</span>
             </span>
           )}
         </div>
@@ -834,45 +705,6 @@ export default function WatchPartyPage() {
             Resync
           </button>
         </div>
-      )}
-
-      {/* Countdown banner overlay */}
-      {countdown !== null && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="shrink-0 flex items-center justify-between px-4 py-2"
-          style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.85), rgba(212,175,55,0.2))', borderBottom: '1px solid rgba(212,175,55,0.3)', backdropFilter: 'blur(8px)' }}
-        >
-          <div className="flex items-center gap-2">
-            <motion.span
-              animate={{ scale: [1, 1.12, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
-              className="text-lg">⏱</motion.span>
-            <div>
-              <p className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Event Starting In</p>
-              <motion.p
-                animate={{ color: countdown < 60 ? ['#FF1564', '#D4AF37', '#FF1564'] : '#D4AF37' }}
-                transition={{ duration: 1, repeat: countdown < 60 ? Infinity : 0 }}
-                className="font-black"
-                style={{ fontSize: 24, fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>
-                {fmtCountdown(countdown)}
-              </motion.p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col items-end">
-              <p className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{party.title}</p>
-              <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{members.length} watching</p>
-            </div>
-            {isHost && (
-              <button onClick={handleCancelCountdown} className="text-[11px] px-2 py-1 rounded"
-                style={{ background: 'rgba(255,21,100,0.12)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Cancel
-              </button>
-            )}
-          </div>
-        </motion.div>
       )}
 
       <div className="shrink-0 relative bg-black group" data-video-container style={{ aspectRatio: '16/9', width: '100%' }}>
@@ -929,37 +761,6 @@ export default function WatchPartyPage() {
 
       <LiveEmoticonStorm partyId={partyId} currentUser={user} />
 
-      {/* ── LIVE CONTROLS BAR — mic/cam toggles for all panel members ── */}
-      <div className="shrink-0 flex items-center justify-center gap-4 py-2 px-4"
-        style={{ background: 'rgba(8,11,24,0.97)', borderTop: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)' }}>
-        <button
-          onClick={toggleAudio}
-          className="w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90"
-          style={{ background: audioEnabled ? 'rgba(0,245,255,0.1)' : 'rgba(255,21,100,0.2)', border: `1px solid ${audioEnabled ? 'rgba(0,245,255,0.3)' : 'rgba(255,21,100,0.4)'}` }}
-          title={audioEnabled ? 'Mute mic' : 'Unmute mic'}>
-          {audioEnabled
-            ? <Mic className="w-4 h-4" style={{ color: '#00F5FF' }} />
-            : <MicOff className="w-4 h-4" style={{ color: '#FF1564' }} />}
-        </button>
-        <button
-          onClick={toggleVideo}
-          className="w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90"
-          style={{ background: videoEnabled ? 'rgba(0,245,255,0.1)' : 'rgba(255,21,100,0.2)', border: `1px solid ${videoEnabled ? 'rgba(0,245,255,0.3)' : 'rgba(255,21,100,0.4)'}` }}
-          title={videoEnabled ? 'Stop camera' : 'Start camera'}>
-          {videoEnabled
-            ? <Video className="w-4 h-4" style={{ color: '#00F5FF' }} />
-            : <VideoOff className="w-4 h-4" style={{ color: '#FF1564' }} />}
-        </button>
-        {remoteStreams.size > 0 && (
-          <span className="text-[11px] font-bold" style={{ color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            ● {remoteStreams.size} cam{remoteStreams.size !== 1 ? 's' : ''} live
-          </span>
-        )}
-        <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-          {members.length} in session
-        </span>
-      </div>
-
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
         <div className={`shrink-0 overflow-hidden ${theaterMode ? 'hidden md:block md:w-[160px] relative' : 'hidden md:block'}`}
@@ -974,10 +775,6 @@ export default function WatchPartyPage() {
             localStream={localStream}
             remoteStreams={remoteStreams}
             peerUserIds={peerUserIds}
-            onMuteMember={handleMuteMember}
-            onRemoveMember={handleRemoveMember}
-            onPinMember={handlePinMember}
-            pinnedMemberId={pinnedMemberId}
           />
         </div>
 
@@ -1023,32 +820,8 @@ export default function WatchPartyPage() {
                     ✨ AI Summary
                   </button>
                 </div>
-                {(isHost) && (
-                  <HostControls
-                    isHost={isHost}
-                    isCoHost={false}
-                    party={party}
-                    members={members}
-                    pinnedMessage={pinnedMessage}
-                    onPinMessage={setPinnedMessage}
-                    slowMode={slowMode}
-                    slowModeCooldown={slowCooldown}
-                    onSlowMode={handleSlowMode}
-                    countdown={countdown}
-                    onStartCountdown={handleStartCountdown}
-                    onCancelCountdown={handleCancelCountdown}
-                    onUpdate={(action) => {
-                      if (action?.action === 'kick') handleRemoveMember(action.member);
-                      else if (action?.action === 'promote') toast.success(`${action.member.user_name} promoted to co-host`);
-                    }}
-                  />
-                )}
-                {pinnedMessage && (
-                  <div className="flex items-start gap-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                    <span className="text-[10px] shrink-0" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>📌 PINNED</span>
-                    <span className="text-[11px] text-white/70 flex-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{pinnedMessage}</span>
-                    {isHost && <button onClick={() => setPinnedMessage('')} className="text-white/30 hover:text-white shrink-0 text-[10px]">✕</button>}
-                  </div>
+                {isHost && (
+                  <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
                 {members.length < 10 && (
@@ -1098,10 +871,6 @@ export default function WatchPartyPage() {
                 localStream={localStream}
                 remoteStreams={remoteStreams}
                 peerUserIds={peerUserIds}
-                onMuteMember={handleMuteMember}
-                onRemoveMember={handleRemoveMember}
-                onPinMember={handlePinMember}
-                pinnedMemberId={pinnedMemberId}
               />
             )}
             {activePanel === 'battle' && (

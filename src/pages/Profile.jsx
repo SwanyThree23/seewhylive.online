@@ -181,21 +181,21 @@ export default function ProfilePage() {
     subscriptions.length > 0 && {
       id: 'subs',
       icon: TrendingUp,
-      color: '#00F5FF',
+      color: '#C9A84C',
       desc: `${subscriptions.length} active subscription${subscriptions.length !== 1 ? 's' : ''}`,
       time: 'Active now',
     },
     completedReferrals > 0 && {
       id: 'refs',
       icon: Gift,
-      color: '#8B5CF6',
+      color: '#D4AF37',
       desc: `${completedReferrals} completed referral${completedReferrals !== 1 ? 's' : ''}`,
       time: 'Recent',
     },
     inventory.length > 0 && {
       id: 'inv',
       icon: Award,
-      color: '#00FF88',
+      color: '#6DBF7E',
       desc: `${inventory.length} virtual item${inventory.length !== 1 ? 's' : ''} in inventory`,
       time: 'Collected',
     },
@@ -248,8 +248,8 @@ export default function ProfilePage() {
                   </p>
                   {isOnline && (
                     <span className="flex items-center gap-1 text-[10px] font-black"
-                      style={{ color: '#00FF88', ...T }}>
-                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#00FF88' }} />
+                      style={{ color: '#6DBF7E', ...T }}>
+                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#6DBF7E' }} />
                       Online
                     </span>
                   )}
@@ -322,9 +322,9 @@ export default function ProfilePage() {
         {/* ── stats row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} />
-          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#00F5FF" />
-          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#8B5CF6" />
-          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#00FF88" />
+          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#C9A84C" />
+          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#D4AF37" />
+          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#6DBF7E" />
         </div>
 
         {/* ── section tabs ── */}
@@ -385,7 +385,7 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#00F5FF' },
+                  { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
                 ].map(item => (
                   <Link key={item.href} to={item.href}>
                     <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110"
@@ -545,7 +545,7 @@ export default function ProfilePage() {
                           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>${sub.price}/month</p>
                         </div>
                         <span className="px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
-                          style={{ background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.2)', color: '#00FF88', ...T }}>
+                          style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E', ...T }}>
                           Active
                         </span>
                       </div>

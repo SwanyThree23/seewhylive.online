@@ -26,7 +26,7 @@ export default function ZEGOMobileAppBanner() {
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>SeeWhy LIVE Mobile</h3>
             <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
-              style={{ background: 'rgba(0,245,255,0.1)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.2)', ...T }}>
+              style={{ background: 'rgba(201,168,76,0.1)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.2)', ...T }}>
               Coming Soon
             </span>
           </div>
@@ -35,7 +35,7 @@ export default function ZEGOMobileAppBanner() {
 
           {/* Tech tag */}
           <div className="flex items-center gap-1.5 mb-4">
-            <Zap className="w-3 h-3" style={{ color: '#00F5FF' }} />
+            <Zap className="w-3 h-3" style={{ color: '#C9A84C' }} />
             <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Share Tech Mono, monospace' }}>
               Built on ZEGOCLOUD Ultra-Low Latency · React Native
             </p>

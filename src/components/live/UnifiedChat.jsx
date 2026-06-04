@@ -189,12 +189,12 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
               <div className="flex items-start gap-2">
                 {/* Avatar dot */}
                 <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-0.5"
-                  style={{ background: msg.user_id === currentUser?.id ? 'rgba(0,245,255,0.2)' : 'rgba(212,175,55,0.15)', color: msg.user_id === currentUser?.id ? '#00F5FF' : '#d4af37' }}>
+                  style={{ background: msg.user_id === currentUser?.id ? 'rgba(201,168,76,0.2)' : 'rgba(212,175,55,0.15)', color: msg.user_id === currentUser?.id ? '#C9A84C' : '#d4af37' }}>
                   {(msg.user_name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`text-[11px] font-bold ${msg.user_id === currentUser?.id ? 'text-[#00F5FF]' : 'text-[#d4af37]'}`}>
+                    <span className={`text-[11px] font-bold ${msg.user_id === currentUser?.id ? 'text-[#C9A84C]' : 'text-[#d4af37]'}`}>
                       {msg.user_name}
                     </span>
                     <MessageBadge type={msg.message_type} />

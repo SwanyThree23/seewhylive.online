@@ -65,6 +65,20 @@ var ANIMATION_STYLES = '' +
 
 var REACT_EMOJIS = ['❤️', '🔥', '😂', '💯', '😮', '👏'];
 
+var FEATURED_VIDEOS = [
+  { id: '7HwU_IDVKuc', url: 'https://youtu.be/7HwU_IDVKuc', channel: 'AIverse Podcast' },
+  { id: 'cDkr2u40oJc', url: 'https://youtu.be/cDkr2u40oJc', channel: 'AIverse Podcast' },
+  { id: '-o--N8NswMM', url: 'https://youtu.be/-o--N8NswMM', channel: 'AIverse Podcast' },
+  { id: 'sn-X0avptY0', url: 'https://youtu.be/sn-X0avptY0', channel: 'Domino Entertainment' },
+  { id: 'cFbjR6VFbnI', url: 'https://youtu.be/cFbjR6VFbnI', channel: 'Domino Entertainment' },
+  { id: 'RTR9Rt09qRY', url: 'https://youtu.be/RTR9Rt09qRY', channel: 'Domino Entertainment' },
+];
+
+var PARTNER_CHANNELS = [
+  { name: 'AIverse Podcast',      handle: '@aiversepodcast',         url: 'https://youtube.com/@aiversepodcast' },
+  { name: 'Domino Entertainment', handle: '@dominoentertainment5513', url: 'https://youtube.com/@dominoentertainment5513' },
+];
+
 export default function WatchPartyTab(props) {
   var guests   = props.guests;
   var socket   = props.socket;
@@ -75,13 +89,15 @@ export default function WatchPartyTab(props) {
   var chat     = props.chat;
 
   // --- video / player state ---
-  var [urlInput,   setUrlInput]   = useState('');
-  var [videoId,    setVideoId]    = useState('');
-  var [playing,    setPlaying]    = useState(false);
-  var [position,   setPosition]   = useState(0);
-  var [duration,   setDuration]   = useState(0);
-  var [ytReady,    setYtReady]    = useState(false);
-  var [synced,     setSynced]     = useState(true);
+  var [urlInput,     setUrlInput]     = useState('');
+  var [videoId,      setVideoId]      = useState('');
+  var [directUrl,    setDirectUrl]    = useState('');
+  var [localFileUrl, setLocalFileUrl] = useState('');
+  var [playing,      setPlaying]      = useState(false);
+  var [position,     setPosition]     = useState(0);
+  var [duration,     setDuration]     = useState(0);
+  var [ytReady,      setYtReady]      = useState(false);
+  var [synced,       setSynced]       = useState(true);
 
   // --- party meta ---
   var [watchPartyActive, setWatchPartyActive] = useState(false);
@@ -120,6 +136,9 @@ export default function WatchPartyTab(props) {
   // --- sync latency ---
   var [syncMs, setSyncMs] = useState(null);
 
+  // --- featured panel ---
+  var [showFeatured, setShowFeatured] = useState(false);
+
   // --- AI Summary ---
   var [aiSummary,    setAiSummary]    = useState('');
   var [aiLoading,    setAiLoading]    = useState(false);
@@ -127,10 +146,13 @@ export default function WatchPartyTab(props) {
 
   // refs
   var playerRef        = useRef(null);
+  var videoRef2        = useRef(null);
+  var fileInputRef     = useRef(null);
   var posRef           = useRef(0);
   var tickRef          = useRef(null);
   var ytDivRef         = useRef(null);
   var partyViewerRef   = useRef(null);
+  var sourceTypeRef    = useRef(sourceType);
 
   var isHost     = role === 'host' || role === 'cohost';
   var liveGuests = (guests || []).filter(function(g) { return g.live !== false; });
@@ -139,14 +161,18 @@ export default function WatchPartyTab(props) {
   var prog      = duration > 0 ? Math.min(100, Math.floor((position / duration) * 100)) : 0;
   var remaining = duration > 0 ? Math.floor(duration - position) : 0;
 
+  // Keep sourceTypeRef current
+  useEffect(function() { sourceTypeRef.current = sourceType; }, [sourceType]);
+
   // ─────────────────────────────────────────────
   // YouTube URL auto-detection
   // ─────────────────────────────────────────────
   useEffect(function() {
+    if (sourceType !== 'youtube') { setYtDetected(false); return; }
     var id = extractYtId(urlInput);
     setYtDetected(id.length > 0);
     if (id) setVideoId(id);
-  }, [urlInput]);
+  }, [urlInput, sourceType]);
 
   // ─────────────────────────────────────────────
   // Party viewer drift simulation
@@ -299,9 +325,41 @@ export default function WatchPartyTab(props) {
   useEffect(function() {
     if (!socket) return;
 
+    function _playerSeekTo(pos) {
+      if (sourceTypeRef.current === 'youtube') {
+        if (playerRef.current) { try { playerRef.current.seekTo(pos, true); } catch(e) {} }
+      } else if (videoRef2.current) {
+        videoRef2.current.currentTime = pos;
+      }
+    }
+    function _playerPlay() {
+      if (sourceTypeRef.current === 'youtube') {
+        if (playerRef.current) { try { playerRef.current.playVideo(); } catch(e) {} }
+      } else if (videoRef2.current) {
+        videoRef2.current.play().catch(function() {});
+      }
+    }
+    function _playerPause() {
+      if (sourceTypeRef.current === 'youtube') {
+        if (playerRef.current) { try { playerRef.current.pauseVideo(); } catch(e) {} }
+      } else if (videoRef2.current) {
+        videoRef2.current.pause();
+      }
+    }
+
     function onWatchUrl(data) {
-      if (!data || !data.videoId) return;
-      setVideoId(data.videoId);
+      if (!data) return;
+      var type = data.type || (data.videoId ? 'youtube' : 'direct');
+      setSourceType(type);
+      if (type === 'youtube' && data.videoId) {
+        setVideoId(data.videoId);
+        setDirectUrl('');
+        setLocalFileUrl('');
+      } else if (data.url) {
+        setDirectUrl(data.url);
+        setVideoId('');
+        setLocalFileUrl('');
+      }
       setUrlInput(data.url || '');
       setPosition(0);
       setPlaying(false);
@@ -311,25 +369,21 @@ export default function WatchPartyTab(props) {
     function onWatchPlay(data) {
       if (!data) return;
       setPlaying(true);
-      if (!isHost && playerRef.current) {
-        try {
-          var serverPos = data.position || 0;
-          var elapsed   = (Date.now() - (data.timestamp || Date.now())) / 1000;
-          playerRef.current.seekTo(serverPos + elapsed, true);
-          playerRef.current.playVideo();
-        } catch(e) {}
+      if (!isHost) {
+        var serverPos = data.position || 0;
+        var elapsed   = (Date.now() - (data.timestamp || Date.now())) / 1000;
+        _playerSeekTo(serverPos + elapsed);
+        _playerPlay();
       }
     }
 
     function onWatchPause(data) {
       setPlaying(false);
-      if (!isHost && playerRef.current) {
-        try {
-          if (data && typeof data.position === 'number') {
-            playerRef.current.seekTo(data.position, true);
-          }
-          playerRef.current.pauseVideo();
-        } catch(e) {}
+      if (!isHost) {
+        if (data && typeof data.position === 'number') {
+          _playerSeekTo(data.position);
+        }
+        _playerPause();
       }
     }
 
@@ -337,27 +391,35 @@ export default function WatchPartyTab(props) {
       if (!data || typeof data.position !== 'number') return;
       setPosition(Math.floor(data.position));
       posRef.current = data.position;
-      if (!isHost && playerRef.current) {
-        try { playerRef.current.seekTo(data.position, true); } catch(e) {}
+      if (!isHost) {
+        _playerSeekTo(data.position);
       }
     }
 
     function onWatchSync(data) {
       if (!data) return;
-      if (data.videoId) { setVideoId(data.videoId); setWatchPartyActive(true); }
+      var type = data.type || (data.videoId ? 'youtube' : 'direct');
+      setSourceType(type);
+      if (data.videoId) {
+        setVideoId(data.videoId);
+        setDirectUrl('');
+        setWatchPartyActive(true);
+      } else if (data.url) {
+        setDirectUrl(data.url);
+        setVideoId('');
+        setWatchPartyActive(true);
+      }
       if (typeof data.position === 'number') {
         setPosition(Math.floor(data.position));
         posRef.current = data.position;
-        if (playerRef.current) {
-          try { playerRef.current.seekTo(data.position, true); } catch(e) {}
-        }
+        _playerSeekTo(data.position);
       }
       if (data.playing) {
         setPlaying(true);
-        if (playerRef.current) { try { playerRef.current.playVideo(); } catch(e) {} }
+        _playerPlay();
       } else {
         setPlaying(false);
-        if (playerRef.current) { try { playerRef.current.pauseVideo(); } catch(e) {} }
+        _playerPause();
       }
     }
 
@@ -388,19 +450,16 @@ export default function WatchPartyTab(props) {
         setSyncMs(Math.abs(Date.now() - data.timestamp));
       }
       if (isHost) return;
-      if (!playerRef.current) return;
-      try {
-        if (data.action === 'play') {
-          playerRef.current.seekTo(data.position || 0, true);
-          playerRef.current.playVideo();
-          setPlaying(true);
-        } else if (data.action === 'pause') {
-          playerRef.current.pauseVideo();
-          setPlaying(false);
-        } else if (data.action === 'seek') {
-          playerRef.current.seekTo(data.position || 0, true);
-        }
-      } catch(e) {}
+      if (data.action === 'play') {
+        _playerSeekTo(data.position || 0);
+        _playerPlay();
+        setPlaying(true);
+      } else if (data.action === 'pause') {
+        _playerPause();
+        setPlaying(false);
+      } else if (data.action === 'seek') {
+        _playerSeekTo(data.position || 0);
+      }
     }
 
     socket.on('watch-party-url',    onWatchUrl);
@@ -428,7 +487,7 @@ export default function WatchPartyTab(props) {
       socket.off('screen-share-ended', onScreenShareEnded);
       socket.off('watch-sync',         onSyncAction);
     };
-  }, [socket, isHost]);
+  }, [socket, isHost, sourceType]);
 
   // ─────────────────────────────────────────────
   // 4K constraint when toggled
@@ -461,25 +520,84 @@ export default function WatchPartyTab(props) {
   }
 
   function handleLoadUrl() {
-    var vid = extractYtId(urlInput.trim());
-    if (!vid) {
-      if (addToast) addToast('Invalid YouTube URL — paste a full youtube.com/watch?v= link', 'error');
+    var raw = urlInput.trim();
+    if (!raw) {
+      if (addToast) addToast('Paste a video URL first', 'error');
       return;
     }
-    setVideoId(vid);
-    setCurrentTitle(urlInput.trim());
-    setPosition(0);
-    posRef.current = 0;
-    if (socket && roomId) {
-      socket.emit('watch-party-url', { roomId: roomId, videoId: vid, url: urlInput.trim() });
+    if (sourceType === 'youtube') {
+      var vid = extractYtId(raw);
+      if (!vid) {
+        if (addToast) addToast('Invalid YouTube URL — paste a youtube.com/watch?v= link', 'error');
+        return;
+      }
+      setVideoId(vid);
+      setDirectUrl('');
+      setLocalFileUrl('');
+      setCurrentTitle(raw);
+      setPosition(0); posRef.current = 0;
+      if (socket && roomId) {
+        socket.emit('watch-party-url', { roomId: roomId, videoId: vid, url: raw, type: 'youtube' });
+      }
+      if (addToast) addToast('Loading YouTube video for all guests...', 'info');
+    } else {
+      // Direct URL (MP4, WebM, HLS, etc.)
+      setDirectUrl(raw);
+      setVideoId('');
+      setLocalFileUrl('');
+      setCurrentTitle(raw.split('/').pop() || raw);
+      setPosition(0); posRef.current = 0;
+      setDuration(0);
+      if (socket && roomId) {
+        socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: raw, type: 'direct' });
+      }
+      if (addToast) addToast('Loading direct video...', 'info');
     }
-    if (addToast) addToast('Loading video for all guests...', 'info');
+  }
+
+  function handleFileSelect(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (localFileUrl) URL.revokeObjectURL(localFileUrl);
+    var blob = URL.createObjectURL(file);
+    setLocalFileUrl(blob);
+    setDirectUrl(blob);
+    setVideoId('');
+    setCurrentTitle(file.name);
+    setPosition(0); posRef.current = 0;
+    setDuration(0);
+    if (addToast) addToast('Local file loaded: ' + file.name, 'success');
+    // Local blob URLs can't be shared with other users
+  }
+
+  function _playerPlay() {
+    if (sourceType === 'youtube') {
+      if (playerRef.current) { try { playerRef.current.playVideo(); } catch(e) {} }
+    } else if (videoRef2.current) {
+      videoRef2.current.play().catch(function() {});
+    }
+  }
+
+  function _playerPause() {
+    if (sourceType === 'youtube') {
+      if (playerRef.current) { try { playerRef.current.pauseVideo(); } catch(e) {} }
+    } else if (videoRef2.current) {
+      videoRef2.current.pause();
+    }
+  }
+
+  function _playerSeekTo(pos) {
+    if (sourceType === 'youtube') {
+      if (playerRef.current) { try { playerRef.current.seekTo(pos, true); } catch(e) {} }
+    } else if (videoRef2.current) {
+      videoRef2.current.currentTime = pos;
+    }
   }
 
   function handlePlay() {
     var pos = posRef.current;
     setPlaying(true);
-    if (playerRef.current) { try { playerRef.current.playVideo(); } catch(e) {} }
+    _playerPlay();
     if (socket && roomId) {
       socket.emit('watch-party-play', { roomId: roomId, position: pos, timestamp: Date.now() });
     }
@@ -488,7 +606,7 @@ export default function WatchPartyTab(props) {
   function handlePause() {
     var pos = posRef.current;
     setPlaying(false);
-    if (playerRef.current) { try { playerRef.current.pauseVideo(); } catch(e) {} }
+    _playerPause();
     if (socket && roomId) {
       socket.emit('watch-party-pause', { roomId: roomId, position: pos });
     }
@@ -501,7 +619,7 @@ export default function WatchPartyTab(props) {
     var newPos = pct * (duration || 1);
     posRef.current = newPos;
     setPosition(Math.floor(newPos));
-    if (playerRef.current) { try { playerRef.current.seekTo(newPos, true); } catch(e2) {} }
+    _playerSeekTo(newPos);
     if (socket && roomId) {
       socket.emit('watch-party-seek', { roomId: roomId, position: newPos });
     }
@@ -512,7 +630,9 @@ export default function WatchPartyTab(props) {
     if (socket && roomId) {
       socket.emit('watch-party-sync', {
         roomId:   roomId,
-        videoId:  videoId,
+        videoId:  videoId || null,
+        url:      directUrl || '',
+        type:     sourceType,
         position: pos,
         playing:  playing
       });
@@ -523,8 +643,22 @@ export default function WatchPartyTab(props) {
   function handleCreateParty() {
     setShowCreatePanel(false);
     setWatchPartyActive(true);
-    if (addToast) addToast('Watch Party started! Sharing with room.', 'success');
     if (socket) socket.emit('watch-party-start', { roomId: roomId });
+    // Auto-broadcast whatever URL/file was entered in the create panel
+    var raw = urlInput.trim();
+    if (raw && sourceType === 'youtube') {
+      var vid = extractYtId(raw);
+      if (vid) {
+        setVideoId(vid);
+        if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: vid, url: raw, type: 'youtube' });
+      }
+    } else if (raw && sourceType === 'direct') {
+      setDirectUrl(raw);
+      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: raw, type: 'direct' });
+    } else if (localFileUrl) {
+      setDirectUrl(localFileUrl);
+    }
+    if (addToast) addToast('Watch Party started!', 'success');
   }
 
   // ── Screen Share ──────────────────────────────
@@ -582,14 +716,44 @@ export default function WatchPartyTab(props) {
     if (addToast) addToast('Sync – ' + action + ' sent to all viewers', 'success');
   }
 
+  // ── Featured handlers ─────────────────────────
+  function handleLoadFeatured(item) {
+    setVideoId(item.id);
+    setDirectUrl('');
+    setLocalFileUrl('');
+    setSourceType('youtube');
+    setUrlInput(item.url);
+    setCurrentTitle(item.channel);
+    setPosition(0); posRef.current = 0;
+    if (socket && roomId) {
+      socket.emit('watch-party-url', { roomId: roomId, videoId: item.id, url: item.url, type: 'youtube' });
+    }
+    if (!watchPartyActive) {
+      setWatchPartyActive(true);
+      setShowCreatePanel(false);
+      if (socket) socket.emit('watch-party-start', { roomId: roomId });
+    }
+    setShowFeatured(false);
+    if (addToast) addToast('Loading: ' + item.channel, 'info');
+  }
+
+  function handleAddFeaturedToQueue(item) {
+    var qitem = { id: Date.now() + Math.random(), title: item.channel, url: item.url, videoId: item.id, type: 'youtube', addedBy: 'host', duration: 0 };
+    setQueue(function(q) { return q.concat([qitem]); });
+    if (addToast) addToast('Added to queue: ' + item.channel, 'success');
+  }
+
   // ── Queue handlers ───────────────────────────
   function handleAddToQueue() {
-    var vid = extractYtId(queueInput.trim());
-    if (!vid) {
-      if (addToast) addToast('Invalid YouTube URL for queue', 'error');
-      return;
+    var raw = queueInput.trim();
+    if (!raw) { if (addToast) addToast('Enter a URL to add', 'error'); return; }
+    var vid = extractYtId(raw);
+    var item;
+    if (vid) {
+      item = { id: Date.now() + Math.random(), title: raw, url: raw, videoId: vid, type: 'youtube', addedBy: 'host', duration: 0 };
+    } else {
+      item = { id: Date.now() + Math.random(), title: raw.split('/').pop() || raw, url: raw, videoId: null, type: 'direct', addedBy: 'host', duration: 0 };
     }
-    var item = { id: Date.now() + Math.random(), title: queueInput.trim(), url: queueInput.trim(), videoId: vid, addedBy: 'host', duration: 0 };
     setQueue(function(q) { return q.concat([item]); });
     setQueueInput('');
     if (addToast) addToast('Added to queue', 'success');
@@ -615,13 +779,15 @@ export default function WatchPartyTab(props) {
     var item = queue[idx];
     if (!item) return;
     setQueue(function(q) { return q.filter(function(_, i) { return i !== idx; }); });
-    setVideoId(item.videoId);
     setCurrentTitle(item.title || item.url);
     setUrlInput(item.url || '');
-    setPosition(0);
-    posRef.current = 0;
-    if (socket && roomId) {
-      socket.emit('watch-party-url', { roomId: roomId, videoId: item.videoId, url: item.url });
+    setPosition(0); posRef.current = 0;
+    if (item.videoId) {
+      setVideoId(item.videoId); setDirectUrl(''); setSourceType('youtube');
+      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: item.videoId, url: item.url, type: 'youtube' });
+    } else {
+      setDirectUrl(item.url); setVideoId(''); setSourceType('direct');
+      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: item.url, type: 'direct' });
     }
   }
 
@@ -659,18 +825,42 @@ export default function WatchPartyTab(props) {
 
       {/* ── URL INPUT ROW (host only, when active) ── */}
       {watchPartyActive && isHost && (
-        <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '6px 10px', display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+        <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '6px 10px', display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Source type picker */}
+          <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+            {[{ k: 'youtube', l: '▶ YT' }, { k: 'direct', l: '🎥 URL/File' }].map(function(s) {
+              return (
+                <button key={s.k} onClick={function() { setSourceType(s.k); }}
+                  style={{ background: sourceType === s.k ? 'rgba(201,168,76,.2)' : 'transparent', border: '1px solid ' + (sourceType === s.k ? 'rgba(201,168,76,.4)' : DIM), borderRadius: 5, padding: '4px 8px', color: sourceType === s.k ? GOLD : MUTED, fontFamily: "'DM Mono',monospace", fontSize: 7.5, cursor: 'pointer', letterSpacing: .5 }}>
+                  {s.l}
+                </button>
+              );
+            })}
+          </div>
           <input
             value={urlInput}
             onChange={function(e) { setUrlInput(e.target.value); }}
             onKeyDown={function(e) { if (e.key === 'Enter') handleLoadUrl(); }}
-            placeholder="Paste YouTube URL..."
-            style={{ flex: 1, background: 'rgba(14,12,9,.9)', border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none' }}
+            placeholder={sourceType === 'direct' ? 'Paste MP4/WebM/HLS URL...' : 'Paste YouTube URL...'}
+            style={{ flex: 1, background: 'rgba(14,12,9,.9)', border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 9, outline: 'none', minWidth: 100 }}
           />
+          {sourceType === 'direct' && (
+            <button
+              onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }}
+              style={{ background: 'rgba(212,133,74,.1)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 6, padding: '6px 8px', color: AMBER, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', flexShrink: 0, letterSpacing: .5 }}>
+              📂 FILE
+            </button>
+          )}
+          <input type="file" ref={fileInputRef} accept="video/*" onChange={handleFileSelect} style={{ display: 'none' }} />
           <button
             onClick={handleLoadUrl}
             style={{ background: BURG, border: 'none', borderRadius: 6, padding: '6px 12px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
             LOAD
+          </button>
+          <button
+            onClick={function() { setShowFeatured(function(o) { return !o; }); }}
+            style={{ background: showFeatured ? 'rgba(201,168,76,.2)' : 'rgba(255,255,255,.04)', border: '1px solid ' + (showFeatured ? 'rgba(201,168,76,.4)' : DIM), borderRadius: 6, padding: '6px 10px', color: showFeatured ? GOLD : MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', flexShrink: 0, letterSpacing: 1 }}>
+            🎬 PICKS
           </button>
           {/* Queue toggle */}
           <button
@@ -695,6 +885,55 @@ export default function WatchPartyTab(props) {
               + QUEUE
             </button>
           )}
+        </div>
+      )}
+
+      {/* ── FEATURED / PICKS PANEL (active party, host) ── */}
+      {watchPartyActive && isHost && showFeatured && (
+        <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '10px 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: TEXT, letterSpacing: 2 }}>🎬 SEEWHY PICKS</span>
+            <button onClick={function() { setShowFeatured(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, padding: 0 }}>✕</button>
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            {PARTNER_CHANNELS.map(function(ch) {
+              return (
+                <a key={ch.handle} href={ch.url} target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 6, padding: '5px 8px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 7, textDecoration: 'none', textAlign: 'center', letterSpacing: .5, display: 'block' }}>
+                  📺 {ch.name}<br/>
+                  <span style={{ color: MUTED, fontSize: 6 }}>{ch.handle}</span>
+                </a>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+            {FEATURED_VIDEOS.map(function(item) {
+              return (
+                <div key={item.id} style={{ flexShrink: 0, width: 120, background: CARD, borderRadius: 8, border: '1px solid ' + BORDER, overflow: 'hidden' }}>
+                  <img
+                    src={'https://img.youtube.com/vi/' + item.id + '/mqdefault.jpg'}
+                    alt={item.channel}
+                    style={{ width: '100%', height: 68, objectFit: 'cover', display: 'block' }}
+                  />
+                  <div style={{ padding: '5px 6px' }}>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: .3, marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.channel}</div>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button
+                        onClick={function() { handleLoadFeatured(item); }}
+                        style={{ flex: 1, background: BURG, border: 'none', borderRadius: 4, padding: '4px 0', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, cursor: 'pointer', letterSpacing: .5 }}>
+                        ▶ NOW
+                      </button>
+                      <button
+                        onClick={function() { handleAddFeaturedToQueue(item); }}
+                        style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '4px 7px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' }}>
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -726,9 +965,9 @@ export default function WatchPartyTab(props) {
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>Video Source</div>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             {[
-              { key: 'youtube', label: '🔴 YouTube',   enabled: true },
-              { key: 'twitch',  label: '🟪 Twitch',    enabled: false },
-              { key: 'direct',  label: '🎥 Direct URL', enabled: false }
+              { key: 'youtube', label: '🔴 YouTube',    enabled: true },
+              { key: 'twitch',  label: '🟤 Twitch',     enabled: false },
+              { key: 'direct',  label: '🎥 Direct / File', enabled: true }
             ].map(function(src) {
               return (
                 <button
@@ -760,9 +999,44 @@ export default function WatchPartyTab(props) {
           <input
             value={urlInput}
             onChange={function(e) { setUrlInput(e.target.value); }}
-            placeholder="Paste YouTube URL (youtube.com/watch?v=...)"
-            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, outline: 'none', marginBottom: 6 }}
+            placeholder={sourceType === 'direct' ? 'Paste MP4/WebM/HLS URL...' : 'Paste YouTube URL (youtube.com/watch?v=...)'}
+            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, outline: 'none', marginBottom: sourceType === 'direct' ? 6 : 6 }}
           />
+
+          {sourceType === 'direct' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <div style={{ flex: 1, height: 1, background: 'rgba(201,168,76,.1)' }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1 }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: 'rgba(201,168,76,.1)' }} />
+            </div>
+          )}
+
+          {sourceType === 'direct' && (
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="video/*"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+              />
+              <button
+                onClick={function() { if (fileInputRef.current) fileInputRef.current.click(); }}
+                style={{ width: '100%', background: 'rgba(212,133,74,.08)', border: '1px dashed rgba(212,133,74,.4)', borderRadius: 7, padding: '10px', color: AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, marginBottom: 8 }}>
+                📂 UPLOAD FROM DEVICE
+              </button>
+              {localFileUrl && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: AMBER, marginBottom: 6, letterSpacing: 1 }}>
+                  ✓ {currentTitle || 'File loaded'} (device-only — not shared to room)
+                </div>
+              )}
+              {sourceType === 'direct' && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, marginBottom: 8, lineHeight: 1.5 }}>
+                  Supports MP4, WebM, HLS (.m3u8). Direct URLs sync to all guests. Device uploads are local only.
+                </div>
+              )}
+            </div>
+          )}
 
           {ytDetected && sourceType === 'youtube' && (
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: AMBER, marginBottom: 8, letterSpacing: 1 }}>
@@ -776,6 +1050,51 @@ export default function WatchPartyTab(props) {
               alt="Thumbnail"
               style={{ width: '100%', borderRadius: 8, marginBottom: 10, objectFit: 'cover', maxHeight: 100 }}
             />
+          )}
+
+          {/* SeeWhy Picks — quick-load curated content */}
+          {isHost && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>🎬 SeeWhy Picks — Quick Load</div>
+              {/* Partner channel chips */}
+              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                {PARTNER_CHANNELS.map(function(ch) {
+                  return (
+                    <a key={ch.handle} href={ch.url} target="_blank" rel="noopener noreferrer"
+                      style={{ flex: 1, background: 'rgba(201,168,76,.07)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 6, padding: '5px 6px', color: GOLD, fontFamily: "'DM Mono',monospace", fontSize: 6.5, textDecoration: 'none', textAlign: 'center', letterSpacing: .3, display: 'block' }}>
+                      📺 {ch.name}<br/>
+                      <span style={{ color: MUTED, fontSize: 6 }}>{ch.handle}</span>
+                    </a>
+                  );
+                })}
+              </div>
+              {/* Video thumbnail cards */}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+                {FEATURED_VIDEOS.map(function(item) {
+                  return (
+                    <div key={item.id} style={{ flexShrink: 0, width: 108, background: CARD2, borderRadius: 7, border: '1px solid ' + BORDER, overflow: 'hidden' }}>
+                      <img
+                        src={'https://img.youtube.com/vi/' + item.id + '/mqdefault.jpg'}
+                        alt={item.channel}
+                        style={{ width: '100%', height: 61, objectFit: 'cover', display: 'block' }}
+                      />
+                      <div style={{ padding: '4px 5px' }}>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: .3, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.channel}</div>
+                        <button
+                          onClick={function() {
+                            setUrlInput(item.url);
+                            setVideoId(item.id);
+                            setSourceType('youtube');
+                          }}
+                          style={{ width: '100%', background: BURG, border: 'none', borderRadius: 4, padding: '4px 0', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 8.5, cursor: 'pointer', letterSpacing: .5 }}>
+                          ▶ SELECT
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           <button
@@ -841,16 +1160,62 @@ export default function WatchPartyTab(props) {
               </button>
             )}
 
-            {/* YouTube player or placeholder */}
+            {/* Player area: YouTube / Direct HTML5 / Placeholder */}
             {videoId ? (
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                 <div ref={ytDivRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+              </div>
+            ) : directUrl ? (
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#000' }}>
+                <video
+                  ref={videoRef2}
+                  src={directUrl}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                  controls={isHost}
+                  onTimeUpdate={function() {
+                    if (!videoRef2.current) return;
+                    var t = videoRef2.current.currentTime;
+                    posRef.current = t;
+                    setPosition(Math.floor(t));
+                  }}
+                  onDurationChange={function() {
+                    if (videoRef2.current && !isNaN(videoRef2.current.duration)) {
+                      setDuration(Math.floor(videoRef2.current.duration));
+                    }
+                  }}
+                  onPlay={function() { setPlaying(true); }}
+                  onPause={function() { setPlaying(false); }}
+                  onEnded={function() {
+                    setPlaying(false);
+                    setQueue(function(q) {
+                      if (q.length === 0) return q;
+                      var next = q[0];
+                      var rest = q.slice(1);
+                      setCurrentTitle(next.title || next.url);
+                      setUrlInput(next.url || '');
+                      setPosition(0); posRef.current = 0;
+                      if (next.videoId) {
+                        setVideoId(next.videoId); setDirectUrl(''); setSourceType('youtube');
+                        if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: next.videoId, url: next.url, type: 'youtube' });
+                      } else {
+                        setDirectUrl(next.url); setVideoId(''); setSourceType('direct');
+                        if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: next.url, type: 'direct' });
+                      }
+                      return rest;
+                    });
+                  }}
+                />
+                {localFileUrl && directUrl === localFileUrl && (
+                  <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(212,133,74,.85)', borderRadius: 4, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: BG, letterSpacing: 1 }}>
+                    📂 LOCAL FILE
+                  </div>
+                )}
               </div>
             ) : (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '24px 20px' }}>
                 <div style={{ fontSize: 48, opacity: 0.2 }}>📺</div>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: MUTED, letterSpacing: 3, textAlign: 'center', lineHeight: 1.3 }}>
-                  {isHost ? 'PASTE A YOUTUBE LINK ABOVE TO START' : 'WAITING FOR HOST TO LOAD A VIDEO'}
+                  {isHost ? 'LOAD A VIDEO OR FILE ABOVE TO START' : 'WAITING FOR HOST TO LOAD A VIDEO'}
                 </div>
                 {!isHost && (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: DIM, textAlign: 'center' }}>
@@ -884,7 +1249,7 @@ export default function WatchPartyTab(props) {
             )}
 
             {/* ±Nms sync badge */}
-            {videoId && (
+            {(videoId || directUrl) && (
               <div style={{
                 position: 'absolute', top: 8,
                 right: is4K && isHost ? 50 : 8,
@@ -918,44 +1283,47 @@ export default function WatchPartyTab(props) {
             </div>
           </div>
 
-          {/* ── AUDIENCE AVATAR ROW ── */}
+          {/* ── CO-WATCHER PRESENCE STRIP ── */}
           {liveGuests.length > 0 && (
-            <div style={{ background: CARD, borderTop: '1px solid ' + BORDER, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0 }}>{liveGuests.length} WATCHING</span>
-              <div style={{ display: 'flex', gap: 4, overflowX: 'auto', flex: 1 }}>
-                {liveGuests.slice(0, 20).map(function(g) {
+            <div style={{ background: CARD, borderTop: '1px solid ' + BORDER, padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, minHeight: 52 }}>
+              {/* Live dot + count */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1A3C', boxShadow: '0 0 6px #FF1A3C', animation: 'watchPulse 1.2s ease infinite' }} />
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: TEXT, letterSpacing: 1 }}>{liveGuests.length}</span>
+                </div>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, letterSpacing: .5 }}>WATCHING</span>
+              </div>
+              {/* Avatar chips with name */}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', flex: 1, alignItems: 'center', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+                {liveGuests.slice(0, 12).map(function(g) {
                   var name     = g.username || 'Guest';
                   var initials = getInitials(name);
-                  var color    = avatarColor(name);
+                  var acolor   = avatarColor(name);
+                  var isLast   = g === liveGuests[liveGuests.length - 1];
                   return (
-                    <div
-                      key={g.userId || g.guestId || name}
-                      title={name}
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: '50%',
-                        background: color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        fontFamily: "'Barlow Condensed',sans-serif",
-                        fontWeight: 700,
-                        fontSize: 11,
-                        color: TEXT,
+                    <div key={g.userId || g.guestId || name} title={name}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                      <div style={{
+                        width: 30, height: 30, borderRadius: '50%',
+                        background: 'linear-gradient(135deg,' + acolor + ',' + acolor + 'BB)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT,
                         border: '2px solid ' + CARD,
                         boxShadow: '0 0 0 1px ' + BORDER,
-                        cursor: 'default',
-                        userSelect: 'none'
+                        userSelect: 'none',
                       }}>
-                      {initials}
+                        {initials}
+                      </div>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: MUTED, maxWidth: 32, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {name.length > 6 ? name.slice(0, 5) + '…' : name}
+                      </span>
                     </div>
                   );
                 })}
-                {liveGuests.length > 20 && (
+                {liveGuests.length > 12 && (
                   <div style={{ width: 30, height: 30, borderRadius: '50%', background: DIM, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0, border: '2px solid ' + CARD }}>
-                    +{liveGuests.length - 20}
+                    +{liveGuests.length - 12}
                   </div>
                 )}
               </div>
@@ -999,7 +1367,7 @@ export default function WatchPartyTab(props) {
           {/* ── CONTROLS BAR ── */}
           <div style={{ background: BG, borderTop: '1px solid ' + DIM, padding: '8px 12px', flexShrink: 0 }}>
             {/* Scrubber */}
-            {videoId && (
+            {(videoId || directUrl) && (
               <div
                 style={{ background: DIM, borderRadius: 3, height: 6, cursor: isHost ? 'pointer' : 'default', marginBottom: 9, position: 'relative' }}
                 onClick={isHost ? handleSeekClick : undefined}>
@@ -1013,7 +1381,7 @@ export default function WatchPartyTab(props) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               {/* Play / Pause */}
-              {isHost && videoId ? (
+              {isHost && (videoId || directUrl) ? (
                 <button
                   onClick={playing ? handlePause : handlePlay}
                   style={{ background: 'linear-gradient(135deg,' + BURG + ',#C01838)', border: 'none', borderRadius: 8, padding: '7px 14px', color: GOLD, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
@@ -1026,7 +1394,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* Timestamp */}
-              {videoId && (
+              {(videoId || directUrl) && (
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, flexShrink: 0 }}>
                   {fmtS(position)}{duration > 0 ? ' / ' + fmtS(duration) : ''}
                 </span>
@@ -1044,7 +1412,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* SYNC button — host only, for YouTube sync-watch */}
-              {isHost && videoId && (
+              {isHost && (videoId || directUrl) && (
                 <button
                   onClick={function() {
                     setSyncActive(function(s) { return !s; });
@@ -1058,7 +1426,7 @@ export default function WatchPartyTab(props) {
               )}
 
               {/* Sync all — host only */}
-              {isHost && videoId && (
+              {isHost && (videoId || directUrl) && (
                 <button
                   onClick={handleSyncAll}
                   style={{ background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.35)', borderRadius: 6, padding: '5px 8px', color: AMBER, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
@@ -1101,11 +1469,15 @@ export default function WatchPartyTab(props) {
                   {queue.map(function(item, idx) {
                     return (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: CARD2, borderRadius: 8, padding: '7px 10px', border: '1px solid ' + BORDER }}>
-                        <img
-                          src={'https://img.youtube.com/vi/' + item.videoId + '/default.jpg'}
-                          alt=""
-                          style={{ width: 56, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
-                        />
+                        {item.videoId ? (
+                          <img
+                            src={'https://img.youtube.com/vi/' + item.videoId + '/default.jpg'}
+                            alt=""
+                            style={{ width: 56, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+                          />
+                        ) : (
+                          <div style={{ width: 56, height: 40, background: DIM, borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🎥</div>
+                        )}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {idx + 1}. {item.title || item.videoId}

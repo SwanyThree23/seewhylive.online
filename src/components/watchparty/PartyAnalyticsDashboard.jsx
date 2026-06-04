@@ -28,7 +28,7 @@ const REACTION_COLORS = {
   superchat: '#00BFFF',
   hype:     '#FF6B00',
   lol:      '#FFD700',
-  wow:      '#9B59B6',
+  wow:      '#D4AF37',
   rage:     BURGUNDY,
   standard: 'rgba(255,255,255,0.4)',
 };
@@ -131,11 +131,11 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-2">
         <StatCard icon={TrendingUp} label="Peak Viewers"       value={analytics.peak_concurrent_viewers || 0} color={GOLD} />
-        <StatCard icon={Users}      label="Total Joined"       value={analytics.total_members_joined || 0}    color="#00FF88" />
+        <StatCard icon={Users}      label="Total Joined"       value={analytics.total_members_joined || 0}    color="#6DBF7E" />
         <StatCard icon={Zap}        label="Total Reactions"    value={analytics.total_reactions || 0}          color="#FF6B00" />
         <StatCard icon={DollarSign} label="Tips Collected"     value={tipsUSD}                                  color={GOLD} />
-        <StatCard icon={Clock}      label="Avg Watch Duration" value={fmt(analytics.avg_watch_duration_seconds)} color="#00F5FF" />
-        <StatCard icon={UserPlus}   label="New Followers"      value={analytics.new_followers_from_party || 0} color="#8B5CF6" />
+        <StatCard icon={Clock}      label="Avg Watch Duration" value={fmt(analytics.avg_watch_duration_seconds)} color="#C9A84C" />
+        <StatCard icon={UserPlus}   label="New Followers"      value={analytics.new_followers_from_party || 0} color="#D4AF37" />
       </div>
 
       {/* Queue performance */}
@@ -146,7 +146,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
         <div className="flex gap-2">
           {[
             { icon: ListVideo,   label: 'Queued', value: analytics.total_videos_queued || 0,       color: GOLD },
-            { icon: Play,        label: 'Played', value: analytics.total_queue_items_played || 0,  color: '#00FF88' },
+            { icon: Play,        label: 'Played', value: analytics.total_queue_items_played || 0,  color: '#6DBF7E' },
             { icon: SkipForward, label: 'Skipped', value: analytics.videos_skipped || 0,           color: '#ff6680' },
           ].map(({ icon: IconComp, label, value, color }) => {
             const Icon = IconComp;
