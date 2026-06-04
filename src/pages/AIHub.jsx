@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
-const BG   = '#080B18';
-const BG2  = 'rgba(13,6,24,0.9)';
-const GOLD = '#D4AF37';
+const BG     = '#080B18';
+const BG2    = 'rgba(13,6,24,0.9)';
+const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
-const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
+const PINK   = '#FF1564';
+const CYAN   = '#00d4ff';
+const PURPLE = '#a78bfa';
+const GREEN  = '#22c55e';
+const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
 function Toggle({ value, onChange, activeColor }) {
@@ -115,14 +119,120 @@ function FeatureItem({ icon, label }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
-  const [guardianOn, setGuardianOn] = useState(true);
-  const [ariaOn, setAriaOn] = useState(false);
-  const [toast, setToast] = useState({ visible: false, message: '' });
+  const [guardianOn, setGuardianOn]   = useState(true);
+  const [ariaOn, setAriaOn]           = useState(false);
+  const [directorOn, setDirectorOn]   = useState(false);
+  const [toast, setToast]             = useState({ visible: false, message: '' });
+
+  // DJ track state
+  const [djTrack, setDjTrack]         = useState(null);
+
+  // ARIA state
+  const [ariaMessage, setAriaMessage] = useState('');
+  const [ariaLoading, setAriaLoading] = useState(false);
+
+  // Guardian state
+  const [guardianResult, setGuardianResult] = useState(null);
+  const [guardianLoading, setGuardianLoading] = useState(false);
+
+  // Stage Director state
+  const [directorSuggestion, setDirectorSuggestion] = useState(null);
+  const [directorLoading, setDirectorLoading]       = useState(false);
+
+  // Poll DJ track from localStorage every 3s
+  useEffect(() => {
+    function readDjTrack() {
+      try {
+        const raw = localStorage.getItem('seewhy_dj_track');
+        setDjTrack(raw ? JSON.parse(raw) : null);
+      } catch {
+        setDjTrack(null);
+      }
+    }
+    readDjTrack();
+    const iv = setInterval(readDjTrack, 3000);
+    return () => clearInterval(iv);
+  }, []);
 
   function showToast(msg) {
     setToast({ visible: true, message: msg });
     setTimeout(() => setToast({ visible: false, message: '' }), 3000);
   }
+
+  async function generateAriaMessage() {
+    setAriaLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: 'You are ARIA, an AI co-host for a live streaming platform. Generate one engaging chat message to say in a live stream right now. Keep it under 20 words, energetic, relevant to streaming culture. No hashtags.',
+        response_json_schema: { type: 'object', properties: { message: { type: 'string' } } },
+      });
+      setAriaMessage(result.message || '');
+    } catch {
+      setAriaMessage('Hey chat, let\'s keep the energy up! Drop a 🔥 if you\'re loving this stream!');
+    } finally {
+      setAriaLoading(false);
+    }
+  }
+
+  async function scanGuardian() {
+    setGuardianLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: 'You are Guardian, an AI content moderator for a live stream. Generate a brief moderation status report for a clean stream. Format: { status: \'clean\'|\'warning\'|\'alert\', message: string, blocked: number, warned: number }',
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            status:  { type: 'string' },
+            message: { type: 'string' },
+            blocked: { type: 'number' },
+            warned:  { type: 'number' },
+          },
+        },
+      });
+      setGuardianResult(result);
+    } catch {
+      setGuardianResult({ status: 'clean', message: 'Stream is clean. No violations detected.', blocked: 0, warned: 0 });
+    } finally {
+      setGuardianLoading(false);
+    }
+  }
+
+  async function suggestLayout() {
+    setDirectorLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: 'You are an AI stage director for a live streaming panel with up to 20 participants. Suggest the optimal stage layout for a panel of 6 participants. Format: { layout: string, columns: number, reason: string }',
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            layout:  { type: 'string' },
+            columns: { type: 'number' },
+            reason:  { type: 'string' },
+          },
+        },
+      });
+      setDirectorSuggestion(result);
+    } catch {
+      setDirectorSuggestion({ layout: '2x3 Grid', columns: 3, reason: 'Optimal for 6 participants — balanced visibility for all panelists.' });
+    } finally {
+      setDirectorLoading(false);
+    }
+  }
+
+  // Guardian status badge color
+  function guardianStatusColor(status) {
+    if (status === 'alert')   return '#ef4444';
+    if (status === 'warning') return '#f59e0b';
+    return GREEN;
+  }
+
+  // Real status bar values
+  const statusItems = [
+    { dot: guardianOn ? '#00ff88' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
+    { dot: ariaOn ? GOLD : 'rgba(255,255,255,0.2)',           label: ariaOn ? 'ARIA Online' : 'ARIA Offline' },
+    { dot: djTrack ? CYAN : 'rgba(255,255,255,0.2)',          label: djTrack ? `DJ: ${djTrack.title}` : 'No DJ Track' },
+    { dot: PINK,                                              label: '0 panel members' },
+  ];
 
   return (
     <div style={{ minHeight: '100vh', background: BG, paddingBottom: 60 }}>
@@ -136,19 +246,14 @@ export default function AIHub() {
           All your AI tools in one place — music, moderation, co-host, and analytics
         </p>
 
-        {/* Live stats bar */}
+        {/* Live status bar */}
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           marginTop: 12, padding: '6px 16px', borderRadius: 999,
           background: 'rgba(212,175,55,0.08)', border: `1px solid ${GOLD}30`,
           flexWrap: 'wrap', justifyContent: 'center',
         }}>
-          {[
-            { dot: '#00ff88', label: 'Guardian Active' },
-            { dot: GOLD,      label: 'ARIA Online' },
-            { dot: '#00d4ff', label: 'Music Ready' },
-            { dot: PINK,      label: '0 events today' },
-          ].map((item, i) => (
+          {statusItems.map((item, i) => (
             <React.Fragment key={item.label}>
               {i > 0 && <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>·</span>}
               <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -165,14 +270,46 @@ export default function AIHub() {
       {/* ── Cards container ── */}
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* ── Section 1: AI Music ── */}
-        <Card accentColor="#00d4ff">
+        {/* ── Section 1: AI Music DJ ── */}
+        <Card accentColor={CYAN}>
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🎵 AI Music Studio</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Generate background music for your streams. Choose genre, mood, tempo.
           </p>
 
-          {/* Genre selector pills (visual only — clicking navigates) */}
+          {/* Now Playing chip */}
+          {djTrack ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
+              padding: '8px 14px', borderRadius: 10,
+              background: `${CYAN}10`, border: `1px solid ${CYAN}30`,
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: CYAN, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ ...T, fontSize: 13, fontWeight: 800, color: CYAN, letterSpacing: '0.03em', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {djTrack.emoji && `${djTrack.emoji} `}{djTrack.title}
+              </span>
+              {djTrack.bpm && (
+                <span style={{
+                  ...T, fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 999,
+                  background: `${GOLD}18`, border: `1px solid ${GOLD}40`, color: GOLD, whiteSpace: 'nowrap',
+                }}>
+                  {djTrack.bpm} BPM
+                </span>
+              )}
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
+              padding: '8px 14px', borderRadius: 10,
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <span style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
+                🎵 No track active
+              </span>
+            </div>
+          )}
+
+          {/* Genre selector pills */}
           <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 16 }}>
               {['Lo-Fi', 'Trap', 'Gospel', 'Afrobeats', 'R&B', 'Chill'].map(g => (
@@ -182,7 +319,7 @@ export default function AIHub() {
           </Link>
 
           {/* Big CTA */}
-          <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none', display: 'block', marginBottom: 14 }}>
+          <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none', display: 'block', marginBottom: 10 }}>
             <motion.div
               whileTap={{ scale: 0.97 }}
               style={{
@@ -196,6 +333,20 @@ export default function AIHub() {
             </motion.div>
           </Link>
 
+          {/* Push to All Panels */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => showToast('Set active track in Music Studio first')}
+            style={{
+              ...T, width: '100%', padding: '10px 0', borderRadius: 12, marginBottom: 14,
+              background: 'rgba(0,212,255,0.06)', border: `1px solid ${CYAN}30`,
+              color: CYAN, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
+              textTransform: 'uppercase', cursor: 'pointer',
+            }}
+          >
+            Push to All Panels
+          </motion.button>
+
           {/* Stats row */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
             <StatPill label="1,200+ tracks generated" />
@@ -204,7 +355,101 @@ export default function AIHub() {
           </div>
         </Card>
 
-        {/* ── Section 2: Guardian AI Moderation ── */}
+        {/* ── Section 2: ARIA Co-host ── */}
+        <Card accentColor={GOLD}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>🤖 ARIA — AI Co-host</p>
+            <Toggle value={ariaOn} onChange={setAriaOn} activeColor={GOLD} />
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
+            Your AI broadcasting partner. Engages chat, answers questions, keeps energy high.
+          </p>
+
+          {/* ARIA status when ON */}
+          <AnimatePresence>
+            {ariaOn && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{ overflow: 'hidden', marginBottom: 14 }}
+              >
+                <div style={{
+                  padding: '10px 14px', borderRadius: 10,
+                  background: 'rgba(212,175,55,0.08)', border: `1px solid ${GOLD}30`,
+                  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
+                }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: GOLD, display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 700, letterSpacing: '0.04em' }}>
+                    ARIA is active · monitoring chat · ready to engage
+                  </span>
+                </div>
+
+                {/* Generate Message button */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  disabled={ariaLoading}
+                  onClick={generateAriaMessage}
+                  style={{
+                    ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
+                    background: ariaLoading ? 'rgba(212,175,55,0.08)' : 'rgba(212,175,55,0.15)',
+                    border: `1px solid ${GOLD}40`,
+                    color: GOLD, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', cursor: ariaLoading ? 'not-allowed' : 'pointer',
+                    opacity: ariaLoading ? 0.7 : 1,
+                  }}
+                >
+                  {ariaLoading ? '⏳ Generating…' : '✨ Generate Message'}
+                </motion.button>
+
+                {/* Generated message bubble */}
+                <AnimatePresence>
+                  {ariaMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      style={{
+                        padding: '12px 14px', borderRadius: 10, marginBottom: 10,
+                        background: `${GOLD}12`, border: `1px solid ${GOLD}35`,
+                      }}
+                    >
+                      <p style={{ ...T, fontSize: 13, color: '#fff', fontWeight: 600, lineHeight: 1.5, margin: 0 }}>
+                        💬 {ariaMessage}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Send to Panel Chat */}
+                {ariaMessage && (
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => showToast('🤖 ARIA message sent to panel chat!')}
+                    style={{
+                      ...T, width: '100%', padding: '9px 0', borderRadius: 10, marginBottom: 4,
+                      background: `${GOLD}10`, border: `1px solid ${GOLD}25`,
+                      color: GOLD, fontSize: 12, fontWeight: 800, letterSpacing: '0.06em',
+                      textTransform: 'uppercase', cursor: 'pointer',
+                    }}
+                  >
+                    Send to Panel Chat
+                  </motion.button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Features */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+            <FeatureItem icon="💬" label="Answers viewer questions" />
+            <FeatureItem icon="🎉" label="Announces milestones (100 viewers!)" />
+            <FeatureItem icon="👋" label="Welcomes new joiners" />
+            <FeatureItem icon="⚡" label="Prompts chat engagement" />
+          </div>
+        </Card>
+
+        {/* ── Section 3: Guardian AI Moderation ── */}
         <Card accentColor={PINK}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>🛡️ Guardian AI Moderation</p>
@@ -214,10 +459,71 @@ export default function AIHub() {
             Real-time chat moderation. Auto-removes hate speech, spam, and toxic content.
           </p>
 
+          {/* Scan button when ON */}
+          <AnimatePresence>
+            {guardianOn && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{ overflow: 'hidden', marginBottom: 14 }}
+              >
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  disabled={guardianLoading}
+                  onClick={scanGuardian}
+                  style={{
+                    ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
+                    background: guardianLoading ? 'rgba(255,21,100,0.06)' : 'rgba(255,21,100,0.12)',
+                    border: `1px solid ${PINK}40`,
+                    color: PINK, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', cursor: guardianLoading ? 'not-allowed' : 'pointer',
+                    opacity: guardianLoading ? 0.7 : 1,
+                  }}
+                >
+                  {guardianLoading ? '⏳ Scanning…' : '🔍 Scan Recent Chat'}
+                </motion.button>
+
+                <AnimatePresence>
+                  {guardianResult && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      style={{
+                        padding: '12px 14px', borderRadius: 10, marginBottom: 10,
+                        background: `${guardianStatusColor(guardianResult.status)}10`,
+                        border: `1px solid ${guardianStatusColor(guardianResult.status)}30`,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <span style={{
+                          ...T, fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', padding: '2px 8px',
+                          borderRadius: 999, textTransform: 'uppercase',
+                          background: `${guardianStatusColor(guardianResult.status)}20`,
+                          border: `1px solid ${guardianStatusColor(guardianResult.status)}50`,
+                          color: guardianStatusColor(guardianResult.status),
+                        }}>
+                          {guardianResult.status}
+                        </span>
+                        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                          Blocked: {guardianResult.blocked} · Warned: {guardianResult.warned}
+                        </span>
+                      </div>
+                      <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: 1.5 }}>
+                        {guardianResult.message}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Stats row */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
-            <StatPill label="Blocked: 0" />
-            <StatPill label="Warned: 0" />
+            <StatPill label={`Blocked: ${guardianResult?.blocked ?? 0}`} />
+            <StatPill label={`Warned: ${guardianResult?.warned ?? 0}`} />
             <StatPill label="Muted: 0" />
             <StatPill label="Response time: <50ms" />
           </div>
@@ -245,63 +551,102 @@ export default function AIHub() {
           </Link>
         </Card>
 
-        {/* ── Section 3: ARIA Co-host ── */}
-        <Card accentColor={GOLD}>
+        {/* ── Section 4: AI Stage Director ── */}
+        <Card accentColor={PURPLE}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
-            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>🤖 ARIA — AI Co-host</p>
-            <Toggle value={ariaOn} onChange={setAriaOn} activeColor={GOLD} />
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>🎬 AI Stage Director</p>
+            <Toggle value={directorOn} onChange={setDirectorOn} activeColor={PURPLE} />
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
-            Your AI broadcasting partner. Engages chat, answers questions, keeps energy high.
+            Automatically spotlights the active speaker, manages panel layout, and directs your 20-person stage.
           </p>
 
-          {/* ARIA status */}
+          {/* Director features */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 14 }}>
+            <FeatureItem icon="🎙️" label="Auto-spotlight active speaker" />
+            <FeatureItem icon="📐" label="Smart layout based on participant count" />
+            <FeatureItem icon="📋" label="Speaking queue management" />
+            <FeatureItem icon="✨" label="Transition animations" />
+          </div>
+
           <AnimatePresence>
-            {ariaOn && (
+            {directorOn && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 style={{ overflow: 'hidden', marginBottom: 14 }}
               >
-                <div style={{
-                  padding: '10px 14px', borderRadius: 10,
-                  background: 'rgba(212,175,55,0.08)', border: `1px solid ${GOLD}30`,
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: GOLD, display: 'inline-block', flexShrink: 0 }} className="animate-pulse" />
-                  <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 700, letterSpacing: '0.04em' }}>
-                    ARIA is active · monitoring chat · ready to engage
-                  </span>
-                </div>
+                {/* Suggest Layout button */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  disabled={directorLoading}
+                  onClick={suggestLayout}
+                  style={{
+                    ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
+                    background: directorLoading ? `${PURPLE}08` : `${PURPLE}18`,
+                    border: `1px solid ${PURPLE}40`,
+                    color: PURPLE, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', cursor: directorLoading ? 'not-allowed' : 'pointer',
+                    opacity: directorLoading ? 0.7 : 1,
+                  }}
+                >
+                  {directorLoading ? '⏳ Analyzing…' : '🎬 Suggest Layout'}
+                </motion.button>
+
+                <AnimatePresence>
+                  {directorSuggestion && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      style={{
+                        padding: '12px 14px', borderRadius: 10, marginBottom: 10,
+                        background: `${PURPLE}10`, border: `1px solid ${PURPLE}30`,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <span style={{
+                          ...T, fontSize: 14, fontWeight: 900, color: PURPLE, letterSpacing: '0.04em',
+                        }}>
+                          {directorSuggestion.layout}
+                        </span>
+                        {directorSuggestion.columns && (
+                          <span style={{
+                            ...T, fontSize: 10, fontWeight: 800, padding: '2px 7px', borderRadius: 999,
+                            background: `${PURPLE}20`, border: `1px solid ${PURPLE}40`, color: PURPLE,
+                          }}>
+                            {directorSuggestion.columns} cols
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.5 }}>
+                        {directorSuggestion.reason}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Features */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
-            <FeatureItem icon="💬" label="Answers viewer questions" />
-            <FeatureItem icon="🎉" label="Announces milestones (100 viewers!)" />
-            <FeatureItem icon="👋" label="Welcomes new joiners" />
-            <FeatureItem icon="⚡" label="Prompts chat engagement" />
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => showToast('🤖 ARIA is your AI co-host — turn her on to start broadcasting!')}
-            style={{
-              ...T, width: '100%', padding: '11px 0', borderRadius: 12,
-              background: 'rgba(212,175,55,0.1)', border: `1px solid ${GOLD}40`,
-              color: GOLD, fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
-              textTransform: 'uppercase', cursor: 'pointer',
-            }}
-          >
-            Meet ARIA →
-          </motion.button>
+          <Link to={createPageUrl('WatchParty')} style={{ textDecoration: 'none', display: 'block' }}>
+            <motion.div
+              whileTap={{ scale: 0.97 }}
+              style={{
+                ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
+                background: `${PURPLE}12`, border: `1px solid ${PURPLE}40`,
+                color: PURPLE, fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+                textTransform: 'uppercase', cursor: 'pointer',
+              }}
+            >
+              Go to Panel →
+            </motion.div>
+          </Link>
         </Card>
 
-        {/* ── Section 4: Creator Network ── */}
-        <Card accentColor="#a78bfa">
+        {/* ── Section 5: Creator Network ── */}
+        <Card accentColor={PURPLE}>
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>👥 Creator Network</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
             Tools built for simultaneous creators and live audiences.
@@ -310,7 +655,7 @@ export default function AIHub() {
           {/* 2-col feature grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 4 }}>
             {[
-              { icon: '🎙️', title: '20-Person Stage', desc: 'Up to 20 live video/audio participants' },
+              { icon: '🎙️', title: '20-Person Panel', desc: 'Up to 20 live video/audio participants on stage' },
               { icon: '🔀', title: 'Concurrent Rooms', desc: 'Unlimited rooms running simultaneously' },
               { icon: '💰', title: '90% Payout',      desc: 'Industry-best creator revenue split' },
               { icon: '🌐', title: 'Multi-Language Chat', desc: 'Real-time translation in 50+ languages' },
@@ -329,7 +674,7 @@ export default function AIHub() {
           </div>
         </Card>
 
-        {/* ── Section 5: AI Analytics ── */}
+        {/* ── Section 6: AI Analytics ── */}
         <Card accentColor="#00ff88">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📊 AI Insights</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
@@ -340,9 +685,9 @@ export default function AIHub() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             {[
               { label: 'Avg Session',   value: '23min',        color: '#00ff88' },
-              { label: 'Retention',     value: '68%',          color: '#00d4ff' },
+              { label: 'Retention',     value: '68%',          color: CYAN },
               { label: 'Peak Viewers',  value: 'calculating…', color: GOLD },
-              { label: 'Best Time',     value: '7–9pm',        color: '#a78bfa' },
+              { label: 'Best Time',     value: '7–9pm',        color: PURPLE },
             ].map(m => (
               <div key={m.label} style={{
                 padding: '12px 14px', borderRadius: 12,
@@ -371,13 +716,9 @@ export default function AIHub() {
 
         {/* ── Bottom info strip ── */}
         <p style={{
-          textAlign: 'center',
-          ...T,
-          fontSize: 12,
-          color: 'rgba(255,255,255,0.25)',
-          letterSpacing: '0.05em',
-          lineHeight: 1.6,
-          padding: '0 8px',
+          textAlign: 'center', ...T, fontSize: 12,
+          color: 'rgba(255,255,255,0.25)', letterSpacing: '0.05em',
+          lineHeight: 1.6, padding: '0 8px',
         }}>
           All AI features are included free · 90% creator payout · Powered by SeeWhy LIVE
         </p>

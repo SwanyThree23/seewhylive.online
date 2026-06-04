@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2 } from 'lucide-react';
+import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2, X as XIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
@@ -338,6 +340,44 @@ export default function WatchPartyPage() {
   const [elapsed, setElapsed] = useState(0);
   const directVideoRef = useRef(null);
   const prevMemberCountRef = useRef(null);
+
+  // AI panel state
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [wpAriaOn, setWpAriaOn] = useState(false);
+  const [wpGuardianOn, setWpGuardianOn] = useState(true);
+  const [wpAriaMessage, setWpAriaMessage] = useState('');
+  const [wpAriaLoading, setWpAriaLoading] = useState(false);
+  const [wpDjTrack, setWpDjTrack] = useState(null);
+
+  // Read DJ track from localStorage
+  useEffect(() => {
+    function readDjTrack() {
+      try {
+        const raw = localStorage.getItem('seewhy_dj_track');
+        setWpDjTrack(raw ? JSON.parse(raw) : null);
+      } catch {
+        setWpDjTrack(null);
+      }
+    }
+    readDjTrack();
+    const iv = setInterval(readDjTrack, 4000);
+    return () => clearInterval(iv);
+  }, []);
+
+  async function generateWpAriaWelcome() {
+    setWpAriaLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: 'You are ARIA, an AI co-host for a live streaming platform. Generate one engaging welcome message for viewers joining a watch party. Keep it under 20 words, energetic, relevant to streaming culture. No hashtags.',
+        response_json_schema: { type: 'object', properties: { message: { type: 'string' } } },
+      });
+      setWpAriaMessage(result.message || '');
+    } catch {
+      setWpAriaMessage('Welcome to the watch party! Great to have you here — enjoy the show!');
+    } finally {
+      setWpAriaLoading(false);
+    }
+  }
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -760,6 +800,184 @@ export default function WatchPartyPage() {
       </div>
 
       <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+
+      {/* ── AI Floating Button ── */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setAiPanelOpen(v => !v)}
+        style={{
+          position: 'fixed', bottom: 80, right: 16, zIndex: 200,
+          width: 44, height: 44, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #800020, #D4AF37)',
+          border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 18,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5), 0 0 16px rgba(212,175,55,0.2)',
+        }}
+        title="AI Controls"
+      >
+        🤖
+      </motion.button>
+
+      {/* ── AI Drawer ── */}
+      <AnimatePresence>
+        {aiPanelOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: '100%' }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            style={{
+              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
+              background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.2)',
+              borderRadius: '16px 16px 0 0',
+              padding: '16px 20px 32px',
+              maxHeight: '80vh', overflowY: 'auto',
+              backdropFilter: 'blur(20px)',
+            }}
+          >
+            {/* Drawer header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 16, fontWeight: 900, color: '#D4AF37', letterSpacing: '0.04em' }}>
+                🤖 AI Controls
+              </span>
+              <button
+                onClick={() => setAiPanelOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 4 }}
+              >
+                <XIcon size={18} />
+              </button>
+            </div>
+
+            {/* ARIA Section */}
+            <div style={{
+              borderRadius: 12, padding: '14px 16px', marginBottom: 12,
+              background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: '#fff' }}>
+                  🤖 ARIA Co-host
+                </span>
+                <button
+                  onClick={() => setWpAriaOn(v => !v)}
+                  style={{
+                    width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
+                    background: wpAriaOn ? '#D4AF37' : 'rgba(255,255,255,0.12)',
+                    position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                  }}
+                >
+                  <motion.div
+                    animate={{ x: wpAriaOn ? 18 : 2 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    style={{ position: 'absolute', top: 2, width: 18, height: 18, borderRadius: 9, background: '#fff' }}
+                  />
+                </button>
+              </div>
+              {wpAriaOn && (
+                <>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    disabled={wpAriaLoading}
+                    onClick={generateWpAriaWelcome}
+                    style={{
+                      fontFamily: 'Barlow Condensed, sans-serif', width: '100%', padding: '8px 0',
+                      borderRadius: 8, border: '1px solid rgba(212,175,55,0.3)',
+                      background: wpAriaLoading ? 'rgba(212,175,55,0.06)' : 'rgba(212,175,55,0.12)',
+                      color: '#D4AF37', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em',
+                      textTransform: 'uppercase', cursor: wpAriaLoading ? 'not-allowed' : 'pointer',
+                      marginBottom: wpAriaMessage ? 8 : 0, opacity: wpAriaLoading ? 0.7 : 1,
+                    }}
+                  >
+                    {wpAriaLoading ? '⏳ Generating…' : '✨ Generate Welcome'}
+                  </motion.button>
+                  {wpAriaMessage && (
+                    <div style={{
+                      padding: '10px 12px', borderRadius: 8,
+                      background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)',
+                    }}>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: '#fff', margin: 0, lineHeight: 1.5 }}>
+                        💬 {wpAriaMessage}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Guardian Section */}
+            <div style={{
+              borderRadius: 12, padding: '14px 16px', marginBottom: 12,
+              background: 'rgba(255,21,100,0.05)', border: '1px solid rgba(255,21,100,0.15)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: '#fff' }}>
+                  🛡️ Guardian
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 800,
+                    padding: '2px 8px', borderRadius: 999, letterSpacing: '0.08em',
+                    background: wpGuardianOn ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.08)',
+                    border: `1px solid ${wpGuardianOn ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                    color: wpGuardianOn ? '#22c55e' : 'rgba(255,255,255,0.3)',
+                    textTransform: 'uppercase',
+                  }}>
+                    {wpGuardianOn ? 'Active' : 'Off'}
+                  </span>
+                  <button
+                    onClick={() => setWpGuardianOn(v => !v)}
+                    style={{
+                      width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
+                      background: wpGuardianOn ? '#22c55e' : 'rgba(255,255,255,0.12)',
+                      position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+                    }}
+                  >
+                    <motion.div
+                      animate={{ x: wpGuardianOn ? 18 : 2 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      style={{ position: 'absolute', top: 2, width: 18, height: 18, borderRadius: 9, background: '#fff' }}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Music Section */}
+            <div style={{
+              borderRadius: 12, padding: '14px 16px',
+              background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)',
+            }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: '#fff', display: 'block', marginBottom: 10 }}>
+                🎵 AI Music
+              </span>
+              {wpDjTrack ? (
+                <div style={{
+                  padding: '8px 12px', borderRadius: 8, marginBottom: 10,
+                  background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)',
+                }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#00d4ff', fontWeight: 700, margin: 0 }}>
+                    Now Playing: {wpDjTrack.emoji && `${wpDjTrack.emoji} `}{wpDjTrack.title}
+                  </p>
+                </div>
+              ) : (
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
+                  No track active
+                </p>
+              )}
+              <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none' }} onClick={() => setAiPanelOpen(false)}>
+                <div style={{
+                  fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 0', borderRadius: 8,
+                  textAlign: 'center', background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.25)',
+                  color: '#00d4ff', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}>
+                  Open Music Studio →
+                </div>
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
