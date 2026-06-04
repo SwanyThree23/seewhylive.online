@@ -33,6 +33,8 @@ import BroadcastStudio from './pages/BroadcastStudio';
 import LiveRoom from './pages/LiveRoom';
 import Login from './pages/Login';
 import SocialExpo from './pages/SocialExpo';
+import AIMusic from './pages/AIMusic';
+import MultiPlatformIntegration from './pages/MultiPlatformIntegration';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -120,6 +122,8 @@ const AuthenticatedApp = () => {
       <Route path="/BroadcastStudio" element={<BroadcastStudio />} />
       <Route path="/LiveRoom" element={<LiveRoom />} />
       <Route path="/SocialExpo" element={<LayoutWrapper currentPageName="SocialExpo"><SocialExpo /></LayoutWrapper>} />
+      <Route path="/AIMusic" element={<AIMusic />} />
+      <Route path="/MultiPlatform" element={<LayoutWrapper currentPageName="MultiPlatform"><MultiPlatformIntegration /></LayoutWrapper>} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, Plus, X, ChevronRight, Zap,
   Sparkles, Radio, Sliders, Send, Search, Filter
 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
-const BG      = '#080B18';
-const BG2     = 'rgba(13,6,24,0.9)';
+const BG      = '#0E0C09';
+const BG2     = 'rgba(14,12,9,0.95)';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#FF1564';
-const CYAN    = '#00d4ff';
-const PURPLE  = '#a78bfa';
-const GREEN   = '#22c55e';
+const AMBER   = '#D4854A';
+const ROSE    = '#C0395A';
+const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Shared input style ─────────────────────────────────────────────────────────
 const inp = {
   width: '100%',
   padding: '12px 16px',
-  background: 'rgba(17,8,34,0.85)',
+  background: 'rgba(14,12,9,0.85)',
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 10,
   color: '#fff',
@@ -36,7 +36,7 @@ const inp = {
 const STYLE_CATEGORIES = [
   {
     label: 'Genre',
-    color: CYAN,
+    color: AMBER,
     tags: ['Lo-Fi','Hip-Hop','Trap','R&B','Gospel','EDM','House','Drill','Afrobeats','Jazz','Ambient','Pop'],
   },
   {
@@ -46,7 +46,7 @@ const STYLE_CATEGORIES = [
   },
   {
     label: 'Instruments',
-    color: PURPLE,
+    color: ROSE,
     tags: ['808','Piano','Guitar','Violin','Drums','Brass','Synth','Choir','Bass','Flute'],
   },
   {
@@ -56,27 +56,27 @@ const STYLE_CATEGORIES = [
   },
 ];
 
-// ── Genre → color mapping for album art ──────────────────────────────────────
+// ── Genre → color mapping for album art (earth-tone palette only) ────────────
 function tagColor(tags) {
   const map = {
-    'trap': `linear-gradient(135deg, #1a0010, ${CRIMSON})`,
-    'lo-fi': `linear-gradient(135deg, #0d001f, ${PURPLE})`,
-    'gospel': `linear-gradient(135deg, #1a0a00, #f97316)`,
-    'afrobeats': `linear-gradient(135deg, #001a0d, ${GREEN})`,
-    'edm': `linear-gradient(135deg, #001a20, ${CYAN})`,
-    'hip-hop': `linear-gradient(135deg, #1a1a00, ${GOLD})`,
-    'r&b': `linear-gradient(135deg, #0d001a, ${PINK})`,
-    'jazz': `linear-gradient(135deg, #001a10, #38bdf8)`,
-    'ambient': `linear-gradient(135deg, #00101a, #7dd3fc)`,
-    'house': `linear-gradient(135deg, #1a0020, ${PURPLE})`,
-    'drill': `linear-gradient(135deg, #1a0000, #ef4444)`,
-    'pop': `linear-gradient(135deg, #1a0015, ${PINK})`,
+    'trap':     `linear-gradient(135deg, #1a0000, ${CRIMSON})`,
+    'lo-fi':    `linear-gradient(135deg, #1a1000, ${GOLD})`,
+    'gospel':   `linear-gradient(135deg, #1a0a00, #E8A030)`,
+    'afrobeats':`linear-gradient(135deg, #120800, #8B4513)`,
+    'edm':      `linear-gradient(135deg, #0d0a00, ${AMBER})`,
+    'hip-hop':  `linear-gradient(135deg, #1a1000, ${GOLD})`,
+    'r&b':      `linear-gradient(135deg, #1a0000, ${ROSE})`,
+    'jazz':     `linear-gradient(135deg, #0d0800, #C9A84C)`,
+    'ambient':  `linear-gradient(135deg, #0a0d00, #8A7A62)`,
+    'house':    `linear-gradient(135deg, #1a0400, ${AMBER})`,
+    'drill':    `linear-gradient(135deg, #1a0000, #A01010)`,
+    'pop':      `linear-gradient(135deg, #1a0008, ${ROSE})`,
   };
   for (const t of (tags || [])) {
     const k = t.toLowerCase();
     if (map[k]) return map[k];
   }
-  return `linear-gradient(135deg, #0d0d1a, ${PURPLE})`;
+  return `linear-gradient(135deg, #100d00, ${CRIMSON})`;
 }
 
 // ── Trending styles data ──────────────────────────────────────────────────────
@@ -144,9 +144,9 @@ const INITIAL_TRACKS = [
 // ── Advanced generation options ───────────────────────────────────────────────
 const VOCAL_TYPES = [
   { id: 'auto',        label: 'Auto',        color: GOLD },
-  { id: 'male-rap',    label: 'Male Rap',    color: CYAN },
+  { id: 'male-rap',    label: 'Male Rap',    color: AMBER },
   { id: 'female-rnb',  label: 'Female R&B',  color: PINK },
-  { id: 'male-singer', label: 'Male Singer', color: PURPLE },
+  { id: 'male-singer', label: 'Male Singer', color: ROSE },
   { id: 'choir',       label: 'Choir',       color: GREEN },
   { id: 'auto-tune',   label: 'Auto-Tune',   color: '#00d4ff' },
 ];
@@ -155,7 +155,7 @@ const MASTER_PRESETS = [
   { id: 'radio',   label: 'Radio',   color: GOLD },
   { id: 'club',    label: 'Club',    color: PINK },
   { id: 'youtube', label: 'YouTube', color: '#FF0000' },
-  { id: 'lo-fi',   label: 'Lo-Fi',   color: PURPLE },
+  { id: 'lo-fi',   label: 'Lo-Fi',   color: ROSE },
 ];
 
 const DURATIONS = [
@@ -285,12 +285,11 @@ function MiniScrubber({ isPlaying, duration }) {
 }
 
 // ── TrackCard ─────────────────────────────────────────────────────────────────
-function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix, onAddToStream, onPushToPanel, panelPushedId, onGenerateAILyrics }) {
+function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onRemix, onAddToStream }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [lyricsOpen, setLyricsOpen] = useState(false);
   const [editingLyrics, setEditingLyrics] = useState(false);
   const [lyricsText, setLyricsText] = useState(track.lyrics || '');
-  const [aiLyricsLoading, setAiLyricsLoading] = useState(false);
   const menuRef = useRef(null);
 
   // close menu on outside click
@@ -389,8 +388,8 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
               <span key={tag} style={{
                 ...T, fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
                 padding: '2px 8px', borderRadius: 999,
-                background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)',
-                color: PURPLE, textTransform: 'uppercase',
+                background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)',
+                color: GOLD, textTransform: 'uppercase',
               }}>
                 {tag}
               </span>
@@ -423,23 +422,6 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             </span>
           </motion.button>
 
-          {/* Push to Panel */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={onPushToPanel}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px',
-              borderRadius: 8, border: `1px solid ${GOLD}44`,
-              background: panelPushedId === track.id ? `${GOLD}22` : 'transparent',
-              color: panelPushedId === track.id ? GOLD : 'rgba(255,255,255,0.4)',
-              fontSize: 11, fontWeight: 700, cursor: 'pointer', ...T,
-              transition: 'all 0.2s',
-            }}
-          >
-            <Radio size={10} />
-            {panelPushedId === track.id ? 'Pushed!' : 'Push'}
-          </motion.button>
-
           {/* More menu */}
           <div style={{ position: 'relative' }} ref={menuRef}>
             <motion.button
@@ -468,8 +450,8 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   }}
                 >
                   {[
-                    { label: 'Remix', icon: RefreshCw, color: CYAN, action: () => { onRemix(); setMenuOpen(false); } },
-                    { label: 'Continue', icon: ChevronRight, color: PURPLE, action: () => { onContinue(); setMenuOpen(false); } },
+                    { label: 'Remix', icon: RefreshCw, color: AMBER, action: () => { onRemix(); setMenuOpen(false); } },
+                    { label: 'Continue', icon: ChevronRight, color: ROSE, action: () => { onContinue(); setMenuOpen(false); } },
                     { label: 'Download', icon: Download, color: GOLD, action: () => setMenuOpen(false) },
                     { label: 'Delete', icon: X, color: PINK, action: () => { onDelete(); setMenuOpen(false); } },
                   ].map(item => (
@@ -500,11 +482,11 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
               whileTap={{ scale: 0.9 }}
               onClick={() => setLyricsOpen(o => !o)}
               style={{
-                background: lyricsOpen ? PURPLE + '22' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${lyricsOpen ? PURPLE + '55' : 'rgba(255,255,255,0.1)'}`,
+                background: lyricsOpen ? ROSE + '22' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${lyricsOpen ? ROSE + '55' : 'rgba(255,255,255,0.1)'}`,
                 borderRadius: 8, width: 30, height: 30,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: lyricsOpen ? PURPLE : 'rgba(255,255,255,0.4)',
+                cursor: 'pointer', color: lyricsOpen ? ROSE : 'rgba(255,255,255,0.4)',
               }}
               title="View lyrics"
             >
@@ -514,8 +496,8 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
         </div>
       </div>
 
-      {/* Add to Stream + AI Lyrics + Scrubber row */}
-      <div style={{ padding: '0 16px 10px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      {/* Add to Stream + Scrubber row */}
+      <div style={{ padding: '0 16px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
         {track.streamReady && (
           <motion.button
             whileTap={{ scale: 0.94 }}
@@ -531,32 +513,6 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             onMouseLeave={e => { e.currentTarget.style.background = `${GREEN}15`; }}
           >
             <Send size={10} /> Add to Stream
-          </motion.button>
-        )}
-        {/* AI Lyrics button for tracks without lyrics */}
-        {!track.lyrics && (
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            disabled={aiLyricsLoading}
-            onClick={async () => {
-              setAiLyricsLoading(true);
-              try {
-                await onGenerateAILyrics?.(track);
-              } finally {
-                setAiLyricsLoading(false);
-              }
-            }}
-            style={{
-              ...T, display: 'flex', alignItems: 'center', gap: 5,
-              padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800,
-              background: aiLyricsLoading ? `${PURPLE}08` : `${PURPLE}15`,
-              border: `1px solid ${PURPLE}40`, color: PURPLE,
-              cursor: aiLyricsLoading ? 'not-allowed' : 'pointer',
-              letterSpacing: '0.04em', textTransform: 'uppercase',
-              transition: 'all 0.15s', opacity: aiLyricsLoading ? 0.6 : 1,
-            }}
-          >
-            <Mic2 size={10} /> {aiLyricsLoading ? 'Writing…' : 'AI Lyrics'}
           </motion.button>
         )}
         <span style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{track.duration}</span>
@@ -576,12 +532,12 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
           >
             <div style={{ padding: '14px 16px', background: 'rgba(167,139,250,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ ...T, fontSize: 11, color: PURPLE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                <span style={{ ...T, fontSize: 11, color: ROSE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Lyrics
                 </span>
                 <button
                   onClick={() => setEditingLyrics(e => !e)}
-                  style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: CYAN, fontSize: 11, fontWeight: 700 }}
+                  style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: AMBER, fontSize: 11, fontWeight: 700 }}
                 >
                   {editingLyrics ? 'Done' : 'Edit'}
                 </button>
@@ -629,12 +585,12 @@ function ContinuePanel({ track, onClose, onGenerate }) {
       exit={{ opacity: 0, y: 16 }}
       style={{
         borderRadius: 16, background: BG2,
-        border: `1px solid ${PURPLE}55`,
+        border: `1px solid ${ROSE}55`,
         padding: 20, marginBottom: 12,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ ...T, color: PURPLE, fontSize: 14, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+        <span style={{ ...T, color: ROSE, fontSize: 14, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
           Continue: {track.title}
         </span>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
@@ -665,7 +621,7 @@ function ContinuePanel({ track, onClose, onGenerate }) {
         onClick={() => onGenerate({ track, startTime, desc })}
         style={{
           ...T, width: '100%', padding: '12px',
-          background: `linear-gradient(90deg, ${PURPLE}, ${CYAN})`,
+          background: `linear-gradient(90deg, ${CRIMSON}, ${AMBER})`,
           border: 'none', borderRadius: 10,
           color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
           textTransform: 'uppercase', cursor: 'pointer',
@@ -746,14 +702,6 @@ export default function AIMusic() {
   // Active style tag category filter
   const [activeCategory, setActiveCategory] = useState(0);
 
-  // DJ Mode
-  const [djMode, setDjMode] = useState(false);
-  const [djInsight, setDjInsight] = useState('');
-  const [djLoading, setDjLoading] = useState(false);
-
-  // Panel push state
-  const [panelPushed, setPanelPushed] = useState(null);
-
   // Parsed style tags (comma-separated from styleInput)
   const parsedTags = styleInput
     .split(',')
@@ -776,21 +724,6 @@ export default function AIMusic() {
     setTimeout(() => setToast({ visible: false, message: '' }), 3000);
   }
 
-  async function getDjRecommendation() {
-    setDjLoading(true);
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an AI DJ for a live stream. Based on these available tracks: ${tracks.map(t => t.title + ' (' + t.tags.join(', ') + ')').join(' | ')}, recommend which track to play next and why. Keep it under 30 words.`,
-        response_json_schema: { type: 'object', properties: { recommendation: { type: 'string' } } },
-      });
-      setDjInsight(result.recommendation || '');
-    } catch {
-      setDjInsight('Play a chill lo-fi track to ease into the stream and warm up the audience.');
-    } finally {
-      setDjLoading(false);
-    }
-  }
-
   function handleAddStyleTag(tag) {
     const lower = tag.toLowerCase();
     if (parsedTags.includes(lower)) return;
@@ -805,60 +738,82 @@ export default function AIMusic() {
   async function handleCreate(forceInstrumental = false) {
     if (generating) return;
     setGenerating(true);
-    const tags = parsedTags.length > 0 ? parsedTags : ['chill'];
     const isInstrumental = forceInstrumental || instrumental;
-    const title = titleInput ||
-      (tags[0] ? tags[0].charAt(0).toUpperCase() + tags[0].slice(1) : 'Track') +
-      ' — AI Generated';
-    const emojiMap = {
-      trap:'🌑', 'lo-fi':'🎧', gospel:'🎺', afrobeats:'🌍',
-      edm:'🎛️', 'hip-hop':'🎤', 'r&b':'💜', jazz:'🎷',
-      ambient:'🌊', house:'🎹', drill:'💥', pop:'⭐',
-      '808':'🥁', piano:'🎹', guitar:'🎸', choir:'🎶',
-    };
-    const emoji = emojiMap[tags[0]] || '🎵';
-    const minutes = 2 + Math.floor(Math.random() * 2);
-    const seconds = 10 + Math.floor(Math.random() * 50);
-    const trackDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    const lyrics = isInstrumental ? null : await generateLyricsWithAI(tags);
-    const newTrack = {
-      id: `t${Date.now()}`,
-      title,
-      tags: tags.slice(0, 6),
-      duration: trackDuration,
-      emoji,
-      playing: false,
-      liked: false,
-      likeCount: Math.floor(Math.random() * 20),
-      streamReady: isInstrumental || Math.random() > 0.4,
-      lyrics,
-    };
-    setTracks(prev => [newTrack, ...prev]);
-    setGenerating(false);
-    setTitleInput('');
-    setDescription('');
-    setMobileTab('library');
-    showToast('🎵 Your track is ready!');
-  }
+    const tags = parsedTags.length > 0 ? parsedTags : ['chill'];
+    const styleDesc = tags.join(', ');
+    const promptText = description || `${styleDesc} background music${isInstrumental ? '' : ' with lyrics'}`;
 
-  function generateMockLyricsSync(tags) {
-    const mood = tags.find(t => ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t)) || 'chill';
-    const genre = tags[0] || 'music';
-    return `[Verse 1]\nRiding the ${mood} wave, ${genre} in my veins\nSeeWhy LIVE is where the magic remains\nEvery beat a story, every note a dream\nNothing is impossible, or so it seems\n\n[Chorus]\n${genre.toUpperCase()}, can you feel it tonight\nThe music takes over, everything feels right\nLive on the stream, hearts locked in the flow\n${mood.charAt(0).toUpperCase() + mood.slice(1)} vibes only, watch the numbers grow\n\n[Verse 2]\nChat moving fast, the energy is real\nHitting every drop, you know how we feel\nAI composing what the soul demands\nSeeWhy LIVE, we're in your hands\n\n[Outro]\nFade into the ${mood} night\nThis music carries us just right`;
-  }
-
-  async function generateLyricsWithAI(tags) {
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Write song lyrics for a track with these style tags: ${tags.join(', ')}.
-Write a [Verse 1], [Chorus], and [Verse 2]. Keep it relevant to live streaming, hustle, creativity, community.
-Under 200 words total. Make it fit the mood/genre of the tags.`,
-        response_json_schema: { type: 'object', properties: { lyrics: { type: 'string' } } },
+        prompt: `You are an AI music producer for SeeWhy LIVE, a live streaming platform. Generate a complete original track.
+Style: ${styleDesc}
+Description: ${promptText}
+BPM: ${bpm}, Key: ${keyNote} ${keyScale}, Mastering: ${masterPreset}
+Vocal: ${isInstrumental ? 'Instrumental – no lyrics' : vocalType}
+Duration: ~${Math.floor(duration/60)}m${duration%60 > 0 ? duration%60+'s' : ''}
+
+Return ONLY valid JSON (no markdown, no backticks):
+{
+  "title": "creative track title",
+  "emoji": "one relevant emoji",
+  "tags": ["tag1","tag2","tag3","tag4"],
+  "duration": "2:45",
+  "streamReady": true,
+  "lyrics": ${isInstrumental ? 'null' : '"[Verse 1]\\nlyric line\\nlyric line\\n\\n[Chorus]\\nchorus line\\nchorus line\\n\\n[Verse 2]\\nverse line\\nverse line\\n\\n[Outro]\\noutro line"'},
+  "description": "one-sentence description of the sound"
+}`,
       });
-      return result.lyrics || generateMockLyricsSync(tags);
-    } catch {
-      return generateMockLyricsSync(tags);
+
+      let data;
+      try {
+        const cleaned = (result || '').replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+        data = JSON.parse(cleaned);
+      } catch (_) {
+        data = {
+          title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
+          emoji: '🎵', tags, duration: `${2 + Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+          streamReady: true,
+          lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
+        };
+      }
+
+      setTracks(prev => [{
+        id: `t${Date.now()}`,
+        title: titleInput || data.title || tags[0] + ' Track',
+        tags: (data.tags || tags).slice(0, 6),
+        duration: data.duration || '2:30',
+        emoji: data.emoji || '🎵',
+        liked: false,
+        likeCount: Math.floor(Math.random() * 20),
+        streamReady: data.streamReady !== false,
+        lyrics: isInstrumental ? null : (data.lyrics || null),
+      }, ...prev]);
+      setTitleInput('');
+      setDescription('');
+      setMobileTab('library');
+      showToast('🎵 AI track generated!');
+    } catch (_) {
+      const newTrack = {
+        id: `t${Date.now()}`,
+        title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
+        tags: tags.slice(0, 6),
+        duration: `${2+Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+        emoji: '🎵', liked: false, likeCount: 0,
+        streamReady: isInstrumental || Math.random() > 0.4,
+        lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
+      };
+      setTracks(prev => [newTrack, ...prev]);
+      setMobileTab('library');
+      showToast('🎵 Track created!');
+    } finally {
+      setGenerating(false);
     }
+  }
+
+  function generateFallbackLyrics(tags) {
+    const mood = tags.find(t => ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t)) || 'chill';
+    const genre = tags[0] || 'music';
+    return `[Verse 1]\nRiding the ${mood} wave, ${genre} in my veins\nSeeWhy LIVE is where the magic remains\nEvery beat a story, every note a dream\n\n[Chorus]\n${genre.toUpperCase()}, can you feel it tonight\nThe music takes over, everything feels right\nLive on the stream, hearts locked in the flow\n\n[Verse 2]\nChat moving fast, the energy is real\nAI composing what the soul demands\n\n[Outro]\nFade into the ${mood} night\nThis music carries us just right`;
   }
 
   function handleContinueGenerate({ track, startTime, desc }) {
@@ -934,7 +889,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
       }}>
         <div style={{
           width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-          background: `linear-gradient(135deg, ${CRIMSON}, ${PURPLE})`,
+          background: `linear-gradient(135deg, ${CRIMSON}, ${AMBER})`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Music size={20} color="#fff" />
@@ -967,8 +922,8 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
       }}>
         {[
           { id: 'create', label: 'Create', icon: Wand2, color: GOLD },
-          { id: 'library', label: `My Songs (${tracks.length})`, icon: Music, color: PURPLE },
-          { id: 'trending', label: 'Trending', icon: Radio, color: CYAN },
+          { id: 'library', label: `My Songs (${tracks.length})`, icon: Music, color: ROSE },
+          { id: 'trending', label: 'Trending', icon: Radio, color: AMBER },
         ].map(tab => (
           <button
             key={tab.id}
@@ -1051,7 +1006,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                   <StyleChip
                     key={tag}
                     label={tag}
-                    color={CYAN}
+                    color={AMBER}
                     active
                     onRemove={() => handleRemoveStyleTag(tag)}
                     onClick={() => {}}
@@ -1077,7 +1032,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                 onClick={() => setInstrumental(i => !i)}
                 style={{
                   width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-                  background: instrumental ? PURPLE : 'rgba(255,255,255,0.12)',
+                  background: instrumental ? ROSE : 'rgba(255,255,255,0.12)',
                   position: 'relative', transition: 'background 0.2s', flexShrink: 0,
                 }}
               >
@@ -1090,7 +1045,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                   }}
                 />
               </button>
-              <span style={{ ...T, fontSize: 13, color: instrumental ? PURPLE : 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
+              <span style={{ ...T, fontSize: 13, color: instrumental ? ROSE : 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
                 Instrumental (no lyrics)
               </span>
             </div>
@@ -1098,7 +1053,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
             {/* Advanced options toggle */}
             <button
               onClick={() => setShowAdvanced(v => !v)}
-              style={{ ...T, display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: showAdvanced ? CYAN : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: showAdvanced ? 0 : 4 }}
+              style={{ ...T, display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: showAdvanced ? AMBER : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: showAdvanced ? 0 : 4 }}
             >
               <Sliders size={12} /> Advanced Options
               <ChevronRight size={11} style={{ transform: showAdvanced ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
@@ -1132,12 +1087,12 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                     {/* Key/Scale */}
                     <div>
                       <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
-                        Key: <span style={{ color: PURPLE }}>{keyNote} {keyScale}</span>
+                        Key: <span style={{ color: ROSE }}>{keyNote} {keyScale}</span>
                       </label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
                         {KEYS.map(k => (
                           <button key={k} onClick={() => setKeyNote(k)}
-                            style={{ ...T, padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: keyNote === k ? PURPLE + '25' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyNote === k ? PURPLE + '60' : 'rgba(255,255,255,0.08)'}`, color: keyNote === k ? PURPLE : 'rgba(255,255,255,0.4)' }}>
+                            style={{ ...T, padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: keyNote === k ? ROSE + '25' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyNote === k ? ROSE + '60' : 'rgba(255,255,255,0.08)'}`, color: keyNote === k ? ROSE : 'rgba(255,255,255,0.4)' }}>
                             {k}
                           </button>
                         ))}
@@ -1145,7 +1100,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                       <div style={{ display: 'flex', gap: 6 }}>
                         {['major', 'minor'].map(s => (
                           <button key={s} onClick={() => setKeyScale(s)}
-                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em', transition: 'all 0.12s', background: keyScale === s ? PURPLE + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyScale === s ? PURPLE + '50' : 'rgba(255,255,255,0.08)'}`, color: keyScale === s ? PURPLE : 'rgba(255,255,255,0.35)' }}>
+                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em', transition: 'all 0.12s', background: keyScale === s ? ROSE + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyScale === s ? ROSE + '50' : 'rgba(255,255,255,0.08)'}`, color: keyScale === s ? ROSE : 'rgba(255,255,255,0.35)' }}>
                             {s}
                           </button>
                         ))}
@@ -1158,7 +1113,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                       <div style={{ display: 'flex', gap: 6 }}>
                         {DURATIONS.map(d => (
                           <button key={d.s} onClick={() => setDuration(d.s)}
-                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: duration === d.s ? CYAN + '18' : 'rgba(255,255,255,0.04)', border: `1px solid ${duration === d.s ? CYAN + '50' : 'rgba(255,255,255,0.08)'}`, color: duration === d.s ? CYAN : 'rgba(255,255,255,0.35)' }}>
+                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: duration === d.s ? AMBER + '18' : 'rgba(255,255,255,0.04)', border: `1px solid ${duration === d.s ? AMBER + '50' : 'rgba(255,255,255,0.08)'}`, color: duration === d.s ? AMBER : 'rgba(255,255,255,0.35)' }}>
                             {d.label}
                           </button>
                         ))}
@@ -1223,8 +1178,8 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                 onClick={() => handleCreate(true)}
                 style={{
                   flex: 1, padding: '13px 0',
-                  background: generating ? 'rgba(167,139,250,0.1)' : `linear-gradient(90deg, ${PURPLE}, #6d28d9)`,
-                  border: `1px solid ${PURPLE}55`, borderRadius: 12, cursor: generating ? 'not-allowed' : 'pointer',
+                  background: generating ? 'rgba(212,133,74,0.1)' : `linear-gradient(90deg, ${CRIMSON}, ${ROSE})`,
+                  border: `1px solid rgba(192,57,90,0.5)`, borderRadius: 12, cursor: generating ? 'not-allowed' : 'pointer',
                   color: '#fff', fontSize: 13, fontWeight: 800,
                   fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
                   textTransform: 'uppercase', opacity: generating ? 0.6 : 1,
@@ -1317,12 +1272,12 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
           {/* ── Trending styles (left panel desktop) ── */}
           <div style={{
             borderRadius: 20, background: BG2,
-            border: '1px solid rgba(0,212,255,0.12)',
+            border: '1px solid rgba(212,175,55,0.12)',
             padding: 20,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <Radio size={14} color={CYAN} />
-              <span style={{ ...T, fontSize: 12, fontWeight: 800, color: CYAN, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <Radio size={14} color={AMBER} />
+              <span style={{ ...T, fontSize: 12, fontWeight: 800, color: AMBER, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Trending Now on SeeWhy LIVE
               </span>
             </div>
@@ -1334,14 +1289,14 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                   whileTap={{ scale: 0.96 }}
                   onClick={() => { setStyleInput(item.style); setMobileTab('create'); }}
                   style={{
-                    background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.12)',
+                    background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.12)',
                     borderRadius: 12, padding: '12px 14px',
                     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = CYAN + '40'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.12)'}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = AMBER + '40'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(212,175,55,0.12)'}
                 >
                   <span style={{ fontSize: 22, marginBottom: 6 }}>{item.emoji}</span>
                   <span style={{ ...T, color: '#fff', fontSize: 13, fontWeight: 800, display: 'block', marginBottom: 2 }}>
@@ -1362,84 +1317,6 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
         }}
           className="desktop-show-right"
         >
-          {/* ── DJ Mode Section ── */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: djMode ? 12 : 0 }}>
-              <button
-                onClick={() => setDjMode(v => !v)}
-                style={{
-                  ...T, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
-                  borderRadius: 999, fontSize: 12, fontWeight: 800, letterSpacing: '0.06em',
-                  textTransform: 'uppercase', cursor: 'pointer',
-                  background: djMode ? `${GOLD}20` : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${djMode ? GOLD + '55' : 'rgba(255,255,255,0.1)'}`,
-                  color: djMode ? GOLD : 'rgba(255,255,255,0.4)',
-                  transition: 'all 0.2s',
-                }}
-              >
-                🎧 DJ Mode {djMode ? 'ON' : 'OFF'}
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {djMode && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  {/* DJ Mode active bar */}
-                  <div style={{
-                    padding: '10px 14px', borderRadius: 10, marginBottom: 10,
-                    background: `${GOLD}10`, border: `1px solid ${GOLD}30`,
-                    display: 'flex', alignItems: 'center', gap: 8,
-                  }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: GOLD, display: 'inline-block', flexShrink: 0 }} />
-                    <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 700, letterSpacing: '0.04em' }}>
-                      🎧 DJ Mode Active — AI is managing your playlist
-                    </span>
-                  </div>
-
-                  {/* Get Recommendation button */}
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    disabled={djLoading}
-                    onClick={getDjRecommendation}
-                    style={{
-                      ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
-                      background: djLoading ? `${GOLD}08` : `${GOLD}15`,
-                      border: `1px solid ${GOLD}40`,
-                      color: GOLD, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
-                      textTransform: 'uppercase', cursor: djLoading ? 'not-allowed' : 'pointer',
-                      opacity: djLoading ? 0.7 : 1,
-                    }}
-                  >
-                    {djLoading ? '⏳ Analyzing…' : '🤖 Get AI Recommendation'}
-                  </motion.button>
-
-                  <AnimatePresence>
-                    {djInsight && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        style={{
-                          padding: '12px 14px', borderRadius: 10, marginBottom: 12,
-                          background: `${GOLD}10`, border: `1px solid ${GOLD}30`,
-                        }}
-                      >
-                        <p style={{ ...T, fontSize: 13, color: '#fff', fontWeight: 600, lineHeight: 1.5, margin: 0 }}>
-                          🎵 {djInsight}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
           {/* Library header */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -1552,21 +1429,6 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                   onContinue={() => setContinueTrack(track)}
                   onRemix={() => remixTrack(track)}
                   onAddToStream={() => handleAddToStream(track)}
-                  panelPushedId={panelPushed}
-                  onPushToPanel={() => {
-                    localStorage.setItem('seewhy_dj_track', JSON.stringify({
-                      id: track.id, title: track.title, tags: track.tags,
-                      emoji: track.emoji, duration: track.duration, streamReady: track.streamReady,
-                    }));
-                    setPanelPushed(track.id);
-                    setTimeout(() => setPanelPushed(null), 3000);
-                    showToast(`📡 "${track.title}" pushed to panels!`);
-                  }}
-                  onGenerateAILyrics={async (t) => {
-                    const lyrics = await generateLyricsWithAI(t.tags);
-                    setTracks(prev => prev.map(x => x.id === t.id ? { ...x, lyrics } : x));
-                    showToast('✍️ AI lyrics generated!');
-                  }}
                 />
               ))}
             </div>
@@ -1582,7 +1444,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
           className="desktop-hide-trending"
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-            <Radio size={16} color={CYAN} />
+            <Radio size={16} color={AMBER} />
             <span style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff' }}>
               Trending Now on SeeWhy LIVE
             </span>
@@ -1595,7 +1457,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                 whileTap={{ scale: 0.96 }}
                 onClick={() => { setStyleInput(item.style); setMobileTab('create'); }}
                 style={{
-                  background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)',
+                  background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)',
                   borderRadius: 16, padding: '20px 16px',
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
                   cursor: 'pointer', textAlign: 'center',
@@ -1606,7 +1468,7 @@ Under 200 words total. Make it fit the mood/genre of the tags.`,
                 <span style={{ ...T, color: '#fff', fontSize: 15, fontWeight: 800, display: 'block', marginBottom: 4 }}>
                   {item.label}
                 </span>
-                <span style={{ ...T, color: CYAN, fontSize: 11, fontWeight: 700 }}>{item.count}</span>
+                <span style={{ ...T, color: AMBER, fontSize: 11, fontWeight: 700 }}>{item.count}</span>
               </motion.button>
             ))}
           </div>
