@@ -211,6 +211,33 @@ export default function CreatorPublicProfile() {
   var totalEarned = transactions.reduce((sum, t) => sum + (t.creator_payout || 0), 0);
   var totalStreams = pastStreams.length;
   var followerCount = followers.length;
+  var [followToast, setFollowToast] = useState('');
+  var isFollowing = currentUser && followers.some(f => f.follower_id === currentUser.id);
+
+  function handleFollow() {
+    if (!currentUser) { setFollowToast('Sign in to follow'); setTimeout(() => setFollowToast(''), 2500); return; }
+    if (isFollowing) {
+      var existing = followers.find(f => f.follower_id === currentUser.id);
+      if (existing) base44.entities.Follow.delete(existing.id).catch(() => {});
+      setFollowToast('Unfollowed');
+    } else {
+      base44.entities.Follow.create({ creator_id: creatorId, follower_id: currentUser.id }).catch(() => {});
+      setFollowToast('Following!');
+    }
+    setTimeout(() => setFollowToast(''), 2500);
+  }
+
+  function handleShare() {
+    var url = window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: profile?.display_name || 'SeeWhy LIVE Creator', url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setFollowToast('Link copied!');
+        setTimeout(() => setFollowToast(''), 2500);
+      }).catch(() => {});
+    }
+  }
 
   // If no creatorId, show the current user's own profile
   useEffect(() => {
@@ -293,11 +320,12 @@ export default function CreatorPublicProfile() {
               ? <img src={profile.avatar_url} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : "🎤"}
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {followToast && <span style={{ color: G.gold, fontSize: 11, marginRight: 4 }}>{followToast}</span>}
             {!isOwnProfile && (
-              <button style={{
-                background: "rgba(212,175,55,0.1)",
-                border: "1px solid rgba(212,175,55,0.3)",
+              <button onClick={handleFollow} style={{
+                background: isFollowing ? "rgba(212,175,55,0.25)" : "rgba(212,175,55,0.1)",
+                border: `1px solid ${isFollowing ? G.gold : "rgba(212,175,55,0.3)"}`,
                 borderRadius: 8,
                 padding: "6px 14px",
                 color: G.gold,
@@ -309,10 +337,10 @@ export default function CreatorPublicProfile() {
                 alignItems: "center",
                 gap: 6,
               }}>
-                <Heart size={13} /> Follow
+                <Heart size={13} fill={isFollowing ? G.gold : "none"} /> {isFollowing ? "Following" : "Follow"}
               </button>
             )}
-            <button style={{
+            <button onClick={handleShare} style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: 8,
