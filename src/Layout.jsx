@@ -54,7 +54,15 @@ var DRAWER_CREATE = [
   { name: 'AI Music Studio',  icon: Radio,           href: createPageUrl('AIMusic') },
   { name: 'Podcast Studio',   icon: Mic2,            href: createPageUrl('PodcastStudio') },
   { name: 'Multi-Platform',   icon: Globe,           href: createPageUrl('MultiPlatform') },
+  { name: 'Multi-Platform+',  icon: Globe,           href: createPageUrl('MultiPlatformIntegration') },
+  { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
+  { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
+  { name: 'AURA AI',          icon: Sparkles,        href: createPageUrl('AuraAI') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Transcription',    icon: Mic2,            href: createPageUrl('TranscriptionStudio') },
+  { name: 'Rooms Manager',    icon: Tv,              href: createPageUrl('RoomsManager') },
+  { name: 'PK Battle Arena',  icon: Swords,          href: createPageUrl('PKBattleArena') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 
