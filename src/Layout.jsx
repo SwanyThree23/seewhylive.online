@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -31,34 +31,25 @@ var BOTTOM_NAV = [
 
 // ── Drawer nav groups ──────────────────────────────────────────────────────
 var DRAWER_WATCH = [
-  { name: 'Home',             icon: Home,    href: createPageUrl('Home') },
-  { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
-  { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
-  { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
-  { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
-  { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
-  { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
-  { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
-  { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
+  { name: 'Home',              icon: Home,    href: createPageUrl('Home') },
+  { name: 'Discover',          icon: Eye,     href: createPageUrl('Discover') },
+  { name: 'Watch Party',       icon: Eye,     href: createPageUrl('WatchParty') },
+  { name: 'Audio Room',        icon: Radio,   href: createPageUrl('AudioRoom') },
+  { name: 'Leaderboard',       icon: Trophy,  href: createPageUrl('Leaderboard') },
 ];
 
 var DRAWER_CREATE = [
   { name: 'Go Live',          icon: Radio,           href: createPageUrl('GoLive') },
-  { name: 'LIVE Studio v37',  icon: Tv,              href: createPageUrl('SeeWhyLIVEv37') },
+  { name: 'LIVE Studio v41',  icon: Tv,              href: createPageUrl('SeeWhyLIVEv41') },
   { name: 'LIVE Studio v36',  icon: Tv,              href: '/SeeWhyLIVEv36' },
   { name: 'Broadcast Studio', icon: Video,           href: createPageUrl('BroadcastStudio') },
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
   { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
   { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
-  { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },
   { name: 'AI Music Studio',  icon: Radio,           href: createPageUrl('AIMusic') },
-  { name: 'Podcast Studio',   icon: Mic2,            href: createPageUrl('PodcastStudio') },
-  { name: 'Multi-Platform',   icon: Globe,           href: createPageUrl('MultiPlatform') },
-  { name: 'Multi-Platform+',  icon: Globe,           href: createPageUrl('MultiPlatformIntegration') },
   { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
-  { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 
@@ -73,10 +64,8 @@ var DRAWER_ACCOUNT = [
 
 var DRAWER_ADMIN = [
   { name: 'AdminDashboard',  icon: Shield, href: createPageUrl('AdminDashboard') },
-  { name: 'Guardian AI',     icon: Shield, href: createPageUrl('GuardianAI') },
   { name: 'StageCleanup',    icon: Layers, href: createPageUrl('StageCleanup') },
   { name: 'RTMPServer',      icon: Server, href: createPageUrl('RTMPServer') },
-  { name: 'Infra Reference', icon: Server, href: createPageUrl('StreamInfraRef') },
 ];
 
 export default function Layout({ children, currentPageName }) {
