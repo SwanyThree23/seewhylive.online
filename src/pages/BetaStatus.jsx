@@ -181,6 +181,8 @@ export default function BetaStatusPage() {
             { label: 'Platform Showcase', href: 'PlatformShowcase' },
             { label: 'Moderation',        href: 'AIModeration' },
             { label: 'Stream Ref Dash',   href: 'StreamRefDash' },
+            { label: 'Newsletter Hub',    href: 'NewsletterHub' },
+            { label: 'Social Expo',       href: 'SocialExpo' },
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)}>
               <button className="w-full py-2.5 rounded-xl font-black uppercase text-[10px]"

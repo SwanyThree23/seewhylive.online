@@ -142,7 +142,10 @@ export default function SettingsPage() {
     { label: 'Scene Templates',   href: 'SceneTemplates' },
     { label: 'Stream Alerts',     href: 'StreamAlerts' },
     { label: 'Platform Showcase', href: 'PlatformShowcase' },
-    { label: 'Stream Ref Dash',  href: 'StreamRefDash' },
+    { label: 'Stream Ref Dash',   href: 'StreamRefDash' },
+    { label: 'Newsletter Hub',    href: 'NewsletterHub' },
+    { label: 'Social Expo',       href: 'SocialExpo' },
+    { label: 'Multi-Platform+',   href: 'MultiPlatformIntegration' },
   ];
 
   return (
