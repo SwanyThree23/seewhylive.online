@@ -62,6 +62,8 @@ export default function NewsletterHubPage() {
   const [toast, setToast] = useState('');
   const [scheduleMode, setScheduleMode] = useState(false);
   const [form, setForm] = useState({ title:'', content:'', preview_text:'', scheduled_for:'' });
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
@@ -86,6 +88,30 @@ export default function NewsletterHubPage() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
   const applyTemplate = (key) => { setForm(f => ({...f, ...TEMPLATES[key]})); };
+
+  async function aiDraft() {
+    if (!aiTopic.trim() || aiGenerating) return;
+    setAiGenerating(true);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a newsletter writer for SeeWhy LIVE, a live-streaming platform focused on domino culture, creator economy, and community. Write an engaging newsletter about: "${aiTopic}". Use a broadcast/community voice — energetic but authentic. Include markdown formatting (## for sections, **bold** for emphasis).`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            title:        { type: 'string' },
+            preview_text: { type: 'string' },
+            content:      { type: 'string' },
+          },
+          required: ['title', 'preview_text', 'content'],
+        },
+      });
+      setForm(f => ({ ...f, title: res.title || f.title, preview_text: res.preview_text || f.preview_text, content: res.content || f.content }));
+      showToast('AI draft generated ✓');
+    } catch {
+      showToast('AI draft failed — try again');
+    }
+    setAiGenerating(false);
+  }
 
   const drafts = letters.filter(l => l.status==='draft');
   const sent = letters.filter(l => l.status==='sent' || l.status==='scheduled');
@@ -122,6 +148,25 @@ export default function NewsletterHubPage() {
       <div style={{ maxWidth:700, margin:'0 auto', padding:'20px' }}>
         {tab==='compose' && (
           <div>
+            {/* AI Draft */}
+            <div style={{ marginBottom:16, padding:'14px 16px', borderRadius:10, background:'rgba(212,175,55,0.04)', border:'1px solid rgba(212,175,55,0.18)', borderLeft:'3px solid #D4AF37' }}>
+              <div style={{ fontFamily:'Barlow Condensed', fontSize:13, color:C.gold, fontWeight:900, letterSpacing:1, marginBottom:8 }}>🤖 AI DRAFT NEWSLETTER</div>
+              <div style={{ display:'flex', gap:8 }}>
+                <input
+                  value={aiTopic} onChange={e => setAiTopic(e.target.value)}
+                  placeholder="Topic or theme — e.g. 'WA Classic recap + upcoming July 4 event'"
+                  style={{ ...inp, flex:1, marginBottom:0 }}
+                  onKeyDown={e => { if (e.key === 'Enter') aiDraft(); }}
+                />
+                <button
+                  onClick={aiDraft}
+                  disabled={aiGenerating || !aiTopic.trim()}
+                  style={{ padding:'9px 16px', background: aiGenerating ? 'rgba(212,175,55,0.1)' : `linear-gradient(90deg,${C.burg},${C.gold})`, border:'none', borderRadius:6, color: aiGenerating ? C.gray : '#000', cursor: aiGenerating || !aiTopic.trim() ? 'not-allowed' : 'pointer', fontFamily:'Barlow Condensed', fontSize:11, fontWeight:900, letterSpacing:1, whiteSpace:'nowrap', flexShrink:0 }}>
+                  {aiGenerating ? '✨ Writing…' : '✨ DRAFT'}
+                </button>
+              </div>
+            </div>
+
             {/* Templates */}
             <div style={{ marginBottom:14 }}>
               <div style={{ fontFamily:'Barlow Condensed', fontSize:11, color:C.gray, letterSpacing:1, marginBottom:6 }}>TEMPLATES</div>

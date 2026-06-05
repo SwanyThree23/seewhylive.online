@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 
 const BG      = '#080B18';
 const BG2     = '#0D1022';
@@ -97,12 +98,28 @@ export default function TributeWall() {
   const [selected, setSelected] = useState(null);
   const [tributeMsg, setTributeMsg] = useState('');
   const [messages, setMessages] = useState(INIT_MESSAGES);
+  const [aiWriting, setAiWriting] = useState(false);
   const [eventOpen, setEventOpen] = useState(false);
   const [nominateName, setNominateName] = useState('');
   const [nominateState, setNominateState] = useState('');
   const [nominateBio, setNominateBio] = useState('');
   const [nominateOpen, setNominateOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  async function aiWriteTribute() {
+    if (!selected || aiWriting) return;
+    setAiWriting(true);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `Write a heartfelt 2-3 sentence tribute message for ${selected.name} (${selected.years}, ${selected.state}), a domino legend. Their story: ${selected.bio} Achievements: ${selected.achievements.join(', ')}. Write in the voice of a fellow domino player paying respects — authentic, warm, community-rooted. No hashtags.`,
+        response_json_schema: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] },
+      });
+      setTributeMsg(res?.message || res?.toString?.() || '');
+    } catch {
+      setTributeMsg(`${selected.name}, your legacy lives in every domino game played in your honor. Thank you for building this culture. Rest easy, Legend. 🙏`);
+    }
+    setAiWriting(false);
+  }
 
   function postTribute() {
     if (!tributeMsg.trim() || !selected) return;
@@ -269,13 +286,21 @@ export default function TributeWall() {
                       </div>
                     ))}
 
-                    <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
                       <input value={tributeMsg} onChange={e => setTributeMsg(e.target.value)}
                         placeholder="Leave a tribute message..."
                         style={{
-                          flex: 1, background: BG2, border: `1px solid ${leg.color}55`,
+                          flex: 1, minWidth: 160, background: BG2, border: `1px solid ${leg.color}55`,
                           borderRadius: 999, padding: '8px 14px', color: '#fff', ...T, fontSize: 12, outline: 'none',
                         }} />
+                      <Btn
+                        label={aiWriting ? '✨ Writing…' : '✨ AI Write'}
+                        variant="ghost"
+                        size="sm"
+                        onClick={aiWriteTribute}
+                        disabled={aiWriting}
+                        style={{ borderColor: PURPLE + '88', color: PURPLE_L, background: PURPLE + '14' }}
+                      />
                       <Btn label="POST" variant="tribute" size="sm" onClick={postTribute} disabled={!tributeMsg.trim()} />
                     </div>
                   </div>
