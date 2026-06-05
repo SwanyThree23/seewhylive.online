@@ -15,6 +15,24 @@ const NLM    = '#4285F4'; // Google NotebookLM blue
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
+// ── NotebookLM Library ────────────────────────────────────────────────────────
+const NLM_LIB = [
+  { id:'p1',  title:'SeeWhy LIVE: AI Multi-Platform Production Suite',        nbId:'c5285f97-1e18-41c7-ac0f-dcdaf996ae25', artId:'d10969fe-4505-48be-9a97-aa017c38347f', icon:'🚀', cat:'platform' },
+  { id:'p2',  title:'Mastering Suno Studio: AI Music Production',             nbId:'db023bed-6228-4049-97f0-9037cc044ecc', artId:'4f3ca811-1e08-425f-9ac4-b268dd7f9c86', icon:'🎵', cat:'music'    },
+  { id:'p3',  title:'High-Fidelity Remote Production & AI Chatbot Orchestration', nbId:'c3c8f857-0fd5-460c-9b69-df7ec11ffc8d', artId:'983483a3-3a76-4025-916c-f2e760bbf8a9', icon:'🤖', cat:'production' },
+  { id:'p4',  title:'SeeWhy LIVE: Multi-User Platform Technical Spec',        nbId:'nlm-multiuser-spec',  artId:null, icon:'📺', cat:'platform'   },
+  { id:'p5',  title:'The Dawn of AI Live Streaming & Virtual Co-Hosts',       nbId:'nlm-dawn-ai',         artId:null, icon:'🤖', cat:'ai'         },
+  { id:'p6',  title:'Multi-Guest Streaming Architecture & Deployment',        nbId:'nlm-multigest',       artId:null, icon:'🏗️', cat:'platform'   },
+  { id:'p7',  title:'Fanbase: Decentralized Creator Monetization Gateway',    nbId:'nlm-fanbase',         artId:null, icon:'💰', cat:'monetize'   },
+  { id:'p8',  title:'VDO.Ninja: Remote Production & Director Control',        nbId:'nlm-vdoninja',        artId:null, icon:'🥷', cat:'production' },
+  { id:'p9',  title:'Mastering beehiiv AI & Automation Workflows 2025',       nbId:'nlm-beehiiv',         artId:null, icon:'🐝', cat:'ai'         },
+  { id:'p10', title:'Domino Social Expo: Participant Invitations',            nbId:'nlm-domino-expo',     artId:null, icon:'🎲', cat:'domino'     },
+  { id:'p11', title:'PRISM Live Studio YouTube Overview',                     nbId:'nlm-prism',           artId:null, icon:'🎬', cat:'production' },
+  { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
+];
+const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
+const CAT_C  = { platform:'#00D4FF', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
+
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
 
@@ -105,6 +123,26 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   const [fetchState, setFetchState] = useState('idle'); // idle | fetching | ok | partial | failed
   const [editIdx, setEditIdx]     = useState(null);
   const [deleteIdx, setDeleteIdx] = useState(null);
+  const [libCat, setLibCat]       = useState('all');
+
+  function addPreset(p) {
+    if (nlmSources.find(nb => nb.notebookId === p.nbId)) { showToast('Already in sources'); return; }
+    if (nlmSources.length >= 8) { showToast('Maximum 8 sources'); return; }
+    const nb = {
+      url: p.artId
+        ? `https://notebooklm.google.com/notebook/${p.nbId}/artifact/${p.artId}`
+        : `https://notebooklm.google.com/notebook/${p.nbId}`,
+      title: p.title,
+      topic: '',
+      notebookId: p.nbId,
+      artifactId: p.artId || null,
+      cat: p.cat,
+      icon: p.icon,
+      addedAt: new Date().toISOString(),
+    };
+    saveNlmSources([nb, ...nlmSources]);
+    showToast(`Added: ${p.title.slice(0, 32)}…`);
+  }
 
   function isNlmUrl(url) {
     return /notebooklm\.google\.com/.test(url.trim());
@@ -487,10 +525,86 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             No sources saved yet
           </p>
           <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
-            Paste a NotebookLM share URL above to get started
+            Paste a NotebookLM share URL above or browse the library below
           </p>
         </div>
       )}
+
+      {/* ── NLM Library Browser ── */}
+      <div style={{ background: BG2, border: `1px solid ${NLM}20`, borderLeft: `3px solid ${NLM}`, borderRadius: 16, padding: '18px 18px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{ fontSize: 18 }}>📚</span>
+          <div>
+            <p style={{ ...T, fontSize: 15, fontWeight: 900, color: '#fff', margin: 0 }}>Source Library</p>
+            <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0 }}>One-click add curated NLM notebooks to your sources</p>
+          </div>
+        </div>
+
+        {/* Category filter pills */}
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 12, paddingBottom: 4 }}>
+          {CATS.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setLibCat(cat)}
+              style={{
+                ...T, fontSize: 10, fontWeight: 800, padding: '4px 11px', borderRadius: 999,
+                border: `1px solid ${cat === 'all' ? NLM : (CAT_C[cat] || NLM)}44`,
+                background: libCat === cat ? (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) + '28' : 'rgba(255,255,255,0.04)',
+                color: libCat === cat ? (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) : 'rgba(255,255,255,0.4)',
+                cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em',
+                whiteSpace: 'nowrap', flexShrink: 0,
+                outline: libCat === cat ? `1px solid ${cat === 'all' ? NLM : (CAT_C[cat] || NLM)}60` : 'none',
+                transition: 'all 0.15s',
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Library entries */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {NLM_LIB.filter(p => libCat === 'all' || p.cat === libCat).map(p => {
+            const alreadyAdded = nlmSources.some(nb => nb.notebookId === p.nbId);
+            const catColor = CAT_C[p.cat] || NLM;
+            return (
+              <div key={p.id} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: 'rgba(255,255,255,0.03)', borderRadius: 10,
+                border: `1px solid rgba(255,255,255,0.07)`, padding: '10px 12px',
+              }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{p.icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ ...T, fontSize: 13, fontWeight: 800, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {p.title}
+                  </p>
+                  <span style={{
+                    ...T, fontSize: 9, fontWeight: 900, padding: '1px 6px', borderRadius: 999,
+                    background: catColor + '18', border: `1px solid ${catColor}35`, color: catColor,
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                  }}>
+                    {p.cat}
+                  </span>
+                </div>
+                <button
+                  onClick={() => addPreset(p)}
+                  disabled={alreadyAdded}
+                  style={{
+                    ...T, padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
+                    cursor: alreadyAdded ? 'default' : 'pointer',
+                    background: alreadyAdded ? 'rgba(34,197,94,0.1)' : NLM,
+                    color: alreadyAdded ? '#22c55e' : '#fff',
+                    fontSize: 11, fontWeight: 900, letterSpacing: '0.04em',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {alreadyAdded ? '✓ Added' : '+ Add'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
