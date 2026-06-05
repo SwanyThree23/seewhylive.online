@@ -103,6 +103,7 @@ const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
 const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
 const SeeWhyLIVEv41            = lazy(() => import('./pages/SeeWhyLIVEv41'));
+const EmbedPlayer              = lazy(() => import('./pages/EmbedPlayer'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -199,6 +200,7 @@ export const PAGES = {
     "SocialExpo": SocialExpo,
     "SeeWhyLIVEv37": SeeWhyLIVEv37,
     "SeeWhyLIVEv41": SeeWhyLIVEv41,
+    "EmbedPlayer": EmbedPlayer,
 }
 
 export const pagesConfig = {
