@@ -192,6 +192,8 @@ export default function App() {
   var [canGoBack, setCanGoBack] = useState(false);
   var [nextEventCountdown, setNextEventCountdown] = useState(null);
   var [tabResetKey, setTabResetKey] = useState(0);
+  var [giftFloats, setGiftFloats] = useState([]);
+  var [gifts, setGifts] = useState([]);
 
   var socketRef = useRef(null);
   var uptimeRef = useRef(null);
