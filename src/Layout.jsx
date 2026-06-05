@@ -94,6 +94,9 @@ export default function Layout({ children, currentPageName }) {
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab
   var scrollPositions = React.useRef({});
+  // Tab stack preservation — remember last URL visited per tab root
+  var tabHistoryRef = React.useRef(new Map());
+  var activeTabHref = React.useRef(BOTTOM_NAV[0].href);
   useEffect(function() {
     var key = location.pathname;
     var saved = scrollPositions.current[key];
@@ -405,14 +408,21 @@ export default function Layout({ children, currentPageName }) {
               var active = isActive(item.href);
 
               function handleTabPress(e) {
+                e.preventDefault();
                 if (active) {
-                  // Double-tap active tab → scroll to top
-                  e.preventDefault();
+                  // Tap active tab → scroll to root, clear this tab's saved sub-page
                   window.scrollTo({ top: 0, behavior: 'smooth' });
+                  tabHistoryRef.current.delete(item.href);
                   navigate(item.href, { replace: true });
                 } else {
-                  // Save current scroll before leaving
+                  // Switch to a different tab
                   scrollPositions.current[location.pathname] = window.scrollY;
+                  // Save current page under the previously-active tab
+                  tabHistoryRef.current.set(activeTabHref.current, location.pathname + location.search);
+                  activeTabHref.current = item.href;
+                  // Navigate to last-visited page in the new tab, or the tab root
+                  var lastUrl = tabHistoryRef.current.get(item.href) || item.href;
+                  navigate(lastUrl);
                 }
               }
 

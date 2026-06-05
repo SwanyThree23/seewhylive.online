@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, ShieldX } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useAuth } from '@/lib/AuthContext';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -59,6 +60,7 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
+  const { logout } = useAuth();
   const [fullName, setFullName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -119,10 +121,10 @@ export default function SettingsPage() {
     setIsDeleting(true);
     try {
       await base44.auth.deleteMe();
+      logout(false);
       window.location.href = '/';
     } catch {
       toast.error('Could not delete account. Contact support.');
-    } finally {
       setIsDeleting(false);
     }
   }
@@ -220,8 +222,8 @@ export default function SettingsPage() {
         </Section>
 
         {/* Account */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(239,68,68,0.04)' }}>
             <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} />
             <p className="font-black text-sm text-white" style={T}>Account</p>
           </div>
@@ -232,13 +234,19 @@ export default function SettingsPage() {
               style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
               Log Out
             </button>
-            <button
-              onClick={() => setShowDeleteDialog(true)}
-              className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
-              style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.6)', userSelect: 'none', ...T }}>
-              <Trash2 className="w-3.5 h-3.5" />
-              Delete Account
-            </button>
+            {/* Delete Account — required by App Store/Google Play guidelines */}
+            <div style={{ borderTop: '1px solid rgba(239,68,68,0.1)', paddingTop: 12 }}>
+              <p className="text-[10px] mb-2" style={{ color: 'rgba(239,68,68,0.5)', ...T }}>
+                DANGER ZONE · This action permanently removes your account and all associated data including streams, tips, and chat history. It cannot be undone.
+              </p>
+              <button
+                onClick={() => setShowDeleteDialog(true)}
+                className="w-full px-4 py-3 rounded-xl font-black uppercase text-[12px] text-left flex items-center gap-2"
+                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)', color: '#EF4444', userSelect: 'none', ...T }}>
+                <ShieldX className="w-4 h-4" />
+                Delete My Account Permanently
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -252,11 +260,20 @@ export default function SettingsPage() {
             <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                <Trash2 className="w-5 h-5" style={{ color: '#EF4444' }} />
+                <ShieldX className="w-5 h-5" style={{ color: '#EF4444' }} />
               </div>
-              <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
-                This permanently deletes your account, streams, and all data. This cannot be undone.
+              <p className="font-black text-lg text-white" style={T}>Permanently Delete Account?</p>
+              <p className="text-xs mt-2 text-left" style={{ color: 'rgba(255,255,255,0.45)', ...T, lineHeight: 1.5 }}>
+                Deleting your account will immediately and permanently remove:
+              </p>
+              <ul className="text-left mt-1 space-y-0.5" style={{ color: 'rgba(239,68,68,0.7)', fontSize: 11, ...T }}>
+                <li>• Your profile and all personal data</li>
+                <li>• All streams, recordings, and content</li>
+                <li>• Chat history and community memberships</li>
+                <li>• Tip history and loyalty points</li>
+              </ul>
+              <p className="text-xs mt-2" style={{ color: 'rgba(239,68,68,0.6)', ...T, fontWeight: 900 }}>
+                THIS ACTION CANNOT BE UNDONE.
               </p>
             </div>
             <div className="p-5 space-y-3">
