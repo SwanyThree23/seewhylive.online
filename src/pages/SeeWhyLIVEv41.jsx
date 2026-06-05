@@ -1766,8 +1766,11 @@ function ShareEmbedPanel() {
   const [copied, setCopied] = useState('');
   const [toastMsg, setToastMsg] = useState('');
   const [flywheelCount, setFlywheelCount] = useState({ shares: 0, views: 0, installs: 0 });
+  const [paywallEnabled, setPaywallEnabled] = useState(true);
+  const [paywallSecs, setPaywallSecs] = useState(120);
 
-  const watchUrl  = APP_URL + '/EmbedPlayer?roomId=' + encodeURIComponent(roomId);
+  const paywallParam = !paywallEnabled ? '&noPaywall=1' : (paywallSecs !== 120 ? '&paywallSec=' + paywallSecs : '');
+  const watchUrl  = APP_URL + '/EmbedPlayer?roomId=' + encodeURIComponent(roomId) + paywallParam;
   const embedCode = '<iframe\n  src="' + watchUrl + '&embed=1"\n  width="100%" height="480"\n  frameborder="0"\n  allow="autoplay; camera; microphone"\n  allowfullscreen\n></iframe>';
 
   function copyText(text, label) {
@@ -1808,6 +1811,90 @@ function ShareEmbedPanel() {
           </Btn>
           <Btn onClick={function() { copyText(embedCode, 'Embed code'); }} small style={{ background: C.slate }}>
             {copied === 'Embed code' ? '✓ Copied' : '</> Embed Code'}
+          </Btn>
+        </div>
+      </Card>
+
+      {/* Golden Paywall Config */}
+      <Card style={{ marginBottom: 16, borderColor: paywallEnabled ? C.goldD : C.slate }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>🔒</span>
+            <p style={{ color: C.gold, fontSize: 12, fontWeight: 700, margin: 0 }}>Golden Paywall</p>
+          </div>
+          <button
+            onClick={function() { setPaywallEnabled(function(v) { return !v; }); }}
+            style={{
+              padding: '4px 14px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+              border: '1px solid ' + (paywallEnabled ? C.goldD : C.slate),
+              background: paywallEnabled ? 'rgba(201,168,76,0.15)' : C.bg2,
+              color: paywallEnabled ? C.gold : C.textM,
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >
+            {paywallEnabled ? '● ON' : '○ OFF'}
+          </button>
+        </div>
+        <p style={{ color: C.textM, fontSize: 11, lineHeight: 1.5, marginBottom: 12 }}>
+          Free viewers watch for the configured duration, then see the Golden Paywall overlay prompting app download or Creator Pass. Use <span style={{ color: C.amber, fontFamily: 'monospace' }}>?noPaywall=1</span> for creator-only preview links.
+        </p>
+        {paywallEnabled && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <label style={{ color: C.textD, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+              Free Preview Duration
+            </label>
+            <input
+              type="range" min="30" max="600" step="30"
+              value={paywallSecs}
+              onChange={function(e) { setPaywallSecs(Number(e.target.value)); }}
+              style={{ flex: 1, accentColor: C.gold }}
+            />
+            <span style={{ color: C.gold, fontWeight: 900, fontSize: 14, fontFamily: 'monospace', minWidth: 44, textAlign: 'right' }}>
+              {paywallSecs}s
+            </span>
+          </div>
+        )}
+        {paywallEnabled && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 12 }}>
+            {[60, 90, 120, 180].map(function(s) {
+              return (
+                <button
+                  key={s}
+                  onClick={function() { setPaywallSecs(s); }}
+                  style={{
+                    padding: '6px 0', borderRadius: 6, fontSize: 11, fontWeight: 700,
+                    border: '1px solid ' + (paywallSecs === s ? C.goldD : C.slate),
+                    background: paywallSecs === s ? 'rgba(201,168,76,0.15)' : C.bg2,
+                    color: paywallSecs === s ? C.gold : C.textM,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {s === 60 ? '1 min' : s === 90 ? '1:30' : s === 120 ? '2 min ★' : '3 min'}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {!paywallEnabled && (
+          <div style={{ background: C.bg2, borderRadius: 6, padding: '8px 12px', marginBottom: 10 }}>
+            <p style={{ color: C.amber, fontSize: 11, margin: 0 }}>
+              ⚠ Paywall OFF — viewers watch unlimited. Use for creator previews or paid events.
+            </p>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Btn
+            onClick={function() {
+              var creatorUrl = APP_URL + '/EmbedPlayer?roomId=' + encodeURIComponent(roomId) + '&noPaywall=1';
+              window.open(creatorUrl, '_blank');
+            }}
+            small
+            style={{ background: 'rgba(201,168,76,0.1)', color: C.gold, border: '1px solid ' + C.goldD }}
+          >
+            🔑 Creator Preview (no paywall)
+          </Btn>
+          <Btn onClick={function() { window.open(watchUrl, '_blank'); }} small>
+            👁 Viewer Preview
           </Btn>
         </div>
       </Card>
