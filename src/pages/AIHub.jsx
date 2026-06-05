@@ -975,6 +975,52 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Section 16: External AI Tools ── */}
+        <Card accentColor={CYAN}>
+          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🔗 External AI Tools</p>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
+            Third-party AI platforms curated for SeeWhy LIVE creators.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              {
+                href: 'https://higgsfield.ai',
+                icon: '🎬',
+                name: 'Higgsfield AI',
+                desc: 'AI video generation — create cinematic clips for stream highlights and promos.',
+                color: '#ff6b35',
+              },
+              {
+                href: 'https://supercomputer.ai',
+                icon: '🖥️',
+                name: 'SuperComputer AI',
+                desc: 'AI productivity platform — automate workflows and content pipelines.',
+                color: CYAN,
+              },
+            ].map(tool => (
+              <a
+                key={tool.href}
+                href={tool.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.1)`,
+                  borderRadius: 12, padding: '12px 14px', textDecoration: 'none',
+                  transition: 'border-color 0.15s',
+                }}
+              >
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: tool.color + '22', border: `1px solid ${tool.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{tool.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ ...T, fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '0.03em' }}>{tool.name}</div>
+                  <div style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2, lineHeight: 1.4 }}>{tool.desc}</div>
+                </div>
+                <span style={{ ...T, fontSize: 13, fontWeight: 700, color: tool.color, letterSpacing: '0.06em', flexShrink: 0 }}>Open ↗</span>
+              </a>
+            ))}
+          </div>
+        </Card>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
