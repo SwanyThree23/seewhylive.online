@@ -763,7 +763,7 @@ function MonetizationTab({ user }) {
               </div>
               <div className="h-6 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <motion.div className="h-full" animate={{ width: '90%' }} transition={{ duration: 1.2 }}
-                  style={{ background: 'linear-gradient(90deg, #6DBF7E, #00D4FF)' }} />
+                  style={{ background: 'linear-gradient(90deg, #6DBF7E, #D4854A)' }} />
                 <div className="h-full flex-1" style={{ background: 'rgba(255,21,100,0.3)' }} />
               </div>
               <div className="flex items-center justify-between text-[11px] mt-1">
