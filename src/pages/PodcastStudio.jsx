@@ -31,7 +31,7 @@ const NLM_LIB = [
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
 const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#00D4FF', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
+const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];

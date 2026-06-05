@@ -93,6 +93,16 @@ const DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoenterta
 
 export default function SocialExpo() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [sponsorToast, setSponsorToast] = useState('');
+
+  function handleSponsorInquiry(tierLabel, price) {
+    var subject = encodeURIComponent(`SeeWhy LIVE Sponsorship Inquiry — ${tierLabel} ($${price}/event)`);
+    var body = encodeURIComponent(`Hi,\n\nI'm interested in the ${tierLabel} sponsorship tier ($${price}/event) on SeeWhy LIVE.\n\nPlease send me more details.\n\nThank you.`);
+    var mailto = `mailto:partnerships@seewhylive.online?subject=${subject}&body=${body}`;
+    window.open(mailto, '_blank');
+    setSponsorToast('Opening email…');
+    setTimeout(() => setSponsorToast(''), 2500);
+  }
 
   const tabs = [
     { id: 'overview',    label: 'Overview',    icon: Globe },
@@ -518,6 +528,7 @@ export default function SocialExpo() {
           {/* SPONSOR TAB */}
           {activeTab === 'sponsor' && (
             <motion.div key="sponsor" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              {sponsorToast && <div style={{ color: G, fontSize: 12, marginBottom: 10, fontWeight: 700 }}>{sponsorToast}</div>}
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', maxWidth: 560, margin: '0 0 28px', lineHeight: 1.6 }}>
                 Sponsor a Domino Social Expo event and reach engaged communities across six platforms
                 simultaneously. All sponsorship revenue flows through SeeWhy LIVE's secure payment
@@ -559,7 +570,7 @@ export default function SocialExpo() {
                           </div>
                         ))}
                       </div>
-                      <button style={{ width: '100%', marginTop: 18, padding: '10px', borderRadius: 10,
+                      <button onClick={() => handleSponsorInquiry(tier.label, tier.price)} style={{ width: '100%', marginTop: 18, padding: '10px', borderRadius: 10,
                         background: `${tier.color}18`, border: `1px solid ${tier.color}40`,
                         color: tier.color, fontSize: 12, fontWeight: 700, cursor: 'pointer', ...T }}>
                         Inquire About Sponsorship
