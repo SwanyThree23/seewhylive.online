@@ -101,6 +101,7 @@ const CreatorPublicProfile     = lazy(() => import('./pages/CreatorPublicProfile
 const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegration'));
 const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
+const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -195,6 +196,7 @@ export const PAGES = {
     "MultiPlatformIntegration": MultiPlatformIntegration,
     "NewsletterHub": NewsletterHub,
     "SocialExpo": SocialExpo,
+    "SeeWhyLIVEv37": SeeWhyLIVEv37,
 }
 
 export const pagesConfig = {
