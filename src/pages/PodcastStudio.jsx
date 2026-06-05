@@ -11,6 +11,7 @@ const CRIMSON = '#800020';
 const CYAN   = '#D4854A';
 const PURPLE = '#8B44B0';
 const GREEN  = '#5A7A4A';
+const NLM    = '#4285F4'; // Google NotebookLM blue
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
@@ -44,7 +45,7 @@ function Toast({ message }) {
 }
 
 // ── Tab Button ────────────────────────────────────────────────────────────────
-function TabBtn({ label, active, onClick }) {
+function TabBtn({ label, active, onClick, badge }) {
   return (
     <button
       onClick={onClick}
@@ -54,10 +55,17 @@ function TabBtn({ label, active, onClick }) {
         background: active ? GOLD : 'rgba(255,255,255,0.06)',
         color: active ? '#000' : 'rgba(255,255,255,0.5)',
         textTransform: 'uppercase', transition: 'all 0.18s',
-        flexShrink: 0,
+        flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6,
       }}
     >
       {label}
+      {badge ? (
+        <span style={{
+          background: NLM, color: '#fff', borderRadius: 999,
+          fontSize: 9, fontWeight: 900, padding: '1px 5px',
+          lineHeight: 1.4, letterSpacing: 0,
+        }}>{badge}</span>
+      ) : null}
     </button>
   );
 }
@@ -89,6 +97,404 @@ function PanelSlot({ name, emoji, borderColor, onInvite }) {
   );
 }
 
+// ── NotebookLM Sources Tab ────────────────────────────────────────────────────
+function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
+  const [urlInput, setUrlInput]   = useState('');
+  const [titleInput, setTitleInput] = useState('');
+  const [topicInput, setTopicInput] = useState('');
+  const [fetchState, setFetchState] = useState('idle'); // idle | fetching | ok | partial | failed
+  const [editIdx, setEditIdx]     = useState(null);
+  const [deleteIdx, setDeleteIdx] = useState(null);
+
+  function isNlmUrl(url) {
+    return /notebooklm\.google\.com/.test(url.trim());
+  }
+
+  function parseNlmIds(url) {
+    const nb  = url.match(/notebook\/([a-f0-9-]+)/);
+    const art = url.match(/artifact\/([a-f0-9-]+)/);
+    return { notebookId: nb?.[1] || null, artifactId: art?.[1] || null };
+  }
+
+  async function handleFetch() {
+    const url = urlInput.trim();
+    if (!url) { showToast('Paste a NotebookLM URL first'); return; }
+    if (!isNlmUrl(url)) { showToast('Must be a notebooklm.google.com URL'); return; }
+
+    setFetchState('fetching');
+    setTitleInput('');
+
+    // Try a plain fetch — NLM serves page metadata before the auth redirect
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    try {
+      const res = await fetch(url, { signal: controller.signal, redirect: 'follow' });
+      clearTimeout(timer);
+      const html = await res.text();
+      // Extract <title>
+      const m = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+      const raw = (m?.[1] || '')
+        .replace(/\s*[-–|]\s*Google NotebookLM\s*$/i, '')
+        .replace(/^Google NotebookLM\s*/i, '')
+        .trim();
+      if (raw && raw.length > 2) {
+        setTitleInput(raw);
+        setFetchState('ok');
+        showToast('Title extracted ✓');
+      } else {
+        setTitleInput('NotebookLM Source');
+        setFetchState('partial');
+      }
+    } catch {
+      clearTimeout(timer);
+      // Likely CORS or auth redirect — gracefully degrade
+      setTitleInput('NotebookLM Source');
+      setFetchState('partial');
+    }
+  }
+
+  function handleAdd() {
+    const url = urlInput.trim();
+    if (!url)          { showToast('URL is required'); return; }
+    if (!isNlmUrl(url)) { showToast('Must be a notebooklm.google.com URL'); return; }
+    if (!titleInput.trim()) { showToast('Add a title so the AI knows what this source is'); return; }
+    if (nlmSources.length >= 8) { showToast('Maximum 8 NotebookLM sources'); return; }
+
+    const ids = parseNlmIds(url);
+    const newSrc = {
+      url,
+      title: titleInput.trim(),
+      topic: topicInput.trim(),
+      notebookId: ids.notebookId,
+      artifactId: ids.artifactId,
+      addedAt: new Date().toISOString(),
+    };
+    saveNlmSources([newSrc, ...nlmSources]);
+    setUrlInput('');
+    setTitleInput('');
+    setTopicInput('');
+    setFetchState('idle');
+    showToast('Source added ✓');
+  }
+
+  function handleSaveEdit(idx) {
+    const updated = nlmSources.map((s, i) =>
+      i === idx ? { ...s, title: titleInput.trim(), topic: topicInput.trim() } : s
+    );
+    saveNlmSources(updated);
+    setEditIdx(null);
+    setTitleInput('');
+    setTopicInput('');
+    showToast('Source updated ✓');
+  }
+
+  function startEdit(idx) {
+    const s = nlmSources[idx];
+    setEditIdx(idx);
+    setTitleInput(s.title);
+    setTopicInput(s.topic || '');
+  }
+
+  function handleDelete(idx) {
+    saveNlmSources(nlmSources.filter((_, i) => i !== idx));
+    setDeleteIdx(null);
+    showToast('Source removed');
+  }
+
+  function handleUrlPaste(e) {
+    const pasted = e.target.value;
+    setUrlInput(pasted);
+    setFetchState('idle');
+    setTitleInput('');
+  }
+
+  const fetchLabel = {
+    idle: '🔍 Fetch Title',
+    fetching: 'Fetching…',
+    ok: '✓ Title Found',
+    partial: '⚠ Auth Required — Enter Title Manually',
+    failed: '⚠ Could Not Fetch — Enter Title Manually',
+  }[fetchState];
+
+  const fetchColor = { ok: '#22c55e', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Explainer card */}
+      <div style={{
+        background: `${NLM}0C`, border: `1px solid ${NLM}30`,
+        borderLeft: `3px solid ${NLM}`, borderRadius: 16, padding: '16px 18px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: 22 }}>🧠</span>
+          <div>
+            <p style={{ ...T, fontSize: 16, fontWeight: 900, color: '#fff', margin: 0 }}>NotebookLM Sources</p>
+            <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>
+              Saved sources feed directly into AI script generation
+            </p>
+          </div>
+        </div>
+        <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, margin: 0 }}>
+          Paste any NotebookLM share URL. The app will try to auto-extract the title.
+          If NotebookLM requires sign-in, enter the title and topic manually — the AI will use
+          them as research context when generating your podcast script.
+        </p>
+      </div>
+
+      {/* URL Input Card */}
+      <div style={{
+        background: BG2, border: `1px solid ${NLM}25`,
+        borderLeft: `3px solid ${NLM}`, borderRadius: 16, padding: '20px 18px',
+      }}>
+        <p style={{ ...T, fontSize: 15, fontWeight: 900, color: '#fff', marginBottom: 14 }}>
+          Add NotebookLM Source
+        </p>
+
+        {/* URL field + fetch button */}
+        <label style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          NotebookLM Share URL
+        </label>
+        <div style={{ display: 'flex', gap: 8, marginTop: 6, marginBottom: 12 }}>
+          <input
+            type="url"
+            value={urlInput}
+            onChange={handleUrlPaste}
+            placeholder="https://notebooklm.google.com/notebook/…"
+            style={{ ...inputStyle, flex: 1, fontFamily: 'monospace', fontSize: 12 }}
+          />
+          <button
+            onClick={handleFetch}
+            disabled={fetchState === 'fetching' || !urlInput.trim()}
+            style={{
+              ...T, padding: '10px 14px', borderRadius: 10, border: 'none',
+              cursor: fetchState === 'fetching' || !urlInput.trim() ? 'not-allowed' : 'pointer',
+              background: fetchState === 'idle' ? NLM : fetchColor + '22',
+              border: `1px solid ${fetchColor}44`,
+              color: fetchState === 'idle' ? '#fff' : fetchColor,
+              fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0,
+              opacity: !urlInput.trim() ? 0.5 : 1,
+              transition: 'all 0.15s',
+            }}
+          >
+            {fetchLabel}
+          </button>
+        </div>
+
+        {/* Status hint */}
+        {(fetchState === 'partial' || fetchState === 'failed') && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              padding: '8px 12px', borderRadius: 8, marginBottom: 12,
+              background: `${GOLD}10`, border: `1px solid ${GOLD}30`,
+              ...T, fontSize: 12, color: GOLD, lineHeight: 1.5,
+            }}
+          >
+            🔐 NotebookLM requires Google sign-in to read content. Enter the title and
+            topic below so the AI knows what this source is about.
+          </motion.div>
+        )}
+
+        {/* Title field */}
+        <label style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          Source Title *
+        </label>
+        <input
+          type="text"
+          value={titleInput}
+          onChange={e => setTitleInput(e.target.value)}
+          placeholder="e.g. Domino Social Expo: Participant Invitations"
+          style={{ ...inputStyle, marginTop: 6, marginBottom: 12 }}
+        />
+
+        {/* Topic/context field */}
+        <label style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          Topic / Context <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>(optional — helps AI understand the source)</span>
+        </label>
+        <textarea
+          value={topicInput}
+          onChange={e => setTopicInput(e.target.value)}
+          placeholder="e.g. Planning and invitations for a domino social tournament event with state teams…"
+          rows={3}
+          style={{ ...inputStyle, marginTop: 6, marginBottom: 14, resize: 'vertical' }}
+        />
+
+        <button
+          onClick={handleAdd}
+          disabled={!urlInput.trim() || !titleInput.trim()}
+          style={{
+            ...T, width: '100%', padding: '12px 0', borderRadius: 10, border: 'none',
+            cursor: !urlInput.trim() || !titleInput.trim() ? 'not-allowed' : 'pointer',
+            background: !urlInput.trim() || !titleInput.trim()
+              ? 'rgba(255,255,255,0.06)'
+              : `linear-gradient(90deg, ${NLM}, #34a853)`,
+            color: !urlInput.trim() || !titleInput.trim() ? 'rgba(255,255,255,0.3)' : '#fff',
+            fontSize: 14, fontWeight: 900, letterSpacing: '0.06em',
+            transition: 'all 0.15s',
+          }}
+        >
+          🧠 Save NotebookLM Source
+        </button>
+      </div>
+
+      {/* Saved sources list */}
+      {nlmSources.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <p style={{ ...T, fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
+            Saved Sources ({nlmSources.length})
+          </p>
+          {nlmSources.map((src, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                background: BG2,
+                border: `1px solid ${NLM}25`,
+                borderLeft: `3px solid ${NLM}`,
+                borderRadius: 14, padding: '14px 16px',
+              }}
+            >
+              {editIdx === i ? (
+                /* Edit mode */
+                <div>
+                  <input
+                    type="text"
+                    value={titleInput}
+                    onChange={e => setTitleInput(e.target.value)}
+                    style={{ ...inputStyle, marginBottom: 8 }}
+                    placeholder="Title"
+                  />
+                  <textarea
+                    value={topicInput}
+                    onChange={e => setTopicInput(e.target.value)}
+                    rows={2}
+                    style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }}
+                    placeholder="Topic / context"
+                  />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => handleSaveEdit(i)}
+                      style={{ ...T, padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: NLM, color: '#fff', fontSize: 12, fontWeight: 800 }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => { setEditIdx(null); setTitleInput(''); setTopicInput(''); }}
+                      style={{ ...T, padding: '7px 14px', borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 700 }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Display mode */
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
+                        <span style={{
+                          ...T, fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 999,
+                          background: `${NLM}20`, border: `1px solid ${NLM}40`, color: NLM,
+                          letterSpacing: '0.1em', textTransform: 'uppercase',
+                        }}>🧠 NLM</span>
+                        <span style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>{src.title}</span>
+                      </div>
+                      {src.topic && (
+                        <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, margin: '0 0 6px' }}>
+                          {src.topic}
+                        </p>
+                      )}
+                      <a
+                        href={src.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...T, fontSize: 10, color: NLM, wordBreak: 'break-all', textDecoration: 'none', opacity: 0.7 }}
+                      >
+                        {src.url.length > 55 ? src.url.slice(0, 55) + '…' : src.url}
+                      </a>
+                      <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+                        Added {new Date(src.addedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 7, marginTop: 8 }}>
+                    <button
+                      onClick={() => startEdit(i)}
+                      style={{
+                        ...T, padding: '5px 14px', borderRadius: 8, cursor: 'pointer',
+                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800,
+                      }}
+                    >
+                      Edit
+                    </button>
+                    {deleteIdx === i ? (
+                      <>
+                        <button
+                          onClick={() => handleDelete(i)}
+                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 900 }}
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          onClick={() => setDeleteIdx(null)}
+                          style={{ ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700 }}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteIdx(i)}
+                        style={{
+                          ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
+                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+                          color: '#ef4444', fontSize: 11, fontWeight: 800,
+                        }}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
+
+          {/* Clear all */}
+          <button
+            onClick={() => { saveNlmSources([]); showToast('All sources cleared'); }}
+            style={{
+              ...T, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
+              background: 'transparent', border: '1px solid rgba(239,68,68,0.2)',
+              color: 'rgba(239,68,68,0.5)', fontSize: 12, fontWeight: 700,
+            }}
+          >
+            Clear All Sources
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          textAlign: 'center', padding: '40px 20px',
+          background: BG2, borderRadius: 16, border: `1px dashed ${NLM}30`,
+        }}>
+          <span style={{ fontSize: 36 }}>🧠</span>
+          <p style={{ ...T, fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.3)', marginTop: 10 }}>
+            No sources saved yet
+          </p>
+          <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+            Paste a NotebookLM share URL above to get started
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
   const [tab, setTab] = useState('create');
@@ -106,6 +512,7 @@ export default function PodcastStudio() {
   const [genStep, setGenStep] = useState('');
   const [script, setScript] = useState(null);
   const [library, setLibrary] = useState(() => JSON.parse(localStorage.getItem('podcast_library') || '[]'));
+  const [nlmSources, setNlmSources] = useState(() => JSON.parse(localStorage.getItem('podcast_nlm_sources') || '[]'));
   const [editingIdx, setEditingIdx] = useState(null);
   const [toast, setToast] = useState('');
   const [panelSegIdx, setPanelSegIdx] = useState(0);
@@ -119,6 +526,11 @@ export default function PodcastStudio() {
   function showToast(msg) {
     setToast(msg);
     setTimeout(() => setToast(''), 3000);
+  }
+
+  function saveNlmSources(updated) {
+    setNlmSources(updated);
+    localStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
   }
 
   function addSource() {
@@ -150,8 +562,13 @@ export default function PodcastStudio() {
       const srcText = sources.length
         ? sources.map(s => `[${s.label}]: ${s.content}`).join('\n---\n')
         : 'No sources provided — generate based on topic only.';
+      const nlmText = nlmSources.length
+        ? `\n\nNotebookLM Research Sources (treat as research context for the discussion):\n${
+            nlmSources.map(s => `- "${s.title}"${s.topic ? ' — ' + s.topic : ''}`).join('\n')
+          }`
+        : '';
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a podcast script writer for SeeWhy LIVE, a live streaming platform. Write a ${duration} podcast script between ${hostName} (host) and ${cohostName} (co-host/AI) about: "${topic || 'live streaming, creator economy, and community building'}". Sources: ${srcText}. Tone: ${tone}. The script should feel like a real conversation about the topic, with the hosts reacting to each other naturally.`,
+        prompt: `You are a podcast script writer for SeeWhy LIVE, a live streaming platform. Write a ${duration} podcast script between ${hostName} (host) and ${cohostName} (co-host/AI) about: "${topic || 'live streaming, creator economy, and community building'}". Sources: ${srcText}${nlmText}. Tone: ${tone}. The script should feel like a real conversation about the topic, with the hosts reacting to each other naturally. If NotebookLM sources are provided, weave their topics into the discussion naturally.`,
         response_json_schema: {
           type: 'object',
           properties: {
@@ -312,6 +729,7 @@ export default function PodcastStudio() {
         scrollbarWidth: 'none', justifyContent: 'center',
       }}>
         <TabBtn label="Create" active={tab === 'create'} onClick={() => setTab('create')} />
+        <TabBtn label="Sources" active={tab === 'sources'} onClick={() => setTab('sources')} badge={nlmSources.length || null} />
         <TabBtn label="Script" active={tab === 'script'} onClick={() => setTab('script')} />
         <TabBtn label="Panel Record" active={tab === 'record'} onClick={() => setTab('record')} />
         <TabBtn label="📓 Sources" active={tab === 'nlm'} onClick={() => setTab('nlm')} />
@@ -334,6 +752,11 @@ export default function PodcastStudio() {
                   <p style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', margin: 0 }}>Sources</p>
                   <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '2px 0 0' }}>
                     {sources.length}/5 added
+                    {nlmSources.length > 0 && (
+                      <span style={{ color: NLM, marginLeft: 8 }}>
+                        + {nlmSources.length} NLM
+                      </span>
+                    )}
                   </p>
                 </div>
                 {!addingSource && sources.length < 5 && (
@@ -527,6 +950,17 @@ export default function PodcastStudio() {
               <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
             </div>
           </div>
+        )}
+
+        {/* ── Tab: Sources ── */}
+        {tab === 'sources' && (
+          <NlmSourcesTab
+            nlmSources={nlmSources}
+            saveNlmSources={saveNlmSources}
+            showToast={showToast}
+            inputStyle={inputStyle}
+            selectStyle={selectStyle}
+          />
         )}
 
         {/* ── Tab: Script ── */}
