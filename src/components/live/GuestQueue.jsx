@@ -4,21 +4,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import {
-  UserPlus,
-  Check,
-  X,
-  Clock,
-  Mic,
-  MicOff,
-  Video,
-  ChevronUp,
-  ChevronDown,
+  UserPlus, Check, X, Clock, Mic, MicOff, Video,
+  ChevronUp, ChevronDown, CheckCircle, AlertCircle,
+  Wifi, Shield, UserCheck, Users,
 } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
-const TEAL = '#C9A84C';
+const PINK    = '#FF1564';
+const TEAL    = '#C9A84C';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -30,6 +24,22 @@ function timeAgo(dateStr) {
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
   return `${hours}h ago`;
+}
+
+function TechBadge({ ok, label }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 3,
+      fontSize: 9, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
+      background: ok ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.1)',
+      color: ok ? '#22c55e' : '#ef4444',
+      border: `1px solid ${ok ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.2)'}`,
+      fontFamily: 'Barlow Condensed, sans-serif',
+    }}>
+      {ok ? <CheckCircle style={{ width: 7, height: 7 }} /> : <AlertCircle style={{ width: 7, height: 7 }} />}
+      {label}
+    </span>
+  );
 }
 
 export default function GuestQueue({ roomId, isHost }) {
@@ -105,6 +115,23 @@ export default function GuestQueue({ roomId, isHost }) {
     },
   });
 
+  const admitAllMutation = useMutation({
+    mutationFn: () =>
+      Promise.all(
+        waitingGuests.map(p =>
+          base44.entities.Participant.update(p.id, {
+            status: 'admitted',
+            admitted_at: new Date().toISOString(),
+          })
+        )
+      ),
+    onSuccess: () => {
+      toast.success(`All ${waitingGuests.length} guests admitted!`);
+      qc.invalidateQueries(['guest-queue', roomId]);
+      qc.invalidateQueries(['admitted-guests', roomId]);
+    },
+  });
+
   const isEmpty = waitingGuests.length === 0 && admittedGuests.length === 0;
 
   return (
@@ -144,22 +171,18 @@ export default function GuestQueue({ roomId, isHost }) {
         >
           Guest Queue
         </span>
-        {waitingGuests.length > 0 && (
-          <span
-            style={{
-              background: CRIMSON,
-              color: '#fff',
-              fontSize: 11,
-              fontWeight: 800,
-              borderRadius: 20,
-              padding: '2px 7px',
-              letterSpacing: '0.03em',
-              lineHeight: 1.4,
-            }}
-          >
-            {waitingGuests.length}
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          {waitingGuests.length > 0 && (
+            <span style={{ background: CRIMSON, color: '#fff', fontSize: 11, fontWeight: 800, borderRadius: 20, padding: '2px 7px', letterSpacing: '0.03em', lineHeight: 1.4 }}>
+              {waitingGuests.length}
+            </span>
+          )}
+          {admittedGuests.length > 0 && (
+            <span style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontSize: 10, fontWeight: 800, borderRadius: 20, padding: '2px 7px', border: '1px solid rgba(34,197,94,0.3)', lineHeight: 1.4 }}>
+              {admittedGuests.length} on stage
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Non-host message */}
@@ -182,19 +205,25 @@ export default function GuestQueue({ roomId, isHost }) {
           {/* Waiting Section */}
           {waitingGuests.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <span
-                style={{
-                  ...T,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: `rgba(212,175,55,0.6)`,
-                  paddingLeft: 2,
-                }}
-              >
-                WAITING
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 2 }}>
+                <span style={{ ...T, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(212,175,55,0.6)' }}>
+                  WAITING ({waitingGuests.length})
+                </span>
+                {waitingGuests.length > 1 && (
+                  <button
+                    onClick={() => admitAllMutation.mutate()}
+                    disabled={admitAllMutation.isPending}
+                    style={{
+                      ...T, display: 'flex', alignItems: 'center', gap: 4,
+                      background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
+                      color: '#22c55e', fontSize: 10, fontWeight: 900, padding: '3px 8px',
+                      borderRadius: 5, cursor: 'pointer', letterSpacing: '0.03em',
+                    }}
+                  >
+                    <Users style={{ width: 8, height: 8 }} /> Admit All
+                  </button>
+                )}
+              </div>
               <AnimatePresence initial={false}>
                 {waitingGuests.map((p) => (
                   <motion.div
@@ -276,6 +305,18 @@ export default function GuestQueue({ roomId, isHost }) {
                           {p.created_date ? timeAgo(p.created_date) : '—'}
                         </span>
                       </div>
+                    </div>
+
+                    {/* Tech readiness indicators */}
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      <TechBadge ok={!!p.mic_ready} label="Mic" />
+                      <TechBadge ok={!!p.cam_ready} label="Cam" />
+                      <TechBadge ok={!!p.net_ready} label="Net" />
+                      {p.platform && (
+                        <span style={{ ...T, fontSize: 9, fontWeight: 700, padding: '2px 5px', borderRadius: 4, background: 'rgba(212,175,55,0.1)', color: TEAL, border: '1px solid rgba(212,175,55,0.2)' }}>
+                          {p.platform}
+                        </span>
+                      )}
                     </div>
 
                     {/* Action buttons */}
