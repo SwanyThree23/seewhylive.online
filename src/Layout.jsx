@@ -90,10 +90,12 @@ export default function Layout({ children, currentPageName }) {
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
   var navigate = useNavigate();
-  var scrollPositions = React.useRef({});
   var { backgroundStyle, backgrounds } = useBackground();
-  // Scroll-position preservation per bottom-nav tab
+  // Scroll-position preservation per pathname
   var scrollPositions = React.useRef({});
+  // Per-tab last-visited URL for independent navigation stacks
+  var tabLastUrl = React.useRef({});
+
   useEffect(function() {
     var key = location.pathname;
     var saved = scrollPositions.current[key];
@@ -406,13 +408,21 @@ export default function Layout({ children, currentPageName }) {
 
               function handleTabPress(e) {
                 if (active) {
-                  // Double-tap active tab → scroll to top
+                  // Tap active tab → reset to root, clear saved URL for this tab
                   e.preventDefault();
+                  delete tabLastUrl.current[item.name];
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                   navigate(item.href, { replace: true });
                 } else {
-                  // Save current scroll before leaving
+                  // Save scroll + current URL under whichever tab owns the current path
                   scrollPositions.current[location.pathname] = window.scrollY;
+                  var currentTab = BOTTOM_NAV.find(function(n) { return isActive(n.href); });
+                  if (currentTab) {
+                    tabLastUrl.current[currentTab.name] = location.pathname + location.search;
+                  }
+                  // Navigate to this tab's last-visited URL, or its root
+                  var dest = tabLastUrl.current[item.name] || item.href;
+                  navigate(dest);
                 }
               }
 

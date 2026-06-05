@@ -5,6 +5,7 @@ import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, 
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useAuth } from '@/lib/AuthContext';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -59,6 +60,7 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
+  const { logout } = useAuth();
   const [fullName, setFullName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -119,9 +121,12 @@ export default function SettingsPage() {
     setIsDeleting(true);
     try {
       await base44.auth.deleteMe();
+      // Clear auth state via AuthContext then do a full-page reset
+      logout(false);
+      queryClient.clear();
       window.location.href = '/';
     } catch {
-      toast.error('Could not delete account. Contact support.');
+      toast.error('Could not delete account. Contact support at support@seewhylive.com');
     } finally {
       setIsDeleting(false);
     }
@@ -220,8 +225,8 @@ export default function SettingsPage() {
         </Section>
 
         {/* Account */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(20,8,8,0.95)', border: '1px solid rgba(239,68,68,0.15)' }}>
+          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
             <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} />
             <p className="font-black text-sm text-white" style={T}>Account</p>
           </div>
@@ -232,13 +237,28 @@ export default function SettingsPage() {
               style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
               Log Out
             </button>
-            <button
-              onClick={() => setShowDeleteDialog(true)}
-              className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
-              style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.6)', userSelect: 'none', ...T }}>
-              <Trash2 className="w-3.5 h-3.5" />
-              Delete Account
-            </button>
+
+            {/* Delete Account — App Store required section */}
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.04)' }}>
+              <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+                <p className="font-black text-[11px] uppercase" style={{ color: '#EF4444', ...T, letterSpacing: '0.08em' }}>Delete Account</p>
+                <p className="text-[11px] mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+                  Permanently removes your account, streams, creator data, and all associated content. This action is <strong style={{ color: 'rgba(239,68,68,0.8)' }}>irreversible</strong> and cannot be undone.
+                </p>
+                <p className="text-[10px] mt-1.5" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Space Mono, monospace' }}>
+                  You may also email support@seewhylive.com to request account deletion.
+                </p>
+              </div>
+              <div className="px-4 py-3">
+                <button
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] flex items-center justify-center gap-2"
+                  style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', userSelect: 'none', ...T }}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete My Account
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
