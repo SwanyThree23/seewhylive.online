@@ -5,14 +5,14 @@ import { Zap, Crown, Star, Heart } from 'lucide-react';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TIERS = [
   { min: 500, icon: '⚡', label: 'ELITE',    color: '#ff6b35', glow: 'rgba(255,107,53,0.5)'  },
   { min: 200, icon: '🌠', label: 'LEGEND',   color: '#a78bfa', glow: 'rgba(167,139,250,0.5)' },
   { min: 100, icon: '👑', label: 'DIAMOND',  color: PINK,      glow: 'rgba(255,21,100,0.5)'  },
-  { min: 50,  icon: '💎', label: 'PLATINUM', color: '#00d4ff', glow: 'rgba(0,212,255,0.45)'  },
+  { min: 50,  icon: '💎', label: 'PLATINUM', color: '#D4AF37', glow: 'rgba(212,175,55,0.45)'  },
   { min: 15,  icon: '💛', label: 'GOLD',     color: G,         glow: 'rgba(212,175,55,0.45)' },
   { min: 5,   icon: '⭐', label: 'SILVER',   color: '#C0C0C0', glow: 'rgba(192,192,192,0.4)' },
   { min: 0,   icon: '🪙', label: 'BRONZE',   color: '#CD7F32', glow: 'rgba(205,127,50,0.35)' },

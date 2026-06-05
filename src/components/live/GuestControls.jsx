@@ -12,7 +12,7 @@ import {
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function qualityDot(health) {
@@ -82,9 +82,9 @@ function GuestRow({ guest, isHost, roomId, onSpotlight, spotlitId, raisedHands =
           <div style={{
             width: 30, height: 30, borderRadius: '50%',
             background: `linear-gradient(135deg, ${isHostP ? '#5a4000' : isCoHost ? '#003050' : CRIMSON}, #0d0614)`,
-            border: `1.5px solid ${isHostP ? G : isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.12)'}`,
+            border: `1.5px solid ${isHostP ? G : isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11, fontWeight: 900, color: isHostP ? G : isCoHost ? '#00d4ff' : '#fff', ...T,
+            fontSize: 11, fontWeight: 900, color: isHostP ? G : isCoHost ? '#D4AF37' : '#fff', ...T,
           }}>
             {guest.user_avatar
               ? <img src={guest.user_avatar} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
@@ -101,7 +101,7 @@ function GuestRow({ guest, isHost, roomId, onSpotlight, spotlitId, raisedHands =
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             {isHostP && <Crown style={{ width: 9, height: 9, color: G, flexShrink: 0 }} />}
-            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#00d4ff', flexShrink: 0 }} />}
+            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#D4AF37', flexShrink: 0 }} />}
             <span style={{ ...T, color: '#fff', fontSize: 11, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {guest.user_name || 'Guest'}
             </span>
@@ -165,7 +165,7 @@ function GuestRow({ guest, isHost, roomId, onSpotlight, spotlitId, raisedHands =
                   <ActionBtn
                     icon={isCoHost ? ShieldOff : Shield}
                     label={isCoHost ? 'Demote' : 'Co-host'}
-                    color={isCoHost ? '#ef4444' : '#00d4ff'}
+                    color={isCoHost ? '#ef4444' : '#D4AF37'}
                     onClick={() => promote.mutate()}
                     loading={promote.isPending}
                   />

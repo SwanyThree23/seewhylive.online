@@ -11,7 +11,7 @@ import { Target, Zap } from 'lucide-react';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function TipGoalBar({ roomId, goal = 500, label = 'Stream Goal', currentTotal }) {
