@@ -16,10 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -33,15 +33,16 @@ jobs:
       - name: Trigger VPS deploy via webhook
         run: |
           HTTP=$(curl -s -o /tmp/deploy_resp.txt -w "%{http_code}" -X POST \
-            https://seewhylive.online/api/webhooks/deploy \
+            https://srv1581658.hstgr.cloud:3001/api/webhooks/deploy \
             -H "x-deploy-token: ${{ secrets.DEPLOY_TOKEN }}" \
             -H "Content-Type: application/json" \
-            --max-time 30 || echo "000")
+            --max-time 30 \
+            --insecure || echo "000")
           echo "Webhook status: $HTTP"
           cat /tmp/deploy_resp.txt || true
           if [ "$HTTP" = "200" ]; then
             echo "✅ VPS reload queued — https://seewhylive.online"
           else
-            echo "⚠️  VPS webhook returned HTTP $HTTP (timeout or unreachable — server may need manual restart)"
+            echo "⚠️  VPS webhook returned HTTP $HTTP (server may need manual restart)"
           fi
-          # Never fail CI on webhook issues — frontend deploys via Vercel separately
+          # Never fail CI on webhook issues
