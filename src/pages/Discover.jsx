@@ -43,7 +43,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#FF1564', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -68,7 +68,7 @@ function FanbaseRoomCard({ room }) {
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-          style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(192,57,43,0.90)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
         </div>
         {viewers > 0 && (
@@ -149,14 +149,19 @@ export default function DiscoverPage() {
     <div className="min-h-screen bg-[#03030A] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <motion.div
-        style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ height: pullY, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
         {pullY > 10 && (
-          <motion.div
-            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
-            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          </motion.div>
+          <>
+            <motion.div
+              animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+              transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+              style={{ width: 26, height: 26, borderRadius: '50%', border: '2.5px solid rgba(212,175,55,0.25)', borderTopColor: '#D4AF37', flexShrink: 0 }}
+            />
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: refreshing ? '#D4AF37' : 'rgba(212,175,55,0.5)' }}>
+              {refreshing ? 'REFRESHING…' : pullY >= 65 ? 'RELEASE TO REFRESH' : 'PULL TO REFRESH'}
+            </span>
+          </>
         )}
       </motion.div>
       {/* Dark header */}
@@ -173,9 +178,9 @@ export default function DiscoverPage() {
               Discover
             </h1>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FF1564] animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
               <span className="text-sm font-bold text-white/70" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                {liveRooms.length} <span style={{ color: '#FF1564' }}>LIVE</span>
+                {liveRooms.length} <span style={{ color: '#C0392B' }}>LIVE</span>
               </span>
             </div>
           </div>
@@ -275,7 +280,7 @@ export default function DiscoverPage() {
               {loadingLive ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#16162A]" />
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#1A1218]" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
@@ -356,7 +361,7 @@ function TrendingCard({ room, rank }) {
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#FF1564]/30 transition-all cursor-pointer"
+        className="relative rounded-xl overflow-hidden border border-[#1A1218] hover:border-[#C0392B]/30 transition-all cursor-pointer"
         style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
       >
         {room.thumbnail_url && (
@@ -364,12 +369,12 @@ function TrendingCard({ room, rank }) {
         )}
         {!room.thumbnail_url && (
           <div className="w-full h-28 bg-gradient-to-br from-[#1a0010] to-[#0B0B18] flex items-center justify-center">
-            <Radio className="w-10 h-10 text-[#FF1564]/30" />
+            <Radio className="w-10 h-10 text-[#C0392B]/30" />
           </div>
         )}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           <span className="text-xs font-black font-mono" style={{ color: rankColors[rank - 1] }}>#{rank}</span>
-          <span style={{ background: '#FF1564', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+          <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
           </span>
         </div>
@@ -390,9 +395,9 @@ function ScheduledRow({ room }) {
     <Link to={`${createPageUrl('Room')}?id=${room.id}`}>
       <motion.div
         whileHover={{ x: 4 }}
-        className="flex items-center gap-4 p-4 rounded-xl border border-[#16162A] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
+        className="flex items-center gap-4 p-4 rounded-xl border border-[#1A1218] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
       >
-        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#16162A] flex items-center justify-center shrink-0">
+        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#1A1218] flex items-center justify-center shrink-0">
           <Calendar className="w-5 h-5 text-[#FFB800]" />
         </div>
         <div className="flex-1 min-w-0">
@@ -419,7 +424,7 @@ function CreatorCard({ creator }) {
         style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-            style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(192,57,43,0.90)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
           </div>
         )}

@@ -443,14 +443,19 @@ export default function Home() {
     >
       {/* Pull-to-refresh indicator */}
       <motion.div
-        style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ height: pullY, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
         {pullY > 10 && (
-          <motion.div
-            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
-            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37' }}
-          />
+          <>
+            <motion.div
+              animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+              transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+              style={{ width: 26, height: 26, borderRadius: '50%', border: '2.5px solid rgba(212,175,55,0.25)', borderTopColor: '#D4AF37', flexShrink: 0 }}
+            />
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: refreshing ? '#D4AF37' : 'rgba(212,175,55,0.5)' }}>
+              {refreshing ? 'REFRESHING…' : pullY >= 65 ? 'RELEASE TO REFRESH' : 'PULL TO REFRESH'}
+            </span>
+          </>
         )}
       </motion.div>
 
