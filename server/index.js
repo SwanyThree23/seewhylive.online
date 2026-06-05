@@ -2986,10 +2986,9 @@ app.post('/api/webhooks/deploy', function(req, res) {
     // so server picks up any server/index.js changes via a fresh reload.
     var cmd = [
       'cd /opt/seewhy',
-      'git fetch origin claude/seewhy-live-v33-build-v0L5Z',
-      'git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z',
+      'git fetch origin main',
+      'git reset --hard origin/main',
       'cd server && npm install --omit=dev --silent',
-      'cd /opt/seewhy/frontend && npm ci --silent && npm run build',
       'pm2 reload seewhy-server --update-env',
       'pm2 save --force'
     ].join(' && ');
