@@ -90,12 +90,13 @@ export default function Layout({ children, currentPageName }) {
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
   var navigate = useNavigate();
-  var { backgroundStyle, backgrounds } = useBackground();
-  // Scroll-position preservation per pathname
   var scrollPositions = React.useRef({});
-  // Per-tab last-visited URL for independent navigation stacks
-  var tabLastUrl = React.useRef({});
-
+  var { backgroundStyle, backgrounds } = useBackground();
+  // Scroll-position preservation per bottom-nav tab
+  var scrollPositions = React.useRef({});
+  // Tab stack preservation — remember last URL visited per tab root
+  var tabHistoryRef = React.useRef(new Map());
+  var activeTabHref = React.useRef(BOTTOM_NAV[0].href);
   useEffect(function() {
     var key = location.pathname;
     var saved = scrollPositions.current[key];
@@ -407,22 +408,21 @@ export default function Layout({ children, currentPageName }) {
               var active = isActive(item.href);
 
               function handleTabPress(e) {
+                e.preventDefault();
                 if (active) {
-                  // Tap active tab → reset to root, clear saved URL for this tab
-                  e.preventDefault();
-                  delete tabLastUrl.current[item.name];
+                  // Tap active tab → scroll to root, clear this tab's saved sub-page
                   window.scrollTo({ top: 0, behavior: 'smooth' });
+                  tabHistoryRef.current.delete(item.href);
                   navigate(item.href, { replace: true });
                 } else {
-                  // Save scroll + current URL under whichever tab owns the current path
+                  // Switch to a different tab
                   scrollPositions.current[location.pathname] = window.scrollY;
-                  var currentTab = BOTTOM_NAV.find(function(n) { return isActive(n.href); });
-                  if (currentTab) {
-                    tabLastUrl.current[currentTab.name] = location.pathname + location.search;
-                  }
-                  // Navigate to this tab's last-visited URL, or its root
-                  var dest = tabLastUrl.current[item.name] || item.href;
-                  navigate(dest);
+                  // Save current page under the previously-active tab
+                  tabHistoryRef.current.set(activeTabHref.current, location.pathname + location.search);
+                  activeTabHref.current = item.href;
+                  // Navigate to last-visited page in the new tab, or the tab root
+                  var lastUrl = tabHistoryRef.current.get(item.href) || item.href;
+                  navigate(lastUrl);
                 }
               }
 
