@@ -95,8 +95,12 @@ const TributeWall         = lazy(() => import('./pages/TributeWall'));
 const INSForge            = lazy(() => import('./pages/INSForge'));
 const JoyceAI             = lazy(() => import('./pages/JoyceAI'));
 const GuardianAI          = lazy(() => import('./pages/GuardianAI'));
-const StreamRefDash       = lazy(() => import('./pages/StreamRefDash'));
-const StreamInfraRef      = lazy(() => import('./pages/StreamInfraRef'));
+const StreamRefDash            = lazy(() => import('./pages/StreamRefDash'));
+const StreamInfraRef           = lazy(() => import('./pages/StreamInfraRef'));
+const CreatorPublicProfile     = lazy(() => import('./pages/CreatorPublicProfile'));
+const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegration'));
+const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
+const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -187,6 +191,10 @@ export const PAGES = {
     "GuardianAI": GuardianAI,
     "StreamRefDash": StreamRefDash,
     "StreamInfraRef": StreamInfraRef,
+    "CreatorPublicProfile": CreatorPublicProfile,
+    "MultiPlatformIntegration": MultiPlatformIntegration,
+    "NewsletterHub": NewsletterHub,
+    "SocialExpo": SocialExpo,
 }
 
 export const pagesConfig = {
