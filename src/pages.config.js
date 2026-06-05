@@ -101,7 +101,12 @@ const CreatorPublicProfile     = lazy(() => import('./pages/CreatorPublicProfile
 const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegration'));
 const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
-const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
+const AuraAI                   = lazy(() => import('./pages/AuraAI'));
+const SwanyBotPage             = lazy(() => import('./pages/SwanyBotPage'));
+const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
+const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
+const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
+const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -196,7 +201,12 @@ export const PAGES = {
     "MultiPlatformIntegration": MultiPlatformIntegration,
     "NewsletterHub": NewsletterHub,
     "SocialExpo": SocialExpo,
-    "SeeWhyLIVEv37": SeeWhyLIVEv37,
+    "AuraAI": AuraAI,
+    "SwanyBotPage": SwanyBotPage,
+    "TranscriptionStudio": TranscriptionStudio,
+    "RoomsManager": RoomsManager,
+    "PKBattleArena": PKBattleArena,
+    "StreamShareHub": StreamShareHub,
 }
 
 export const pagesConfig = {

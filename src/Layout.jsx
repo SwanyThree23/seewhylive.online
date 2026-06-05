@@ -59,6 +59,12 @@ var DRAWER_CREATE = [
   { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
+  { name: 'AURA AI',          icon: Sparkles,        href: createPageUrl('AuraAI') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Transcription',    icon: Mic2,            href: createPageUrl('TranscriptionStudio') },
+  { name: 'Rooms Manager',    icon: Tv,              href: createPageUrl('RoomsManager') },
+  { name: 'PK Battle Arena',  icon: Swords,          href: createPageUrl('PKBattleArena') },
+  { name: 'Stream Share Hub', icon: Globe,           href: createPageUrl('StreamShareHub') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 

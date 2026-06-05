@@ -919,6 +919,108 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Section 14: AURA AI ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>✨ AURA AI</p>
+            <span style={{ ...T, fontSize: 11, color: '#a78bfa', fontWeight: 700, letterSpacing: '0.05em' }}>BROADCAST STRATEGY</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Editorial luxury AI co-host. Production scripts, revenue drives, multi-platform strategy, and premium show format guidance.
+          </p>
+          <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{
+              margin: '0 16px 16px',
+              background: 'linear-gradient(135deg, rgba(167,139,250,0.12), rgba(109,40,217,0.08))',
+              border: '1px solid rgba(167,139,250,0.3)', borderRadius: 10,
+              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #a78bfa, #6d28d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✨</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: '#a78bfa', fontWeight: 900 }}>ASK AURA</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>LUXURY STRATEGY · CLAUDE POWERED</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: '#a78bfa', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Open →</span>
+            </div>
+          </Link>
+        </Card>
+
+        {/* ── Section 15: SwanyBot ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🎲 SwanyBot</p>
+            <span style={{ ...T, fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: '0.05em' }}>DOMINO CULTURE AI</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            The cultural voice of SeeWhy LIVE. Match analysis, domino strategy, State vs State commentary, PK Battle hype, and legend tributes.
+          </p>
+          <Link to={createPageUrl('SwanyBotPage')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{
+              margin: '0 16px 16px',
+              background: 'linear-gradient(135deg, rgba(212,175,55,0.12), rgba(138,111,46,0.08))',
+              border: '1px solid rgba(212,175,55,0.3)', borderRadius: 10,
+              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${GOLD}, #8A6F2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🎲</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900 }}>ASK SWANYBOT</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>DOMINO ANALYST · CLAUDE POWERED</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: GOLD, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Open →</span>
+            </div>
+          </Link>
+        </Card>
+
+        {/* ── Section 16: External AI Tools ── */}
+        <Card accentColor={CYAN}>
+          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🔗 External AI Tools</p>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
+            Third-party AI platforms curated for SeeWhy LIVE creators.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              {
+                href: 'https://higgsfield.ai',
+                icon: '🎬',
+                name: 'Higgsfield AI',
+                desc: 'AI video generation — create cinematic clips for stream highlights and promos.',
+                color: '#ff6b35',
+              },
+              {
+                href: 'https://supercomputer.ai',
+                icon: '🖥️',
+                name: 'SuperComputer AI',
+                desc: 'AI productivity platform — automate workflows and content pipelines.',
+                color: CYAN,
+              },
+            ].map(tool => (
+              <a
+                key={tool.href}
+                href={tool.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.1)`,
+                  borderRadius: 12, padding: '12px 14px', textDecoration: 'none',
+                  transition: 'border-color 0.15s',
+                }}
+              >
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: tool.color + '22', border: `1px solid ${tool.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{tool.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ ...T, fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '0.03em' }}>{tool.name}</div>
+                  <div style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2, lineHeight: 1.4 }}>{tool.desc}</div>
+                </div>
+                <span style={{ ...T, fontSize: 13, fontWeight: 700, color: tool.color, letterSpacing: '0.06em', flexShrink: 0 }}>Open ↗</span>
+              </a>
+            ))}
+          </div>
+        </Card>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
