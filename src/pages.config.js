@@ -88,10 +88,25 @@ const VaultPro            = lazy(() => import('./pages/VaultPro'));
 const AudioRoom           = lazy(() => import('./pages/AudioRoom'));
 const SceneTemplates      = lazy(() => import('./pages/SceneTemplates'));
 const StreamAlerts        = lazy(() => import('./pages/StreamAlerts'));
+const PodcastStudio       = lazy(() => import('./pages/PodcastStudio'));
+const MultiPlatform       = lazy(() => import('./pages/MultiPlatform'));
+const StateVsState        = lazy(() => import('./pages/StateVsState'));
+const TributeWall         = lazy(() => import('./pages/TributeWall'));
+const INSForge            = lazy(() => import('./pages/INSForge'));
+const JoyceAI             = lazy(() => import('./pages/JoyceAI'));
+const GuardianAI          = lazy(() => import('./pages/GuardianAI'));
+const StreamRefDash            = lazy(() => import('./pages/StreamRefDash'));
+const StreamInfraRef           = lazy(() => import('./pages/StreamInfraRef'));
 const CreatorPublicProfile     = lazy(() => import('./pages/CreatorPublicProfile'));
+const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegration'));
 const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
-const SeeWhyLIVEv41            = lazy(() => import('./pages/SeeWhyLIVEv41'));
-const EmbedPlayer              = lazy(() => import('./pages/EmbedPlayer'));
+const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
+const AuraAI                   = lazy(() => import('./pages/AuraAI'));
+const SwanyBotPage             = lazy(() => import('./pages/SwanyBotPage'));
+const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
+const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
+const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
+const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -173,10 +188,25 @@ export const PAGES = {
     "AudioRoom": AudioRoom,
     "SceneTemplates": SceneTemplates,
     "StreamAlerts": StreamAlerts,
+    "PodcastStudio": PodcastStudio,
+    "MultiPlatform": MultiPlatform,
+    "StateVsState": StateVsState,
+    "TributeWall": TributeWall,
+    "INSForge": INSForge,
+    "JoyceAI": JoyceAI,
+    "GuardianAI": GuardianAI,
+    "StreamRefDash": StreamRefDash,
+    "StreamInfraRef": StreamInfraRef,
     "CreatorPublicProfile": CreatorPublicProfile,
+    "MultiPlatformIntegration": MultiPlatformIntegration,
     "NewsletterHub": NewsletterHub,
-    "SeeWhyLIVEv41": SeeWhyLIVEv41,
-    "EmbedPlayer": EmbedPlayer,
+    "SocialExpo": SocialExpo,
+    "AuraAI": AuraAI,
+    "SwanyBotPage": SwanyBotPage,
+    "TranscriptionStudio": TranscriptionStudio,
+    "RoomsManager": RoomsManager,
+    "PKBattleArena": PKBattleArena,
+    "StreamShareHub": StreamShareHub,
 }
 
 export const pagesConfig = {
