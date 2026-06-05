@@ -47,6 +47,8 @@ import SwanyBotPage from './pages/SwanyBotPage';
 import TranscriptionStudio from './pages/TranscriptionStudio';
 import RoomsManager from './pages/RoomsManager';
 import PKBattleArena from './pages/PKBattleArena';
+import EmbedPage from './pages/EmbedPage';
+import StreamShareHub from './pages/StreamShareHub';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -147,6 +149,7 @@ const AuthenticatedApp = () => {
       <Route path="/TranscriptionStudio" element={<LayoutWrapper currentPageName="TranscriptionStudio"><TranscriptionStudio /></LayoutWrapper>} />
       <Route path="/RoomsManager" element={<LayoutWrapper currentPageName="RoomsManager"><RoomsManager /></LayoutWrapper>} />
       <Route path="/PKBattleArena" element={<LayoutWrapper currentPageName="PKBattleArena"><PKBattleArena /></LayoutWrapper>} />
+      <Route path="/StreamShareHub" element={<LayoutWrapper currentPageName="StreamShareHub"><StreamShareHub /></LayoutWrapper>} />
       <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
@@ -165,6 +168,9 @@ function App() {
         <Router>
           <NavigationTracker />
           <Routes>
+            {/* Public routes — no auth required */}
+            <Route path="/embed" element={<EmbedPage />} />
+            <Route path="/watch" element={<LayoutWrapper currentPageName="Watch"><StreamShareHub /></LayoutWrapper>} />
             <Route path="/login" element={<Login />} />
             <Route path="/*" element={<AuthenticatedApp />} />
           </Routes>

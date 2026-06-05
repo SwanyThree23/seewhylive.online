@@ -106,6 +106,7 @@ const SwanyBotPage             = lazy(() => import('./pages/SwanyBotPage'));
 const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
 const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
 const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
+const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -205,6 +206,7 @@ export const PAGES = {
     "TranscriptionStudio": TranscriptionStudio,
     "RoomsManager": RoomsManager,
     "PKBattleArena": PKBattleArena,
+    "StreamShareHub": StreamShareHub,
 }
 
 export const pagesConfig = {

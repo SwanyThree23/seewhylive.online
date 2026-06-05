@@ -63,6 +63,7 @@ var DRAWER_CREATE = [
   { name: 'Transcription',    icon: Mic2,            href: createPageUrl('TranscriptionStudio') },
   { name: 'Rooms Manager',    icon: Tv,              href: createPageUrl('RoomsManager') },
   { name: 'PK Battle Arena',  icon: Swords,          href: createPageUrl('PKBattleArena') },
+  { name: 'Stream Share Hub', icon: Globe,           href: createPageUrl('StreamShareHub') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 

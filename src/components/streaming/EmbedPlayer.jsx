@@ -255,7 +255,7 @@ export default function EmbedPlayer({
 
       {/* Watermark */}
       <div className="absolute bottom-2 right-3 text-[#d4af37]/40 text-[10px] font-bold pointer-events-none">
-        StreamSpace
+        SeeWhy LIVE
       </div>
     </div>
   );
