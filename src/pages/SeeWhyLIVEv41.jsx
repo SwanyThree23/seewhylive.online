@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import CoStreamHub from '../components/live/CoStreamHub';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -262,6 +263,17 @@ function StagePanel() {
           <div key={s} style={{ color: C.textM, fontSize: 12, padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>{s}</div>
         ))}
       </Card>
+
+      {/* Co-Streaming Hub — 20-seat VDO.Ninja panel */}
+      <div style={{ marginTop: 20 }}>
+        <CoStreamHub
+          roomId={roomName || 'studio'}
+          isHost={true}
+          isCoHost={false}
+          currentUser={null}
+          compact={false}
+        />
+      </div>
     </div>
   );
 }

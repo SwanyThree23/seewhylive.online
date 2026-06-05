@@ -15,6 +15,7 @@ import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CoStreamHub from '../components/live/CoStreamHub';
 import QuickTip from '../components/rooms/QuickTip';
 import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
@@ -555,7 +556,13 @@ export default function RoomPage() {
               </TabsContent>
 
               <TabsContent value="costream" className="h-full mt-4 overflow-auto">
-                <CoStreamPanel roomId={roomId} />
+                <CoStreamHub
+                  roomId={roomId}
+                  isHost={isHost}
+                  isCoHost={currentParticipant?.role === 'co-host'}
+                  currentUser={user}
+                  compact={false}
+                />
               </TabsContent>
 
               <TabsContent value="analytics" className="h-full mt-4 overflow-auto">
