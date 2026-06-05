@@ -44,6 +44,7 @@ var DRAWER_WATCH = [
 
 var DRAWER_CREATE = [
   { name: 'Go Live',          icon: Radio,           href: createPageUrl('GoLive') },
+  { name: 'LIVE Studio v37',  icon: Tv,              href: createPageUrl('SeeWhyLIVEv37') },
   { name: 'LIVE Studio v36',  icon: Tv,              href: '/SeeWhyLIVEv36' },
   { name: 'Broadcast Studio', icon: Video,           href: createPageUrl('BroadcastStudio') },
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
