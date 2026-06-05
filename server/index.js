@@ -262,6 +262,7 @@ app.use(rateLimit({
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   skip: function(req) { return req.path === '/api/health' || req.path.startsWith('/socket.io'); }
 }));
 
@@ -271,6 +272,7 @@ var aiRateLimit = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many AI requests — please wait before trying again.' }
 });
 app.use('/api/ai', aiRateLimit);
@@ -2986,10 +2988,9 @@ app.post('/api/webhooks/deploy', function(req, res) {
     // so server picks up any server/index.js changes via a fresh reload.
     var cmd = [
       'cd /opt/seewhy',
-      'git fetch origin claude/seewhy-live-v33-build-v0L5Z',
-      'git reset --hard origin/claude/seewhy-live-v33-build-v0L5Z',
+      'git fetch origin main',
+      'git reset --hard origin/main',
       'cd server && npm install --omit=dev --silent',
-      'cd /opt/seewhy/frontend && npm ci --silent && npm run build',
       'pm2 reload seewhy-server --update-env',
       'pm2 save --force'
     ].join(' && ');
