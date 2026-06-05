@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -12,6 +13,15 @@ const PURPLE = '#a78bfa';
 const BLUE   = '#1565C0';
 const RED2   = '#C62828';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const QUICK_PROMPTS = {
+  svs_bracket:      ['WA vs TX State Championship — Sunday at Jamar\'s Sports Bar', 'Southeast Regional Final — FL vs GA — Double Elimination', 'National Qualifier — Opening Round — 8 States competing'],
+  tribute_card:     ['Big Bone Earl — WA legend, 1958–2021, 4× Regional Champion', 'Mama Joyce Thompson — GA Queen, 1962–2023, 30-year teaching legacy', 'Fast Hands Rodriguez — TX speed record holder, ESPN feature'],
+  stream_overlay:   ['SeeWhy LIVE tournament — gold & crimson domino theme', 'Podcast interview — dual speakers, Barlow Condensed headlines', 'LIVE NOW alert lower-third — breaking broadcast style'],
+  podcast_cover:    ['Domino culture deep dive — dark studio, gold accents', 'AI Live Streaming future — tech theme, cyan gradients', 'Creator economy special — community & money vibes'],
+  music_promo:      ['New AI-generated beat drop — trap/chill hybrid release', 'Community remix challenge — open collab call', 'SeeWhy LIVE music showcase playlist announcement'],
+  tournament_flyer: ['State vs State WA Classic — July 4 at Jamar\'s Sports Bar, Des Moines WA', 'Open Invitational — $2,500 prize pool — all states welcome', 'Tribute Gaming Event — Big Bone Earl Memorial Fund'],
+};
 
 const FORGE_TYPES = [
   { id: 'svs_bracket',     label: 'SVS Bracket Graphic',      icon: '⚔️', color: BLUE },
@@ -191,6 +201,32 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
           <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
             Creative Brief
           </div>
+
+          {/* Quick preset chips */}
+          {QUICK_PROMPTS[selected.id] && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
+              <div style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Quick start</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                {QUICK_PROMPTS[selected.id].map((p, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPrompt(p)}
+                    style={{
+                      ...T, fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+                      background: prompt === p ? `${selected.color}22` : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${prompt === p ? selected.color + '66' : 'rgba(255,255,255,0.1)'}`,
+                      color: prompt === p ? selected.color : 'rgba(255,255,255,0.45)',
+                      cursor: 'pointer', textAlign: 'left', letterSpacing: '0.02em',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {p.length > 42 ? p.slice(0, 42) + '…' : p}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <textarea value={prompt} onChange={e => setPrompt(e.target.value)}
             placeholder={`Describe your ${selected.label} — event details, theme, names, vibe…`}
             rows={3}
