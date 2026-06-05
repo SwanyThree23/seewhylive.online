@@ -139,7 +139,7 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
         <motion.div
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          style={{ height: '100%', borderRadius: 99, background: done ? '#6DBF7E' : 'linear-gradient(90deg, #D4AF37, #FF1564)' }}
+          style={{ height: '100%', borderRadius: 99, background: done ? '#6DBF7E' : 'linear-gradient(90deg, #D4AF37, #C0392B)' }}
         />
       </div>
 

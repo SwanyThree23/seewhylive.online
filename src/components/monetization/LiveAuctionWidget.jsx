@@ -45,7 +45,7 @@ function CountdownTimer({ endsAt, onExpire }) {
   }, [endsAt]);
 
   return (
-    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: urgent ? '#f87171' : '#00d4ff' }}>
+    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: urgent ? '#f87171' : '#D4AF37' }}>
       <Clock className="w-3.5 h-3.5" style={{ display: 'inline', marginRight: 4 }} />{time}
     </span>
   );
