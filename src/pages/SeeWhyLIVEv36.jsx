@@ -28,7 +28,7 @@ const C = {
   red:     "#E74C3C",
   blue:    "#3498DB",
   purple:  "#8B44B0",
-  cyan:    "#00D4FF",
+  cyan:    "#D4854A",
   orange:  "#FF6B35",
   teal:    "#1ABC9C",
   warn:    "#F39C12",
@@ -698,16 +698,19 @@ function PodcastPanel() {
     if (!topic.trim()) return;
     setLoading(true); setEpisode(null);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:`You are the SeeWhy LIVE AI Podcast Producer. Create a complete podcast episode outline.\n\nTopic: "${topic}"\nAI Hosts: ${hosts.join(" and ")}\nSource Material: ${sources.map(s=>s.text).join("; ")||"General domino culture knowledge"}\nPlatform: SeeWhy LIVE by SwanyThree EntTech\n\nRespond ONLY with valid JSON (no markdown fences):\n{"title":"episode title","tagline":"one-line hook","duration":"estimated duration","topics":["topic1","topic2","topic3"],"segments":[{"title":"name","host":"host","duration":"X min","notes":"key points"}],"cold_open":"first 30 seconds hook","call_to_action":"closing CTA"}`}]
-        })
+      const data = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are the SeeWhy LIVE AI Podcast Producer. Create a complete podcast episode outline.\n\nTopic: "${topic}"\nAI Hosts: ${hosts.join(" and ")}\nSource Material: ${sources.map(s=>s.text).join("; ")||"General domino culture knowledge"}\nPlatform: SeeWhy LIVE by SwanyThree EntTech`,
+        response_json_schema: {
+          type:"object",
+          properties:{
+            title:{type:"string"},tagline:{type:"string"},duration:{type:"string"},
+            topics:{type:"array",items:{type:"string"}},
+            segments:{type:"array",items:{type:"object",properties:{title:{type:"string"},host:{type:"string"},duration:{type:"string"},notes:{type:"string"}}}},
+            cold_open:{type:"string"},call_to_action:{type:"string"}
+          }
+        }
       });
-      const data = await res.json();
-      const raw = data.content && data.content[0] ? data.content[0].text : "{}";
-      setEpisode(JSON.parse(raw.replace(/```json|```/g,"").trim()));
+      setEpisode(data);
     } catch(e) {
       setEpisode({title:"Domino Culture Deep Dive",tagline:"The untold story of street domino",duration:"38 min",
         topics:["Origins","State Rivalries","Tribute Events","Future of Domino"],
@@ -915,16 +918,19 @@ function MusicStudioPanel() {
     if (!prompt.trim()) return;
     setLoading(true); setTrack(null);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:`You are SeeWhy LIVE AI Music Director. Generate a complete music production brief.\n\nConcept: "${prompt}"\nGenre: ${genre} | BPM: ${bpm} | Key: ${keyVal}\nActive Stems: ${Object.entries(stems).filter(([,v])=>v).map(([k])=>k).join(", ")}\n\nRespond ONLY with JSON (no markdown):\n{"title":"track title","vibe":"one-line vibe","arrangement":[{"section":"Intro","bars":"1–8","notes":"what happens"}],"hook":"sample hook line","mix_tips":["tip1","tip2"],"release_strategy":"brief plan","collab_suggestion":"who and why"}`}]
-        })
+      const data = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are SeeWhy LIVE AI Music Director. Generate a complete music production brief.\n\nConcept: "${prompt}"\nGenre: ${genre} | BPM: ${bpm} | Key: ${keyVal}\nActive Stems: ${Object.entries(stems).filter(([,v])=>v).map(([k])=>k).join(", ")}`,
+        response_json_schema: {
+          type:"object",
+          properties:{
+            title:{type:"string"},vibe:{type:"string"},
+            arrangement:{type:"array",items:{type:"object",properties:{section:{type:"string"},bars:{type:"string"},notes:{type:"string"}}}},
+            hook:{type:"string"},mix_tips:{type:"array",items:{type:"string"}},
+            release_strategy:{type:"string"},collab_suggestion:{type:"string"}
+          }
+        }
       });
-      const data = await res.json();
-      const raw = data.content && data.content[0] ? data.content[0].text : "{}";
-      setTrack(JSON.parse(raw.replace(/```json|```/g,"").trim()));
+      setTrack(data);
     } catch(e) {
       setTrack({title:"SeeWhy Anthem",vibe:"Hard-hitting domino culture banger — unfiltered",
         arrangement:[
@@ -1677,16 +1683,20 @@ function InsForgePanel() {
     if (!selected || !prompt.trim()) return;
     setLoading(true); setResult(null);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:`You are the SeeWhy LIVE INS Forge — a creative asset generator for SwanyThree EntTech.\n\nAsset Type: ${selected.label}\nConcept: "${prompt}"\nBrand: SeeWhy LIVE — dark burgundy/deep purple backgrounds, gold (#C9A84C) accents, Bebas Neue display, broadcast aesthetic\n\nGenerate a complete creative brief for this asset. Respond ONLY with JSON:\n{"title":"asset title","headline":"primary headline text","subline":"secondary text","copy_lines":["line1","line2","line3"],"color_palette":["#hex1","#hex2","#hex3"],"layout_notes":"layout description","cta":"call to action text","brand_elements":["element1","element2"],"dimensions":"recommended dimensions"}`}]
-        })
+      const data = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are the SeeWhy LIVE INS Forge — a creative asset generator for SwanyThree EntTech.\n\nAsset Type: ${selected.label}\nConcept: "${prompt}"\nBrand: SeeWhy LIVE — dark backgrounds, gold (#C9A84C) accents, Bebas Neue display, broadcast aesthetic`,
+        response_json_schema: {
+          type:"object",
+          properties:{
+            title:{type:"string"},headline:{type:"string"},subline:{type:"string"},
+            copy_lines:{type:"array",items:{type:"string"}},
+            color_palette:{type:"array",items:{type:"string"}},
+            layout_notes:{type:"string"},cta:{type:"string"},
+            brand_elements:{type:"array",items:{type:"string"}},dimensions:{type:"string"}
+          }
+        }
       });
-      const data = await res.json();
-      const raw = data.content && data.content[0] ? data.content[0].text : "{}";
-      setResult(JSON.parse(raw.replace(/```json|```/g,"").trim()));
+      setResult(data);
     } catch(e) {
       setResult({
         title:`${selected.label} — ${prompt.slice(0,30)}`,
