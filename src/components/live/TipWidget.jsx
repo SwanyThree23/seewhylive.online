@@ -1,135 +1,172 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { X, Zap, Flame, CreditCard, ChevronDown, ChevronUp, Users, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 
-// ── Palette (zero forbidden colors) ───────────────────────────────────────────
-const C = {
-  bg:      '#07050A',
-  bg2:     '#0E0C09',
-  bg3:     'rgba(255,255,255,0.04)',
-  bg4:     'rgba(255,255,255,0.02)',
-  gold:    '#D4AF37',
-  goldD:   '#C9A84C',
-  amber:   '#D4854A',
-  crimson: '#800020',
-  crimsonD:'#8B1A2F',
-  bronze:  '#CD7F32',
-  scarlet: '#C0392B',
-  text:    '#F0E8D4',
-  textM:   'rgba(240,232,212,0.55)',
-  textD:   'rgba(240,232,212,0.28)',
-  slate:   'rgba(255,255,255,0.08)',
-  slate2:  'rgba(255,255,255,0.05)',
-};
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const G      = '#D4AF37';
+const CRIMSON= '#800020';
+const PINK   = '#FF1564';
+const BG     = '#080B18';
+const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-// ── Tip tiers ──────────────────────────────────────────────────────────────────
 const TIERS = [
-  { amount: 1,   label: 'Spark',   icon: '✨', color: '#CD7F32', glow: 'rgba(205,127,50,0.35)',  desc: 'Quick love'     },
-  { amount: 5,   label: 'Blaze',   icon: '🔥', color: '#D4854A', glow: 'rgba(212,133,74,0.40)',  desc: '1 shoutout'     },
-  { amount: 15,  label: 'Gold',    icon: '⭐', color: '#D4AF37', glow: 'rgba(212,175,55,0.50)',  desc: 'Top chat'       },
-  { amount: 50,  label: 'Crimson', icon: '💢', color: '#C0392B', glow: 'rgba(192,57,43,0.50)',   desc: 'Pinned msg'     },
-  { amount: 100, label: 'Legend',  icon: '👑', color: '#C9A84C', glow: 'rgba(201,168,76,0.60)',  desc: 'Hall of fame'   },
+  { amount: 1,   label: 'Bronze',   color: '#CD7F32', icon: '🪙', glow: 'rgba(205,127,50,0.4)',  pts: 10 },
+  { amount: 5,   label: 'Silver',   color: '#C0C0C0', icon: '⭐', glow: 'rgba(192,192,192,0.4)', pts: 50 },
+  { amount: 15,  label: 'Gold',     color: G,         icon: '💛', glow: 'rgba(212,175,55,0.5)',  pts: 150 },
+  { amount: 50,  label: 'Platinum', color: '#00d4ff', icon: '💎', glow: 'rgba(0,212,255,0.5)',   pts: 500 },
+  { amount: 100, label: 'Diamond',  color: PINK,      icon: '👑', glow: 'rgba(255,21,100,0.6)',  pts: 1000 },
+  { amount: 200, label: 'Legend',   color: '#a78bfa', icon: '🌠', glow: 'rgba(167,139,250,0.6)', pts: 2000 },
+  { amount: 500, label: 'Elite',    color: '#ff6b35', icon: '⚡', glow: 'rgba(255,107,53,0.7)',  pts: 5000 },
 ];
 
-const EMOJIS = ['🔥','💯','❤️','🚀','👑','💎','🎉','🤑','💪','✨','👏','🙌'];
-const PAYMENT_METHODS = ['Card', 'CashApp', 'PayPal', 'Venmo', 'SeeGems'];
-const PARTICLE_COLORS = ['#D4AF37','#800020','#D4854A','#CD7F32','#F0E8D4','#C0392B'];
+const RAIN_AMOUNT = 10;
 
-function getActiveTier(amount) {
-  return TIERS.slice().reverse().find(t => t.amount <= amount) || TIERS[0];
-}
+const PAYMENT_METHODS = [
+  { id: 'card',    label: 'Card',    icon: '💳' },
+  { id: 'cashapp', label: 'CashApp', icon: '💚' },
+  { id: 'paypal',  label: 'PayPal',  icon: '🅿️' },
+  { id: 'venmo',   label: 'Venmo',   icon: '🔵' },
+  { id: 'zelle',   label: 'Zelle',   icon: '💜' },
+  { id: 'seegems', label: 'SeeGems', icon: '💎' },
+];
 
-// ── Particle burst ─────────────────────────────────────────────────────────────
-function Particle({ color, delay }) {
+const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑', '🙌', '😍', '💸', '✨'];
+
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00d4ff', '#a78bfa', '#ff6b35', '#22c55e'];
+
+function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;
-  const dist  = 90 + Math.random() * 150;
+  const dist  = 80 + Math.random() * 160;
+  const tx = Math.cos((angle * Math.PI) / 180) * dist;
+  const ty = Math.sin((angle * Math.PI) / 180) * dist - 60;
   return (
     <motion.div
-      initial={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-      animate={{ opacity: 0, x: Math.cos(angle * Math.PI / 180) * dist, y: Math.sin(angle * Math.PI / 180) * dist - 70, scale: 0 }}
-      transition={{ duration: 1.3, delay, ease: 'easeOut' }}
-      style={{ position: 'absolute', left: `${18 + Math.random() * 64}%`, top: '50%', width: 8, height: 8, borderRadius: Math.random() > 0.5 ? '50%' : 3, background: color, pointerEvents: 'none' }}
+      initial={{ opacity: 1, x: 0, y: 0, scale: 1, rotate: 0 }}
+      animate={{ opacity: 0, x: tx, y: ty, scale: 0, rotate: angle * 2 }}
+      transition={{ duration: 1.4, delay, ease: 'easeOut' }}
+      style={{
+        position: 'absolute', left: x, top: '50%',
+        width: 9, height: 9, borderRadius: Math.random() > 0.5 ? '50%' : 2,
+        background: color, pointerEvents: 'none',
+      }}
     />
   );
 }
 
-function ParticleBurst({ active }) {
+function ConfettiBurst({ active }) {
   if (!active) return null;
   return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 8 }}>
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 10 }}>
       {Array.from({ length: 36 }).map((_, i) => (
-        <Particle key={i} color={PARTICLE_COLORS[i % PARTICLE_COLORS.length]} delay={i * 0.025} />
+        <Particle
+          key={i}
+          x={`${10 + Math.random() * 80}%`}
+          color={CONFETTI_COLORS[i % CONFETTI_COLORS.length]}
+          delay={i * 0.03}
+        />
       ))}
     </div>
   );
 }
 
-// ── Full-screen celebration ────────────────────────────────────────────────────
-function TipCelebration({ name, amount, emoji, tier, onDone }) {
+function RainDrop({ index }) {
+  const left = 5 + Math.random() * 90;
+  const delay = index * 0.08;
+  return (
+    <motion.div
+      initial={{ opacity: 1, y: -30, x: 0 }}
+      animate={{ opacity: 0, y: 140, x: (Math.random() - 0.5) * 40 }}
+      transition={{ duration: 1.2, delay, ease: 'easeIn' }}
+      style={{ position: 'absolute', left: `${left}%`, top: 0, fontSize: 22, pointerEvents: 'none' }}
+    >
+      💸
+    </motion.div>
+  );
+}
+
+function GiftRainBurst({ active }) {
+  if (!active) return null;
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 10 }}>
+      {Array.from({ length: 18 }).map((_, i) => <RainDrop key={i} index={i} />)}
+    </div>
+  );
+}
+
+function TipAnimation({ senderName, amount, emoji, isRain, onDone }) {
   useEffect(() => {
-    const t = setTimeout(onDone, 4400);
+    const t = setTimeout(onDone, isRain ? 3200 : 3800);
     return () => clearTimeout(t);
   }, []);
+
+  const activeTier = TIERS.slice().reverse().find(t => t.amount <= amount) || TIERS[0];
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.6 } }}
-      style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.93)', backdropFilter: 'blur(22px)' }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[110] flex flex-col items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(16px)' }}
     >
-      {/* Radial glow backdrop */}
-      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at center, ${tier.glow} 0%, transparent 62%)`, pointerEvents: 'none' }} />
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: `radial-gradient(ellipse at center, ${activeTier.glow} 0%, transparent 65%)`,
+      }} />
 
-      {/* Expanding rings */}
-      {[0, 0.25, 0.5].map((delay, i) => (
-        <motion.div key={i}
-          initial={{ scale: 0.4, opacity: 0.8 - i * 0.2 }}
-          animate={{ scale: 2.8 - i * 0.3, opacity: 0 }}
-          transition={{ duration: 1.8 + i * 0.2, ease: 'easeOut', delay }}
-          style={{ position: 'absolute', width: 180, height: 180, borderRadius: '50%', border: `${3 - i}px solid ${tier.color}${i === 0 ? '' : '60'}` }}
-        />
-      ))}
+      {isRain ? (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          {Array.from({ length: 30 }).map((_, i) => <RainDrop key={i} index={i} />)}
+        </div>
+      ) : (
+        <>
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0.8 }}
+            animate={{ scale: 2.8, opacity: 0 }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
+            style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', border: `3px solid ${activeTier.color}` }}
+          />
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0.5 }}
+            animate={{ scale: 4, opacity: 0 }}
+            transition={{ duration: 1.8, ease: 'easeOut', delay: 0.2 }}
+            style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', border: `1px solid ${activeTier.color}60` }}
+          />
+        </>
+      )}
 
-      {/* Main icon */}
       <motion.div
-        initial={{ scale: 0.15, rotate: -25, y: 80 }}
-        animate={{ scale: 1.25, rotate: 0, y: 0 }}
-        transition={{ type: 'spring', bounce: 0.6, duration: 0.9 }}
-        style={{ fontSize: 92, marginBottom: 22, userSelect: 'none', position: 'relative', zIndex: 2, filter: `drop-shadow(0 0 24px ${tier.glow})` }}
+        initial={{ scale: 0.3, rotate: -15, y: 40 }}
+        animate={{ scale: 1.15, rotate: 0, y: 0 }}
+        transition={{ type: 'spring', bounce: 0.6, duration: 0.7 }}
+        className="text-8xl mb-4 select-none"
       >
-        {emoji || tier.icon}
+        {isRain ? '🌧️' : (emoji || activeTier.icon)}
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.38 }}
-        style={{ textAlign: 'center', zIndex: 2, padding: '0 28px' }}
-      >
-        <p style={{ ...T, fontSize: 40, fontWeight: 900, color: tier.color, textTransform: 'uppercase', textShadow: `0 0 48px ${tier.glow}`, letterSpacing: '0.04em', lineHeight: 1.1, marginBottom: 10 }}>
-          {name} tipped ${amount}!
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-center px-6">
+        <p className="text-3xl font-black uppercase mb-1"
+          style={{ ...T, color: activeTier.color, textShadow: `0 0 32px ${activeTier.glow}` }}>
+          {isRain ? `${senderName} made it rain!` : `${senderName} tipped $${amount}!`}
         </p>
         <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.58, type: 'spring' }}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 20px', borderRadius: 24, background: `${tier.color}18`, border: `1px solid ${tier.color}55`, color: tier.color, ...T, fontSize: 15, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' }}
+          initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.5, type: 'spring' }}
+          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase mt-2"
+          style={{ background: `${activeTier.color}15`, border: `1px solid ${activeTier.color}40`, color: activeTier.color, ...T }}
         >
-          {tier.icon} {tier.label} Tier
+          {isRain ? '🌧 Gift Rain +100 pts' : `${activeTier.icon} ${activeTier.label} Tier · +${activeTier.pts} pts`}
         </motion.div>
       </motion.div>
 
-      {/* Floating emoji burst */}
-      {['💸','✨','🎊','💰','🔥'].map((e, i) => (
+      {['💸', '✨', '🎉'].map((e, i) => (
         <motion.div key={i}
-          initial={{ opacity: 0, x: (i - 2) * 52, y: 36, scale: 0 }}
-          animate={{ opacity: [0, 1, 1, 0], y: -110, scale: [0, 1.6, 1.3, 0] }}
-          transition={{ delay: 0.75 + i * 0.16, duration: 1.7 }}
-          style={{ position: 'absolute', fontSize: 36, top: '62%', zIndex: 2 }}
+          initial={{ opacity: 0, x: (i - 1) * 70, y: 20, scale: 0 }}
+          animate={{ opacity: [0, 1, 1, 0], y: -90, scale: [0, 1.4, 1.2, 0] }}
+          transition={{ delay: 0.6 + i * 0.2, duration: 1.5 }}
+          style={{ position: 'absolute', fontSize: 36, top: '58%' }}
         >
           {e}
         </motion.div>
@@ -138,445 +175,511 @@ function TipCelebration({ name, amount, emoji, tier, onDone }) {
   );
 }
 
-// ── Session leaderboard ────────────────────────────────────────────────────────
-function SessionLeaderboard({ roomId }) {
-  const { data: txns = [], isLoading } = useQuery({
-    queryKey: ['tip-leaders', roomId],
-    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, type: 'tip' }, '-created_date', 150),
-    refetchInterval: 15000,
-    enabled: !!roomId,
-  });
-
-  const { leaders, sessionTotal } = useMemo(() => {
-    const map = {};
-    txns.forEach(t => {
-      const name = t.sender_name || 'Anonymous';
-      map[name] = (map[name] || 0) + (t.amount || 0);
-    });
-    const leaders = Object.entries(map)
-      .map(([name, total]) => ({ name, total }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 5);
-    const sessionTotal = txns.reduce((s, t) => s + (t.amount || 0), 0);
-    return { leaders, sessionTotal };
-  }, [txns]);
-
-  const MEDALS = ['🥇', '🥈', '🥉', '4', '5'];
-  const RANK_COLORS = [C.gold, C.textM, C.bronze, C.textD, C.textD];
-
-  if (isLoading) return (
-    <div style={{ padding: 32, textAlign: 'center', color: C.textD, ...T, fontSize: 13 }}>Loading…</div>
-  );
-
-  if (leaders.length === 0) return (
-    <div style={{ padding: 40, textAlign: 'center' }}>
-      <div style={{ fontSize: 40, marginBottom: 12 }}>🏆</div>
-      <p style={{ ...T, fontSize: 14, color: C.textM, fontWeight: 700 }}>No tips yet this session</p>
-      <p style={{ ...T, fontSize: 12, color: C.textD, marginTop: 4 }}>Be the first to support the creator!</p>
-    </div>
-  );
-
+function StatBadge({ label, value, icon }) {
   return (
-    <div style={{ padding: '0 0 8px' }}>
-      {/* Session total */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: `${C.gold}0A`, borderRadius: 12, marginBottom: 12, border: `1px solid ${C.gold}22` }}>
-        <div>
-          <p style={{ ...T, fontSize: 10, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Session Total</p>
-          <p style={{ ...T, fontSize: 28, fontWeight: 900, color: C.gold, lineHeight: 1 }}>${sessionTotal.toFixed(2)}</p>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ ...T, fontSize: 10, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Creator Earned</p>
-          <p style={{ ...T, fontSize: 22, fontWeight: 900, color: C.amber }}>${Math.floor(sessionTotal * 90) / 100}</p>
-        </div>
+    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <span className="text-sm">{icon}</span>
+      <div>
+        <p className="text-[11px] font-black leading-none" style={{ color: G, ...T }}>{value}</p>
+        <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
       </div>
-
-      {/* Leaderboard rows */}
-      <p style={{ ...T, fontSize: 10, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Top Supporters</p>
-      {leaders.map((l, i) => (
-        <motion.div
-          key={l.name}
-          initial={{ opacity: 0, x: -12 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.06 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, marginBottom: 6, background: i === 0 ? `${C.gold}0C` : C.bg3, border: `1px solid ${i === 0 ? C.gold + '25' : C.slate}` }}
-        >
-          <span style={{ fontSize: i < 3 ? 20 : 13, minWidth: 24, textAlign: 'center' }}>{MEDALS[i]}</span>
-          <span style={{ flex: 1, ...T, fontSize: 14, fontWeight: 700, color: i === 0 ? C.text : C.textM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.name}</span>
-          <span style={{ ...T, fontSize: 16, fontWeight: 900, color: RANK_COLORS[i] }}>${l.total.toFixed(0)}</span>
-        </motion.div>
-      ))}
     </div>
   );
 }
 
-// ── Exported: TipGoalBar ───────────────────────────────────────────────────────
-// Drop this into stream room headers to show the creator's session goal
-export function TipGoalBar({ roomId, goal = 0 }) {
-  const { data: txns = [] } = useQuery({
-    queryKey: ['tip-goal', roomId],
-    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, type: 'tip' }, '-created_date', 200),
-    refetchInterval: 8000,
-    enabled: !!roomId && goal > 0,
-  });
-
-  const total    = txns.reduce((s, t) => s + (t.amount || 0), 0);
-  const pct      = goal > 0 ? Math.min((total / goal) * 100, 100) : 0;
-  const reached  = pct >= 100;
-
-  if (!goal) return null;
-
-  return (
-    <div style={{ padding: '9px 14px', background: `${C.gold}09`, borderRadius: 10, border: `1px solid ${reached ? C.gold + '55' : C.gold + '20'}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
-        <span style={{ ...T, fontSize: 10, fontWeight: 900, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          🎯 Session Goal
-        </span>
-        <span style={{ ...T, fontSize: 12, fontWeight: 900, color: reached ? C.gold : C.textM }}>
-          ${total.toFixed(0)} / ${goal}
-        </span>
-      </div>
-      <div style={{ height: 7, borderRadius: 4, background: C.slate, overflow: 'hidden' }}>
-        <motion.div
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          style={{ height: '100%', borderRadius: 4, background: reached ? `linear-gradient(90deg, ${C.gold}, #fff8a0)` : `linear-gradient(90deg, ${C.crimson}, ${C.gold})` }}
-        />
-      </div>
-      {reached && (
-        <p style={{ ...T, fontSize: 10, color: C.gold, fontWeight: 700, marginTop: 5, textAlign: 'center' }}>
-          🎉 Goal reached! Incredible support!
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ── Main TipWidget ─────────────────────────────────────────────────────────────
-export default function TipWidget({ roomId, hostId, currentUser, goalAmount = 0 }) {
-  const [open,          setOpen]          = useState(false);
-  const [view,          setView]          = useState('tip');    // 'tip' | 'leaders'
-  const [selected,      setSelected]      = useState(5);
-  const [custom,        setCustom]        = useState('');
-  const [useCustom,     setUseCustom]     = useState(false);
-  const [message,       setMessage]       = useState('');
+export default function TipWidget({ roomId, hostId, currentUser }) {
+  const [open, setOpen]               = useState(false);
+  const [selected, setSelected]       = useState(15);
+  const [custom, setCustom]           = useState('');
+  const [useCustom, setUseCustom]     = useState(false);
+  const [message, setMessage]         = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState(null);
-  const [anonymous,     setAnonymous]     = useState(false);
-  const [superTip,      setSuperTip]      = useState(false);
-  const [payMethod,     setPayMethod]     = useState('Card');
-  const [animating,     setAnimating]     = useState(null);
-  const [burst,         setBurst]         = useState(false);
-  const [tipCount,      setTipCount]      = useState(0);
+  const [payMethod, setPayMethod]     = useState('card');
+  const [animating, setAnimating]     = useState(null);
+  const [confetti, setConfetti]       = useState(false);
+  const [rainBurst, setRainBurst]     = useState(false);
+  const [tipStreak, setTipStreak]     = useState(0);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const sessionTipCount = useRef(0);
 
-  const baseAmount  = useCustom ? (parseFloat(custom) || 0) : selected;
-  const superCost   = superTip ? 5 : 0;
-  const totalAmount = baseAmount + superCost;
-  const validAmount = totalAmount > 0;
-  // Math.floor on all money per security contract
-  const creatorEarns = Math.floor(totalAmount * 0.9 * 100) / 100;
-  const platformFee  = Math.floor(totalAmount * 0.1 * 100) / 100;
-  const tier         = getActiveTier(baseAmount);
-  const senderName   = anonymous ? 'A Viewer' : (currentUser?.full_name || currentUser?.email?.split('@')[0] || 'Viewer');
+  const rawAmount   = useCustom ? parseFloat(custom) : selected;
+  const validAmount = rawAmount > 0 && !isNaN(rawAmount);
+  const creatorAmt  = validAmount ? (rawAmount * 0.9).toFixed(2) : '0.00';
+  const platformFee = validAmount ? (rawAmount * 0.1).toFixed(2) : '0.00';
+  const activeTier  = TIERS.slice().reverse().find(t => t.amount <= rawAmount) || TIERS[0];
+  const ptsPreview  = validAmount ? Math.floor(rawAmount * 10) : 0;
 
-  const sendTip = useMutation({
-    mutationFn: async () => {
+  // Session stats: count + total for this room
+  const { data: sessionStats } = useQuery({
+    queryKey: ['tip-session-stats', roomId],
+    queryFn: async () => {
+      if (!roomId) return { count: 0, total: 0 };
+      const txns = await base44.entities.Transaction.filter({ room_id: roomId, type: 'tip' });
+      const total = txns.reduce((s, t) => s + (t.amount || 0), 0);
+      return { count: txns.length, total: total.toFixed(0) };
+    },
+    refetchInterval: 15000,
+    enabled: open,
+  });
+
+  // Top 3 tippers this session
+  const { data: topTippers = [] } = useQuery({
+    queryKey: ['tip-leaderboard', roomId],
+    queryFn: async () => {
+      if (!roomId) return [];
+      const txns = await base44.entities.Transaction.filter({ room_id: roomId, type: 'tip' });
+      const map = {};
+      txns.forEach(t => {
+        const key = t.sender_name || t.sender_id || 'Viewer';
+        map[key] = (map[key] || 0) + (t.amount || 0);
+      });
+      return Object.entries(map)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, total]) => ({ name, total }));
+    },
+    refetchInterval: 15000,
+    enabled: open && showLeaderboard,
+  });
+
+  const doSendTip = useMutation({
+    mutationFn: async (amt) => {
       await base44.entities.Transaction.create({
-        room_id:        roomId,
-        type:           'tip',
-        amount:         totalAmount,
-        creator_amount: creatorEarns,
-        platform_fee:   platformFee,
-        from_user_id:   anonymous ? null : currentUser?.id,
-        sender_id:      anonymous ? null : currentUser?.id,
-        sender_name:    senderName,
-        to_user_id:     hostId,
-        status:         'completed',
-        message:        message,
-        emoji:          selectedEmoji,
-        is_super_tip:   superTip,
+        room_id: roomId,
+        type: 'tip',
+        amount: amt,
+        creator_amount: parseFloat((amt * 0.9).toFixed(2)),
+        platform_fee: parseFloat((amt * 0.1).toFixed(2)),
+        from_user_id: currentUser?.id,
+        sender_id: currentUser?.id,
+        sender_name: currentUser?.full_name || currentUser?.email || 'Viewer',
+        to_user_id: hostId,
+        status: 'completed',
+        message: message,
+        emoji: selectedEmoji,
         payment_method: payMethod,
+        loyalty_points_earned: Math.floor(amt * 10),
       });
     },
-    onSuccess: () => {
-      setBurst(true);
-      setTimeout(() => setBurst(false), 1500);
-      setAnimating({ name: senderName.split(' ')[0], amount: totalAmount, emoji: selectedEmoji, tier });
-      setTipCount(n => n + 1);
+    onSuccess: (_, amt) => {
+      const name = (currentUser?.full_name || currentUser?.email || 'Viewer').split(' ')[0];
+      sessionTipCount.current += 1;
+      setTipStreak(sessionTipCount.current);
+      setAnimating({ name, amount: amt, emoji: selectedEmoji, isRain: false });
       setOpen(false);
       setMessage('');
       setCustom('');
       setUseCustom(false);
-      setSelected(5);
+      setSelected(15);
       setSelectedEmoji(null);
-      setSuperTip(false);
     },
-    onError: () => toast.error('Could not send tip. Please try again.'),
+    onError: () => toast.error('Could not send tip'),
   });
+
+  const doRain = useMutation({
+    mutationFn: async () => {
+      await base44.entities.Transaction.create({
+        room_id: roomId,
+        type: 'tip',
+        amount: RAIN_AMOUNT,
+        creator_amount: parseFloat((RAIN_AMOUNT * 0.9).toFixed(2)),
+        platform_fee: parseFloat((RAIN_AMOUNT * 0.1).toFixed(2)),
+        from_user_id: currentUser?.id,
+        sender_id: currentUser?.id,
+        sender_name: currentUser?.full_name || currentUser?.email || 'Viewer',
+        to_user_id: hostId,
+        status: 'completed',
+        message: '🌧️ Gift Rain!',
+        payment_method: payMethod,
+        tip_type: 'rain',
+        loyalty_points_earned: 100,
+      });
+    },
+    onSuccess: () => {
+      const name = (currentUser?.full_name || currentUser?.email || 'Viewer').split(' ')[0];
+      sessionTipCount.current += 1;
+      setTipStreak(sessionTipCount.current);
+      setAnimating({ name, amount: RAIN_AMOUNT, emoji: null, isRain: true });
+      setOpen(false);
+    },
+    onError: () => toast.error('Could not send gift rain'),
+  });
+
+  const TIER_ROWS = [TIERS.slice(0, 4), TIERS.slice(4)];
 
   return (
     <>
-      {/* Full-screen celebration */}
       <AnimatePresence>
         {animating && (
-          <TipCelebration
-            name={animating.name}
+          <TipAnimation
+            senderName={animating.name}
             amount={animating.amount}
             emoji={animating.emoji}
-            tier={animating.tier}
+            isRain={animating.isRain}
             onDone={() => setAnimating(null)}
           />
         )}
       </AnimatePresence>
 
-      {/* Trigger button */}
+      {/* Tip Button */}
       <motion.button
-        whileTap={{ scale: 0.91 }}
+        whileTap={{ scale: 0.93 }}
         onClick={() => setOpen(true)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px] relative"
         title="Send a tip"
-        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 12, background: `linear-gradient(90deg, ${C.crimson}22, ${C.gold}1E)`, border: `1px solid ${C.gold}42`, color: C.gold, cursor: 'pointer', ...T, fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' }}
+        style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}30, ${G}25)`, color: G, border: `1px solid ${G}40` }}
       >
         💸 Tip
-        {tipCount > 0 && (
-          <span style={{ background: C.gold, color: C.bg, borderRadius: 8, padding: '1px 6px', fontSize: 10, fontWeight: 900 }}>
-            {tipCount}
+        {tipStreak >= 2 && (
+          <span className="absolute -top-1.5 -right-1.5 flex items-center gap-0.5 px-1 rounded-full text-[8px] font-black"
+            style={{ background: PINK, color: '#fff', ...T }}>
+            🔥{tipStreak}
           </span>
         )}
       </motion.button>
 
-      {/* Bottom sheet */}
+      {/* Bottom Sheet */}
       <AnimatePresence>
         {open && (
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.78)' }}
               onClick={() => setOpen(false)}
-              style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(0,0,0,0.78)' }}
             />
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 32, stiffness: 340 }}
-              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 90, borderRadius: '24px 24px 0 0', background: C.bg2, border: `1px solid ${C.gold}1E`, maxHeight: '93vh', overflowY: 'auto' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+              className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl flex flex-col"
+              style={{ background: BG, border: `1px solid ${G}20`, maxHeight: '92vh', overflowY: 'auto' }}
             >
-              {/* Animated top stripe */}
-              <div style={{ height: 4, borderRadius: '4px 4px 0 0', background: validAmount ? `linear-gradient(90deg, ${C.crimson}, ${tier.color}, ${C.gold})` : `linear-gradient(90deg, ${C.crimson}55, ${C.gold}55)`, transition: 'background 0.4s' }} />
+              {/* Glow bar */}
+              <div style={{
+                height: 4, borderRadius: '4px 4px 0 0',
+                background: validAmount
+                  ? `linear-gradient(90deg, ${CRIMSON}, ${activeTier.color}, ${PINK})`
+                  : `linear-gradient(90deg, ${CRIMSON}, ${G})`,
+                transition: 'background 0.4s',
+              }} />
 
               {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: `1px solid ${C.slate}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 12, background: `linear-gradient(135deg, ${C.crimson}, ${C.gold})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
-                    💸
+              <div className="flex items-center justify-between px-5 py-4 shrink-0"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: `linear-gradient(135deg, ${CRIMSON}, ${G})` }}>
+                    <Zap className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p style={{ ...T, fontSize: 17, fontWeight: 900, color: C.gold, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1 }}>Support Creator</p>
-                    <p style={{ ...T, fontSize: 11, color: C.textM, marginTop: 2 }}>90% goes directly to them</p>
+                    <p className="font-black uppercase text-sm leading-none" style={{ ...T, color: G }}>
+                      Send a Tip
+                    </p>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+                      90% goes directly to the creator
+                    </p>
                   </div>
                 </div>
-
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  {/* View tabs */}
-                  <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: `1px solid ${C.slate}` }}>
-                    {[['tip','💸 Send'], ['leaders','🏆 Top']].map(([v, label]) => (
-                      <button key={v} onClick={() => setView(v)} style={{ padding: '6px 12px', background: view === v ? `${C.gold}1E` : 'transparent', color: view === v ? C.gold : C.textM, border: 'none', cursor: 'pointer', ...T, fontSize: 11, fontWeight: 900 }}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <button onClick={() => setOpen(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: C.bg3, border: 'none', cursor: 'pointer', color: C.textM, fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    ✕
+                <div className="flex items-center gap-2">
+                  {tipStreak >= 2 && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-lg"
+                      style={{ background: `${PINK}20`, border: `1px solid ${PINK}40` }}>
+                      <Flame className="w-3 h-3" style={{ color: PINK }} />
+                      <span className="text-[10px] font-black" style={{ color: PINK, ...T }}>
+                        {tipStreak}x streak
+                      </span>
+                    </div>
+                  )}
+                  <button onClick={() => setOpen(false)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
                   </button>
                 </div>
               </div>
 
-              <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16, position: 'relative' }}>
-                <ParticleBurst active={burst} />
+              {/* Session Stats */}
+              {sessionStats && sessionStats.count > 0 && (
+                <div className="flex items-center gap-2 px-5 pt-3">
+                  <StatBadge icon="👥" label="tippers" value={sessionStats.count} />
+                  <StatBadge icon="💰" label="total tipped" value={`$${sessionStats.total}`} />
+                  {topTippers.length > 0 && (
+                    <StatBadge icon="🏆" label="top tipper" value={topTippers[0]?.name?.split(' ')[0] || '—'} />
+                  )}
+                </div>
+              )}
 
-                {/* ── Leaders view ── */}
-                {view === 'leaders' && <SessionLeaderboard roomId={roomId} />}
+              <div className="px-5 py-4 space-y-5 relative">
+                <ConfettiBurst active={confetti} />
+                <GiftRainBurst active={rainBurst} />
 
-                {/* ── Tip view ── */}
-                {view === 'tip' && (
-                  <>
-                    {/* Goal bar */}
-                    {goalAmount > 0 && <TipGoalBar roomId={roomId} goal={goalAmount} />}
+                {/* Gift Rain Button */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => doRain.mutate()}
+                  disabled={doRain.isPending}
+                  className="w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs tracking-widest transition-all disabled:opacity-40"
+                  style={{
+                    ...T,
+                    background: `linear-gradient(90deg, rgba(0,150,255,0.15), rgba(0,212,255,0.15))`,
+                    border: '1px solid rgba(0,212,255,0.35)',
+                    color: '#00d4ff',
+                  }}
+                >
+                  🌧️ {doRain.isPending ? 'Raining…' : `Gift Rain — $${RAIN_AMOUNT} · +100 pts`}
+                </motion.button>
 
-                    {/* Tier grid */}
-                    <div>
-                      <p style={{ ...T, fontSize: 10, fontWeight: 900, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Choose Amount</p>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-                        {TIERS.map(t => {
-                          const active = !useCustom && selected === t.amount;
-                          return (
-                            <motion.button
-                              key={t.amount}
-                              whileTap={{ scale: 0.86 }}
-                              onClick={() => { setSelected(t.amount); setUseCustom(false); }}
-                              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 4px', borderRadius: 12, cursor: 'pointer', background: active ? `${t.color}18` : C.bg3, border: `1.5px solid ${active ? t.color + '70' : C.slate}`, boxShadow: active ? `0 0 20px ${t.glow}` : 'none', transition: 'all 0.15s' }}
-                            >
-                              <span style={{ fontSize: 20, marginBottom: 2 }}>{t.icon}</span>
-                              <span style={{ ...T, fontSize: 13, fontWeight: 900, color: active ? t.color : C.textM }}>${t.amount}</span>
-                              <span style={{ ...T, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: active ? t.color + 'cc' : C.textD }}>{t.label}</span>
-                              <span style={{ ...T, fontSize: 9, color: active ? t.color + '88' : 'rgba(255,255,255,0.15)', marginTop: 2 }}>{t.desc}</span>
-                            </motion.button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                {/* Tier grid */}
+                <div>
+                  <p className="text-[11px] uppercase font-black tracking-widest mb-2.5"
+                    style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>Tip Amount</p>
 
-                    {/* Custom amount */}
-                    <button
-                      onClick={() => setUseCustom(v => !v)}
-                      style={{ width: '100%', padding: '9px', borderRadius: 10, cursor: 'pointer', background: useCustom ? `${C.gold}12` : C.bg3, border: `1px solid ${useCustom ? C.gold + '50' : C.slate}`, color: useCustom ? C.gold : C.textM, ...T, fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' }}
+                  {/* Row 1: $1–$50 */}
+                  <div className="grid grid-cols-4 gap-2 mb-2">
+                    {TIERS.slice(0, 4).map(tier => {
+                      const active = !useCustom && selected === tier.amount;
+                      return (
+                        <motion.button
+                          key={tier.amount} whileTap={{ scale: 0.88 }}
+                          onClick={() => { setSelected(tier.amount); setUseCustom(false); }}
+                          className="flex flex-col items-center py-2.5 rounded-xl transition-all"
+                          style={{
+                            background: active ? `${tier.color}18` : 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${active ? tier.color + '60' : 'rgba(255,255,255,0.08)'}`,
+                            boxShadow: active ? `0 0 18px ${tier.glow}` : 'none',
+                          }}
+                        >
+                          <span className="text-lg mb-0.5">{tier.icon}</span>
+                          <span className="text-[11px] font-black" style={{ ...T, color: active ? tier.color : 'rgba(255,255,255,0.5)' }}>${tier.amount}</span>
+                          <span className="text-[10px] font-black uppercase" style={{ ...T, color: active ? tier.color + 'bb' : 'rgba(255,255,255,0.2)' }}>{tier.label}</span>
+                          <span className="text-[9px] mt-0.5" style={{ color: active ? tier.color + '90' : 'rgba(255,255,255,0.15)', ...T }}>+{tier.pts}pts</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Row 2: $100–$500 */}
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {TIERS.slice(4).map(tier => {
+                      const active = !useCustom && selected === tier.amount;
+                      return (
+                        <motion.button
+                          key={tier.amount} whileTap={{ scale: 0.88 }}
+                          onClick={() => { setSelected(tier.amount); setUseCustom(false); }}
+                          className="flex flex-col items-center py-2.5 rounded-xl transition-all"
+                          style={{
+                            background: active ? `${tier.color}18` : 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${active ? tier.color + '60' : 'rgba(255,255,255,0.08)'}`,
+                            boxShadow: active ? `0 0 22px ${tier.glow}` : 'none',
+                          }}
+                        >
+                          <span className="text-xl mb-0.5">{tier.icon}</span>
+                          <span className="text-[12px] font-black" style={{ ...T, color: active ? tier.color : 'rgba(255,255,255,0.5)' }}>${tier.amount}</span>
+                          <span className="text-[10px] font-black uppercase" style={{ ...T, color: active ? tier.color + 'bb' : 'rgba(255,255,255,0.2)' }}>{tier.label}</span>
+                          <span className="text-[9px] mt-0.5" style={{ color: active ? tier.color + '90' : 'rgba(255,255,255,0.15)', ...T }}>+{tier.pts}pts</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom amount */}
+                  <button
+                    onClick={() => setUseCustom(true)}
+                    className="mt-1 w-full py-2 rounded-xl text-xs font-black uppercase transition-all"
+                    style={{
+                      ...T,
+                      background: useCustom ? `${G}12` : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${useCustom ? G + '40' : 'rgba(255,255,255,0.08)'}`,
+                      color: useCustom ? G : 'rgba(255,255,255,0.4)',
+                    }}
+                  >
+                    + Custom Amount
+                  </button>
+
+                  <AnimatePresence>
+                    {useCustom && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                        className="mt-2 relative overflow-hidden"
+                      >
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-sm z-10" style={{ color: G, ...T }}>$</span>
+                        <input
+                          type="number" min="1" step="1"
+                          value={custom} onChange={e => setCustom(e.target.value)}
+                          placeholder="Enter amount"
+                          autoFocus
+                          className="w-full rounded-xl pl-7 pr-4 py-2.5 text-sm font-bold outline-none"
+                          style={{ background: 'rgba(17,8,34,0.9)', border: `1px solid ${G}30`, color: '#fff', ...T }}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Payment Methods */}
+                <div>
+                  <p className="text-[11px] uppercase font-black tracking-widest mb-2"
+                    style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>
+                    <CreditCard className="inline w-3 h-3 mr-1" />
+                    Payment Method
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {PAYMENT_METHODS.map(m => (
+                      <motion.button
+                        key={m.id} whileTap={{ scale: 0.92 }}
+                        onClick={() => setPayMethod(m.id)}
+                        className="flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-black uppercase transition-all"
+                        style={{
+                          ...T,
+                          background: payMethod === m.id ? `${G}15` : 'rgba(255,255,255,0.04)',
+                          border: `1px solid ${payMethod === m.id ? G + '50' : 'rgba(255,255,255,0.08)'}`,
+                          color: payMethod === m.id ? G : 'rgba(255,255,255,0.45)',
+                        }}
+                      >
+                        <span>{m.icon}</span> {m.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Emoji Reactions */}
+                <div>
+                  <p className="text-[11px] uppercase font-black tracking-widest mb-2"
+                    style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>
+                    React <span style={{ color: 'rgba(255,255,255,0.18)' }}>(optional)</span>
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    {QUICK_EMOJIS.map(e => (
+                      <motion.button
+                        key={e} whileTap={{ scale: 0.8 }}
+                        onClick={() => setSelectedEmoji(selectedEmoji === e ? null : e)}
+                        className="w-9 h-9 rounded-xl text-lg flex items-center justify-center transition-all"
+                        style={{
+                          background: selectedEmoji === e ? `${G}20` : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${selectedEmoji === e ? G + '50' : 'rgba(255,255,255,0.08)'}`,
+                          boxShadow: selectedEmoji === e ? `0 0 10px ${G}40` : 'none',
+                        }}
+                      >
+                        {e}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Split Breakdown */}
+                <AnimatePresence>
+                  {validAmount && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+                      className="rounded-xl px-4 py-3"
+                      style={{ background: `${activeTier.color}08`, border: `1px solid ${activeTier.color}25` }}
                     >
-                      ✏️ Custom Amount
-                    </button>
-                    <AnimatePresence>
-                      {useCustom && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ position: 'relative', overflow: 'hidden' }}>
-                          <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.gold, fontWeight: 900, fontSize: 15, zIndex: 1, ...T }}>$</span>
-                          <input
-                            type="number" min="1" step="1"
-                            value={custom} onChange={e => setCustom(e.target.value)}
-                            placeholder="Enter any amount"
-                            style={{ width: '100%', paddingLeft: 28, paddingRight: 16, paddingTop: 11, paddingBottom: 11, borderRadius: 10, background: '#0D080B', border: `1px solid ${C.gold}35`, color: C.text, ...T, fontSize: 16, outline: 'none', boxSizing: 'border-box' }}
-                          />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Boost options */}
-                    <div>
-                      <p style={{ ...T, fontSize: 10, fontWeight: 900, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Boost Options</p>
-                      <div style={{ display: 'flex', gap: 8 }}>
-
-                        {/* Super Tip */}
-                        <button
-                          onClick={() => setSuperTip(v => !v)}
-                          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '11px 8px', borderRadius: 12, cursor: 'pointer', background: superTip ? `${C.gold}15` : C.bg3, border: `1px solid ${superTip ? C.gold + '55' : C.slate}`, transition: 'all 0.15s' }}
-                        >
-                          <span style={{ fontSize: 20, marginBottom: 3 }}>📌</span>
-                          <span style={{ ...T, fontSize: 10, fontWeight: 900, color: superTip ? C.gold : C.textM, textTransform: 'uppercase' }}>Super Tip</span>
-                          <span style={{ ...T, fontSize: 9, color: superTip ? C.amber : C.textD, marginTop: 1 }}>+$5 · Pin 60s</span>
-                        </button>
-
-                        {/* Anonymous */}
-                        <button
-                          onClick={() => setAnonymous(v => !v)}
-                          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '11px 8px', borderRadius: 12, cursor: 'pointer', background: anonymous ? 'rgba(255,255,255,0.06)' : C.bg3, border: `1px solid ${anonymous ? 'rgba(255,255,255,0.22)' : C.slate}`, transition: 'all 0.15s' }}
-                        >
-                          <span style={{ fontSize: 20, marginBottom: 3 }}>{anonymous ? '🙈' : '👁'}</span>
-                          <span style={{ ...T, fontSize: 10, fontWeight: 900, color: anonymous ? C.text : C.textM, textTransform: 'uppercase' }}>Anonymous</span>
-                          <span style={{ ...T, fontSize: 9, color: C.textD, marginTop: 1 }}>{anonymous ? 'Hidden' : 'Show name'}</span>
-                        </button>
-
-                        {/* Rapid 5x ($5 = 5 × $1) quick-fire */}
-                        <button
-                          onClick={() => { setSelected(1); setUseCustom(false); setSuperTip(false); }}
-                          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '11px 8px', borderRadius: 12, cursor: 'pointer', background: C.bg3, border: `1px solid ${C.slate}`, transition: 'all 0.15s' }}
-                        >
-                          <span style={{ fontSize: 20, marginBottom: 3 }}>⚡</span>
-                          <span style={{ ...T, fontSize: 10, fontWeight: 900, color: C.textM, textTransform: 'uppercase' }}>Spark</span>
-                          <span style={{ ...T, fontSize: 9, color: C.textD, marginTop: 1 }}>Quick $1</span>
-                        </button>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase" style={{ ...T, color: activeTier.color }}>
+                          {activeTier.icon} {activeTier.label} Tier
+                        </span>
+                        <span className="text-[10px] font-black uppercase" style={{ ...T, color: activeTier.color + '80' }}>
+                          +{ptsPreview} loyalty pts
+                        </span>
                       </div>
-                    </div>
-
-                    {/* Emoji reaction row */}
-                    <div>
-                      <p style={{ ...T, fontSize: 10, fontWeight: 900, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>
-                        Reaction <span style={{ color: 'rgba(255,255,255,0.15)', fontWeight: 400, textTransform: 'none' }}>optional</span>
-                      </p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {EMOJIS.map(e => (
-                          <motion.button
-                            key={e} whileTap={{ scale: 0.72 }}
-                            onClick={() => setSelectedEmoji(selectedEmoji === e ? null : e)}
-                            style={{ width: 38, height: 38, borderRadius: 10, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: selectedEmoji === e ? `${C.gold}22` : C.bg3, border: `1px solid ${selectedEmoji === e ? C.gold + '55' : C.slate}`, boxShadow: selectedEmoji === e ? `0 0 12px ${C.gold}40` : 'none' }}
-                          >
-                            {e}
-                          </motion.button>
-                        ))}
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] uppercase" style={{ ...T, color: 'rgba(255,255,255,0.4)' }}>Creator (90%)</span>
+                        <span className="font-black text-sm" style={{ color: G, ...T }}>${creatorAmt}</span>
                       </div>
-                    </div>
-
-                    {/* Message */}
-                    <div>
-                      <p style={{ ...T, fontSize: 10, fontWeight: 900, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>
-                        Message
-                        <span style={{ color: 'rgba(255,255,255,0.15)', fontWeight: 400, textTransform: 'none', marginLeft: 6 }}>optional</span>
-                        {superTip && <span style={{ color: C.gold, fontWeight: 700, marginLeft: 8 }}>📌 Will be pinned on stream</span>}
-                      </p>
-                      <textarea
-                        maxLength={140} rows={2} value={message}
-                        onChange={e => setMessage(e.target.value)}
-                        placeholder={superTip ? 'Your message will be pinned on the stream for 60 seconds...' : 'Say something nice to the creator...'}
-                        style={{ width: '100%', borderRadius: 10, padding: '10px 14px', background: '#0D080B', border: `1px solid ${superTip ? C.gold + '40' : C.slate}`, color: C.text, ...T, fontSize: 13, outline: 'none', resize: 'none', boxSizing: 'border-box', lineHeight: 1.5 }}
-                      />
-                      <p style={{ ...T, fontSize: 10, color: C.textD, textAlign: 'right', marginTop: 2 }}>{message.length}/140</p>
-                    </div>
-
-                    {/* Split visualization */}
-                    <AnimatePresence>
-                      {validAmount && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                          style={{ borderRadius: 12, padding: '13px 15px', background: `${tier.color}0A`, border: `1px solid ${tier.color}28` }}
-                        >
-                          {/* Animated split bar */}
-                          <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex', marginBottom: 11 }}>
-                            <motion.div
-                              initial={{ width: '0%' }}
-                              animate={{ width: '90%' }}
-                              transition={{ duration: 0.7, ease: 'easeOut' }}
-                              style={{ height: '100%', background: `linear-gradient(90deg, ${C.crimson}, ${tier.color})`, borderRadius: '4px 0 0 4px' }}
-                            />
-                            <div style={{ flex: 1, background: C.slate, borderRadius: '0 4px 4px 0' }} />
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                              <span style={{ ...T, fontSize: 9, color: C.textD, textTransform: 'uppercase' }}>Creator gets</span>
-                              <span style={{ ...T, fontSize: 22, fontWeight: 900, color: C.gold }}>${creatorEarns.toFixed(2)}</span>
-                              <span style={{ ...T, fontSize: 9, color: C.textD }}>(90%)</span>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ ...T, fontSize: 9, color: 'rgba(255,255,255,0.18)', textTransform: 'uppercase' }}>Platform</div>
-                              <div style={{ ...T, fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.25)' }}>${platformFee.toFixed(2)}</div>
-                            </div>
-                          </div>
-                          {superTip && (
-                            <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.slate}`, ...T, fontSize: 10, color: C.amber, fontWeight: 600 }}>
-                              📌 +$5 Super Tip included — your message pinned on stream for 60 seconds
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Payment method */}
-                    <div>
-                      <p style={{ ...T, fontSize: 10, fontWeight: 900, color: C.textD, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>Pay With</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {PAYMENT_METHODS.map(m => (
-                          <button key={m} onClick={() => setPayMethod(m)} style={{ padding: '6px 13px', borderRadius: 8, cursor: 'pointer', background: payMethod === m ? `${C.gold}18` : C.bg3, border: `1px solid ${payMethod === m ? C.gold + '45' : C.slate}`, color: payMethod === m ? C.gold : C.textM, ...T, fontSize: 11, fontWeight: 700 }}>
-                            {m}
-                          </button>
-                        ))}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase" style={{ ...T, color: 'rgba(255,255,255,0.25)' }}>Platform (10%)</span>
+                        <span className="font-black text-sm" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>${platformFee}</span>
                       </div>
-                    </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                    {/* Send button */}
-                    <motion.button
-                      disabled={!validAmount || sendTip.isPending}
-                      onClick={() => sendTip.mutate()}
-                      whileTap={validAmount ? { scale: 0.96 } : {}}
-                      style={{ width: '100%', padding: '17px', borderRadius: 16, background: validAmount ? `linear-gradient(90deg, ${C.crimson}, ${tier.color})` : 'rgba(128,0,32,0.18)', border: 'none', cursor: validAmount ? 'pointer' : 'not-allowed', color: '#fff', ...T, fontSize: 17, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', boxShadow: validAmount ? `0 4px 32px ${tier.glow}` : 'none', opacity: !validAmount ? 0.42 : 1, transition: 'all 0.2s' }}
+                {/* Message */}
+                <div>
+                  <p className="text-[11px] uppercase font-black tracking-widest mb-2"
+                    style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>
+                    Message <span style={{ color: 'rgba(255,255,255,0.15)' }}>(optional)</span>
+                  </p>
+                  <textarea
+                    maxLength={140} value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder="Say something nice…"
+                    rows={2}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm outline-none resize-none"
+                    style={{ background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', ...T }}
+                  />
+                  <p className="text-right text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+                    {message.length}/140
+                  </p>
+                </div>
+
+                {/* Leaderboard toggle */}
+                <button
+                  onClick={() => setShowLeaderboard(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-2 rounded-xl transition-all"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-3.5 h-3.5" style={{ color: G }} />
+                    <span className="text-[11px] font-black uppercase" style={{ ...T, color: 'rgba(255,255,255,0.45)' }}>
+                      Session Leaderboard
+                    </span>
+                  </div>
+                  {showLeaderboard ? <ChevronUp className="w-3.5 h-3.5 text-white/30" /> : <ChevronDown className="w-3.5 h-3.5 text-white/30" />}
+                </button>
+
+                <AnimatePresence>
+                  {showLeaderboard && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                      className="space-y-1.5 overflow-hidden"
                     >
-                      {sendTip.isPending
-                        ? '⏳ Sending…'
-                        : `${selectedEmoji || '💸'} Send $${validAmount ? totalAmount.toFixed(0) : '?'} Tip`}
-                    </motion.button>
+                      {topTippers.length === 0 && (
+                        <p className="text-center text-[11px] py-3" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>
+                          No tips yet — be the first! 🎉
+                        </p>
+                      )}
+                      {topTippers.map((tipper, idx) => (
+                        <div key={tipper.name} className="flex items-center justify-between px-4 py-2 rounded-xl"
+                          style={{ background: idx === 0 ? `${G}0a` : 'rgba(255,255,255,0.03)', border: `1px solid ${idx === 0 ? G + '25' : 'rgba(255,255,255,0.06)'}` }}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}</span>
+                            <span className="text-[12px] font-black" style={{ ...T, color: idx === 0 ? G : 'rgba(255,255,255,0.6)' }}>
+                              {tipper.name.split(' ')[0]}
+                            </span>
+                          </div>
+                          <span className="font-black text-[12px]" style={{ color: idx === 0 ? G : 'rgba(255,255,255,0.5)', ...T }}>
+                            ${tipper.total.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                    <div style={{ paddingBottom: 10 }} />
-                  </>
-                )}
+                {/* Send Button */}
+                <motion.button
+                  disabled={!validAmount || doSendTip.isPending}
+                  onClick={() => doSendTip.mutate(rawAmount)}
+                  whileTap={validAmount ? { scale: 0.97 } : {}}
+                  className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all disabled:opacity-40"
+                  style={{
+                    ...T,
+                    background: validAmount
+                      ? `linear-gradient(90deg, ${CRIMSON}, ${activeTier.color})`
+                      : 'rgba(128,0,32,0.25)',
+                    color: '#fff',
+                    letterSpacing: '0.1em',
+                    boxShadow: validAmount ? `0 4px 28px ${activeTier.glow}` : 'none',
+                  }}
+                >
+                  {doSendTip.isPending
+                    ? '⏳ Sending…'
+                    : `${selectedEmoji || '💸'} Send ${validAmount ? `$${rawAmount}` : 'Tip'}`}
+                </motion.button>
+
+                <div className="pb-4" />
               </div>
             </motion.div>
           </>
