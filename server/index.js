@@ -262,6 +262,7 @@ app.use(rateLimit({
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   skip: function(req) { return req.path === '/api/health' || req.path.startsWith('/socket.io'); }
 }));
 
@@ -271,6 +272,7 @@ var aiRateLimit = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many AI requests — please wait before trying again.' }
 });
 app.use('/api/ai', aiRateLimit);
