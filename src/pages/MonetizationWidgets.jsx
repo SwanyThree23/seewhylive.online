@@ -46,16 +46,16 @@ export default function MonetizationWidgets() {
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 space-y-4">
         {/* Beta notice */}
         <div className="flex items-start gap-3 p-4 rounded-xl"
-          style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}>
-          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#00d4ff' }} />
+          style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}>
+          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#D4AF37' }} />
           <div>
-            <p className="text-sm font-black" style={{ ...T, color: '#00d4ff' }}>Beta Testing</p>
+            <p className="text-sm font-black" style={{ ...T, color: '#D4AF37' }}>Beta Testing</p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
               {activeRoom ? (
                 <span> Using room: <strong className="text-white">{activeRoom.title}</strong></span>
               ) : (
-                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#00d4ff' }}>Start a live room</Link> to enable auction bidding.</span>
+                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#D4AF37' }}>Start a live room</Link> to enable auction bidding.</span>
               )}
             </p>
           </div>

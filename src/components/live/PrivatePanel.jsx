@@ -6,7 +6,7 @@ const PANEL_TYPES = [
   { id: 'vip', label: 'VIP Room', icon: '👑', desc: 'Invite-only private chat & stage', color: '#d4af37' },
   { id: 'backstage', label: 'Backstage', icon: '🎭', desc: 'Host + guests only', color: '#800020' },
   { id: 'subscriber', label: 'Subscribers', icon: '⭐', desc: 'Paid subscribers only', color: '#a78bfa' },
-  { id: 'custom', label: 'Custom Group', icon: '🔒', desc: 'Manually invite users', color: '#00d4ff' },
+  { id: 'custom', label: 'Custom Group', icon: '🔒', desc: 'Manually invite users', color: '#D4AF37' },
 ];
 
 export default function PrivatePanel({ isHost, currentUser }) {

@@ -11,7 +11,7 @@ const TEXT  = '#F0EAF8';
 const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
 const PURPLE = '#a78bfa';
-const CYAN   = '#00d4ff';
+const CYAN   = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
 

@@ -15,7 +15,7 @@ import LoveTap from '../components/live/LoveTap';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const BG      = '#080B18';
 const BG2     = '#0d0618';
 const GREEN   = '#6DBF7E';

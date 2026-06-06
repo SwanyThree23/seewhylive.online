@@ -450,7 +450,7 @@ export default function EmbedPage() {
                   onClick={extend15}
                   style={{
                     fontFamily: MONO, fontSize: 10, fontWeight: 700,
-                    color: '#00d4ff', background: 'none', border: 'none',
+                    color: '#D4AF37', background: 'none', border: 'none',
                     cursor: 'pointer', textDecoration: 'underline', letterSpacing: '.06em',
                   }}
                 >

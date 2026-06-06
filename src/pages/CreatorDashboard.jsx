@@ -12,7 +12,7 @@ import { createPageUrl } from '../utils';
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -76,9 +76,9 @@ export default function CreatorDashboardPage() {
       icon: Send,
       label: 'Newsletter',
       href: createPageUrl('Newsletter'),
-      gradient: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05))',
-      border: 'rgba(0,212,255,0.4)',
-      iconColor: '#00d4ff',
+      gradient: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))',
+      border: 'rgba(212,175,55,0.4)',
+      iconColor: '#D4AF37',
     },
     {
       icon: Scissors,
@@ -108,9 +108,9 @@ export default function CreatorDashboardPage() {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.04))`,
-      border: 'rgba(0,212,255,0.3)',
-      iconColor: '#00d4ff',
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.04))`,
+      border: 'rgba(212,175,55,0.3)',
+      iconColor: '#D4AF37',
     },
   ];
 

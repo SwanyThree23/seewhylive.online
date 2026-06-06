@@ -49,14 +49,14 @@ export default function PKBattleVotePanel({ battleId, creatorId, challengerId, c
       style={{ background: PANEL, border: `1px solid ${BORDER}` }}
     >
       <h3 className="text-sm font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-        <Heart className="w-4 h-4 inline mr-2" style={{ color: '#FF1564' }} />
+        <Heart className="w-4 h-4 inline mr-2" style={{ color: '#C0392B' }} />
         Support Your Creator
       </h3>
 
       {/* Creator selection */}
       <div className="grid grid-cols-2 gap-2">
         {[
-          { id: creatorId, name: creatorName, color: '#FF1564' },
+          { id: creatorId, name: creatorName, color: '#C0392B' },
           { id: challengerId, name: challengerName, color: '#D4AF37' },
         ].map((creator) => (
           <motion.button

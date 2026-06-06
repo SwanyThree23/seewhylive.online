@@ -8,8 +8,8 @@ const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const BLUE  = '#1565C0';
 const RED2  = '#C62828';
-const TEAL  = '#1ABC9C';
-const CYAN  = '#00d4ff';
+const TEAL  = '#6DBF7E';
+const CYAN  = '#D4AF37';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATES_DATA = [

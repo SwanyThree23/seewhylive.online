@@ -14,13 +14,13 @@ const BURGUNDY = '#800020';
 const VIOLATION_STYLES = {
   harassment:    { color: '#FF6B35', bg: 'rgba(255,107,53,0.12)',  border: 'rgba(255,107,53,0.3)' },
   spam:          { color: '#FFD700', bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.3)' },
-  hate_speech:   { color: '#FF1564', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
+  hate_speech:   { color: '#C0392B', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
   inappropriate: { color: '#FF8C00', bg: 'rgba(255,140,0,0.12)',   border: 'rgba(255,140,0,0.3)' },
   safe:          { color: '#6DBF7E', bg: 'rgba(109,191,126,0.08)',   border: 'rgba(109,191,126,0.2)' },
 };
 
 const PRIORITY_STYLES = {
-  urgent: { color: '#FF1564', label: 'URGENT' },
+  urgent: { color: '#C0392B', label: 'URGENT' },
   high:   { color: '#FF6B35', label: 'HIGH' },
   medium: { color: GOLD,       label: 'MEDIUM' },
   low:    { color: 'rgba(255,255,255,0.3)', label: 'LOW' },
@@ -139,7 +139,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
         ))}
         <button onClick={() => onQuickAction(entry, 'ban')}
           className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
-          style={{ background: 'rgba(255,21,100,0.1)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(255,21,100,0.1)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Ban
         </button>
       </div>
@@ -287,7 +287,7 @@ export default function ModerationDashboardPage() {
           </div>
           <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
             <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #FF1564)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }} />
+              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #C0392B)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }} />
           </div>
         </div>
       </div>

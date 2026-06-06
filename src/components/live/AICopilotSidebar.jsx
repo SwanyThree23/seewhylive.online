@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const INSIGHT_CONFIG = {
   conversation_starter: { icon: MessageSquare, color: '#C9A84C', label: 'Talk About',  bg: 'rgba(201,168,76,0.08)' },
-  thank_you:            { icon: Heart,          color: '#FF1564', label: 'Thank You',   bg: 'rgba(255,21,100,0.08)' },
+  thank_you:            { icon: Heart,          color: '#C0392B', label: 'Thank You',   bg: 'rgba(255,21,100,0.08)' },
   chat_spike:           { icon: Zap,            color: '#FFB800', label: '⚡ Spike',    bg: 'rgba(255,184,0,0.08)' },
   trending_topic:       { icon: TrendingUp,     color: '#D4AF37', label: 'Trending',    bg: 'rgba(212,175,55,0.08)' },
   performance_tip:      { icon: TrendingUp,     color: '#6DBF7E', label: 'Pro Tip',     bg: 'rgba(109,191,126,0.08)' },
@@ -15,7 +15,7 @@ const INSIGHT_CONFIG = {
 };
 
 function SentimentMeter({ score }) {
-  const color = score >= 70 ? '#6DBF7E' : score >= 40 ? '#FFB800' : '#FF1564';
+  const color = score >= 70 ? '#6DBF7E' : score >= 40 ? '#FFB800' : '#C0392B';
   const label = score >= 70 ? 'Positive' : score >= 40 ? 'Neutral' : 'Negative';
   return (
     <div className="space-y-1.5">

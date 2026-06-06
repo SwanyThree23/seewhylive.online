@@ -5,11 +5,11 @@ const BG     = '#080B18';
 const BG2    = '#0D0620';
 const GOLD   = '#D4AF37';
 const CRIMSON= '#800020';
-const PINK   = '#FF1564';
+const PINK   = '#C0392B';
 const GREEN  = '#6DBF7E';
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-const PALETTE = ['#D4AF37','#FF1564','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#EC4899'];
+const PALETTE = ['#D4AF37','#C0392B','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#EC4899'];
 const avatarColor = n => PALETTE[(n?.charCodeAt(0) ?? 0) % PALETTE.length];
 
 const ALL_NAMES = ['SwanyThree','Joyce 🦋','CaliBonesOG','Marvin','Yahawadah','Tom','Durand','Phelo','Simone','Obi','Kenya','Marcus','Tasha','DeeJay','Rakim','Zara','Kwame','Blessed','BigFacts','Nijah'];

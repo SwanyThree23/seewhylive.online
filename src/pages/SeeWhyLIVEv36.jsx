@@ -30,7 +30,7 @@ const C = {
   purple:  "#8B44B0",
   cyan:    "#D4854A",
   orange:  "#FF6B35",
-  teal:    "#1ABC9C",
+  teal:    "#6DBF7E",
   warn:    "#F39C12",
   tribute: "#7B5EA7",
   tribL:   "#A07BC4",

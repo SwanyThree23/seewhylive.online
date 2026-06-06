@@ -142,7 +142,7 @@ export default function VideoLibrary({ creatorId }) {
       </Modal>
 
       {/* Chapters Modal */}
-      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#00d4ff">
+      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#D4AF37">
         {chapterTarget && (
           <ChapterEditor
             video={chapterTarget}

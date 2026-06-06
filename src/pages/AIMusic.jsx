@@ -12,7 +12,7 @@ const BG      = '#0E0C09';
 const BG2     = 'rgba(14,12,9,0.95)';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const AMBER   = '#D4854A';
 const ROSE    = '#C0395A';
 const GREEN   = '#6DBF7E';
@@ -148,7 +148,7 @@ const VOCAL_TYPES = [
   { id: 'female-rnb',  label: 'Female R&B',  color: PINK },
   { id: 'male-singer', label: 'Male Singer', color: ROSE },
   { id: 'choir',       label: 'Choir',       color: GREEN },
-  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#00d4ff' },
+  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#D4AF37' },
 ];
 
 const MASTER_PRESETS = [

@@ -8,7 +8,7 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 // ── Real-time metric tile ───────────────────────────────────────────────────
 function MetricTile({ icon: Icon, label, value, unit, color, trend, sparkData }) {
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  const trendColor = trend === 'up' ? '#6DBF7E' : trend === 'down' ? '#FF1564' : 'rgba(255,255,255,0.3)';
+  const trendColor = trend === 'up' ? '#6DBF7E' : trend === 'down' ? '#C0392B' : 'rgba(255,255,255,0.3)';
   return (
     <div className="rounded-xl p-3 space-y-2 relative overflow-hidden"
       style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${color}20` }}>
@@ -43,7 +43,7 @@ function DestinationStatus({ platform, status }) {
   const cfg = {
     live:       { color: '#6DBF7E', dot: true,  label: 'LIVE' },
     connecting: { color: '#FFB800', dot: true,  label: 'Connecting' },
-    error:      { color: '#FF1564', dot: false, label: 'Error' },
+    error:      { color: '#C0392B', dot: false, label: 'Error' },
     offline:    { color: 'rgba(255,255,255,0.2)', dot: false, label: 'Idle' },
   }[status] || { color: 'rgba(255,255,255,0.2)', dot: false, label: status };
 
@@ -63,7 +63,7 @@ function DestinationStatus({ platform, status }) {
 function NetworkGauge({ qualityScore }) {
   const segments = 10;
   const filled = Math.round((qualityScore / 100) * segments);
-  const color = qualityScore >= 80 ? '#6DBF7E' : qualityScore >= 50 ? '#FFB800' : '#FF1564';
+  const color = qualityScore >= 80 ? '#6DBF7E' : qualityScore >= 50 ? '#FFB800' : '#C0392B';
   const label = qualityScore >= 80 ? 'Excellent' : qualityScore >= 50 ? 'Fair' : 'Poor';
   return (
     <div className="flex items-center gap-2">
@@ -210,8 +210,8 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
         <MetricTile icon={MessageSquare} label="Chat/min" value={metrics.messages} color="#D4AF37" trend={getTrend('messages')} />
         <MetricTile icon={Radio} label="Bitrate" value={metrics.bitrate > 0 ? `${(metrics.bitrate/1000).toFixed(1)}` : '—'} unit="Mbps" color="#d4af37" trend={getTrend('bitrate')} sparkData={bitrateSparkData} />
         <MetricTile icon={Zap} label="FPS" value={metrics.fps || '—'} color="#6DBF7E" trend="stable" />
-        <MetricTile icon={Activity} label="Latency" value={metrics.latency || '—'} unit="ms" color={metrics.latency > 100 ? '#FF1564' : '#FFB800'} trend={getTrend('latency')} />
-        <MetricTile icon={Eye} label="Peak Viewers" value={Math.max(metrics.viewers, ...history.map(h => h.viewers || 0))} color="#FF1564" trend="stable" />
+        <MetricTile icon={Activity} label="Latency" value={metrics.latency || '—'} unit="ms" color={metrics.latency > 100 ? '#C0392B' : '#FFB800'} trend={getTrend('latency')} />
+        <MetricTile icon={Eye} label="Peak Viewers" value={Math.max(metrics.viewers, ...history.map(h => h.viewers || 0))} color="#C0392B" trend="stable" />
       </div>
 
       {/* Network quality bar */}
@@ -269,7 +269,7 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
               background: alert.type === 'error' ? 'rgba(255,21,100,0.08)' : 'rgba(255,184,0,0.08)',
               border: `1px solid ${alert.type === 'error' ? 'rgba(255,21,100,0.25)' : 'rgba(255,184,0,0.25)'}`,
             }}>
-            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: alert.type === 'error' ? '#FF1564' : '#FFB800' }} />
+            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: alert.type === 'error' ? '#C0392B' : '#FFB800' }} />
             <p className="text-[10px] text-white/70">{alert.msg}</p>
           </motion.div>
         ))}

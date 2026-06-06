@@ -161,7 +161,7 @@ export default function ViewerDashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{liveRooms.length}</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}>{liveRooms.length}</span>
               </div>
               {liveRooms.length === 0 ? (
                 <p className="text-sm py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No one is live right now</p>
@@ -186,7 +186,7 @@ export default function ViewerDashboard() {
                         </div>
                         <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`} className="block mt-3">
                           <button className="w-full py-2 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-                            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
+                            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', ...T }}>
                             <Radio className="w-3.5 h-3.5" /> Join Now
                           </button>
                         </Link>
@@ -200,19 +200,19 @@ export default function ViewerDashboard() {
             {/* Upcoming */}
             <div className="space-y-3">
               <h2 className="font-black text-white text-sm flex items-center gap-2" style={T}>
-                <Clock className="w-4 h-4" style={{ color: '#00d4ff' }} /> Upcoming Streams
+                <Clock className="w-4 h-4" style={{ color: '#D4AF37' }} /> Upcoming Streams
               </h2>
               {scheduledRooms.slice(0, 4).map(room => (
                 <div key={room.id} className="flex items-center gap-3 p-3 rounded-xl transition-all"
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(0,212,255,0.1)' }}>
-                    <Clock className="w-5 h-5" style={{ color: '#00d4ff' }} />
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)' }}>
+                    <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
-                    <p className="text-xs" style={{ color: '#00d4ff' }}>{getCountdown(room.scheduled_start)}</p>
+                    <p className="text-xs" style={{ color: '#D4AF37' }}>{getCountdown(room.scheduled_start)}</p>
                   </div>
-                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', ...T }}>Upcoming</span>
                 </div>
               ))}
             </div>
