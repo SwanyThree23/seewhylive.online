@@ -23,11 +23,11 @@ import SwanyBotWidget from '@/components/guide/ARIAWidget';
 
 // ── 5 Bottom Nav Tabs ──────────────────────────────────────────────────────
 var BOTTOM_NAV = [
-  { name: 'Home',  icon: Home,         href: createPageUrl('Home') },
-  { name: 'Watch', icon: Eye,          href: createPageUrl('Discover') },
-  { name: 'Go Live', icon: Radio,      href: createPageUrl('GoLive'), isCenter: true },
-  { name: 'Chat',  icon: MessageSquare, href: createPageUrl('Messages') },
-  { name: 'Me',    icon: User,         href: createPageUrl('Profile') },
+  { name: 'Home',    icon: Home,         href: createPageUrl('Home') },
+  { name: 'Discover',icon: SearchIcon,   href: createPageUrl('Discover') },
+  { name: 'Studio',  icon: Radio,        href: createPageUrl('BroadcastStudio'), isCenter: true },
+  { name: 'Battles', icon: Swords,       href: createPageUrl('PKBattleArena') },
+  { name: 'Profile', icon: User,         href: createPageUrl('Profile') },
 ];
 
 // ── Drawer nav groups ──────────────────────────────────────────────────────
@@ -230,7 +230,7 @@ export default function Layout({ children, currentPageName }) {
       <header className="sticky z-50 w-full"
         style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
-        <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
+        <div className="flex h-14 items-center gap-2 px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
           {isMainPage ? (
             <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0 active:opacity-70 transition-opacity" style={{ userSelect: 'none' }}>
@@ -264,6 +264,17 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-sm font-black" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.7)', letterSpacing: '0.04em' }}>Back</span>
             </button>
           )}
+
+          {/* Center: page title (hidden on main pages, shown on sub-pages) */}
+          {!isMainPage && currentPageName && (
+            <div className="flex-1 min-w-0 text-center">
+              <span className="text-sm font-black uppercase truncate"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.06em' }}>
+                {currentPageName.replace(/([A-Z])/g, ' $1').trim()}
+              </span>
+            </div>
+          )}
+          {isMainPage && <div className="flex-1" />}
 
           {/* Right actions */}
           <div className="flex items-center gap-1.5 md:gap-2">

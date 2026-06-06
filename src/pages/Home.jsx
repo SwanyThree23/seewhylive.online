@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Radio, Users } from 'lucide-react';
+import { Radio, Users, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -459,32 +459,39 @@ export default function Home() {
         )}
       </motion.div>
 
-      {/* ── HERO STRIP ── */}
+      {/* ── ALL ROOMS HEADER ── */}
       <div className="flex items-center justify-between px-4"
-        style={{ height: 48, background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.10)' }}>
-        <div className="flex items-center gap-2">
-          {liveCount > 0 ? (
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
-              <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Space Mono, monospace' }}>
-                {liveCount} LIVE
+        style={{ height: 52, background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.10)' }}>
+        <h1 className="text-2xl font-black text-white"
+          style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.02em' }}>
+          All Rooms
+        </h1>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <Users className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.35)' }} />
+            <span className="text-sm font-black" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {liveCount}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {liveCount > 0 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
+                <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  LIVE
+                </span>
               </span>
-            </span>
-          ) : (
-            <span className="text-sm font-black"
-              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
-              No streams yet
-            </span>
-          )}
+            )}
+          </div>
+          <Link to={createPageUrl('GoLive')}>
+            <motion.div whileTap={{ scale: 0.93 }}
+              className="px-3 py-1 rounded-full text-xs font-black uppercase cursor-pointer"
+              style={{ background: 'linear-gradient(90deg, #6B4423, #D4AF37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+              Go Live →
+            </motion.div>
+          </Link>
         </div>
-        <Link to={createPageUrl('GoLive')}>
-          <motion.div whileTap={{ scale: 0.93 }}
-            className="px-4 py-1.5 rounded-full text-xs font-black uppercase cursor-pointer"
-            style={{ background: 'linear-gradient(90deg, #6B4423, #D4AF37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
-            Go Live →
-          </motion.div>
-        </Link>
       </div>
 
       {/* ── DOMINO SOCIAL EXPO FEATURED PARTNER ── */}
