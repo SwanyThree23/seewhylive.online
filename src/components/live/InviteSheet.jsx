@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const BG3     = '#0d0618';
+const BG3     = '#080B18';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function genToken() {
@@ -47,7 +47,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
       label:      'Co-Host Invite',
       desc:       'Full co-host access and moderation controls',
       Icon:       UserCheck,
-      color:      '#00d4ff',
+      color:      '#D4AF37',
       url:        `${roomUrl}&join_as=co-host&ik=${coHostToken}`,
       badge:      'CO-HOST',
     }] : []),
