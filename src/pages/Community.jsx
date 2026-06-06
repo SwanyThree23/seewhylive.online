@@ -1,7 +1,33 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+function usePullToRefresh(onRefresh) {
+  var [pullY, setPullY] = useState(0);
+  var [refreshing, setRefreshing] = useState(false);
+  var startY = React.useRef(0);
+  var THRESHOLD = 65;
+  function onTouchStart(e) {
+    if (window.scrollY > 0) return;
+    startY.current = e.touches[0].clientY;
+  }
+  function onTouchMove(e) {
+    if (window.scrollY > 0) return;
+    var dy = e.touches[0].clientY - startY.current;
+    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+  }
+  async function onTouchEnd() {
+    if (pullY >= THRESHOLD && !refreshing) {
+      setRefreshing(true);
+      setPullY(THRESHOLD);
+      await onRefresh();
+      setRefreshing(false);
+    }
+    setPullY(0);
+  }
+  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
+}
 import { Users, MessageSquare } from 'lucide-react';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
@@ -11,6 +37,11 @@ const G = '#D4AF37';
 const BG = '#080B18';
 
 export default function CommunityPage() {
+  const qc = useQueryClient();
+  const { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {
+    await qc.invalidateQueries();
+  });
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -27,7 +58,24 @@ export default function CommunityPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ background: BG }}>
+    <div className="min-h-screen" style={{ background: BG }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      {/* Pull-to-refresh indicator */}
+      <motion.div
+        style={{ height: pullY, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
+        {pullY > 10 && (
+          <>
+            <motion.div
+              animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+              transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+              style={{ width: 26, height: 26, borderRadius: '50%', border: '2.5px solid rgba(212,175,55,0.25)', borderTopColor: '#D4AF37', flexShrink: 0 }}
+            />
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: refreshing ? '#D4AF37' : 'rgba(212,175,55,0.5)' }}>
+              {refreshing ? 'REFRESHING…' : pullY >= 65 ? 'RELEASE TO REFRESH' : 'PULL TO REFRESH'}
+            </span>
+          </>
+        )}
+      </motion.div>
       {/* Header */}
       <div className="sticky top-0 z-20 px-4 py-6 md:px-8 border-b" style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>

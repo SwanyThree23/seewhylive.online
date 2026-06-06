@@ -216,7 +216,7 @@ function SpotlightStrip() {
         fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase',
         color: 'rgba(255,255,255,0.25)',
       }}>Platform Features</div>
-      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
         {SPOTLIGHT_ITEMS.map(function(item) {
           return (
             <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -300,7 +300,7 @@ function DominoExpoSection() {
       </div>
 
       {/* Feature pillars (horizontal scroll) */}
-      <div style={{ overflowX: 'auto', padding: '0 16px 14px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div style={{ overflowX: 'auto', padding: '0 16px 14px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
         {DOMINO_FEATURES.map(function(f) {
           return (
             <div key={f.title} style={{ flexShrink: 0, width: 140, background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(201,168,76,0.11)', borderRadius: 12, padding: '12px 12px 10px' }}>
@@ -321,7 +321,7 @@ function DominoExpoSection() {
           Latest from Domino Entertainment
         </span>
       </div>
-      <div style={{ overflowX: 'auto', padding: '0 16px 16px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div style={{ overflowX: 'auto', padding: '0 16px 16px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
         {DOMINO_VIDEOS.map(function(v) {
           return (
             <a key={v.id} href={'https://youtu.be/' + v.id} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, textDecoration: 'none' }}>
@@ -362,7 +362,7 @@ function DominoExpoSection() {
           Sponsorship &amp; Monetization
         </span>
       </div>
-      <div style={{ overflowX: 'auto', padding: '0 16px 20px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div style={{ overflowX: 'auto', padding: '0 16px 20px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
         {DOMINO_SPONSORSHIPS.map(function(s) {
           var accent = s.accent || '#C9A84C';
           return (

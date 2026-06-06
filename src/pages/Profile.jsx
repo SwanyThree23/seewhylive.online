@@ -8,6 +8,8 @@ import {
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fadeUp, fadeIn, scaleIn, stagger, staggerFast } from '../lib/animations';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -28,7 +30,7 @@ function DarkCard({ children, className = '', style = {} }) {
 
 function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
   return (
-    <div className="relative cursor-pointer shrink-0" style={{ width: size, height: size }} onClick={onClick}>
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="relative cursor-pointer shrink-0" style={{ width: size, height: size }} onClick={onClick}>
       {/* gold border layer */}
       <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
       {/* inner filled layer */}
@@ -52,7 +54,7 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
             : <Camera className="w-5 h-5 text-white" />}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -224,7 +226,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ── hero banner ── */}
-      <div className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #080B18)', minHeight: 160 }}>
+      <motion.div initial="hidden" animate="visible" variants={fadeIn} className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #080B18)', minHeight: 160 }}>
         {/* glow spot */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 pointer-events-none"
           style={{ background: `radial-gradient(ellipse at center, ${CRIMSON}33 0%, transparent 70%)` }} />
@@ -277,12 +279,14 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-4xl mx-auto px-4 pt-4 space-y-4">
 
         {/* ── edit form ── */}
+        <AnimatePresence>
         {isEditing && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
           <DarkCard>
             <div className="p-4 space-y-3">
               <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Edit Profile</p>
@@ -317,22 +321,24 @@ export default function ProfilePage() {
               </div>
             </div>
           </DarkCard>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* ── stats row ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} />
-          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#C9A84C" />
-          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#D4AF37" />
-          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#6DBF7E" />
-        </div>
+        <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3" variants={stagger} initial="hidden" animate="visible">
+          <motion.div variants={fadeUp}><StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} /></motion.div>
+          <motion.div variants={fadeUp}><StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#C9A84C" /></motion.div>
+          <motion.div variants={fadeUp}><StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#D4AF37" /></motion.div>
+          <motion.div variants={fadeUp}><StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#6DBF7E" /></motion.div>
+        </motion.div>
 
         {/* ── section tabs ── */}
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
+        <motion.div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1" variants={staggerFast} initial="hidden" animate="visible">
           {TABS.map(tab => {
             const active = activeTab === tab;
             return (
-              <button key={tab} onClick={() => setActiveTab(tab)}
+              <motion.button key={tab} variants={fadeUp} whileTap={{ scale: 0.92 }} onClick={() => setActiveTab(tab)}
                 className="relative shrink-0 px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
                 style={{
                   background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
@@ -345,12 +351,14 @@ export default function ProfilePage() {
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full"
                     style={{ background: GOLD }} />
                 )}
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* ── tab content ── */}
+        <AnimatePresence mode="wait">
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
         {activeTab === 'Overview' && (
           <>
             {/* activity feed */}
@@ -361,9 +369,9 @@ export default function ProfilePage() {
                   <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Recent Activity</p>
                 </div>
               </div>
-              <div className="p-3 space-y-2">
+              <motion.div className="p-3 space-y-2" variants={stagger} initial="hidden" animate="visible">
                 {activityItems.map(item => (
-                  <div key={item.id} className="flex items-center gap-3 p-3 rounded-2xl"
+                  <motion.div key={item.id} variants={fadeUp} className="flex items-center gap-3 p-3 rounded-2xl" whileHover={{ x: 4 }}
                     style={{ background: `${item.color}08`, borderLeft: `2px solid ${item.color}30` }}>
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: `${item.color}15`, border: `1px solid ${item.color}25` }}>
@@ -371,9 +379,9 @@ export default function ProfilePage() {
                     </div>
                     <p className="flex-1 font-black text-[12px] text-white" style={T}>{item.desc}</p>
                     <span className="text-[11px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.time}</span>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </DarkCard>
 
             {/* quick links */}
@@ -558,6 +566,8 @@ export default function ProfilePage() {
             </div>
           </DarkCard>
         )}
+        </motion.div>
+        </AnimatePresence>
 
       </div>
     </div>

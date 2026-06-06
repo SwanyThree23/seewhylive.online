@@ -172,6 +172,26 @@
     color: rgba(255,255,255,0.85);
   }
 
+  /* Mobile readability: 14px minimum prevents iOS auto-zoom & aids legibility */
+  input, textarea {
+    font-size: max(14px, 1em);
+  }
+  label {
+    font-size: max(14px, 1em);
+  }
+
+  /* 44px minimum tap targets for settings / account buttons */
+  .tap-target {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Contain scroll so nested horizontal strips don't bleed into page scroll */
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
+
   /* Earth Tone palette — PK Battle & tournament pages */
   .text-terracotta { color: #CC7755; }
   .text-moss { color: #6B7C4A; }

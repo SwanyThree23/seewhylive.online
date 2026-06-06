@@ -232,7 +232,7 @@ export default function DiscoverPage() {
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
-        <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
+        <div className="overflow-x-auto scrollbar-hide overscroll-contain -mx-6 px-6">
           <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
               { id: 'live', label: 'Live', icon: Radio },
@@ -259,7 +259,7 @@ export default function DiscoverPage() {
 
         {/* Genre pills */}
         {(tab === 'live' || tab === 'scheduled') && (
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-6 px-6 pb-1" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide overscroll-contain -mx-6 px-6 pb-1" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             {GENRES.map(g => (
               <button key={g} onClick={() => setGenre(g)}
                 className="shrink-0 text-[11px] px-3.5 py-1.5 rounded-full transition-all active:scale-95 whitespace-nowrap font-bold"

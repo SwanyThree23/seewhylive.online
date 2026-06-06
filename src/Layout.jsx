@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv, ShieldX
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -18,6 +18,7 @@ import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
 import GlobalChatWidget from '@/components/live/GlobalChatWidget';
+import { useAuth } from '@/lib/AuthContext';
 import SwanyBotWidget from '@/components/guide/ARIAWidget';
 
 // ── 5 Bottom Nav Tabs ──────────────────────────────────────────────────────
@@ -88,6 +89,22 @@ var DRAWER_ADMIN = [
 export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
+  var [showDeleteModal, setShowDeleteModal] = useState(false);
+  var [deleteConfirmText, setDeleteConfirmText] = useState('');
+  var [isDeleting, setIsDeleting] = useState(false);
+  var { logout } = useAuth();
+
+  async function handleDeleteAccount() {
+    if (deleteConfirmText !== 'DELETE') return;
+    setIsDeleting(true);
+    try {
+      await base44.auth.deleteMe();
+      logout(false);
+      window.location.href = '/';
+    } catch {
+      setIsDeleting(false);
+    }
+  }
   var location = useLocation();
   var navigate = useNavigate();
   var scrollPositions = React.useRef({});
@@ -167,12 +184,13 @@ export default function Layout({ children, currentPageName }) {
           style={{ fontFamily: 'Barlow Condensed, sans-serif', color: labelColor || 'rgba(255,255,255,0.2)' }}>
           {label}
         </p>
-        <div className="space-y-0.5">
+        <motion.div className="space-y-0.5" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }} initial="hidden" animate="visible">
           {items.map(function(item) {
             var Icon = item.icon;
             var active = isActive(item.href);
             return (
-              <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
+              <motion.div key={item.name} variants={{ hidden: { opacity: 0, x: -16 }, visible: { opacity: 1, x: 0, transition: { duration: 0.22 } } }} whileTap={{ scale: 0.97 }}>
+              <Link to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
                   style={{
                     background: active ? 'rgba(212,175,55,0.1)' : 'transparent',
@@ -187,9 +205,10 @@ export default function Layout({ children, currentPageName }) {
                   {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: '#d4af37' }} />}
                 </div>
               </Link>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -309,7 +328,7 @@ export default function Layout({ children, currentPageName }) {
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
               className="fixed top-0 left-0 bottom-0 z-[91] flex flex-col overflow-y-auto w-full sm:w-[80vw] sm:max-w-[320px]"
-              style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)' }}>
+              style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)', overscrollBehavior: 'contain' }}>
 
               {/* Drawer header */}
               <div className="flex items-center justify-between px-4 pt-10 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -338,6 +357,17 @@ export default function Layout({ children, currentPageName }) {
 
               {/* Group 3: Account */}
               <DrawerSection label="Account" items={DRAWER_ACCOUNT} />
+
+              {/* Delete Account — danger zone */}
+              <div className="px-3 pb-3 pt-2">
+                <button
+                  onClick={function() { setShowMobileMenu(false); setTimeout(function() { setShowDeleteModal(true); }, 260); }}
+                  className="tap-target w-full flex items-center gap-3 px-3 rounded-xl"
+                  style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', color: '#EF4444', userSelect: 'none', WebkitUserSelect: 'none', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 700, letterSpacing: '0.04em' }}>
+                  <ShieldX className="w-4 h-4" style={{ flexShrink: 0 }} />
+                  Delete Account
+                </button>
+              </div>
 
               {/* Group 4: Admin (isAdmin only) */}
               {isAdmin && (
@@ -409,6 +439,7 @@ export default function Layout({ children, currentPageName }) {
 
               function handleTabPress(e) {
                 e.preventDefault();
+                if (navigator.vibrate) navigator.vibrate(10);
                 if (active) {
                   // Tap active tab → scroll to root, clear this tab's saved sub-page
                   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -448,17 +479,71 @@ export default function Layout({ children, currentPageName }) {
               }
 
               return (
-                <Link key={item.name} to={item.href}
-                  onClick={handleTabPress}
-                  className="flex flex-col items-center gap-1 px-3 pb-1 transition-all active:scale-90"
-                  style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', userSelect: 'none', WebkitUserSelect: 'none', borderTop: active ? '2px solid #d4af37' : '2px solid transparent', paddingTop: 6, transition: 'all .15s' }}>
-                  <Icon className="w-5 h-5" />
-                  <span className="text-[10px] uppercase font-bold"
-                    style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{item.name}</span>
-                </Link>
+                <motion.div key={item.name} className="flex-1 relative" whileTap={{ scale: 0.85 }}>
+                  <Link to={item.href} onClick={handleTabPress}
+                    className="flex flex-col items-center gap-1 px-3 pb-1 w-full"
+                    style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', paddingTop: 6, userSelect: 'none', WebkitUserSelect: 'none' }}>
+                    <motion.div animate={{ scale: active ? 1.15 : 1, y: active ? -1 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }}>
+                      <Icon className="w-5 h-5" />
+                    </motion.div>
+                    <span className="text-[10px] uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{item.name}</span>
+                  </Link>
+                  <AnimatePresence>
+                    {active && (
+                      <motion.div
+                        layoutId="bottom-nav-indicator"
+                        className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-8 rounded-full"
+                        style={{ background: '#d4af37' }}
+                        initial={{ opacity: 0, scaleX: 0 }}
+                        animate={{ opacity: 1, scaleX: 1 }}
+                        exit={{ opacity: 0, scaleX: 0 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               );
             })}
           </nav>
+        </div>
+      )}
+
+      {/* Delete Account confirmation modal (accessible from drawer) */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-5"
+          style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(8px)' }}
+          onClick={function(e) { if (e.target === e.currentTarget) { setShowDeleteModal(false); setDeleteConfirmText(''); } }}>
+          <div className="w-full max-w-sm rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
+            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                <ShieldX className="w-5 h-5" style={{ color: '#EF4444' }} />
+              </div>
+              <p className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Permanently Delete Account?</p>
+              <p className="text-xs mt-2 text-left" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1.5 }}>
+                This will immediately and permanently remove your profile, streams, tips, earnings, and chat history. It cannot be undone.
+              </p>
+            </div>
+            <div className="p-5 space-y-3">
+              <input
+                value={deleteConfirmText}
+                onChange={function(e) { setDeleteConfirmText(e.target.value.toUpperCase()); }}
+                placeholder="Type DELETE to confirm"
+                className="w-full px-3 py-3 rounded-xl text-center outline-none font-black"
+                style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid ' + (deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'), color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', fontSize: 14 }} />
+              <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                className="tap-target w-full rounded-xl font-black uppercase text-sm justify-center"
+                style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
+              </button>
+              <button onClick={function() { setShowDeleteModal(false); setDeleteConfirmText(''); }}
+                className="tap-target w-full rounded-xl font-black uppercase text-xs justify-center"
+                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

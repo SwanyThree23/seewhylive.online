@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
@@ -207,7 +208,10 @@ export default function Messages() {
               var last = t.messages[t.messages.length - 1];
               var isSelected = selectedThread === t.partnerId;
               return (
-                <div key={t.partnerId}>
+                <motion.div key={t.partnerId}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.04, duration: 0.28, ease: 'easeOut' }}>
                   <div
                     onClick={() => setSelectedThread(t.partnerId)}
                     className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-all"
@@ -267,16 +271,17 @@ export default function Messages() {
 
                     {/* Unread badge */}
                     {t.unread > 0 && (
-                      <div className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-black text-white"
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                        className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-black text-white"
                         style={{ background: PINK, ...T }}>
                         {t.unread}
-                      </div>
+                      </motion.div>
                     )}
                   </div>
                   {idx < threads.length - 1 && (
                     <div style={{ height: 1, background: "rgba(255,255,255,0.04)", marginLeft: 64 }} />
                   )}
-                </div>
+                </motion.div>
               );
             })
           )}
@@ -315,7 +320,10 @@ export default function Messages() {
                 var isHovered = hoveredMsg === m.id;
                 var showPicker = reactionPickerMsg === m.id;
                 return (
-                  <div key={m.id}
+                  <motion.div key={m.id}
+                    initial={{ opacity: 0, x: isMe ? 20 : -20, scale: 0.92 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{ type: 'spring', damping: 22, stiffness: 280 }}
                     style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", position: "relative" }}
                     onMouseEnter={() => setHoveredMsg(m.id)}
                     onMouseLeave={() => { setHoveredMsg(null); if (reactionPickerMsg === m.id) setReactionPickerMsg(null); }}>
@@ -398,7 +406,7 @@ export default function Messages() {
                         </span>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -437,8 +445,9 @@ export default function Messages() {
       </div>
 
       {/* ── Compose modal ── */}
+      <AnimatePresence>
       {showCompose && (
-        <div
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowCompose(false); }}
           style={{
             position: "fixed", inset: 0, zIndex: 50,
@@ -446,7 +455,8 @@ export default function Messages() {
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "0 16px",
           }}>
-          <div style={{
+          <motion.div initial={{ y: 48, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 48, opacity: 0 }} transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+            style={{
             background: "rgba(13,6,24,0.98)",
             border: "1px solid rgba(212,175,55,0.2)",
             borderRadius: 20, padding: 24, width: "100%", maxWidth: 400,
@@ -488,9 +498,10 @@ export default function Messages() {
                 {composeMutation.isPending ? "Sending…" : "Send Message"}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -93,6 +93,7 @@ export default function PKBattleArena() {
 
   function startBattle() {
     if (!selectedOpponent) return;
+    if (navigator.vibrate) navigator.vibrate(10);
     setPhase('countdown');
     setCountdown(3);
     setHostVotes(50);
@@ -130,6 +131,7 @@ export default function PKBattleArena() {
   }
 
   function endBattle() {
+    if (navigator.vibrate) navigator.vibrate(10);
     clearInterval(timerRef.current);
     clearInterval(voteRef.current);
     setPhase('result');
@@ -149,6 +151,7 @@ export default function PKBattleArena() {
   }
 
   function resetBattle() {
+    if (navigator.vibrate) navigator.vibrate(10);
     clearInterval(timerRef.current);
     clearInterval(voteRef.current);
     clearInterval(cdRef.current);
@@ -268,7 +271,7 @@ export default function PKBattleArena() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ ...T, fontSize: 13, fontWeight: 700, color: TEXTM, letterSpacing: '0.1em' }}>SELECT OPPONENT</div>
             {OPPONENTS.map(opp => (
-              <div key={opp.id} className="card-in" onClick={() => setSelectedOpponent(opp)} style={{
+              <div key={opp.id} className="card-in" onClick={() => { if (navigator.vibrate) navigator.vibrate(10); setSelectedOpponent(opp); }} style={{
                 background: BG2,
                 border: `1px solid ${selectedOpponent?.id === opp.id ? GOLD : 'rgba(212,175,55,0.1)'}`,
                 borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
