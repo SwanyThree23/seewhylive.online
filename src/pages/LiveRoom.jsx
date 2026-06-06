@@ -509,11 +509,21 @@ export default function LiveRoom() {
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
 
-  // Determine entry role for the gate
-  const entryRole = isHost ? 'host' : isCoHost ? 'co-host' : 'audience';
+  // Determine entry role for the gate — wait for party data when a roomId is present
+  // so a host always gets the 21+ gate, not the audience (18+) gate
+  const partyReady = !roomId || party !== undefined;
+  const entryRole  = isHost ? 'host' : isCoHost ? 'co-host' : 'audience';
 
-  // Show unified entry gate before room content
+  // Hold until party data resolves, then show the gate
   if (user && !gateComplete) {
+    if (!partyReady) {
+      return (
+        <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#080B18' }}>
+          <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: '#D4AF37' }} />
+        </div>
+      );
+    }
     return (
       <RoomEntryGate
         role={entryRole}

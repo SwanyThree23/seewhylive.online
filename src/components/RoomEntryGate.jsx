@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, FileText, User, Mic, Camera, X, ChevronLeft } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -463,11 +463,12 @@ export default function RoomEntryGate({ role, user, onPass, onRoleDowngrade, onE
 
   const [stepIndex, setStepIndex] = useState(0);
 
-  // If no steps needed, pass immediately on first render
-  if (steps.length === 0) {
-    onPass();
-    return null;
-  }
+  // If no steps needed, pass immediately after mount (not during render)
+  const noSteps = steps.length === 0;
+  useEffect(() => {
+    if (noSteps) onPass();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  if (noSteps) return null;
 
   const currentStep = steps[stepIndex];
 
