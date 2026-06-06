@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import RoomEntryGate from '../components/RoomEntryGate';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -327,6 +328,7 @@ export default function WatchPartyPage() {
   const partyId = urlParams.get('id');
   const qc = useQueryClient();
 
+  const [gateComplete, setGateComplete] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
   const [partyTitle, setPartyTitle] = useState('');
   const [creating, setCreating] = useState(false);
@@ -559,6 +561,21 @@ export default function WatchPartyPage() {
       }
     } catch (e) {}
   };
+
+  // ── Entry gate ───────────────────────────────────────────────────────────
+  const wpRole = party?.host_id === user?.id ? 'host' : 'audience';
+
+  if (user && !gateComplete) {
+    return (
+      <RoomEntryGate
+        role={wpRole}
+        user={user}
+        onPass={() => setGateComplete(true)}
+        onRoleDowngrade={() => setGateComplete(true)}
+        onExit={() => window.history.back()}
+      />
+    );
+  }
 
   if (!partyId) {
     return (

@@ -14,8 +14,8 @@ import ShareModal from '../components/live/ShareModal';
 import InviteSheet from '../components/live/InviteSheet';
 import { buildVdoViewUrl } from '../components/live/VdoNinjaGuestLink';
 import DirectPayments from '../components/live/DirectPayments';
-import AgeGate from '../components/AgeGate';
 import { getStoredAge, getAccessLevel } from '../lib/ageVerification';
+import RoomEntryGate from '../components/RoomEntryGate';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
@@ -359,7 +359,7 @@ export default function LiveRoom() {
   const lastGiftTsRef               = useRef(0);
   const [joinNotif, setJoinNotif]   = useState(null);
   const prevMemberCountRef           = useRef(0);
-  const [showAgeGate, setShowAgeGate] = useState(false);
+  const [gateComplete, setGateComplete] = useState(false);
   const [showNameModal, setShowNameModal]   = useState(false);
   const [editName, setEditName]             = useState('');
 
@@ -508,6 +508,22 @@ export default function LiveRoom() {
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
+
+  // Determine entry role for the gate
+  const entryRole = isHost ? 'host' : isCoHost ? 'co-host' : 'audience';
+
+  // Show unified entry gate before room content
+  if (user && !gateComplete) {
+    return (
+      <RoomEntryGate
+        role={entryRole}
+        user={user}
+        onPass={() => setGateComplete(true)}
+        onRoleDowngrade={() => setGateComplete(true)}
+        onExit={() => window.history.back()}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden"
@@ -791,7 +807,6 @@ export default function LiveRoom() {
 
           {/* Hand raise */}
           <button onClick={() => {
-            if (user && getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
             setHandRaised(h => !h);
           }} className="flex flex-col items-center gap-0.5">
             <motion.div
@@ -845,7 +860,6 @@ export default function LiveRoom() {
             <>
               {/* Camera toggle */}
               <button onClick={() => {
-                if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
                 toggleVideo();
               }} className="flex flex-col items-center gap-0.5">
                 <motion.div
@@ -862,7 +876,6 @@ export default function LiveRoom() {
               </button>
               {/* Mic toggle */}
               <button onClick={() => {
-                if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
                 toggleAudio();
               }} className="flex flex-col items-center gap-0.5">
                 <motion.div
@@ -987,16 +1000,7 @@ export default function LiveRoom() {
         isCoHost={isCoHost}
       />
 
-      {/* Age gate — shown when a logged-in user tries to use mic or raise hand without verified age */}
-      {showAgeGate && user && (
-        <AgeGate
-          minAge={18}
-          feature="join the audience"
-          onPass={() => setShowAgeGate(false)}
-          onDeny={() => setShowAgeGate(false)}
-          onSkip={() => setShowAgeGate(false)}
-        />
-      )}
+
 
       {/* ── Display name modal ─────────────────────────────────────────────── */}
       {showNameModal && (

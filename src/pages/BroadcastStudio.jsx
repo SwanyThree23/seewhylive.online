@@ -41,8 +41,7 @@ import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import InviteSheet from '../components/live/InviteSheet';
 import { Hand, UserPlus } from 'lucide-react';
-import AgeGate from '../components/AgeGate';
-import { getStoredAge, getAccessLevel } from '../lib/ageVerification';
+import RoomEntryGate from '../components/RoomEntryGate';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -320,7 +319,7 @@ export default function BroadcastStudio() {
   const [ariaEnabled, setAriaEnabled] = useState(false);
   const [linkCopied, setLinkCopied]     = useState(false);
   const [inviteSheetOpen, setInviteSheetOpen] = useState(false);
-  const [ageGatePassed, setAgeGatePassed] = useState(() => getAccessLevel(getStoredAge()) === 'host');
+  const [gateComplete, setGateComplete] = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [isExclusive, setIsExclusive] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
@@ -660,15 +659,19 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     showLive: true,
   };
 
-  // ── Age gate (must be 21+ to host) ──────────────────────────────────────
-  if (!ageGatePassed) {
+  // ── Entry gate ───────────────────────────────────────────────────────────
+  const studioRole = party?.host_id === user?.id ? 'host'
+    : members.some(m => m.user_id === user?.id && m.role === 'co-host') ? 'co-host'
+    : 'speaker';
+
+  if (user && !gateComplete) {
     return (
-      <AgeGate
-        minAge={21}
-        feature="host a room"
-        onPass={() => setAgeGatePassed(true)}
-        onDeny={() => history.back()}
-        onSkip={() => history.back()}
+      <RoomEntryGate
+        role={studioRole}
+        user={user}
+        onPass={() => setGateComplete(true)}
+        onRoleDowngrade={() => setGateComplete(true)}
+        onExit={() => window.history.back()}
       />
     );
   }
