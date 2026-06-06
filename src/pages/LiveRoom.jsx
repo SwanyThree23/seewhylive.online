@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, Video, VideoOff, MessageCircle, Heart, Hand, Crown,
   ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
-  Users, LayoutGrid, Send, X, UserPlus, LogIn,
+  Users, LayoutGrid, Send, X, UserPlus, LogIn, Trophy,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -362,6 +362,9 @@ export default function LiveRoom() {
   const [gateComplete, setGateComplete] = useState(false);
   const [showNameModal, setShowNameModal]   = useState(false);
   const [editName, setEditName]             = useState('');
+  const [giftLeaderboard, setGiftLeaderboard] = useState([]); // [{userId, name, total, lastGift, combo}]
+  const [giftCombo, setGiftCombo] = useState(null); // {emoji, count, color} - shown as overlay for 2s
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // Announce presence to peers for WebRTC discovery
   useEffect(() => {
@@ -505,6 +508,29 @@ export default function LiveRoom() {
     prevMemberCountRef.current = members.length;
   }, [members.length]);
 
+  function recordGift(senderId, senderName, gift) {
+    setGiftLeaderboard(prev => {
+      const idx = prev.findIndex(r => r.userId === senderId);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = {
+          ...updated[idx],
+          total: updated[idx].total + (gift.price || 0),
+          lastGift: gift.emoji,
+          combo: updated[idx].lastGift === gift.emoji ? (updated[idx].combo || 1) + 1 : 1,
+        };
+        return updated.sort((a, b) => b.total - a.total);
+      }
+      return [...prev, { userId: senderId, name: senderName, total: gift.price || 0, lastGift: gift.emoji, combo: 1 }]
+        .sort((a, b) => b.total - a.total);
+    });
+    // Show combo overlay if gift was sent by me
+    if (senderId === user?.id) {
+      setGiftCombo({ emoji: gift.emoji, color: gift.color || '#D4AF37' });
+      setTimeout(() => setGiftCombo(null), 2000);
+    }
+  }
+
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
@@ -538,6 +564,25 @@ export default function LiveRoom() {
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden"
       style={{ background: BG, fontFamily: 'Barlow Condensed, sans-serif' }}>
+
+      {/* ── Gift combo VFX overlay ────────────────────────────────────────── */}
+      <AnimatePresence>
+        {giftCombo && (
+          <motion.div
+            key="combo"
+            initial={{ scale: 0.5, opacity: 0, y: 20 }}
+            animate={{ scale: 1.2, opacity: 1, y: 0 }}
+            exit={{ scale: 1.5, opacity: 0, y: -30 }}
+            transition={{ duration: 0.4 }}
+            className="fixed top-1/3 left-1/2 -translate-x-1/2 z-[200] pointer-events-none text-center"
+          >
+            <div className="text-6xl">{giftCombo.emoji}</div>
+            <div className="font-black text-xl mt-1" style={{ color: giftCombo.color, fontFamily: 'Barlow Condensed, sans-serif', textShadow: `0 0 20px ${giftCombo.color}` }}>
+              GIFT SENT! ✨
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-3 py-2.5 shrink-0"
@@ -830,6 +875,19 @@ export default function LiveRoom() {
             <span className="text-[11px] text-white/35"> </span>
           </button>
 
+          {/* Gift Leaderboard */}
+          <button onClick={() => setShowLeaderboard(l => !l)} className="flex flex-col items-center gap-0.5">
+            <motion.div
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: showLeaderboard ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: showLeaderboard ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}
+              whileTap={{ scale: 0.82 }}
+              whileHover={{ scale: 1.1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+              <Trophy className="w-4 h-4 transition-all" style={{ color: showLeaderboard ? GOLD : 'rgba(255,255,255,0.6)' }} />
+            </motion.div>
+            <span className="text-[11px] text-white/35">Top</span>
+          </button>
+
           {/* Gift */}
           {party && party?.host_id !== user?.id && (
             <button onClick={() => setGiftOpen(true)} className="flex flex-col items-center gap-0.5">
@@ -994,6 +1052,7 @@ export default function LiveRoom() {
         onGiftSent={(gift, sender) => {
           lastGiftTsRef.current = Date.now();
           setGiftEvent({ id: Date.now(), gift, senderName: sender?.full_name || sender?.email || 'You' });
+          recordGift(sender?.id || user?.id, sender?.full_name || sender?.email || 'You', gift);
           setGiftOpen(false);
         }}
       />
@@ -1011,6 +1070,43 @@ export default function LiveRoom() {
       />
 
 
+
+      {/* ── Gift Leaderboard panel ────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showLeaderboard && (
+          <motion.div
+            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
+            style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.15)', maxHeight: '60vh' }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(212,175,55,0.1)' }}>
+              <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>🏆 Gift Leaders</h3>
+              <button onClick={() => setShowLeaderboard(false)} className="text-white/40 hover:text-white/70">✕</button>
+            </div>
+            <div className="overflow-y-auto" style={{ maxHeight: 'calc(60vh - 64px)' }}>
+              {giftLeaderboard.length === 0 ? (
+                <div className="text-center py-12 text-white/30 text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  No gifts yet — be the first! 🎁
+                </div>
+              ) : giftLeaderboard.slice(0, 10).map((entry, i) => (
+                <div key={entry.userId} className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+                  <span className="w-6 text-center font-black text-sm" style={{ color: i === 0 ? '#D4AF37' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`}
+                  </span>
+                  <span className="text-2xl">{entry.lastGift}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-black text-white text-sm truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{entry.name}</div>
+                    {entry.combo > 1 && <div className="text-[10px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>×{entry.combo} combo!</div>}
+                  </div>
+                  <span className="font-black text-sm" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    ${entry.total.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Display name modal ─────────────────────────────────────────────── */}
       {showNameModal && (

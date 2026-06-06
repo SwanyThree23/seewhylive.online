@@ -45,13 +45,24 @@ const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'F
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
-function FanbaseRoomCard({ room }) {
+function scoreRoom(room, watchedTags) {
+  const viewers = room.viewer_count || 0;
+  const followers = room.follower_count || 0;
+  const engagement = room.like_count || 0;
+  const ageMs = Date.now() - new Date(room.created_date || 0).getTime();
+  const recencyScore = Math.max(0, 1 - ageMs / (4 * 3600 * 1000)); // decay over 4h
+  const tagBoost = (room.tags || []).some(t => watchedTags.includes(t)) ? 0.25 : 0;
+  return followers * 0.3 + viewers * 0.4 + engagement * 0.2 + recencyScore * 100 * 0.1 + tagBoost * 50;
+}
+
+function FanbaseRoomCard({ room, onCardClick }) {
   var tag = room.tags && room.tags[0];
   var tagColor = tag ? (CAT_COLOR[tag] || '#D4AF37') : '#D4AF37';
   var viewers = room.viewer_count || room.participant_count || 0;
   return (
     <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
+      onClick={() => onCardClick && onCardClick(room)}>
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
         <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full"
           style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -93,7 +104,10 @@ export default function DiscoverPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [genre, setGenre] = useState('All');
-  const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
+  const [tab, setTab] = useState('foryou'); // foryou | live | trending | scheduled | communities | creators
+  const [watchedTags] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('swl_watched_tags') || '[]'); } catch { return []; }
+  });
   const debounceRef = useRef(null);
   const queryClient = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
@@ -139,11 +153,30 @@ export default function DiscoverPage() {
     });
   };
 
-  const trending = [...liveRooms]
+  const handleCardClick = (room) => {
+    try {
+      const existing = JSON.parse(localStorage.getItem('swl_watched_tags') || '[]');
+      const roomTags = room.tags || [];
+      const merged = [...new Set([...existing, ...roomTags])].slice(0, 20);
+      localStorage.setItem('swl_watched_tags', JSON.stringify(merged));
+    } catch {}
+    window.location.href = createPageUrl('LiveRoom') + '?roomId=' + room.id;
+  };
+
+  const heroTrending = [...liveRooms]
     .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
     .slice(0, 3);
 
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
+
+  const forYouRooms = [...liveRooms]
+    .sort((a, b) => scoreRoom(b, watchedTags) - scoreRoom(a, watchedTags));
+
+  const trendingRooms = [...liveRooms]
+    .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
+    .slice(0, 20);
+
+  const trendingTotalViewers = trendingRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
 
   return (
     <div className="min-h-screen bg-[#03030A] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
@@ -205,9 +238,9 @@ export default function DiscoverPage() {
           </div>
 
           {/* Hero trending */}
-          {trending.length > 0 && (
+          {heroTrending.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {trending.map((room, i) => (
+              {heroTrending.map((room, i) => (
                 <TrendingCard key={room.id} room={room} rank={i + 1} />
               ))}
             </div>
@@ -235,7 +268,9 @@ export default function DiscoverPage() {
         <div className="overflow-x-auto scrollbar-hide overscroll-contain -mx-6 px-6">
           <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
+              { id: 'foryou', label: 'For You', icon: Zap },
               { id: 'live', label: 'Live', icon: Radio },
+              { id: 'trending', label: 'Trending', icon: TrendingUp },
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
@@ -258,7 +293,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Genre pills */}
-        {(tab === 'live' || tab === 'scheduled') && (
+        {(tab === 'live' || tab === 'scheduled' || tab === 'foryou' || tab === 'trending') && (
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide overscroll-contain -mx-6 px-6 pb-1" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             {GENRES.map(g => (
               <button key={g} onClick={() => setGenre(g)}
@@ -275,6 +310,67 @@ export default function DiscoverPage() {
 
         {/* Content */}
         <AnimatePresence mode="wait">
+          {tab === 'foryou' && (
+            <motion.div key="foryou" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              {watchedTags.length === 0 && (
+                <p className="text-center text-xs mb-4" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  Watch some streams to unlock personalized recommendations
+                </p>
+              )}
+              {watchedTags.length > 0 && (
+                <p className="text-[10px] font-black uppercase tracking-widest mb-4" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  Based on your interests: {watchedTags.slice(0, 3).join(', ')}
+                </p>
+              )}
+              {loadingLive ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#1A1218]" />
+                  ))}
+                </div>
+              ) : forYouRooms.length === 0 ? (
+                <EmptyState icon={Zap} title="No live rooms yet" desc="Check back soon for personalized picks" />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {forYouRooms.map((room, i) => (
+                    <motion.div key={room.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                      <FanbaseRoomCard room={room} onCardClick={handleCardClick} />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {tab === 'trending' && (
+            <motion.div key="trending" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg" aria-hidden="true">🔥</span>
+                <span className="font-black uppercase tracking-wider text-sm" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending Now</span>
+                <span className="text-[11px] font-bold ml-auto" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  {trendingTotalViewers.toLocaleString()} total viewers
+                </span>
+              </div>
+              {loadingLive ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#1A1218]" />
+                  ))}
+                </div>
+              ) : trendingRooms.length === 0 ? (
+                <EmptyState icon={TrendingUp} title="No trending rooms yet" desc="Check back soon" />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {trendingRooms.map((room, i) => (
+                    <motion.div key={room.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                      <FanbaseRoomCard room={room} onCardClick={handleCardClick} />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {tab === 'live' && (
             <motion.div key="live" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               {loadingLive ? (
@@ -304,7 +400,7 @@ export default function DiscoverPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                     >
-                      <FanbaseRoomCard room={room} />
+                      <FanbaseRoomCard room={room} onCardClick={handleCardClick} />
                     </motion.div>
                   ))}
                 </div>

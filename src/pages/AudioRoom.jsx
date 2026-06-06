@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand,
-  ChevronLeft, MoreHorizontal, Share2, Users, Crown, Radio, Plus
+  ChevronLeft, MoreHorizontal, Share2, Users, Crown, Radio, Plus,
+  UserPlus, UserCheck, X
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
@@ -136,9 +137,12 @@ export default function AudioRoom() {
     refetchInterval: 5000,
   });
 
-  const [chatOpen,   setChatOpen]   = useState(false);
-  const [handRaised, setHandRaised] = useState(false);
-  const [loveCount,  setLoveCount]  = useState(0);
+  const qc = useQueryClient();
+  const [chatOpen,        setChatOpen]        = useState(false);
+  const [handRaised,      setHandRaised]      = useState(false);
+  const [loveCount,       setLoveCount]       = useState(0);
+  const [showHandQueue,   setShowHandQueue]   = useState(false);
+  const [inviting,        setInviting]        = useState(null);
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
@@ -157,6 +161,24 @@ export default function AudioRoom() {
   const audienceList = speakers.length > 0 ? audience : members.slice(6);
 
   const isHost  = user?.id && party?.host_id && user.id === party.host_id;
+  const raisedHands = members.filter(m => m.hand_raised && m.role !== 'host' && m.role !== 'cohost' && m.role !== 'speaker');
+
+  const promoteMutation = useMutation({
+    mutationFn: ({ memberId }) => base44.entities.WatchPartyMember.update(memberId, { role: 'speaker', hand_raised: false }),
+    onSuccess: (_, { memberName }) => { qc.invalidateQueries(['audio-room-members', roomId]); toast.success(`${memberName} is now on stage`); setInviting(null); },
+  });
+
+  async function toggleHandRaise() {
+    const next = !handRaised;
+    setHandRaised(next);
+    if (user?.id && roomId) {
+      const myMember = members.find(m => m.user_id === user.id);
+      if (myMember) {
+        await base44.entities.WatchPartyMember.update(myMember.id, { hand_raised: next }).catch(() => {});
+        qc.invalidateQueries(['audio-room-members', roomId]);
+      }
+    }
+  }
   const ytId    = getYouTubeId(party?.video_url || '');
   const hostMember = members.find(m => m.user_id === party?.host_id);
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
@@ -388,14 +410,20 @@ export default function AudioRoom() {
           </button>
 
           <button
-            onClick={() => setHandRaised(h => !h)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+            onClick={isHost ? () => setShowHandQueue(v => !v) : toggleHandRaise}
+            className="relative w-10 h-10 rounded-full flex items-center justify-center transition-all"
             style={{
-              background: handRaised ? `${GOLD}20` : 'rgba(255,255,255,0.07)',
-              border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.12)',
+              background: (isHost ? showHandQueue : handRaised) ? `${GOLD}20` : 'rgba(255,255,255,0.07)',
+              border: (isHost ? showHandQueue : handRaised) ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.12)',
             }}
           >
-            <Hand className="w-4 h-4" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
+            <Hand className="w-4 h-4" style={{ color: (isHost ? showHandQueue : handRaised) ? GOLD : 'rgba(255,255,255,0.6)' }} />
+            {isHost && raisedHands.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
+                style={{ background: CRIMSON, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {raisedHands.length}
+              </span>
+            )}
           </button>
 
           <button
@@ -438,6 +466,88 @@ export default function AudioRoom() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Hand-raise queue panel (host only) ─────────────────── */}
+      <AnimatePresence>
+        {isHost && showHandQueue && (
+          <>
+            <motion.div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.45)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowHandQueue(false)} />
+            <motion.div
+              className="fixed inset-x-0 z-50 rounded-t-3xl overflow-hidden flex flex-col"
+              style={{ bottom: 64, maxHeight: '55vh', background: 'rgba(8,11,24,0.99)', borderTop: `1px solid rgba(212,175,55,0.2)` }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}>
+              <div className="shrink-0 flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(212,175,55,0.1)' }}>
+                <span className="font-black text-base text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  ✋ Speaker Queue {raisedHands.length > 0 && `(${raisedHands.length})`}
+                </span>
+                <button onClick={() => setShowHandQueue(false)} className="text-white/40 hover:text-white/70"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto divide-y" style={{ divideColor: 'rgba(255,255,255,0.04)' }}>
+                {raisedHands.length === 0 ? (
+                  <div className="py-12 text-center text-sm" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    No hands raised yet
+                  </div>
+                ) : raisedHands.map(m => (
+                  <div key={m.id} className="flex items-center gap-3 px-5 py-3">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm text-white shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${avatarColor(m.user_name)}, ${BG2})` }}>
+                      {(m.user_name || '?')[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-white text-sm truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{m.user_name || 'Guest'}</p>
+                      <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Wants to speak</p>
+                    </div>
+                    <button
+                      onClick={() => { setInviting(m); setShowHandQueue(false); }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs"
+                      style={{ background: `${GOLD}20`, border: `1px solid ${GOLD}40`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      <UserPlus className="w-3 h-3" /> Invite
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Invite-to-stage confirmation ────────────────────────── */}
+      <AnimatePresence>
+        {inviting && (
+          <motion.div className="fixed inset-0 z-[60] flex items-end justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.6)' }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setInviting(null)}>
+            <motion.div
+              className="w-full max-w-sm rounded-2xl p-5 space-y-4"
+              style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}
+              initial={{ y: 60 }} animate={{ y: 0 }} exit={{ y: 60 }}
+              onClick={e => e.stopPropagation()}>
+              <p className="font-black text-base text-white text-center" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Invite <span style={{ color: GOLD }}>{inviting.user_name}</span> to the stage?
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setInviting(null)}
+                  className="flex-1 h-11 rounded-xl font-black text-sm"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={() => promoteMutation.mutate({ memberId: inviting.id, memberName: inviting.user_name })}
+                  disabled={promoteMutation.isPending}
+                  className="flex-1 h-11 rounded-xl font-black text-sm flex items-center justify-center gap-2"
+                  style={{ background: GOLD, color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <UserCheck className="w-4 h-4" />
+                  {promoteMutation.isPending ? 'Inviting…' : 'Invite to Stage'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 

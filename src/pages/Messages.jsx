@@ -37,6 +37,10 @@ export default function Messages() {
   var [hoveredMsg, setHoveredMsg] = useState(null);
   var [reactionPickerMsg, setReactionPickerMsg] = useState(null);
   var [msgReactions, setMsgReactions] = useState(new Map());
+  var [isTyping, setIsTyping] = useState(false);
+  var [showTipModal, setShowTipModal] = useState(false);
+  var [tipAmount, setTipAmount] = useState(5);
+  var [tipToast, setTipToast] = useState(false);
   var msgRef = useRef(null);
   var qc = useQueryClient();
 
@@ -48,7 +52,7 @@ export default function Messages() {
     queryKey: ["all-dms", user?.id],
     queryFn: () => base44.entities.DirectMessage.list("-created_date", 200),
     enabled: !!user?.id,
-    refetchInterval: 5000,
+    refetchInterval: 2000,
   });
 
   var { data: onlineRecords = [] } = useQuery({
@@ -117,6 +121,23 @@ export default function Messages() {
     },
   });
 
+  var tipMutation = useMutation({
+    mutationFn: (amount) => base44.entities.DirectMessage.create({
+      sender_id: user?.id, sender_name: user?.full_name || "Me",
+      recipient_id: selectedThread,
+      recipient_name: currentThread?.partnerName || "User",
+      content: `💸 Sent you a $${amount} tip!`,
+      type: "gift_notification",
+      is_whisper: false,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries(["all-dms", user?.id]);
+      setShowTipModal(false);
+      setTipToast(true);
+      setTimeout(() => setTipToast(false), 2500);
+    },
+  });
+
   function handleReaction(msgId, emoji) {
     setMsgReactions(prev => {
       var next = new Map(prev);
@@ -125,6 +146,38 @@ export default function Messages() {
     });
     setReactionPickerMsg(null);
   }
+
+  // Typing indicator: write to localStorage when local user types
+  function handleInputChange(e) {
+    setInput(e.target.value);
+    if (user?.id && selectedThread) {
+      try {
+        localStorage.setItem(
+          "swl_typing_" + user.id,
+          JSON.stringify({ to: selectedThread, ts: Date.now() })
+        );
+      } catch (_) {}
+    }
+  }
+
+  // Typing indicator: poll localStorage for partner typing signal
+  useEffect(() => {
+    if (!selectedThread) { setIsTyping(false); return; }
+    var interval = setInterval(() => {
+      try {
+        var raw = localStorage.getItem("swl_typing_" + selectedThread);
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed.to === user?.id && Date.now() - parsed.ts < 3000) {
+            setIsTyping(true);
+            return;
+          }
+        }
+      } catch (_) {}
+      setIsTyping(false);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [selectedThread, user?.id]);
 
   useEffect(() => {
     if (msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
@@ -312,7 +365,7 @@ export default function Messages() {
             {/* Messages scroll area */}
             <div ref={msgRef} className="flex-1 overflow-y-auto px-4 py-3"
               style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {threadMessages.map(m => {
+              {threadMessages.map((m) => {
                 var isMe = m.sender_id === user?.id;
                 var isWhisper = m.is_whisper;
                 var isGiftNotif = m.type === "gift_notification";
@@ -409,6 +462,40 @@ export default function Messages() {
                   </motion.div>
                 );
               })}
+
+              {/* Typing indicator bubble */}
+              <AnimatePresence>
+                {isTyping && (
+                  <motion.div
+                    key="typing-indicator"
+                    initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.9 }}
+                    transition={{ type: "spring", damping: 22, stiffness: 280 }}
+                    style={{ display: "flex", alignItems: "flex-start" }}>
+                    <div className="px-4 py-2 rounded-2xl"
+                      style={{
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        opacity: 0.5,
+                        display: "flex", gap: 4, alignItems: "center",
+                      }}>
+                      {[0, 1, 2].map(i => (
+                        <motion.span
+                          key={i}
+                          animate={{ y: [0, -4, 0] }}
+                          transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.18, ease: "easeInOut" }}
+                          style={{
+                            display: "inline-block",
+                            width: 6, height: 6, borderRadius: "50%",
+                            background: "#fff",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* ── Input bar ──────────────────────────────────────── */}
@@ -426,9 +513,23 @@ export default function Messages() {
                 }}
                 placeholder="Type a message…"
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={e => { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
               />
+              {selectedThread && (
+                <button
+                  onClick={() => { setTipAmount(5); setShowTipModal(true); }}
+                  className="flex items-center justify-center shrink-0 font-black text-[11px] px-3 h-10 rounded-2xl transition-all hover:brightness-125"
+                  style={{
+                    background: "rgba(212,175,55,0.10)",
+                    border: `1px solid rgba(212,175,55,0.3)`,
+                    color: GOLD,
+                    whiteSpace: "nowrap",
+                    ...T,
+                  }}>
+                  💸 Tip
+                </button>
+              )}
               <button
                 onClick={() => input.trim() && sendMutation.mutate(input.trim())}
                 className="flex items-center justify-center w-10 h-10 rounded-2xl transition-all hover:brightness-110 shrink-0"
@@ -501,6 +602,97 @@ export default function Messages() {
           </motion.div>
         </motion.div>
       )}
+      </AnimatePresence>
+
+      {/* ── Tip modal ── */}
+      <AnimatePresence>
+        {showTipModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={(e) => { if (e.target === e.currentTarget) setShowTipModal(false); }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 50,
+              background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "0 16px",
+            }}>
+            <motion.div
+              initial={{ y: 48, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 48, opacity: 0 }}
+              transition={{ type: "spring", damping: 26, stiffness: 280 }}
+              style={{
+                background: "rgba(13,6,24,0.98)",
+                border: "1px solid rgba(212,175,55,0.2)",
+                borderRadius: 20, padding: 24, width: "100%", maxWidth: 340,
+              }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <span className="font-black text-base text-white" style={T}>Send a Tip 💸</span>
+                <button
+                  onClick={() => setShowTipModal(false)}
+                  style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <X style={{ width: 14, height: 14 }} />
+                </button>
+              </div>
+              <p className="text-[12px] mb-4" style={{ color: "rgba(255,255,255,0.45)", ...T }}>
+                Choose an amount to send to {currentThread?.partnerName}
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+                {[1, 5, 10, 25].map(amt => (
+                  <button
+                    key={amt}
+                    onClick={() => setTipAmount(amt)}
+                    className="font-black text-[13px] px-4 py-2 rounded-2xl transition-all"
+                    style={{
+                      background: tipAmount === amt ? `rgba(212,175,55,0.2)` : "rgba(255,255,255,0.06)",
+                      border: tipAmount === amt ? `1px solid ${GOLD}` : "1px solid rgba(255,255,255,0.1)",
+                      color: tipAmount === amt ? GOLD : "rgba(255,255,255,0.7)",
+                      cursor: "pointer",
+                      ...T,
+                    }}>
+                    ${amt}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => !tipMutation.isPending && tipMutation.mutate(tipAmount)}
+                disabled={tipMutation.isPending}
+                className="w-full font-black uppercase text-[11px] py-2.5 rounded-2xl transition-all"
+                style={{
+                  background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                  color: "#fff", border: "none", cursor: "pointer",
+                  opacity: tipMutation.isPending ? 0.6 : 1,
+                  ...T,
+                }}>
+                {tipMutation.isPending ? "Sending…" : `Send Tip 💸`}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Tip sent toast ── */}
+      <AnimatePresence>
+        {tipToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ type: "spring", damping: 22, stiffness: 300 }}
+            style={{
+              position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)",
+              zIndex: 100,
+              background: "rgba(13,6,24,0.97)",
+              border: `1px solid ${GOLD}55`,
+              borderRadius: 14,
+              padding: "10px 20px",
+              color: GOLD,
+              fontFamily: "Barlow Condensed, sans-serif",
+              fontWeight: 700,
+              fontSize: 13,
+              whiteSpace: "nowrap",
+              boxShadow: `0 0 20px ${GOLD}33`,
+            }}>
+            💸 Tip sent!
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
