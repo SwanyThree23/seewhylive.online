@@ -32,6 +32,23 @@ import CreatorPublicProfile from './pages/CreatorPublicProfile';
 import BroadcastStudio from './pages/BroadcastStudio';
 import LiveRoom from './pages/LiveRoom';
 import Login from './pages/Login';
+import SocialExpo from './pages/SocialExpo';
+import PodcastStudio from './pages/PodcastStudio';
+import MultiPlatform from './pages/MultiPlatform';
+import AIMusic from './pages/AIMusic';
+import SeeWhyLIVEv36 from './pages/SeeWhyLIVEv36';
+import StateVsState from './pages/StateVsState';
+import TributeWall from './pages/TributeWall';
+import INSForge from './pages/INSForge';
+import JoyceAI from './pages/JoyceAI';
+import GuardianAI from './pages/GuardianAI';
+import AuraAI from './pages/AuraAI';
+import SwanyBotPage from './pages/SwanyBotPage';
+import TranscriptionStudio from './pages/TranscriptionStudio';
+import RoomsManager from './pages/RoomsManager';
+import PKBattleArena from './pages/PKBattleArena';
+import EmbedPage from './pages/EmbedPage';
+import StreamShareHub from './pages/StreamShareHub';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -44,69 +61,10 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
-const AppSuspenseFallback = () => (
-  <div style={{ minHeight: '100vh', background: '#080B18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <div style={{ width: 32, height: 32, border: '3px solid rgba(212,175,55,0.2)', borderTopColor: '#D4AF37', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-  </div>
-);
-
-function AppRoutes() {
-  return (
-    <Suspense fallback={<AppSuspenseFallback />}>
-      <Routes>
-        <Route path="/" element={<LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>} />
-        {Object.entries(Pages).map(([path, Page]) => (
-          <Route key={path} path={`/${path}`} element={<LayoutWrapper currentPageName={path}><Page /></LayoutWrapper>} />
-        ))}
-        <Route path="/Greenroom" element={<LayoutWrapper currentPageName="Greenroom"><Greenroom /></LayoutWrapper>} />
-        <Route path="/ControlRoom" element={<LayoutWrapper currentPageName="ControlRoom"><ControlRoom /></LayoutWrapper>} />
-        <Route path="/ModerationDashboard" element={<LayoutWrapper currentPageName="ModerationDashboard"><ModerationDashboard /></LayoutWrapper>} />
-        <Route path="/Dashboard" element={<LayoutWrapper currentPageName="Dashboard"><Dashboard /></LayoutWrapper>} />
-        <Route path="/OverlayBuilder" element={<LayoutWrapper currentPageName="OverlayBuilder"><OverlayBuilder /></LayoutWrapper>} />
-        <Route path="/LoyaltyHub" element={<LayoutWrapper currentPageName="LoyaltyHub"><LoyaltyHub /></LayoutWrapper>} />
-        <Route path="/ChallengesHub" element={<LayoutWrapper currentPageName="ChallengesHub"><ChallengesHub /></LayoutWrapper>} />
-        <Route path="/PollManager" element={<LayoutWrapper currentPageName="PollManager"><PollManager /></LayoutWrapper>} />
-        <Route path="/PlatformShowcase" element={<LayoutWrapper currentPageName="PlatformShowcase"><PlatformShowcase /></LayoutWrapper>} />
-        <Route path="/Monetization" element={<LayoutWrapper currentPageName="Monetization"><Monetization /></LayoutWrapper>} />
-        <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
-        <Route path="/OverlayEditor" element={<LayoutWrapper currentPageName="OverlayEditor"><OverlayEditor /></LayoutWrapper>} />
-        <Route path="/CreatorDashboard" element={<LayoutWrapper currentPageName="CreatorDashboard"><CreatorDashboard /></LayoutWrapper>} />
-        <Route path="/Welcome" element={<Welcome />} />
-        <Route path="/PKBattle" element={<LayoutWrapper currentPageName="PKBattle"><PKBattle /></LayoutWrapper>} />
-        <Route path="/CoverPage" element={<CoverPage />} />
-        <Route path="/BackPage" element={<BackPage />} />
-        <Route path="/SeeWhyLIVEv17" element={<SeeWhyLIVEv17 />} />
-        <Route path="/messages" element={<LayoutWrapper currentPageName="Messages"><Messages /></LayoutWrapper>} />
-        <Route path="/onboarding" element={<OnboardingPage />} />
-        <Route path="/clips" element={<LayoutWrapper currentPageName="ClipsLibrary"><ClipsLibraryPage /></LayoutWrapper>} />
-        <Route path="/newsletter" element={<LayoutWrapper currentPageName="NewsletterHub"><NewsletterHubPage /></LayoutWrapper>} />
-        <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
-        <Route path="/BroadcastStudio" element={<BroadcastStudio />} />
-        <Route path="/LiveRoom" element={<LiveRoom />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </Suspense>
-  );
-}
-
-const GuestBanner = () => {
-  const { exitGuestMode } = useAuth();
-  return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: 'rgba(14,12,9,0.97)', borderBottom: '1px solid rgba(201,168,76,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '7px 16px', fontFamily: 'Barlow Condensed, sans-serif' }}>
-      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>Browsing as guest</span>
-      <button onClick={exitGuestMode}
-        style={{ padding: '4px 14px', borderRadius: 6, border: '1px solid rgba(201,168,76,0.45)', background: 'rgba(201,168,76,0.12)', color: '#C9A84C', fontSize: 11, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
-        SIGN IN
-      </button>
-    </div>
-  );
-};
-
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, guestMode } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
+  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0E0C09' }}>
@@ -116,47 +74,110 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError && !guestMode) {
+  // Handle authentication errors
+  if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     }
-    if (authError.type === 'auth_required') {
-      // Render login inline — preserves current URL for redirect after auth
-      return <Login fromUrl={window.location.pathname + window.location.search} />;
-    }
+    // auth_required: fall through and render the app in browse mode
+    // Individual pages gate their own features via useAuth()
   }
 
-  if (guestMode) {
-    return (
-      <>
-        <GuestBanner />
-        <div style={{ paddingTop: 36 }}>
-          <AppRoutes />
-        </div>
-      </>
-    );
-  }
-
-  return <AppRoutes />;
+  // Render the main app
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#080B18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid rgba(212,175,55,0.2)', borderTopColor: '#D4AF37', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    }>
+    <Routes>
+      <Route path="/" element={
+        <LayoutWrapper currentPageName={mainPageKey}>
+          <MainPage />
+        </LayoutWrapper>
+      } />
+      {Object.entries(Pages).map(([path, Page]) => (
+        <Route
+          key={path}
+          path={`/${path}`}
+          element={
+            <LayoutWrapper currentPageName={path}>
+              <Page />
+            </LayoutWrapper>
+          }
+        />
+      ))}
+      <Route path="/Greenroom" element={<LayoutWrapper currentPageName="Greenroom"><Greenroom /></LayoutWrapper>} />
+      <Route path="/ControlRoom" element={<LayoutWrapper currentPageName="ControlRoom"><ControlRoom /></LayoutWrapper>} />
+      <Route path="/ModerationDashboard" element={<LayoutWrapper currentPageName="ModerationDashboard"><ModerationDashboard /></LayoutWrapper>} />
+      <Route path="/Dashboard" element={<LayoutWrapper currentPageName="Dashboard"><Dashboard /></LayoutWrapper>} />
+      <Route path="/OverlayBuilder" element={<LayoutWrapper currentPageName="OverlayBuilder"><OverlayBuilder /></LayoutWrapper>} />
+      <Route path="/LoyaltyHub" element={<LayoutWrapper currentPageName="LoyaltyHub"><LoyaltyHub /></LayoutWrapper>} />
+      <Route path="/ChallengesHub" element={<LayoutWrapper currentPageName="ChallengesHub"><ChallengesHub /></LayoutWrapper>} />
+      <Route path="/PollManager" element={<LayoutWrapper currentPageName="PollManager"><PollManager /></LayoutWrapper>} />
+      <Route path="/PlatformShowcase" element={<LayoutWrapper currentPageName="PlatformShowcase"><PlatformShowcase /></LayoutWrapper>} />
+      <Route path="/Monetization" element={<LayoutWrapper currentPageName="Monetization"><Monetization /></LayoutWrapper>} />
+      <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
+      <Route path="/OverlayEditor" element={<LayoutWrapper currentPageName="OverlayEditor"><OverlayEditor /></LayoutWrapper>} />
+      <Route path="/CreatorDashboard" element={<LayoutWrapper currentPageName="CreatorDashboard"><CreatorDashboard /></LayoutWrapper>} />
+      <Route path="/Welcome" element={<Welcome />} />
+      <Route path="/PKBattle" element={<LayoutWrapper currentPageName="PKBattle"><PKBattle /></LayoutWrapper>} />
+      <Route path="/CoverPage" element={<CoverPage />} />
+      <Route path="/BackPage" element={<BackPage />} />
+      <Route path="/SeeWhyLIVEv17" element={<SeeWhyLIVEv17 />} />
+      <Route path="/messages" element={<LayoutWrapper currentPageName="Messages"><Messages /></LayoutWrapper>} />
+      <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route path="/clips" element={<LayoutWrapper currentPageName="ClipsLibrary"><ClipsLibraryPage /></LayoutWrapper>} />
+      <Route path="/newsletter" element={<LayoutWrapper currentPageName="NewsletterHub"><NewsletterHubPage /></LayoutWrapper>} />
+      <Route path="/CreatorPublicProfile" element={<LayoutWrapper currentPageName="CreatorPublicProfile"><CreatorPublicProfile /></LayoutWrapper>} />
+      <Route path="/BroadcastStudio" element={<BroadcastStudio />} />
+      <Route path="/LiveRoom" element={<LiveRoom />} />
+      <Route path="/SocialExpo" element={<LayoutWrapper currentPageName="SocialExpo"><SocialExpo /></LayoutWrapper>} />
+      <Route path="/PodcastStudio" element={<LayoutWrapper currentPageName="PodcastStudio"><PodcastStudio /></LayoutWrapper>} />
+      <Route path="/MultiPlatform" element={<LayoutWrapper currentPageName="MultiPlatform"><MultiPlatform /></LayoutWrapper>} />
+      <Route path="/AIMusic" element={<LayoutWrapper currentPageName="AIMusic"><AIMusic /></LayoutWrapper>} />
+      <Route path="/StateVsState" element={<LayoutWrapper currentPageName="StateVsState"><StateVsState /></LayoutWrapper>} />
+      <Route path="/TributeWall" element={<LayoutWrapper currentPageName="TributeWall"><TributeWall /></LayoutWrapper>} />
+      <Route path="/INSForge" element={<LayoutWrapper currentPageName="INSForge"><INSForge /></LayoutWrapper>} />
+      <Route path="/JoyceAI" element={<LayoutWrapper currentPageName="JoyceAI"><JoyceAI /></LayoutWrapper>} />
+      <Route path="/GuardianAI" element={<LayoutWrapper currentPageName="GuardianAI"><GuardianAI /></LayoutWrapper>} />
+      <Route path="/AuraAI" element={<LayoutWrapper currentPageName="AuraAI"><AuraAI /></LayoutWrapper>} />
+      <Route path="/SwanyBotPage" element={<LayoutWrapper currentPageName="SwanyBotPage"><SwanyBotPage /></LayoutWrapper>} />
+      <Route path="/TranscriptionStudio" element={<LayoutWrapper currentPageName="TranscriptionStudio"><TranscriptionStudio /></LayoutWrapper>} />
+      <Route path="/RoomsManager" element={<LayoutWrapper currentPageName="RoomsManager"><RoomsManager /></LayoutWrapper>} />
+      <Route path="/PKBattleArena" element={<LayoutWrapper currentPageName="PKBattleArena"><PKBattleArena /></LayoutWrapper>} />
+      <Route path="/StreamShareHub" element={<LayoutWrapper currentPageName="StreamShareHub"><StreamShareHub /></LayoutWrapper>} />
+      <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+    </Suspense>
+  );
 };
 
+
 function App() {
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <BackgroundProvider>
-          <Router>
-            <NavigationTracker />
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/*" element={<AuthenticatedApp />} />
-            </Routes>
-          </Router>
-          <Toaster />
+        <Router>
+          <NavigationTracker />
+          <Routes>
+            {/* Public routes — no auth required */}
+            <Route path="/embed" element={<EmbedPage />} />
+            <Route path="/watch" element={<LayoutWrapper currentPageName="Watch"><StreamShareHub /></LayoutWrapper>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/*" element={<AuthenticatedApp />} />
+          </Routes>
+        </Router>
+        <Toaster />
         </BackgroundProvider>
       </QueryClientProvider>
     </AuthProvider>
-  );
+  )
 }
 
-export default App;
+export default App
