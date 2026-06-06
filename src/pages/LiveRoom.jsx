@@ -317,6 +317,32 @@ export default function LiveRoom() {
   const [giftEvent, setGiftEvent]   = useState(null);
   const lastGiftTsRef               = useRef(0);
 
+  // Apply pending invite role when user logs in and arrives at the room
+  useEffect(() => {
+    if (!user?.id || !roomId) return;
+    const pendingRole = joinAs || sessionStorage.getItem('swl_pending_role');
+    const pendingRoom = sessionStorage.getItem('swl_pending_room');
+    if (!pendingRole) return;
+    if (pendingRoom && pendingRoom !== roomId) return; // different room
+    // Clear immediately so we don't re-apply on re-renders
+    sessionStorage.removeItem('swl_pending_role');
+    sessionStorage.removeItem('swl_pending_room');
+    // Find existing membership and update role
+    (async () => {
+      try {
+        const existing = await base44.entities.WatchPartyMember.filter({ party_id: roomId, user_id: user.id });
+        if (existing && existing.length > 0) {
+          const m = existing[0];
+          if (m.role === 'audience' || !m.role) {
+            await base44.entities.WatchPartyMember.update(m.id, { role: pendingRole });
+          }
+        } else {
+          await base44.entities.WatchPartyMember.create({ party_id: roomId, user_id: user.id, user_name: user.full_name || user.email, role: pendingRole, is_active: true });
+        }
+      } catch {}
+    })();
+  }, [user?.id, roomId]);
+
   // Sync stage when real data arrives
   useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Copy, Share2, UserCheck, Users, Eye, Check, Link } from 'lucide-react';
+import { X, Copy, Share2, UserCheck, Users, Eye, Check, Link, KeyRound, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -13,9 +14,11 @@ function genToken() {
 }
 
 export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost, isCoHost }) {
-  const [copiedKey, setCopiedKey] = useState(null);
-  const [coHostToken]  = useState(genToken);
-  const [guestToken]   = useState(genToken);
+  const [copiedKey, setCopiedKey]           = useState(null);
+  const [coHostToken]                       = useState(genToken);
+  const [guestToken]                        = useState(genToken);
+  const [regCode, setRegCode]               = useState('');
+  const [generatingCode, setGeneratingCode] = useState(false);
 
   const base    = typeof window !== 'undefined' ? window.location.origin : 'https://seewhylive.online';
   const roomUrl = `${base}/LiveRoom?id=${roomId}`;
@@ -49,6 +52,28 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
       badge:      'CO-HOST',
     }] : []),
   ];
+
+  const generateRegCode = async () => {
+    setGeneratingCode(true);
+    const code = genToken();
+    try {
+      await base44.entities.InviteCode.create({ code, used: false, created_by_room: roomId || '' });
+    } catch {
+      // entity may not exist yet — use locally generated code
+    }
+    setRegCode(code);
+    setGeneratingCode(false);
+  };
+
+  const copyRegCode = async () => {
+    const loginUrl = `${base}/login?invite=${regCode}`;
+    try {
+      await navigator.clipboard.writeText(loginUrl);
+      toast.success('Registration invite link copied!');
+    } catch {
+      toast.error('Copy failed');
+    }
+  };
 
   const copyLink = async (type) => {
     try {
@@ -177,13 +202,43 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
                 </div>
               ))}
 
+              {/* Registration invite code (host only) */}
+              {isHost && (
+                <div style={{ background: 'rgba(212,175,55,0.04)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '13px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <KeyRound style={{ width: 14, height: 14, color: GOLD }} />
+                    <span style={{ ...T, color: GOLD, fontSize: 13, fontWeight: 900 }}>New User Invite Code</span>
+                    <span style={{ ...T, fontSize: 9, fontWeight: 900, color: CRIMSON, background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}30`, borderRadius: 4, padding: '1px 5px' }}>HOST ONLY</span>
+                  </div>
+                  <p style={{ ...T, color: 'rgba(255,255,255,0.35)', fontSize: 11, margin: '0 0 10px' }}>
+                    One-time code for someone who doesn't have a SeeWhy LIVE account yet
+                  </p>
+                  {!regCode ? (
+                    <button onClick={generateRegCode} disabled={generatingCode}
+                      style={{ width: '100%', height: 36, borderRadius: 8, border: `1px solid rgba(212,175,55,0.3)`, background: `rgba(212,175,55,0.08)`, color: GOLD, cursor: generatingCode ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...T, fontSize: 12, fontWeight: 900 }}>
+                      <KeyRound style={{ width: 12, height: 12 }} />
+                      {generatingCode ? 'Generating…' : 'Generate Invite Code'}
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 12px', textAlign: 'center', ...T, color: GOLD, fontSize: 16, fontWeight: 900, letterSpacing: '0.18em' }}>
+                        {regCode}
+                      </div>
+                      <button onClick={copyRegCode} title="Copy invite link"
+                        style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${GOLD}35`, background: `${GOLD}0E`, color: GOLD, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Copy style={{ width: 13, height: 13 }} />
+                      </button>
+                      <button onClick={() => setRegCode('')} title="Generate new code"
+                        style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <RefreshCw style={{ width: 12, height: 12 }} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Public note */}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                marginTop: 4, padding: '10px 0',
-                background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)',
-                borderRadius: 10,
-              }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 4, padding: '10px 0', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 10 }}>
                 <Eye style={{ width: 12, height: 12, color: '#22c55e' }} />
                 <span style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
                   Anyone can watch with the Viewer link — no sign-in required

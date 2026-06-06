@@ -463,6 +463,13 @@ export default function Login({ fromUrl: propFromUrl }) {
           Must be 18+ to view · 21+ to host.
         </p>
       </div>
+
+      {/* Browse without account */}
+      <div style={{ marginTop: 20, textAlign: 'center' }}>
+        <a href="/" style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.3)', textDecoration: 'none' }}>
+          Browse without signing in →
+        </a>
+      </div>
     </div>
   );
 }
