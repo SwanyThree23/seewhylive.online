@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv, Trash2
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -339,6 +339,19 @@ export default function Layout({ children, currentPageName }) {
               {/* Group 3: Account */}
               <DrawerSection label="Account" items={DRAWER_ACCOUNT} />
 
+              {/* Delete Account — required by App Store / Google Play guidelines */}
+              {user && (
+                <div className="px-4 pb-3 pt-2" style={{ borderTop: '1px solid rgba(239,68,68,0.12)' }}>
+                  <Link to={createPageUrl('Settings') + '?action=delete'} onClick={function() { setShowMobileMenu(false); }}>
+                    <div className="flex items-center gap-2.5 px-3 rounded-xl"
+                      style={{ height: 44, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', userSelect: 'none', WebkitUserSelect: 'none' }}>
+                      <Trash2 className="w-4 h-4 shrink-0" style={{ color: 'rgba(239,68,68,0.7)' }} />
+                      <span className="text-sm font-black" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(239,68,68,0.7)', letterSpacing: '0.04em' }}>Delete Account</span>
+                    </div>
+                  </Link>
+                </div>
+              )}
+
               {/* Group 4: Admin (isAdmin only) */}
               {isAdmin && (
                 <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,140,0,0.12)' }}>
@@ -409,6 +422,8 @@ export default function Layout({ children, currentPageName }) {
 
               function handleTabPress(e) {
                 e.preventDefault();
+                // Haptic feedback — 10 ms pulse for tab confirmation
+                if (navigator.vibrate) navigator.vibrate(10);
                 if (active) {
                   // Tap active tab → scroll to root, clear this tab's saved sub-page
                   window.scrollTo({ top: 0, behavior: 'smooth' });

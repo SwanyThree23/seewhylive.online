@@ -138,6 +138,27 @@
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+  /* ── Mobile accessibility ─────────────────────────────────────────────────── */
+  /* Prevent iOS auto-zoom on input focus — requires ≥16 px on touch devices    */
+  @media (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea {
+      font-size: 16px !important;
+      min-height: 44px;
+    }
+    select { font-size: 16px !important; }
+    label  { font-size: 14px; }
+  }
+
+  /* Contain overscroll in nested scrollable panes — prevents scroll leaking    */
+  /* to the main window on iOS bounce and Android overscroll.                   */
+  .overflow-y-auto, .overflow-y-scroll, .overflow-auto, .overflow-scroll {
+    overscroll-behavior: contain;
+  }
+
+  /* Reusable minimum tap-target utility (Apple HIG / Material: 44 × 44 px)    */
+  .tap-44 { min-height: 44px; display: flex; align-items: center; }
+
   /* Safe-area inset helpers (notch / home bar support) */
   .pt-safe  { padding-top:    env(safe-area-inset-top, 0px); }
   .pb-safe  { padding-bottom: env(safe-area-inset-bottom, 0px); }

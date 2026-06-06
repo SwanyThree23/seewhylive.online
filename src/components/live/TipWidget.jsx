@@ -34,6 +34,9 @@ const PAYMENT_METHODS = [
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑', '🙌', '😍', '💸', '✨'];
 
+// Haptic: single short pulse — no-ops on unsupported devices
+function haptic(ms) { if (navigator.vibrate) navigator.vibrate(ms || 10); };
+
 const CONFETTI_COLORS = [G, CRIMSON, PINK, '#D4AF37', '#a78bfa', '#ff6b35', '#22c55e'];
 
 function Particle({ x, color, delay }) {
@@ -353,7 +356,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 320 }}
               className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl flex flex-col"
-              style={{ background: BG, border: `1px solid ${G}20`, maxHeight: '92vh', overflowY: 'auto' }}
+              style={{ background: BG, border: `1px solid ${G}20`, maxHeight: '92vh', overflowY: 'auto', overscrollBehavior: 'contain' }}
             >
               {/* Glow bar */}
               <div style={{
@@ -417,7 +420,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                 {/* Gift Rain Button */}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => doRain.mutate()}
+                  onClick={() => { haptic(); doRain.mutate(); }}
                   disabled={doRain.isPending}
                   className="w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs tracking-widest transition-all disabled:opacity-40"
                   style={{
@@ -442,7 +445,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                       return (
                         <motion.button
                           key={tier.amount} whileTap={{ scale: 0.88 }}
-                          onClick={() => { setSelected(tier.amount); setUseCustom(false); }}
+                          onClick={() => { haptic(); setSelected(tier.amount); setUseCustom(false); }}
                           className="flex flex-col items-center py-2.5 rounded-xl transition-all"
                           style={{
                             background: active ? `${tier.color}18` : 'rgba(255,255,255,0.04)',
@@ -466,7 +469,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                       return (
                         <motion.button
                           key={tier.amount} whileTap={{ scale: 0.88 }}
-                          onClick={() => { setSelected(tier.amount); setUseCustom(false); }}
+                          onClick={() => { haptic(); setSelected(tier.amount); setUseCustom(false); }}
                           className="flex flex-col items-center py-2.5 rounded-xl transition-all"
                           style={{
                             background: active ? `${tier.color}18` : 'rgba(255,255,255,0.04)',
@@ -661,7 +664,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                 {/* Send Button */}
                 <motion.button
                   disabled={!validAmount || doSendTip.isPending}
-                  onClick={() => doSendTip.mutate(rawAmount)}
+                  onClick={() => { haptic(20); doSendTip.mutate(rawAmount); }}
                   whileTap={validAmount ? { scale: 0.97 } : {}}
                   className="w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all disabled:opacity-40"
                   style={{
