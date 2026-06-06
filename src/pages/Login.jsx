@@ -332,6 +332,13 @@ export default function Login({ fromUrl: propFromUrl }) {
           By continuing you agree to our terms of service and privacy policy.
         </p>
       </div>
+
+      {/* Browse without account */}
+      <div style={{ marginTop: 20, textAlign: 'center' }}>
+        <a href="/" style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.3)', textDecoration: 'none' }}>
+          Browse without signing in →
+        </a>
+      </div>
     </div>
   );
 }
