@@ -14,6 +14,8 @@ import ShareModal from '../components/live/ShareModal';
 import InviteSheet from '../components/live/InviteSheet';
 import { buildVdoViewUrl } from '../components/live/VdoNinjaGuestLink';
 import DirectPayments from '../components/live/DirectPayments';
+import AgeGate from '../components/AgeGate';
+import { getStoredAge, getAccessLevel } from '../lib/ageVerification';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
@@ -292,6 +294,7 @@ export default function LiveRoom() {
   const stage = roomId && members.length > 0
     ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
+        userId:   m.user_id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
@@ -325,6 +328,7 @@ export default function LiveRoom() {
   const [giftOpen, setGiftOpen]     = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
   const lastGiftTsRef               = useRef(0);
+  const [showAgeGate, setShowAgeGate] = useState(false);
 
   // Announce presence to peers for WebRTC discovery
   useEffect(() => {
@@ -342,6 +346,11 @@ export default function LiveRoom() {
     // Clear immediately so we don't re-apply on re-renders
     sessionStorage.removeItem('swl_pending_role');
     sessionStorage.removeItem('swl_pending_room');
+    // Enforce age requirements for invited roles
+    const ageLevel = getAccessLevel(getStoredAge());
+    let effectiveRole = pendingRole;
+    if (pendingRole === 'co-host' && ageLevel !== 'host') effectiveRole = 'audience';
+    else if (pendingRole === 'guest' && (ageLevel === 'blocked' || ageLevel === null)) effectiveRole = 'audience';
     // Find existing membership and update role
     (async () => {
       try {
@@ -349,10 +358,10 @@ export default function LiveRoom() {
         if (existing && existing.length > 0) {
           const m = existing[0];
           if (m.role === 'audience' || !m.role) {
-            await base44.entities.WatchPartyMember.update(m.id, { role: pendingRole });
+            await base44.entities.WatchPartyMember.update(m.id, { role: effectiveRole });
           }
         } else {
-          await base44.entities.WatchPartyMember.create({ party_id: roomId, user_id: user.id, user_name: user.full_name || user.email, role: pendingRole, is_active: true });
+          await base44.entities.WatchPartyMember.create({ party_id: roomId, user_id: user.id, user_name: user.full_name || user.email, role: effectiveRole, is_active: true });
         }
       } catch {}
     })();
@@ -675,7 +684,10 @@ export default function LiveRoom() {
           </button>
 
           {/* Hand raise */}
-          <button onClick={() => setHandRaised(h => !h)} className="flex flex-col items-center gap-0.5">
+          <button onClick={() => {
+            if (user && getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
+            setHandRaised(h => !h);
+          }} className="flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
               style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
               <Hand className="w-4 h-4 transition-all" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
@@ -717,15 +729,34 @@ export default function LiveRoom() {
 
           {/* Mic / Sign-in gate */}
           {user ? (
-            <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
-                {!audioEnabled
-                  ? <MicOff className="w-4 h-4 text-red-400" />
-                  : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
-              </div>
-              <span className="text-[11px] text-white/35"> </span>
-            </button>
+            <>
+              {/* Camera toggle */}
+              <button onClick={() => {
+                if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
+                toggleVideo();
+              }} className="flex flex-col items-center gap-0.5">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                  style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                  {!videoEnabled
+                    ? <VideoOff className="w-4 h-4 text-red-400" />
+                    : <Video className="w-4 h-4" style={{ color: GOLD }} />}
+                </div>
+                <span className="text-[11px] text-white/35">Cam</span>
+              </button>
+              {/* Mic toggle */}
+              <button onClick={() => {
+                if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
+                toggleAudio();
+              }} className="flex flex-col items-center gap-0.5">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                  style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                  {!audioEnabled
+                    ? <MicOff className="w-4 h-4 text-red-400" />
+                    : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
+                </div>
+                <span className="text-[11px] text-white/35"> </span>
+              </button>
+            </>
           ) : (
             <a href={`/login?from_url=${encodeURIComponent(window.location.href)}`}
               className="flex flex-col items-center gap-0.5" style={{ textDecoration: 'none' }}>
@@ -813,6 +844,17 @@ export default function LiveRoom() {
         isHost={isHost}
         isCoHost={isCoHost}
       />
+
+      {/* Age gate — shown when a logged-in user tries to use mic or raise hand without verified age */}
+      {showAgeGate && user && (
+        <AgeGate
+          minAge={18}
+          feature="join the audience"
+          onPass={() => setShowAgeGate(false)}
+          onDeny={() => setShowAgeGate(false)}
+          onSkip={() => setShowAgeGate(false)}
+        />
+      )}
 
       {showExclusiveGate && (
         <div style={{
