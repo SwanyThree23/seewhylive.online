@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { Radio, Mic, Eye, CheckCircle, ShieldCheck } from 'lucide-react';
@@ -65,18 +66,26 @@ function Btn({ children, loading, onClick, type, variant }) {
     color: 'rgba(255,255,255,0.35)', height: 'auto', padding: '6px 0',
   });
   return (
-    <button type={type || 'button'} onClick={onClick} disabled={!!loading}
-      style={base}>
+    <motion.button type={type || 'button'} onClick={onClick} disabled={!!loading}
+      style={base}
+      whileTap={{ scale: loading ? 1 : 0.97 }}
+      whileHover={{ scale: loading ? 1 : 1.015 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
       {children}
-    </button>
+    </motion.button>
   );
 }
 
 function ErrBox({ msg }) {
   return (
-    <div style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.28)', color: '#FF8070', fontSize: 12, ...T }}>
+    <motion.div
+      initial={{ opacity: 0, x: -6 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.28)', color: '#FF8070', fontSize: 12, ...T }}>
       {msg}
-    </div>
+    </motion.div>
   );
 }
 
@@ -234,22 +243,26 @@ export default function Login({ fromUrl: propFromUrl }) {
     <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
 
       {/* Brand */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-        <Radio style={{ width: 28, height: 28, color: GOLD }} />
+      <motion.div initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.4 }} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+        <motion.div animate={{ rotate: [0, 8, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', repeatDelay: 4 }}>
+          <Radio style={{ width: 28, height: 28, color: GOLD }} />
+        </motion.div>
         <span style={{ fontSize: 28, fontWeight: 900, color: GOLD, letterSpacing: '0.04em', ...T }}>SeeWhy LIVE</span>
-      </div>
+      </motion.div>
 
-      <div style={{ width: '100%', maxWidth: 400, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.18)', padding: '26px 26px 20px' }}>
+      <motion.div initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1, type: 'spring', damping: 22, stiffness: 200 }} style={{ width: '100%', maxWidth: 400, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.18)', padding: '26px 26px 20px' }}>
+
+        <AnimatePresence mode="wait">
 
         {/* ══════════ WELCOME — choose your path ══════════ */}
         {phase === 'welcome' && (
-          <>
+          <motion.div key="welcome" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.18 }}>
             <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.38)', textAlign: 'center', marginBottom: 20 }}>
               How would you like to join?
             </p>
 
             {/* Viewer — free, no code */}
-            <button onClick={() => go('viewer')}
+            <motion.button whileHover={{ x: 5 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }} onClick={() => go('viewer')}
               style={{ width: '100%', marginBottom: 10, padding: '14px 16px', borderRadius: 12, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.22)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
               <Eye style={{ width: 22, height: 22, color: GOLD, flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
@@ -259,10 +272,10 @@ export default function Login({ fromUrl: propFromUrl }) {
                 </div>
                 <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>Free account — no invitation needed</div>
               </div>
-            </button>
+            </motion.button>
 
             {/* Host / Co-host — invite only */}
-            <button onClick={() => go('invite')}
+            <motion.button whileHover={{ x: 5 }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }} onClick={() => go('invite')}
               style={{ width: '100%', marginBottom: 18, padding: '14px 16px', borderRadius: 12, background: 'rgba(128,0,32,0.12)', border: '1px solid rgba(128,0,32,0.45)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
               <Mic style={{ width: 22, height: 22, color: '#C0392B', flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
@@ -272,24 +285,24 @@ export default function Login({ fromUrl: propFromUrl }) {
                 </div>
                 <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>Invitation only — enter your invite code</div>
               </div>
-            </button>
+            </motion.button>
 
             <Divider label="already a member?" />
 
             {/* Existing member sign-in */}
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button onClick={handleGoogle}
+              <motion.button whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.01 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} onClick={handleGoogle}
                 style={{ width: '100%', height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 10, background: '#fff', border: 'none', color: '#333', fontSize: 14, fontWeight: 700, cursor: 'pointer', ...T }}>
                 <GoogleIcon /> Sign in with Google
-              </button>
+              </motion.button>
               <Btn variant="outline" onClick={() => go('signin')}>Sign In with Email</Btn>
             </div>
-          </>
+          </motion.div>
         )}
 
         {/* ══════════ SIGN IN (email → password) ══════════ */}
         {phase === 'signin' && (
-          <>
+          <motion.div key="signin" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.18 }}>
             <button onClick={() => go('welcome')}
               style={{ ...T, background: 'none', border: 'none', color: 'rgba(255,255,255,0.38)', fontSize: 12, cursor: 'pointer', marginBottom: 18, padding: 0 }}>
               ← Back
@@ -310,12 +323,12 @@ export default function Login({ fromUrl: propFromUrl }) {
                 Sign in with Google instead
               </button>
             </div>
-          </>
+          </motion.div>
         )}
 
         {/* ══════════ PASSWORD ══════════ */}
         {phase === 'password' && (
-          <>
+          <motion.div key="password" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.18 }}>
             <button onClick={() => go('signin')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '5px 12px 5px 8px', cursor: 'pointer', marginBottom: 18, ...T, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
               ← {email}
@@ -335,12 +348,12 @@ export default function Login({ fromUrl: propFromUrl }) {
               }
               <Btn type="submit" loading={loading}>{loading ? 'Signing in…' : 'Sign In'}</Btn>
             </form>
-          </>
+          </motion.div>
         )}
 
         {/* ══════════ VIEWER REGISTRATION (free) ══════════ */}
         {phase === 'viewer' && (
-          <>
+          <motion.div key="viewer" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.18 }}>
             <button onClick={() => go('welcome')}
               style={{ ...T, background: 'none', border: 'none', color: 'rgba(255,255,255,0.38)', fontSize: 12, cursor: 'pointer', marginBottom: 18, padding: 0 }}>
               ← Back
@@ -355,10 +368,10 @@ export default function Login({ fromUrl: propFromUrl }) {
             </p>
 
             <div style={{ marginBottom: 14 }}>
-              <button onClick={handleGoogle}
+              <motion.button whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.01 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} onClick={handleGoogle}
                 style={{ width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 10, background: '#fff', border: 'none', color: '#333', fontSize: 14, fontWeight: 700, cursor: 'pointer', ...T }}>
                 <GoogleIcon /> Continue with Google
-              </button>
+              </motion.button>
             </div>
 
             <Divider label="or email" />
@@ -388,12 +401,12 @@ export default function Login({ fromUrl: propFromUrl }) {
               {error && <ErrBox msg={error} />}
               <Btn type="submit" loading={loading}>{loading ? 'Creating account…' : 'Create Free Account'}</Btn>
             </form>
-          </>
+          </motion.div>
         )}
 
         {/* ══════════ INVITE CODE (host / co-host) ══════════ */}
         {phase === 'invite' && (
-          <>
+          <motion.div key="invite" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.18 }}>
             <button onClick={() => go('welcome')}
               style={{ ...T, background: 'none', border: 'none', color: 'rgba(255,255,255,0.38)', fontSize: 12, cursor: 'pointer', marginBottom: 18, padding: 0 }}>
               ← Back
@@ -427,19 +440,19 @@ export default function Login({ fromUrl: propFromUrl }) {
                 Request access →
               </a>
             </p>
-          </>
+          </motion.div>
         )}
 
         {/* ══════════ HOST / CO-HOST REGISTRATION ══════════ */}
         {phase === 'register' && (
-          <>
+          <motion.div key="register" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.18 }}>
             <button onClick={() => go('invite')}
               style={{ ...T, background: 'none', border: 'none', color: 'rgba(255,255,255,0.38)', fontSize: 12, cursor: 'pointer', marginBottom: 18, padding: 0 }}>
               ← Back
             </button>
 
             {/* Verified role badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16, padding: '7px 12px', borderRadius: 8, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.28)' }}>
+            <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 18 }} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16, padding: '7px 12px', borderRadius: 8, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.28)' }}>
               <CheckCircle style={{ width: 13, height: 13, color: GREEN, flexShrink: 0 }} />
               <span style={{ ...T, fontSize: 11, color: GREEN, fontWeight: 900, letterSpacing: '0.08em' }}>
                 INVITE VERIFIED —
@@ -447,7 +460,7 @@ export default function Login({ fromUrl: propFromUrl }) {
               <span style={{ ...T, fontSize: 11, fontWeight: 900, color: roleColor, letterSpacing: '0.06em' }}>
                 {roleLabel.toUpperCase()} ACCESS
               </span>
-            </div>
+            </motion.div>
 
             <h2 style={{ ...T, fontSize: 17, fontWeight: 900, color: '#fff', margin: '0 0 16px' }}>Create your account</h2>
 
@@ -476,14 +489,16 @@ export default function Login({ fromUrl: propFromUrl }) {
               {error && <ErrBox msg={error} />}
               <Btn type="submit" loading={loading}>{loading ? 'Creating account…' : `Join as ${roleLabel}`}</Btn>
             </form>
-          </>
+          </motion.div>
         )}
+
+        </AnimatePresence>
 
         <p style={{ marginTop: 18, textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.13)', ...T }}>
           By continuing you agree to our terms of service and privacy policy.
           Must be 18+ to view · 21+ to host.
         </p>
-      </div>
+      </motion.div>
 
       {/* Browse without account */}
       <div style={{ marginTop: 20, textAlign: 'center' }}>

@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv, ShieldX
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv, ShieldX, Trash2
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -358,8 +358,8 @@ export default function Layout({ children, currentPageName }) {
               {/* Group 3: Account */}
               <DrawerSection label="Account" items={DRAWER_ACCOUNT} />
 
-              {/* Delete Account — danger zone */}
-              <div className="px-3 pb-3 pt-2">
+              {/* Delete Account — danger zone / App Store required */}
+              <div className="px-3 pb-3 pt-2" style={{ borderTop: '1px solid rgba(239,68,68,0.1)' }}>
                 <button
                   onClick={function() { setShowMobileMenu(false); setTimeout(function() { setShowDeleteModal(true); }, 260); }}
                   className="tap-target w-full flex items-center gap-3 px-3 rounded-xl"

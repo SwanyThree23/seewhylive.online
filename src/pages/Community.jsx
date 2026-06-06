@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Users, MessageSquare } from 'lucide-react';
+import DiscussionFeed from '@/components/community/DiscussionFeed';
+import SpotlightSection from '@/components/community/SpotlightSection';
+import ReferralProgram from '@/components/community/ReferralProgram';
+
+const G = '#D4AF37';
+const BG = '#080B18';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -28,17 +35,10 @@ function usePullToRefresh(onRefresh) {
   }
   return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
 }
-import { Users, MessageSquare } from 'lucide-react';
-import DiscussionFeed from '@/components/community/DiscussionFeed';
-import SpotlightSection from '@/components/community/SpotlightSection';
-import ReferralProgram from '@/components/community/ReferralProgram';
-
-const G = '#D4AF37';
-const BG = '#080B18';
 
 export default function CommunityPage() {
   const qc = useQueryClient();
-  const { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {
+  const { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async () => {
     await qc.invalidateQueries();
   });
 
@@ -58,7 +58,9 @@ export default function CommunityPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ background: BG }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div className="min-h-screen" style={{ background: BG }}
+      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -76,6 +78,7 @@ export default function CommunityPage() {
           </>
         )}
       </motion.div>
+
       {/* Header */}
       <div className="sticky top-0 z-20 px-4 py-6 md:px-8 border-b" style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>

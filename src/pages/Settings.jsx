@@ -43,8 +43,8 @@ function ToggleRow({ label, description, checked, onChange }) {
 function SaveButton({ onClick, disabled, label = 'Save Changes' }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className="px-5 py-2 rounded-xl font-black uppercase text-[11px] disabled:opacity-50"
-      style={{ background: disabled ? 'rgba(212,175,55,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(128,0,32,0.3)', ...T }}>
+      className="px-5 rounded-xl font-black uppercase text-[12px] disabled:opacity-50"
+      style={{ minHeight: 44, background: disabled ? 'rgba(212,175,55,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(128,0,32,0.3)', ...T }}>
       {label}
     </button>
   );
@@ -87,6 +87,13 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user) setFullName(user.full_name || '');
   }, [user]);
+
+  // Auto-open delete dialog when redirected from the Account Drawer
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('action') === 'delete') {
+      setShowDeleteDialog(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (preferences) {
@@ -230,8 +237,8 @@ export default function SettingsPage() {
           <div className="p-4 space-y-3">
             <button
               onClick={() => base44.auth.logout()}
-              className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
+              className="w-full px-4 rounded-xl font-black uppercase text-[12px] text-left flex items-center"
+              style={{ minHeight: 44, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
               Log Out
             </button>
             {/* Delete Account — required by App Store/Google Play guidelines */}
@@ -241,8 +248,8 @@ export default function SettingsPage() {
               </p>
               <button
                 onClick={() => setShowDeleteDialog(true)}
-                className="w-full px-4 py-3 rounded-xl font-black uppercase text-[12px] text-left flex items-center gap-2"
-                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)', color: '#EF4444', userSelect: 'none', ...T }}>
+                className="w-full px-4 rounded-xl font-black uppercase text-[12px] text-left flex items-center gap-2"
+                style={{ minHeight: 44, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)', color: '#EF4444', userSelect: 'none', ...T }}>
                 <ShieldX className="w-4 h-4" />
                 Delete My Account Permanently
               </button>
@@ -289,13 +296,13 @@ export default function SettingsPage() {
                   style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
               </div>
               <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-                className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
-                style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
+                className="w-full rounded-xl font-black uppercase text-sm transition-all flex items-center justify-center"
+                style={{ minHeight: 44, background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
                 {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
               </button>
               <button onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(''); }}
-                className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
-                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
+                className="w-full rounded-xl font-black uppercase text-xs flex items-center justify-center"
+                style={{ minHeight: 44, background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
                 Cancel
               </button>
             </div>
