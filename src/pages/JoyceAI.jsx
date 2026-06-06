@@ -14,7 +14,7 @@ const TEXTM = '#8A7A94';
 const GREEN = '#22c55e';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
-const CYAN = '#00d4ff';
+const CYAN = '#D4AF37';
 const PILL = 999;
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };

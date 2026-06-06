@@ -33,7 +33,7 @@ export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'h
   }, [roomId, sessionId, auraPersona]);
 
   const emotionConfig = {
-    high: { color: '#FF1564', icon: Heart, label: 'Peak Energy' },
+    high: { color: '#C0392B', icon: Heart, label: 'Peak Energy' },
     medium: { color: '#FFB800', icon: Zap, label: 'Moderate' },
     low: { color: '#C9A84C', icon: TrendingUp, label: 'Growing' },
   };

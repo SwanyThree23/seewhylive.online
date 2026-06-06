@@ -150,7 +150,7 @@ export default function NewsletterPage() {
                   {createMutation.isPending ? 'Saving…' : 'Save Draft'}
                 </button>
                 <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', cursor: 'pointer', ...T }}>
+                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer', ...T }}>
                   <Calendar className="w-3.5 h-3.5" /> Schedule
                 </button>
               </div>

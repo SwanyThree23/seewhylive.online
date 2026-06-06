@@ -8,16 +8,16 @@ import AlertConfig from '@/components/live/AlertConfig';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
+const PINK = '#C0392B';
 const FONT = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const OVERLAY_TYPES = [
   { type: 'new_follower',  icon: Users,    color: '#C9A84C', label: 'New Follower',   desc: 'Shown when someone follows you live',  trigger: 'Auto' },
   { type: 'new_sub',       icon: Star,     color: '#D4AF37', label: 'New Subscriber', desc: 'Banner for new paid subscribers',       trigger: 'Auto' },
   { type: 'tip_received',  icon: Gift,     color: '#6DBF7E', label: 'Tip Alert',      desc: 'Animated tip overlay with amount',      trigger: 'Auto' },
-  { type: 'love_tap',      icon: Heart,    color: '#FF1564', label: 'Love Tap',       desc: '❤️ burst animation on screen',           trigger: 'Auto' },
+  { type: 'love_tap',      icon: Heart,    color: '#C0392B', label: 'Love Tap',       desc: '❤️ burst animation on screen',           trigger: 'Auto' },
   { type: 'goal_reached',  icon: Zap,      color: '#D4AF37', label: 'Goal Reached',   desc: 'Celebration when stream goal hit',      trigger: 'Auto' },
-  { type: 'raid_incoming', icon: BellRing, color: '#FF1564', label: 'Raid Alert',     desc: 'Host raiding your stream',              trigger: 'Auto' },
+  { type: 'raid_incoming', icon: BellRing, color: '#C0392B', label: 'Raid Alert',     desc: 'Host raiding your stream',              trigger: 'Auto' },
 ];
 
 function ToggleSwitch({ enabled, onToggle }) {

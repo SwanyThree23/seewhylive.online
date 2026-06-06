@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
           <StatCard label="Avg Viewers" value={avgViewers} icon={Users} color="#a78bfa" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="#6DBF7E" />
           <StatCard label="Rooms" value={rooms.length} icon={Radio} color={GOLD} />
-          <StatCard label="Live Now" value={liveRooms} icon={Zap} color="#FF1564" sub="currently live" />
+          <StatCard label="Live Now" value={liveRooms} icon={Zap} color="#C0392B" sub="currently live" />
           <StatCard label="Subscribers" value={activeSubscriptions} icon={Star} color={GOLD} sub="active" />
         </div>
 
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-3 gap-4 text-center">
                 {[
                   { status: 'active', color: '#6DBF7E', bg: 'rgba(109,191,126,0.06)' },
-                  { status: 'cancelled', color: '#FF1564', bg: 'rgba(255,21,100,0.06)' },
+                  { status: 'cancelled', color: '#C0392B', bg: 'rgba(255,21,100,0.06)' },
                   { status: 'expired', color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.03)' },
                 ].map(({ status, color, bg }) => {
                   const count = subscriptions.filter(s => s.status === status).length;
@@ -265,9 +265,9 @@ export default function AnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-black" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Orbitron, monospace' }}>{room.viewer_count || 0}</span>
                         <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T,
-                          background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : room.status === 'ended' ? 'rgba(255,255,255,0.06)' : 'rgba(0,212,255,0.1)',
-                          border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : room.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(0,212,255,0.3)'}`,
-                          color: room.status === 'live' ? '#FF1564' : room.status === 'ended' ? 'rgba(255,255,255,0.4)' : '#00d4ff',
+                          background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : room.status === 'ended' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.1)',
+                          border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : room.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(212,175,55,0.3)'}`,
+                          color: room.status === 'live' ? '#C0392B' : room.status === 'ended' ? 'rgba(255,255,255,0.4)' : '#D4AF37',
                         }}>{room.status}</span>
                       </div>
                     </div>

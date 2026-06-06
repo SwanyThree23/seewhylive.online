@@ -10,7 +10,7 @@ const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
 const GREEN = '#22c55e';
 const RED   = '#ef4444';
-const CYAN  = '#00d4ff';
+const CYAN  = '#D4AF37';
 const PURPLE = '#a78bfa';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -83,7 +83,7 @@ function StatusBadge({ status }) {
   const conf = status === 'live'
     ? { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.35)', color: GREEN, label: 'LIVE' }
     : status === 'scheduled'
-    ? { bg: 'rgba(0,212,255,0.1)', border: 'rgba(0,212,255,0.3)', color: CYAN, label: 'SOON' }
+    ? { bg: 'rgba(212,175,55,0.1)', border: 'rgba(212,175,55,0.3)', color: CYAN, label: 'SOON' }
     : { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: TEXTM, label: 'IDLE' };
   return (
     <span style={{
@@ -301,7 +301,7 @@ export default function RoomsManager() {
                   href={`https://vdo.ninja/?room=${VDO_ROOM}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ ...MONO, fontSize: 10, color: CYAN, background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.25)', borderRadius: 6, padding: '5px 12px', textDecoration: 'none', letterSpacing: '0.08em' }}
+                  style={{ ...MONO, fontSize: 10, color: CYAN, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 6, padding: '5px 12px', textDecoration: 'none', letterSpacing: '0.08em' }}
                 >
                   OPEN ↗
                 </a>
@@ -315,7 +315,7 @@ export default function RoomsManager() {
                 />
               </div>
             </div>
-            <div style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: 14, padding: '14px 16px' }}>
               <div style={{ ...T, fontSize: 14, fontWeight: 700, color: CYAN, marginBottom: 6 }}>Guest Invite Link</div>
               <div style={{ ...MONO, fontSize: 11, color: TEXTD, wordBreak: 'break-all', background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '10px 12px' }}>
                 {`https://vdo.ninja/?room=${VDO_ROOM}&push`}

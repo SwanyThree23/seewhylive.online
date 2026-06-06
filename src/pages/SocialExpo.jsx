@@ -11,7 +11,7 @@ import { FEATURED_VIDEOS } from '../components/home/FeaturedContent';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const TEAL    = '#00F5FF';
 const BG      = '#080B18';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };

@@ -301,7 +301,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
 
   const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
   const urgency = timeLeft < 30 ? 'critical' : timeLeft < 60 ? 'warning' : 'normal';
-  const timerColor = urgency === 'critical' ? '#FF1564' : urgency === 'warning' ? '#FF8C00' : '#d4af37';
+  const timerColor = urgency === 'critical' ? '#C0392B' : urgency === 'warning' ? '#FF8C00' : '#d4af37';
 
   if (!battle) return null;
 
@@ -341,7 +341,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             <Swords className="w-3 md:w-4 h-3 md:h-4 text-yellow-400 animate-pulse flex-shrink-0" />
             {isActive ? (
               <span className="font-black uppercase animate-pulse truncate"
-                style={{ color: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em', fontSize: '8px' }}>
+                style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em', fontSize: '8px' }}>
                 ● LIVE
               </span>
             ) : (

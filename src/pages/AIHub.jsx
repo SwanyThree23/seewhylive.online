@@ -9,8 +9,8 @@ const BG     = '#080B18';
 const BG2    = 'rgba(13,6,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK   = '#FF1564';
-const CYAN   = '#00d4ff';
+const PINK   = '#C0392B';
+const CYAN   = '#D4AF37';
 const PURPLE = '#a78bfa';
 const GREEN  = '#22c55e';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -339,7 +339,7 @@ export default function AIHub() {
             onClick={() => showToast('Set active track in Music Studio first')}
             style={{
               ...T, width: '100%', padding: '10px 0', borderRadius: 12, marginBottom: 14,
-              background: 'rgba(0,212,255,0.06)', border: `1px solid ${CYAN}30`,
+              background: 'rgba(212,175,55,0.06)', border: `1px solid ${CYAN}30`,
               color: CYAN, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}
@@ -859,7 +859,7 @@ export default function AIHub() {
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📋 Content Review Queue</p>
-            <span style={{ ...T, fontSize: 11, color: '#FF1564', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN TOOL</span>
+            <span style={{ ...T, fontSize: 11, color: '#C0392B', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN TOOL</span>
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
             Review AI-flagged messages, approve or dismiss violations, and track moderation history for your streams.
@@ -874,11 +874,11 @@ export default function AIHub() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
                 <div>
-                  <div style={{ ...T, fontSize: 12, color: '#FF1564', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
+                  <div style={{ ...T, fontSize: 12, color: '#C0392B', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>AI MODERATION · ADMIN</div>
                 </div>
               </div>
-              <span style={{ ...T, fontSize: 13, color: '#FF1564', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              <span style={{ ...T, fontSize: 13, color: '#C0392B', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                 Review →
               </span>
             </div>

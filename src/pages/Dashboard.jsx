@@ -102,7 +102,7 @@ function OverviewTab({ user }) {
         <StatTile label="Pending Balance" value={`$${Math.floor(payout?.pending_balance || 0)}`} icon={DollarSign} color={GOLD} />
         <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#C9A84C" />
         <StatTile label="Hours Streamed" value={`${Math.floor(profile?.total_hours_streamed || 0)}h`} icon={Clock} color="#D4AF37" />
-        <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#FF1564" sub="right now" />
+        <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#C0392B" sub="right now" />
       </div>
 
       <Card>
@@ -198,7 +198,7 @@ function AnalyticsTab({ user }) {
     viewers: Math.floor(Math.random() * 200 + 50),
   }));
 
-  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#FF1564', '#6DBF7E'];
+  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];
 
   return (
     <div className="space-y-5">
@@ -207,7 +207,7 @@ function AnalyticsTab({ user }) {
         <StatTile label="Avg Watch Time" value={`${avgWatch}m`} icon={Clock} color="#C9A84C" />
         <StatTile label="New Followers" value={follows.length} icon={Users} color="#6DBF7E" />
         <StatTile label="Chat Messages" value={messages.length} icon={MessageSquare} color="#D4AF37" />
-        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#FF1564" />
+        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#C0392B" />
         <StatTile label="Tips Earned" value={`$${Math.floor(totalTips)}`} icon={DollarSign} color={GOLD} />
       </div>
 

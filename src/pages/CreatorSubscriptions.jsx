@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
-const PINK  = '#FF1564';
+const PINK  = '#C0392B';
 const GREEN = '#6DBF7E';
 const FONT  = 'Barlow Condensed, sans-serif';
 

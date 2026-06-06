@@ -11,7 +11,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const STATUS = {
   idle: { label: 'Idle', color: 'rgba(255,255,255,0.3)' },
   connecting: { label: 'Connecting…', color: '#F59E0B' },
-  live: { label: 'LIVE', color: '#FF1564' },
+  live: { label: 'LIVE', color: '#C0392B' },
   recording: { label: 'Recording', color: '#22C55E' },
   error: { label: 'Error', color: '#EF4444' },
 };
@@ -213,8 +213,8 @@ export default function CompositorOverlay({
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all"
         style={{
           background: open ? 'rgba(255,21,100,0.2)' : 'rgba(255,21,100,0.1)',
-          border: `1px solid ${status === 'live' ? '#FF1564' : status === 'recording' ? '#22C55E' : 'rgba(255,21,100,0.3)'}`,
-          color: status === 'live' ? '#FF1564' : status === 'recording' ? '#22C55E' : '#FF8899',
+          border: `1px solid ${status === 'live' ? '#C0392B' : status === 'recording' ? '#22C55E' : 'rgba(255,21,100,0.3)'}`,
+          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#22C55E' : '#FF8899',
           ...T,
         }}
       >
@@ -329,7 +329,7 @@ export default function CompositorOverlay({
             <button
               onClick={stopStream}
               className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-2 transition-all"
-              style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}
+              style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}
             >
               <Square className="w-4 h-4" /> {status === 'recording' ? 'Stop & Save' : 'End Stream'}
             </button>

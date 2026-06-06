@@ -303,7 +303,7 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           <button
             onClick={() => { setTranslateEnabled(t => !t); if (!translateEnabled) translateAll(); }}
             disabled={isTranslating}
-            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#00d4ff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#D4AF37' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             <Languages className="w-3 h-3" />
             {isTranslating ? '…' : translateEnabled ? 'On' : 'Translate'}
@@ -368,7 +368,7 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
                   ) : displayText}
                 </span>
                 {translateEnabled && translationMap[msg.id] && translationMap[msg.id] !== msg.content && (
-                  <p className="text-[#00d4ff]/40 text-[10px] mt-0.5 italic">original: {msg.content}</p>
+                  <p className="text-[#D4AF37]/40 text-[10px] mt-0.5 italic">original: {msg.content}</p>
                 )}
               </div>
             </div>

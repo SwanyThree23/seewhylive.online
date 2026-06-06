@@ -90,7 +90,7 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
           className="overflow-hidden px-3 pb-3 space-y-1.5"
         >
           <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-            <Stat label="FPS" value={`${fps} fps`} color="#00d4ff" />
+            <Stat label="FPS" value={`${fps} fps`} color="#D4AF37" />
             <Stat label="Latency" value={`${latency} ms`} color={latencyColor} />
             <Stat label="Bitrate" value={`${(bitrate / 1000).toFixed(1)} Mbps`} color="#d4af37" />
             <Stat label="Dropped" value={`${droppedFrames} fr`} color={droppedFrames > 10 ? '#ef4444' : '#22c55e'} />

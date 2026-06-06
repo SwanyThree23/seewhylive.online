@@ -10,7 +10,7 @@ const SLATE = '#1A1530';
 const TEXT  = '#F0EAF8';
 const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
-const CYAN  = '#00d4ff';
+const CYAN  = '#D4AF37';
 const GREEN = '#22c55e';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
@@ -220,7 +220,7 @@ export default function TranscriptionStudio() {
                 style={{
                   ...MONO, fontSize: 10, color: CYAN,
                   textDecoration: 'none', letterSpacing: '0.08em',
-                  background: 'rgba(0,212,255,0.1)', border: `1px solid rgba(0,212,255,0.25)`,
+                  background: 'rgba(212,175,55,0.1)', border: `1px solid rgba(212,175,55,0.25)`,
                   borderRadius: 6, padding: '5px 12px',
                 }}
               >
@@ -300,7 +300,7 @@ export default function TranscriptionStudio() {
                   onClick={() => setTargetLang(lang.code)}
                   style={{
                     ...T, fontSize: 12, fontWeight: 700,
-                    background: targetLang === lang.code ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)',
+                    background: targetLang === lang.code ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
                     border: `1px solid ${targetLang === lang.code ? CYAN : 'rgba(255,255,255,0.1)'}`,
                     borderRadius: 999, padding: '5px 12px',
                     color: targetLang === lang.code ? CYAN : TEXTD, cursor: 'pointer',
@@ -316,8 +316,8 @@ export default function TranscriptionStudio() {
             disabled={!demoText || translating}
             style={{
               ...T, fontSize: 14, fontWeight: 700, letterSpacing: '0.06em',
-              background: !demoText || translating ? 'rgba(0,212,255,0.08)' : 'rgba(0,212,255,0.15)',
-              border: `1px solid ${!demoText || translating ? 'rgba(0,212,255,0.1)' : 'rgba(0,212,255,0.4)'}`,
+              background: !demoText || translating ? 'rgba(212,175,55,0.08)' : 'rgba(212,175,55,0.15)',
+              border: `1px solid ${!demoText || translating ? 'rgba(212,175,55,0.1)' : 'rgba(212,175,55,0.4)'}`,
               borderRadius: 8, padding: '9px 20px',
               color: !demoText || translating ? TEXTM : CYAN, cursor: !demoText || translating ? 'not-allowed' : 'pointer',
               marginBottom: 12,
@@ -326,7 +326,7 @@ export default function TranscriptionStudio() {
             {translating ? 'TRANSLATING…' : '🌐 TRANSLATE LAST CAPTION'}
           </button>
           {translatedText && (
-            <div className="caption-fade" style={{ background: 'rgba(0,212,255,0.06)', border: `1px solid rgba(0,212,255,0.2)`, borderRadius: 10, padding: '12px 14px' }}>
+            <div className="caption-fade" style={{ background: 'rgba(212,175,55,0.06)', border: `1px solid rgba(212,175,55,0.2)`, borderRadius: 10, padding: '12px 14px' }}>
               <div style={{ ...MONO, fontSize: 9, color: CYAN, letterSpacing: '0.1em', marginBottom: 6 }}>
                 {SUPPORTED_LANGS.find(l => l.code === targetLang)?.label?.toUpperCase()} TRANSLATION
               </div>
@@ -371,7 +371,7 @@ export default function TranscriptionStudio() {
         )}
 
         {/* Caption.Ninja link */}
-        <div style={{ background: 'rgba(0,212,255,0.05)', border: `1px solid rgba(0,212,255,0.15)`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ background: 'rgba(212,175,55,0.05)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div>
             <div style={{ ...T, fontSize: 14, fontWeight: 700, color: CYAN, letterSpacing: '0.05em' }}>Caption.Ninja Integration</div>
             <div style={{ ...MONO, fontSize: 10, color: TEXTM, marginTop: 4 }}>Use Caption.Ninja browser extension to broadcast real-time captions from your stream</div>
@@ -382,7 +382,7 @@ export default function TranscriptionStudio() {
             rel="noopener noreferrer"
             style={{
               ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em',
-              background: 'rgba(0,212,255,0.15)', border: `1px solid rgba(0,212,255,0.35)`,
+              background: 'rgba(212,175,55,0.15)', border: `1px solid rgba(212,175,55,0.35)`,
               borderRadius: 8, padding: '8px 18px',
               color: CYAN, textDecoration: 'none',
               flexShrink: 0,
