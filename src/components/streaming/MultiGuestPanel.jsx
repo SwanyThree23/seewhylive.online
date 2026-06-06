@@ -3,7 +3,8 @@ import {
   Maximize2, Minimize2, Mic, MicOff, Video, VideoOff, Radio,
   Swords, Users, Pin, PinOff, Shield, ShieldOff, Wifi, WifiOff,
   LayoutGrid, LayoutList, Star, Hand, Settings, Signal, BarChart2,
-  Zap, Crown, Eye, EyeOff, MoreVertical, X, Tv, Volume2,
+  Zap, Crown, Eye, EyeOff, MoreVertical, X, Tv, Volume2, AlignJustify,
+  ChevronLeft, ChevronRight, Cast,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,11 +19,12 @@ const PINK    = '#FF1564';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const LAYOUT_PRESETS = [
-  { id: 'grid',        label: 'Grid',   icon: LayoutGrid },
-  { id: 'spotlight',   label: 'Focus',  icon: Maximize2  },
-  { id: 'broadcast',   label: '1+5',    icon: LayoutList },
-  { id: 'battle',      label: 'Battle', icon: Swords     },
-  { id: 'watch_party', label: 'Watch',  icon: Tv         },
+  { id: 'list',        label: 'List',   icon: AlignJustify },
+  { id: 'grid',        label: 'Grid',   icon: LayoutGrid   },
+  { id: 'spotlight',   label: 'Focus',  icon: Maximize2    },
+  { id: 'broadcast',   label: '1+5',    icon: LayoutList   },
+  { id: 'battle',      label: 'Battle', icon: Swords       },
+  { id: 'watch_party', label: 'Watch',  icon: Tv           },
 ];
 
 function qualityColor(q) {
@@ -884,14 +886,121 @@ function BattlePanel({ participants, roomId, isHost }) {
   );
 }
 
+/* ─── GuestListRow — always-visible controls, designed for 20-person panels ─ */
+function GuestListRow({ participant, isHost, roomId, raisedHands, onSpotlight, onPromote, onMute, onKick, onStreamToggle }) {
+  const audioLevel = useAudioLevel(participant?.id, participant?.is_streaming);
+  const isCoHost   = participant?.role === 'co-host';
+  const isHostP    = participant?.role === 'host';
+  const isRaised   = raisedHands.has(participant?.user_id);
+  const speaking   = audioLevel > 40;
+
+  if (!participant) return null;
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '8px 10px', borderRadius: 8,
+      background: participant.is_streaming ? 'rgba(128,0,32,0.12)' : 'rgba(255,255,255,0.025)',
+      border: participant.is_streaming
+        ? `1px solid rgba(128,0,32,0.3)`
+        : '1px solid rgba(255,255,255,0.06)',
+      transition: 'background 0.2s',
+    }}>
+      {/* Avatar */}
+      <div style={{
+        width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+        background: `linear-gradient(135deg, ${CRIMSON}, #3a0015)`,
+        border: `2px solid ${isHostP ? G : isCoHost ? '#00d4ff' : speaking ? '#22c55e' : 'rgba(255,255,255,0.15)'}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 14, color: G, fontWeight: 900, ...T,
+        boxShadow: speaking ? '0 0 10px rgba(34,197,94,0.5)' : 'none',
+        overflow: 'hidden',
+      }}>
+        {participant.user_avatar
+          ? <img src={participant.user_avatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : (participant.user_name || '?')[0].toUpperCase()}
+      </div>
+
+      {/* Name + role + indicators */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {isRaised && <span style={{ fontSize: 11 }}>✋</span>}
+          <span style={{ ...T, color: '#fff', fontSize: 12, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {participant.user_name || 'Guest'}
+          </span>
+          {isHostP && <span style={{ ...T, fontSize: 8, fontWeight: 900, color: G, background: `${G}20`, border: `1px solid ${G}40`, borderRadius: 3, padding: '1px 4px' }}>HOST</span>}
+          {isCoHost && <span style={{ ...T, fontSize: 8, fontWeight: 900, color: '#00d4ff', background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 3, padding: '1px 4px' }}>CO-HOST</span>}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+          {participant.is_streaming ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#dc2626', animation: 'pulse 1s infinite' }} />
+              <span style={{ ...T, color: '#dc2626', fontSize: 9, fontWeight: 900 }}>LIVE</span>
+            </div>
+          ) : (
+            <span style={{ ...T, color: 'rgba(255,255,255,0.25)', fontSize: 9, fontWeight: 700 }}>Offline</span>
+          )}
+          {speaking && (
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1, height: 10 }}>
+              {[0.6, 1, 0.7].map((h, i) => (
+                <div key={i} style={{ width: 2, height: Math.round(h * 10), background: '#22c55e', borderRadius: 1 }} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Always-visible action buttons */}
+      {isHost && (
+        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+          {/* Stream toggle */}
+          <button onClick={() => onStreamToggle(participant)} title={participant.is_streaming ? 'Stop stream' : 'Go live'}
+            style={{
+              width: 28, height: 28, borderRadius: 6, cursor: 'pointer', border: 'none',
+              background: participant.is_streaming ? 'rgba(220,38,38,0.25)' : `${G}25`,
+              color: participant.is_streaming ? '#ef4444' : G,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+            <Cast style={{ width: 11, height: 11 }} />
+          </button>
+          {/* Spotlight */}
+          <button onClick={() => onSpotlight(participant.id)} title="Spotlight"
+            style={{ width: 28, height: 28, borderRadius: 6, cursor: 'pointer', border: 'none', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Maximize2 style={{ width: 11, height: 11 }} />
+          </button>
+          {/* Mute */}
+          <button onClick={() => onMute(participant)} title={participant.is_muted ? 'Unmute' : 'Mute'}
+            style={{ width: 28, height: 28, borderRadius: 6, cursor: 'pointer', border: 'none', background: participant.is_muted ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.07)', color: participant.is_muted ? '#ef4444' : 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {participant.is_muted ? <MicOff style={{ width: 11, height: 11 }} /> : <Mic style={{ width: 11, height: 11 }} />}
+          </button>
+          {/* Co-host toggle */}
+          {!isHostP && (
+            <button onClick={() => onPromote(participant)} title={isCoHost ? 'Remove Co-host' : 'Make Co-host'}
+              style={{ width: 28, height: 28, borderRadius: 6, cursor: 'pointer', border: 'none', background: isCoHost ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.07)', color: isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {isCoHost ? <ShieldOff style={{ width: 11, height: 11 }} /> : <Shield style={{ width: 11, height: 11 }} />}
+            </button>
+          )}
+          {/* Kick */}
+          <button onClick={() => onKick(participant)} title="Remove from stage"
+            style={{ width: 28, height: 28, borderRadius: 6, cursor: 'pointer', border: 'none', background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X style={{ width: 11, height: 11 }} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MultiGuestPanel({
   participants = [], spotlightId, onSpotlight, maxGuests = 20,
   roomId, isHost, remoteStreams = new Map(), raisedHands = new Set(),
 }) {
-  const [layout, setLayout]       = useState('grid');
+  const [layout, setLayout]       = useState('list');
   const [tab, setTab]             = useState('stage');
   const [mutedIds, setMutedIds]   = useState(new Set());
   const [hiddenIds, setHiddenIds] = useState(new Set());
+  const [gridPage, setGridPage]   = useState(0);
+  const PAGE_SIZE = 9;
   const qc = useQueryClient();
 
   const speakers = participants
@@ -907,6 +1016,30 @@ export default function MultiGuestPanel({
     if (n <= 12) return 'repeat(4,1fr)';
     if (n <= 16) return 'repeat(4,1fr)';
     return 'repeat(5,1fr)';
+  };
+
+  const streamToggle = useMutation({
+    mutationFn: (p) => base44.entities.Participant.update(p.id, { is_streaming: !p.is_streaming }),
+    onSuccess: (_, p) => {
+      toast.success(p.is_streaming ? `${p.user_name} stream stopped` : `${p.user_name} is now live`);
+      qc.invalidateQueries(['participants', roomId]);
+    },
+  });
+
+  const streamAll = () => {
+    speakers.forEach(p => {
+      if (!p.is_streaming) base44.entities.Participant.update(p.id, { is_streaming: true }).catch(() => {});
+    });
+    toast.success(`All ${speakers.length} guests going live`);
+    qc.invalidateQueries(['participants', roomId]);
+  };
+
+  const stopAll = () => {
+    speakers.forEach(p => {
+      if (p.is_streaming) base44.entities.Participant.update(p.id, { is_streaming: false }).catch(() => {});
+    });
+    toast.info('All streams stopped');
+    qc.invalidateQueries(['participants', roomId]);
   };
 
   const promoteGuest = useMutation({
@@ -976,14 +1109,31 @@ export default function MultiGuestPanel({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {isHost && (
-            <button onClick={muteAll} style={{
-              ...T, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)',
-              color: '#ef4444', borderRadius: 6, padding: '3px 8px',
-              fontSize: 10, fontWeight: 900, cursor: 'pointer',
-            }}>
-              <MicOff style={{ display: 'inline', width: 9, height: 9, marginRight: 3 }} />
-              Mute All
-            </button>
+            <div style={{ display: 'flex', gap: 5 }}>
+              <button onClick={streamAll} title="Go live with all guests" style={{
+                ...T, background: `${CRIMSON}25`, border: `1px solid ${CRIMSON}50`,
+                color: '#ff6680', borderRadius: 6, padding: '3px 9px',
+                fontSize: 10, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+              }}>
+                <Cast style={{ width: 9, height: 9 }} />
+                Stream All
+              </button>
+              <button onClick={stopAll} title="Stop all guest streams" style={{
+                ...T, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+                color: 'rgba(255,255,255,0.4)', borderRadius: 6, padding: '3px 8px',
+                fontSize: 10, fontWeight: 900, cursor: 'pointer',
+              }}>
+                Stop All
+              </button>
+              <button onClick={muteAll} style={{
+                ...T, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)',
+                color: '#ef4444', borderRadius: 6, padding: '3px 8px',
+                fontSize: 10, fontWeight: 900, cursor: 'pointer',
+              }}>
+                <MicOff style={{ display: 'inline', width: 9, height: 9, marginRight: 3 }} />
+                Mute All
+              </button>
+            </div>
           )}
 
           <div style={{ display: 'flex', gap: 3 }}>
@@ -1028,6 +1178,24 @@ export default function MultiGuestPanel({
       <div style={{ flex: 1, overflowY: 'auto', padding: 12, position: 'relative' }}>
         {tab === 'greenroom' ? (
           <GreenroomQueue roomId={roomId} isHost={isHost} />
+        ) : layout === 'list' ? (
+          /* ── List view: all 20 as scrollable rows with always-visible controls ── */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {speakers.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.2)', ...T, fontSize: 12 }}>
+                No guests on stage — admit guests from the Queue tab
+              </div>
+            )}
+            {speakers.map(p => (
+              <GuestListRow key={p.id} participant={p} isHost={isHost} roomId={roomId} raisedHands={raisedHands}
+                onSpotlight={onSpotlight}
+                onPromote={p2 => promoteGuest.mutate(p2)}
+                onMute={muteGuest}
+                onKick={p2 => kickGuest.mutate(p2)}
+                onStreamToggle={p2 => streamToggle.mutate(p2)}
+              />
+            ))}
+          </div>
         ) : layout === 'battle' ? (
           <BattlePanel participants={speakers} roomId={roomId} isHost={isHost} />
         ) : layout === 'watch_party' ? (
@@ -1077,21 +1245,38 @@ export default function MultiGuestPanel({
             </div>
           </div>
         ) : (
-          /* Grid */
-          <div style={{ display: 'grid', gridTemplateColumns: getGridCols(), gap: 8 }}>
-            <AnimatePresence>
-              {speakers.map(p => (
-                <GuestTile key={p.id} participant={p} isSpotlit={p.id === spotlightId}
-                  isHost={isHost} roomId={roomId}
-                  onSpotlight={onSpotlight} onPromote={p2 => promoteGuest.mutate(p2)}
-                  onMute={muteGuest} onKick={p2 => kickGuest.mutate(p2)} raisedHands={raisedHands}
-                  streamRef={remoteStreams.get(p.user_id)}
-                />
-              ))}
-            </AnimatePresence>
-            {speakers.length === 0 && (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.2)', ...T, fontSize: 12 }}>
-                No guests on stage yet — admit guests from the Queue tab
+          /* Grid with pagination for large panels */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: getGridCols(), gap: 8 }}>
+              <AnimatePresence>
+                {speakers.slice(gridPage * PAGE_SIZE, (gridPage + 1) * PAGE_SIZE).map(p => (
+                  <GuestTile key={p.id} participant={p} isSpotlit={p.id === spotlightId}
+                    isHost={isHost} roomId={roomId}
+                    onSpotlight={onSpotlight} onPromote={p2 => promoteGuest.mutate(p2)}
+                    onMute={muteGuest} onKick={p2 => kickGuest.mutate(p2)} raisedHands={raisedHands}
+                    streamRef={remoteStreams.get(p.user_id)}
+                  />
+                ))}
+              </AnimatePresence>
+              {speakers.length === 0 && (
+                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px 20px', color: 'rgba(255,255,255,0.2)', ...T, fontSize: 12 }}>
+                  No guests on stage yet — admit guests from the Queue tab
+                </div>
+              )}
+            </div>
+            {speakers.length > PAGE_SIZE && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, paddingTop: 4 }}>
+                <button onClick={() => setGridPage(p => Math.max(0, p - 1))} disabled={gridPage === 0}
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', color: gridPage === 0 ? 'rgba(255,255,255,0.2)' : G }}>
+                  <ChevronLeft style={{ width: 12, height: 12 }} />
+                </button>
+                <span style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700 }}>
+                  {gridPage + 1} / {Math.ceil(speakers.length / PAGE_SIZE)} · {speakers.length} total
+                </span>
+                <button onClick={() => setGridPage(p => Math.min(Math.ceil(speakers.length / PAGE_SIZE) - 1, p + 1))} disabled={(gridPage + 1) * PAGE_SIZE >= speakers.length}
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer', color: (gridPage + 1) * PAGE_SIZE >= speakers.length ? 'rgba(255,255,255,0.2)' : G }}>
+                  <ChevronRight style={{ width: 12, height: 12 }} />
+                </button>
               </div>
             )}
           </div>
