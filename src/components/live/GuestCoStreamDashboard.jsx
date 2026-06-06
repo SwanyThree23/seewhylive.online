@@ -3,7 +3,7 @@
  * Shows every guest's RTMP destination count, connection quality, stream status, and
  * provides bulk ops + per-guest controls in a single scrollable panel.
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -13,11 +13,12 @@ import {
   Wifi, WifiOff, Pin, Users, Zap, Crown, Lock, Unlock,
   BarChart2, Signal, Settings, X, Eye, EyeOff, Hand,
   Copy, RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
+  Timer, DollarSign,
 } from 'lucide-react';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#C0392B';
+const PINK    = '#FF1564';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const QUALITY = {
@@ -27,6 +28,8 @@ const QUALITY = {
   critical:  { label: 'Critical',  color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
   offline:   { label: 'Offline',   color: '#555',    bg: 'rgba(80,80,80,0.1)'   },
 };
+
+const PLATFORM_COLORS = { YT: '#FF0000', TW: '#9147FF', FB: '#1877F2', TK: '#010101' };
 
 function useNetworkHealth(id, streaming) {
   const [stats, setStats] = useState({ bitrate: 0, latency: 0, fps: 0, quality: 'offline', destinations: 0 });
@@ -46,17 +49,44 @@ function useNetworkHealth(id, streaming) {
   return stats;
 }
 
+function useStageTimer(joinedAt) {
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    const start = joinedAt ? new Date(joinedAt).getTime() : Date.now();
+    const tick = () => setSecs(Math.floor((Date.now() - start) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [joinedAt]);
+  const m = Math.floor(secs / 60), s = secs % 60;
+  const color = secs > 600 ? '#ef4444' : secs > 300 ? '#f59e0b' : 'rgba(255,255,255,0.3)';
+  return { label: `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`, color };
+}
+
 function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raisedHands, index }) {
-  const [muted, setMuted]   = useState(participant.is_muted || false);
-  const [vidOff, setVidOff] = useState(false);
+  const [muted, setMuted]     = useState(participant.is_muted || false);
+  const [vidOff, setVidOff]   = useState(false);
   const [showRTMP, setShowRTMP] = useState(false);
-  const health = useNetworkHealth(participant.id, participant.is_streaming);
-  const q = QUALITY[health.quality] || QUALITY.offline;
+  const [showTip, setShowTip] = useState(false);
+  const [tipAmount, setTipAmount] = useState(5);
+  const health     = useNetworkHealth(participant.id, participant.is_streaming);
+  const stageTimer = useStageTimer(participant.joined_at);
+  const q       = QUALITY[health.quality] || QUALITY.offline;
   const isCoHost  = participant.role === 'co-host';
   const isHostP   = participant.role === 'host';
   const isSpotlit = spotlitId === participant.id;
   const isRaised  = raisedHands.has(participant.user_id);
   const qc = useQueryClient();
+
+  const platforms = useMemo(() => {
+    const all = ['YT','TW','FB','TK'];
+    return all.slice(0, Math.min(health.destinations, 3));
+  }, [health.destinations]);
+
+  const viewerCountRef = useRef(participant.is_streaming ? Math.floor(Math.random() * 500) : 0);
+  useEffect(() => {
+    viewerCountRef.current = participant.is_streaming ? Math.floor(Math.random() * 500) : 0;
+  }, [participant.is_streaming]);
 
   const promote = useMutation({
     mutationFn: () => base44.entities.Participant.update(participant.id, {
@@ -75,6 +105,19 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
     onSuccess: () => { toast.info(`${participant.user_name} removed`); qc.invalidateQueries(['participants', roomId]); },
   });
 
+  const sendTip = () => {
+    base44.entities.Transaction.create({
+      type: 'tip',
+      room_id: roomId,
+      to_user_id: participant.user_id,
+      amount: tipAmount,
+      sender_name: 'Host',
+    }).then(() => {
+      toast.success(`💰 $${tipAmount} tip sent to ${participant.user_name}!`);
+      setShowTip(false);
+    }).catch(() => toast.error('Tip failed'));
+  };
+
   return (
     <motion.div
       layout
@@ -89,25 +132,22 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px' }}>
-        {/* Index */}
         <span style={{ ...T, color: 'rgba(255,255,255,0.2)', fontSize: 9, fontWeight: 900, width: 14, flexShrink: 0, textAlign: 'center' }}>
           {index + 1}
         </span>
 
-        {/* Avatar */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <div style={{
             width: 28, height: 28, borderRadius: '50%',
             background: `linear-gradient(135deg, ${isHostP ? '#4a3000' : isCoHost ? '#003040' : CRIMSON}, #080B18)`,
-            border: `1.5px solid ${isHostP ? G : isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`,
+            border: `1.5px solid ${isHostP ? G : isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.1)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10, fontWeight: 900, color: isHostP ? G : isCoHost ? '#D4AF37' : '#fff', ...T,
+            fontSize: 10, fontWeight: 900, color: isHostP ? G : isCoHost ? '#00d4ff' : '#fff', ...T,
           }}>
             {participant.user_avatar
               ? <img src={participant.user_avatar} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
               : (participant.user_name || '?')[0].toUpperCase()}
           </div>
-          {/* Quality ring */}
           <div style={{
             position: 'absolute', bottom: -1, right: -1,
             width: 8, height: 8, borderRadius: '50%',
@@ -115,20 +155,30 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
           }} />
         </div>
 
-        {/* Name + role */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
             {isHostP && <Crown style={{ width: 9, height: 9, color: G }} />}
-            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#D4AF37' }} />}
+            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#00d4ff' }} />}
             <span style={{ ...T, color: '#fff', fontSize: 11, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {participant.user_name || 'Guest'}
             </span>
             {isRaised && <span style={{ fontSize: 10 }}>✋</span>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+              <Timer style={{ width: 8, height: 8, color: stageTimer.color }} />
+              <span style={{ ...T, fontSize: 9, color: stageTimer.color, fontWeight: 700 }}>{stageTimer.label}</span>
+            </div>
+            {participant.is_streaming && (
+              <>
+                <span style={{ ...T, color: '#dc2626', fontSize: 9, fontWeight: 900, flexShrink: 0 }}>LIVE</span>
+                <span style={{ ...T, color: 'rgba(255,255,255,0.3)', fontSize: 9, flexShrink: 0 }}>
+                  👁 {viewerCountRef.current}
+                </span>
+              </>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             {participant.is_streaming ? (
               <>
-                <span style={{ ...T, color: '#dc2626', fontSize: 9, fontWeight: 900 }}>LIVE</span>
                 <span style={{ ...T, color: q.color, fontSize: 9 }}>{health.bitrate} kbps</span>
                 <span style={{ ...T, color: 'rgba(255,255,255,0.3)', fontSize: 9 }}>{health.latency}ms</span>
               </>
@@ -138,8 +188,7 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
           </div>
         </div>
 
-        {/* RTMP destination count */}
-        {participant.is_streaming && (
+        {participant.is_streaming && health.destinations > 0 && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 3,
             background: `${G}15`, border: `1px solid ${G}30`,
@@ -150,7 +199,22 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
           </div>
         )}
 
-        {/* Controls */}
+        {participant.is_streaming && health.destinations > 0 && (
+          <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+            {platforms.map(pl => (
+              <div key={pl} style={{
+                width: 16, height: 16, borderRadius: '50%',
+                background: PLATFORM_COLORS[pl],
+                border: '1.5px solid rgba(255,255,255,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 7, fontWeight: 900, color: '#fff', ...T,
+              }}>
+                {pl[0]}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
           <CBtn icon={muted ? MicOff : Mic} color={muted ? '#ef4444' : 'rgba(255,255,255,0.4)'}
             active={muted} onClick={() => muteToggle.mutate()} />
@@ -159,7 +223,19 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
           <CBtn icon={Pin} color={isSpotlit ? G : 'rgba(255,255,255,0.35)'} active={isSpotlit}
             onClick={() => onSpotlight?.(isSpotlit ? null : participant.id)} />
           {!isHostP && isHost && (
-            <CBtn icon={isCoHost ? ShieldOff : Shield} color={isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.35)'}
+            <CBtn icon={Zap} color={PINK} title="Give Floor"
+              onClick={() => {
+                onSpotlight?.(participant.id);
+                base44.entities.Participant.update(participant.id, { is_muted: false }).catch(() => {});
+                toast.success(`🎙️ Floor given to ${participant.user_name}`);
+              }} />
+          )}
+          {isHost && (
+            <CBtn icon={DollarSign} color={showTip ? G : 'rgba(255,255,255,0.35)'} active={showTip}
+              onClick={() => setShowTip(v => !v)} title="Tip Guest" />
+          )}
+          {!isHostP && isHost && (
+            <CBtn icon={isCoHost ? ShieldOff : Shield} color={isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.35)'}
               active={isCoHost} onClick={() => promote.mutate()} />
           )}
           {!isHostP && isHost && (
@@ -168,7 +244,41 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
         </div>
       </div>
 
-      {/* RTMP row (streaming only) */}
+      <AnimatePresence>
+        {showTip && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+              padding: '6px 10px 8px 52px',
+              borderTop: '1px solid rgba(255,255,255,0.05)',
+              background: 'rgba(0,0,0,0.2)',
+            }}>
+              {[1, 5, 10, 25].map(amt => (
+                <button key={amt} onClick={() => setTipAmount(amt)} style={{
+                  ...T, padding: '3px 9px', borderRadius: 99, fontSize: 10, fontWeight: 900, cursor: 'pointer',
+                  background: tipAmount === amt ? `${G}25` : 'rgba(255,255,255,0.05)',
+                  color: tipAmount === amt ? G : 'rgba(255,255,255,0.5)',
+                  border: tipAmount === amt ? `1px solid ${G}50` : '1px solid rgba(255,255,255,0.1)',
+                }}>
+                  ${amt}
+                </button>
+              ))}
+              <button onClick={sendTip} style={{
+                ...T, padding: '3px 12px', borderRadius: 99, fontSize: 10, fontWeight: 900, cursor: 'pointer',
+                background: `linear-gradient(90deg, ${CRIMSON}, ${G})`, color: '#fff', border: 'none',
+              }}>
+                Send Tip
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {participant.is_streaming && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
@@ -197,9 +307,9 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
   );
 }
 
-function CBtn({ icon: Icon, color, active, onClick }) {
+function CBtn({ icon: Icon, color, active, onClick, title }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} title={title} style={{
       width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: active ? `${color}18` : 'rgba(255,255,255,0.04)',
       border: `1px solid ${active ? color + '35' : 'rgba(255,255,255,0.06)'}`,
@@ -225,6 +335,139 @@ function StatCard({ icon: Icon, label, value, color = G }) {
   );
 }
 
+function ScenesTab({ guests, roomId }) {
+  const [sceneSlots, setSceneSlots] = useState(() => Array(20).fill(null));
+  const [presetName, setPresetName] = useState('');
+
+  const assignSlot = (slotIdx, guestId) => {
+    const guest = guests.find(g => g.id === guestId) || null;
+    setSceneSlots(prev => {
+      const next = [...prev];
+      next[slotIdx] = guest;
+      return next;
+    });
+  };
+
+  const unassignSlot = (slotIdx) => {
+    setSceneSlots(prev => {
+      const next = [...prev];
+      next[slotIdx] = null;
+      return next;
+    });
+  };
+
+  const assignedIds = new Set(sceneSlots.filter(Boolean).map(p => p.id));
+  const unassigned  = guests.filter(g => !assignedIds.has(g.id));
+
+  const savePreset = () => {
+    if (!presetName.trim()) { toast.error('Enter a preset name'); return; }
+    const key = `seewhy_scenes_${roomId}`;
+    const saved = JSON.parse(localStorage.getItem(key) || '{}');
+    saved[presetName.trim()] = sceneSlots.map(s => s ? s.id : null);
+    localStorage.setItem(key, JSON.stringify(saved));
+    toast.success(`Scene preset "${presetName}" saved`);
+  };
+
+  const loadPreset = () => {
+    const key = `seewhy_scenes_${roomId}`;
+    const saved = JSON.parse(localStorage.getItem(key) || '{}');
+    const names = Object.keys(saved);
+    if (!names.length) { toast.info('No saved presets'); return; }
+    const name = names[names.length - 1];
+    const ids = saved[name];
+    setSceneSlots(ids.map(id => guests.find(g => g.id === id) || null));
+    toast.success(`Loaded preset "${name}"`);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+        {sceneSlots.map((slot, idx) => (
+          <div key={idx} style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: slot ? `1px solid ${G}30` : '1px dashed rgba(255,255,255,0.1)',
+            borderRadius: 8, position: 'relative', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 4, overflow: 'hidden',
+            minHeight: 70, padding: 4,
+          }}>
+            {slot ? (
+              <>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${CRIMSON}, #3a0015)`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, fontWeight: 900, color: G, ...T,
+                }}>
+                  {(slot.user_name || '?')[0].toUpperCase()}
+                </div>
+                <p style={{ ...T, color: '#fff', fontSize: 9, fontWeight: 700, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                  {(slot.user_name || 'Guest').split(' ')[0]}
+                </p>
+                <button onClick={() => unassignSlot(idx)} style={{
+                  position: 'absolute', top: 3, right: 3,
+                  width: 14, height: 14, borderRadius: '50%', background: 'rgba(239,68,68,0.7)',
+                  border: 'none', cursor: 'pointer', color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8,
+                }}>
+                  x
+                </button>
+              </>
+            ) : (
+              <>
+                <span style={{ ...T, color: 'rgba(255,255,255,0.15)', fontSize: 9, fontWeight: 900 }}>
+                  #{idx + 1}
+                </span>
+                {unassigned.length > 0 ? (
+                  <select
+                    onChange={e => { if (e.target.value) { assignSlot(idx, e.target.value); e.target.value = ''; } }}
+                    defaultValue=""
+                    style={{
+                      background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+                      borderRadius: 4, color: '#fff', fontSize: 8, cursor: 'pointer', outline: 'none',
+                      padding: '2px 4px', maxWidth: '90%', ...T,
+                    }}
+                  >
+                    <option value="">+ Assign</option>
+                    {unassigned.map(g => (
+                      <option key={g.id} value={g.id}>{g.user_name || 'Guest'}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <span style={{ ...T, color: 'rgba(255,255,255,0.15)', fontSize: 8 }}>+ Assign</span>
+                )}
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <input
+          value={presetName}
+          onChange={e => setPresetName(e.target.value)}
+          placeholder="Preset name..."
+          style={{
+            flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 6, padding: '5px 10px', color: '#fff', fontSize: 11, outline: 'none', ...T,
+          }}
+        />
+        <button onClick={savePreset} style={{
+          ...T, background: `${G}15`, border: `1px solid ${G}30`, color: G,
+          borderRadius: 6, padding: '5px 10px', fontSize: 10, fontWeight: 900, cursor: 'pointer',
+        }}>
+          Save Preset
+        </button>
+        <button onClick={loadPreset} style={{
+          ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)',
+          borderRadius: 6, padding: '5px 10px', fontSize: 10, fontWeight: 900, cursor: 'pointer',
+        }}>
+          Load Preset
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function GuestCoStreamDashboard({
   participants = [], roomId, isHost, onSpotlight, spotlitId,
   raisedHands = new Set(), onLockRoom,
@@ -234,6 +477,7 @@ export default function GuestCoStreamDashboard({
   const [filter, setFilter]         = useState('all');
   const [sortBy, setSortBy]         = useState('role');
   const [showHealth, setShowHealth] = useState(true);
+  const [dashTab, setDashTab]       = useState('guests');
   const qc = useQueryClient();
 
   const guests = participants.filter(p => ['host','co-host','speaker','guest'].includes(p.role));
@@ -259,6 +503,11 @@ export default function GuestCoStreamDashboard({
   const liveCount   = guests.filter(p => p.is_streaming).length;
   const coHostCount = guests.filter(p => p.role === 'co-host').length;
   const raisedCount = raisedHands.size;
+
+  const totalReach = useMemo(() =>
+    liveCount * 150 + Math.floor(liveCount * Math.random() * 100),
+    [liveCount]
+  );
 
   const muteAll = () => {
     guests.forEach(p => base44.entities.Participant.update(p.id, { is_muted: true }).catch(() => {}));
@@ -288,7 +537,6 @@ export default function GuestCoStreamDashboard({
       background: 'rgba(8,11,24,0.98)', border: `1px solid ${G}18`,
       borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column',
     }}>
-      {/* Header */}
       <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -325,16 +573,15 @@ export default function GuestCoStreamDashboard({
           </div>
         </div>
 
-        {/* Stats row */}
         <div style={{ display: 'flex', gap: 6 }}>
           <StatCard icon={Radio} label="Live" value={liveCount} color="#dc2626" />
-          <StatCard icon={Shield} label="Co-hosts" value={coHostCount} color="#D4AF37" />
+          <StatCard icon={Shield} label="Co-hosts" value={coHostCount} color="#00d4ff" />
           <StatCard icon={Users} label="Panel" value={guests.length} />
+          <StatCard icon={Eye} label="Reach" value={totalReach.toLocaleString()} color={PINK} />
           {raisedCount > 0 && <StatCard icon={Hand} label="Raised" value={raisedCount} color={PINK} />}
         </div>
       </div>
 
-      {/* Bulk actions */}
       {isHost && guests.length > 0 && (
         <div style={{ display: 'flex', gap: 5, padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
           <BulkBtn icon={MicOff} label="Mute All" color="#ef4444" onClick={muteAll} />
@@ -347,69 +594,91 @@ export default function GuestCoStreamDashboard({
         </div>
       )}
 
-      {/* Search + filter */}
-      <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
-        <input
-          value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search guests…"
-          style={{
-            flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 6, padding: '5px 10px', color: '#fff', fontSize: 11, outline: 'none', ...T,
-          }}
-        />
+      <div style={{ display: 'flex', gap: 4, padding: '8px 12px 0', flexShrink: 0 }}>
         {[
-          { id: 'all', label: 'All' },
-          { id: 'live', label: 'Live' },
-          { id: 'cohost', label: 'Co-hosts' },
-          ...(raisedCount > 0 ? [{ id: 'hands', label: `✋ ${raisedCount}` }] : []),
-        ].map(f => (
-          <button key={f.id} onClick={() => setFilter(f.id)} style={{
-            ...T, fontSize: 9, padding: '4px 8px', borderRadius: 5, cursor: 'pointer',
-            background: filter === f.id ? `${G}18` : 'rgba(255,255,255,0.04)',
-            color: filter === f.id ? G : 'rgba(255,255,255,0.35)',
-            border: filter === f.id ? `1px solid ${G}35` : '1px solid rgba(255,255,255,0.07)',
-            fontWeight: 900, whiteSpace: 'nowrap',
+          { id: 'guests', label: 'Guests' },
+          { id: 'scenes', label: 'Scenes' },
+        ].map(t => (
+          <button key={t.id} onClick={() => setDashTab(t.id)} style={{
+            ...T, fontSize: 10, padding: '4px 12px', borderRadius: 6,
+            background: dashTab === t.id ? `${G}15` : 'transparent',
+            color: dashTab === t.id ? G : 'rgba(255,255,255,0.35)',
+            border: dashTab === t.id ? `1px solid ${G}35` : '1px solid rgba(255,255,255,0.08)',
+            cursor: 'pointer', fontWeight: 900,
           }}>
-            {f.label}
+            {t.id === 'scenes' ? 'Scenes' : t.label}
           </button>
         ))}
       </div>
 
-      {/* Guest list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
-        <AnimatePresence>
-          {filtered.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', padding: '32px 16px', color: 'rgba(255,255,255,0.2)', ...T, fontSize: 11 }}>
-              {guests.length === 0 ? 'No panel members yet — share your guest join link' : 'No guests match your filter'}
-            </motion.div>
-          ) : (
-            filtered.map((p, idx) => (
-              <GuestCard
-                key={p.id}
-                participant={p}
-                index={idx}
-                isHost={isHost}
-                roomId={roomId}
-                onSpotlight={onSpotlight}
-                spotlitId={spotlitId}
-                raisedHands={raisedHands}
-              />
-            ))
-          )}
-        </AnimatePresence>
-
-        {/* Empty slots */}
-        {guests.length < 20 && (
-          <div style={{
-            border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '10px',
-            textAlign: 'center', marginTop: 4,
-          }}>
-            <p style={{ ...T, color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>
-              {20 - guests.length} open slot{20 - guests.length !== 1 ? 's' : ''} remaining
-            </p>
+      {dashTab === 'scenes' ? (
+        <div style={{ flex: 1, overflowY: 'auto', padding: 10 }}>
+          <ScenesTab guests={guests} roomId={roomId} />
+        </div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
+            <input
+              value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search guests..."
+              style={{
+                flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 6, padding: '5px 10px', color: '#fff', fontSize: 11, outline: 'none', ...T,
+              }}
+            />
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'live', label: 'Live' },
+              { id: 'cohost', label: 'Co-hosts' },
+              ...(raisedCount > 0 ? [{ id: 'hands', label: `Raised ${raisedCount}` }] : []),
+            ].map(f => (
+              <button key={f.id} onClick={() => setFilter(f.id)} style={{
+                ...T, fontSize: 9, padding: '4px 8px', borderRadius: 5, cursor: 'pointer',
+                background: filter === f.id ? `${G}18` : 'rgba(255,255,255,0.04)',
+                color: filter === f.id ? G : 'rgba(255,255,255,0.35)',
+                border: filter === f.id ? `1px solid ${G}35` : '1px solid rgba(255,255,255,0.07)',
+                fontWeight: 900, whiteSpace: 'nowrap',
+              }}>
+                {f.label}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <AnimatePresence>
+              {filtered.length === 0 ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign: 'center', padding: '32px 16px', color: 'rgba(255,255,255,0.2)', ...T, fontSize: 11 }}>
+                  {guests.length === 0 ? 'No panel members yet — share your guest join link' : 'No guests match your filter'}
+                </motion.div>
+              ) : (
+                filtered.map((p, idx) => (
+                  <GuestCard
+                    key={p.id}
+                    participant={p}
+                    index={idx}
+                    isHost={isHost}
+                    roomId={roomId}
+                    onSpotlight={onSpotlight}
+                    spotlitId={spotlitId}
+                    raisedHands={raisedHands}
+                  />
+                ))
+              )}
+            </AnimatePresence>
+
+            {guests.length < 20 && (
+              <div style={{
+                border: '1px dashed rgba(255,255,255,0.08)', borderRadius: 8, padding: '10px',
+                textAlign: 'center', marginTop: 4,
+              }}>
+                <p style={{ ...T, color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>
+                  {20 - guests.length} open slot{20 - guests.length !== 1 ? 's' : ''} remaining
+                </p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
