@@ -296,9 +296,30 @@ export default function LiveRoom() {
   const isSubscribed = activeSubs.length > 0;
   const showExclusiveGate = isExclusiveStream && !isHost && !isSubscribed && !!party;
 
+  // Deduplicate — keep one record per user_id (latest by created_date)
+  const dedupedMembers = React.useMemo(() => {
+    if (!roomId || !members.length) return [];
+    const seen = new Map();
+    members.forEach(m => {
+      const key = m.user_id || m.id;
+      const existing = seen.get(key);
+      if (!existing || (m.created_date || '') > (existing.created_date || '')) {
+        seen.set(key, m);
+      }
+    });
+    return Array.from(seen.values());
+  }, [members, roomId]);
+
+  const stageMembers = dedupedMembers.filter(m =>
+    m.role && ['host', 'co-host', 'speaker', 'guest'].includes(m.role)
+  );
+  const audienceMembers = dedupedMembers.filter(m =>
+    !m.role || m.role === 'audience'
+  );
+
   // Build stage from real members or demo data
-  const stage = roomId && members.length > 0
-    ? members.slice(0, 20).map((m, i) => ({
+  const stage = roomId && stageMembers.length > 0
+    ? stageMembers.slice(0, 20).map((m, i) => ({
         id:       m.id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
@@ -309,11 +330,11 @@ export default function LiveRoom() {
       }))
     // Demo mode: give first tile the current user's ID so local camera appears
     : user
-      ? [{ ...DEMO_STAGE[0], userId: user.id }, ...DEMO_STAGE.slice(1)]
+      ? [{ ...DEMO_STAGE[0], userId: user.id, name: user.full_name || 'You' }, ...DEMO_STAGE.slice(1)]
       : DEMO_STAGE;
 
-  const audience = roomId && members.length > 6
-    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
+  const audience = roomId && members.length > 0
+    ? audienceMembers.map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
     : DEMO_AUDIENCE;
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
@@ -339,6 +360,8 @@ export default function LiveRoom() {
   const [joinNotif, setJoinNotif]   = useState(null);
   const prevMemberCountRef           = useRef(0);
   const [showAgeGate, setShowAgeGate] = useState(false);
+  const [showNameModal, setShowNameModal]   = useState(false);
+  const [editName, setEditName]             = useState('');
 
   // Announce presence to peers for WebRTC discovery
   useEffect(() => {
@@ -377,6 +400,26 @@ export default function LiveRoom() {
     })();
   }, [user?.id, roomId]);
 
+  // Auto-create/update member record when signed-in user enters room
+  useEffect(() => {
+    if (!user?.id || !roomId || !party?.id) return;
+    const myName = user.full_name || user.email?.split('@')[0] || 'Guest';
+    const myMember = members.find(m => m.user_id === user.id);
+    if (!myMember) {
+      base44.entities.WatchPartyMember.create({
+        party_id: roomId,
+        user_id: user.id,
+        user_name: myName,
+        role: 'audience',
+        is_active: true,
+      }).catch(() => {});
+    } else if (user.full_name && myMember.user_name !== user.full_name) {
+      base44.entities.WatchPartyMember.update(myMember.id, {
+        user_name: user.full_name,
+      }).catch(() => {});
+    }
+  }, [user?.id, user?.full_name, roomId, party?.id, members.length]);
+
   // Sync stage when real data or current user changes
   useEffect(() => { if (stage.length) setStageData(stage); }, [members, user?.id]);
 
@@ -394,9 +437,9 @@ export default function LiveRoom() {
   const activeSpeaker = stageData.find(s => s.speaking);
 
   // Ensure the local user always has a tile (handles demo mode + initial load before members arrive)
-  const hasSelfTile = stageData.some(p => p.userId === user?.id);
-  const displayStage = (user?.id && !hasSelfTile)
-    ? [{ id: 'local-self', userId: user.id, name: user.full_name || 'You',
+  const selfInStage = user?.id && stageData.some(p => p.userId === user.id);
+  const displayStage = (user?.id && !selfInStage)
+    ? [{ id: 'local-self', userId: user.id, name: user.full_name || user.email?.split('@')[0] || 'You',
          role: isHost ? 'host' : isCoHost ? 'co-host' : 'speaker', speaking: false, muted: !audioEnabled },
        ...stageData.slice(0, 19)]
     : stageData;
@@ -405,8 +448,11 @@ export default function LiveRoom() {
   const tileSize  = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
 
   function resolveStream(memberId, userId) {
-    if (userId === user?.id) return { stream: localStream, isLocal: true };
-    const peerId = Array.from((peerUserIds || new Map()).entries()).find(([, uid]) => uid === userId)?.[0];
+    if (memberId === 'local-self' || (user?.id && userId === user.id)) {
+      return { stream: localStream, isLocal: true };
+    }
+    const peerId = Array.from((peerUserIds || new Map()).entries())
+      .find(([, uid]) => uid === userId)?.[0];
     return { stream: peerId ? remoteStreams?.get(peerId) : null, isLocal: false };
   }
 
@@ -782,6 +828,18 @@ export default function LiveRoom() {
             </div>
           )}
 
+          {/* Edit Name (host / co-host) */}
+          {(isHost || isCoHost) && (
+            <button onClick={() => { setEditName(user?.full_name || ''); setShowNameModal(true); }}
+              className="flex flex-col items-center gap-0.5">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                <span className="text-sm">✏️</span>
+              </div>
+              <span className="text-[11px]" style={{ color: 'rgba(212,175,55,0.7)' }}>Name</span>
+            </button>
+          )}
+
           {/* Mic / Sign-in gate */}
           {user ? (
             <>
@@ -938,6 +996,54 @@ export default function LiveRoom() {
           onDeny={() => setShowAgeGate(false)}
           onSkip={() => setShowAgeGate(false)}
         />
+      )}
+
+      {/* ── Display name modal ─────────────────────────────────────────────── */}
+      {showNameModal && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center px-5"
+          style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-xs rounded-2xl overflow-hidden"
+            style={{ background: '#0E1120', border: '1px solid rgba(212,175,55,0.25)' }}>
+            <div className="px-5 pt-5 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="font-black text-base text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Your screen name
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                This is how others see you on stage
+              </p>
+            </div>
+            <div className="p-5 space-y-3">
+              <input
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                maxLength={32}
+                placeholder="Enter your name…"
+                className="w-full px-3 py-3 rounded-xl text-white outline-none"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15 }}
+              />
+              <button
+                onClick={async () => {
+                  if (!editName.trim()) return;
+                  const myMember = members.find(m => m.user_id === user?.id);
+                  if (myMember) {
+                    await base44.entities.WatchPartyMember.update(myMember.id, { user_name: editName.trim() }).catch(() => {});
+                  }
+                  try { await base44.auth.updateMe({ full_name: editName.trim() }); } catch {}
+                  setShowNameModal(false);
+                }}
+                disabled={!editName.trim()}
+                className="w-full py-3 rounded-xl font-black uppercase text-sm"
+                style={{ background: editName.trim() ? '#800020' : 'rgba(128,0,32,0.2)', color: editName.trim() ? '#D4AF37' : 'rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                Set Name
+              </button>
+              <button onClick={() => setShowNameModal(false)}
+                className="w-full py-2 rounded-xl font-black uppercase text-xs"
+                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                Skip
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showExclusiveGate && (
