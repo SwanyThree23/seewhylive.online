@@ -12,6 +12,7 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import InviteSheet from '../components/live/InviteSheet';
+import { buildVdoViewUrl } from '../components/live/VdoNinjaGuestLink';
 import DirectPayments from '../components/live/DirectPayments';
 import AgeGate from '../components/AgeGate';
 import { getStoredAge, getAccessLevel } from '../lib/ageVerification';
@@ -26,8 +27,8 @@ const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const BG      = '#080B18';
-const BG2     = '#0d0618';
-const BG3     = '#110822';
+const BG2     = '#0A0D1E';
+const BG3     = '#0E1120';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
 
@@ -57,7 +58,7 @@ const DEMO_CHAT = [
 ];
 
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
-function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
+function StageTile({ p, size = 96, stream, isLocal = false, vdoUrl = null, onClick }) {
   const videoRef = useRef(null);
   useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
 
@@ -91,6 +92,12 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
           {stream ? (
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
+          ) : vdoUrl ? (
+            <iframe
+              src={vdoUrl}
+              allow="camera; microphone; autoplay; fullscreen; display-capture"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', background: 'transparent', pointerEvents: 'none' }}
+            />
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-black border-2 shrink-0"
               style={{ background: avatarColor(p.name) + '55', borderColor: avatarColor(p.name), color: '#fff' }}>
@@ -254,7 +261,7 @@ export default function LiveRoom() {
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -287,13 +294,17 @@ export default function LiveRoom() {
   const stage = roomId && members.length > 0
     ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
-        userId:   m.user_id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
         muted:    m.is_audio_enabled === false,
+        userId:   m.user_id,
+        vdoSeat:  i + 1,
       }))
-    : DEMO_STAGE;
+    // Demo mode: give first tile the current user's ID so local camera appears
+    : user
+      ? [{ ...DEMO_STAGE[0], userId: user.id }, ...DEMO_STAGE.slice(1)]
+      : DEMO_STAGE;
 
   const audience = roomId && members.length > 6
     ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
@@ -320,6 +331,12 @@ export default function LiveRoom() {
   const [giftEvent, setGiftEvent]   = useState(null);
   const lastGiftTsRef               = useRef(0);
   const [showAgeGate, setShowAgeGate] = useState(false);
+
+  // Announce presence to peers for WebRTC discovery
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+  }, [roomId, user?.id]);
 
   // Apply pending invite role when user logs in and arrives at the room
   useEffect(() => {
@@ -352,8 +369,8 @@ export default function LiveRoom() {
     })();
   }, [user?.id, roomId]);
 
-  // Sync stage when real data arrives
-  useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
+  // Sync stage when real data or current user changes
+  useEffect(() => { if (stage.length) setStageData(stage); }, [members, user?.id]);
 
   // Simulate rotating speaker in demo mode
   useEffect(() => {
@@ -539,14 +556,19 @@ export default function LiveRoom() {
             /* Spotlight mode */
             <div className="space-y-4">
               <div className="flex justify-center py-3">
-                {(() => { const { stream: s, isLocal: l } = resolveStream(spotlit.id, spotlit.userId); return <StageTile p={spotlit} size={170} stream={s} isLocal={l} onClick={() => setSpotlit(null)} />; })()}
+                {(() => {
+                  const { stream, isLocal } = resolveStream(spotlit.id, spotlit.userId);
+                  const vdoUrl = roomId && spotlit.vdoSeat && !stream ? buildVdoViewUrl(roomId, spotlit.vdoSeat) : null;
+                  return <StageTile p={spotlit} size={170} stream={stream} isLocal={isLocal} vdoUrl={vdoUrl} onClick={() => setSpotlit(null)} />;
+                })()}
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 px-1">
                 {displayStage.filter(s => s.id !== spotlit.id).map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);
+                  const vdoUrl = roomId && p.vdoSeat && !stream ? buildVdoViewUrl(roomId, p.vdoSeat) : null;
                   return (
                     <div key={p.id} className="shrink-0">
-                      <StageTile p={p} size={72} stream={stream} isLocal={isLocal} onClick={() => setSpotlit(p)} />
+                      <StageTile p={p} size={72} stream={stream} isLocal={isLocal} vdoUrl={vdoUrl} onClick={() => setSpotlit(p)} />
                     </div>
                   );
                 })}
@@ -557,13 +579,14 @@ export default function LiveRoom() {
               <AnimatePresence>
                 {displayStage.map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);
+                  const vdoUrl = roomId && p.vdoSeat && !stream ? buildVdoViewUrl(roomId, p.vdoSeat) : null;
                   return (
                     <motion.div key={p.id} layout
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       className="flex justify-center">
-                      <StageTile p={p} size={tileSize} stream={stream} isLocal={isLocal}
+                      <StageTile p={p} size={tileSize} stream={stream} isLocal={isLocal} vdoUrl={vdoUrl}
                         onClick={() => setSpotlit(p)} />
                     </motion.div>
                   );
@@ -700,6 +723,19 @@ export default function LiveRoom() {
               <TipWidget roomId={roomId} hostId={party?.host_id} currentUser={user} />
               <span className="text-[11px] text-white/35">Tip</span>
             </div>
+          )}
+
+          {/* Camera toggle */}
+          {user && (
+            <button onClick={toggleVideo} className="flex flex-col items-center gap-0.5">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                {!videoEnabled
+                  ? <VideoOff className="w-4 h-4 text-red-400" />
+                  : <Video className="w-4 h-4" style={{ color: GOLD }} />}
+              </div>
+              <span className="text-[11px] text-white/35"> </span>
+            </button>
           )}
 
           {/* Mic / Sign-in gate */}

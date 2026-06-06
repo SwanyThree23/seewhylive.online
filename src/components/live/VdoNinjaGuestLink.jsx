@@ -6,8 +6,15 @@ import { ExternalLink, Copy, CheckCircle2 } from 'lucide-react';
 function vdoRoom(roomId) {
   return 'sw' + (roomId || 'room').replace(/[^a-z0-9]/gi, '').slice(0, 12).toLowerCase();
 }
+// Deterministic per-seat stream ID — 8 chars of room + zero-padded seat
+export function vdoSeatId(roomId, seatNum) {
+  return vdoRoom(roomId).slice(0, 8) + String(seatNum).padStart(2, '0');
+}
 export function buildGuestPushUrl(roomId, seatNum) {
-  return 'https://vdo.ninja/?room=' + vdoRoom(roomId) + '&push&label=G' + seatNum + '&effects&showlabels';
+  return 'https://vdo.ninja/?room=' + vdoRoom(roomId) + '&push=' + vdoSeatId(roomId, seatNum) + '&label=G' + seatNum + '&effects&showlabels';
+}
+export function buildVdoViewUrl(roomId, seatNum) {
+  return 'https://vdo.ninja/?view=' + vdoSeatId(roomId, seatNum) + '&room=' + vdoRoom(roomId) + '&nocontrols&autoplay&muted=1';
 }
 export function buildSceneUrl(roomId) {
   return 'https://vdo.ninja/?room=' + vdoRoom(roomId) + '&scene&layout=2';
