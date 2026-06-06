@@ -24,10 +24,10 @@ export const AuthProvider = ({ children }) => {
       setAuthError(null);
 
       const appClient = createAxiosClient({
-        baseURL: `/api/apps/public`,
+        baseURL: `https://base44.app/api/apps/public`,
         headers: { 'X-App-Id': appParams.appId },
         token: appParams.token,
-        interceptResponses: true
+        interceptResponses: false
       });
 
       try {
