@@ -294,7 +294,6 @@ export default function LiveRoom() {
   const stage = roomId && members.length > 0
     ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
-        userId:   m.user_id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
@@ -302,7 +301,10 @@ export default function LiveRoom() {
         userId:   m.user_id,
         vdoSeat:  i + 1,
       }))
-    : DEMO_STAGE;
+    // Demo mode: give first tile the current user's ID so local camera appears
+    : user
+      ? [{ ...DEMO_STAGE[0], userId: user.id }, ...DEMO_STAGE.slice(1)]
+      : DEMO_STAGE;
 
   const audience = roomId && members.length > 6
     ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
@@ -367,8 +369,8 @@ export default function LiveRoom() {
     })();
   }, [user?.id, roomId]);
 
-  // Sync stage when real data arrives
-  useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
+  // Sync stage when real data or current user changes
+  useEffect(() => { if (stage.length) setStageData(stage); }, [members, user?.id]);
 
   // Simulate rotating speaker in demo mode
   useEffect(() => {
