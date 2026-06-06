@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, animate as fmAnimate } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
@@ -15,6 +15,26 @@ const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+// Counts up from 0 to `value` on mount
+function AnimatedNumber({ value, prefix = '', suffix = '', decimals = 0 }) {
+  const mv = useMotionValue(0);
+  const rounded = useTransform(mv, v => prefix + v.toFixed(decimals) + suffix);
+  useEffect(() => {
+    const ctrl = fmAnimate(mv, value, { duration: 1.2, ease: [0.16, 1, 0.3, 1] });
+    return () => ctrl.stop();
+  }, [value]);
+  return <motion.span>{rounded}</motion.span>;
+}
+
+const QUICK_VARIANTS = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+const QUICK_ITEM = {
+  hidden: { opacity: 0, y: 20, scale: 0.92 },
+  show:   { opacity: 1, y: 0,  scale: 1, transition: { type: 'spring', damping: 20, stiffness: 300 } },
+};
 
 function fmtDuration(seconds) {
   if (!seconds) return '—';
@@ -133,29 +153,33 @@ export default function CreatorDashboardPage() {
                   <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black"
                     style={{ background: `${G}12`, border: `1px solid ${G}30`, color: G, ...T }}>
                     <Users className="w-3 h-3" />
-                    {activeSubs.length} Subscribers
+                    <AnimatedNumber value={activeSubs.length} /> Subscribers
                   </span>
                   <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black"
                     style={{ background: `${GREEN}12`, border: `1px solid ${GREEN}30`, color: GREEN, ...T }}>
                     <DollarSign className="w-3 h-3" />
-                    ${tipsThisWeek.toFixed(0)} Tips
+                    $<AnimatedNumber value={tipsThisWeek} decimals={0} /> Tips
                   </span>
                 </>
               )}
               <div className="flex gap-1">
                 {['7d', '30d', '365d'].map((range) => (
-                  <button
+                  <motion.button
                     key={range}
                     onClick={() => setTimeRange(range)}
-                    className="px-3 py-1.5 rounded text-xs font-black transition-all"
+                    className="px-3 py-1.5 rounded text-xs font-black"
+                    whileTap={{ scale: 0.92 }}
+                    whileHover={{ scale: 1.06 }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                     style={{
                       background: timeRange === range ? `${G}20` : 'rgba(255,255,255,0.03)',
                       color: timeRange === range ? G : 'rgba(255,255,255,0.5)',
                       border: timeRange === range ? `1px solid ${G}40` : '1px solid rgba(212,175,55,0.12)',
+                      cursor: 'pointer',
                       ...T,
                     }}>
                     {range === '7d' ? '7D' : range === '30d' ? '30D' : '1Y'}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -169,26 +193,32 @@ export default function CreatorDashboardPage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-[10px] uppercase tracking-widest font-black mb-3"
             style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Quick Actions</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3"
+            variants={QUICK_VARIANTS} initial="hidden" animate="show">
             {quickActions.map(({ icon: Icon, label, href, gradient, border, iconColor }) => (
-              <Link key={href} to={href}>
-                <div className="flex items-center gap-3 px-4 rounded-2xl transition-all hover:brightness-110 cursor-pointer"
-                  style={{
-                    height: 80,
-                    background: gradient,
-                    border: `1px solid ${border}`,
-                    borderLeft: `4px solid ${border}`,
-                  }}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}30` }}>
-                    <Icon className="w-5 h-5" style={{ color: iconColor }} />
+              <motion.div key={href} variants={QUICK_ITEM}
+                whileHover={{ scale: 1.03, brightness: 1.1 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 22 }}>
+                <Link to={href}>
+                  <div className="flex items-center gap-3 px-4 rounded-2xl cursor-pointer"
+                    style={{
+                      height: 80,
+                      background: gradient,
+                      border: `1px solid ${border}`,
+                      borderLeft: `4px solid ${border}`,
+                    }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}30` }}>
+                      <Icon className="w-5 h-5" style={{ color: iconColor }} />
+                    </div>
+                    <span className="font-black text-sm text-white flex-1" style={T}>{label}</span>
+                    <ArrowRight className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
                   </div>
-                  <span className="font-black text-sm text-white flex-1" style={T}>{label}</span>
-                  <ArrowRight className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                </div>
-              </Link>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </motion.div>
 
         {user?.id && (
@@ -236,11 +266,14 @@ export default function CreatorDashboardPage() {
                           </Link>
                         </div>
                       ) : (
-                        <div className="space-y-1">
+                        <motion.div className="space-y-1"
+                          variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+                          initial="hidden" animate="show">
                           {recentRooms.map(room => {
                             const isLive = room.status === 'live';
                             return (
-                              <div key={room.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                              <motion.div key={room.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                                variants={{ hidden: { opacity: 0, x: -12 }, show: { opacity: 1, x: 0, transition: { type: 'spring', damping: 22, stiffness: 280 } } }}
                                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div className="w-2 h-2 rounded-full shrink-0"
                                   style={{ background: isLive ? PINK : 'rgba(255,255,255,0.2)' }} />
@@ -266,10 +299,10 @@ export default function CreatorDashboardPage() {
                                     {fmtDuration(room.duration)}
                                   </span>
                                 )}
-                              </div>
+                              </motion.div>
                             );
                           })}
-                        </div>
+                        </motion.div>
                       )}
                     </div>
                   </div>

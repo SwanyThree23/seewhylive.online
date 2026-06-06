@@ -60,7 +60,13 @@ const DEMO_CHAT = [
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
 function StageTile({ p, size = 96, stream, isLocal = false, vdoUrl = null, onClick }) {
   const videoRef = useRef(null);
-  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !stream) return;
+    v.muted = isLocal;        // set DOM property directly — React muted prop unreliable on mobile
+    v.srcObject = stream;
+    v.play().catch(() => {}); // explicit play() — autoPlay alone not reliable on mobile
+  }, [stream, isLocal]);
 
   const isHost   = p.role === 'host';
   const isCohost = p.role === 'co-host';
@@ -260,7 +266,7 @@ export default function LiveRoom() {
   }
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: { facingMode: 'user' } });
   const { remoteStreams, peerUserIds, announceJoin } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
@@ -330,6 +336,8 @@ export default function LiveRoom() {
   const [giftOpen, setGiftOpen]     = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
   const lastGiftTsRef               = useRef(0);
+  const [joinNotif, setJoinNotif]   = useState(null);
+  const prevMemberCountRef           = useRef(0);
   const [showAgeGate, setShowAgeGate] = useState(false);
 
   // Announce presence to peers for WebRTC discovery
@@ -429,6 +437,18 @@ export default function LiveRoom() {
     }, 4000);
     return () => clearInterval(iv);
   }, [roomId, user?.id]);
+
+  useEffect(() => {
+    if (!roomId || !members.length) return;
+    const prev = prevMemberCountRef.current;
+    if (members.length > prev && prev > 0) {
+      const newest = members[members.length - 1];
+      setJoinNotif({ name: newest.user_name || 'Someone' });
+      const t = setTimeout(() => setJoinNotif(null), 3500);
+      return () => clearTimeout(t);
+    }
+    prevMemberCountRef.current = members.length;
+  }, [members.length]);
 
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
@@ -566,16 +586,24 @@ export default function LiveRoom() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}>
+            <motion.div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}
+              variants={{ show: { transition: { staggerChildren: 0.08 } } }}
+              initial="hidden"
+              animate="show">
               <AnimatePresence>
                 {stageData.map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);
                   const vdoUrl = roomId && p.vdoSeat && !stream ? buildVdoViewUrl(roomId, p.vdoSeat) : null;
                   return (
                     <motion.div key={p.id} layout
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
+                      variants={{
+                        hidden: { opacity: 0, scale: 0.75, y: 18 },
+                        show:   { opacity: 1, scale: 1,    y: 0,
+                                  transition: { type: 'spring', damping: 22, stiffness: 280 } }
+                      }}
+                      exit={{ opacity: 0, scale: 0.7 }}
                       className="flex justify-center">
                       <StageTile p={p} size={tileSize} stream={stream} isLocal={isLocal} vdoUrl={vdoUrl}
                         onClick={() => setSpotlit(p)} />
@@ -583,7 +611,7 @@ export default function LiveRoom() {
                   );
                 })}
               </AnimatePresence>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -599,13 +627,23 @@ export default function LiveRoom() {
               <span className="text-[10px]">{audience.length}</span>
             </div>
           </div>
-          <div className="grid grid-cols-5 gap-x-2 gap-y-3">
+          <motion.div
+            className="grid grid-cols-5 gap-x-2 gap-y-3"
+            variants={{ show: { transition: { staggerChildren: 0.04 } } }}
+            initial="hidden"
+            animate="show">
             {audience.map(p => (
-              <div key={p.id} className="flex justify-center">
+              <motion.div
+                key={p.id}
+                className="flex justify-center"
+                variants={{
+                  hidden: { opacity: 0, y: 10 },
+                  show:   { opacity: 1, y: 0, transition: { type: 'spring', damping: 22, stiffness: 260 } }
+                }}>
                 <AudienceTile p={p} />
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* ── App shortcut carousel ─────────────────────────────────────────── */}
@@ -619,15 +657,18 @@ export default function LiveRoom() {
               { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
             ].map(s => (
-              <div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+              <motion.div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
                 onClick={s.action}
+                whileTap={{ scale: 0.82 }}
+                whileHover={{ scale: 1.12 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 style={{ userSelect: 'none' }}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
                   style={{ background: s.bg, border: '1px solid rgba(255,255,255,0.07)' }}>
                   {s.icon}
                 </div>
                 <span className="text-[11px] text-white/30">{s.label}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -664,10 +705,14 @@ export default function LiveRoom() {
 
           {/* Chat */}
           <button onClick={openChat} className="relative flex flex-col items-center gap-0.5">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center"
-              style={{ background: chatOpen ? `${GOLD}15` : 'rgba(255,255,255,0.07)', border: chatOpen ? `1px solid ${GOLD}44` : '1px solid rgba(255,255,255,0.1)' }}>
+            <motion.div
+              className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ background: chatOpen ? `${GOLD}15` : 'rgba(255,255,255,0.07)', border: chatOpen ? `1px solid ${GOLD}44` : '1px solid rgba(255,255,255,0.1)' }}
+              whileTap={{ scale: 0.82 }}
+              whileHover={{ scale: 1.1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
               <MessageCircle className="w-4 h-4 text-white" />
-            </div>
+            </motion.div>
             {unread > 0 && (
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-bold"
                 style={{ background: PINK, color: '#fff' }}>{unread}</div>
@@ -677,11 +722,15 @@ export default function LiveRoom() {
 
           {/* Heart */}
           <button onClick={handleLike} className="flex flex-col items-center gap-0.5">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: liked ? `${PINK}1A` : 'rgba(255,255,255,0.07)', border: liked ? `1px solid ${PINK}55` : '1px solid rgba(255,255,255,0.1)' }}>
+            <motion.div
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: liked ? `${PINK}1A` : 'rgba(255,255,255,0.07)', border: liked ? `1px solid ${PINK}55` : '1px solid rgba(255,255,255,0.1)' }}
+              whileTap={{ scale: 0.82 }}
+              whileHover={{ scale: 1.1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
               <Heart className="w-4 h-4 transition-all"
                 style={{ color: liked ? PINK : 'rgba(255,255,255,0.6)', fill: liked ? PINK : 'none' }} />
-            </div>
+            </motion.div>
             <span className="text-[11px]" style={{ color: liked ? PINK : 'rgba(255,255,255,0.35)' }}>{likeCount}</span>
           </button>
 
@@ -690,20 +739,28 @@ export default function LiveRoom() {
             if (user && getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
             setHandRaised(h => !h);
           }} className="flex flex-col items-center gap-0.5">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
+            <motion.div
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}
+              whileTap={{ scale: 0.82 }}
+              whileHover={{ scale: 1.1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
               <Hand className="w-4 h-4 transition-all" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
-            </div>
+            </motion.div>
             <span className="text-[11px] text-white/35"> </span>
           </button>
 
           {/* Gift */}
           {party && party?.host_id !== user?.id && (
             <button onClick={() => setGiftOpen(true)} className="flex flex-col items-center gap-0.5">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}44` }}>
+              <motion.div
+                className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}44` }}
+                whileTap={{ scale: 0.82 }}
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
                 <Gift className="w-4 h-4" style={{ color: GOLD }} />
-              </div>
+              </motion.div>
               <span className="text-[11px]" style={{ color: GOLD }}>Gift</span>
             </button>
           )}
@@ -716,19 +773,6 @@ export default function LiveRoom() {
             </div>
           )}
 
-          {/* Camera toggle */}
-          {user && (
-            <button onClick={toggleVideo} className="flex flex-col items-center gap-0.5">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
-                {!videoEnabled
-                  ? <VideoOff className="w-4 h-4 text-red-400" />
-                  : <Video className="w-4 h-4" style={{ color: GOLD }} />}
-              </div>
-              <span className="text-[11px] text-white/35"> </span>
-            </button>
-          )}
-
           {/* Mic / Sign-in gate */}
           {user ? (
             <>
@@ -737,12 +781,16 @@ export default function LiveRoom() {
                 if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
                 toggleVideo();
               }} className="flex flex-col items-center gap-0.5">
-                <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                  style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                <motion.div
+                  className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                  style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}
+                  whileTap={{ scale: 0.82 }}
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
                   {!videoEnabled
                     ? <VideoOff className="w-4 h-4 text-red-400" />
                     : <Video className="w-4 h-4" style={{ color: GOLD }} />}
-                </div>
+                </motion.div>
                 <span className="text-[11px] text-white/35">Cam</span>
               </button>
               {/* Mic toggle */}
@@ -750,12 +798,16 @@ export default function LiveRoom() {
                 if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
                 toggleAudio();
               }} className="flex flex-col items-center gap-0.5">
-                <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                  style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                <motion.div
+                  className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                  style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}
+                  whileTap={{ scale: 0.82 }}
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
                   {!audioEnabled
                     ? <MicOff className="w-4 h-4 text-red-400" />
                     : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
-                </div>
+                </motion.div>
                 <span className="text-[11px] text-white/35"> </span>
               </button>
             </>
@@ -771,6 +823,27 @@ export default function LiveRoom() {
           )}
         </div>
       </div>
+
+      {/* Join notification */}
+      <AnimatePresence>
+        {joinNotif && (
+          <motion.div
+            initial={{ y: 48, opacity: 0, scale: 0.9 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 48, opacity: 0, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+            className="fixed bottom-24 inset-x-0 flex justify-center z-50 px-6 pointer-events-none">
+            <div style={{ background: 'rgba(14,17,32,0.92)', border: '1px solid rgba(212,175,55,0.28)', borderRadius: 40, padding: '8px 18px', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: avatarColor(joinNotif.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: '#fff', flexShrink: 0 }}>
+                {joinNotif.name.charAt(0).toUpperCase()}
+              </div>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>
+                <strong style={{ color: '#D4AF37' }}>{joinNotif.name}</strong> joined the room ✨
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Chat panel overlay ─────────────────────────────────────────────── */}
       <AnimatePresence>
