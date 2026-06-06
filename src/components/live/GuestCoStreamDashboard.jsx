@@ -18,7 +18,7 @@ import {
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const QUALITY = {
@@ -140,9 +140,9 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
           <div style={{
             width: 28, height: 28, borderRadius: '50%',
             background: `linear-gradient(135deg, ${isHostP ? '#4a3000' : isCoHost ? '#003040' : CRIMSON}, #080B18)`,
-            border: `1.5px solid ${isHostP ? G : isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.1)'}`,
+            border: `1.5px solid ${isHostP ? G : isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10, fontWeight: 900, color: isHostP ? G : isCoHost ? '#00d4ff' : '#fff', ...T,
+            fontSize: 10, fontWeight: 900, color: isHostP ? G : isCoHost ? '#D4AF37' : '#fff', ...T,
           }}>
             {participant.user_avatar
               ? <img src={participant.user_avatar} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
@@ -158,7 +158,7 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
             {isHostP && <Crown style={{ width: 9, height: 9, color: G }} />}
-            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#00d4ff' }} />}
+            {isCoHost && <Shield style={{ width: 9, height: 9, color: '#D4AF37' }} />}
             <span style={{ ...T, color: '#fff', fontSize: 11, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {participant.user_name || 'Guest'}
             </span>
@@ -235,7 +235,7 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
               onClick={() => setShowTip(v => !v)} title="Tip Guest" />
           )}
           {!isHostP && isHost && (
-            <CBtn icon={isCoHost ? ShieldOff : Shield} color={isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.35)'}
+            <CBtn icon={isCoHost ? ShieldOff : Shield} color={isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.35)'}
               active={isCoHost} onClick={() => promote.mutate()} />
           )}
           {!isHostP && isHost && (
@@ -575,7 +575,7 @@ export default function GuestCoStreamDashboard({
 
         <div style={{ display: 'flex', gap: 6 }}>
           <StatCard icon={Radio} label="Live" value={liveCount} color="#dc2626" />
-          <StatCard icon={Shield} label="Co-hosts" value={coHostCount} color="#00d4ff" />
+          <StatCard icon={Shield} label="Co-hosts" value={coHostCount} color="#D4AF37" />
           <StatCard icon={Users} label="Panel" value={guests.length} />
           <StatCard icon={Eye} label="Reach" value={totalReach.toLocaleString()} color={PINK} />
           {raisedCount > 0 && <StatCard icon={Hand} label="Raised" value={raisedCount} color={PINK} />}
