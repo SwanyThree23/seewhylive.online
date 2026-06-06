@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { Radio, Mic, Eye, CheckCircle } from 'lucide-react';
+import { calcAge, setStoredDob } from '@/lib/ageVerification';
 
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 const GOLD    = '#D4AF37';
@@ -17,6 +18,17 @@ const inputSty = {
   outline: 'none', width: '100%', boxSizing: 'border-box',
   fontFamily: 'Barlow Condensed, sans-serif',
 };
+const dobSelSty = {
+  flex: 1, height: 46, background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: 10, color: '#fff', fontSize: 13,
+  outline: 'none', cursor: 'pointer',
+  fontFamily: 'Barlow Condensed, sans-serif',
+  paddingLeft: 10, WebkitAppearance: 'none',
+};
+const DOB_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOB_DAYS   = Array.from({ length: 31 }, (_, i) => i + 1);
+const DOB_YEARS  = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
 
 function GoogleIcon() {
   return (
@@ -119,6 +131,9 @@ export default function Login({ fromUrl: propFromUrl }) {
   const [info, setInfo]           = useState('');
   const [loading, setLoading]     = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [dobMonth, setDobMonth]   = useState('');
+  const [dobDay, setDobDay]       = useState('');
+  const [dobYear, setDobYear]     = useState('');
 
   const params     = new URLSearchParams(window.location.search);
   const rawFromUrl = propFromUrl || params.get('from_url') || appParams.fromUrl || '/';
@@ -149,7 +164,17 @@ export default function Login({ fromUrl: propFromUrl }) {
 
   const handleViewerRegister = async (e) => {
     e.preventDefault();
-    setError(''); setInfo('Creating your account…'); setLoading(true);
+    setError(''); setLoading(true);
+    if (!dobMonth || !dobDay || !dobYear) {
+      setError('Please enter your date of birth.'); setLoading(false); return;
+    }
+    const dob = `${dobYear}-${String(Number(dobMonth)).padStart(2,'0')}-${String(Number(dobDay)).padStart(2,'0')}`;
+    const age = calcAge(dob);
+    if (age === null || age < 18) {
+      setError('You must be 18 or older to create an account.'); setLoading(false); return;
+    }
+    setStoredDob(dob);
+    setInfo('Creating your account…');
     try {
       await base44.auth.register({ email, password });
       await base44.auth.loginViaEmailPassword(email, password);
@@ -172,7 +197,17 @@ export default function Login({ fromUrl: propFromUrl }) {
 
   const handleHostRegister = async (e) => {
     e.preventDefault();
-    setError(''); setInfo('Creating your account…'); setLoading(true);
+    setError(''); setLoading(true);
+    if (!dobMonth || !dobDay || !dobYear) {
+      setError('Please enter your date of birth.'); setLoading(false); return;
+    }
+    const dob = `${dobYear}-${String(Number(dobMonth)).padStart(2,'0')}-${String(Number(dobDay)).padStart(2,'0')}`;
+    const age = calcAge(dob);
+    if (age === null || age < 21) {
+      setError('You must be 21 or older to host or co-host on SeeWhy LIVE.'); setLoading(false); return;
+    }
+    setStoredDob(dob);
+    setInfo('Creating your account…');
     try {
       await base44.auth.register({ email, password });
       await markCodeUsed(inviteMeta?.id, email);
@@ -328,6 +363,21 @@ export default function Login({ fromUrl: propFromUrl }) {
               <input type="password" placeholder="Choose a password" value={password}
                 onChange={e => setPassword(e.target.value)} required
                 autoComplete="new-password" style={inputSty} />
+              <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '2px 0 -2px' }}>Date of birth (must be 18+)</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <select value={dobMonth} onChange={e => setDobMonth(e.target.value)} required style={dobSelSty}>
+                  <option value="">Month</option>
+                  {DOB_MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                </select>
+                <select value={dobDay} onChange={e => setDobDay(e.target.value)} required style={{ ...dobSelSty, flex: '0 0 70px' }}>
+                  <option value="">Day</option>
+                  {DOB_DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <select value={dobYear} onChange={e => setDobYear(e.target.value)} required style={dobSelSty}>
+                  <option value="">Year</option>
+                  {DOB_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
               {info && <p style={{ ...T, fontSize: 12, color: GOLD, textAlign: 'center', margin: 0 }}>{info}</p>}
               {error && <ErrBox msg={error} />}
               <Btn type="submit" loading={loading}>{loading ? 'Creating account…' : 'Create Free Account'}</Btn>
@@ -401,6 +451,21 @@ export default function Login({ fromUrl: propFromUrl }) {
               <input type="password" placeholder="Choose a password" value={password}
                 onChange={e => setPassword(e.target.value)} required
                 autoComplete="new-password" style={inputSty} />
+              <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '2px 0 -2px' }}>Date of birth (must be 21+)</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <select value={dobMonth} onChange={e => setDobMonth(e.target.value)} required style={dobSelSty}>
+                  <option value="">Month</option>
+                  {DOB_MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                </select>
+                <select value={dobDay} onChange={e => setDobDay(e.target.value)} required style={{ ...dobSelSty, flex: '0 0 70px' }}>
+                  <option value="">Day</option>
+                  {DOB_DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <select value={dobYear} onChange={e => setDobYear(e.target.value)} required style={dobSelSty}>
+                  <option value="">Year</option>
+                  {DOB_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
               {info && <p style={{ ...T, fontSize: 12, color: GOLD, textAlign: 'center', margin: 0 }}>{info}</p>}
               {error && <ErrBox msg={error} />}
               <Btn type="submit" loading={loading}>{loading ? 'Creating account…' : `Join as ${roleLabel}`}</Btn>
