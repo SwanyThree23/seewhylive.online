@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
-import { Radio, Mic, Eye, CheckCircle } from 'lucide-react';
+import { Radio, Mic, Eye, CheckCircle, ShieldCheck } from 'lucide-react';
 
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 const GOLD    = '#D4AF37';
@@ -119,6 +119,8 @@ export default function Login({ fromUrl: propFromUrl }) {
   const [info, setInfo]           = useState('');
   const [loading, setLoading]     = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [viewerAgeOk, setViewerAgeOk] = useState(false);
+  const [hostAgeOk, setHostAgeOk]     = useState(false);
 
   const params     = new URLSearchParams(window.location.search);
   const rawFromUrl = propFromUrl || params.get('from_url') || appParams.fromUrl || '/';
@@ -131,7 +133,11 @@ export default function Login({ fromUrl: propFromUrl }) {
     if (urlCode) { setInviteCode(urlCode.toUpperCase()); go('invite'); }
   }, []);
 
-  function go(p) { setPhase(p); setError(''); setInfo(''); }
+  function go(p) {
+    setPhase(p); setError(''); setInfo('');
+    if (p !== 'viewer')   setViewerAgeOk(false);
+    if (p !== 'register') setHostAgeOk(false);
+  }
 
   // ── Auth actions ────────────────────────────────────────────────────────
   const handleGoogle = () => base44.auth.loginWithProvider('google', fromUrl);
@@ -217,8 +223,11 @@ export default function Login({ fromUrl: propFromUrl }) {
             <button onClick={() => go('viewer')}
               style={{ width: '100%', marginBottom: 10, padding: '14px 16px', borderRadius: 12, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.22)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
               <Eye style={{ width: 22, height: 22, color: GOLD, flexShrink: 0 }} />
-              <div>
-                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Watch &amp; Explore</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Watch &amp; Explore</span>
+                  <span style={{ ...T, fontSize: 9, fontWeight: 900, color: GOLD, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: '0.06em' }}>18+</span>
+                </div>
                 <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>Free account — no invitation needed</div>
               </div>
             </button>
@@ -227,8 +236,11 @@ export default function Login({ fromUrl: propFromUrl }) {
             <button onClick={() => go('invite')}
               style={{ width: '100%', marginBottom: 18, padding: '14px 16px', borderRadius: 12, background: 'rgba(128,0,32,0.12)', border: '1px solid rgba(128,0,32,0.45)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
               <Mic style={{ width: 22, height: 22, color: '#C0392B', flexShrink: 0 }} />
-              <div>
-                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Go Live as Host / Co-Host</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Go Live as Host / Co-Host</span>
+                  <span style={{ ...T, fontSize: 9, fontWeight: 900, color: '#C0392B', background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', borderRadius: 4, padding: '1px 5px', letterSpacing: '0.06em' }}>21+</span>
+                </div>
                 <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>Invitation only — enter your invite code</div>
               </div>
             </button>
@@ -328,9 +340,28 @@ export default function Login({ fromUrl: propFromUrl }) {
               <input type="password" placeholder="Choose a password" value={password}
                 onChange={e => setPassword(e.target.value)} required
                 autoComplete="new-password" style={inputSty} />
+
+              {/* Age gate — 18+ */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: viewerAgeOk ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (viewerAgeOk ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'), transition: 'all 0.2s' }}>
+                <input type="checkbox" checked={viewerAgeOk} onChange={e => setViewerAgeOk(e.target.checked)}
+                  style={{ marginTop: 2, accentColor: GREEN, width: 15, height: 15, flexShrink: 0, cursor: 'pointer' }} />
+                <span style={{ ...T, fontSize: 12, color: viewerAgeOk ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.38)', lineHeight: 1.4 }}>
+                  I confirm I am <strong style={{ color: GOLD }}>18 years of age or older</strong>
+                </span>
+              </label>
+
               {info && <p style={{ ...T, fontSize: 12, color: GOLD, textAlign: 'center', margin: 0 }}>{info}</p>}
               {error && <ErrBox msg={error} />}
-              <Btn type="submit" loading={loading}>{loading ? 'Creating account…' : 'Create Free Account'}</Btn>
+              <div style={{ position: 'relative' }}>
+                <Btn type="submit" loading={loading} onClick={!viewerAgeOk ? (e => { e.preventDefault(); setError('You must be 18 or older to create an account.'); }) : undefined}>
+                  {loading ? 'Creating account…' : 'Create Free Account'}
+                </Btn>
+                {!viewerAgeOk && (
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: 'rgba(8,11,24,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    <span style={{ ...T, fontSize: 11, color: 'rgba(212,175,55,0.5)' }}>Confirm age above to continue</span>
+                  </div>
+                )}
+              </div>
             </form>
           </>
         )}
@@ -401,15 +432,35 @@ export default function Login({ fromUrl: propFromUrl }) {
               <input type="password" placeholder="Choose a password" value={password}
                 onChange={e => setPassword(e.target.value)} required
                 autoComplete="new-password" style={inputSty} />
+
+              {/* Age gate — 21+ */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: hostAgeOk ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (hostAgeOk ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'), transition: 'all 0.2s' }}>
+                <input type="checkbox" checked={hostAgeOk} onChange={e => setHostAgeOk(e.target.checked)}
+                  style={{ marginTop: 2, accentColor: GREEN, width: 15, height: 15, flexShrink: 0, cursor: 'pointer' }} />
+                <span style={{ ...T, fontSize: 12, color: hostAgeOk ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.38)', lineHeight: 1.4 }}>
+                  I confirm I am <strong style={{ color: '#C0392B' }}>21 years of age or older</strong>
+                </span>
+              </label>
+
               {info && <p style={{ ...T, fontSize: 12, color: GOLD, textAlign: 'center', margin: 0 }}>{info}</p>}
               {error && <ErrBox msg={error} />}
-              <Btn type="submit" loading={loading}>{loading ? 'Creating account…' : `Join as ${roleLabel}`}</Btn>
+              <div style={{ position: 'relative' }}>
+                <Btn type="submit" loading={loading} onClick={!hostAgeOk ? (e => { e.preventDefault(); setError('You must be 21 or older to register as a Host or Co-Host.'); }) : undefined}>
+                  {loading ? 'Creating account…' : `Join as ${roleLabel}`}
+                </Btn>
+                {!hostAgeOk && (
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: 'rgba(8,11,24,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    <span style={{ ...T, fontSize: 11, color: 'rgba(212,175,55,0.5)' }}>Confirm age above to continue</span>
+                  </div>
+                )}
+              </div>
             </form>
           </>
         )}
 
         <p style={{ marginTop: 18, textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.13)', ...T }}>
           By continuing you agree to our terms of service and privacy policy.
+          Must be 18+ to view · 21+ to host.
         </p>
       </div>
     </div>
