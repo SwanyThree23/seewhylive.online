@@ -910,7 +910,7 @@ function GuestListRow({ participant, isHost, roomId, raisedHands, onSpotlight, o
       <div style={{
         width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
         background: `linear-gradient(135deg, ${CRIMSON}, #3a0015)`,
-        border: `2px solid ${isHostP ? G : isCoHost ? '#00d4ff' : speaking ? '#22c55e' : 'rgba(255,255,255,0.15)'}`,
+        border: `2px solid ${isHostP ? G : isCoHost ? '#D4AF37' : speaking ? '#22c55e' : 'rgba(255,255,255,0.15)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 14, color: G, fontWeight: 900, ...T,
         boxShadow: speaking ? '0 0 10px rgba(34,197,94,0.5)' : 'none',
@@ -929,7 +929,7 @@ function GuestListRow({ participant, isHost, roomId, raisedHands, onSpotlight, o
             {participant.user_name || 'Guest'}
           </span>
           {isHostP && <span style={{ ...T, fontSize: 8, fontWeight: 900, color: G, background: `${G}20`, border: `1px solid ${G}40`, borderRadius: 3, padding: '1px 4px' }}>HOST</span>}
-          {isCoHost && <span style={{ ...T, fontSize: 8, fontWeight: 900, color: '#00d4ff', background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 3, padding: '1px 4px' }}>CO-HOST</span>}
+          {isCoHost && <span style={{ ...T, fontSize: 8, fontWeight: 900, color: '#D4AF37', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 3, padding: '1px 4px' }}>CO-HOST</span>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
           {participant.is_streaming ? (
@@ -976,7 +976,7 @@ function GuestListRow({ participant, isHost, roomId, raisedHands, onSpotlight, o
           {/* Co-host toggle */}
           {!isHostP && (
             <button onClick={() => onPromote(participant)} title={isCoHost ? 'Remove Co-host' : 'Make Co-host'}
-              style={{ width: 28, height: 28, borderRadius: 6, cursor: 'pointer', border: 'none', background: isCoHost ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.07)', color: isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              style={{ width: 28, height: 28, borderRadius: 6, cursor: 'pointer', border: 'none', background: isCoHost ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.07)', color: isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {isCoHost ? <ShieldOff style={{ width: 11, height: 11 }} /> : <Shield style={{ width: 11, height: 11 }} />}
             </button>
           )}
