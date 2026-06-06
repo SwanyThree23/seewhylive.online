@@ -392,8 +392,17 @@ export default function LiveRoom() {
   }, [roomId]);
 
   const activeSpeaker = stageData.find(s => s.speaking);
-  const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;
-  const tileSize = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
+
+  // Ensure the local user always has a tile (handles demo mode + initial load before members arrive)
+  const hasSelfTile = stageData.some(p => p.userId === user?.id);
+  const displayStage = (user?.id && !hasSelfTile)
+    ? [{ id: 'local-self', userId: user.id, name: user.full_name || 'You',
+         role: isHost ? 'host' : isCoHost ? 'co-host' : 'speaker', speaking: false, muted: !audioEnabled },
+       ...stageData.slice(0, 19)]
+    : stageData;
+
+  const stageCols = displayStage.length <= 4 ? 2 : displayStage.length <= 9 ? 3 : 4;
+  const tileSize  = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
 
   function resolveStream(memberId, userId) {
     if (userId === user?.id) return { stream: localStream, isLocal: true };
@@ -550,7 +559,7 @@ export default function LiveRoom() {
           <div className="flex items-baseline gap-2">
             <span className="text-[17px] font-black text-white">Stage</span>
             <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {stageData.length}/20
+              {displayStage.length}/20
             </span>
           </div>
           <button
@@ -574,7 +583,7 @@ export default function LiveRoom() {
                 })()}
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 px-1">
-                {stageData.filter(s => s.id !== spotlit.id).map(p => {
+                {displayStage.filter(s => s.id !== spotlit.id).map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);
                   const vdoUrl = roomId && p.vdoSeat && !stream ? buildVdoViewUrl(roomId, p.vdoSeat) : null;
                   return (
@@ -593,7 +602,7 @@ export default function LiveRoom() {
               initial="hidden"
               animate="show">
               <AnimatePresence>
-                {stageData.map(p => {
+                {displayStage.map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);
                   const vdoUrl = roomId && p.vdoSeat && !stream ? buildVdoViewUrl(roomId, p.vdoSeat) : null;
                   return (
