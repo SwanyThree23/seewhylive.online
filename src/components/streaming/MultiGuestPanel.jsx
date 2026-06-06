@@ -15,7 +15,7 @@ import GreenroomQueue from '@/components/streaming/GreenroomQueue';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const LAYOUT_PRESETS = [
@@ -138,11 +138,11 @@ function GuestTile({ participant, isSpotlit, onSpotlight, compact, isHost, roomI
               height: isSpotlit ? 96 : compact ? 36 : 64,
               borderRadius: '50%',
               background: `linear-gradient(135deg, ${CRIMSON}, #3a0015)`,
-              border: `2px solid ${isHostP ? G : isCoHost ? '#00d4ff' : 'rgba(255,255,255,0.15)'}`,
+              border: `2px solid ${isHostP ? G : isCoHost ? '#D4AF37' : 'rgba(255,255,255,0.15)'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: isSpotlit ? 32 : compact ? 14 : 20,
               color: G, fontWeight: 900, ...T,
-              boxShadow: isHostP ? `0 0 20px ${G}50` : isCoHost ? '0 0 16px rgba(0,212,255,0.4)' : 'none',
+              boxShadow: isHostP ? `0 0 20px ${G}50` : isCoHost ? '0 0 16px rgba(212,175,55,0.4)' : 'none',
             }}>
               {participant.user_avatar
                 ? <img src={participant.user_avatar} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
@@ -181,9 +181,9 @@ function GuestTile({ participant, isSpotlit, onSpotlight, compact, isHost, roomI
           {!compact && (isHostP || isCoHost) && (
             <div style={{
               position: 'absolute', top: 6, left: isRaised ? 34 : 6,
-              background: isHostP ? `${G}22` : 'rgba(0,212,255,0.15)',
-              border: `1px solid ${isHostP ? G + '60' : 'rgba(0,212,255,0.4)'}`,
-              color: isHostP ? G : '#00d4ff', fontSize: 9, fontWeight: 900,
+              background: isHostP ? `${G}22` : 'rgba(212,175,55,0.15)',
+              border: `1px solid ${isHostP ? G + '60' : 'rgba(212,175,55,0.4)'}`,
+              color: isHostP ? G : '#D4AF37', fontSize: 9, fontWeight: 900,
               padding: '2px 5px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 2, ...T,
             }}>
               {isHostP ? <Crown style={{ width: 8, height: 8 }} /> : <Shield style={{ width: 8, height: 8 }} />}
@@ -246,7 +246,7 @@ function GuestTile({ participant, isSpotlit, onSpotlight, compact, isHost, roomI
                 <TileBtn icon={isSpotlit ? Minimize2 : Maximize2} title={isSpotlit ? 'Un-spotlight' : 'Spotlight'}
                   onClick={() => onSpotlight(participant.id)} color={G} />
                 {!isHostP && <TileBtn icon={isCoHost ? ShieldOff : Shield} title={isCoHost ? 'Remove Co-host' : 'Make Co-host'}
-                  onClick={() => onPromote(participant)} color="#00d4ff" />}
+                  onClick={() => onPromote(participant)} color="#D4AF37" />}
               </div>
               <div style={{ display: 'flex', gap: 4, pointerEvents: 'all' }}>
                 <TileBtn icon={Radio} title="RTMP destinations" onClick={() => { setShowRTMP(v => !v); setShowMenu(false); }}
