@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mic, MicOff, MessageCircle, Heart, Hand, Crown,
+  Mic, MicOff, Video, VideoOff, MessageCircle, Heart, Hand, Crown,
   ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
   Users, LayoutGrid, Send, X, UserPlus, LogIn,
 } from 'lucide-react';
@@ -253,7 +253,7 @@ export default function LiveRoom() {
   }
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
@@ -287,6 +287,7 @@ export default function LiveRoom() {
   const stage = roomId && members.length > 0
     ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
+        userId:   m.user_id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
@@ -529,14 +530,17 @@ export default function LiveRoom() {
             /* Spotlight mode */
             <div className="space-y-4">
               <div className="flex justify-center py-3">
-                <StageTile p={spotlit} size={170} onClick={() => setSpotlit(null)} />
+                {(() => { const { stream: s, isLocal: l } = resolveStream(spotlit.id, spotlit.userId); return <StageTile p={spotlit} size={170} stream={s} isLocal={l} onClick={() => setSpotlit(null)} />; })()}
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 px-1">
-                {stageData.filter(s => s.id !== spotlit.id).map(p => (
-                  <div key={p.id} className="shrink-0">
-                    <StageTile p={p} size={72} onClick={() => setSpotlit(p)} />
-                  </div>
-                ))}
+                {stageData.filter(s => s.id !== spotlit.id).map(p => {
+                  const { stream, isLocal } = resolveStream(p.id, p.userId);
+                  return (
+                    <div key={p.id} className="shrink-0">
+                      <StageTile p={p} size={72} stream={stream} isLocal={isLocal} onClick={() => setSpotlit(p)} />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -691,18 +695,34 @@ export default function LiveRoom() {
 
           {/* Mic / Sign-in gate */}
           {user ? (
-            <button onClick={() => {
-              if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
-              toggleAudio();
-            }} className="flex flex-col items-center gap-0.5">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
-                {!audioEnabled
-                  ? <MicOff className="w-4 h-4 text-red-400" />
-                  : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
-              </div>
-              <span className="text-[11px] text-white/35"> </span>
-            </button>
+            <>
+              {/* Camera toggle */}
+              <button onClick={() => {
+                if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
+                toggleVideo();
+              }} className="flex flex-col items-center gap-0.5">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                  style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                  {!videoEnabled
+                    ? <VideoOff className="w-4 h-4 text-red-400" />
+                    : <Video className="w-4 h-4" style={{ color: GOLD }} />}
+                </div>
+                <span className="text-[11px] text-white/35">Cam</span>
+              </button>
+              {/* Mic toggle */}
+              <button onClick={() => {
+                if (getAccessLevel(getStoredAge()) === null) { setShowAgeGate(true); return; }
+                toggleAudio();
+              }} className="flex flex-col items-center gap-0.5">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                  style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                  {!audioEnabled
+                    ? <MicOff className="w-4 h-4 text-red-400" />
+                    : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
+                </div>
+                <span className="text-[11px] text-white/35"> </span>
+              </button>
+            </>
           ) : (
             <a href={`/login?from_url=${encodeURIComponent(window.location.href)}`}
               className="flex flex-col items-center gap-0.5" style={{ textDecoration: 'none' }}>
