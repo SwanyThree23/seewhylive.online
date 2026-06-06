@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const G      = '#D4AF37';
 const CRIMSON= '#800020';
-const PINK   = '#FF1564';
+const PINK   = '#C0392B';
 const BG     = '#080B18';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -15,7 +15,7 @@ const TIERS = [
   { amount: 1,   label: 'Bronze',   color: '#CD7F32', icon: '🪙', glow: 'rgba(205,127,50,0.4)',  pts: 10 },
   { amount: 5,   label: 'Silver',   color: '#C0C0C0', icon: '⭐', glow: 'rgba(192,192,192,0.4)', pts: 50 },
   { amount: 15,  label: 'Gold',     color: G,         icon: '💛', glow: 'rgba(212,175,55,0.5)',  pts: 150 },
-  { amount: 50,  label: 'Platinum', color: '#00d4ff', icon: '💎', glow: 'rgba(0,212,255,0.5)',   pts: 500 },
+  { amount: 50,  label: 'Platinum', color: '#D4AF37', icon: '💎', glow: 'rgba(212,175,55,0.5)',   pts: 500 },
   { amount: 100, label: 'Diamond',  color: PINK,      icon: '👑', glow: 'rgba(255,21,100,0.6)',  pts: 1000 },
   { amount: 200, label: 'Legend',   color: '#a78bfa', icon: '🌠', glow: 'rgba(167,139,250,0.6)', pts: 2000 },
   { amount: 500, label: 'Elite',    color: '#ff6b35', icon: '⚡', glow: 'rgba(255,107,53,0.7)',  pts: 5000 },
@@ -34,7 +34,7 @@ const PAYMENT_METHODS = [
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑', '🙌', '😍', '💸', '✨'];
 
-const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00d4ff', '#a78bfa', '#ff6b35', '#22c55e'];
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#D4AF37', '#a78bfa', '#ff6b35', '#22c55e'];
 
 function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;
@@ -422,9 +422,9 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                   className="w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs tracking-widest transition-all disabled:opacity-40"
                   style={{
                     ...T,
-                    background: `linear-gradient(90deg, rgba(0,150,255,0.15), rgba(0,212,255,0.15))`,
-                    border: '1px solid rgba(0,212,255,0.35)',
-                    color: '#00d4ff',
+                    background: `linear-gradient(90deg, rgba(0,150,255,0.15), rgba(212,175,55,0.15))`,
+                    border: '1px solid rgba(212,175,55,0.35)',
+                    color: '#D4AF37',
                   }}
                 >
                   🌧️ {doRain.isPending ? 'Raining…' : `Gift Rain — $${RAIN_AMOUNT} · +100 pts`}
