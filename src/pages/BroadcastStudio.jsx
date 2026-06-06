@@ -39,7 +39,8 @@ import AIModeration from '../components/live/AIModeration';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
-import { Hand } from 'lucide-react';
+import InviteSheet from '../components/live/InviteSheet';
+import { Hand, UserPlus } from 'lucide-react';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -315,7 +316,8 @@ export default function BroadcastStudio() {
   const [guardianEnabled, setGuardianEnabled] = useState(true);
   const [guardianStats, setGuardianStats] = useState({ blocked: 0, warned: 0, muted: 0 });
   const [ariaEnabled, setAriaEnabled] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
+  const [linkCopied, setLinkCopied]     = useState(false);
+  const [inviteSheetOpen, setInviteSheetOpen] = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [isExclusive, setIsExclusive] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
@@ -717,10 +719,10 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            <button onClick={copyLink}
+            <button onClick={() => setInviteSheetOpen(true)}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
-              style={{ background: 'rgba(212,175,55,0.08)', color: GOLD }} title="Copy invite link">
-              <Copy className="w-3.5 h-3.5" />
+              style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD }} title="Invite people">
+              <UserPlus className="w-3.5 h-3.5" />
             </button>
             <button onClick={() => setTheaterMode(v => !v)}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
@@ -1858,6 +1860,15 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      <InviteSheet
+        isOpen={inviteSheetOpen}
+        onClose={() => setInviteSheetOpen(false)}
+        roomId={partyId}
+        roomTitle={party?.title}
+        isHost={isHost}
+        isCoHost={isCoHost}
+      />
     </div>
   );
 }
