@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand, Crown,
   ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
-  Users, LayoutGrid, Send, X,
+  Users, LayoutGrid, Send, X, UserPlus, LogIn,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
+import InviteSheet from '../components/live/InviteSheet';
 import DirectPayments from '../components/live/DirectPayments';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
@@ -215,7 +216,7 @@ function ChatPanel({ messages, onClose, onSend }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
+      {/* Input / sign-in prompt */}
       <div className="shrink-0 flex gap-2 px-3 py-2.5"
         style={{ borderTop: '1px solid rgba(255,255,255,0.05)', background: BG2 }}>
         <input
@@ -238,8 +239,16 @@ function ChatPanel({ messages, onClose, onSend }) {
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function LiveRoom() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId    = urlParams.get('id');
+  const urlParams    = new URLSearchParams(window.location.search);
+  const roomId       = urlParams.get('id');
+  const joinAs       = urlParams.get('join_as');   // 'co-host' | 'guest' | null
+  const inviteKey    = urlParams.get('ik');
+
+  // Store invite role so it survives a login redirect
+  if (joinAs && typeof sessionStorage !== 'undefined') {
+    sessionStorage.setItem('swl_pending_role', joinAs);
+    sessionStorage.setItem('swl_pending_room', roomId || '');
+  }
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
   const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
@@ -260,7 +269,8 @@ export default function LiveRoom() {
   });
 
   const isExclusiveStream = party?.is_exclusive === true;
-  const isHost = user?.id && party?.host_id && user.id === party.host_id;
+  const isHost   = user?.id && party?.host_id && user.id === party.host_id;
+  const isCoHost = !isHost && members.some(m => m.user_id === user?.id && m.role === 'co-host');
 
   const { data: activeSubs = [] } = useQuery({
     queryKey: ['user-subscriptions', user?.id, party?.host_id],
@@ -301,6 +311,7 @@ export default function LiveRoom() {
   const [likeCount, setLikeCount]   = useState(3);
   const [handRaised, setHandRaised] = useState(false);
   const [shareOpen, setShareOpen]   = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
@@ -394,6 +405,14 @@ export default function LiveRoom() {
         <button className="w-7 h-7 flex items-center justify-center" onClick={() => setShareOpen(true)}>
           <Share2 className="w-4 h-4 text-white/40" />
         </button>
+        {(isHost || isCoHost) && (
+          <button onClick={() => setInviteOpen(true)}
+            className="w-7 h-7 flex items-center justify-center rounded-full transition-all"
+            style={{ background: `rgba(212,175,55,0.15)`, border: `1px solid rgba(212,175,55,0.3)` }}
+            title="Invite people">
+            <UserPlus className="w-3.5 h-3.5" style={{ color: GOLD }} />
+          </button>
+        )}
         <button className="w-7 h-7 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.07)' }}>
           <Minus className="w-3.5 h-3.5 text-white/40" />
@@ -553,6 +572,23 @@ export default function LiveRoom() {
         </div>
       </div>
 
+      {/* ── Anonymous viewer banner ───────────────────────────────────────────── */}
+      {!user && (
+        <div className="fixed bottom-[76px] inset-x-0 z-30 px-4">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
+            style={{ background: 'rgba(13,6,24,0.96)', border: '1px solid rgba(212,175,55,0.18)', backdropFilter: 'blur(12px)' }}>
+            <span className="text-[11px] text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif', flex: 1 }}>
+              👁 Watching as guest — sign in to chat, tip, and join the stage
+            </span>
+            <a href={`/login?from_url=${encodeURIComponent(window.location.href)}`}
+              className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wide"
+              style={{ background: `linear-gradient(135deg, #800020, #A0003A)`, color: GOLD, textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Sign In
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* ── Fixed bottom toolbar ──────────────────────────────────────────────── */}
       <div className="fixed bottom-0 inset-x-0 flex items-center justify-between px-4 py-3 shrink-0"
         style={{ background: `linear-gradient(to top, ${BG} 70%, ${BG}00)`, backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -616,16 +652,27 @@ export default function LiveRoom() {
             </div>
           )}
 
-          {/* Mic */}
-          <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
-              {!audioEnabled
-                ? <MicOff className="w-4 h-4 text-red-400" />
-                : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
-            </div>
-            <span className="text-[11px] text-white/35"> </span>
-          </button>
+          {/* Mic / Sign-in gate */}
+          {user ? (
+            <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+                {!audioEnabled
+                  ? <MicOff className="w-4 h-4 text-red-400" />
+                  : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
+              </div>
+              <span className="text-[11px] text-white/35"> </span>
+            </button>
+          ) : (
+            <a href={`/login?from_url=${encodeURIComponent(window.location.href)}`}
+              className="flex flex-col items-center gap-0.5" style={{ textDecoration: 'none' }}>
+              <div className="w-11 h-11 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <LogIn className="w-4 h-4 text-white/30" />
+              </div>
+              <span className="text-[9px] text-white/25" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Sign in</span>
+            </a>
+          )}
         </div>
       </div>
 
@@ -693,6 +740,16 @@ export default function LiveRoom() {
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      {/* Invite sheet */}
+      <InviteSheet
+        isOpen={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        roomId={roomId}
+        roomTitle={roomTitle}
+        isHost={isHost}
+        isCoHost={isCoHost}
+      />
 
       {showExclusiveGate && (
         <div style={{
