@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
-import { Radio, Mic, Eye, CheckCircle } from 'lucide-react';
+import { Radio, Mic, Eye, CheckCircle, ShieldCheck } from 'lucide-react';
 import { calcAge, setStoredDob } from '@/lib/ageVerification';
 
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -252,8 +252,11 @@ export default function Login({ fromUrl: propFromUrl }) {
             <button onClick={() => go('viewer')}
               style={{ width: '100%', marginBottom: 10, padding: '14px 16px', borderRadius: 12, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.22)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
               <Eye style={{ width: 22, height: 22, color: GOLD, flexShrink: 0 }} />
-              <div>
-                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Watch &amp; Explore</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Watch &amp; Explore</span>
+                  <span style={{ ...T, fontSize: 9, fontWeight: 900, color: GOLD, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: '0.06em' }}>18+</span>
+                </div>
                 <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>Free account — no invitation needed</div>
               </div>
             </button>
@@ -262,8 +265,11 @@ export default function Login({ fromUrl: propFromUrl }) {
             <button onClick={() => go('invite')}
               style={{ width: '100%', marginBottom: 18, padding: '14px 16px', borderRadius: 12, background: 'rgba(128,0,32,0.12)', border: '1px solid rgba(128,0,32,0.45)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
               <Mic style={{ width: 22, height: 22, color: '#C0392B', flexShrink: 0 }} />
-              <div>
-                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Go Live as Host / Co-Host</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>Go Live as Host / Co-Host</span>
+                  <span style={{ ...T, fontSize: 9, fontWeight: 900, color: '#C0392B', background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', borderRadius: 4, padding: '1px 5px', letterSpacing: '0.06em' }}>21+</span>
+                </div>
                 <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>Invitation only — enter your invite code</div>
               </div>
             </button>
@@ -475,6 +481,7 @@ export default function Login({ fromUrl: propFromUrl }) {
 
         <p style={{ marginTop: 18, textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.13)', ...T }}>
           By continuing you agree to our terms of service and privacy policy.
+          Must be 18+ to view · 21+ to host.
         </p>
       </div>
 
