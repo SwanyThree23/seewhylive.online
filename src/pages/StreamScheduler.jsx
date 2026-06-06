@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, ChevronLeft, ChevronRight, Calendar, Clock, Bell,
-  Radio, Share2, Pencil, Trash2, X, Check, RefreshCw
+  Radio, Share2, Pencil, Trash2, X, Check, RefreshCw, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,18 @@ const CATEGORIES = [
   { id: 'art', label: '🎨 Art' }, { id: 'tech', label: '💻 Tech' },
   { id: 'irl', label: '📍 IRL' }, { id: 'other', label: '🌟 Other' },
 ];
+const BEST_TIMES = {
+  gaming:    { day: 'Fri', hour: '8PM', note: 'Peak gaming hours', confidence: 92 },
+  music:     { day: 'Sat', hour: '9PM', note: 'Weekend prime time', confidence: 88 },
+  education: { day: 'Mon', hour: '7PM', note: 'Weekday after work', confidence: 85 },
+  talk:      { day: 'Sun', hour: '4PM', note: 'Sunday wind-down', confidence: 80 },
+  fitness:   { day: 'Tue', hour: '6AM', note: 'Morning workout crowd', confidence: 78 },
+  cooking:   { day: 'Sun', hour: '2PM', note: 'Sunday meal prep', confidence: 83 },
+  art:       { day: 'Sat', hour: '3PM', note: 'Afternoon creative time', confidence: 75 },
+  tech:      { day: 'Wed', hour: '7PM', note: 'Mid-week tech crowd', confidence: 87 },
+  irl:       { day: 'Fri', hour: '7PM', note: 'TGIF energy', confidence: 82 },
+  other:     { day: 'Sat', hour: '6PM', note: 'General peak time', confidence: 72 },
+};
 const DURATIONS = [
   { label: '30 min', value: 30 }, { label: '1 hr', value: 60 },
   { label: '2 hr', value: 120 }, { label: '3 hr', value: 180 }, { label: '4 hr+', value: 240 },
@@ -165,6 +177,26 @@ export default function StreamScheduler() {
             </button>
           </div>
         </div>
+
+        {/* Best-time overview strip */}
+        {!showForm && !editingStream && (
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
+            <div className="flex gap-3" style={{ width: 'max-content' }}>
+              {['gaming','music','talk','tech','education'].map(cat => {
+                const bt = BEST_TIMES[cat];
+                const catLabel = CATEGORIES.find(c => c.id === cat)?.label || cat;
+                return (
+                  <div key={cat} className="rounded-xl p-3 flex flex-col gap-1"
+                    style={{ background: 'rgba(13,6,24,0.8)', border: '1px solid rgba(212,175,55,0.1)', minWidth: 120 }}>
+                    <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{catLabel}</span>
+                    <span className="text-base font-black" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{bt.day} {bt.hour}</span>
+                    <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{bt.confidence}% conf.</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Calendar */}
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16 }}>
@@ -382,6 +414,44 @@ export default function StreamScheduler() {
                     ))}
                   </div>
                 </div>
+
+                {/* Best-time suggestion */}
+                {form.category && BEST_TIMES[form.category] && (
+                  <div className="rounded-xl p-3 flex items-center gap-3"
+                    style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: 'rgba(212,175,55,0.15)' }}>
+                      <Zap className="w-4 h-4" style={{ color: '#D4AF37' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-black uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                        AI Suggestion: {BEST_TIMES[form.category].day} {BEST_TIMES[form.category].hour}
+                      </p>
+                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {BEST_TIMES[form.category].note} · {BEST_TIMES[form.category].confidence}% confidence
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const day = BEST_TIMES[form.category].day;
+                        const hour = BEST_TIMES[form.category].hour;
+                        // Build a date string for next occurrence of that day
+                        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                        const targetDay = days.indexOf(day);
+                        const now = new Date();
+                        const daysUntil = (targetDay - now.getDay() + 7) % 7 || 7;
+                        const next = new Date(now);
+                        next.setDate(now.getDate() + daysUntil);
+                        const h = parseInt(hour) + (hour.includes('PM') && parseInt(hour) < 12 ? 12 : 0);
+                        next.setHours(h, 0, 0, 0);
+                        setForm(f => ({ ...f, scheduled_start: next.toISOString().slice(0, 16) }));
+                      }}
+                      className="text-[11px] font-black uppercase px-2 py-1 rounded-lg"
+                      style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
+                      Apply
+                    </button>
+                  </div>
+                )}
 
                 {/* Date/Time */}
                 <div className="space-y-1.5">

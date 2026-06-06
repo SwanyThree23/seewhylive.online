@@ -42,59 +42,68 @@ function StatCard({ icon: Icon, label, value, color = GOLD }) {
   );
 }
 
-function FlaggedItem({ mod, onAction, user }) {
+function FlaggedItem({ mod, onAction, user, bulkMode, selectedIds, onToggleSelect }) {
   const vStyle = VIOLATION_STYLES[mod.violation_type] || VIOLATION_STYLES.inappropriate;
   return (
-    <div className="rounded-xl p-3 space-y-2"
-      style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${vStyle.border}` }}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
-            style={{ background: vStyle.bg, color: vStyle.color, border: `1px solid ${vStyle.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {mod.content_type?.toUpperCase()}
-          </span>
-          <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
-            style={{ background: vStyle.bg, color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {mod.violation_type?.replace('_', ' ')}
-          </span>
-          {mod.auto_detected && (
-            <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-              style={{ background: 'rgba(255,215,0,0.12)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              AI
-            </span>
-          )}
+    <div className="relative">
+      {bulkMode && (
+        <div className="absolute top-2 left-2 z-10 w-5 h-5 rounded flex items-center justify-center cursor-pointer"
+          style={{ background: selectedIds.has(mod.id) ? '#D4AF37' : 'rgba(255,255,255,0.1)', border: '1px solid rgba(212,175,55,0.5)' }}
+          onClick={e => { e.stopPropagation(); onToggleSelect(mod.id); }}>
+          {selectedIds.has(mod.id) && <span style={{ fontSize: 10, color: '#000', fontWeight: 900 }}>✓</span>}
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Confidence</div>
-          <div className="text-[10px] font-black" style={{ color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {Math.round((mod.ai_confidence || 0) * 100)}%
+      )}
+      <div className="rounded-xl p-3 space-y-2"
+        style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${vStyle.border}`, paddingLeft: bulkMode ? '2rem' : undefined }}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-wrap gap-1.5 items-center">
+            <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
+              style={{ background: vStyle.bg, color: vStyle.color, border: `1px solid ${vStyle.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {mod.content_type?.toUpperCase()}
+            </span>
+            <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
+              style={{ background: vStyle.bg, color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {mod.violation_type?.replace('_', ' ')}
+            </span>
+            {mod.auto_detected && (
+              <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                style={{ background: 'rgba(255,215,0,0.12)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                AI
+              </span>
+            )}
+          </div>
+          <div className="text-right shrink-0">
+            <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Confidence</div>
+            <div className="text-[10px] font-black" style={{ color: vStyle.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {Math.round((mod.ai_confidence || 0) * 100)}%
+            </div>
           </div>
         </div>
-      </div>
-      {mod.ai_explanation && (
-        <p className="text-[10px] italic px-2 py-1 rounded"
-          style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.03)', borderLeft: `2px solid ${vStyle.color}` }}>
-          "{mod.ai_explanation}"
-        </p>
-      )}
-      {/* Confidence bar */}
-      <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-        <div className="h-full rounded-full" style={{ width: `${(mod.ai_confidence || 0) * 100}%`, background: vStyle.color }} />
-      </div>
-      <div className="flex gap-1.5 flex-wrap">
-        {[
-          { label: 'Hide', action: 'hidden', color: GOLD },
-          { label: 'Delete', action: 'deleted', color: '#FF4444' },
-          { label: 'Warn', action: 'warned', color: '#FFD700' },
-          { label: '✓ Safe', action: 'none_safe', color: '#6DBF7E' },
-        ].map(({ label, action, color }) => (
-          <button key={action}
-            onClick={() => onAction(mod, action)}
-            className="px-2.5 py-1 rounded-lg text-[11px] font-black uppercase transition-all"
-            style={{ background: `${color}12`, color, border: `1px solid ${color}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {label}
-          </button>
-        ))}
+        {mod.ai_explanation && (
+          <p className="text-[10px] italic px-2 py-1 rounded"
+            style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.03)', borderLeft: `2px solid ${vStyle.color}` }}>
+            "{mod.ai_explanation}"
+          </p>
+        )}
+        {/* Confidence bar */}
+        <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <div className="h-full rounded-full" style={{ width: `${(mod.ai_confidence || 0) * 100}%`, background: vStyle.color }} />
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          {[
+            { label: 'Hide', action: 'hidden', color: GOLD },
+            { label: 'Delete', action: 'deleted', color: '#FF4444' },
+            { label: 'Warn', action: 'warned', color: '#FFD700' },
+            { label: '✓ Safe', action: 'none_safe', color: '#6DBF7E' },
+          ].map(({ label, action, color }) => (
+            <button key={action}
+              onClick={() => onAction(mod, action)}
+              className="px-2.5 py-1 rounded-lg text-[11px] font-black uppercase transition-all"
+              style={{ background: `${color}12`, color, border: `1px solid ${color}25`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -188,6 +197,19 @@ export default function ModerationDashboardPage() {
   const [activeTab, setActiveTab] = useState('flagged');
   const qc = useQueryClient();
 
+  // Settings panel state
+  const [showSettings, setShowSettings] = useState(false);
+  const [thresholds, setThresholds] = useState({
+    spam: 3,
+    harassment: 1,
+    hate_speech: 1,
+    inappropriate: 5,
+  });
+
+  // Bulk action state
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkMode, setBulkMode] = useState(false);
+
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: moderations = [] } = useQuery({
     queryKey: ['mod-content'],
@@ -253,6 +275,14 @@ export default function ModerationDashboardPage() {
     { id: 'reports',  label: `📋 Reports (${reports.length})` },
   ];
 
+  const handleToggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  };
+
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Header */}
@@ -265,6 +295,13 @@ export default function ModerationDashboardPage() {
           </span>
           <span className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)' }}>Moderation</span>
         </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowSettings(s => !s)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase"
+            style={{ background: showSettings ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${showSettings ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: showSettings ? '#D4AF37' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            ⚙ Thresholds
+          </button>
+        </div>
       </div>
 
       {/* Stats row */}
@@ -275,6 +312,45 @@ export default function ModerationDashboardPage() {
           <StatCard icon={Eye} label="Auto-Detected" value={autoDetected.length} color="#D4AF37" />
           <StatCard icon={TrendingUp} label="Human Overrides" value={humanOverrides.length} color="#C9A84C" />
         </div>
+
+        {/* Auto-Mute Thresholds Settings Panel */}
+        <AnimatePresence>
+          {showSettings && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden rounded-xl mb-4"
+              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+              <div className="p-4">
+                <p className="font-black text-sm mb-3 uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                  Auto-Mute Thresholds
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(thresholds).map(([key, val]) => (
+                    <div key={key} className="space-y-1">
+                      <label className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {key.replace('_', ' ')}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range" min={1} max={10} value={val}
+                          onChange={e => setThresholds(t => ({ ...t, [key]: +e.target.value }))}
+                          className="flex-1" style={{ accentColor: '#D4AF37' }}
+                        />
+                        <span className="font-black text-sm w-4 text-right" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>{val}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] mt-3" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  Users are automatically muted after exceeding N flags of each type in a session.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Toxicity gauge */}
         <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center justify-between mb-1.5">
@@ -311,16 +387,33 @@ export default function ModerationDashboardPage() {
       {/* Content */}
       <div className="p-4 md:p-6 space-y-2 max-w-4xl mx-auto">
         {activeTab === 'flagged' && (
-          flagged.length === 0
-            ? <div className="flex flex-col items-center justify-center py-16 gap-3">
-                <Shield className="w-14 h-14" style={{ color: 'rgba(109,191,126,0.3)' }} />
-                <p className="font-black uppercase text-lg" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI: All Clear ✓</p>
-                <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No flagged content requires review</p>
+          <>
+            {/* Bulk select controls */}
+            {flagged.length > 0 && (
+              <div className="flex items-center justify-end mb-2">
+                <button
+                  onClick={() => { setBulkMode(b => !b); setSelectedIds(new Set()); }}
+                  className="px-3 py-1.5 rounded-xl text-[11px] font-black uppercase"
+                  style={{ background: bulkMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${bulkMode ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: bulkMode ? '#D4AF37' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  {bulkMode ? '✕ Cancel' : '☑ Bulk Select'}
+                </button>
               </div>
-            : flagged.map(mod => (
-                <FlaggedItem key={mod.id} mod={mod} user={user}
-                  onAction={(m, action) => reviewMut.mutate({ id: m.id, action })} />
-              ))
+            )}
+            {flagged.length === 0
+              ? <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <Shield className="w-14 h-14" style={{ color: 'rgba(109,191,126,0.3)' }} />
+                  <p className="font-black uppercase text-lg" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>Guardian AI: All Clear ✓</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No flagged content requires review</p>
+                </div>
+              : flagged.map(mod => (
+                  <FlaggedItem key={mod.id} mod={mod} user={user}
+                    bulkMode={bulkMode}
+                    selectedIds={selectedIds}
+                    onToggleSelect={handleToggleSelect}
+                    onAction={(m, action) => reviewMut.mutate({ id: m.id, action })} />
+                ))
+            }
+          </>
         )}
         {activeTab === 'chat' && (
           chatMods.length === 0
@@ -339,6 +432,28 @@ export default function ModerationDashboardPage() {
               ))
         )}
       </div>
+
+      {/* Bulk action bar */}
+      {bulkMode && selectedIds.size > 0 && (
+        <div className="fixed bottom-20 left-0 right-0 z-40 px-4">
+          <div className="rounded-2xl p-3 flex items-center gap-3"
+            style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', boxShadow: '0 -4px 20px rgba(0,0,0,0.5)' }}>
+            <span className="font-black text-sm flex-1" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {selectedIds.size} selected
+            </span>
+            <button onClick={() => { selectedIds.forEach(id => reviewMut.mutate({ id, action: 'none_safe' })); setSelectedIds(new Set()); setBulkMode(false); }}
+              className="px-3 py-1.5 rounded-xl text-[11px] font-black uppercase"
+              style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              ✓ Approve All
+            </button>
+            <button onClick={() => { setSelectedIds(new Set()); setBulkMode(false); }}
+              className="px-3 py-1.5 rounded-xl text-[11px] font-black uppercase"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

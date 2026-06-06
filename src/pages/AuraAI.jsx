@@ -44,16 +44,66 @@ Production standards you enforce:
 
 Be concise, strategic, and luxury-forward. Never reveal credentials or server IPs. Address the creator as "Creator" or by context.`;
 
-const QUICK_ACTIONS = [
-  { label: '🎬 Stream Opener', prompt: 'Write me a luxury opening script for tonight\'s live domino tournament stream. Make it cinematic and hype the audience in the first 10 seconds.' },
-  { label: '💸 Revenue Drive', prompt: 'Give me a 3-step subscriber conversion script I can run during a slow moment in the stream to drive Gold tier sign-ups.' },
-  { label: '📡 Multi-Stream', prompt: 'I\'m about to go multi-platform. Give me a quick checklist and talking points to tell viewers on all platforms where to find me.' },
-  { label: '🎙️ Guest Intro', prompt: 'Write a 30-second introduction script for a VIP co-host guest joining my stream via VDO.Ninja.' },
-  { label: '⚔️ PK Battle Hype', prompt: 'I\'m about to start a PK Battle. Give me a hype script to get the crowd behind both competitors before the countdown.' },
-  { label: '📊 Mid-Stream CTA', prompt: 'I\'m 30 minutes into my stream. Write a mid-show call-to-action that drives tips without feeling desperate.' },
-  { label: '🔴 Go Live Checklist', prompt: 'Give me a production-quality pre-stream checklist covering audio, video, overlays, chat moderation, and monetization for a SeeWhy LIVE broadcast.' },
-  { label: '🌟 Closing Segment', prompt: 'Write a premium closing segment script that thanks top tippers, teases next stream, and drives subscription conversions in under 60 seconds.' },
-];
+const AURA_MODES = {
+  STRATEGY: {
+    label: '🎬 Strategy',
+    color: PURPLE,
+    system: AURA_SYSTEM,
+    hint: 'Broadcast strategy & production quality',
+  },
+  HYPE: {
+    label: '🔥 Hype',
+    color: '#FF4500',
+    hint: 'High-energy crowd hype & engagement',
+    system: `You are AURA in HYPE MODE — an ultra-high-energy live event hype master for SeeWhy LIVE. Your responses are short, punchy, all-caps where needed, loaded with emojis and audience callouts. You drive donations, reactions, and viral moments. Think stadium announcer meets rap battle host. Every response should make the audience FEEL the energy. Keep answers under 3 sentences. Use exclamation marks. Make it LOUD.`,
+  },
+  EDUCATOR: {
+    label: '📚 Educator',
+    color: '#22c55e',
+    hint: 'Educational content & structured teaching',
+    system: `You are AURA in EDUCATOR MODE — a calm, structured teaching co-host for SeeWhy LIVE. You help creators deliver educational content: clear explanations, step-by-step breakdowns, quiz prompts for the chat, and engaging lesson frameworks. Your tone is warm, authoritative, and pedagogically sound. You suggest interactive elements (polls, Q&A, chat challenges) and help pace the educational content for live streaming. Keep answers focused and actionable.`,
+  },
+  MODERATOR: {
+    label: '🛡️ Moderator',
+    color: '#D4AF37',
+    hint: 'Community management & conflict resolution',
+    system: `You are AURA in MODERATOR MODE — a calm, firm community management co-host for SeeWhy LIVE. You help creators handle difficult chat situations, write moderation announcements, craft community guidelines, de-escalate conflicts, and manage disruptive viewers professionally. Your tone is measured, fair, and authoritative — never inflammatory. Suggest specific chat commands, timeout policies, and positive reinforcement strategies. Always prioritize creator safety and community health.`,
+  },
+};
+
+const QUICK_ACTIONS_BY_MODE = {
+  STRATEGY: [
+    { label: '🎬 Stream Opener', prompt: 'Write me a luxury opening script for tonight\'s live domino tournament stream. Make it cinematic and hype the audience in the first 10 seconds.' },
+    { label: '💸 Revenue Drive', prompt: 'Give me a 3-step subscriber conversion script I can run during a slow moment in the stream to drive Gold tier sign-ups.' },
+    { label: '📡 Multi-Stream', prompt: 'I\'m about to go multi-platform. Give me a quick checklist and talking points to tell viewers on all platforms where to find me.' },
+    { label: '🎙️ Guest Intro', prompt: 'Write a 30-second introduction script for a VIP co-host guest joining my stream via VDO.Ninja.' },
+    { label: '⚔️ PK Battle Hype', prompt: 'I\'m about to start a PK Battle. Give me a hype script to get the crowd behind both competitors before the countdown.' },
+    { label: '📊 Mid-Stream CTA', prompt: 'I\'m 30 minutes into my stream. Write a mid-show call-to-action that drives tips without feeling desperate.' },
+    { label: '🔴 Go Live Checklist', prompt: 'Give me a production-quality pre-stream checklist covering audio, video, overlays, chat moderation, and monetization.' },
+    { label: '🌟 Closing Segment', prompt: 'Write a premium closing segment script that thanks top tippers, teases next stream, and drives subscription conversions in under 60 seconds.' },
+  ],
+  HYPE: [
+    { label: '🔥 HYPE DROP', prompt: 'Give me an explosive 10-second crowd hype drop to kick off this stream RIGHT NOW!' },
+    { label: '💎 TIP STORM', prompt: 'Write a 15-second tip storm callout that will get the crowd sending gifts immediately!' },
+    { label: '👑 SHOUTOUT', prompt: 'Give me a hype shoutout script for the top 3 gifters in the room right now.' },
+    { label: '⚡ REACTION WAVE', prompt: 'Write something that will make EVERYONE react in chat at the same time — hearts, flames, crowns!' },
+    { label: '🎯 CHALLENGE', prompt: 'Create a live viewer challenge that drives engagement and makes people tag their friends.' },
+  ],
+  EDUCATOR: [
+    { label: '📋 Lesson Outline', prompt: 'Help me structure a 30-minute educational stream on domino strategy into clear segments with audience engagement moments.' },
+    { label: '❓ Chat Quiz', prompt: 'Give me 5 quiz questions I can pose to the chat during a domino strategy lesson.' },
+    { label: '🎯 Learning CTA', prompt: 'Write a mid-lesson check-in that encourages viewers to apply what they learned and share their answer in chat.' },
+    { label: '📝 Summary Slide', prompt: 'Help me create a 3-point verbal summary to close a lesson that reinforces key takeaways.' },
+  ],
+  MODERATOR: [
+    { label: '⚠️ Warning Script', prompt: 'Write a firm but fair warning message to post in chat for a viewer being disruptive.' },
+    { label: '🤝 Welcome Rules', prompt: 'Write a brief chat welcome + community rules message I can pin at the top of every stream.' },
+    { label: '🚫 Timeout Notice', prompt: 'Write a short announcement when I time out a disruptive user that explains why without creating drama.' },
+    { label: '🌟 Positive Reset', prompt: 'My chat has gone negative. Write a reset message that shifts the energy back to positive without calling out specific users.' },
+  ],
+};
+
+const QUICK_ACTIONS = QUICK_ACTIONS_BY_MODE.STRATEGY;
 
 function ThinkDots() {
   return (
@@ -69,6 +119,7 @@ function ThinkDots() {
 }
 
 export default function AuraAI() {
+  const [activeMode, setActiveMode] = useState('STRATEGY');
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "I'm AURA — your editorial luxury AI co-host. I handle broadcast strategy, production quality, and revenue maximization. What are we building tonight?" }
   ]);
@@ -77,6 +128,15 @@ export default function AuraAI() {
   const [copiedIdx, setCopiedIdx] = useState(null);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
+
+  const mode = AURA_MODES[activeMode];
+  const quickActions = QUICK_ACTIONS_BY_MODE[activeMode] || QUICK_ACTIONS_BY_MODE.STRATEGY;
+
+  function switchMode(modeKey) {
+    setActiveMode(modeKey);
+    const m = AURA_MODES[modeKey];
+    setMessages([{ role: 'assistant', text: `${m.label} activated. ${m.hint}. How can I help?` }]);
+  }
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -106,7 +166,7 @@ export default function AuraAI() {
     try {
       const history = next.map(m => m.role + ': ' + m.text).join('\n');
       const res = await base44.integrations.Core.InvokeLLM({
-        prompt: AURA_SYSTEM + '\n\nConversation:\n' + history + '\n\nRespond as AURA in 2-4 sentences. Be strategic, polished, and production-focused.'
+        prompt: mode.system + '\n\nConversation:\n' + history + '\n\nRespond as AURA. Be focused and on-brand for the current mode.'
       });
       setMessages(m => [...m, { role: 'assistant', text: res || 'Analyzing your broadcast strategy — try again in a moment.' }]);
     } catch {
@@ -138,8 +198,9 @@ export default function AuraAI() {
           <a href="/AIHub" style={{ color: 'rgba(255,255,255,0.28)', fontSize: 11, ...T, fontWeight: 700, letterSpacing: '0.06em', textDecoration: 'none', marginRight: 4 }}>← AI Hub</a>
           <div className="aura-glow" style={{
             width: 44, height: 44, borderRadius: '50%',
-            background: `linear-gradient(135deg, ${PURPLE}, #6d28d9)`,
+            background: `linear-gradient(135deg, ${mode.color}, ${mode.color}88)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+            transition: 'background 0.3s',
           }}>✨</div>
           <div>
             <div style={{ ...T, fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: '0.08em', lineHeight: 1 }}>AURA AI</div>
@@ -154,20 +215,46 @@ export default function AuraAI() {
         </button>
       </div>
 
+      {/* Mode selector */}
+      <div style={{ padding: '10px 16px 0', flexShrink: 0, borderBottom: `1px solid ${SLATE}` }}>
+        <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.12em', marginBottom: 8 }}>CO-HOST MODE</div>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 10, scrollbarWidth: 'none' }}>
+          {Object.entries(AURA_MODES).map(([key, m]) => {
+            const isActive = activeMode === key;
+            return (
+              <button key={key}
+                onClick={() => switchMode(key)}
+                style={{
+                  ...T, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
+                  flexShrink: 0,
+                  background: isActive ? m.color + '22' : 'rgba(255,255,255,0.04)',
+                  border: `1.5px solid ${isActive ? m.color : 'rgba(255,255,255,0.08)'}`,
+                  borderRadius: 999, padding: '6px 14px',
+                  color: isActive ? m.color : TEXTM,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  boxShadow: isActive ? `0 0 10px ${m.color}40` : 'none',
+                }}>
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Quick actions */}
       <div style={{ padding: '14px 16px 8px', flexShrink: 0 }}>
-        <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.12em', marginBottom: 10 }}>QUICK STRATEGIES</div>
+        <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.12em', marginBottom: 10 }}>QUICK ACTIONS</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {QUICK_ACTIONS.map(a => (
+          {quickActions.map(a => (
             <button
               key={a.label}
               onClick={() => send(a.prompt)}
               disabled={loading}
               style={{
                 ...T, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
-                background: 'rgba(167,139,250,0.1)', border: `1px solid rgba(167,139,250,0.25)`,
+                background: mode.color + '18', border: `1px solid ${mode.color}40`,
                 borderRadius: 999, padding: '6px 14px',
-                color: PURPLE, cursor: loading ? 'not-allowed' : 'pointer',
+                color: mode.color, cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.5 : 1, transition: 'all 0.15s',
               }}
             >
