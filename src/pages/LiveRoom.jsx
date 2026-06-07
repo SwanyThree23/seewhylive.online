@@ -26,6 +26,7 @@ import { DollarSign, Gift } from 'lucide-react';
 import SuperChatRail from '../components/live/SuperChatRail';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
+import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -457,6 +458,9 @@ export default function LiveRoom() {
 
   // Feature: Stream Goals
   const [goalsOpen, setGoalsOpen] = useState(false);
+
+  // Feature: Breakout Rooms
+  const [breakoutOpen, setBreakoutOpen] = useState(false);
 
   // Feature: ClipMarker stream start timestamp
   const streamStartRef = useRef(Date.now());
@@ -966,6 +970,7 @@ export default function LiveRoom() {
               { label: 'Invite',    icon: '🤝', bg: 'rgba(109,191,126,0.07)', action: () => setInviteGuestsOpen(true) },
               { label: 'Room Link', icon: '🔗', bg: 'rgba(109,191,126,0.07)', action: () => setRoomLinkOpen(true) },
               { label: 'Goals',     icon: '🎯', bg: 'rgba(34,197,94,0.08)',   action: () => setGoalsOpen(true) },
+              { label: 'Breakout',  icon: '🔀', bg: 'rgba(167,139,250,0.08)', action: () => (isHost || isCoHost) && setBreakoutOpen(true) },
             ].map(s => (
               <motion.div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
                 onClick={s.action}
@@ -1553,6 +1558,16 @@ export default function LiveRoom() {
           </>
         )}
       </AnimatePresence>
+
+      {/* ── Breakout Rooms Modal ──────────────────────────────────────────── */}
+      <BreakoutRoomsModal
+        isOpen={breakoutOpen}
+        onClose={() => setBreakoutOpen(false)}
+        roomId={roomId}
+        roomTitle={roomTitle}
+        currentUser={user}
+        participants={displayStage || []}
+      />
 
       {/* ── Sponsor Overlay Modal (host only) ──────────────────────────────── */}
       <AnimatePresence>

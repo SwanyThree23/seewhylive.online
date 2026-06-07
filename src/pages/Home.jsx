@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Radio, Users, Heart } from 'lucide-react';
+import { Radio, Users, Heart, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -406,6 +406,111 @@ function applyFilter(rooms, filter) {
   return rooms;
 }
 
+// ── Following Live strip ───────────────────────────────────────────────────
+function FollowingLiveStrip({ userId, liveRooms }) {
+  var { data: follows = [] } = useQuery({
+    queryKey: ['my-follows', userId],
+    queryFn: function() { return base44.entities.Follow.filter({ follower_id: userId }); },
+    enabled: !!userId,
+  });
+
+  var followingIds = new Set(follows.map(function(f) { return f.following_id; }));
+  var followingLive = liveRooms.filter(function(r) { return followingIds.has(r.host_id); });
+
+  if (followingLive.length === 0 || !userId) return null;
+
+  return (
+    <div style={{ paddingTop: 10, paddingBottom: 4 }}>
+      <div style={{ padding: '0 16px 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B', display: 'inline-block' }} />
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
+          Following · Live Now
+        </span>
+      </div>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 12, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {followingLive.map(function(room) {
+          var initial = (room.host_name || '?').charAt(0).toUpperCase();
+          return (
+            <Link key={room.id} to={'/LiveRoom?id=' + room.id} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <motion.div whileTap={{ scale: 0.92 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: 60 }}>
+                <div style={{ position: 'relative', width: 52, height: 52 }}>
+                  {/* Gold OCT border pulse */}
+                  <div style={{
+                    position: 'absolute', inset: -2, clipPath: OCT,
+                    background: 'linear-gradient(135deg, #800020, #D4AF37)',
+                    animation: 'pulse 1.5s ease infinite',
+                  }} />
+                  <div style={{
+                    position: 'absolute', inset: 2, clipPath: OCT,
+                    background: 'linear-gradient(145deg, #800020cc, #0d0618)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {room.host_avatar_url
+                      ? <img src={room.host_avatar_url} alt={room.host_name} style={{ width: '100%', height: '100%', objectFit: 'cover', clipPath: OCT }} />
+                      : <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 18, color: '#D4AF37' }}>{initial}</span>
+                    }
+                  </div>
+                  {/* LIVE dot */}
+                  <div style={{ position: 'absolute', bottom: 2, right: 2, width: 10, height: 10, borderRadius: '50%', background: '#C0392B', border: '2px solid #080B18' }} />
+                </div>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 10, color: 'rgba(255,255,255,0.6)', textAlign: 'center', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {room.host_name?.split(' ')[0] || 'Live'}
+                </span>
+              </motion.div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Creator CTA banner ────────────────────────────────────────────────────
+function CreatorCTABanner({ user, liveRooms }) {
+  var isCreator = user?.is_creator || user?.creator_tier;
+  var myLiveRoom = liveRooms.find(function(r) { return r.host_id === user?.id; });
+  if (!user || !isCreator) return null;
+
+  if (myLiveRoom) {
+    return (
+      <Link to={'/LiveRoom?id=' + myLiveRoom.id} style={{ textDecoration: 'none', display: 'block', margin: '0 16px', marginTop: 10, marginBottom: 4 }}>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+          style={{ background: 'linear-gradient(90deg, rgba(128,0,32,0.3), rgba(212,175,55,0.1))', border: '1px solid rgba(128,0,32,0.4)' }}>
+          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#C0392B', flexShrink: 0 }} />
+          <div className="flex-1">
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#fff', margin: 0 }}>You're Live!</p>
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{myLiveRoom.title} · {myLiveRoom.viewer_count || 0} watching</p>
+          </div>
+          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', padding: '4px 10px', borderRadius: 8 }}>
+            Return →
+          </span>
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none', display: 'block', margin: '10px 16px 4px' }}>
+      <motion.div
+        whileTap={{ scale: 0.97 }}
+        className="flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer"
+        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
+          <Zap className="w-4 h-4 text-white" />
+        </div>
+        <div className="flex-1">
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#fff', margin: 0 }}>You're not streaming</p>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Go live now — your audience is waiting</p>
+        </div>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, color: '#000', background: 'linear-gradient(90deg, #800020, #D4AF37)', padding: '5px 12px', borderRadius: 8 }}>
+          Go Live
+        </span>
+      </motion.div>
+    </Link>
+  );
+}
+
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
   var [activeFilter, setActiveFilter] = useState('All');
@@ -530,6 +635,12 @@ export default function Home() {
 
       {/* ── PLATFORM FEATURES SPOTLIGHT ── */}
       <SpotlightStrip />
+
+      {/* ── CREATOR CTA (for logged-in creators) ── */}
+      <CreatorCTABanner user={user} liveRooms={liveRooms} />
+
+      {/* ── FOLLOWING LIVE STRIP ── */}
+      <FollowingLiveStrip userId={user?.id} liveRooms={liveRooms} />
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
