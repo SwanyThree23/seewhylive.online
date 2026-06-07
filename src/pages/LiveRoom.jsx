@@ -14,6 +14,8 @@ import ShareModal from '../components/live/ShareModal';
 import InviteSheet from '../components/live/InviteSheet';
 import { buildVdoViewUrl } from '../components/live/VdoNinjaGuestLink';
 import DirectPayments from '../components/live/DirectPayments';
+import PKBattleModal from '../components/live/PKBattleModal';
+import InviteGuestsModal from '../components/live/InviteGuestsModal';
 import { getStoredAge, getAccessLevel } from '../lib/ageVerification';
 import RoomEntryGate from '../components/RoomEntryGate';
 import LoveHearts from '../components/live/LoveHearts';
@@ -438,6 +440,10 @@ export default function LiveRoom() {
     }, 5000);
     return () => clearInterval(t);
   }, []);
+
+  // PKBattle + InviteGuests modals
+  const [pkBattleOpen, setPkBattleOpen] = useState(false);
+  const [inviteGuestsOpen, setInviteGuestsOpen] = useState(false);
 
   // V45: sponsor overlay
   const [sponsorActive, setSponsorActive] = useState(false);
@@ -922,8 +928,9 @@ export default function LiveRoom() {
               { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
               { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'Pay',          icon: '💸', bg: 'rgba(255,21,100,0.08)', action: () => setPayOpen(true) },
-              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
-              { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
+              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)', action: () => (isHost || isCoHost) && setPkBattleOpen(true) },
+              { label: 'Invite',       icon: '🤝', bg: 'rgba(109,191,126,0.07)', action: () => setInviteGuestsOpen(true) },
+          { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
             ].map(s => (
               <motion.div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
                 onClick={s.action}
@@ -1394,6 +1401,33 @@ export default function LiveRoom() {
           </div>
         </div>
       )}
+
+      {/* ── PK Battle Modal (host/co-host only) ────────────────────────────── */}
+      <AnimatePresence>
+        {pkBattleOpen && (
+          <PKBattleModal
+            isOpen={pkBattleOpen}
+            onClose={() => setPkBattleOpen(false)}
+            roomId={roomId}
+            isHost={isHost}
+            currentUser={user}
+            hostName={hostName}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Invite Guests Modal ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {inviteGuestsOpen && (
+          <InviteGuestsModal
+            isOpen={inviteGuestsOpen}
+            onClose={() => setInviteGuestsOpen(false)}
+            roomId={roomId}
+            roomTitle={roomTitle}
+            currentUser={user}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Sponsor Overlay Modal (host only) ──────────────────────────────── */}
       <AnimatePresence>

@@ -10,6 +10,8 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import GreenRoomModal from '../components/live/GreenRoomModal';
+import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -338,6 +340,12 @@ export default function GoLive() {
   const [quality, setQuality] = useState('mobile'); // 'mobile' | 'desktop' | 'ultra'
   const [isPrivate, setIsPrivate] = useState(false);
   const [rtmpDestinations, setRtmpDestinations] = useState([{ platform: '', url: '', key: '' }]);
+  const [greenRoomOpen, setGreenRoomOpen] = useState(false);
+  const [webRTCConfigOpen, setWebRTCConfigOpen] = useState(false);
+  const [webRTCConfig, setWebRTCConfig] = useState(null); // applied config from modal
+  const [localStream, setLocalStream] = useState(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [videoEnabled, setVideoEnabled] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -490,16 +498,16 @@ export default function GoLive() {
 
             {FORMATS.map(fmt => <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />)}
 
-            <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.12)' }}>
-              <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-                <span style={{ fontSize: 28 }}>🎬</span>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Green Room</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: FONT }}>Test camera, mic, and lighting before going live</div>
-                </div>
-                <ChevronRight style={{ width: 16, height: 16, color: GREEN, marginLeft: 'auto' }} />
-              </Link>
-            </div>
+            <button
+              onClick={() => setGreenRoomOpen(true)}
+              style={{ marginTop: 8, width: '100%', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 16, padding: '14px 16px', background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.12)', cursor: 'pointer', textAlign: 'left' }}>
+              <span style={{ fontSize: 28 }}>🎬</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Green Room Pre-Check</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: FONT }}>Test mic, camera &amp; network before going live</div>
+              </div>
+              <ChevronRight style={{ width: 16, height: 16, color: GREEN }} />
+            </button>
 
             <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 12, lineHeight: 1.6 }}>
               90% Creator Payout · Multi-Language Chat · Powered by SeeWhy LIVE
@@ -706,6 +714,29 @@ export default function GoLive() {
               </div>
             </div>
 
+            {/* Advanced Stream Config */}
+            <button
+              onClick={() => setWebRTCConfigOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', borderRadius: 12, cursor: 'pointer',
+                background: webRTCConfig ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.03)',
+                border: webRTCConfig ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.08)',
+              }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 16 }}>⚙️</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: webRTCConfig ? GOLD : '#fff', fontFamily: FONT }}>
+                    Advanced Stream Config
+                  </div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: FONT }}>
+                    {webRTCConfig ? `${webRTCConfig.codec} · ${webRTCConfig.resolution} · ${webRTCConfig.fps}fps` : 'Codec, resolution, FPS, bitrate'}
+                  </div>
+                </div>
+              </div>
+              <ChevronRight style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.25)' }} />
+            </button>
+
             {/* Private Room */}
             <button
               onClick={() => setIsPrivate(v => !v)}
@@ -832,6 +863,23 @@ export default function GoLive() {
           </motion.button>
         </div>
       )}
+
+      {/* Green Room pre-flight modal */}
+      <GreenRoomModal
+        isOpen={greenRoomOpen}
+        onClose={() => setGreenRoomOpen(false)}
+        onReady={() => { setGreenRoomOpen(false); toast.success("All systems go — you're ready to stream! 🔴"); }}
+        audioEnabled={audioEnabled}
+        videoEnabled={videoEnabled}
+      />
+
+      {/* WebRTC Advanced Config modal */}
+      <WebRTCConfigModal
+        isOpen={webRTCConfigOpen}
+        onClose={() => setWebRTCConfigOpen(false)}
+        onApply={cfg => { setWebRTCConfig(cfg); toast.success(`Config saved: ${cfg.codec} · ${cfg.resolution} · ${cfg.fps}fps`); }}
+        currentConfig={webRTCConfig}
+      />
     </div>
   );
 }
