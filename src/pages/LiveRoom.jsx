@@ -22,6 +22,21 @@ import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import { DollarSign, Gift } from 'lucide-react';
 
+// ── Guardian AI chat filter ──────────────────────────────────────────────────
+const GUARDIAN_PATTERNS = [
+  /\b(hate|kill|rape|n[i1]gg[ae]r|f[a@]gg[o0]t|ch[i1]nk|sp[i1]c|k[y1]ke)\b/i,
+  /\b(fuck\s+you|piece\s+of\s+shit|stupid\s+bitch|go\s+die)\b/i,
+  /((.)\2{5,})/,                          // spam: same char 6+ times
+  /https?:\/\/[^\s]{0,40}\.ru\b/i,        // suspicious domains
+  /(buy|cheap|discount|click here|earn \$)/i,
+];
+function filterMessageWithGuardianAI(text) {
+  for (const pat of GUARDIAN_PATTERNS) {
+    if (pat.test(text)) return { blocked: true, reason: 'Message flagged by Guardian AI' };
+  }
+  return { blocked: false };
+}
+
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -216,12 +231,16 @@ function ChatPanel({ messages, onClose, onSend }) {
               {m.user.charAt(0).toUpperCase()}
             </div>
             <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                 <span className="text-[10px] font-bold"
                   style={{ color: m.host ? GOLD : 'rgba(255,255,255,0.55)' }}>{m.user}</span>
                 {m.host && (
                   <span className="text-[7px] px-1 py-0.5 rounded font-bold uppercase"
                     style={{ background: `${GOLD}22`, color: GOLD }}>HOST</span>
+                )}
+                {m.fm && (
+                  <span className="text-[7px] px-1 py-0.5 rounded font-bold uppercase"
+                    style={{ background: 'rgba(128,0,32,0.35)', color: '#FF9944', border: '1px solid rgba(255,153,68,0.3)' }}>FM</span>
                 )}
               </div>
               <p className="text-[12px] text-white/80 leading-snug">{m.text}</p>
@@ -397,6 +416,34 @@ export default function LiveRoom() {
   const [giftCombo, setGiftCombo] = useState(null); // {emoji, count, color} - shown as overlay for 2s
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
+  // V45: stream duration timer (HH:MM:SS)
+  const [streamDuration, setStreamDuration] = useState(0); // seconds
+  useEffect(() => {
+    if (!isLive) return;
+    const t = setInterval(() => setStreamDuration(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [isLive]);
+  function fmtDuration(s) {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sc = s % 60;
+    return [h, m, sc].map(v => String(v).padStart(2, '0')).join(':');
+  }
+
+  // V45: live viewer ticker (simulated ±)
+  const [viewerCount, setViewerCount] = useState(liveCount);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setViewerCount(c => Math.max(1, c + (Math.random() > 0.45 ? 1 : -1)));
+    }, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  // V45: sponsor overlay
+  const [sponsorActive, setSponsorActive] = useState(false);
+  const [sponsorData, setSponsorData] = useState({ name: '', logoUrl: '', cta: '' });
+  const [sponsorModalOpen, setSponsorModalOpen] = useState(false);
+
   // Announce presence to peers for WebRTC discovery
   useEffect(() => {
     if (!roomId || !user?.id) return;
@@ -563,7 +610,13 @@ export default function LiveRoom() {
   }
 
   function openChat()  { setChatOpen(true); setUnread(0); }
-  function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
+  function sendChat(rawText) {
+    const { blocked } = filterMessageWithGuardianAI(rawText);
+    if (blocked) return; // silently drop — Guardian AI filtered it
+    const isFM = user?.is_founding_member === true;
+    const displayName = (user?.full_name || 'You') + (isFM ? ' [FM]' : '');
+    setChatMsgs(p => [...p, { id: Date.now(), user: displayName, text: rawText, host: isHost || isCoHost, fm: isFM }]);
+  }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
 
   // Determine entry role for the gate — wait for party data when a roomId is present
@@ -623,14 +676,42 @@ export default function LiveRoom() {
           onClick={() => history.back()}>
           <ChevronLeft className="w-4 h-4 text-white" />
         </button>
-        <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <MessageCircle className="w-3 h-3 text-white/40" />
-        </div>
+
+        {/* Stream timer */}
+        {isLive && (
+          <div className="shrink-0 px-2 py-0.5 rounded-md font-black text-[11px] tabular-nums"
+            style={{ background: `${CRIMSON}22`, color: PINK, border: `1px solid ${PINK}33`, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>
+            {fmtDuration(streamDuration)}
+          </div>
+        )}
+
         <h1 className="flex-1 text-sm font-bold text-white truncate">{roomTitle}</h1>
-        <button className="w-7 h-7 flex items-center justify-center">
-          <MoreHorizontal className="w-4 h-4 text-white/40" />
-        </button>
+
+        {/* Viewer count ticker */}
+        <div className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-md"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <Users className="w-2.5 h-2.5 text-white/40" />
+          <span className="text-[11px] font-bold text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{viewerCount}</span>
+        </div>
+
+        {/* Sponsor badge (when active) */}
+        {sponsorActive && sponsorData.name && (
+          <div className="shrink-0 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide"
+            style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            ★ {sponsorData.name}
+          </div>
+        )}
+
+        {/* Host: sponsor button */}
+        {isHost && (
+          <button onClick={() => setSponsorModalOpen(true)}
+            className="w-7 h-7 flex items-center justify-center rounded-full"
+            style={{ background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.25)` }}
+            title="Manage sponsor overlay">
+            <span className="text-[10px]">★</span>
+          </button>
+        )}
+
         <button className="w-7 h-7 flex items-center justify-center" onClick={() => setShareOpen(true)}>
           <Share2 className="w-4 h-4 text-white/40" />
         </button>
@@ -647,6 +728,28 @@ export default function LiveRoom() {
           <Minus className="w-3.5 h-3.5 text-white/40" />
         </button>
       </div>
+
+      {/* Sponsor overlay banner */}
+      <AnimatePresence>
+        {sponsorActive && sponsorData.name && (
+          <motion.div
+            initial={{ y: -32, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -32, opacity: 0 }}
+            className="w-full flex items-center gap-3 px-4 py-1.5 shrink-0"
+            style={{ background: `linear-gradient(90deg, ${GOLD}18, ${CRIMSON}18)`, borderBottom: `1px solid ${GOLD}22` }}>
+            {sponsorData.logoUrl && (
+              <img src={sponsorData.logoUrl} alt={sponsorData.name} className="h-5 w-auto object-contain rounded" />
+            )}
+            <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Sponsored by {sponsorData.name}
+            </span>
+            {sponsorData.cta && (
+              <span className="ml-auto text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {sponsorData.cta}
+              </span>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Scrollable content ──────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 88 }}>
@@ -1291,6 +1394,71 @@ export default function LiveRoom() {
           </div>
         </div>
       )}
+
+      {/* ── Sponsor Overlay Modal (host only) ──────────────────────────────── */}
+      <AnimatePresence>
+        {sponsorModalOpen && isHost && (
+          <>
+            <motion.div className="fixed inset-0 z-[80]" style={{ background: 'rgba(0,0,0,0.75)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSponsorModalOpen(false)} />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              className="fixed inset-x-0 bottom-0 z-[85] rounded-t-3xl overflow-hidden"
+              style={{ background: '#0E1120', border: '1px solid rgba(212,175,55,0.2)', maxHeight: '75vh' }}>
+              <div className="w-8 h-1 rounded-full bg-white/10 mx-auto mt-3 mb-4" />
+              <div className="px-5 pb-2 flex items-center justify-between">
+                <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>★ Sponsor Overlay</h3>
+                <button onClick={() => setSponsorModalOpen(false)} className="text-white/40 text-xl">✕</button>
+              </div>
+              <div className="px-5 pb-8 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(75vh - 80px)' }}>
+                <div>
+                  <label className="text-[11px] uppercase tracking-wide font-bold text-white/40 mb-1 block" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Sponsor Name</label>
+                  <input
+                    value={sponsorData.name}
+                    onChange={e => setSponsorData(d => ({ ...d, name: e.target.value }))}
+                    placeholder="e.g. Domino Social Expo"
+                    className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] uppercase tracking-wide font-bold text-white/40 mb-1 block" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Logo URL (optional)</label>
+                  <input
+                    value={sponsorData.logoUrl}
+                    onChange={e => setSponsorData(d => ({ ...d, logoUrl: e.target.value }))}
+                    placeholder="https://…"
+                    className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] uppercase tracking-wide font-bold text-white/40 mb-1 block" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Call to Action Text (optional)</label>
+                  <input
+                    value={sponsorData.cta}
+                    onChange={e => setSponsorData(d => ({ ...d, cta: e.target.value }))}
+                    placeholder="e.g. Visit booth 4B!"
+                    className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  />
+                </div>
+                <button
+                  onClick={() => { setSponsorActive(a => !a); setSponsorModalOpen(false); }}
+                  className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-wide"
+                  style={{
+                    background: sponsorActive ? 'rgba(239,68,68,0.18)' : `linear-gradient(135deg, ${GOLD}, #B8960C)`,
+                    color: sponsorActive ? '#EF4444' : '#080B18',
+                    border: sponsorActive ? '1px solid rgba(239,68,68,0.35)' : 'none',
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                  }}>
+                  {sponsorActive ? 'Deactivate Overlay' : 'Activate Overlay'}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {paywallVisible && !showExclusiveGate && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,11,24,0.94)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>

@@ -13,6 +13,8 @@ import AggregatedChat from '../components/live/AggregatedChat';
 import ViewerRail from '../components/watchparty/ViewerRail';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ShareButtons from '../components/shared/ShareButtons';
+import ShareModal from '../components/live/ShareModal';
+import DirectPayments from '../components/live/DirectPayments';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
 import WatchQueue from '../components/watchparty/WatchQueue';
@@ -402,6 +404,8 @@ export default function WatchPartyPage() {
   const { localStream } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
 
+  const [shareOpen, setShareOpen] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
 
@@ -679,11 +683,10 @@ export default function WatchPartyPage() {
                 📺
               </button>
             )}
-            <ShareButtons
-              url={window.location.href}
-              title={`Join my Watch Party: ${party?.title}`}
-              className="text-white [&_button]:text-white/60"
-            />
+            <button onClick={() => setShareOpen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', cursor: 'pointer', color: '#D4AF37', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>
+              📤 Share Room
+            </button>
             <VideoSourcePicker
               compact
               isHost={isHost}
@@ -728,6 +731,10 @@ export default function WatchPartyPage() {
           <span className="text-white/15 mx-0.5">·</span>
           <Users className="w-3 h-3 shrink-0" style={{ color: '#d4af37' }} />
           <span className="text-[10px] font-bold shrink-0" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{members.length}/20</span>
+          <button onClick={() => setPayOpen(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 8, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', cursor: 'pointer', color: '#6DBF7E', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900 }}>
+            💸 Tip Host
+          </button>
           {isHost ? (
             <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
               style={{ background: 'rgba(212,175,55,0.1)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -1136,6 +1143,17 @@ export default function WatchPartyPage() {
           </div>
         </div>
       </div>
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        url={typeof window !== 'undefined' ? window.location.href : ''}
+        title={(party?.title || 'Watch Party') + ' — SeeWhy LIVE'}
+      />
+      <DirectPayments
+        isOpen={payOpen}
+        onClose={() => setPayOpen(false)}
+        creatorName={party?.host_name || 'Host'}
+      />
     </div>
   );
 }

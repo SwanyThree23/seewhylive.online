@@ -40,6 +40,7 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import InviteSheet from '../components/live/InviteSheet';
+import DirectPayments from '../components/live/DirectPayments';
 import { Hand, UserPlus } from 'lucide-react';
 import RoomEntryGate from '../components/RoomEntryGate';
 
@@ -323,6 +324,7 @@ export default function BroadcastStudio() {
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [isExclusive, setIsExclusive] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
   const [giftEvent, setGiftEvent] = useState(null);
   const [guardianWords, setGuardianWords] = useState([]);
   const [guardianWordInput, setGuardianWordInput] = useState('');
@@ -1708,25 +1710,39 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
                 {/* Social platforms grid */}
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { name: 'WhatsApp',  emoji: '💬', color: '#25D366', href: `https://wa.me/?text=${encodeURIComponent('🔴 I\'m LIVE on SeeWhy! Join me → ' + window.location.href)}` },
-                    { name: 'Twitter/X', emoji: '🐦', color: '#1DA1F2', href: `https://twitter.com/intent/tweet?text=${encodeURIComponent('🔴 LIVE on SeeWhy LIVE! Join me → ' + window.location.href)}` },
-                    { name: 'Facebook',  emoji: '👥', color: '#1877F2', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
-                    { name: 'Telegram',  emoji: '✈️', color: '#2AABEE', href: `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('🔴 Join me LIVE on SeeWhy!')}` },
-                    { name: 'Instagram', emoji: '📸', color: '#E1306C', href: null, note: 'Copy link → paste in story' },
-                    { name: 'TikTok',    emoji: '🎵', color: '#000000', href: null, note: 'Copy link → paste in bio' },
-                  ].map(p => (
-                    <button key={p.name}
-                      onClick={() => p.href ? window.open(p.href, '_blank', 'noopener,noreferrer') : copyLink()}
-                      className="flex items-center gap-2 p-2 rounded-xl transition-all text-left"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <span className="text-base">{p.emoji}</span>
-                      <div>
-                        <div className="text-[10px] font-bold text-white">{p.name}</div>
-                        {p.note && <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{p.note}</div>}
-                      </div>
-                    </button>
-                  ))}
+                  {(() => {
+                    const sharePlatforms = [
+                      { name: 'Instagram', emoji: '📸', href: null, copy: true },
+                      { name: 'TikTok',    emoji: '🎵', href: null, copy: true },
+                      { name: 'Facebook',  emoji: '👥', href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, copy: false },
+                      { name: 'X / Twitter', emoji: '🐦', href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('🔴 LIVE on SeeWhy!')}`, copy: false },
+                      { name: 'Snapchat',  emoji: '👻', href: `https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(window.location.href)}`, copy: false },
+                      { name: 'WhatsApp',  emoji: '💬', href: `https://wa.me/?text=${encodeURIComponent('Join me LIVE: ' + window.location.href)}`, copy: false },
+                      { name: 'Telegram',  emoji: '✈️', href: `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('🔴 LIVE on SeeWhy!')}`, copy: false },
+                    ];
+                    return sharePlatforms.map(p => (
+                      <button key={p.name}
+                        onClick={() => p.href ? window.open(p.href, '_blank', 'noopener,noreferrer') : copyLink()}
+                        className="flex items-center gap-2 p-2 rounded-xl transition-all text-left"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <span className="text-base">{p.emoji}</span>
+                        <div>
+                          <div className="text-[10px] font-bold text-white">{p.name}</div>
+                          {p.copy && <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)' }}>Copy link to share</div>}
+                        </div>
+                      </button>
+                    ));
+                  })()}
+                </div>
+
+                <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    Monetize Your Stream
+                  </div>
+                  <button onClick={() => setPayOpen(true)}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: 12, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.3)', cursor: 'pointer', color: '#6DBF7E', fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    💸 Setup Direct Pay Links
+                  </button>
                 </div>
 
                 {/* Native share if available */}
@@ -1887,6 +1903,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         roomTitle={party?.title}
         isHost={isHost}
         isCoHost={isCoHost}
+      />
+      <DirectPayments
+        isOpen={payOpen}
+        onClose={() => setPayOpen(false)}
+        creatorName={user?.full_name || user?.email || 'Creator'}
       />
     </div>
   );
