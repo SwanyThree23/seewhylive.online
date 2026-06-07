@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv, ShieldX, Trash2
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv, ShieldX, Trash2, ShoppingBag
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -50,6 +50,7 @@ var DRAWER_CREATE = [
   { name: 'Broadcast Studio', icon: Video,           href: createPageUrl('BroadcastStudio') },
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
+  { name: 'Merch Store',      icon: ShoppingBag,     href: createPageUrl('MerchStore') },
   { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
   { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
   { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },

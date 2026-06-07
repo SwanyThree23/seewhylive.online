@@ -109,6 +109,7 @@ const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
 const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
 const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
 const SeeWhyLIVEv41            = lazy(() => import('./pages/SeeWhyLIVEv41'));
+const MerchStore               = lazy(() => import('./pages/MerchStore'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -211,6 +212,7 @@ export const PAGES = {
     "StreamShareHub": StreamShareHub,
     "SeeWhyLIVEv37": SeeWhyLIVEv37,
     "SeeWhyLIVEv41": SeeWhyLIVEv41,
+    "MerchStore": MerchStore,
 }
 
 export const pagesConfig = {
