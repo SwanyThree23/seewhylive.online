@@ -9,7 +9,7 @@ import {
   Swords, Trophy, Crown, ArrowLeft, Plus, Users, Zap, Clock,
   Gift, Send, CheckCircle, XCircle, Star, Flame, Search,
   BarChart2, Shield, AlertCircle, Copy, Share2, Sparkles,
-  ChevronRight, Play, Square, RefreshCw, Medal
+  ChevronRight, Play, Square, RefreshCw, Medal, DollarSign, ExternalLink
 } from 'lucide-react';
 import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import TournamentBracket from '../components/pk/TournamentBracket';
@@ -545,6 +545,163 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
         battle={battle}
         onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }}
       />
+
+      {/* ── Direct Pay Support Panel ────────────────────────────────────────── */}
+      {battle.status === 'active' && <DirectPaySupportPanel battle={battle} user={user} onTipRecorded={function() { qc.invalidateQueries(['pk-battles']); }} />}
+    </div>
+  );
+}
+
+/* ─── Direct Pay Support ─────────────────────────────────────────────────── */
+var DIRECT_PAY_PLATFORMS = [
+  { id: 'cashapp',  name: 'Cash App',  emoji: '💚', baseUrl: 'https://cash.app/$' },
+  { id: 'paypal',   name: 'PayPal',    emoji: '🅿️', baseUrl: 'https://paypal.me/' },
+  { id: 'venmo',    name: 'Venmo',     emoji: '💙', baseUrl: 'https://venmo.com/' },
+  { id: 'zelle',    name: 'Zelle',     emoji: '💜', baseUrl: null },
+  { id: 'chime',    name: 'Chime',     emoji: '🟢', baseUrl: 'https://chime.com/' },
+];
+var TIP_AMOUNTS = [1, 3, 5, 10, 25, 50];
+
+function DirectPaySupportPanel({ battle, user, onTipRecorded }) {
+  var [supportSide, setSupportSide] = useState(null); // 'creator' | 'challenger'
+  var [tipAmount, setTipAmount] = useState(5);
+  var [pendingPlatform, setPendingPlatform] = useState(null);
+  var [awaitingConfirm, setAwaitingConfirm] = useState(false);
+  var [confirmed, setConfirmed] = useState(false);
+
+  var creatorHandle = battle.creator_payment_handle || battle.creator_name || 'Creator';
+  var challengerHandle = battle.challenger_payment_handle || battle.challenger_name || 'Challenger';
+
+  function openPay(platform) {
+    var handle = supportSide === 'creator' ? creatorHandle : challengerHandle;
+    var url = platform.baseUrl ? (platform.baseUrl + handle.replace(/^@/, '')) : null;
+    setPendingPlatform(platform);
+    setAwaitingConfirm(true);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    else {
+      navigator.clipboard.writeText(handle);
+      toast.success('Handle copied — send via ' + platform.name);
+    }
+  }
+
+  async function confirmPayment() {
+    var side = supportSide === 'creator' ? 'creator' : 'challenger';
+    var pts = tipAmount * 10;
+    var update = side === 'creator'
+      ? { creator_score: (battle.creator_score || 0) + pts }
+      : { challenger_score: (battle.challenger_score || 0) + pts };
+    try {
+      await base44.entities.PKBattle.update(battle.id, update);
+      await base44.entities.Transaction.create({
+        user_id: user?.id,
+        amount: tipAmount,
+        transaction_type: 'battle_tip',
+        description: 'Direct tip supporting ' + (side === 'creator' ? battle.creator_name : battle.challenger_name) + ' in PK Battle',
+        status: 'completed',
+      });
+      setConfirmed(true);
+      onTipRecorded();
+      toast.success('+' + pts + ' pts for your team! 🔥');
+      setTimeout(() => { setAwaitingConfirm(false); setConfirmed(false); setSupportSide(null); }, 2500);
+    } catch {
+      toast.error('Could not record tip');
+    }
+  }
+
+  return (
+    <div className="rounded-2xl p-4 space-y-4" style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      <div className="flex items-center gap-2">
+        <DollarSign className="w-4 h-4" style={{ color: '#D4AF37' }} />
+        <span className="text-sm font-black uppercase tracking-wider" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Support a Side — Direct Pay</span>
+      </div>
+      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Money goes straight to the creator. Confirm payment → your side earns battle points.</p>
+
+      {!supportSide ? (
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { side: 'creator', name: battle.creator_name || 'Creator', score: battle.creator_score || 0, color: '#3B82F6' },
+            { side: 'challenger', name: battle.challenger_name || 'Challenger', score: battle.challenger_score || 0, color: '#EF4444' },
+          ].map(function(t) {
+            return (
+              <button key={t.side} onClick={function() { setSupportSide(t.side); }}
+                className="flex flex-col items-center gap-1 p-3 rounded-xl transition-all"
+                style={{ background: t.color + '15', border: '1px solid ' + t.color + '40', cursor: 'pointer' }}>
+                <span className="text-base font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{t.name}</span>
+                <span className="text-[10px]" style={{ color: t.color }}>{t.score.toLocaleString()} pts</span>
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full mt-1"
+                  style={{ background: t.color + '25', color: t.color, fontFamily: 'Barlow Condensed, sans-serif' }}>Support</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : awaitingConfirm ? (
+        <div className="space-y-3 text-center">
+          {confirmed ? (
+            <div className="py-4">
+              <CheckCircle className="w-10 h-10 mx-auto mb-2" style={{ color: '#6DBF7E' }} />
+              <p className="font-black text-sm text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Payment confirmed! Points added.</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-white/70">Did you complete the ${tipAmount} payment via {pendingPlatform?.name}?</p>
+              <div className="flex gap-3">
+                <button onClick={confirmPayment}
+                  className="flex-1 py-2 rounded-xl font-black uppercase text-xs"
+                  style={{ background: 'linear-gradient(135deg, #6DBF7E, #26A69A)', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  ✓ Yes, I Paid
+                </button>
+                <button onClick={function() { setAwaitingConfirm(false); setPendingPlatform(null); }}
+                  className="flex-1 py-2 rounded-xl font-black uppercase text-xs"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  ✗ Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <button onClick={function() { setSupportSide(null); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>← Back</button>
+            <span className="text-xs font-black" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              Supporting: {supportSide === 'creator' ? battle.creator_name : battle.challenger_name}
+            </span>
+          </div>
+          <div>
+            <p className="text-[10px] text-white/40 mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Amount</p>
+            <div className="flex gap-1.5 flex-wrap">
+              {TIP_AMOUNTS.map(function(a) {
+                return (
+                  <button key={a} onClick={function() { setTipAmount(a); }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-black transition-all"
+                    style={{ background: tipAmount === a ? '#D4AF37' : 'rgba(255,255,255,0.06)', color: tipAmount === a ? '#080B18' : 'rgba(255,255,255,0.6)', border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    ${a}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] text-white/40 mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Pay via</p>
+            <div className="grid grid-cols-5 gap-1.5">
+              {DIRECT_PAY_PLATFORMS.map(function(p) {
+                return (
+                  <button key={p.id} onClick={function() { openPay(p); }}
+                    className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
+                    <span style={{ fontSize: 18 }}>{p.emoji}</span>
+                    <span className="text-[9px] text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{p.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            ${tipAmount} = {tipAmount * 10} battle pts · Creator keeps 90%
+          </p>
+        </div>
+      )}
     </div>
   );
 }

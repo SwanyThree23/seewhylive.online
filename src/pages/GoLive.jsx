@@ -59,6 +59,16 @@ const FORMATS = [
     color: '#26A69A',
     dest: 'AudioRoom',
   },
+  {
+    id: 'videopost',
+    icon: <Camera style={{ width: 32, height: 32 }} />,
+    emoji: '🎬',
+    title: 'Video Post',
+    subtitle: 'Record & post a video up to 10 minutes.',
+    features: ['📹 Record', '⏱️ Max 10 min', '🔒 Optional PPV', '📤 Share'],
+    color: '#8B5CF6',
+    dest: 'VideoPost',
+  },
 ];
 
 const CATEGORIES = [
