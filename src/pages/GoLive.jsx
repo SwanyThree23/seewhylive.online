@@ -297,6 +297,19 @@ function Countdown({ onDone }) {
   );
 }
 
+const QUALITY_PRESETS = [
+  { id: 'mobile',  label: '720p 30fps',  sub: 'Mobile HQ',     badge: '📱', bitrate: '2.5 Mbps' },
+  { id: 'desktop', label: '1080p 30fps', sub: 'Desktop',        badge: '🖥️', bitrate: '4.5 Mbps' },
+  { id: 'ultra',   label: '1080p 60fps', sub: 'Ultra Smooth',   badge: '⚡', bitrate: '6.5 Mbps' },
+];
+const RTMP_TEMPLATES = [
+  { name: 'YouTube', icon: '▶️', url: 'rtmp://a.rtmp.youtube.com/live2', hint: 'YouTube Stream Key' },
+  { name: 'Facebook', icon: '👥', url: 'rtmps://live-api-s.facebook.com:443/rtmp/', hint: 'Facebook Live Key' },
+  { name: 'Twitch', icon: '💜', url: 'rtmp://live.twitch.tv/app/', hint: 'Twitch Stream Key' },
+  { name: 'TikTok', icon: '🎵', url: 'rtmps://push.rtmp.tiktok.com/live/', hint: 'TikTok Stream Key' },
+  { name: 'Kick', icon: '🟢', url: 'rtmp://ingest.kick.com/app/', hint: 'Kick Stream Key' },
+];
+
 export default function GoLive() {
   const [step,        setStep]        = useState('pick');
   const [format,      setFormat]      = useState(null);
@@ -312,6 +325,9 @@ export default function GoLive() {
   const [partyId,     setPartyId]     = useState(null);
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
+  const [quality, setQuality] = useState('mobile'); // 'mobile' | 'desktop' | 'ultra'
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [rtmpDestinations, setRtmpDestinations] = useState([{ platform: '', url: '', key: '' }]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -378,6 +394,8 @@ export default function GoLive() {
         status:       'active',
         is_exclusive: isExclusive,
         stream_type:  format?.id,
+        stream_quality: quality,
+        is_private: isPrivate,
         updated_at_ms: Date.now(),
       });
       setPartyId(party.id);
@@ -653,6 +671,105 @@ export default function GoLive() {
                 }} />
               </div>
             </button>
+
+            {/* Stream Quality */}
+            <div>
+              <div style={SL}><span>📶</span> Stream Quality</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {QUALITY_PRESETS.map(q => (
+                  <button
+                    key={q.id}
+                    onClick={() => setQuality(q.id)}
+                    style={{
+                      flex: 1, padding: '10px 6px', borderRadius: 12, cursor: 'pointer',
+                      background: quality === q.id ? `${GOLD}15` : 'rgba(255,255,255,0.04)',
+                      border: quality === q.id ? `1px solid ${GOLD}50` : '1px solid rgba(255,255,255,0.08)',
+                      textAlign: 'center', transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{ fontSize: 18, marginBottom: 2 }}>{q.badge}</div>
+                    <div style={{ fontSize: 10, fontWeight: 900, color: quality === q.id ? GOLD : '#fff', fontFamily: FONT, letterSpacing: '0.03em' }}>{q.label}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontFamily: FONT }}>{q.sub}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', fontFamily: FONT, marginTop: 2 }}>{q.bitrate}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Private Room */}
+            <button
+              onClick={() => setIsPrivate(v => !v)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+                background: isPrivate ? 'rgba(192,57,43,0.08)' : 'rgba(255,255,255,0.03)',
+                border: isPrivate ? '1px solid rgba(192,57,43,0.3)' : '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>{isPrivate ? '🔒' : '🌐'}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: isPrivate ? '#ff9999' : '#fff', fontFamily: FONT }}>
+                    {isPrivate ? 'Private Room' : 'Public Room'}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: FONT }}>
+                    {isPrivate ? 'Host approves each viewer request' : 'Anyone can join freely'}
+                  </div>
+                </div>
+              </div>
+              <div style={{ width: 38, height: 22, borderRadius: 11, background: isPrivate ? PINK : 'rgba(255,255,255,0.1)', position: 'relative', transition: 'background 0.2s' }}>
+                <div style={{ position: 'absolute', top: 3, left: isPrivate ? 18 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </div>
+            </button>
+
+            {/* RTMP Multi-Destinations */}
+            <div>
+              <div style={{ ...SL, justifyContent: 'space-between' }}>
+                <span>📡 Simulcast Destinations (optional)</span>
+                <button
+                  onClick={() => setRtmpDestinations(prev => prev.length < 5 ? [...prev, { platform: '', url: '', key: '' }] : prev)}
+                  style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 99, padding: '2px 8px', cursor: 'pointer', color: GOLD, fontSize: 10, fontFamily: FONT, fontWeight: 900 }}
+                >+ Add</button>
+              </div>
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 8 }}>
+                {RTMP_TEMPLATES.map(t => (
+                  <button
+                    key={t.name}
+                    onClick={() => {
+                      setRtmpDestinations(prev => {
+                        const empty = prev.findIndex(d => !d.platform);
+                        if (empty >= 0) { const n = [...prev]; n[empty] = { platform: t.name, url: t.url, key: '' }; return n; }
+                        if (prev.length < 5) return [...prev, { platform: t.name, url: t.url, key: '' }];
+                        return prev;
+                      });
+                    }}
+                    style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 99, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: 10, fontFamily: FONT, fontWeight: 700 }}
+                  >{t.icon} {t.name}</button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {rtmpDestinations.map((dest, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input
+                      placeholder="Platform (e.g. YouTube)"
+                      value={dest.platform}
+                      onChange={e => setRtmpDestinations(prev => { const n = [...prev]; n[i] = { ...n[i], platform: e.target.value }; return n; })}
+                      style={{ ...INPUT, flex: '0 0 100px', fontSize: 11 }}
+                    />
+                    <input
+                      placeholder="Stream key"
+                      value={dest.key}
+                      onChange={e => setRtmpDestinations(prev => { const n = [...prev]; n[i] = { ...n[i], key: e.target.value }; return n; })}
+                      style={{ ...INPUT, flex: 1, fontSize: 11 }}
+                    />
+                    {rtmpDestinations.length > 1 && (
+                      <button onClick={() => setRtmpDestinations(prev => prev.filter((_, j) => j !== i))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,100,100,0.5)', fontSize: 14, padding: 4 }}>×</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <RtmpKeyRow streamKey={streamKey} />
 

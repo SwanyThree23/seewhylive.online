@@ -296,6 +296,37 @@ export default function LiveRoom() {
   const isSubscribed = activeSubs.length > 0;
   const showExclusiveGate = isExclusiveStream && !isHost && !isSubscribed && !!party;
 
+  const isPrivateRoom = party?.is_private === true;
+  const [approvalStatus, setApprovalStatus] = React.useState('none'); // 'none' | 'pending' | 'approved'
+  const showPrivateGate = isPrivateRoom && !isHost && !isCoHost && approvalStatus !== 'approved' && !!party;
+
+  async function requestJoin() {
+    setApprovalStatus('pending');
+    try {
+      await base44.entities.WatchPartyMember.create({
+        party_id: roomId,
+        user_id: user?.id,
+        user_name: user?.full_name || 'Viewer',
+        role: 'audience',
+        join_request: 'pending',
+        is_active: false,
+      });
+    } catch { /* ignore — record may exist */ }
+  }
+
+  const [paywallVisible, setPaywallVisible] = React.useState(false);
+  const [previewSecondsLeft, setPreviewSecondsLeft] = React.useState(120);
+  React.useEffect(() => {
+    if (!isExclusiveStream || isHost || isSubscribed || !party || showExclusiveGate) return;
+    const t = setInterval(() => {
+      setPreviewSecondsLeft(s => {
+        if (s <= 1) { clearInterval(t); setPaywallVisible(true); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [isExclusiveStream, isHost, isSubscribed, party, showExclusiveGate]);
+
   // Deduplicate — keep one record per user_id (latest by created_date)
   const dedupedMembers = React.useMemo(() => {
     if (!roomId || !members.length) return [];
@@ -669,6 +700,14 @@ export default function LiveRoom() {
             <Radio className="w-2.5 h-2.5" style={{ color: GOLD }} />
             <span className="text-[11px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
           </div>
+          {isExclusiveStream && !isHost && !isSubscribed && !paywallVisible && previewSecondsLeft < 120 && (
+            <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+              <span className="text-[10px] font-black" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Free preview: {previewSecondsLeft}s
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ── Stage header ─────────────────────────────────────────────────── */}
@@ -1156,6 +1195,31 @@ export default function LiveRoom() {
         </div>
       )}
 
+      {showPrivateGate && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,11,24,0.97)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ width: '100%', maxWidth: 360, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 56 }}>🔒</span>
+            <h2 style={{ margin: 0, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 28, fontWeight: 900 }}>Private Room</h2>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: 14, lineHeight: 1.5 }}>
+              {approvalStatus === 'pending'
+                ? 'Your request was sent. Waiting for the host to let you in...'
+                : `This room is invite-only. Request access from ${hostName}.`}
+            </p>
+            {approvalStatus === 'none' ? (
+              <button
+                onClick={requestJoin}
+                style={{ width: '100%', padding: '12px 0', background: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#080B18', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, letterSpacing: '0.05em', borderRadius: 12, border: 'none', cursor: 'pointer', textTransform: 'uppercase' }}
+              >Request to Join</button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(212,175,55,0.7)', fontSize: 13 }}>
+                <span>⏳</span> Pending approval...
+              </div>
+            )}
+            <button onClick={() => history.back()} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 14, padding: '10px 0', width: '100%', cursor: 'pointer' }}>Go Back</button>
+          </div>
+        </div>
+      )}
+
       {showExclusiveGate && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 60,
@@ -1223,6 +1287,26 @@ export default function LiveRoom() {
               }}
             >
               Go Back
+            </button>
+          </div>
+        </div>
+      )}
+
+      {paywallVisible && !showExclusiveGate && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,11,24,0.94)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ width: '100%', maxWidth: 360, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 20, padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 56 }}>⏱️</span>
+            <h2 style={{ margin: 0, color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 30, fontWeight: 900, letterSpacing: '0.04em' }}>Free Preview Ended</h2>
+            <p style={{ margin: 0, color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.5 }}>
+              Subscribe to {hostName} to keep watching this exclusive stream.
+            </p>
+            <a href={`/CreatorSubscriptions?creator=${party?.host_id}`}
+              style={{ display: 'block', width: '100%', padding: '12px 0', background: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#080B18', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, letterSpacing: '0.05em', borderRadius: 12, textDecoration: 'none', textTransform: 'uppercase' }}>
+              Subscribe Now — 90/10 Split
+            </a>
+            <button onClick={() => setPaywallVisible(false)}
+              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 13, padding: '8px 0', width: '100%', cursor: 'pointer' }}>
+              Watch for free (limited view)
             </button>
           </div>
         </div>

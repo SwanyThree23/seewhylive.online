@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, animate as fmAnimate } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, Flame, Target } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
@@ -74,6 +74,30 @@ export default function CreatorDashboardPage() {
   const tipsThisWeek = recentTips
     .filter(t => t.creator_id === user?.id && new Date(t.created_date).getTime() > oneWeekAgo)
     .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+  // Streak: count consecutive days with at least one stream
+  const streakDays = useMemo(() => {
+    if (!recentRooms.length) return 0;
+    const days = new Set(recentRooms.map(r => new Date(r.created_date).toDateString()));
+    let streak = 0;
+    const d = new Date();
+    while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
+    return streak;
+  }, [recentRooms]);
+
+  // Today's earnings: tips from today
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const earningsToday = recentTips
+    .filter(t => t.creator_id === user?.id && new Date(t.created_date) >= todayStart)
+    .reduce((s, t) => s + (t.amount || 0), 0);
+
+  // Monthly goal: percentage toward $500/month
+  const MONTHLY_GOAL = 500;
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const earningsThisMonth = recentTips
+    .filter(t => t.creator_id === user?.id && new Date(t.created_date) >= monthStart)
+    .reduce((s, t) => s + (t.amount || 0), 0);
+  const goalPct = Math.min(100, Math.round((earningsThisMonth / MONTHLY_GOAL) * 100));
 
   const quickActions = [
     {
@@ -220,6 +244,46 @@ export default function CreatorDashboardPage() {
             ))}
           </motion.div>
         </motion.div>
+
+        {user?.id && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <div className="grid grid-cols-3 gap-3">
+              {/* Streak */}
+              <div className="rounded-2xl p-4 flex flex-col gap-1"
+                style={{ background: streakDays >= 3 ? 'rgba(212,175,55,0.07)' : 'rgba(255,255,255,0.03)', border: streakDays >= 3 ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.07)' }}>
+                <Flame className="w-4 h-4 mb-1" style={{ color: streakDays >= 3 ? '#FF4500' : 'rgba(255,255,255,0.2)' }} />
+                <span className="text-2xl font-black" style={{ color: streakDays >= 3 ? G : 'rgba(255,255,255,0.5)', ...T }}>
+                  {streakDays}d
+                </span>
+                <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Streak</span>
+                {streakDays >= 3 && <span className="text-[9px]" style={{ color: '#FF4500' }}>🔥 On a roll!</span>}
+              </div>
+
+              {/* Today's earnings */}
+              <div className="rounded-2xl p-4 flex flex-col gap-1"
+                style={{ background: earningsToday > 0 ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)', border: earningsToday > 0 ? '1px solid rgba(109,191,126,0.25)' : '1px solid rgba(255,255,255,0.07)' }}>
+                <DollarSign className="w-4 h-4 mb-1" style={{ color: earningsToday > 0 ? GREEN : 'rgba(255,255,255,0.2)' }} />
+                <span className="text-2xl font-black" style={{ color: earningsToday > 0 ? GREEN : 'rgba(255,255,255,0.5)', ...T }}>
+                  $<AnimatedNumber value={earningsToday} decimals={0} />
+                </span>
+                <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Today</span>
+              </div>
+
+              {/* Monthly goal */}
+              <div className="rounded-2xl p-4 flex flex-col gap-1"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <Target className="w-4 h-4 mb-1" style={{ color: goalPct >= 100 ? G : 'rgba(255,255,255,0.3)' }} />
+                <span className="text-2xl font-black" style={{ color: goalPct >= 100 ? G : 'rgba(255,255,255,0.5)', ...T }}>
+                  {goalPct}%
+                </span>
+                <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Monthly Goal</span>
+                <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginTop: 2, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: goalPct + '%', background: goalPct >= 100 ? G : 'rgba(212,175,55,0.5)', borderRadius: 2, transition: 'width 1s ease' }} />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {user?.id && (
           <>
