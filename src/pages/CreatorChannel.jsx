@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Radio, Users, CheckCircle, Share2, Bell, Play, Clock,
-  Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown
+  Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown, ShoppingBag
 } from 'lucide-react';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
 import VideoLibrary from '../components/vod/VideoLibrary';
@@ -17,7 +17,58 @@ const CRIMSON = '#800020';
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = ['live', 'videos', 'schedule', 'memberships', 'about'];
+const TABS = ['live', 'videos', 'schedule', 'memberships', 'merch', 'about'];
+
+function MerchPreview({ creatorId }) {
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['cc-merch', creatorId],
+    queryFn: () => base44.entities.MerchandiseItem.filter({ creator_id: creatorId, is_active: true }),
+    enabled: !!creatorId,
+  });
+
+  if (isLoading) return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {[...Array(4)].map((_, i) => <div key={i} className="h-48 rounded-2xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />)}
+    </div>
+  );
+
+  if (items.length === 0) return (
+    <div className="flex flex-col items-center py-16">
+      <ShoppingBag className="w-12 h-12 mb-3" style={{ color: 'rgba(255,255,255,0.1)' }} />
+      <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No merch yet</p>
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+        {items.slice(0, 8).map(item => (
+          <motion.div key={item.id} whileHover={{ y: -4, scale: 1.02 }}
+            className="rounded-2xl overflow-hidden cursor-pointer"
+            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}
+            onClick={() => window.location.href = createPageUrl('MerchStore') + `?id=${creatorId}`}>
+            <div className="h-36 flex items-center justify-center"
+              style={{ background: item.image_url ? undefined : `linear-gradient(135deg, ${CRIMSON}44, rgba(13,6,24,0.8))` }}>
+              {item.image_url
+                ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                : <span className="text-4xl">👕</span>}
+            </div>
+            <div className="p-3">
+              <p className="font-black text-xs text-white truncate" style={T}>{item.name}</p>
+              <p className="font-black text-sm mt-0.5" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${item.price_usd}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      <Link to={createPageUrl('MerchStore') + `?id=${creatorId}`}>
+        <button className="w-full py-2.5 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-2"
+          style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', ...T }}>
+          <ShoppingBag className="w-3.5 h-3.5" /> View Full Store →
+        </button>
+      </Link>
+    </div>
+  );
+}
 
 export default function CreatorChannel() {
   const [activeTab, setActiveTab] = useState('live');
@@ -163,7 +214,9 @@ export default function CreatorChannel() {
             <button key={tab} onClick={() => setActiveTab(tab)}
               className="flex-1 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all capitalize flex items-center justify-center gap-1"
               style={{ ...T, color: activeTab === tab ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === tab ? GOLD : 'transparent', background: activeTab === tab ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
-              {tab === 'memberships' && <Crown className="w-3 h-3" />}{tab}
+              {tab === 'memberships' && <Crown className="w-3 h-3" />}
+              {tab === 'merch' && <ShoppingBag className="w-3 h-3" />}
+              {tab}
             </button>
           ))}
         </div>
@@ -252,6 +305,13 @@ export default function CreatorChannel() {
             <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.5)' }}>
               <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
             </div>
+          </div>
+        )}
+
+        {/* Merch */}
+        {activeTab === 'merch' && (
+          <div className="pb-16">
+            <MerchPreview creatorId={userId} />
           </div>
         )}
 
