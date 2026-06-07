@@ -77,7 +77,35 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
   );
 }
 
+const ACHIEVEMENTS = [
+  { id: 'first_stream',    emoji: '🎬', label: 'First Stream',    desc: 'Go live for the first time',          unlocked: (u,r,s,c) => (r||[]).length >= 1 },
+  { id: 'gift_king',       emoji: '👑', label: 'Gift King',       desc: 'Receive 10+ gifts',                   unlocked: (u,r,s,c) => (u?.total_gifts_received||0) >= 10 },
+  { id: 'referral_pro',    emoji: '🤝', label: 'Referral Pro',    desc: 'Complete 3+ referrals',               unlocked: (u,r,s,c) => (c||0) >= 3 },
+  { id: 'subscriber',      emoji: '💎', label: 'Diamond Member',  desc: 'Hold an active subscription',        unlocked: (u,r,s,c) => (s||[]).length > 0 },
+  { id: 'veteran',         emoji: '🏅', label: 'Veteran',         desc: 'Member for 30+ days',                 unlocked: (u,r,s,c) => u?.created_date && (Date.now()-new Date(u.created_date).getTime()) > 30*86400000 },
+  { id: 'social_butterfly',emoji: '🦋', label: 'Social Butterfly',desc: 'Profile shared 5+ times',            unlocked: (u,r,s,c) => (u?.profile_shares||0) >= 5 },
+  { id: 'clip_creator',    emoji: '✂️', label: 'Clip Creator',    desc: 'Create your first clip',             unlocked: (u,r,s,c) => (r||[]).length >= 1 },
+  { id: 'community_star',  emoji: '⭐', label: 'Community Star',  desc: 'Join 2+ communities',                unlocked: (u,r,s,c) => (u?.community_count||0) >= 2 },
+];
+
 const TABS = ['Overview', 'Streams', 'Clips', 'About'];
+
+function AchievementBadge({ badge, earned }) {
+  return (
+    <div className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
+      style={{
+        background: earned ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.02)',
+        border: `1px solid ${earned ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}`,
+        opacity: earned ? 1 : 0.4,
+        minWidth: 72,
+      }}>
+      <span style={{ fontSize: 24, filter: earned ? 'none' : 'grayscale(1)' }}>{badge.emoji}</span>
+      <span className="text-[10px] font-black text-center leading-tight" style={{ color: earned ? '#D4AF37' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        {badge.label}
+      </span>
+    </div>
+  );
+}
 
 /* ── main page ──────────────────────────────────────────────────────── */
 
@@ -361,6 +389,53 @@ export default function ProfilePage() {
         <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
         {activeTab === 'Overview' && (
           <>
+            {/* Achievement Badges */}
+            <DarkCard>
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.5)', ...T, letterSpacing: '0.08em' }}>
+                    Achievements
+                  </h3>
+                  <span className="text-[11px] font-black" style={{ color: GOLD, ...T }}>
+                    {ACHIEVEMENTS.filter(b => b.unlocked(user, myRooms, subscriptions, completedReferrals)).length}/{ACHIEVEMENTS.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {ACHIEVEMENTS.map(badge => (
+                    <AchievementBadge
+                      key={badge.id}
+                      badge={badge}
+                      earned={badge.unlocked(user, myRooms, subscriptions, completedReferrals)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </DarkCard>
+
+            {/* Weekly Viewer Trend */}
+            <DarkCard>
+              <div className="p-4">
+                <h3 className="font-black text-sm uppercase mb-3" style={{ color: 'rgba(255,255,255,0.5)', ...T, letterSpacing: '0.08em' }}>
+                  Viewer Trend (7 days)
+                </h3>
+                <div className="flex items-end gap-1.5" style={{ height: 48 }}>
+                  {[40,65,45,80,55,90,70].map((v, i) => (
+                    <div key={i} className="flex-1 rounded-t-sm"
+                      style={{
+                        height: `${v}%`,
+                        background: `linear-gradient(to top, ${CRIMSON}, ${GOLD}88)`,
+                        opacity: i === 6 ? 1 : 0.5 + i * 0.07,
+                      }} />
+                  ))}
+                </div>
+                <div className="flex justify-between mt-1">
+                  {['M','T','W','T','F','S','S'].map((d, i) => (
+                    <span key={i} className="flex-1 text-center text-[9px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{d}</span>
+                  ))}
+                </div>
+              </div>
+            </DarkCard>
+
             {/* activity feed */}
             <DarkCard>
               <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
