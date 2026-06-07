@@ -200,48 +200,60 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
 }
 
 function MobileParticipantStrip({ members, hostId, speakingIds }) {
-  var displayMembers = members.slice(0, 8);
-  var overflow = members.length - 8;
+  var displayMembers = members.slice(0, 20);
+  var overflow = members.length - 20;
   return (
-    <div className="flex md:hidden items-center gap-2 px-3 py-1.5 overflow-x-auto shrink-0"
+    <div className="md:hidden shrink-0 px-3 py-2"
       style={{ background: 'rgba(8,11,24,0.9)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-      {displayMembers.map(function(m) {
-        var isHostMember = m.user_id === hostId;
-        var isSpeaking = speakingIds && speakingIds.has(m.user_id);
-        return (
-          <div key={m.id || m.user_id} className="flex flex-col items-center shrink-0 gap-0.5">
-            <motion.div
-              style={{ width: 44, height: 44, borderRadius: 2 }}
-              animate={{
-                boxShadow: isSpeaking
-                  ? ['0 0 0 2px rgba(212,175,55,0.8)', '0 0 0 6px rgba(212,175,55,0.15)']
-                  : isHostMember
-                  ? '0 0 0 2px rgba(212,175,55,0.5)'
-                  : '0 0 0 0px transparent',
-              }}
-              transition={isSpeaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}}
-            >
-              <div className="w-full h-full relative" style={{ clipPath: OCT, background: isHostMember ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.12)' }}>
-                <div className="absolute inset-[2px] flex items-center justify-center font-bold text-white text-xs"
-                  style={{ clipPath: OCT, background: '#1a0f2e' }}>
-                  {m.user_name ? m.user_name.charAt(0).toUpperCase() : '?'}
-                  {isHostMember && (
-                    <span className="absolute top-0 right-0 text-[6px]">👑</span>
-                  )}
-                </div>
+      {/* section header */}
+      <p className="font-black uppercase mb-2"
+        style={{ fontSize: 11, color: 'rgba(212,175,55,0.75)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+        👥 {members.length} in the room
+      </p>
+
+      {members.length === 0 ? (
+        <p className="text-center py-2" style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          Waiting for viewers…
+        </p>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+          {displayMembers.map(function(m) {
+            var isHostMember = m.user_id === hostId;
+            var isSpeaking = speakingIds && speakingIds.has(m.user_id);
+            return (
+              <div key={m.id || m.user_id} className="flex flex-col items-center gap-0.5">
+                <motion.div
+                  style={{ width: 44, height: 44, borderRadius: 2 }}
+                  animate={{
+                    boxShadow: isSpeaking
+                      ? ['0 0 0 2px rgba(212,175,55,0.8)', '0 0 0 6px rgba(212,175,55,0.15)']
+                      : isHostMember
+                      ? '0 0 0 2px rgba(212,175,55,0.5)'
+                      : '0 0 0 0px transparent',
+                  }}
+                  transition={isSpeaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}}
+                >
+                  <div className="w-full h-full relative" style={{ clipPath: OCT, background: isHostMember ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.12)' }}>
+                    <div className="absolute inset-[2px] flex items-center justify-center font-bold text-white text-xs"
+                      style={{ clipPath: OCT, background: '#1a0f2e' }}>
+                      {m.user_name ? m.user_name.charAt(0).toUpperCase() : '?'}
+                      {isHostMember && (
+                        <span className="absolute top-0 right-0 text-[6px]">👑</span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+                <span className="text-white/50 truncate max-w-[44px]" style={{ fontSize: 7 }}>{m.user_name}</span>
               </div>
-            </motion.div>
-            <span className="text-white/50 truncate max-w-[44px]" style={{ fontSize: 7 }}>{m.user_name}</span>
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      )}
+
       {overflow > 0 && (
-        <div className="shrink-0 flex flex-col items-center gap-0.5">
-          <div className="flex items-center justify-center text-[10px] font-bold rounded"
-            style={{ width: 44, height: 44, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', clipPath: OCT }}>
-            +{overflow}
-          </div>
-          <span style={{ fontSize: 7, color: 'transparent' }}>.</span>
+        <div className="mt-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full font-black"
+          style={{ fontSize: 10, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          +{overflow} more
         </div>
       )}
     </div>

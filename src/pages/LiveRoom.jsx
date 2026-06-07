@@ -23,6 +23,8 @@ import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import { DollarSign, Gift } from 'lucide-react';
+import SuperChatRail from '../components/live/SuperChatRail';
+import ClipMarker from '../components/live/ClipMarker';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -445,6 +447,16 @@ export default function LiveRoom() {
   const [pkBattleOpen, setPkBattleOpen] = useState(false);
   const [inviteGuestsOpen, setInviteGuestsOpen] = useState(false);
 
+  // Feature: SuperChatRail
+  const [superchats, setSuperchats] = useState([]);
+
+  // Feature: Room Link modal
+  const [roomLinkOpen, setRoomLinkOpen] = useState(false);
+  const [roomLinkCopied, setRoomLinkCopied] = useState(false);
+
+  // Feature: ClipMarker stream start timestamp
+  const streamStartRef = useRef(Date.now());
+
   // V45: sponsor overlay
   const [sponsorActive, setSponsorActive] = useState(false);
   const [sponsorData, setSponsorData] = useState({ name: '', logoUrl: '', cta: '' });
@@ -621,6 +633,17 @@ export default function LiveRoom() {
     if (blocked) return; // silently drop — Guardian AI filtered it
     const isFM = user?.is_founding_member === true;
     const displayName = (user?.full_name || 'You') + (isFM ? ' [FM]' : '');
+    // Super chat: message starting with $amount
+    const scMatch = rawText.match(/^\$(\d+(?:\.\d{1,2})?)\s*(.*)/);
+    if (scMatch) {
+      const entry = {
+        id: Date.now(),
+        user: displayName,
+        amount: parseFloat(scMatch[1]),
+        message: scMatch[2] || '',
+      };
+      setSuperchats(s => [...s.slice(-9), entry]);
+    }
     setChatMsgs(p => [...p, { id: Date.now(), user: displayName, text: rawText, host: isHost || isCoHost, fm: isFM }]);
   }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
@@ -756,6 +779,13 @@ export default function LiveRoom() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── SuperChatRail ────────────────────────────────────────────────────── */}
+      {superchats.length > 0 && (
+        <div className="shrink-0">
+          <SuperChatRail superchats={superchats} />
+        </div>
+      )}
 
       {/* ── Scrollable content ──────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 88 }}>
@@ -930,7 +960,7 @@ export default function LiveRoom() {
               { label: 'Pay',          icon: '💸', bg: 'rgba(255,21,100,0.08)', action: () => setPayOpen(true) },
               { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)', action: () => (isHost || isCoHost) && setPkBattleOpen(true) },
               { label: 'Invite',       icon: '🤝', bg: 'rgba(109,191,126,0.07)', action: () => setInviteGuestsOpen(true) },
-          { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
+          { label: 'Room Link',    icon: '🔗', bg: 'rgba(109,191,126,0.07)', action: () => setRoomLinkOpen(true) },
             ].map(s => (
               <motion.div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
                 onClick={s.action}
@@ -1057,6 +1087,14 @@ export default function LiveRoom() {
             <div className="flex flex-col items-center gap-0.5">
               <TipWidget roomId={roomId} hostId={party?.host_id} currentUser={user} />
               <span className="text-[11px] text-white/35">Tip</span>
+            </div>
+          )}
+
+          {/* ClipMarker (host / co-host) */}
+          {(isHost || isCoHost) && (
+            <div className="flex flex-col items-center gap-0.5">
+              <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} />
+              <span className="text-[11px] text-white/35">Clip</span>
             </div>
           )}
 
@@ -1415,6 +1453,58 @@ export default function LiveRoom() {
           />
         )}
       </AnimatePresence>
+
+      {/* ── Room Link modal ────────────────────────────────────────────────── */}
+      {(() => {
+        const roomUrl = `${window.location.origin}/LiveRoom?id=${roomId || 'demo'}`;
+        return (
+          <AnimatePresence>
+            {roomLinkOpen && (
+              <>
+                <motion.div className="fixed inset-0 z-[74]" style={{ background: 'rgba(0,0,0,0.65)' }}
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  onClick={() => setRoomLinkOpen(false)} />
+                <motion.div
+                  initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                  transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                  className="fixed inset-x-0 bottom-0 z-[75] rounded-t-3xl overflow-hidden"
+                  style={{ background: '#0E1120', border: '1px solid rgba(212,175,55,0.18)', maxHeight: '60vh' }}>
+                  <div className="w-8 h-1 rounded-full bg-white/10 mx-auto mt-3 mb-1" />
+                  <div className="px-5 pt-2 pb-2 flex items-center justify-between">
+                    <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>🔗 Room Link</h3>
+                    <button onClick={() => setRoomLinkOpen(false)} className="text-white/40 text-xl">✕</button>
+                  </div>
+                  <div className="px-5 pb-8 space-y-3">
+                    <p className="text-[11px] text-white/35" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      Share this link to invite viewers into your room
+                    </p>
+                    <div className="px-3 py-2.5 rounded-xl break-all"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>
+                      {roomUrl}
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText(roomUrl);
+                        setRoomLinkCopied(true);
+                        setTimeout(() => setRoomLinkCopied(false), 2000);
+                      }}
+                      className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-wide"
+                      style={{ background: roomLinkCopied ? 'rgba(109,191,126,0.2)' : `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, color: roomLinkCopied ? '#6DBF7E' : GOLD, border: roomLinkCopied ? '1px solid rgba(109,191,126,0.4)' : 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {roomLinkCopied ? '✓ Copied!' : '📋 Copy Link'}
+                    </button>
+                    <button
+                      onClick={() => { if (navigator.share) navigator.share({ title: roomTitle, url: roomUrl }).catch(() => {}); else navigator.clipboard?.writeText(roomUrl); }}
+                      className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-wide"
+                      style={{ background: 'transparent', color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      📤 Share via…
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        );
+      })()}
 
       {/* ── Invite Guests Modal ─────────────────────────────────────────────── */}
       <AnimatePresence>

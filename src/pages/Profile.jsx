@@ -118,6 +118,8 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab]         = useState('Overview');
   const [isOnline]                        = useState(true);
+  const [socialLinks, setSocialLinks]     = useState({ instagram: '', twitter: '', youtube: '', tiktok: '' });
+  const [editingSocial, setEditingSocial] = useState(false);
   const fileRef = useRef();
 
   /* ── queries ── */
@@ -170,6 +172,12 @@ export default function ProfilePage() {
     if (user) {
       setBio(user.bio || '');
       setDisplayName(user.full_name || '');
+      setSocialLinks({
+        instagram: user.social_instagram || '',
+        twitter:   user.social_twitter   || '',
+        youtube:   user.social_youtube   || '',
+        tiktok:    user.social_tiktok    || '',
+      });
     }
   }, [user]);
 
@@ -618,6 +626,83 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
+              {/* Social Links */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Social Links</p>
+                  <button
+                    onClick={() => {
+                      if (editingSocial) {
+                        base44.auth.updateMe({
+                          social_instagram: socialLinks.instagram,
+                          social_twitter:   socialLinks.twitter,
+                          social_youtube:   socialLinks.youtube,
+                          social_tiktok:    socialLinks.tiktok,
+                        }).then(() => { toast.success('Social links saved!'); queryClient.invalidateQueries(['currentUser']); }).catch(() => {});
+                      }
+                      setEditingSocial(e => !e);
+                    }}
+                    className="text-[10px] font-black uppercase px-2 py-0.5 rounded-lg"
+                    style={{ background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.25)`, color: GOLD, ...T }}>
+                    {editingSocial ? 'Save' : 'Edit'}
+                  </button>
+                </div>
+                {editingSocial ? (
+                  <div className="space-y-2">
+                    {[
+                      { key: 'instagram', label: '📸 Instagram', placeholder: '@handle' },
+                      { key: 'twitter',   label: '🐦 X / Twitter', placeholder: '@handle' },
+                      { key: 'youtube',   label: '▶️ YouTube',    placeholder: 'Channel name or @handle' },
+                      { key: 'tiktok',    label: '🎵 TikTok',     placeholder: '@handle' },
+                    ].map(({ key, label, placeholder }) => (
+                      <div key={key}>
+                        <p className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
+                        <input
+                          value={socialLinks[key]}
+                          onChange={e => setSocialLinks(l => ({ ...l, [key]: e.target.value }))}
+                          placeholder={placeholder}
+                          className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
+                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', ...T }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: 'instagram', emoji: '📸', base: 'https://instagram.com/' },
+                      { key: 'twitter',   emoji: '🐦', base: 'https://x.com/' },
+                      { key: 'youtube',   emoji: '▶️', base: 'https://youtube.com/@' },
+                      { key: 'tiktok',    emoji: '🎵', base: 'https://tiktok.com/@' },
+                    ].map(({ key, emoji, base }) => socialLinks[key] ? (
+                      <a key={key}
+                        href={base + socialLinks[key].replace(/^@/, '')}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[11px] uppercase"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', ...T }}>
+                        <span>{emoji}</span>
+                        <span>{socialLinks[key]}</span>
+                      </a>
+                    ) : null)}
+                    {!Object.values(socialLinks).some(Boolean) && (
+                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No social links added yet. Tap Edit to add.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Founding Member status */}
+              {user?.is_founding_member && (
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                  style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.35)' }}>
+                  <span className="text-lg">🏅</span>
+                  <div>
+                    <p className="font-black text-sm" style={{ color: '#FF9944', ...T }}>Founding Member</p>
+                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Your [FM] badge appears in Live Chat</p>
+                  </div>
+                </div>
+              )}
+
               {subscriptions.length > 0 && (
                 <div>
                   <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Active Subscriptions</p>
