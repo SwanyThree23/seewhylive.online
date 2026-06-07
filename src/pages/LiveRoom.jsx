@@ -25,6 +25,7 @@ import GiftAnimation from '../components/live/GiftAnimation';
 import { DollarSign, Gift } from 'lucide-react';
 import SuperChatRail from '../components/live/SuperChatRail';
 import ClipMarker from '../components/live/ClipMarker';
+import StreamGoals from '../components/live/StreamGoals';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -453,6 +454,9 @@ export default function LiveRoom() {
   // Feature: Room Link modal
   const [roomLinkOpen, setRoomLinkOpen] = useState(false);
   const [roomLinkCopied, setRoomLinkCopied] = useState(false);
+
+  // Feature: Stream Goals
+  const [goalsOpen, setGoalsOpen] = useState(false);
 
   // Feature: ClipMarker stream start timestamp
   const streamStartRef = useRef(Date.now());
@@ -958,9 +962,10 @@ export default function LiveRoom() {
               { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
               { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'Pay',          icon: '💸', bg: 'rgba(255,21,100,0.08)', action: () => setPayOpen(true) },
-              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)', action: () => (isHost || isCoHost) && setPkBattleOpen(true) },
-              { label: 'Invite',       icon: '🤝', bg: 'rgba(109,191,126,0.07)', action: () => setInviteGuestsOpen(true) },
-          { label: 'Room Link',    icon: '🔗', bg: 'rgba(109,191,126,0.07)', action: () => setRoomLinkOpen(true) },
+              { label: 'Battle',    icon: '⚔️', bg: 'rgba(212,175,55,0.08)', action: () => (isHost || isCoHost) && setPkBattleOpen(true) },
+              { label: 'Invite',    icon: '🤝', bg: 'rgba(109,191,126,0.07)', action: () => setInviteGuestsOpen(true) },
+              { label: 'Room Link', icon: '🔗', bg: 'rgba(109,191,126,0.07)', action: () => setRoomLinkOpen(true) },
+              { label: 'Goals',     icon: '🎯', bg: 'rgba(34,197,94,0.08)',   action: () => setGoalsOpen(true) },
             ].map(s => (
               <motion.div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
                 onClick={s.action}
@@ -1516,6 +1521,36 @@ export default function LiveRoom() {
             roomTitle={roomTitle}
             currentUser={user}
           />
+        )}
+      </AnimatePresence>
+
+      {/* ── Stream Goals slide-up panel ─────────────────────────────────────── */}
+      <AnimatePresence>
+        {goalsOpen && (
+          <>
+            <motion.div className="fixed inset-0 z-[80]" style={{ background: 'rgba(0,0,0,0.7)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setGoalsOpen(false)} />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              className="fixed inset-x-0 bottom-0 z-[85] rounded-t-3xl overflow-hidden"
+              style={{ background: '#0E1120', border: '1px solid rgba(34,197,94,0.2)', maxHeight: '70vh' }}>
+              <div className="w-8 h-1 rounded-full bg-white/10 mx-auto mt-3 mb-2" />
+              <div className="px-5 pb-2 flex items-center justify-between">
+                <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>🎯 Stream Goals</h3>
+                <button onClick={() => setGoalsOpen(false)} className="text-white/40 text-xl">✕</button>
+              </div>
+              <div style={{ overflowY: 'auto', maxHeight: 'calc(70vh - 70px)' }}>
+                <StreamGoals
+                  isHost={isHost || isCoHost}
+                  currentTips={superchats.reduce((s, sc) => s + (sc.amount || 0), 0)}
+                  currentViewers={viewerCount}
+                  currentSubs={0}
+                />
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
