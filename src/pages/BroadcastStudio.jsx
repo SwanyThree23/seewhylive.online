@@ -48,6 +48,7 @@ import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1545,6 +1546,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                       <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
                         <AICopilotSidebar roomId={partyId} isHost={canManage} viewerCount={members.length} />
                       </div>
+                      {/* Engagement badges for host to award */}
+                      {isHost && user?.id && (
+                        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.12)' }}>
+                          <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user.id} />
+                        </div>
+                      )}
                       {/* ARIA toggle */}
                       <div className="rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
                         <div className="flex items-center justify-between mb-2">

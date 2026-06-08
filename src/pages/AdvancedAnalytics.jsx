@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Users, DollarSign, Radio, Zap, Target, Download } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -186,18 +188,24 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Performance */}
         {activeTab === 'performance' && (
-          <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-            <p className="font-black text-sm text-white mb-1" style={T}>Top Performing Rooms</p>
-            <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>By viewer count</p>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={roomPerformance}>
-                <CartesianGrid strokeDasharray="3 3" {...GRID} />
-                <XAxis dataKey="title" tick={TICK} axisLine={false} tickLine={false} />
-                <YAxis tick={TICK} axisLine={false} tickLine={false} />
-                <Tooltip {...TOOLTIP_STYLE} />
-                <Bar dataKey="viewers" fill={CRIMSON} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-4">
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+              <p className="font-black text-sm text-white mb-1" style={T}>Top Performing Rooms</p>
+              <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>By viewer count</p>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={roomPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" {...GRID} />
+                  <XAxis dataKey="title" tick={TICK} axisLine={false} tickLine={false} />
+                  <YAxis tick={TICK} axisLine={false} tickLine={false} />
+                  <Tooltip {...TOOLTIP_STYLE} />
+                  <Bar dataKey="viewers" fill={CRIMSON} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Live stream analytics panel */}
+            {rooms.find(r => r.status === 'live') && (
+              <StreamAnalyticsDashboard roomId={rooms.find(r => r.status === 'live').id} />
+            )}
           </div>
         )}
 
@@ -274,47 +282,13 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Insights */}
         {activeTab === 'insights' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="w-4 h-4" style={{ color: GOLD }} />
-                <p className="font-black text-sm text-white" style={T}>Growth Opportunities</p>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { title: 'Optimize Stream Times', desc: 'Peak viewership at 7–9 PM', color: '#D4AF37' },
-                  { title: 'Increase Monetization', desc: '15% conversion rate on tips', color: '#00ff88' },
-                  { title: 'Community Engagement', desc: 'Chat activity up 23%', color: '#D4AF37' },
-                ].map(({ title, desc, color }) => (
-                  <div key={title} className="p-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.06)` }}>
-                    <p className="font-black text-xs" style={{ color, ...T }}>{title}</p>
-                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-              <p className="font-black text-sm text-white mb-4" style={T}>Platform Health</p>
-              <div className="space-y-4">
-                {[
-                  { label: 'System Performance', value: 95, text: 'Excellent', color: '#00ff88' },
-                  { label: 'User Satisfaction', value: 88, text: 'High', color: '#D4AF37' },
-                  { label: 'Content Quality', value: 82, text: 'Good', color: '#D4AF37' },
-                ].map(({ label, value, text, color }) => (
-                  <div key={label}>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span style={{ color: 'rgba(255,255,255,0.5)', ...T }}>{label}</span>
-                      <span className="font-black" style={{ color, ...T }}>{text}</span>
-                    </div>
-                    <div className="rounded-full h-1.5 overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                      <div className="h-full rounded-full" style={{ width: `${value}%`, background: color }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="space-y-4">
+            {/* AI-powered recommendations (live room context if one is active) */}
+            <SwanAIRecommendations
+              roomId={rooms.find(r => r.status === 'live')?.id || null}
+              currentLayout="analytics"
+              viewerCount={activeRooms}
+            />
           </div>
         )}
       </div>
