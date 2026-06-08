@@ -27,6 +27,9 @@ import SuperChatRail from '../components/live/SuperChatRail';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
 import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import GoldenWall from '../components/live/GoldenWall';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -731,6 +734,11 @@ export default function LiveRoom() {
           <span className="text-[11px] font-bold text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{viewerCount}</span>
         </div>
 
+        {/* Audience engagement pulse — visible to host & co-host */}
+        {(isHost || isCoHost) && roomId && (
+          <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={viewerCount} />
+        )}
+
         {/* Sponsor badge (when active) */}
         {sponsorActive && sponsorData.name && (
           <div className="shrink-0 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide"
@@ -926,6 +934,20 @@ export default function LiveRoom() {
             </motion.div>
           )}
         </div>
+
+        {/* ── Golden Wall: live tips & gifts ───────────────────────────────── */}
+        {roomId && (
+          <div className="px-3 mb-4">
+            <GoldenWall roomId={roomId} isExpanded />
+          </div>
+        )}
+
+        {/* ── Viewer loyalty card for this creator ─────────────────────────── */}
+        {user?.id && party?.host_id && user.id !== party.host_id && (
+          <div className="px-3 mb-4">
+            <ViewerLoyaltyCard userId={user.id} creatorId={party.host_id} compact />
+          </div>
+        )}
 
         {/* ── Audience section ──────────────────────────────────────────────── */}
         <div className="px-4 mb-4">

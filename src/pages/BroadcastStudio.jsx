@@ -43,6 +43,9 @@ import InviteSheet from '../components/live/InviteSheet';
 import DirectPayments from '../components/live/DirectPayments';
 import { Hand, UserPlus } from 'lucide-react';
 import RoomEntryGate from '../components/RoomEntryGate';
+import GoldenWall from '../components/live/GoldenWall';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -701,6 +704,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     { id: 'battle',  label: '⚔️ Battle', desc: 'PK Tiers' },
     { id: 'polls',   label: '📊 Polls',  desc: 'Live polls' },
     { id: 'viewers', label: '👥 Panel',  desc: 'Manage' },
+    { id: 'tips',    label: '💰 Tips',   desc: 'Golden Wall' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
     ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
@@ -849,13 +853,20 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           )}
         </div>
 
-        {/* Metrics bar */}
-        <StreamMetricsBar
-          startTime={streamStartRef.current}
-          memberCount={members.length}
-          tipTotal={tipTotal}
-          peakViewers={members.length}
-        />
+        {/* Metrics bar + audience pulse */}
+        <div className="flex items-center gap-2 px-3 pb-1">
+          <div className="flex-1">
+            <StreamMetricsBar
+              startTime={streamStartRef.current}
+              memberCount={members.length}
+              tipTotal={tipTotal}
+              peakViewers={members.length}
+            />
+          </div>
+          {isHost && partyId && (
+            <LiveAudiencePulse roomId={partyId} isHost viewerCount={members.length} />
+          )}
+        </div>
       </div>
 
       {/* ── MAIN AREA ──────────────────────────────────────────────────────── */}
@@ -1167,6 +1178,13 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               </div>
             )}
 
+            {/* 💰 GOLDEN WALL */}
+            {activeTab === 'tips' && (
+              <div className="p-2">
+                <GoldenWall roomId={partyId} isExpanded />
+              </div>
+            )}
+
             {/* 👥 PANEL MANAGEMENT */}
             {activeTab === 'viewers' && (
               <div className="p-2 space-y-2">
@@ -1343,6 +1361,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     }}
                   />
                 </div>
+
+                {/* Reward redemption queue */}
+                {isHost && user?.id && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🔔 Reward Queue</p>
+                    <RedemptionQueue creatorId={user.id} roomId={partyId} />
+                  </div>
+                )}
 
                 {/* Danger zone */}
                 {isHost && (

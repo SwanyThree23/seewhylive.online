@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Trophy, Star, Flame, Gift, Clock, ChevronDown, ChevronUp, Users, MessageSquare, DollarSign, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import RewardShop from '../components/loyalty/RewardShop';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -153,10 +155,11 @@ export default function LoyaltyHubPage() {
   const totalWatchTime = viewerPoints.reduce((s, v) => s + (v.watch_minutes || 0), 0);
 
   const TABS = [
-    { id: 'my_card',   label: '🃏 My Card' },
-    { id: 'rewards',   label: '🎁 Rewards' },
-    { id: 'points',    label: '⭐ Points' },
-    { id: 'leaderboard', label: '🏆 Board' },
+    { id: 'my_card',      label: '🃏 My Card' },
+    { id: 'rewards',      label: '🎁 Rewards' },
+    { id: 'points',       label: '⭐ Points' },
+    { id: 'leaderboard',  label: '🏆 Board' },
+    { id: 'redemptions',  label: '🔔 Queue' },
   ];
 
   return (
@@ -227,31 +230,19 @@ export default function LoyaltyHubPage() {
             )}
 
             {activeTab === 'rewards' && (
-              <div className="space-y-2">
-                {allRewards.length === 0
-                  ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No rewards available</p>
-                  : allRewards.map((r, i) => {
-                    const canRedeem = totalPoints >= r.points_required;
-                    return (
-                      <div key={r.id} className="rounded-xl p-3 flex items-center gap-3"
-                        style={{ background: 'rgba(13,6,24,0.9)', border: canRedeem ? `1px solid ${GOLD}35` : '1px solid rgba(255,255,255,0.07)' }}>
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
-                          style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}30` }}>
-                          {['🏅','🎟','🔒','📣','😎'][i % 5]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-[11px] text-white">{r.name}</p>
-                          <p className="text-[11px]" style={{ color: CREAM + '40' }}>{r.description}</p>
-                          <p className="text-[11px] font-black mt-0.5" style={{ color: GOLD }}>{r.points_required.toLocaleString()} pts</p>
-                        </div>
-                        <button disabled={!canRedeem}
-                          className="px-3 py-1.5 rounded-lg font-black uppercase text-[11px] shrink-0"
-                          style={{ background: canRedeem ? BURGUNDY : 'rgba(255,255,255,0.05)', color: canRedeem ? GOLD : CREAM + '25', border: canRedeem ? `1px solid ${GOLD}40` : '1px solid rgba(255,255,255,0.08)', ...T, cursor: canRedeem ? 'pointer' : 'not-allowed' }}>
-                          {canRedeem ? 'Redeem' : `Need ${(r.points_required - totalPoints).toLocaleString()} more`}
-                        </button>
-                      </div>
-                    );
-                  })}
+              <div className="space-y-3">
+                {mainLoyalty?.creator_id ? (
+                  <RewardShop
+                    creatorId={mainLoyalty.creator_id}
+                    roomId={null}
+                    currentUser={user}
+                  />
+                ) : (
+                  <div className="rounded-xl p-8 text-center" style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
+                    <p className="text-[12px] font-black uppercase" style={{ color: GOLD + '50', ...T }}>Watch a stream first</p>
+                    <p className="text-[10px] mt-1" style={{ color: CREAM + '30' }}>Rewards unlock after you earn loyalty points with a creator.</p>
+                  </div>
+                )}
 
                 {/* How to earn guide */}
                 <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -272,6 +263,19 @@ export default function LoyaltyHubPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'redemptions' && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase mb-2 px-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
+                  Pending reward requests from your fans
+                </p>
+                {user?.id ? (
+                  <RedemptionQueue creatorId={user.id} roomId={null} />
+                ) : (
+                  <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>Sign in to see redemptions</p>
+                )}
               </div>
             )}
 
