@@ -46,6 +46,8 @@ import RoomEntryGate from '../components/RoomEntryGate';
 import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1397,12 +1399,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Sub-tab nav */}
                 <div className="flex gap-0 border-b shrink-0" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
                   {[
-                    { id: 'music',    icon: '🎵', label: 'Music' },
-                    { id: 'copilot',  icon: '🤖', label: 'Copilot' },
-                    { id: 'guardian', icon: '🛡️', label: 'Guard' },
-                    { id: 'director', icon: '🎬', label: 'Director' },
-                    { id: 'summary',  icon: '📊', label: 'Summary' },
-                    { id: 'clips',    icon: '✂️',  label: 'Clips' },
+                    { id: 'music',     icon: '🎵', label: 'Music' },
+                    { id: 'copilot',   icon: '🤖', label: 'Copilot' },
+                    { id: 'guardian',  icon: '🛡️', label: 'Guard' },
+                    { id: 'director',  icon: '🎬', label: 'Direct' },
+                    { id: 'summary',   icon: '📊', label: 'Summary' },
+                    { id: 'clips',     icon: '✂️',  label: 'Clips' },
+                    { id: 'persona',   icon: '✨', label: 'Persona' },
+                    { id: 'countdown', icon: '⏱', label: 'Count' },
                   ].map(t => (
                     <button key={t.id} onClick={() => setAiSubTab(t.id)}
                       className="flex-1 py-2 flex flex-col items-center gap-0.5 transition-all"
@@ -1710,6 +1714,22 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                         <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Automatically detects highlight moments and creates shareable clips from your live session.</p>
                       </div>
                     </div>
+                  )}
+
+                  {/* ── AI PERSONA ── */}
+                  {aiSubTab === 'persona' && (
+                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                      <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />
+                    </div>
+                  )}
+
+                  {/* ── PRE-STREAM COUNTDOWN ── */}
+                  {aiSubTab === 'countdown' && (
+                    <PreStreamCountdown
+                      room={party}
+                      currentUser={user}
+                      onGoLive={() => toast.success('You\'re live! 🎙')}
+                    />
                   )}
 
                 </div>
