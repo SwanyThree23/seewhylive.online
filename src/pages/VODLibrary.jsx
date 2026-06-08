@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Film, Scissors } from 'lucide-react';
+import { Film, Scissors, Archive } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
+import RecordingManager from '../components/content/RecordingManager';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
 
 export default function VODLibraryPage() {
+  const [activeTab, setActiveTab] = useState('library');
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -58,9 +60,29 @@ export default function VODLibraryPage() {
         </div>
       </div>
 
+      {/* Tab nav */}
+      <div className="flex gap-0 border-b sticky top-0 z-10" style={{ borderColor: 'rgba(212,175,55,0.1)', background: 'rgba(10,7,16,0.97)', backdropFilter: 'blur(12px)' }}>
+        {[
+          { id: 'library',    icon: <Film className="w-3.5 h-3.5" />,    label: 'Library' },
+          { id: 'recordings', icon: <Archive className="w-3.5 h-3.5" />, label: 'Recordings' },
+        ].map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            className="flex items-center gap-1.5 flex-1 py-3 text-[11px] font-black uppercase transition-all border-b-2"
+            style={{
+              fontFamily: 'Barlow Condensed, sans-serif',
+              color: activeTab === t.id ? G : 'rgba(255,255,255,0.3)',
+              borderBottomColor: activeTab === t.id ? G : 'transparent',
+              background: activeTab === t.id ? 'rgba(212,175,55,0.05)' : 'transparent',
+            }}>
+            <span className="mx-auto flex items-center gap-1.5">{t.icon}{t.label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        {user?.id && <VODLibraryComponent creatorId={user.id} />}
+        {activeTab === 'library' && user?.id && <VODLibraryComponent creatorId={user.id} />}
+        {activeTab === 'recordings' && user?.id && <RecordingManager userId={user.id} />}
       </div>
     </div>
   );

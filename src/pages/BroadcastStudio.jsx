@@ -49,6 +49,7 @@ import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1787,6 +1788,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     ));
                   })()}
                 </div>
+
+                {/* ShareToSocial — dynamic share card */}
+                {party && (
+                  <ShareToSocial content={{ title: party.title, url: window.location.href }} />
+                )}
 
                 <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   <div className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>

@@ -4,13 +4,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter
+  Zap, Eye, Clock, ChevronRight, Filter, Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 import { formatDistanceToNow } from 'date-fns';
 
 function usePullToRefresh(onRefresh) {
@@ -274,6 +275,7 @@ export default function DiscoverPage() {
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
+              { id: 'recommended', label: 'Picks', icon: Sparkles },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -443,6 +445,12 @@ export default function DiscoverPage() {
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+          )}
+
+          {tab === 'recommended' && (
+            <motion.div key="recommended" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <ContentRecommendations />
             </motion.div>
           )}
         </AnimatePresence>

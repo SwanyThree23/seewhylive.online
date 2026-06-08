@@ -6,6 +6,7 @@ import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Use
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -287,6 +288,11 @@ export default function CreatorDashboardPage() {
 
         {user?.id && (
           <>
+            {/* Milestone alerts — celebrates hitting follower/revenue/stream goals */}
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+              <MilestoneAlerts creatorId={user.id} />
+            </motion.div>
+
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <AnalyticsOverview creatorId={user.id} timeRange={timeRange} />
             </motion.div>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, ShieldX } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, ShieldX, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { useAuth } from '@/lib/AuthContext';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -216,6 +217,11 @@ export default function SettingsPage() {
               </Link>
             ))}
           </div>
+        </Section>
+
+        {/* Appearance */}
+        <Section icon={Palette} title="Appearance" description="Customize your stream and app background">
+          <BackgroundCustomizer />
         </Section>
 
         {/* Data Export */}
