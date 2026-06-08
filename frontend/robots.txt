@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /AdminDashboard
+Disallow: /StageCleanup
+Disallow: /RTMPServer
+Disallow: /ControlRoom
+Disallow: /ModerationDashboard
+
+Sitemap: https://seewhylive.online/sitemap.xml
