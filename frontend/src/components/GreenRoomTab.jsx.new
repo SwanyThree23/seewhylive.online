@@ -1,0 +1,2 @@
+# test heredoc works
+echo "heredoc OK"
