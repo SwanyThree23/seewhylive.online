@@ -5,7 +5,7 @@
 // Rules: no ?. · no ?? · no localStorage · Math.floor() for money · inline styles only
 // CREATOR_SPLIT = 90/10 IMMUTABLE · MAX_PANEL_GUESTS = 20 · PREVIEW_SECONDS = 120
 
-import React, { useState, useEffect, useRef, useReducer, useCallback } from 'react';
+import { useState, useEffect, useRef, useReducer, useCallback } from 'react';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const C = {
@@ -34,12 +34,12 @@ const MAX_VIDEO_SECONDS = 600;
 const MAX_DRIFT_MS = 300;
 const GUARDIAN_AUTOBAN = 0.95;
 const GUARDIAN_WARN = 0.75;
+const GUARDIAN_FLAG = 0.50;
 const CONNECTION_CHECK_INTERVAL = 2000;
 const BASE44_APP_ID = '6990f5f24823b53e21fcdc9d';
 const INGEST_URL = 'rtmp://ingest.seewhylive.online:1935/live';
 const STREAM_KEY_PREFIX = 'sw_6991033b_';
-const SUPABASE_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmeWMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcxMjAxMjQ0NCwiZXhwIjoyMDI3NTg4NDQ0fQ.B7ccAn-f6MOzOAa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+const SUPABASE_URL = 'https://xlrcibziouffgxciecvc.supabase.co';
 
 // Subscription tiers
 const TIERS = {
@@ -91,28 +91,10 @@ function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).
 function appReducer(state, action) {
   switch (action.type) {
     case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
-    case 'SET_STREAMS': return Object.assign({}, state, { streams: action.payload });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
-    case 'SET_CHAT': return Object.assign({}, state, { chatMessages: action.payload });
-    case 'ADD_CHAT': return Object.assign({}, state, { chatMessages: (state.chatMessages || []).concat(action.payload) });
-    case 'SET_IS_LIVE': return Object.assign({}, state, { streams: state.streams.map(function(s) { return s.id === action.payload.id ? Object.assign({}, s, { is_live: action.payload.is_live }) : s; }) });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
     case 'SET_MODAL': return Object.assign({}, state, { modal: action.payload });
-    case 'SIGN_IN_SUCCESS': return Object.assign({}, state, {
-      isSignedIn: true,
-      auth: Object.assign({}, state.auth, { user: action.payload, isSignedIn: true }),
-      currentUser: Object.assign({}, state.currentUser, {
-        id: action.payload.id,
-        username: action.payload.user_metadata ? (action.payload.user_metadata.username || state.currentUser.username) : state.currentUser.username,
-        name: action.payload.user_metadata ? (action.payload.user_metadata.full_name || state.currentUser.name) : state.currentUser.name,
-        avatar_url: action.payload.user_metadata ? (action.payload.user_metadata.avatar_url || null) : null
-      })
-    });
-    case 'SIGN_OUT': return Object.assign({}, state, {
-      isSignedIn: false,
-      auth: { isSignedIn: false, user: null, loading: false, error: null }
-    });
     case 'SET_TOASTS': return Object.assign({}, state, { toasts: action.payload });
     case 'ADD_TOAST': return Object.assign({}, state, { toasts: state.toasts.concat([action.payload]) });
     case 'SET_CONNECTION': return Object.assign({}, state, { connection: action.payload });
@@ -136,7 +118,6 @@ function appReducer(state, action) {
     case 'SET_SCHEDULE': return Object.assign({}, state, { schedule: action.payload });
     case 'SET_MESSAGES': return Object.assign({}, state, { messages: action.payload });
     case 'SET_AUTH': return Object.assign({}, state, { auth: action.payload });
-    case 'SET_USER': return Object.assign({}, state, { auth: Object.assign({}, state.auth, { user: action.payload }) });
     case 'SET_NOTIFICATIONS': return Object.assign({}, state, { notifications: action.payload });
     case 'ADD_NOTIFICATION': return Object.assign({}, state, { notifications: [action.payload].concat(state.notifications).slice(0, 50) });
     case 'MARK_NOTIFS_READ': return Object.assign({}, state, { notifications: state.notifications.map(function(n) { return Object.assign({}, n, { read: true }); }) });
@@ -188,7 +169,7 @@ var initialState = {
     handles: { paypal: 'swanythree23', cashapp: 'SwanyThree23', venmo: 'SwanyThree23', zelle: '+16026986110' },
   },
   auth: {
-    isSignedIn: false,
+    isSignedIn: true,
     user: null,
     loading: false,
     error: null,
@@ -1660,18 +1641,6 @@ function LiveRoom(props) {
   var [shareOpen, setShareOpen] = useState(false);
   var chatRef = useRef(null);
 
-  // Toggle is_live on mount/unmount
-  useEffect(function() {
-    if (props.toggleIsLive && room && room.id) {
-      props.toggleIsLive(room.id, true);
-    }
-    return function() {
-      if (props.toggleIsLive && room && room.id) {
-        props.toggleIsLive(room.id, false);
-      }
-    };
-  }, []);
-
   // Live viewer counter
   useEffect(function() {
     var t = setInterval(function() {
@@ -2164,80 +2133,6 @@ function BattlesPage(props) {
 }
 
 // ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
-function AuthModal(props) {
-  var dispatch = props.dispatch;
-  var [mode, setMode] = React.useState('signin');
-  var [email, setEmail] = React.useState('');
-  var [password, setPassword] = React.useState('');
-  var [loading, setLoading] = React.useState(false);
-  var [error, setError] = React.useState('');
-
-  var handleAuth = function() {
-    if (!email || !password) { setError('Email and password required'); return; }
-    setLoading(true);
-    setError('');
-    var endpoint = mode === 'signin'
-      ? SUPABASE_URL + '/auth/v1/token?grant_type=password'
-      : SUPABASE_URL + '/auth/v1/signup';
-    fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email: email, password: password })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      setLoading(false);
-      if (data.error || data.msg) {
-        setError(data.error_description || data.msg || 'Auth failed');
-      } else if (data.user || data.access_token) {
-        var user = data.user || { id: data.access_token, email: email };
-        dispatch({ type: 'SIGN_IN_SUCCESS', payload: user });
-        dispatch({ type: 'SET_MODAL', payload: null });
-      }
-    })
-    .catch(function(e) { setLoading(false); setError('Network error'); });
-  };
-
-  return React.createElement('div', {
-    style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-  },
-    React.createElement('div', {
-      style: { background: '#1a0a0f', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 16, padding: '32px 24px', width: '100%', maxWidth: 360 }
-    },
-      React.createElement('div', { style: { textAlign: 'center', marginBottom: 24 } },
-        React.createElement('div', { style: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 2 } }, 'SEEWHYLIVE'),
-        React.createElement('div', { style: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 } }, mode === 'signin' ? 'Sign in to your account' : 'Create your account')
-      ),
-      error && React.createElement('div', { style: { background: 'rgba(255,50,50,0.1)', border: '1px solid rgba(255,50,50,0.3)', borderRadius: 8, padding: '10px 14px', color: '#ff6b6b', fontSize: 13, marginBottom: 16 } }, error),
-      React.createElement('input', {
-        type: 'email', placeholder: 'Email', value: email,
-        onChange: function(e) { setEmail(e.target.value); },
-        style: { width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 14, marginBottom: 12, boxSizing: 'border-box' }
-      }),
-      React.createElement('input', {
-        type: 'password', placeholder: 'Password', value: password,
-        onChange: function(e) { setPassword(e.target.value); },
-        onKeyDown: function(e) { if (e.key === 'Enter') handleAuth(); },
-        style: { width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 14, marginBottom: 20, boxSizing: 'border-box' }
-      }),
-      React.createElement('button', {
-        onClick: handleAuth, disabled: loading,
-        style: { width: '100%', background: '#C9A84C', color: '#000', border: 'none', borderRadius: 8, padding: '14px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }
-      }, loading ? 'Please wait...' : (mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT')),
-      React.createElement('div', { style: { textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.5)' } },
-        mode === 'signin' ? "Don't have an account? " : "Already have an account? ",
-        React.createElement('span', {
-          onClick: function() { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); },
-          style: { color: '#C9A84C', cursor: 'pointer' }
-        }, mode === 'signin' ? 'Sign up' : 'Sign in')
-      )
-    )
-  );
-}
-
 function ProfilePage(props) {
   var state = props.state;
   var dispatch = props.dispatch;
@@ -2531,25 +2426,7 @@ function ModalDispatcher(props) {
             <div style={{ color: C.gold, fontSize: 12, fontFamily: 'monospace', wordBreak: 'break-all', marginBottom: 10 }}>
               https://seewhylive.online/watch/{state.liveRoom.id}
             </div>
-            <Btn onClick={function() { try { navigator.clipboard.writeText('https://seewhylive.online/watch/' + state.liveRoom.id);
-  var toggleIsLive = function(streamId, isLive) {
-    fetch(SUPABASE_URL + '/rest/v1/streams?id=eq.' + streamId, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ is_live: isLive })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data) && data[0]) {
-        dispatch({ type: 'SET_IS_LIVE', payload: { id: streamId, is_live: isLive } });
-      }
-    });
-  }; } catch(e) {} dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: '✓ Link copied!' } }); close(); }} variant="gold" full>Copy Room Link</Btn>
+            <Btn onClick={function() { try { navigator.clipboard.writeText('https://seewhylive.online/watch/' + state.liveRoom.id); } catch(e) {} dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: '✓ Link copied!' } }); close(); }} variant="gold" full>Copy Room Link</Btn>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
             {['Instagram', 'TikTok', 'X/Twitter'].map(function(p) {
@@ -2590,7 +2467,7 @@ function InjectStyles() {
   useEffect(function() {
     if (STYLES_INJECTED) return;
     STYLES_INJECTED = true;
-    if (typeof document !== 'undefined') { var style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = [
       "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap');",
       '@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }',
@@ -2600,7 +2477,7 @@ function InjectStyles() {
       'button { font-family: inherit; }',
       '::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }',
     ].join('\n');
-    document.head.appendChild(style); }
+    document.head.appendChild(style);
   }, []);
   return null;
 }
@@ -2608,49 +2485,6 @@ function InjectStyles() {
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
-
-  // stream_chat realtime subscription
-  React.useEffect(function() {
-    if (!state.liveRoom || !state.liveRoom.id) return;
-    var streamId = state.liveRoom.id;
-    // Fetch existing messages
-    fetch(SUPABASE_URL + '/rest/v1/stream_chat?stream_id=eq.' + streamId + '&order=created_at.asc&limit=100', {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data)) dispatch({ type: 'SET_CHAT', payload: data });
-    });
-    // Realtime subscription via SSE
-    var es = new EventSource(SUPABASE_URL + '/realtime/v1/sse?apikey=' + SUPABASE_ANON);
-    es.onmessage = function(e) {
-      try {
-        var msg = JSON.parse(e.data);
-        if (msg.type === 'INSERT' && msg.table === 'stream_chat' && msg.record && msg.record.stream_id === streamId) {
-          dispatch({ type: 'ADD_CHAT', payload: msg.record });
-        }
-      } catch(err) {}
-    };
-    return function() { es.close(); };
-  }, [state.liveRoom]);
-
-  // Fetch live streams from Supabase on mount
-  React.useEffect(function() {
-    var url = SUPABASE_URL + '/rest/v1/streams?select=*&order=is_live.desc,viewer_count.desc&limit=20';
-    fetch(url, {
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON
-      }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data)) {
-        dispatch({ type: 'SET_STREAMS', payload: data });
-      }
-    })
-    .catch(function(e) { console.error('Streams fetch error:', e); });
-  }, []);
 
   // Simulate connection quality fluctuation
   useEffect(function() {
@@ -2703,8 +2537,7 @@ export default function App() {
 
       {/* Page content */}
       {page === 'home' && <HomePage state={state} dispatch={dispatch} />}
-      {page === 'live' && <LiveRoom state={state} dispatch={dispatch} toggleIsLive={toggleIsLive} />}
-      {!state.isSignedIn && <AuthModal dispatch={dispatch} />}
+      {page === 'live' && <LiveRoom state={state} dispatch={dispatch} />}
       {page === 'battles' && <BattlesPage state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
