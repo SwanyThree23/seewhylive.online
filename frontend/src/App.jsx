@@ -3408,7 +3408,7 @@ function TranscriptionV2() {
 // ═══════════════════════════════════════════════════════════════
 function WalletTabV2() {
   var [subTab, setSubTab] = useState('overview');
-  var tabs = [['overview','💎 OVERVIEW'],['gems','⬆ GEMS'],['revenue','📊 REVENUE'],['payouts','💸 PAYOUTS']];
+  var tabs = [['overview','💎 OVERVIEW'],['gems','⬆ GEMS'],['shop','🛒 SHOP'],['send','🎁 SEND'],['revenue','📊 REVENUE'],['payouts','💸 PAYOUTS']];
   return (
     <div style={{ paddingBottom: 80 }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto', paddingBottom: 4 }}>
@@ -3423,6 +3423,8 @@ function WalletTabV2() {
       </div>
       {subTab === 'overview' && <WalletOverviewV2 />}
       {subTab === 'gems' && <GemPanelV2 />}
+      {subTab === 'shop' && <GemShopV2 />}
+      {subTab === 'send' && <GemSendV2 />}
       {subTab === 'revenue' && <RevenueCenterV2 />}
       {subTab === 'payouts' && <PayoutsPanelV2 />}
     </div>
@@ -3471,6 +3473,60 @@ function WalletOverviewV2() {
   );
 }
 
+function GemShopV2() {
+  var C = COLORS;
+  var packs = [[50,4.99,0,'Starter'],[100,9.99,10,'Popular'],[250,22.99,30,'Value'],[500,42.99,75,'Pro'],[1000,79.99,200,'Elite']];
+  return (
+    <div style={{ paddingBottom: 20 }}>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>BUY GEMS</div>
+      <div style={{ fontSize: 11, color: C.muted, marginBottom: 16 }}>1 Gem = $0.10 USD · 90% goes to creators</div>
+      {packs.map(function(p, i) { return (
+        <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid ' + (p[3] === 'Popular' ? C.gold : 'rgba(255,255,255,0.08)'), borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#FFD700' }}>{p[0]}{p[2] > 0 ? ' +' + p[2] : ''} 💎</span>
+              {p[3] === 'Popular' && <span style={{ background: C.gold, color: '#000', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>BEST VALUE</span>}
+            </div>
+            {p[2] > 0 && <div style={{ fontSize: 10, color: '#00FF88', marginTop: 2 }}>+{p[2]} bonus gems</div>}
+          </div>
+          <button style={{ background: C.burgundy, border: 'none', borderRadius: 8, padding: '8px 16px', color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>${p[1].toFixed(2)}</button>
+        </div>
+      );})}
+      <div style={{ fontSize: 10, color: '#444', textAlign: 'center', marginTop: 8 }}>Payments processed securely · Gems non-refundable</div>
+    </div>
+  );
+}
+function GemSendV2() {
+  var C = COLORS;
+  var creators = [{name:'SwanyThree23',gems:4821,live:true},{name:'CaliBone22',gems:2103,live:true},{name:'VibeNBones',gems:1892,live:false}];
+  return (
+    <div style={{ paddingBottom: 20 }}>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>SEND GEMS</div>
+      <div style={{ fontSize: 11, color: C.muted, marginBottom: 16 }}>Gift gems to your favorite creators</div>
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: 16, marginBottom: 12 }}>
+        <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>SEND TO</div>
+        <input placeholder="@creator handle..." style={{ width: '100%', background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', marginBottom: 12 }} />
+        <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>AMOUNT</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          {[10,25,50,100,250].map(function(amt) { return (
+            <button key={amt} style={{ flex: 1, background: '#1a1a2a', border: '1px solid #333', borderRadius: 6, padding: '8px 4px', color: C.gold, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{amt}💎</button>
+          );})}
+        </div>
+        <button style={{ width: '100%', background: C.burgundy, border: 'none', borderRadius: 10, padding: 14, color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>SEND GEMS</button>
+      </div>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#888', marginBottom: 10, letterSpacing: 1 }}>TOP CREATORS</div>
+      {creators.map(function(c, i) { return (
+        <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '10px 14px', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ color: C.white, fontWeight: 700, fontSize: 13 }}>@{c.name}{c.live ? ' 🔴' : ''}</div>
+            <div style={{ color: '#666', fontSize: 10 }}>{c.gems.toLocaleString()} gems received</div>
+          </div>
+          <button style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid ' + C.gold, borderRadius: 8, padding: '6px 14px', color: C.gold, fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>💎 GIFT</button>
+        </div>
+      );})}
+    </div>
+  );
+}
 function GemPanelV2() {
   var [selected, setSelected] = useState(100);
   var packs = [[10,1.00],[50,4.99],[100,9.99],[250,24.99],[500,49.99],[1000,99.99]];
