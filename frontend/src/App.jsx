@@ -2122,6 +2122,11 @@ function HomePage(props) {
             { icon: '💳', label: 'Wallet', action: function() { dispatch({ type: 'SET_PAGE', payload: 'wallet' }); } },
     { icon: '📡', label: 'Broadcast', action: function() { dispatch({ type: 'SET_PAGE', payload: 'broadcast' }); } },
     { icon: '💰', label: 'Monetize', action: function() { dispatch({ type: 'SET_PAGE', payload: 'monetize' }); } },
+    { icon: '🎯', label: 'Domino', action: function() { dispatch({ type: 'SET_PAGE', payload: 'domino' }); } },
+    { icon: '👥', label: 'Community', action: function() { dispatch({ type: 'SET_PAGE', payload: 'community' }); } },
+    { icon: '🤖', label: 'AI Hub', action: function() { dispatch({ type: 'SET_PAGE', payload: 'aihub' }); } },
+    { icon: '📊', label: 'Dashboard', action: function() { dispatch({ type: 'SET_PAGE', payload: 'creatordash' }); } },
+    { icon: '⚙', label: 'Settings', action: function() { dispatch({ type: 'SET_PAGE', payload: 'settings' }); } },
             { icon: '📅', label: 'Schedule', action: function() { dispatch({ type: 'SET_PAGE', payload: 'schedule' }); } },
           ].map(function(tool) {
             return (
@@ -3067,6 +3072,1797 @@ function MonetizationHubPageV2({ state, dispatch }) {
     </div>
   );
 }
+
+// ============================================================
+// v49 ONBOARDING, PROFILE, COMMUNITY, DOMINO FEATURES
+// ============================================================
+
+function OnboardingWizardV2({ state, dispatch }) {
+  var C = COLORS;
+  var [step, setStep] = React.useState(0);
+  var [data, setData] = React.useState({ handle: '', displayName: '', bio: '', category: '', platforms: [] });
+  var steps = ['WELCOME','PROFILE','CATEGORY','PLATFORMS','READY'];
+  var categories = ['Domino Player','Tournament Host','Podcast Creator','Music Producer','Sports Commentator','Community Builder'];
+  var platforms = ['YouTube','Twitch','Facebook','TikTok','X / Twitter','Instagram'];
+  function update(k, v) { setData(function(d) { return Object.assign({}, d, { [k]: v }); }); }
+  function togglePlat(p) { setData(function(d) { var arr = d.platforms.indexOf(p) === -1 ? d.platforms.concat([p]) : d.platforms.filter(function(x) { return x !== p; }); return Object.assign({}, d, { platforms: arr }); }); }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '20px 14px 14px' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: C.gold, letterSpacing: 2 }}>SEEWHY LIVE</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Creator Setup · Step {step+1} of {steps.length}</div>
+        <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
+          {steps.map(function(s, i) { return (
+            <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= step ? C.gold : '#333' }}></div>
+          );})}
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: 20 }}>
+        {step === 0 && (
+          <div style={{ textAlign: 'center', paddingTop: 40 }}>
+            <div style={{ fontSize: 60, marginBottom: 16 }}>🎯</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: C.white, marginBottom: 8 }}>WELCOME TO THE CULTURE</div>
+            <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 30 }}>SeeWhy LIVE is the premier platform for domino entertainment, creator monetization, and community broadcasting.</div>
+            <div style={{ background: C.slate, border: '1px solid ' + C.gold + '44', borderRadius: 12, padding: 16, marginBottom: 20, textAlign: 'left' }}>
+              {['Stream live domino games','Earn gems from your community','Join State VS State tournaments','Get paid direct — 90% to you'].map(function(f, i) { return (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ color: C.gold }}>✓</span>
+                  <span style={{ color: C.white, fontSize: 13 }}>{f}</span>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {step === 1 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, marginBottom: 4 }}>YOUR PROFILE</div>
+            <div style={{ fontSize: 11, color: C.muted, marginBottom: 20 }}>Set up your creator identity</div>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>DISPLAY NAME</div>
+              <input value={data.displayName} onChange={function(e) { update('displayName', e.target.value); }} placeholder="e.g. SwanyThree23" style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '12px 14px', color: C.white, fontSize: 14, boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>HANDLE</div>
+              <div style={{ display: 'flex', alignItems: 'center', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '12px 14px' }}>
+                <span style={{ color: C.gold, marginRight: 4 }}>@</span>
+                <input value={data.handle} onChange={function(e) { update('handle', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'')); }} placeholder="yourhandle" style={{ flex: 1, background: 'none', border: 'none', color: C.white, fontSize: 14, outline: 'none' }} />
+              </div>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>BIO</div>
+              <textarea value={data.bio} onChange={function(e) { update('bio', e.target.value); }} placeholder="Tell the community about yourself..." style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '12px 14px', color: C.white, fontSize: 13, boxSizing: 'border-box', minHeight: 80, resize: 'none' }} />
+            </div>
+          </div>
+        )}
+        {step === 2 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, marginBottom: 4 }}>YOUR CATEGORY</div>
+            <div style={{ fontSize: 11, color: C.muted, marginBottom: 20 }}>What best describes you?</div>
+            {categories.map(function(cat, i) { return (
+              <div key={i} onClick={function() { update('category', cat); }} style={{ background: data.category === cat ? 'rgba(201,168,76,0.15)' : C.slate, border: '2px solid ' + (data.category === cat ? C.gold : '#2a2a2a'), borderRadius: 10, padding: 16, marginBottom: 10, cursor: 'pointer' }}>
+                <div style={{ color: data.category === cat ? C.gold : C.white, fontWeight: 700, fontSize: 14 }}>{cat}</div>
+              </div>
+            );})}
+          </div>
+        )}
+        {step === 3 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, marginBottom: 4 }}>YOUR PLATFORMS</div>
+            <div style={{ fontSize: 11, color: C.muted, marginBottom: 20 }}>Where else do you stream? (optional)</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {platforms.map(function(p, i) { return (
+                <div key={i} onClick={function() { togglePlat(p); }} style={{ background: data.platforms.indexOf(p) !== -1 ? 'rgba(201,168,76,0.15)' : C.slate, border: '2px solid ' + (data.platforms.indexOf(p) !== -1 ? C.gold : '#2a2a2a'), borderRadius: 10, padding: 14, textAlign: 'center', cursor: 'pointer' }}>
+                  <div style={{ color: data.platforms.indexOf(p) !== -1 ? C.gold : C.white, fontSize: 13, fontWeight: 700 }}>{p}</div>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {step === 4 && (
+          <div style={{ textAlign: 'center', paddingTop: 30 }}>
+            <div style={{ fontSize: 60, marginBottom: 16 }}>🏆</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: C.gold, marginBottom: 8 }}>YOU'RE LIVE READY!</div>
+            <div style={{ fontSize: 13, color: C.muted, marginBottom: 6 }}>@{data.handle || 'creator'}</div>
+            <div style={{ fontSize: 13, color: C.white, marginBottom: 20 }}>{data.category || 'Creator'}</div>
+            <div style={{ background: C.slate, border: '1px solid ' + C.gold + '44', borderRadius: 12, padding: 16, marginBottom: 20, textAlign: 'left' }}>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>NEXT STEPS</div>
+              {['Set up your RTMP stream key','Go live and earn your first gems','Join the Washington Classic','Connect with the TECHMUNITY'].map(function(s, i) { return (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ color: C.gold, fontSize: 12 }}>{i+1}.</span>
+                  <span style={{ color: C.white, fontSize: 12 }}>{s}</span>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+      </div>
+      <div style={{ padding: '0 20px 30px', display: 'flex', gap: 10 }}>
+        {step > 0 && <button onClick={function() { setStep(function(s) { return s-1; }); }} style={{ flex: 1, background: '#1a1a2a', border: '1px solid #444', borderRadius: 10, padding: 14, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>BACK</button>}
+        <button onClick={function() { if (step < steps.length-1) { setStep(function(s) { return s+1; }); } else { dispatch({ type: 'SET_PAGE', payload: 'home' }); } }} style={{ flex: 2, background: step === steps.length-1 ? C.green : C.gold, border: 'none', borderRadius: 10, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>{step === steps.length-1 ? 'START STREAMING' : 'CONTINUE'}</button>
+      </div>
+    </div>
+  );
+}
+
+function NotificationsCenterV2({ state, dispatch }) {
+  var C = COLORS;
+  var [filter, setFilter] = React.useState('all');
+  var [notifs, setNotifs] = React.useState([
+    { id: 1, type: 'gem', title: 'CaliBone22 sent you 50 gems', time: '2m ago', read: false, icon: '💎' },
+    { id: 2, type: 'live', title: 'SwanyThree23 just went LIVE', time: '5m ago', read: false, icon: '🔴' },
+    { id: 3, type: 'battle', title: 'You have a PK Battle challenge', time: '12m ago', read: false, icon: '🎯' },
+    { id: 4, type: 'svs', title: 'Washington Team ranked #1', time: '1h ago', read: true, icon: '🏆' },
+    { id: 5, type: 'follow', title: 'VibeNBones started following you', time: '2h ago', read: true, icon: '👤' },
+    { id: 6, type: 'payout', title: 'Payout of $84.50 processed', time: '1d ago', read: true, icon: '💰' },
+    { id: 7, type: 'gem', title: 'DominoKing_WA sent you 100 gems', time: '1d ago', read: true, icon: '💎' },
+  ]);
+  function markAll() { setNotifs(function(n) { return n.map(function(x) { return Object.assign({}, x, { read: true }); }); }); }
+  var filters = ['all','gem','live','battle','payout'];
+  var filtered = filter === 'all' ? notifs : notifs.filter(function(n) { return n.type === filter; });
+  var unread = notifs.filter(function(n) { return !n.read; }).length;
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>NOTIFICATIONS</div>
+            {unread > 0 && <div style={{ fontSize: 11, color: C.muted }}>{unread} unread</div>}
+          </div>
+          <button onClick={markAll} style={{ background: 'none', border: '1px solid #444', borderRadius: 6, padding: '6px 12px', color: C.muted, fontSize: 11, cursor: 'pointer' }}>MARK ALL READ</button>
+        </div>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto' }}>
+          {filters.map(function(f) { return (
+            <button key={f} onClick={function() { setFilter(f); }} style={{ flexShrink: 0, background: filter === f ? C.gold : 'none', border: '1px solid ' + (filter === f ? C.gold : '#444'), borderRadius: 20, padding: '4px 12px', color: filter === f ? '#000' : C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{f.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {filtered.map(function(n) { return (
+          <div key={n.id} onClick={function() { setNotifs(function(ns) { return ns.map(function(x) { return x.id === n.id ? Object.assign({}, x, { read: true }) : x; }); }); }} style={{ background: n.read ? C.slate : 'rgba(201,168,76,0.08)', border: '1px solid ' + (n.read ? '#2a2a2a' : C.gold + '33'), borderRadius: 10, padding: 14, marginBottom: 8, display: 'flex', gap: 12, alignItems: 'center', cursor: 'pointer' }}>
+            <div style={{ fontSize: 24, flexShrink: 0 }}>{n.icon}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: n.read ? C.muted : C.white, fontWeight: n.read ? 400 : 700 }}>{n.title}</div>
+              <div style={{ fontSize: 10, color: '#555', marginTop: 3 }}>{n.time}</div>
+            </div>
+            {!n.read && <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.gold, flexShrink: 0 }}></div>}
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function ThemeToggleV2({ state, dispatch }) {
+  var C = COLORS;
+  var [darkMode, setDarkMode] = React.useState(true);
+  var [accent, setAccent] = React.useState('gold');
+  var accents = [
+    { id: 'gold', color: '#C9A84C', label: 'Gold' },
+    { id: 'cyan', color: '#00D4FF', label: 'Cyan' },
+    { id: 'green', color: '#00FF88', label: 'Volt' },
+    { id: 'purple', color: '#9B59B6', label: 'Purple' },
+    { id: 'red', color: '#FF4444', label: 'Red' },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>APPEARANCE</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Customize your experience</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <div>
+              <div style={{ color: C.white, fontWeight: 700, fontSize: 14 }}>DARK MODE</div>
+              <div style={{ fontSize: 11, color: C.muted }}>Broadcast Control Room Noir</div>
+            </div>
+            <div onClick={function() { setDarkMode(function(v) { return !v; }); }} style={{ width: 44, height: 24, borderRadius: 12, background: darkMode ? C.gold : '#333', cursor: 'pointer', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 2, left: darkMode ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }}></div>
+            </div>
+          </div>
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+          <div style={{ color: C.white, fontWeight: 700, fontSize: 14, marginBottom: 4 }}>ACCENT COLOR</div>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 14 }}>Choose your platform accent</div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            {accents.map(function(a) { return (
+              <div key={a.id} onClick={function() { setAccent(a.id); }} style={{ textAlign: 'center', cursor: 'pointer' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: a.color, border: accent === a.id ? '3px solid #fff' : '3px solid transparent', marginBottom: 6 }}></div>
+                <div style={{ fontSize: 9, color: accent === a.id ? C.white : C.muted }}>{a.label}</div>
+              </div>
+            );})}
+          </div>
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16 }}>
+          <div style={{ color: C.white, fontWeight: 700, fontSize: 14, marginBottom: 14 }}>FONT SIZE</div>
+          {['Small','Medium','Large'].map(function(size, i) { return (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < 2 ? '1px solid #222' : 'none' }}>
+              <span style={{ color: C.white, fontSize: 13 }}>{size}</span>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid ' + (i === 1 ? C.gold : '#444'), background: i === 1 ? C.gold : 'none' }}></div>
+            </div>
+          );})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileCustomizerV2({ state, dispatch }) {
+  var C = COLORS;
+  var [bio, setBio] = React.useState('7-Rock domino player · Washington State · Founder @SeeWhyLIVE');
+  var [links, setLinks] = React.useState({ youtube: '', instagram: '', twitter: '', cashapp: '$SwanyThree' });
+  var [banner, setBanner] = React.useState('gradient');
+  var banners = [
+    { id: 'gradient', label: 'Gold Noir', style: 'linear-gradient(135deg,#1a0a0a,#2a1500,#0a0a1a)' },
+    { id: 'burgundy', label: 'Burgundy', style: 'linear-gradient(135deg,' + C.burgundy + ',#0a0a0a)' },
+    { id: 'cyan', label: 'Cyan Night', style: 'linear-gradient(135deg,#001a2a,#002a3a)' },
+    { id: 'green', label: 'Volt', style: 'linear-gradient(135deg,#001a00,#002a00)' },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: banners.find(function(b) { return b.id === banner; }).style, padding: '40px 14px 20px', borderBottom: '1px solid #222', position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+          <div style={{ width: 70, height: 70, borderRadius: '50%', background: C.gold, border: '3px solid ' + C.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#000' }}>SW</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.white }}>SwanyThree23</div>
+            <div style={{ fontSize: 12, color: C.gold }}>@swanythree23 · FM Creator</div>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10 }}>BANNER STYLE</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {banners.map(function(b) { return (
+              <div key={b.id} onClick={function() { setBanner(b.id); }} style={{ flex: 1, height: 40, borderRadius: 8, background: b.style, border: banner === b.id ? '2px solid ' + C.gold : '2px solid transparent', cursor: 'pointer' }}></div>
+            );})}
+          </div>
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10 }}>BIO</div>
+          <textarea value={bio} onChange={function(e) { setBio(e.target.value); }} style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', minHeight: 70, resize: 'none' }} />
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10 }}>SOCIAL LINKS</div>
+          {Object.keys(links).map(function(k) { return (
+            <div key={k} style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>{k.toUpperCase()}</div>
+              <input value={links[k]} onChange={function(e) { var v = e.target.value; setLinks(function(l) { var n = Object.assign({}, l); n[k] = v; return n; }); }} placeholder={k === 'cashapp' ? '$yourname' : '@' + k} style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box' }} />
+            </div>
+          );})}
+        </div>
+        <button style={{ width: '100%', background: C.gold, border: 'none', borderRadius: 10, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>SAVE PROFILE</button>
+      </div>
+    </div>
+  );
+}
+
+function DirectMessagesV2({ state, dispatch }) {
+  var C = COLORS;
+  var [activeChat, setActiveChat] = React.useState(null);
+  var [msg, setMsg] = React.useState('');
+  var [chats, setChats] = React.useState([
+    { id: 1, user: 'CaliBone22', fm: true, lastMsg: 'Good game bro, rematch?', time: '2m', unread: 2, msgs: [{ from: 'them', text: 'Aye what time you going live?', t: '10:42' },{ from: 'me', text: 'Tonight around 8pm PST', t: '10:44' },{ from: 'them', text: 'Good game bro, rematch?', t: '10:51' }] },
+    { id: 2, user: 'VibeNBones', fm: true, lastMsg: 'Thanks for the gems!', time: '14m', unread: 0, msgs: [{ from: 'them', text: 'Thanks for the gems!', t: '9:30' }] },
+    { id: 3, user: 'DominoKing_WA', fm: false, lastMsg: 'Tournament brackets are set', time: '1h', unread: 1, msgs: [{ from: 'them', text: 'Tournament brackets are set', t: '8:00' }] },
+  ]);
+  function sendMsg() {
+    if (!msg.trim() || !activeChat) return;
+    var txt = msg;
+    setMsg('');
+    setChats(function(cs) { return cs.map(function(c) { return c.id === activeChat ? Object.assign({}, c, { msgs: c.msgs.concat([{ from: 'me', text: txt, t: 'now' }]), lastMsg: txt }) : c; }); });
+  }
+  var chat = chats.find(function(c) { return c.id === activeChat; });
+  if (activeChat && chat) return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: '#0a0a0a', padding: '14px', borderBottom: '1px solid #222', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={function() { setActiveChat(null); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 18, cursor: 'pointer' }}>←</button>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.white }}>{chat.user}</div>
+        {chat.fm && <span style={{ background: C.gold, color: '#000', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>FM</span>}
+      </div>
+      <div style={{ flex: 1, padding: 14, overflowY: 'auto' }}>
+        {chat.msgs.map(function(m, i) { return (
+          <div key={i} style={{ display: 'flex', justifyContent: m.from === 'me' ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
+            <div style={{ background: m.from === 'me' ? C.burgundy : C.slate, border: '1px solid ' + (m.from === 'me' ? C.gold + '44' : '#333'), borderRadius: 12, padding: '10px 14px', maxWidth: '75%' }}>
+              <div style={{ fontSize: 13, color: C.white }}>{m.text}</div>
+              <div style={{ fontSize: 9, color: '#555', marginTop: 4, textAlign: 'right' }}>{m.t}</div>
+            </div>
+          </div>
+        );})}
+      </div>
+      <div style={{ padding: '10px 14px 24px', borderTop: '1px solid #222', display: 'flex', gap: 8 }}>
+        <input value={msg} onChange={function(e) { setMsg(e.target.value); }} onKeyDown={function(e) { if (e.key === 'Enter') sendMsg(); }} placeholder="Message..." style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 20, padding: '10px 16px', color: C.white, fontSize: 13 }} />
+        <button onClick={sendMsg} style={{ background: C.gold, border: 'none', borderRadius: '50%', width: 40, height: 40, color: '#000', fontSize: 18, cursor: 'pointer' }}>↑</button>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>MESSAGES</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Direct messages</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {chats.map(function(c) { return (
+          <div key={c.id} onClick={function() { setActiveChat(c.id); setChats(function(cs) { return cs.map(function(x) { return x.id === c.id ? Object.assign({}, x, { unread: 0 }) : x; }); }); }} style={{ background: C.slate, border: '1px solid ' + (c.unread > 0 ? C.gold + '44' : '#2a2a2a'), borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', gap: 12, alignItems: 'center', cursor: 'pointer' }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: C.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.gold, flexShrink: 0 }}>{c.user[0]}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <span style={{ color: C.white, fontWeight: 700, fontSize: 14 }}>{c.user}{c.fm ? ' 💎' : ''}</span>
+                <span style={{ fontSize: 10, color: C.muted }}>{c.time}</span>
+              </div>
+              <div style={{ fontSize: 12, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lastMsg}</div>
+            </div>
+            {c.unread > 0 && <div style={{ width: 20, height: 20, borderRadius: '50%', background: C.gold, color: '#000', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{c.unread}</div>}
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function LeaderboardsV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('gems');
+  var data = {
+    gems: [
+      { rank: 1, name: 'SwanyThree23', value: '48,210 💎', fm: true },
+      { rank: 2, name: 'CaliBone22', value: '21,030 💎', fm: false },
+      { rank: 3, name: 'DominoKing_WA', value: '18,920 💎', fm: true },
+      { rank: 4, name: 'VibeNBones', value: '15,400 💎', fm: true },
+      { rank: 5, name: 'AIversePod', value: '12,030 💎', fm: false },
+    ],
+    viewers: [
+      { rank: 1, name: 'SwanyThree23', value: '4,821 peak', fm: true },
+      { rank: 2, name: 'WashingtonClassic', value: '3,204 peak', fm: false },
+      { rank: 3, name: 'CaliBone22', value: '2,103 peak', fm: false },
+      { rank: 4, name: 'VibeNBones', value: '1,892 peak', fm: true },
+      { rank: 5, name: 'DominoKing_WA', value: '1,540 peak', fm: true },
+    ],
+    battles: [
+      { rank: 1, name: 'SwanyThree23', value: '47W · 8L', fm: true },
+      { rank: 2, name: 'CaliBone22', value: '38W · 12L', fm: false },
+      { rank: 3, name: 'VibeNBones', value: '31W · 9L', fm: true },
+      { rank: 4, name: 'DominoKing_WA', value: '28W · 14L', fm: true },
+      { rank: 5, name: 'FastHandsFred', value: '22W · 6L', fm: false },
+    ],
+  };
+  var medals = ['🥇','🥈','🥉'];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 0', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2, marginBottom: 10 }}>LEADERBOARDS</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['gems','viewers','battles'].map(function(t) { return (
+            <button key={t} onClick={function() { setTab(t); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 4px', color: tab === t ? C.gold : C.muted, fontSize: 12, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {data[tab].map(function(item, i) { return (
+          <div key={i} style={{ background: i === 0 ? 'linear-gradient(135deg,rgba(201,168,76,0.15),rgba(139,0,0,0.1))' : C.slate, border: '1px solid ' + (i === 0 ? C.gold + '66' : '#2a2a2a'), borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: i < 3 ? 28 : 20, width: 36, textAlign: 'center' }}>{i < 3 ? medals[i] : '#' + item.rank}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: i === 0 ? C.gold : C.white, fontWeight: 700, fontSize: 14 }}>{item.name}{item.fm ? ' 💎' : ''}</div>
+              <div style={{ fontSize: 12, color: C.muted }}>{item.value}</div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function VODLibraryV2({ state, dispatch }) {
+  var C = COLORS;
+  var [activeVOD, setActiveVOD] = React.useState(null);
+  var [comment, setComment] = React.useState('');
+  var vods = [
+    { id: 1, title: 'Washington Classic 2026 - Semifinals', creator: 'SwanyThree23', views: 4821, duration: '2:34:12', date: 'Jun 7', clips: 8, comments: [{ user: 'CaliBone22', text: 'That last hand was insane!', time: '2h' },{ user: 'VibeNBones', text: 'SwanyThree23 is built different', time: '3h' }] },
+    { id: 2, title: 'PKBattle: CaliBone vs VibeNBones', creator: 'CaliBone22', views: 2103, duration: '0:45:22', date: 'Jun 6', clips: 3, comments: [{ user: 'DominoKing_WA', text: 'Gg to both!', time: '1d' }] },
+    { id: 3, title: 'AIverse Podcast Ep. 43 - AI in Dominos', creator: 'AIversePod', views: 1540, duration: '1:12:08', date: 'Jun 5', clips: 2, comments: [] },
+  ];
+  if (activeVOD) {
+    var vod = vods.find(function(v) { return v.id === activeVOD; });
+    return (
+      <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+        <div style={{ background: '#000', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          <div style={{ fontSize: 60 }}>▶</div>
+          <button onClick={function() { setActiveVOD(null); }} style={{ position: 'absolute', top: 10, left: 10, background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: 6, padding: '6px 12px', color: C.white, fontSize: 13, cursor: 'pointer' }}>← BACK</button>
+          <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'rgba(0,0,0,0.7)', borderRadius: 4, padding: '2px 8px', fontSize: 11, color: C.white }}>{vod.duration}</div>
+        </div>
+        <div style={{ padding: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.white, marginBottom: 4 }}>{vod.title}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
+            <span style={{ fontSize: 12, color: C.gold }}>{vod.creator}</span>
+            <span style={{ fontSize: 12, color: C.muted }}>{vod.views.toLocaleString()} views · {vod.date}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            {['👍 Share','📌 Clip','💾 Save'].map(function(a, i) { return (
+              <button key={i} style={{ flex: 1, background: C.slate, border: '1px solid #333', borderRadius: 8, padding: 10, color: C.white, fontSize: 12, cursor: 'pointer' }}>{a}</button>
+            );})}
+          </div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.gold, marginBottom: 10 }}>COMMENTS ({vod.comments.length})</div>
+          {vod.comments.map(function(c, i) { return (
+            <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 8, padding: 12, marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ color: C.gold, fontWeight: 700, fontSize: 12 }}>{c.user}</span>
+                <span style={{ fontSize: 10, color: C.muted }}>{c.time}</span>
+              </div>
+              <div style={{ fontSize: 13, color: C.white }}>{c.text}</div>
+            </div>
+          );})}
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <input value={comment} onChange={function(e) { setComment(e.target.value); }} placeholder="Add a comment..." style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+            <button onClick={function() { setComment(''); }} style={{ background: C.burgundy, border: 'none', borderRadius: 8, padding: '10px 16px', color: C.white, fontSize: 13, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>POST</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>VOD LIBRARY</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Clips, replays and full streams</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {vods.map(function(v) { return (
+          <div key={v.id} onClick={function() { setActiveVOD(v.id); }} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, marginBottom: 14, overflow: 'hidden', cursor: 'pointer' }}>
+            <div style={{ background: '#111', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <div style={{ fontSize: 40 }}>▶</div>
+              <div style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.8)', borderRadius: 4, padding: '2px 6px', fontSize: 10, color: C.white }}>{v.duration}</div>
+              <div style={{ position: 'absolute', bottom: 8, left: 8, background: C.burgundy, borderRadius: 4, padding: '2px 6px', fontSize: 9, color: C.white, fontFamily: "'Bebas Neue',sans-serif" }}>{v.clips} CLIPS</div>
+            </div>
+            <div style={{ padding: 12 }}>
+              <div style={{ color: C.white, fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{v.title}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, color: C.gold }}>{v.creator}</span>
+                <span style={{ fontSize: 11, color: C.muted }}>{v.views.toLocaleString()} views · {v.date}</span>
+              </div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function LiveScoreboardV2({ state, dispatch }) {
+  var C = COLORS;
+  var [scores, setScores] = React.useState([
+    { player: 'SwanyThree23', state: 'WA', score: 7, sets: 2, status: 'live' },
+    { player: 'CaliBone22', state: 'CA', score: 4, sets: 1, status: 'live' },
+  ]);
+  var [gameLog, setGameLog] = React.useState([
+    { time: '18:42', event: 'SwanyThree23 rocks out — takes the set!', type: 'score' },
+    { time: '18:38', event: 'Double six pulled — CaliBone22 leads hand', type: 'play' },
+    { time: '18:31', event: 'SwanyThree23 draws heavy — 3 tiles picked up', type: 'play' },
+    { time: '18:25', event: 'Set 1 begins — SwanyThree23 wins the bone', type: 'start' },
+  ]);
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>LIVE SCOREBOARD</div>
+          <div style={{ background: C.red, color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 4 }}>● LIVE</div>
+        </div>
+        <div style={{ fontSize: 11, color: C.muted }}>Washington Classic 2026 · Finals</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'linear-gradient(135deg,' + C.burgundy + ',#1a0a1a)', border: '1px solid ' + C.gold + '44', borderRadius: 14, padding: 20, marginBottom: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {scores.map(function(p, i) { return (
+              <div key={i} style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.muted, marginBottom: 4 }}>{p.state}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.white, marginBottom: 6 }}>{p.player}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 64, color: p.score >= 7 ? C.gold : C.white, lineHeight: 1 }}>{p.score}</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Sets: {p.sets}</div>
+              </div>
+            );})}
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold, paddingBottom: 20 }}>VS</div>
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 14, fontSize: 12, color: C.muted }}>7-Rock · Double Elimination · Best of 5</div>
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10, letterSpacing: 1 }}>GAME LOG</div>
+          {gameLog.map(function(log, i) { return (
+            <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 8, paddingBottom: 8, borderBottom: i < gameLog.length-1 ? '1px solid #1a1a1a' : 'none' }}>
+              <span style={{ fontSize: 10, color: C.muted, flexShrink: 0, marginTop: 2 }}>{log.time}</span>
+              <span style={{ fontSize: 12, color: log.type === 'score' ? C.gold : C.white }}>{log.event}</span>
+            </div>
+          );})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlayerStatsV2({ state, dispatch }) {
+  var C = COLORS;
+  var [search, setSearch] = React.useState('');
+  var [selected, setSelected] = React.useState(null);
+  var players = [
+    { name: 'SwanyThree23', state: 'WA', wins: 47, losses: 8, gems: 48210, winRate: 85, sets: 124, rockedOut: 31, avgScore: 6.2, tournaments: 12, titles: 3 },
+    { name: 'CaliBone22', state: 'CA', wins: 38, losses: 12, gems: 21030, winRate: 76, sets: 98, rockedOut: 22, avgScore: 5.8, tournaments: 9, titles: 1 },
+    { name: 'VibeNBones', state: 'WA', wins: 31, losses: 9, gems: 18920, winRate: 78, sets: 84, rockedOut: 19, avgScore: 5.4, tournaments: 7, titles: 1 },
+    { name: 'DominoKing_WA', state: 'WA', wins: 28, losses: 14, gems: 15400, winRate: 67, sets: 76, rockedOut: 15, avgScore: 5.1, tournaments: 8, titles: 0 },
+  ];
+  var filtered = players.filter(function(p) { return p.name.toLowerCase().indexOf(search.toLowerCase()) !== -1; });
+  if (selected) {
+    var p = players.find(function(x) { return x.name === selected; });
+    return (
+      <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+        <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+          <button onClick={function() { setSelected(null); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 16, cursor: 'pointer', marginBottom: 8 }}>← BACK</button>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: C.gold }}>{p.name}</div>
+          <div style={{ fontSize: 12, color: C.muted }}>{p.state} · {p.winRate}% win rate</div>
+        </div>
+        <div style={{ padding: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+            {[['WINS', p.wins, C.green],['LOSSES', p.losses, C.red],['SETS PLAYED', p.sets, C.white],['ROCKED OUT', p.rockedOut, C.gold],['AVG SCORE', p.avgScore, C.cyan],['TOURNAMENTS', p.tournaments, C.white],['TITLES', p.titles, C.gold],['GEMS EARNED', p.gems.toLocaleString()+' 💎', C.gold]].map(function(s, i) { return (
+              <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>{s[0]}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: s[2] }}>{s[1]}</div>
+              </div>
+            );})}
+          </div>
+          <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10 }}>WIN RATE</div>
+            <div style={{ background: '#1a1a1a', borderRadius: 6, height: 12, overflow: 'hidden' }}>
+              <div style={{ background: 'linear-gradient(90deg,' + C.green + ',' + C.gold + ')', height: '100%', width: p.winRate + '%', borderRadius: 6 }}></div>
+            </div>
+            <div style={{ fontSize: 11, color: C.muted, marginTop: 6, textAlign: 'right' }}>{p.winRate}%</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>PLAYER STATS</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Career records and performance</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <input value={search} onChange={function(e) { setSearch(e.target.value); }} placeholder="Search players..." style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 10, padding: '12px 14px', color: C.white, fontSize: 13, boxSizing: 'border-box', marginBottom: 14 }} />
+        {filtered.map(function(p, i) { return (
+          <div key={i} onClick={function() { setSelected(p.name); }} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+            <div>
+              <div style={{ color: C.white, fontWeight: 700, fontSize: 14 }}>{p.name}</div>
+              <div style={{ fontSize: 11, color: C.muted }}>{p.state} · {p.wins}W {p.losses}L · {p.winRate}% WR</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.gold }}>{p.titles}🏆</div>
+              <div style={{ fontSize: 10, color: C.muted }}>titles</div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function TournamentRegistrationV2({ state, dispatch }) {
+  var C = COLORS;
+  var [step, setStep] = React.useState(0);
+  var [form, setForm] = React.useState({ name: '', state: '', experience: '', format: '', partner: '', agree: false });
+  var states = ['WA','CA','TX','FL','NY','GA'];
+  var formats = ['7-Rock Singles','7-Rock Doubles','9-Rock Singles','Mexican Train'];
+  function update(k, v) { setForm(function(f) { return Object.assign({}, f, { [k]: v }); }); }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,' + C.burgundy + ',#0a0a0a)', padding: '16px 14px 12px', borderBottom: '1px solid ' + C.gold + '44' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>TOURNAMENT REGISTRATION</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Washington Classic 2026 · Jamar's Sports Bar</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid ' + C.gold + '44', borderRadius: 12, padding: 14, marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold }}>$50,000 PRIZE POOL</div>
+            <div style={{ fontSize: 11, color: C.muted }}>June 15, 2026 · Des Moines, WA</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 11, color: C.green }}>OPEN</div>
+            <div style={{ fontSize: 11, color: C.muted }}>47 registered</div>
+          </div>
+        </div>
+        {[
+          { label: 'FULL NAME', key: 'name', placeholder: 'Your real name' },
+          { label: 'PARTNER NAME (doubles)', key: 'partner', placeholder: 'Leave blank for singles' },
+        ].map(function(field, i) { return (
+          <div key={i} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>{field.label}</div>
+            <input value={form[field.key]} onChange={function(e) { update(field.key, e.target.value); }} placeholder={field.placeholder} style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '12px 14px', color: C.white, fontSize: 13, boxSizing: 'border-box' }} />
+          </div>
+        );})}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>REPRESENTING STATE</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {states.map(function(s) { return (
+              <div key={s} onClick={function() { update('state', s); }} style={{ background: form.state === s ? C.burgundy : C.slate, border: '2px solid ' + (form.state === s ? C.gold : '#333'), borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: form.state === s ? C.gold : C.muted }}>{s}</div>
+            );})}
+          </div>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>FORMAT</div>
+          {formats.map(function(f) { return (
+            <div key={f} onClick={function() { update('format', f); }} style={{ background: form.format === f ? 'rgba(201,168,76,0.1)' : C.slate, border: '1px solid ' + (form.format === f ? C.gold : '#2a2a2a'), borderRadius: 8, padding: 12, marginBottom: 8, cursor: 'pointer' }}>
+              <div style={{ color: form.format === f ? C.gold : C.white, fontSize: 13, fontWeight: 700 }}>{f}</div>
+            </div>
+          );})}
+        </div>
+        <div onClick={function() { update('agree', !form.agree); }} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 20, cursor: 'pointer' }}>
+          <div style={{ width: 20, height: 20, borderRadius: 4, border: '2px solid ' + (form.agree ? C.gold : '#444'), background: form.agree ? C.gold : 'none', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>{form.agree && <span style={{ color: '#000', fontSize: 12, fontWeight: 700 }}>✓</span>}</div>
+          <div style={{ fontSize: 12, color: C.muted }}>I agree to the tournament rules, code of conduct, and understand the $50 entry fee will be charged separately.</div>
+        </div>
+        <button style={{ width: '100%', background: form.agree && form.name && form.state && form.format ? C.gold : '#333', border: 'none', borderRadius: 10, padding: 14, color: form.agree && form.name && form.state && form.format ? '#000' : '#666', fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, cursor: 'pointer' }}>REGISTER NOW</button>
+      </div>
+    </div>
+  );
+}
+
+function HeadToHeadV2({ state, dispatch }) {
+  var C = COLORS;
+  var players = ['SwanyThree23','CaliBone22','VibeNBones','DominoKing_WA','FastHandsFred'];
+  var [p1, setP1] = React.useState('SwanyThree23');
+  var [p2, setP2] = React.useState('CaliBone22');
+  var stats = {
+    SwanyThree23: { wins: 47, losses: 8, winRate: 85, gems: 48210, sets: 124, titles: 3, rockedOut: 31 },
+    CaliBone22: { wins: 38, losses: 12, winRate: 76, gems: 21030, sets: 98, titles: 1, rockedOut: 22 },
+    VibeNBones: { wins: 31, losses: 9, winRate: 78, gems: 18920, sets: 84, titles: 1, rockedOut: 19 },
+    DominoKing_WA: { wins: 28, losses: 14, winRate: 67, gems: 15400, sets: 76, titles: 0, rockedOut: 15 },
+    FastHandsFred: { wins: 22, losses: 6, winRate: 79, gems: 9200, sets: 58, titles: 0, rockedOut: 11 },
+  };
+  var s1 = stats[p1];
+  var s2 = stats[p2];
+  var cats = [['WIN RATE', s1.winRate + '%', s2.winRate + '%', s1.winRate, s2.winRate],['WINS', s1.wins, s2.wins, s1.wins, s2.wins],['SETS', s1.sets, s2.sets, s1.sets, s2.sets],['ROCKED OUT', s1.rockedOut, s2.rockedOut, s1.rockedOut, s2.rockedOut],['TITLES', s1.titles, s2.titles, s1.titles, s2.titles]];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>HEAD TO HEAD</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Player comparison tool</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 14, alignItems: 'center' }}>
+          <select value={p1} onChange={function(e) { setP1(e.target.value); }} style={{ flex: 1, background: '#111', border: '1px solid ' + C.gold, borderRadius: 8, padding: '10px 12px', color: C.gold, fontSize: 13, fontFamily: "'Bebas Neue',sans-serif" }}>
+            {players.map(function(p) { return <option key={p} value={p}>{p}</option>; })}
+          </select>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.muted }}>VS</div>
+          <select value={p2} onChange={function(e) { setP2(e.target.value); }} style={{ flex: 1, background: '#111', border: '1px solid ' + C.cyan, borderRadius: 8, padding: '10px 12px', color: C.cyan, fontSize: 13, fontFamily: "'Bebas Neue',sans-serif" }}>
+            {players.map(function(p) { return <option key={p} value={p}>{p}</option>; })}
+          </select>
+        </div>
+        {cats.map(function(cat, i) {
+          var total = cat[3] + cat[4];
+          var pct1 = total > 0 ? Math.floor((cat[3] / total) * 100) : 50;
+          var pct2 = 100 - pct1;
+          var winner = cat[3] > cat[4] ? 'p1' : cat[4] > cat[3] ? 'p2' : 'tie';
+          return (
+            <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+              <div style={{ fontSize: 10, color: C.muted, textAlign: 'center', marginBottom: 8, letterSpacing: 1 }}>{cat[0]}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: winner === 'p1' ? C.gold : C.muted }}>{cat[1]}</span>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: winner === 'p2' ? C.cyan : C.muted }}>{cat[2]}</span>
+              </div>
+              <div style={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ width: pct1 + '%', background: C.gold }}></div>
+                <div style={{ width: pct2 + '%', background: C.cyan }}></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DominoHubPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('scoreboard');
+  var tabs = [['scoreboard','🔴 LIVE'],['stats','📊 STATS'],['h2h','⚔ H2H'],['register','🏆 REGISTER']];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,' + C.burgundy + ',#0a0a0a)', padding: '16px 14px 0', borderBottom: '1px solid ' + C.gold + '44' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: C.gold, letterSpacing: 2, marginBottom: 12 }}>DOMINO HUB</div>
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 12px', color: tab === t[0] ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'scoreboard' && <LiveScoreboardV2 state={state} dispatch={dispatch} />}
+        {tab === 'stats' && <PlayerStatsV2 state={state} dispatch={dispatch} />}
+        {tab === 'h2h' && <HeadToHeadV2 state={state} dispatch={dispatch} />}
+        {tab === 'register' && <TournamentRegistrationV2 state={state} dispatch={dispatch} />}
+      </div>
+    </div>
+  );
+}
+
+function CommunityHubPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('leaderboards');
+  var tabs = [['leaderboards','🏆 BOARDS'],['vods','📼 VODS'],['messages','💬 DMs']];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 0', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: C.gold, letterSpacing: 2, marginBottom: 12 }}>COMMUNITY</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 4px', color: tab === t[0] ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'leaderboards' && <LeaderboardsV2 state={state} dispatch={dispatch} />}
+        {tab === 'vods' && <VODLibraryV2 state={state} dispatch={dispatch} />}
+        {tab === 'messages' && <DirectMessagesV2 state={state} dispatch={dispatch} />}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// BATCH E — AI PERSONA PAGES
+// ============================================================
+
+function JoyceAIPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [msgs, setMsgs] = React.useState([
+    { role: 'joyce', text: 'Hey baby! Mama Joyce is in the building. Ask me anything about dominos, the tournament, or just come talk to me. I got you!' }
+  ]);
+  var [input, setInput] = React.useState('');
+  var [loading, setLoading] = React.useState(false);
+  function send() {
+    if (!input.trim() || loading) return;
+    var userMsg = input.trim();
+    setInput('');
+    setMsgs(function(m) { return m.concat([{ role: 'user', text: userMsg }]); });
+    setLoading(true);
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'You are Joyce AI — Mama Joyce Thompson, the warm, wise, spirited co-host of SeeWhy LIVE. You are a domino culture icon, community matriarch, and hype woman for the Washington Classic tournament. You speak with warmth, Southern charm, domino knowledge, and real talk. Keep responses conversational, fun, and under 3 sentences. Never break character.',
+        messages: msgs.concat([{ role: 'user', content: userMsg }]).filter(function(m) { return m.role !== 'joyce'; }).map(function(m) { return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text }; })
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      var reply = data.content && data.content[0] ? data.content[0].text : 'Baby, let me think on that one...';
+      setMsgs(function(m) { return m.concat([{ role: 'joyce', text: reply }]); });
+      setLoading(false);
+    }).catch(function() {
+      setMsgs(function(m) { return m.concat([{ role: 'joyce', text: 'Sugar, something went wrong on my end. Try me again!' }]); });
+      setLoading(false);
+    });
+  }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'linear-gradient(135deg,#1a0a0a,' + C.burgundy + ')', padding: '16px 14px 14px', borderBottom: '1px solid ' + C.gold + '44' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,' + C.gold + ',' + C.burgundy + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '2px solid ' + C.gold }}>👑</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>JOYCE AI</div>
+            <div style={{ fontSize: 11, color: C.muted }}>Mama Joyce · Community Matriarch · Powered by Claude Sonnet</div>
+          </div>
+          <div style={{ marginLeft: 'auto', background: C.green, borderRadius: 20, padding: '3px 10px', fontSize: 10, color: '#000', fontWeight: 700 }}>LIVE</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: '14px 14px 0', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {msgs.map(function(m, i) { return (
+          <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', gap: 8 }}>
+            {m.role === 'joyce' && <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>👑</div>}
+            <div style={{ background: m.role === 'user' ? C.burgundy : 'rgba(201,168,76,0.12)', border: '1px solid ' + (m.role === 'user' ? C.gold + '44' : C.gold + '33'), borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', padding: '10px 14px', maxWidth: '78%' }}>
+              <div style={{ fontSize: 13, color: C.white, lineHeight: 1.5 }}>{m.text}</div>
+            </div>
+          </div>
+        );})}
+        {loading && <div style={{ display: 'flex', gap: 8 }}><div style={{ width: 32, height: 32, borderRadius: '50%', background: C.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>👑</div><div style={{ background: 'rgba(201,168,76,0.12)', border: '1px solid ' + C.gold + '33', borderRadius: '16px 16px 16px 4px', padding: '10px 14px' }}><div style={{ fontSize: 13, color: C.muted }}>Mama Joyce is typing...</div></div></div>}
+      </div>
+      <div style={{ padding: '12px 14px 28px', borderTop: '1px solid #222', display: 'flex', gap: 8 }}>
+        <input value={input} onChange={function(e) { setInput(e.target.value); }} onKeyDown={function(e) { if (e.key === 'Enter') send(); }} placeholder="Talk to Mama Joyce..." style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 20, padding: '11px 16px', color: C.white, fontSize: 13 }} />
+        <button onClick={send} style={{ background: C.gold, border: 'none', borderRadius: '50%', width: 42, height: 42, color: '#000', fontSize: 18, cursor: 'pointer', fontWeight: 700 }}>↑</button>
+      </div>
+    </div>
+  );
+}
+
+function AuraAIPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [msgs, setMsgs] = React.useState([
+    { role: 'aura', text: 'AURA online. I am your broadcast intelligence — stream analytics, overlay control, and creative direction. What do you need?' }
+  ]);
+  var [input, setInput] = React.useState('');
+  var [loading, setLoading] = React.useState(false);
+  function send() {
+    if (!input.trim() || loading) return;
+    var userMsg = input.trim();
+    setInput('');
+    setMsgs(function(m) { return m.concat([{ role: 'user', text: userMsg }]); });
+    setLoading(true);
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'You are AURA — the AI broadcast intelligence system for SeeWhy LIVE. You are precise, futuristic, and data-driven. You help creators optimize their streams, understand analytics, control overlays, and make strategic broadcast decisions. Speak in short, sharp, technically confident sentences. You are the voice of the machine — calm, powerful, and always on.',
+        messages: msgs.concat([{ role: 'user', content: userMsg }]).filter(function(m) { return m.role !== 'aura'; }).map(function(m) { return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text }; })
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      var reply = data.content && data.content[0] ? data.content[0].text : 'Signal lost. Reconnecting...';
+      setMsgs(function(m) { return m.concat([{ role: 'aura', text: reply }]); });
+      setLoading(false);
+    }).catch(function() {
+      setMsgs(function(m) { return m.concat([{ role: 'aura', text: 'Connection interrupted. Retry.' }]); });
+      setLoading(false);
+    });
+  }
+  return (
+    <div style={{ background: '#020408', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'linear-gradient(135deg,#020408,#001a2a)', padding: '16px 14px 14px', borderBottom: '1px solid #00D4FF33' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#0044aa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '2px solid #00D4FF' }}>⚡</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#00D4FF', letterSpacing: 3 }}>AURA AI</div>
+            <div style={{ fontSize: 11, color: '#446677' }}>Broadcast Intelligence · Powered by Claude Sonnet</div>
+          </div>
+          <div style={{ marginLeft: 'auto', background: '#00D4FF', borderRadius: 20, padding: '3px 10px', fontSize: 10, color: '#000', fontWeight: 700 }}>ONLINE</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: '14px 14px 0', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {msgs.map(function(m, i) { return (
+          <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', gap: 8 }}>
+            {m.role === 'aura' && <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#0044aa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>⚡</div>}
+            <div style={{ background: m.role === 'user' ? '#001a2a' : 'rgba(0,212,255,0.08)', border: '1px solid ' + (m.role === 'user' ? '#00D4FF44' : '#00D4FF22'), borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', padding: '10px 14px', maxWidth: '78%' }}>
+              <div style={{ fontSize: 13, color: m.role === 'user' ? '#ccc' : '#00D4FF', lineHeight: 1.5, fontFamily: m.role === 'aura' ? "'IBM Plex Mono',monospace" : 'inherit' }}>{m.text}</div>
+            </div>
+          </div>
+        );})}
+        {loading && <div style={{ display: 'flex', gap: 8 }}><div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#0044aa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>⚡</div><div style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid #00D4FF22', borderRadius: '16px 16px 16px 4px', padding: '10px 14px' }}><div style={{ fontSize: 13, color: '#446677', fontFamily: "'IBM Plex Mono',monospace" }}>Processing...</div></div></div>}
+      </div>
+      <div style={{ padding: '12px 14px 28px', borderTop: '1px solid #00D4FF22', display: 'flex', gap: 8 }}>
+        <input value={input} onChange={function(e) { setInput(e.target.value); }} onKeyDown={function(e) { if (e.key === 'Enter') send(); }} placeholder="Query AURA..." style={{ flex: 1, background: '#0a0f14', border: '1px solid #00D4FF33', borderRadius: 20, padding: '11px 16px', color: '#00D4FF', fontSize: 13, fontFamily: "'IBM Plex Mono',monospace" }} />
+        <button onClick={send} style={{ background: '#00D4FF', border: 'none', borderRadius: '50%', width: 42, height: 42, color: '#000', fontSize: 18, cursor: 'pointer', fontWeight: 700 }}>↑</button>
+      </div>
+    </div>
+  );
+}
+
+function SwanyBotPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [msgs, setMsgs] = React.useState([
+    { role: 'swany', text: 'SwanyBot in the building! The Griot is here — keeper of domino culture, platform lore, and SeeWhy LIVE history. What you wanna know?' }
+  ]);
+  var [input, setInput] = React.useState('');
+  var [loading, setLoading] = React.useState(false);
+  function send() {
+    if (!input.trim() || loading) return;
+    var userMsg = input.trim();
+    setInput('');
+    setMsgs(function(m) { return m.concat([{ role: 'user', text: userMsg }]); });
+    setLoading(true);
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'You are SwanyBot — The Griot of SeeWhy LIVE, built by SwanyThree23. You are the keeper of domino culture, platform history, and community lore. You know the Washington Classic tournament inside and out, you know the creators — CaliBonesOG, VibeNBones, Big Bone Earl, Mama Joyce Thompson, Fast Hands Rodriguez. You speak with confidence, cultural pride, and domino wisdom. Short, punchy responses with personality.',
+        messages: msgs.concat([{ role: 'user', content: userMsg }]).filter(function(m) { return m.role !== 'swany'; }).map(function(m) { return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text }; })
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      var reply = data.content && data.content[0] ? data.content[0].text : 'The Griot needs a moment...';
+      setMsgs(function(m) { return m.concat([{ role: 'swany', text: reply }]); });
+      setLoading(false);
+    }).catch(function() {
+      setMsgs(function(m) { return m.concat([{ role: 'swany', text: 'Connection dropped. Run it back.' }]); });
+      setLoading(false);
+    });
+  }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#0a1a0a)', padding: '16px 14px 14px', borderBottom: '1px solid ' + C.green + '33' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,' + C.green + ',#004400)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '2px solid ' + C.green }}>🎙️</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.green, letterSpacing: 2 }}>SWANYBOT</div>
+            <div style={{ fontSize: 11, color: C.muted }}>The Griot · Culture Keeper · Powered by Claude Sonnet</div>
+          </div>
+          <div style={{ marginLeft: 'auto', background: C.green, borderRadius: 20, padding: '3px 10px', fontSize: 10, color: '#000', fontWeight: 700 }}>ACTIVE</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: '14px 14px 0', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {msgs.map(function(m, i) { return (
+          <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', gap: 8 }}>
+            {m.role === 'swany' && <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,' + C.green + ',#004400)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🎙️</div>}
+            <div style={{ background: m.role === 'user' ? '#0a1a0a' : 'rgba(200,255,0,0.06)', border: '1px solid ' + (m.role === 'user' ? C.green + '44' : C.green + '22'), borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', padding: '10px 14px', maxWidth: '78%' }}>
+              <div style={{ fontSize: 13, color: m.role === 'user' ? '#ccc' : C.green, lineHeight: 1.5 }}>{m.text}</div>
+            </div>
+          </div>
+        );})}
+        {loading && <div style={{ display: 'flex', gap: 8 }}><div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,' + C.green + ',#004400)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🎙️</div><div style={{ background: 'rgba(200,255,0,0.06)', border: '1px solid ' + C.green + '22', borderRadius: '16px 16px 16px 4px', padding: '10px 14px' }}><div style={{ fontSize: 13, color: C.muted }}>The Griot is thinking...</div></div></div>}
+      </div>
+      <div style={{ padding: '12px 14px 28px', borderTop: '1px solid ' + C.green + '22', display: 'flex', gap: 8 }}>
+        <input value={input} onChange={function(e) { setInput(e.target.value); }} onKeyDown={function(e) { if (e.key === 'Enter') send(); }} placeholder="Ask the Griot..." style={{ flex: 1, background: '#111', border: '1px solid ' + C.green + '44', borderRadius: 20, padding: '11px 16px', color: C.white, fontSize: 13 }} />
+        <button onClick={send} style={{ background: C.green, border: 'none', borderRadius: '50%', width: 42, height: 42, color: '#000', fontSize: 18, cursor: 'pointer', fontWeight: 700 }}>↑</button>
+      </div>
+    </div>
+  );
+}
+
+function GuardianAIPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('dashboard');
+  var [log, setLog] = React.useState([
+    { id: 1, user: 'TrollAcct99', msg: 'trash stream', action: 'flagged', score: 52, time: '2m ago' },
+    { id: 2, user: 'SpamBot001', msg: 'click here for free gems!!!', action: 'muted', score: 78, time: '5m ago' },
+    { id: 3, user: 'HateSpeech22', msg: '[removed]', action: 'banned', score: 96, time: '8m ago' },
+    { id: 4, user: 'NormalUser1', msg: 'great stream!', action: 'allowed', score: 12, time: '10m ago' },
+  ]);
+  var stats = { flagged: 14, muted: 6, banned: 2, allowed: 1842, accuracy: 98.2 };
+  var actionColor = { flagged: C.gold, muted: '#FF8C00', banned: C.red, allowed: C.green };
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a1a,#1a0a2a)', padding: '16px 14px 0', borderBottom: '1px solid #333' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,#9B59B6,#1a0a2a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '2px solid #9B59B6' }}>🛡️</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#9B59B6', letterSpacing: 2 }}>GUARDIAN AI</div>
+            <div style={{ fontSize: 11, color: C.muted }}>Chat Moderation · Powered by Claude Haiku</div>
+          </div>
+          <div style={{ marginLeft: 'auto', background: C.green, borderRadius: 20, padding: '3px 10px', fontSize: 10, color: '#000', fontWeight: 700 }}>ACTIVE</div>
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['dashboard','log','thresholds'].map(function(t) { return (
+            <button key={t} onClick={function() { setTab(t); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t ? '2px solid #9B59B6' : '2px solid transparent', padding: '8px 4px', color: tab === t ? '#9B59B6' : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {tab === 'dashboard' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+              {[['FLAGGED', stats.flagged, C.gold],['MUTED', stats.muted, '#FF8C00'],['BANNED', stats.banned, C.red],['ACCURACY', stats.accuracy + '%', C.green]].map(function(s, i) { return (
+                <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+                  <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>{s[0]}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: s[2] }}>{s[1]}</div>
+                </div>
+              );})}
+            </div>
+            <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#9B59B6', marginBottom: 10 }}>THRESHOLD LEVELS</div>
+              {[['FLAG', 50, C.gold],['MUTE', 75, '#FF8C00'],['BAN', 95, C.red]].map(function(t, i) { return (
+                <div key={i} style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, color: C.muted }}>{t[0]}</span>
+                    <span style={{ fontSize: 11, color: t[2] }}>{t[1]}%</span>
+                  </div>
+                  <div style={{ background: '#1a1a1a', borderRadius: 4, height: 6 }}>
+                    <div style={{ width: t[1] + '%', background: t[2], height: '100%', borderRadius: 4 }}></div>
+                  </div>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {tab === 'log' && (
+          <div>
+            {log.map(function(entry) { return (
+              <div key={entry.id} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 12, marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ color: C.white, fontWeight: 700, fontSize: 13 }}>{entry.user}</span>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <span style={{ background: actionColor[entry.action] + '22', border: '1px solid ' + actionColor[entry.action] + '66', borderRadius: 4, padding: '2px 8px', fontSize: 10, color: actionColor[entry.action], fontFamily: "'Bebas Neue',sans-serif" }}>{entry.action.toUpperCase()}</span>
+                    <span style={{ fontSize: 10, color: C.muted }}>{entry.time}</span>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>"{entry.msg}"</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 10, color: C.muted }}>Risk Score:</span>
+                  <div style={{ flex: 1, background: '#1a1a1a', borderRadius: 4, height: 4 }}>
+                    <div style={{ width: entry.score + '%', background: entry.score >= 95 ? C.red : entry.score >= 75 ? '#FF8C00' : entry.score >= 50 ? C.gold : C.green, height: '100%', borderRadius: 4 }}></div>
+                  </div>
+                  <span style={{ fontSize: 10, color: C.muted }}>{entry.score}%</span>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'thresholds' && (
+          <div>
+            <div style={{ background: 'rgba(155,89,182,0.08)', border: '1px solid #9B59B633', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+              <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>Guardian AI uses Claude Haiku to analyze every chat message in real time. Messages are scored 0–100 for toxicity. Actions trigger automatically at threshold levels.</div>
+            </div>
+            {[{ level: 'FLAG', threshold: 50, color: C.gold, desc: 'Message is logged and reviewed. No action taken on user.' },{ level: 'MUTE', threshold: 75, color: '#FF8C00', desc: 'User is muted for 10 minutes. Message is hidden.' },{ level: 'BAN', threshold: 95, color: C.red, desc: 'User is immediately banned from the stream.' }].map(function(t, i) { return (
+              <div key={i} style={{ background: C.slate, border: '2px solid ' + t.color + '44', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: t.color }}>{t.level}</span>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: t.color }}>{t.threshold}%+</span>
+                </div>
+                <div style={{ fontSize: 12, color: C.muted }}>{t.desc}</div>
+              </div>
+            );})}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AIHubPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var personas = [
+    { id: 'joyce', name: 'JOYCE AI', sub: 'Community Matriarch', icon: '👑', color: C.gold, bg: C.burgundy, desc: 'Warm, wise, spirited co-host. Domino culture icon. Ask her anything.', status: 'LIVE', page: 'joyce' },
+    { id: 'aura', name: 'AURA AI', sub: 'Broadcast Intelligence', icon: '⚡', color: '#00D4FF', bg: '#001a2a', desc: 'Precision stream analytics, overlay control, and creative direction.', status: 'ONLINE', page: 'aura' },
+    { id: 'swany', name: 'SWANYBOT', sub: 'The Griot', icon: '🎙️', color: C.green, bg: '#0a1a0a', desc: 'Culture keeper. Platform lore. Washington Classic historian.', status: 'ACTIVE', page: 'swanybot' },
+    { id: 'guardian', name: 'GUARDIAN AI', sub: 'Chat Moderation', icon: '🛡️', color: '#9B59B6', bg: '#0a0a1a', desc: 'Real-time toxicity detection. Flag · Mute · Ban thresholds.', status: 'GUARDING', page: 'guardian' },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#0a0a1a)', padding: '16px 14px 14px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: C.gold, letterSpacing: 2 }}>AI HUB</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Your AI crew — powered by Anthropic Claude</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {personas.map(function(p) { return (
+          <div key={p.id} onClick={function() { dispatch({ type: 'SET_PAGE', payload: p.page }); }} style={{ background: 'linear-gradient(135deg,' + p.bg + ',#0a0a0a)', border: '1px solid ' + p.color + '44', borderRadius: 14, padding: 18, marginBottom: 14, cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: p.bg, border: '2px solid ' + p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>{p.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: p.color, letterSpacing: 1 }}>{p.name}</div>
+                <div style={{ fontSize: 11, color: C.muted }}>{p.sub}</div>
+              </div>
+              <div style={{ background: p.color, borderRadius: 20, padding: '3px 10px', fontSize: 9, color: '#000', fontWeight: 700 }}>{p.status}</div>
+            </div>
+            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5 }}>{p.desc}</div>
+            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+              <span style={{ fontSize: 11, color: p.color, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 1 }}>TALK TO {p.name} →</span>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// BATCH F — PK BATTLE ARENA UPGRADES
+// ============================================================
+
+function PKBattleLobbyV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('active');
+  var battles = {
+    active: [
+      { id: 1, p1: 'SwanyThree23', p2: 'CaliBone22', gems1: 2400, gems2: 1800, viewers: 342, status: 'live', round: 3 },
+      { id: 2, p1: 'VibeNBones', p2: 'DominoKing_WA', gems1: 900, gems2: 1100, viewers: 187, status: 'live', round: 1 },
+    ],
+    pending: [
+      { id: 3, challenger: 'FastHandsFred', target: 'SwanyThree23', wager: 500, expires: '14m', status: 'pending' },
+      { id: 4, challenger: 'BigBoneEarl', target: 'CaliBone22', wager: 250, expires: '32m', status: 'pending' },
+    ],
+    results: [
+      { id: 5, winner: 'SwanyThree23', loser: 'VibeNBones', gems: 3200, date: 'Jun 7' },
+      { id: 6, winner: 'CaliBone22', loser: 'DominoKing_WA', gems: 1800, date: 'Jun 6' },
+      { id: 7, winner: 'VibeNBones', loser: 'FastHandsFred', gems: 900, date: 'Jun 5' },
+    ]
+  };
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,' + C.burgundy + ',#0a0a0a)', padding: '16px 14px 0', borderBottom: '1px solid ' + C.gold + '44' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: C.gold, letterSpacing: 2 }}>PK BATTLE ARENA</div>
+            <div style={{ fontSize: 11, color: C.muted }}>1v1 Domino Showdowns · Gem Stakes</div>
+          </div>
+          <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'pkchallenge' }); }} style={{ background: C.gold, border: 'none', borderRadius: 8, padding: '8px 14px', color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>⚔ CHALLENGE</button>
+        </div>
+        <div style={{ display: 'flex' }}>
+          {['active','pending','results'].map(function(t) { return (
+            <button key={t} onClick={function() { setTab(t); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 4px', color: tab === t ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {tab === 'active' && battles.active.map(function(b) { return (
+          <div key={b.id} onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'pkwatch' }); }} style={{ background: 'linear-gradient(135deg,rgba(139,0,0,0.2),#0a0a0a)', border: '1px solid ' + C.gold + '44', borderRadius: 14, padding: 16, marginBottom: 14, cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ background: C.red, borderRadius: 4, padding: '2px 8px', fontSize: 10, color: '#fff', fontWeight: 700 }}>● LIVE · Round {b.round}</div>
+              <div style={{ fontSize: 11, color: C.muted }}>{b.viewers} watching</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.white }}>{b.p1}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold }}>{b.gems1.toLocaleString()}</div>
+                <div style={{ fontSize: 10, color: C.muted }}>gems</div>
+              </div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.burgundy }}>VS</div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.white }}>{b.p2}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.cyan }}>{ b.gems2.toLocaleString()}</div>
+                <div style={{ fontSize: 10, color: C.muted }}>gems</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 12, height: 6, borderRadius: 3, background: '#1a1a1a', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: Math.floor((b.gems1 / (b.gems1 + b.gems2)) * 100) + '%', background: 'linear-gradient(90deg,' + C.gold + ',' + C.burgundy + ')', borderRadius: 3 }}></div>
+            </div>
+            <div style={{ marginTop: 10, textAlign: 'center', fontSize: 11, color: C.gold, fontFamily: "'Bebas Neue',sans-serif" }}>TAP TO WATCH + SEND GEMS →</div>
+          </div>
+        );})}
+        {tab === 'pending' && battles.pending.map(function(b) { return (
+          <div key={b.id} style={{ background: C.slate, border: '1px solid #333', borderRadius: 12, padding: 14, marginBottom: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.gold }}>CHALLENGE</span>
+              <span style={{ fontSize: 11, color: C.red }}>Expires in {b.expires}</span>
+            </div>
+            <div style={{ fontSize: 13, color: C.white, marginBottom: 4 }}><span style={{ color: C.gold }}>{b.challenger}</span> challenged <span style={{ color: C.cyan }}>{b.target}</span></div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>Wager: {b.wager} gems</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ flex: 1, background: C.green, border: 'none', borderRadius: 8, padding: 10, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>ACCEPT</button>
+              <button style={{ flex: 1, background: 'none', border: '1px solid #444', borderRadius: 8, padding: 10, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>DECLINE</button>
+            </div>
+          </div>
+        );})}
+        {tab === 'results' && battles.results.map(function(b) { return (
+          <div key={b.id} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 13, color: C.white }}><span style={{ color: C.gold }}>🏆 {b.winner}</span> def. {b.loser}</div>
+              <div style={{ fontSize: 11, color: C.muted }}>{b.date}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold }}>{b.gems.toLocaleString()}</div>
+              <div style={{ fontSize: 10, color: C.muted }}>gems won</div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function PKChallengeFlowV2({ state, dispatch }) {
+  var C = COLORS;
+  var [step, setStep] = React.useState(0);
+  var [form, setForm] = React.useState({ target: '', wager: 100, format: '7-Rock', rounds: 3 });
+  var creators = ['CaliBone22','VibeNBones','DominoKing_WA','FastHandsFred','BigBoneEarl'];
+  var formats = ['7-Rock','9-Rock','Mexican Train'];
+  function update(k, v) { setForm(function(f) { return Object.assign({}, f, { [k]: v }); }); }
+  var steps = ['TARGET','WAGER','FORMAT','CONFIRM'];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'linear-gradient(135deg,' + C.burgundy + ',#0a0a0a)', padding: '16px 14px 14px', borderBottom: '1px solid ' + C.gold + '44' }}>
+        <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'pkbattle' }); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 16, cursor: 'pointer', marginBottom: 8 }}>← BACK</button>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold }}>SEND CHALLENGE</div>
+        <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
+          {steps.map(function(s, i) { return (
+            <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= step ? C.gold : '#333' }}></div>
+          );})}
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: 20 }}>
+        {step === 0 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold, marginBottom: 16 }}>WHO YOU CHALLENGING?</div>
+            {creators.map(function(c) { return (
+              <div key={c} onClick={function() { update('target', c); }} style={{ background: form.target === c ? 'rgba(201,168,76,0.15)' : C.slate, border: '2px solid ' + (form.target === c ? C.gold : '#2a2a2a'), borderRadius: 10, padding: 14, marginBottom: 10, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: form.target === c ? C.gold : C.white, fontWeight: 700, fontSize: 14 }}>{c}</span>
+                {form.target === c && <span style={{ color: C.gold }}>✓</span>}
+              </div>
+            );})}
+          </div>
+        )}
+        {step === 1 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold, marginBottom: 8 }}>SET THE WAGER</div>
+            <div style={{ fontSize: 11, color: C.muted, marginBottom: 20 }}>How many gems are you putting up?</div>
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 72, color: C.gold }}>{form.wager}</div>
+              <div style={{ fontSize: 13, color: C.muted }}>💎 gems · ${(form.wager * 0.05).toFixed(2)}</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {[50, 100, 250, 500, 1000].map(function(v) { return (
+                <button key={v} onClick={function() { update('wager', v); }} style={{ background: form.wager === v ? C.gold : C.slate, border: '1px solid ' + (form.wager === v ? C.gold : '#333'), borderRadius: 8, padding: '10px 18px', color: form.wager === v ? '#000' : C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>{v}</button>
+              );})}
+            </div>
+          </div>
+        )}
+        {step === 2 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold, marginBottom: 16 }}>PICK THE FORMAT</div>
+            {formats.map(function(f) { return (
+              <div key={f} onClick={function() { update('format', f); }} style={{ background: form.format === f ? 'rgba(201,168,76,0.15)' : C.slate, border: '2px solid ' + (form.format === f ? C.gold : '#2a2a2a'), borderRadius: 10, padding: 14, marginBottom: 10, cursor: 'pointer' }}>
+                <div style={{ color: form.format === f ? C.gold : C.white, fontWeight: 700 }}>{f}</div>
+              </div>
+            );})}
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>BEST OF</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[1, 3, 5].map(function(r) { return (
+                  <button key={r} onClick={function() { update('rounds', r); }} style={{ flex: 1, background: form.rounds === r ? C.burgundy : C.slate, border: '2px solid ' + (form.rounds === r ? C.gold : '#333'), borderRadius: 8, padding: 12, color: form.rounds === r ? C.gold : C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>BO{r}</button>
+                );})}
+              </div>
+            </div>
+          </div>
+        )}
+        {step === 3 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold, marginBottom: 20 }}>CONFIRM CHALLENGE</div>
+            <div style={{ background: 'linear-gradient(135deg,' + C.burgundy + ',#1a0a0a)', border: '1px solid ' + C.gold + '44', borderRadius: 14, padding: 20, marginBottom: 20 }}>
+              <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                <div style={{ fontSize: 13, color: C.muted, marginBottom: 4 }}>YOU vs</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold }}>{form.target}</div>
+              </div>
+              {[['FORMAT', form.format],['BEST OF', 'BO' + form.rounds],['WAGER', form.wager + ' 💎 gems'],['VALUE', '$' + (form.wager * 0.05).toFixed(2)]].map(function(row, i) { return (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < 3 ? '1px solid #2a2a2a' : 'none' }}>
+                  <span style={{ fontSize: 12, color: C.muted }}>{row[0]}</span>
+                  <span style={{ fontSize: 12, color: C.white, fontWeight: 700 }}>{row[1]}</span>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+      </div>
+      <div style={{ padding: '0 20px 30px', display: 'flex', gap: 10 }}>
+        {step > 0 && <button onClick={function() { setStep(function(s) { return s - 1; }); }} style={{ flex: 1, background: '#1a1a2a', border: '1px solid #444', borderRadius: 10, padding: 14, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>BACK</button>}
+        <button onClick={function() { if (step < steps.length - 1) { setStep(function(s) { return s + 1; }); } else { dispatch({ type: 'SET_PAGE', payload: 'pkbattle' }); } }} disabled={step === 0 && !form.target} style={{ flex: 2, background: step === 3 ? C.green : C.gold, border: 'none', borderRadius: 10, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', opacity: (step === 0 && !form.target) ? 0.4 : 1 }}>{step === 3 ? 'SEND CHALLENGE' : 'CONTINUE'}</button>
+      </div>
+    </div>
+  );
+}
+
+function PKWatchRoomV2({ state, dispatch }) {
+  var C = COLORS;
+  var [gems, setGems] = React.useState({ p1: 2400, p2: 1800 });
+  var [chatMsgs, setChatMsgs] = React.useState([
+    { user: 'CaliBone22Fan', text: 'LETS GO CALI', gem: false },
+    { user: 'SwanyArmy', text: '💎💎💎', gem: false },
+    { user: 'VibeNBones', text: 'SwanyThree sending gems — 50 dropped!', gem: true },
+  ]);
+  var [chatInput, setChatInput] = React.useState('');
+  var gemAmounts = [10, 25, 50, 100, 500];
+  function sendGems(player, amount) {
+    setGems(function(g) {
+      var n = Object.assign({}, g);
+      if (player === 1) { n.p1 = n.p1 + amount; } else { n.p2 = n.p2 + amount; }
+      return n;
+    });
+    setChatMsgs(function(m) { return m.concat([{ user: 'You', text: 'Sent ' + amount + ' 💎 to ' + (player === 1 ? 'SwanyThree23' : 'CaliBone22'), gem: true }]); });
+  }
+  var total = gems.p1 + gems.p2;
+  var pct1 = Math.floor((gems.p1 / total) * 100);
+  return (
+    <div style={{ background: '#000', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: '#000', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: '1px solid #222' }}>
+        <div style={{ fontSize: 48, color: '#333' }}>⚔</div>
+        <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'pkbattle' }); }} style={{ position: 'absolute', top: 8, left: 10, background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: 6, padding: '5px 10px', color: C.white, fontSize: 12, cursor: 'pointer' }}>← BACK</button>
+        <div style={{ position: 'absolute', top: 8, right: 10, background: C.red, borderRadius: 4, padding: '3px 8px', fontSize: 10, color: '#fff', fontWeight: 700 }}>● LIVE</div>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent,rgba(0,0,0,0.9))', padding: '20px 10px 8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.gold }}>SwanyThree23</span>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.cyan }}>CaliBone22</span>
+          </div>
+          <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{ width: pct1 + '%', background: C.gold }}></div>
+            <div style={{ width: (100 - pct1) + '%', background: C.cyan }}></div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+            <span style={{ fontSize: 11, color: C.gold }}>{gems.p1.toLocaleString()} 💎</span>
+            <span style={{ fontSize: 11, color: C.cyan }}>{gems.p2.toLocaleString()} 💎</span>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding: '10px 10px 4px' }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 6 }}>SEND GEMS TO</div>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10, color: C.gold, marginBottom: 4, fontFamily: "'Bebas Neue',sans-serif" }}>SWANY</div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {gemAmounts.map(function(a) { return (
+                <button key={a} onClick={function() { sendGems(1, a); }} style={{ background: C.burgundy, border: '1px solid ' + C.gold + '44', borderRadius: 6, padding: '5px 8px', color: C.gold, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{a}💎</button>
+              );})}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10, color: C.cyan, marginBottom: 4, fontFamily: "'Bebas Neue',sans-serif" }}>CALI</div>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {gemAmounts.map(function(a) { return (
+                <button key={a} onClick={function() { sendGems(2, a); }} style={{ background: '#001a2a', border: '1px solid ' + C.cyan + '44', borderRadius: 6, padding: '5px 8px', color: C.cyan, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{a}💎</button>
+              );})}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: '0 10px', overflowY: 'auto', maxHeight: 160 }}>
+        {chatMsgs.map(function(m, i) { return (
+          <div key={i} style={{ marginBottom: 4 }}>
+            <span style={{ color: m.gem ? C.gold : C.cyan, fontSize: 11, fontWeight: 700 }}>{m.user}: </span>
+            <span style={{ color: m.gem ? C.gold : C.white, fontSize: 11 }}>{m.text}</span>
+          </div>
+        );})}
+      </div>
+      <div style={{ padding: '8px 10px 20px', borderTop: '1px solid #222', display: 'flex', gap: 8 }}>
+        <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }} onKeyDown={function(e) { if (e.key === 'Enter' && chatInput.trim()) { setChatMsgs(function(m) { return m.concat([{ user: 'You', text: chatInput, gem: false }]); }); setChatInput(''); } }} placeholder="Cheer in chat..." style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 16, padding: '8px 14px', color: C.white, fontSize: 12 }} />
+        <button onClick={function() { if (chatInput.trim()) { setChatMsgs(function(m) { return m.concat([{ user: 'You', text: chatInput, gem: false }]); }); setChatInput(''); } }} style={{ background: C.burgundy, border: 'none', borderRadius: '50%', width: 36, height: 36, color: C.white, fontSize: 16, cursor: 'pointer' }}>↑</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// BATCH G — CREATOR DASHBOARD + ANALYTICS
+// ============================================================
+
+function CreatorDashboardV2({ state, dispatch }) {
+  var C = COLORS;
+  var [period, setPeriod] = React.useState('7d');
+  var stats = {
+    '7d': { revenue: 284.50, gems: 5690, viewers: 12430, streams: 4, followers: 89, hours: 18.5 },
+    '30d': { revenue: 1240.00, gems: 24800, viewers: 48200, streams: 14, followers: 312, hours: 67.0 },
+    '90d': { revenue: 3820.00, gems: 76400, viewers: 142000, streams: 38, followers: 890, hours: 198.0 },
+  };
+  var s = stats[period];
+  var chartData = {
+    '7d': [120, 95, 210, 180, 340, 280, 420],
+    '30d': [80, 140, 200, 160, 300, 240, 380, 420, 200, 160, 300, 280, 400, 360, 480, 320, 260, 200, 340, 380, 440, 300, 260, 480, 400, 360, 320, 280, 420, 500],
+    '90d': [100, 150, 200, 180, 250, 300, 280, 320, 400, 380, 420, 460],
+  };
+  var bars = chartData[period];
+  var maxBar = Math.max.apply(null, bars);
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a0a)', padding: '16px 14px 14px', borderBottom: '1px solid #222' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>CREATOR DASHBOARD</div>
+            <div style={{ fontSize: 11, color: C.muted }}>SwanyThree23 · FM Creator</div>
+          </div>
+          <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'analytics' }); }} style={{ background: 'none', border: '1px solid ' + C.gold + '44', borderRadius: 8, padding: '6px 12px', color: C.gold, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>DEEP ANALYTICS →</button>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['7d','30d','90d'].map(function(p) { return (
+            <button key={p} onClick={function() { setPeriod(p); }} style={{ flex: 1, background: period === p ? C.gold : 'none', border: '1px solid ' + (period === p ? C.gold : '#444'), borderRadius: 20, padding: '5px 0', color: period === p ? '#000' : C.muted, fontSize: 12, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{p.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,0.12),rgba(139,0,0,0.08))', border: '1px solid ' + C.gold + '44', borderRadius: 14, padding: 16, marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>TOTAL REVENUE ({period})</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: C.gold, lineHeight: 1 }}>${s.revenue.toFixed(2)}</div>
+          <div style={{ fontSize: 11, color: C.green, marginTop: 4 }}>↑ 90% creator split · ${(s.revenue * 0.9).toFixed(2)} yours</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
+          {[['GEMS', s.gems.toLocaleString(), C.gold],['VIEWERS', s.viewers.toLocaleString(), C.cyan],['STREAMS', s.streams, C.white],['FOLLOWERS', '+' + s.followers, C.green],['HOURS', s.hours + 'h', C.muted],['AVG/STREAM', '$' + (s.revenue / s.streams).toFixed(2), C.gold]].map(function(item, i) { return (
+            <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: 9, color: C.muted, marginBottom: 4 }}>{item[0]}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: item[2] }}>{item[1]}</div>
+            </div>
+          );})}
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>GEM REVENUE ({period})</div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 80 }}>
+            {bars.map(function(v, i) { return (
+              <div key={i} style={{ flex: 1, background: 'linear-gradient(180deg,' + C.gold + ',' + C.burgundy + ')', borderRadius: '2px 2px 0 0', height: Math.floor((v / maxBar) * 80) + 'px', opacity: 0.8 }}></div>
+            );})}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+            <span style={{ fontSize: 9, color: C.muted }}>{period === '7d' ? 'Mon' : period === '30d' ? 'Day 1' : 'Month 1'}</span>
+            <span style={{ fontSize: 9, color: C.muted }}>{period === '7d' ? 'Sun' : period === '30d' ? 'Day 30' : 'Month 3'}</span>
+          </div>
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 12 }}>RECENT STREAMS</div>
+          {[{ title: 'Washington Classic Semifinals', date: 'Jun 7', viewers: 4821, gems: 2140, revenue: 107.00 },{ title: 'PK Battle vs CaliBone22', date: 'Jun 5', viewers: 2103, gems: 890, revenue: 44.50 },{ title: 'Community Night Live', date: 'Jun 3', viewers: 1240, gems: 620, revenue: 31.00 }].map(function(stream, i) { return (
+            <div key={i} style={{ paddingBottom: 12, marginBottom: 12, borderBottom: i < 2 ? '1px solid #1a1a1a' : 'none' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ color: C.white, fontSize: 12, fontWeight: 700 }}>{stream.title}</span>
+                <span style={{ fontSize: 10, color: C.muted }}>{stream.date}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <span style={{ fontSize: 11, color: C.muted }}>{stream.viewers.toLocaleString()} viewers</span>
+                <span style={{ fontSize: 11, color: C.gold }}>{stream.gems} 💎</span>
+                <span style={{ fontSize: 11, color: C.green }}>${stream.revenue.toFixed(2)}</span>
+              </div>
+            </div>
+          );})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsDashboardV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('audience');
+  var audience = {
+    topStates: [['Washington', 38], ['California', 24], ['Texas', 14], ['Georgia', 10], ['Florida', 8]],
+    devices: [['Mobile', 64], ['Desktop', 28], ['Tablet', 8]],
+    peakHour: '8–10 PM PST',
+    avgWatch: '24m 18s',
+    returnRate: 67,
+  };
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a0a)', padding: '16px 14px 0', borderBottom: '1px solid #222' }}>
+        <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'creatordash' }); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 16, cursor: 'pointer', marginBottom: 8 }}>← BACK</button>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2, marginBottom: 10 }}>DEEP ANALYTICS</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['audience','content','revenue'].map(function(t) { return (
+            <button key={t} onClick={function() { setTab(t); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 4px', color: tab === t ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {tab === 'audience' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+              {[['PEAK HOUR', audience.peakHour, C.gold],['AVG WATCH TIME', audience.avgWatch, C.cyan],['RETURN RATE', audience.returnRate + '%', C.green],['TOP PLATFORM', 'Mobile', C.white]].map(function(item, i) { return (
+                <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+                  <div style={{ fontSize: 9, color: C.muted, marginBottom: 6 }}>{item[0]}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: item[2] }}>{item[1]}</div>
+                </div>
+              );})}
+            </div>
+            <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 12 }}>VIEWERS BY STATE</div>
+              {audience.topStates.map(function(item, i) { return (
+                <div key={i} style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 12, color: C.white }}>{item[0]}</span>
+                    <span style={{ fontSize: 12, color: C.muted }}>{item[1]}%</span>
+                  </div>
+                  <div style={{ background: '#1a1a1a', borderRadius: 4, height: 6 }}>
+                    <div style={{ width: item[1] + '%', background: 'linear-gradient(90deg,' + C.gold + ',' + C.burgundy + ')', height: '100%', borderRadius: 4 }}></div>
+                  </div>
+                </div>
+              );})}
+            </div>
+            <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 12 }}>DEVICE BREAKDOWN</div>
+              {audience.devices.map(function(item, i) { return (
+                <div key={i} style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 12, color: C.white }}>{item[0]}</span>
+                    <span style={{ fontSize: 12, color: C.muted }}>{item[1]}%</span>
+                  </div>
+                  <div style={{ background: '#1a1a1a', borderRadius: 4, height: 6 }}>
+                    <div style={{ width: item[1] + '%', background: C.cyan, height: '100%', borderRadius: 4 }}></div>
+                  </div>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {tab === 'content' && (
+          <div>
+            <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 14, marginBottom: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 12 }}>TOP PERFORMING STREAMS</div>
+              {[{ title: 'Washington Classic Semifinals', viewers: 4821, retention: 78, gems: 2140 },{ title: 'PK Battle Championship', viewers: 3204, retention: 71, gems: 1580 },{ title: 'Community Night Live', viewers: 2103, retention: 65, gems: 890 }].map(function(s, i) { return (
+                <div key={i} style={{ paddingBottom: 14, marginBottom: 14, borderBottom: i < 2 ? '1px solid #1a1a1a' : 'none' }}>
+                  <div style={{ color: C.white, fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{s.title}</div>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 6 }}>
+                    <span style={{ fontSize: 11, color: C.muted }}>{s.viewers.toLocaleString()} peak</span>
+                    <span style={{ fontSize: 11, color: C.gold }}>{s.gems} 💎</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, color: C.muted }}>Retention</span>
+                    <span style={{ fontSize: 10, color: C.green }}>{s.retention}%</span>
+                  </div>
+                  <div style={{ background: '#1a1a1a', borderRadius: 4, height: 5 }}>
+                    <div style={{ width: s.retention + '%', background: C.green, height: '100%', borderRadius: 4 }}></div>
+                  </div>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {tab === 'revenue' && (
+          <div>
+            <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,0.1),rgba(0,0,0,0))', border: '1px solid ' + C.gold + '44', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>30-DAY REVENUE</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: C.gold }}>$1,240.00</div>
+              <div style={{ fontSize: 11, color: C.green }}>↑ 90% to you = $1,116.00</div>
+            </div>
+            {[{ label: 'Gem Tips', amount: 840.00, pct: 68 },{ label: 'Subscriptions', amount: 280.00, pct: 23 },{ label: 'PPV Events', amount: 120.00, pct: 10 }].map(function(item, i) { return (
+              <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{item.label}</span>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold }}>${item.amount.toFixed(2)}</span>
+                </div>
+                <div style={{ background: '#1a1a1a', borderRadius: 4, height: 6 }}>
+                  <div style={{ width: item.pct + '%', background: 'linear-gradient(90deg,' + C.gold + ',' + C.burgundy + ')', height: '100%', borderRadius: 4 }}></div>
+                </div>
+                <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>{item.pct}% of revenue</div>
+              </div>
+            );})}
+            <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10 }}>NEXT PAYOUT</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.white }}>$248.30</div>
+                  <div style={{ fontSize: 11, color: C.muted }}>Processes Jun 15, 2026</div>
+                </div>
+                <button style={{ background: C.burgundy, border: '1px solid ' + C.gold + '44', borderRadius: 8, padding: '10px 16px', color: C.gold, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>REQUEST EARLY</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function GoalTrackerV2({ state, dispatch }) {
+  var C = COLORS;
+  var [goals, setGoals] = React.useState([
+    { id: 1, title: '10K Monthly Gems', current: 5690, target: 10000, color: C.gold, emoji: '💎' },
+    { id: 2, title: '1K Followers', current: 642, target: 1000, color: C.cyan, emoji: '👥' },
+    { id: 3, title: '$500 Monthly Revenue', current: 284.50, target: 500, color: C.green, emoji: '💰' },
+    { id: 4, title: 'Washington Classic Title', current: 1, target: 1, color: C.burgundy, emoji: '🏆' },
+    { id: 5, title: '100 Stream Hours', current: 67, target: 100, color: '#9B59B6', emoji: '📺' },
+  ]);
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a0a)', padding: '16px 14px 14px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>GOAL TRACKER</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Creator milestones and progress</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {goals.map(function(g) {
+          var pct = Math.min(100, Math.floor((g.current / g.target) * 100));
+          var done = pct >= 100;
+          return (
+            <div key={g.id} style={{ background: done ? 'rgba(200,255,0,0.05)' : C.slate, border: '1px solid ' + (done ? C.green + '44' : '#2a2a2a'), borderRadius: 12, padding: 16, marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 24 }}>{g.emoji}</span>
+                  <div>
+                    <div style={{ color: done ? C.green : C.white, fontWeight: 700, fontSize: 14 }}>{g.title}</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>{typeof g.current === 'number' && g.current % 1 !== 0 ? '$' + g.current.toFixed(2) : g.current.toLocaleString()} / {typeof g.target === 'number' && g.target % 1 !== 0 ? '$' + g.target.toFixed(2) : g.target.toLocaleString()}</div>
+                  </div>
+                </div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: done ? C.green : g.color }}>{done ? '✓' : pct + '%'}</div>
+              </div>
+              <div style={{ background: '#1a1a1a', borderRadius: 6, height: 8 }}>
+                <div style={{ width: pct + '%', background: done ? C.green : 'linear-gradient(90deg,' + g.color + ',rgba(255,255,255,0.3))', height: '100%', borderRadius: 6 }}></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// BATCH H — SETTINGS + ACCOUNT PAGES
+// ============================================================
+
+function SettingsPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [notifications, setNotifications] = React.useState({ gems: true, live: true, battles: true, payouts: true, messages: true, tournament: false });
+  var [privacy, setPrivacy] = React.useState({ showEarnings: false, showStats: true, allowDMs: true, publicProfile: true });
+  var [tab, setTab] = React.useState('account');
+  function toggle(obj, setObj, key) { setObj(function(o) { var n = Object.assign({}, o); n[key] = !n[key]; return n; }); }
+  function ToggleRow(label, val, onToggle, sub) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #1a1a1a' }}>
+        <div>
+          <div style={{ color: C.white, fontSize: 13 }}>{label}</div>
+          {sub && <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{sub}</div>}
+        </div>
+        <div onClick={onToggle} style={{ width: 44, height: 24, borderRadius: 12, background: val ? C.gold : '#333', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+          <div style={{ position: 'absolute', top: 2, left: val ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.15s' }}></div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 0', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2, marginBottom: 10 }}>SETTINGS</div>
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto' }}>
+          {['account','notifications','privacy','streaming','legal'].map(function(t) { return (
+            <button key={t} onClick={function() { setTab(t); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 10px', color: tab === t ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {tab === 'account' && (
+          <div>
+            <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: '#000' }}>SW</div>
+                <div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.white }}>SwanyThree23</div>
+                  <div style={{ fontSize: 12, color: C.gold }}>FM Creator · Washington</div>
+                  <div style={{ fontSize: 11, color: C.muted }}>Member since Jan 2025</div>
+                </div>
+              </div>
+              <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'customize' }); }} style={{ width: '100%', background: 'none', border: '1px solid ' + C.gold + '44', borderRadius: 8, padding: 12, color: C.gold, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>EDIT PROFILE</button>
+            </div>
+            {[{ label: 'Verification', value: '✓ Verified Creator', color: C.green },{ label: 'Creator Tier', value: 'FM (Founding Member)', color: C.gold },{ label: 'Invite Code', value: 'SWANY2026', color: C.cyan },{ label: 'Account Type', value: 'Creator + Viewer', color: C.white }].map(function(item, i) { return (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #1a1a1a' }}>
+                <span style={{ color: C.muted, fontSize: 13 }}>{item.label}</span>
+                <span style={{ color: item.color, fontSize: 13, fontWeight: 700 }}>{item.value}</span>
+              </div>
+            );})}
+            <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'streamkeys' }); }} style={{ background: C.slate, border: '1px solid #333', borderRadius: 10, padding: 14, color: C.white, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>🔑 Stream Keys & RTMP Settings</button>
+              <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'payoutsetup' }); }} style={{ background: C.slate, border: '1px solid #333', borderRadius: 10, padding: 14, color: C.white, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>💳 Payout Setup</button>
+              <button style={{ background: 'none', border: '1px solid ' + C.red + '44', borderRadius: 10, padding: 14, color: C.red, fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>⚠ Delete Account</button>
+            </div>
+          </div>
+        )}
+        {tab === 'notifications' && (
+          <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: '0 16px' }}>
+            {ToggleRow('Gem Alerts', notifications.gems, function() { toggle(notifications, setNotifications, 'gems'); }, 'When someone sends you gems')}
+            {ToggleRow('Go Live Alerts', notifications.live, function() { toggle(notifications, setNotifications, 'live'); }, 'When creators you follow go live')}
+            {ToggleRow('Battle Challenges', notifications.battles, function() { toggle(notifications, setNotifications, 'battles'); }, 'PK Battle challenges and results')}
+            {ToggleRow('Payout Notifications', notifications.payouts, function() { toggle(notifications, setNotifications, 'payouts'); }, 'When payouts are processed')}
+            {ToggleRow('Direct Messages', notifications.messages, function() { toggle(notifications, setNotifications, 'messages'); }, 'New DMs from creators')}
+            {ToggleRow('Tournament Updates', notifications.tournament, function() { toggle(notifications, setNotifications, 'tournament'); }, 'Washington Classic brackets and results')}
+          </div>
+        )}
+        {tab === 'privacy' && (
+          <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: '0 16px' }}>
+            {ToggleRow('Public Profile', privacy.publicProfile, function() { toggle(privacy, setPrivacy, 'publicProfile'); }, 'Allow anyone to view your profile')}
+            {ToggleRow('Show Stats', privacy.showStats, function() { toggle(privacy, setPrivacy, 'showStats'); }, 'Display your win/loss record publicly')}
+            {ToggleRow('Show Earnings', privacy.showEarnings, function() { toggle(privacy, setPrivacy, 'showEarnings'); }, 'Display gem earnings on leaderboard')}
+            {ToggleRow('Allow DMs', privacy.allowDMs, function() { toggle(privacy, setPrivacy, 'allowDMs'); }, 'Let other creators message you')}
+          </div>
+        )}
+        {tab === 'streaming' && (
+          <div>
+            {[{ label: 'RTMP Ingest', value: 'rtmp://ingest.seewhylive.online:1935/live' },{ label: 'Stream Key Format', value: 'swany:sw3_YOURKEY' },{ label: 'HLS Endpoint', value: 'https://seewhylive.online/hls' },{ label: 'VDO.Ninja Room', value: 'sw_thrrj4' }].map(function(item, i) { return (
+              <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+                <div style={{ fontSize: 10, color: C.muted, marginBottom: 6 }}>{item.label}</div>
+                <div style={{ fontSize: 12, color: C.cyan, fontFamily: "'IBM Plex Mono',monospace", wordBreak: 'break-all' }}>{item.value}</div>
+              </div>
+            );})}
+            <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid ' + C.gold + '33', borderRadius: 10, padding: 14, marginTop: 4 }}>
+              <div style={{ fontSize: 11, color: C.muted }}>Use OBS, Streamlabs, or any RTMP-compatible software. Set video to 1080p 30fps, bitrate 4000–6000 kbps.</div>
+            </div>
+          </div>
+        )}
+        {tab === 'legal' && (
+          <div>
+            {[{ title: 'Terms of Service', sub: 'Last updated Jan 2025' },{ title: 'Privacy Policy', sub: 'Last updated Jan 2025' },{ title: 'Creator Agreement', sub: 'Includes 90/10 revenue split terms' },{ title: 'DMCA Policy', sub: 'Content takedown procedures' }].map(function(doc, i) { return (
+              <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                <div>
+                  <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{doc.title}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{doc.sub}</div>
+                </div>
+                <span style={{ color: C.gold, fontSize: 16 }}>→</span>
+              </div>
+            );})}
+            <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: C.muted }}>SwanyThree Entertainment Technology LLC · Des Moines, WA · Age 21+ to create, 18+ to view.</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StreamKeysPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [revealed, setRevealed] = React.useState({});
+  var keys = [
+    { id: 'main', label: 'PRIMARY STREAM KEY', key: 'sw3_a8f2k9x1m4p7', platform: 'SeeWhy LIVE' },
+    { id: 'yt', label: 'YOUTUBE RTMP KEY', key: 'xxxx-xxxx-xxxx-xxxx', platform: 'YouTube' },
+    { id: 'twitch', label: 'TWITCH STREAM KEY', key: 'live_xxxxxxxxxxxxxxxxxx', platform: 'Twitch' },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 14px', borderBottom: '1px solid #222' }}>
+        <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'settings' }); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 16, cursor: 'pointer', marginBottom: 8 }}>← BACK</button>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold }}>STREAM KEYS</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Keep these secret — never share publicly</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'rgba(255,68,68,0.08)', border: '1px solid ' + C.red + '44', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: C.red }}>⚠ Never share your stream keys. Anyone with your key can stream to your channel.</div>
+        </div>
+        {keys.map(function(k) { return (
+          <div key={k.id} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginBottom: 12 }}>
+            <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>{k.label}</div>
+            <div style={{ fontSize: 11, color: C.gold, marginBottom: 8 }}>{k.platform}</div>
+            <div style={{ background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, color: revealed[k.id] ? C.cyan : '#555', marginBottom: 10, wordBreak: 'break-all' }}>{revealed[k.id] ? k.key : '••••••••••••••••••••'}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() { setRevealed(function(r) { var n = Object.assign({}, r); n[k.id] = !n[k.id]; return n; }); }} style={{ flex: 1, background: 'none', border: '1px solid #444', borderRadius: 8, padding: 10, color: C.muted, fontSize: 12, cursor: 'pointer' }}>{revealed[k.id] ? 'HIDE' : 'REVEAL'}</button>
+              <button style={{ flex: 1, background: C.burgundy, border: 'none', borderRadius: 8, padding: 10, color: C.white, fontSize: 12, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>COPY</button>
+              <button style={{ flex: 1, background: 'none', border: '1px solid ' + C.red + '44', borderRadius: 8, padding: 10, color: C.red, fontSize: 12, cursor: 'pointer' }}>RESET</button>
+            </div>
+          </div>
+        );})}
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 16, marginTop: 4 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10 }}>RTMP INGEST</div>
+          <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>Server URL</div>
+          <div style={{ background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: C.cyan }}>rtmp://ingest.seewhylive.online:1935/live</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PayoutSetupV2({ state, dispatch }) {
+  var C = COLORS;
+  var [method, setMethod] = React.useState('stripe');
+  var [tab, setTab] = React.useState('overview');
+  var payouts = [
+    { date: 'Jun 1, 2026', amount: 284.50, status: 'processed', method: 'Stripe' },
+    { date: 'May 15, 2026', amount: 198.20, status: 'processed', method: 'Stripe' },
+    { date: 'May 1, 2026', amount: 142.80, status: 'processed', method: 'Stripe' },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 0', borderBottom: '1px solid #222' }}>
+        <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'settings' }); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 16, cursor: 'pointer', marginBottom: 8 }}>← BACK</button>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, marginBottom: 10 }}>PAYOUT SETUP</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['overview','history','setup'].map(function(t) { return (
+            <button key={t} onClick={function() { setTab(t); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 4px', color: tab === t ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {tab === 'overview' && (
+          <div>
+            <div style={{ background: 'linear-gradient(135deg,rgba(201,168,76,0.12),rgba(0,0,0,0))', border: '1px solid ' + C.gold + '44', borderRadius: 14, padding: 20, marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>AVAILABLE BALANCE</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 52, color: C.gold, lineHeight: 1 }}>$248.30</div>
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>Next automatic payout: Jun 15, 2026</div>
+              <button style={{ marginTop: 14, width: '100%', background: C.gold, border: 'none', borderRadius: 10, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>REQUEST PAYOUT NOW</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {[['TOTAL EARNED', '$3,820.00', C.gold],['TOTAL PAID', '$3,571.70', C.green],['PLATFORM FEE', '$382.00', C.muted],['YOUR SPLIT', '90%', C.green]].map(function(item, i) { return (
+                <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+                  <div style={{ fontSize: 9, color: C.muted, marginBottom: 4 }}>{item[0]}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: item[2] }}>{item[1]}</div>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {tab === 'history' && (
+          <div>
+            {payouts.map(function(p, i) { return (
+              <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>${p.amount.toFixed(2)}</div>
+                  <div style={{ fontSize: 11, color: C.muted }}>{p.date} · {p.method}</div>
+                </div>
+                <div style={{ background: C.green + '22', border: '1px solid ' + C.green + '44', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: C.green, fontFamily: "'Bebas Neue',sans-serif" }}>{p.status.toUpperCase()}</div>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'setup' && (
+          <div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>Choose your payout method. Minimum payout is $25.00.</div>
+            {[{ id: 'stripe', label: 'Stripe Connect', sub: 'Instant to bank account', icon: '💳' },{ id: 'cashapp', label: 'Cash App', sub: '$SwanyThree', icon: '💰' },{ id: 'paypal', label: 'PayPal', sub: 'Standard 3-5 business days', icon: '🅿' }].map(function(m) { return (
+              <div key={m.id} onClick={function() { setMethod(m.id); }} style={{ background: method === m.id ? 'rgba(201,168,76,0.1)' : C.slate, border: '2px solid ' + (method === m.id ? C.gold : '#2a2a2a'), borderRadius: 10, padding: 14, marginBottom: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 24 }}>{m.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: method === m.id ? C.gold : C.white, fontWeight: 700, fontSize: 14 }}>{m.label}</div>
+                  <div style={{ fontSize: 11, color: C.muted }}>{m.sub}</div>
+                </div>
+                {method === m.id && <span style={{ color: C.gold }}>✓</span>}
+              </div>
+            );})}
+            <button style={{ width: '100%', background: C.gold, border: 'none', borderRadius: 10, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', marginTop: 10 }}>SAVE PAYOUT METHOD</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -3132,6 +4928,28 @@ export default function App() {
       {page === 'captions' && <CaptionStudioPage state={state} dispatch={dispatch} />}
       {page === 'greenroom' && <GreenRoomPage state={state} dispatch={dispatch} />}
       {page === 'broadcast' && <BroadcastHubPageV2 state={state} dispatch={dispatch} />}
+        {page === 'domino' && <DominoHubPageV2 state={state} dispatch={dispatch} />}
+        {page === 'community' && <CommunityHubPageV2 state={state} dispatch={dispatch} />}
+        {page === 'notifications' && <NotificationsCenterV2 state={state} dispatch={dispatch} />}
+        {page === 'messages' && <DirectMessagesV2 state={state} dispatch={dispatch} />}
+        {page === 'appearance' && <ThemeToggleV2 state={state} dispatch={dispatch} />}
+        {page === 'customize' && <ProfileCustomizerV2 state={state} dispatch={dispatch} />}
+        {page === 'vods' && <VODLibraryV2 state={state} dispatch={dispatch} />}
+        {page === 'onboarding' && <OnboardingWizardV2 state={state} dispatch={dispatch} />}
+        {page === 'aihub' && <AIHubPageV2 state={state} dispatch={dispatch} />}
+        {page === 'joyce' && <JoyceAIPageV2 state={state} dispatch={dispatch} />}
+        {page === 'aura' && <AuraAIPageV2 state={state} dispatch={dispatch} />}
+        {page === 'swanybot' && <SwanyBotPageV2 state={state} dispatch={dispatch} />}
+        {page === 'guardian' && <GuardianAIPageV2 state={state} dispatch={dispatch} />}
+        {page === 'pkbattle' && <PKBattleLobbyV2 state={state} dispatch={dispatch} />}
+        {page === 'pkchallenge' && <PKChallengeFlowV2 state={state} dispatch={dispatch} />}
+        {page === 'pkwatch' && <PKWatchRoomV2 state={state} dispatch={dispatch} />}
+        {page === 'creatordash' && <CreatorDashboardV2 state={state} dispatch={dispatch} />}
+        {page === 'analytics' && <AnalyticsDashboardV2 state={state} dispatch={dispatch} />}
+        {page === 'goals' && <GoalTrackerV2 state={state} dispatch={dispatch} />}
+        {page === 'settings' && <SettingsPageV2 state={state} dispatch={dispatch} />}
+        {page === 'streamkeys' && <StreamKeysPageV2 state={state} dispatch={dispatch} />}
+        {page === 'payoutsetup' && <PayoutSetupV2 state={state} dispatch={dispatch} />}
       {page === 'monetize' && <MonetizationHubPageV2 state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
