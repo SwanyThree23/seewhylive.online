@@ -229,6 +229,8 @@ if (giftCount.c === 0) {
 var app    = express();
 var server = createServer(app);
 app.set('trust proxy', 1);
+app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
+app.get('*', function(req, res) { res.sendFile(require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html')); });
 
 // Stripe webhook needs raw body - register BEFORE express.json()
 app.post(
