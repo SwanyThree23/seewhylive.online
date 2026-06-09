@@ -1326,7 +1326,65 @@ function WalletPage(props) {
             <div style={{ color: C.muted, fontSize: 11, textAlign: 'center', marginTop: 10 }}>Last payout: {wallet.lastPayoutDate}</div>
           </div>
         )}
-        {tab === 'history' && (
+        {tab === 'shop' && (
+      <div style={{ paddingBottom: 20 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>BUY GEMS</div>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 16 }}>1 Gem = $0.10 USD · 90% goes to creators</div>
+        {[
+          { gems: 50, price: 4.99, bonus: 0, label: 'Starter' },
+          { gems: 100, price: 9.99, bonus: 10, label: 'Popular' },
+          { gems: 250, price: 22.99, bonus: 30, label: 'Value' },
+          { gems: 500, price: 42.99, bonus: 75, label: 'Pro' },
+          { gems: 1000, price: 79.99, bonus: 200, label: 'Elite' },
+        ].map(function(pkg, i) { return (
+          <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid ' + (pkg.label === 'Popular' ? C.gold : 'rgba(255,255,255,0.08)'), borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#FFD700' }}>{pkg.gems}{pkg.bonus > 0 ? ' +' + pkg.bonus : ''} 💎</span>
+                {pkg.label === 'Popular' && <span style={{ background: C.gold, color: '#000', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>BEST VALUE</span>}
+              </div>
+              {pkg.bonus > 0 && <div style={{ fontSize: 10, color: '#00FF88', marginTop: 2 }}>+{pkg.bonus} bonus gems</div>}
+            </div>
+            <button style={{ background: C.burgundy, border: 'none', borderRadius: 8, padding: '8px 16px', color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>${pkg.price.toFixed(2)}</button>
+          </div>
+        );})}
+        <div style={{ fontSize: 10, color: '#444', textAlign: 'center', marginTop: 8 }}>Payments processed securely · Gems non-refundable</div>
+      </div>
+    ),
+    tab === 'send' && (
+      <div style={{ paddingBottom: 20 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>SEND GEMS</div>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 16 }}>Gift gems to your favorite creators</div>
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: 16, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>YOUR BALANCE</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FFD700', marginBottom: 16 }}>{gems} 💎</div>
+          <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>SEND TO</div>
+          <input placeholder="@creator handle..." style={{ width: '100%', background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', marginBottom: 12 }} />
+          <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>AMOUNT</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            {[10, 25, 50, 100, 250].map(function(amt) { return (
+              <button key={amt} style={{ flex: 1, background: '#1a1a2a', border: '1px solid #333', borderRadius: 6, padding: '8px 4px', color: C.gold, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{amt}💎</button>
+            );})}
+          </div>
+          <button style={{ width: '100%', background: C.burgundy, border: 'none', borderRadius: 10, padding: 14, color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>SEND GEMS</button>
+        </div>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#888', marginBottom: 10, letterSpacing: 1 }}>TOP CREATORS</div>
+        {[
+          { name: 'SwanyThree23', gems: 4821, live: true },
+          { name: 'CaliBone22', gems: 2103, live: true },
+          { name: 'VibeNBones', gems: 1892, live: false },
+        ].map(function(c, i) { return (
+          <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '10px 14px', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: C.white, fontWeight: 700, fontSize: 13 }}>@{c.name}{c.live ? ' 🔴' : ''}</div>
+              <div style={{ color: '#666', fontSize: 10 }}>{c.gems.toLocaleString()} gems received</div>
+            </div>
+            <button style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid ' + C.gold, borderRadius: 8, padding: '6px 14px', color: C.gold, fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>💎 GIFT</button>
+          </div>
+        );})}
+      </div>
+    ),
+    tab === 'history' && (
           <div>
             {[
               { type: 'tip', from: 'JoyceM_LLC', amount: 25, ts: tsNow() - 120000 },
@@ -1987,6 +2045,73 @@ function HomePage(props) {
         )}
       </div>
 
+      {/* Trending Creators */}
+      <div style={{ padding: '0 14px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2 }}>TRENDING CREATORS</span>
+          <span style={{ color: C.gold, fontSize: 11, cursor: 'pointer' }}>SEE ALL</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6 }}>
+          {[
+            { name: 'SwanyThree23', gems: 4821, live: true, fm: true },
+            { name: 'CaliBone22', gems: 2103, live: true, fm: false },
+            { name: 'VibeNBones', gems: 1892, live: false, fm: true },
+            { name: 'AIversePod', gems: 1540, live: false, fm: false },
+            { name: 'DominoKing_WA', gems: 1203, live: true, fm: true },
+          ].map(function(c) { return (
+            <div key={c.name} style={{ flexShrink: 0, textAlign: 'center', cursor: 'pointer' }}>
+              <div style={{ position: 'relative', marginBottom: 6 }}>
+                <Avatar name={c.name} size={52} isFM={c.fm} />
+                {c.live && <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', background: C.red, color: '#fff', fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 4 }}>LIVE</div>}
+              </div>
+              <div style={{ fontSize: 10, color: C.white, fontWeight: 700, maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+              <div style={{ fontSize: 9, color: C.gold }}>{fmtK(c.gems)} 💎</div>
+            </div>
+          );})}
+        </div>
+      </div>
+
+      {/* Community Feed */}
+      <div style={{ padding: '0 14px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2 }}>COMMUNITY</span>
+          <span style={{ color: C.gold, fontSize: 11 }}>TECHMUNITY</span>
+        </div>
+        {[
+          { user: 'SwanyThree23', fm: true, action: 'went LIVE', detail: 'Washington Classic 2026 Finals', time: '2m ago', type: 'live' },
+          { user: 'CaliBone22', fm: false, action: 'won a PK Battle', detail: 'vs VibeNBones +250 Gems', time: '14m ago', type: 'battle' },
+          { user: 'DominoKing_WA', fm: true, action: 'joined State VS State', detail: 'Washington Team Rank #1', time: '31m ago', type: 'svs' },
+          { user: 'AIversePod', fm: false, action: 'dropped a VOD', detail: 'AIverse Podcast Ep. 43', time: '1h ago', type: 'vod' },
+          { user: 'VibeNBones', fm: true, action: 'hit a new milestone', detail: '10,000 Gems earned', time: '2h ago', type: 'gem' },
+        ].map(function(item, i) {
+          var icons = { live: '🔴', battle: 'X', svs: '🏆', vod: '📼', gem: '💎' };
+          return (
+            <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: '10px 12px', marginBottom: 8, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{icons[item.type]}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: C.white }}>
+                  <span style={{ fontWeight: 700, color: item.fm ? C.gold : C.white }}>{item.user}</span>
+                  {' '}<span style={{ color: C.muted }}>{item.action}</span>
+                </div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{item.detail}</div>
+              </div>
+              <div style={{ fontSize: 10, color: C.muted, flexShrink: 0 }}>{item.time}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Featured Event */}
+      <div style={{ margin: '0 14px 16px', background: 'linear-gradient(135deg,' + C.burgundy + ',#1a0a1a)', border: '1px solid ' + C.gold + '44', borderRadius: 14, padding: 16 }}>
+        <div style={{ fontSize: 10, color: C.gold, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 2, marginBottom: 4 }}>FEATURED EVENT</div>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.white, marginBottom: 4 }}>WASHINGTON CLASSIC 2026</div>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 12 }}>7 Rock · Double Elimination · $50K Prize Pool · Jamar's Sports Bar</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'battles' }); }} style={{ flex: 1, background: C.gold, border: 'none', borderRadius: 8, padding: 10, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>VIEW BRACKET</button>
+          <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'live' }); }} style={{ flex: 1, background: C.burgundy, border: '1px solid ' + C.gold, borderRadius: 8, padding: 10, color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>WATCH LIVE</button>
+        </div>
+      </div>
+
       {/* Quick actions */}
       <div style={{ padding: '16px 14px 0' }}>
         <div style={{ color: C.white, fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, letterSpacing: 2, marginBottom: 12 }}>CREATOR TOOLS</div>
@@ -2539,6 +2664,14 @@ export default function App() {
       {page === 'home' && <HomePage state={state} dispatch={dispatch} />}
       {page === 'live' && <LiveRoom state={state} dispatch={dispatch} />}
       {page === 'battles' && <BattlesPage state={state} dispatch={dispatch} />}
+      {page === 'watchparty' && <WatchPartyPage state={state} dispatch={dispatch} />}
+      {page === 'vods' && <VODLibraryPage state={state} dispatch={dispatch} />}
+      {page === 'overlay' && <OverlayBuilderPage state={state} dispatch={dispatch} />}
+      {page === 'clips' && <ClipEditorPage state={state} dispatch={dispatch} />}
+      {page === 'podcast' && <PodcastStudioPage state={state} dispatch={dispatch} />}
+      {page === 'multistream' && <MultiStreamPage state={state} dispatch={dispatch} />}
+      {page === 'captions' && <CaptionStudioPage state={state} dispatch={dispatch} />}
+      {page === 'greenroom' && <GreenRoomPage state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
       {/* Global modals */}
