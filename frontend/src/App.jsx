@@ -2120,6 +2120,8 @@ function HomePage(props) {
             { icon: '🚀', label: 'Go Live', action: function() { dispatch({ type: 'SET_PAGE', payload: 'live' }); } },
             { icon: '📊', label: 'Analytics', action: function() { dispatch({ type: 'SET_PAGE', payload: 'analytics' }); } },
             { icon: '💳', label: 'Wallet', action: function() { dispatch({ type: 'SET_PAGE', payload: 'wallet' }); } },
+    { icon: '📡', label: 'Broadcast', action: function() { dispatch({ type: 'SET_PAGE', payload: 'broadcast' }); } },
+    { icon: '💰', label: 'Monetize', action: function() { dispatch({ type: 'SET_PAGE', payload: 'monetize' }); } },
             { icon: '📅', label: 'Schedule', action: function() { dispatch({ type: 'SET_PAGE', payload: 'schedule' }); } },
           ].map(function(tool) {
             return (
@@ -2608,6 +2610,463 @@ function InjectStyles() {
 }
 
 // ─── ROOT APP ─────────────────────────────────────────────────────────────────
+
+// ============================================================
+// v48 LIVESTREAM & BROADCAST
+// ============================================================
+function StreamHealthV2({ state, dispatch }) {
+  var C = COLORS;
+  var [health, setHealth] = React.useState({ bitrate: 4823, dropped: 0.2, latency: 180, viewers: 342, uptime: 3720 });
+  React.useEffect(function() {
+    var t = setInterval(function() {
+      setHealth(function(h) { return Object.assign({}, h, { bitrate: 4600 + Math.floor(Math.random()*600), viewers: h.viewers + Math.floor(Math.random()*3)-1, dropped: Math.round((Math.random()*0.8)*10)/10 }); });
+    }, 3000);
+    return function() { clearInterval(t); };
+  }, []);
+  function statusColor(v, good, warn) { return v <= good ? C.green : v <= warn ? C.orange : C.red; }
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>STREAM HEALTH</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Live broadcast monitor</div>
+      </div>
+      <div style={{ padding: '14px 14px 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+          {[
+            { label: 'BITRATE', value: health.bitrate + ' kbps', color: statusColor(health.bitrate < 3000 ? 1 : 0, 0, 1) },
+            { label: 'DROPPED FRAMES', value: health.dropped + '%', color: statusColor(health.dropped, 0.5, 2) },
+            { label: 'LATENCY', value: health.latency + ' ms', color: statusColor(health.latency, 200, 500) },
+            { label: 'VIEWERS', value: health.viewers, color: C.gold },
+          ].map(function(m, i) { return (
+            <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>{m.label}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: m.color }}>{m.value}</div>
+            </div>
+          );})}
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 8, letterSpacing: 1 }}>STREAM UPTIME</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: C.green }}>{Math.floor(health.uptime/3600)}h {Math.floor((health.uptime%3600)/60)}m {health.uptime%60}s</div>
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 10, letterSpacing: 1 }}>RTMP INGEST</div>
+          <div style={{ fontSize: 10, color: C.green, fontFamily: "'Space Mono',monospace", marginBottom: 6, wordBreak: 'break-all' }}>rtmp://ingest.seewhylive.online:1935/live</div>
+          <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>STREAM KEY</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 6, padding: '8px 10px', fontSize: 11, color: C.gold, fontFamily: "'Space Mono',monospace", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>swny-live-••••••••••••</div>
+            <button style={{ background: C.burgundy, border: 'none', borderRadius: 6, padding: '8px 14px', color: C.white, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>COPY</button>
+            <button style={{ background: '#1a1a2a', border: '1px solid #444', borderRadius: 6, padding: '8px 14px', color: C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>REGEN</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FanoutManagerV2({ state, dispatch }) {
+  var C = COLORS;
+  var [platforms, setPlatforms] = React.useState([
+    { id: 'youtube', name: 'YouTube', icon: '▶', active: true, viewers: 128, key: '' },
+    { id: 'twitch', name: 'Twitch', icon: '📡', active: true, viewers: 94, key: '' },
+    { id: 'facebook', name: 'Facebook', icon: '📘', active: false, viewers: 0, key: '' },
+    { id: 'tiktok', name: 'TikTok', icon: '🎵', active: false, viewers: 0, key: '' },
+    { id: 'x', name: 'X / Twitter', icon: '✖', active: false, viewers: 0, key: '' },
+  ]);
+  function toggle(id) {
+    setPlatforms(function(prev) { return prev.map(function(p) { return p.id === id ? Object.assign({}, p, { active: !p.active }) : p; }); });
+  }
+  var totalViewers = platforms.reduce(function(a, p) { return a + (p.active ? p.viewers : 0); }, 0) + 342;
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>MULTI-PLATFORM FANOUT</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Total reach: <span style={{ color: C.gold, fontWeight: 700 }}>{totalViewers} viewers</span></div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'rgba(0,255,136,0.06)', border: '1px solid ' + C.green + '44', borderRadius: 10, padding: 12, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.green }}></div>
+          <div style={{ fontSize: 12, color: C.green }}>SeeWhy LIVE broadcasting · RTMP active</div>
+        </div>
+        {platforms.map(function(p) { return (
+          <div key={p.id} style={{ background: C.slate, border: '1px solid ' + (p.active ? C.gold + '44' : '#222'), borderRadius: 10, padding: 14, marginBottom: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: p.active ? 10 : 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 20 }}>{p.icon}</span>
+                <div>
+                  <div style={{ color: C.white, fontWeight: 700, fontSize: 13 }}>{p.name}</div>
+                  {p.active && <div style={{ fontSize: 10, color: C.green }}>{p.viewers} viewers</div>}
+                </div>
+              </div>
+              <div onClick={function() { toggle(p.id); }} style={{ width: 44, height: 24, borderRadius: 12, background: p.active ? C.gold : '#333', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+                <div style={{ position: 'absolute', top: 2, left: p.active ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }}></div>
+              </div>
+            </div>
+            {p.active && (
+              <input placeholder="RTMP stream key..." style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 6, padding: '8px 10px', color: C.white, fontSize: 11, boxSizing: 'border-box', fontFamily: "'Space Mono',monospace" }} />
+            )}
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function SceneSwitcherV2({ state, dispatch }) {
+  var C = COLORS;
+  var [activeScene, setActiveScene] = React.useState('cam');
+  var [isLive, setIsLive] = React.useState(false);
+  var scenes = [
+    { id: 'cam', label: 'MAIN CAM', icon: '🎥', color: C.gold },
+    { id: 'screen', label: 'SCREEN SHARE', icon: '🖥', color: C.cyan },
+    { id: 'overlay', label: 'OVERLAY', icon: '🎨', color: C.burgundy },
+    { id: 'intermission', label: 'BRB / INTERMISSION', icon: '⏸', color: '#666' },
+    { id: 'starting', label: 'STARTING SOON', icon: '⏳', color: C.green },
+    { id: 'ending', label: 'STREAM ENDED', icon: '🏁', color: C.red },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>SCENE SWITCHER</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Virtual broadcast control room</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: '#000', border: '2px solid ' + (isLive ? C.red : '#333'), borderRadius: 12, aspectRatio: '16/9', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>{scenes.find(function(s) { return s.id === activeScene; }).icon}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.white }}>{scenes.find(function(s) { return s.id === activeScene; }).label}</div>
+          </div>
+          {isLive && <div style={{ position: 'absolute', top: 10, left: 10, background: C.red, color: '#fff', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 4 }}>● LIVE</div>}
+        </div>
+        <button onClick={function() { setIsLive(function(v) { return !v; }); }} style={{ width: '100%', background: isLive ? C.red : C.green, border: 'none', borderRadius: 10, padding: 14, color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, cursor: 'pointer', marginBottom: 14 }}>{isLive ? '⏹ END STREAM' : '● GO LIVE'}</button>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {scenes.map(function(s) { return (
+            <div key={s.id} onClick={function() { setActiveScene(s.id); }} style={{ background: activeScene === s.id ? 'rgba(201,168,76,0.15)' : C.slate, border: '2px solid ' + (activeScene === s.id ? C.gold : '#2a2a2a'), borderRadius: 10, padding: 14, textAlign: 'center', cursor: 'pointer' }}>
+              <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
+              <div style={{ fontSize: 10, color: activeScene === s.id ? C.gold : C.muted, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 1 }}>{s.label}</div>
+            </div>
+          );})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StreamSchedulerV2({ state, dispatch }) {
+  var C = COLORS;
+  var [scheduled, setScheduled] = React.useState([
+    { title: 'Washington Classic 2026 Finals', date: '2026-06-15', time: '18:00', type: 'tournament', viewers: 0 },
+    { title: 'SwanyThree23 Sunday Dominos', date: '2026-06-09', time: '20:00', type: 'casual', viewers: 0 },
+  ]);
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>STREAM SCHEDULER</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Plan and promote upcoming streams</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid ' + C.gold + '44', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>SCHEDULE NEW STREAM</div>
+          <input placeholder="Stream title..." style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+            <input type="date" style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+            <input type="time" style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+          </div>
+          <button style={{ width: '100%', background: C.burgundy, border: 'none', borderRadius: 8, padding: 12, color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>SCHEDULE STREAM</button>
+        </div>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#888', marginBottom: 10, letterSpacing: 1 }}>UPCOMING STREAMS</div>
+        {scheduled.map(function(s, i) { return (
+          <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: C.white, fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{s.title}</div>
+                <div style={{ fontSize: 11, color: C.gold }}>{s.date} · {s.time}</div>
+              </div>
+              <span style={{ background: s.type === 'tournament' ? C.burgundy : '#1a2a1a', border: '1px solid ' + (s.type === 'tournament' ? C.gold : C.green), borderRadius: 6, padding: '3px 8px', fontSize: 9, color: s.type === 'tournament' ? C.gold : C.green, fontFamily: "'Bebas Neue',sans-serif" }}>{s.type.toUpperCase()}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <button style={{ flex: 1, background: C.gold, border: 'none', borderRadius: 6, padding: 8, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>SHARE</button>
+              <button style={{ flex: 1, background: '#1a1a2a', border: '1px solid #444', borderRadius: 6, padding: 8, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>EDIT</button>
+              <button style={{ flex: 1, background: C.red + '22', border: '1px solid ' + C.red + '44', borderRadius: 6, padding: 8, color: C.red, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>CANCEL</button>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function ChatModerationV2({ state, dispatch }) {
+  var C = COLORS;
+  var [slowMode, setSlowMode] = React.useState(false);
+  var [subOnly, setSubOnly] = React.useState(false);
+  var [followOnly, setFollowOnly] = React.useState(false);
+  var [keywords, setKeywords] = React.useState(['spam', 'hate', 'bot']);
+  var [newKw, setNewKw] = React.useState('');
+  var [banned, setBanned] = React.useState(['TrollUser99', 'SpamBot42']);
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>CHAT MODERATION</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Guardian AI + manual controls</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {[
+          { label: 'SLOW MODE', sub: '30s between messages', val: slowMode, set: setSlowMode },
+          { label: 'SUBSCRIBERS ONLY', sub: 'FM members only', val: subOnly, set: setSubOnly },
+          { label: 'FOLLOWERS ONLY', sub: 'Must follow to chat', val: followOnly, set: setFollowOnly },
+        ].map(function(ctrl, i) { return (
+          <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ color: C.white, fontWeight: 700, fontSize: 13 }}>{ctrl.label}</div>
+              <div style={{ fontSize: 10, color: C.muted }}>{ctrl.sub}</div>
+            </div>
+            <div onClick={function() { ctrl.set(function(v) { return !v; }); }} style={{ width: 44, height: 24, borderRadius: 12, background: ctrl.val ? C.gold : '#333', cursor: 'pointer', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 2, left: ctrl.val ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }}></div>
+            </div>
+          </div>
+        );})}
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10, letterSpacing: 1 }}>BLOCKED KEYWORDS</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+            {keywords.map(function(kw, i) { return (
+              <span key={i} style={{ background: C.red + '22', border: '1px solid ' + C.red + '44', borderRadius: 20, padding: '4px 10px', fontSize: 11, color: C.red, cursor: 'pointer' }} onClick={function() { setKeywords(function(k) { return k.filter(function(x) { return x !== kw; }); }); }}>{kw} ✕</span>
+            );})}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input value={newKw} onChange={function(e) { setNewKw(e.target.value); }} placeholder="Add keyword..." style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 6, padding: '8px 10px', color: C.white, fontSize: 12 }} />
+            <button onClick={function() { if (newKw.trim()) { setKeywords(function(k) { return k.concat([newKw.trim()]); }); setNewKw(''); } }} style={{ background: C.burgundy, border: 'none', borderRadius: 6, padding: '8px 14px', color: C.white, fontSize: 12, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>ADD</button>
+          </div>
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.red, marginBottom: 10, letterSpacing: 1 }}>BANNED USERS</div>
+          {banned.map(function(u, i) { return (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < banned.length-1 ? '1px solid #222' : 'none' }}>
+              <span style={{ color: C.white, fontSize: 13 }}>@{u}</span>
+              <button onClick={function() { setBanned(function(b) { return b.filter(function(x) { return x !== u; }); }); }} style={{ background: 'none', border: '1px solid #444', borderRadius: 6, padding: '4px 10px', color: C.muted, fontSize: 11, cursor: 'pointer' }}>UNBAN</button>
+            </div>
+          );})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// v48 SAAS & MONETIZATION
+// ============================================================
+function CreatorPlansV2({ state, dispatch }) {
+  var C = COLORS;
+  var plans = [
+    { name: 'FREE', price: 0, color: '#666', features: ['Basic streaming', '720p max', 'SeeWhy chat', '1 platform fanout', 'Standard support'] },
+    { name: 'PRO', price: 19.99, color: C.gold, features: ['1080p streaming', '3 platform fanout', 'Gem monetization', 'Analytics dashboard', 'Scene switcher', 'Priority support'] },
+    { name: 'ELITE', price: 49.99, color: C.cyan, features: ['4K streaming', 'Unlimited fanout', 'PPV & ticketing', 'AI co-host (AURA)', 'White-label stream', 'Dedicated manager'] },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>CREATOR PLANS</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Choose your SeeWhy LIVE tier</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        {plans.map(function(plan, i) { return (
+          <div key={i} style={{ background: i === 1 ? 'linear-gradient(135deg,rgba(201,168,76,0.1),rgba(139,0,0,0.1))' : C.slate, border: '2px solid ' + (i === 1 ? C.gold : '#2a2a2a'), borderRadius: 14, padding: 18, marginBottom: 14 }}>
+            {i === 1 && <div style={{ background: C.gold, color: '#000', fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, display: 'inline-block', marginBottom: 10, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 1 }}>MOST POPULAR</div>}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: plan.color, letterSpacing: 2 }}>{plan.name}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: C.white }}>{plan.price === 0 ? 'FREE' : '$' + plan.price}<span style={{ fontSize: 14, color: C.muted }}>{plan.price > 0 ? '/mo' : ''}</span></div>
+              </div>
+            </div>
+            {plan.features.map(function(f, j) { return (
+              <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ color: plan.color, fontSize: 12 }}>✓</span>
+                <span style={{ color: C.white, fontSize: 12 }}>{f}</span>
+              </div>
+            );})}
+            <button style={{ width: '100%', background: i === 1 ? C.gold : i === 2 ? C.cyan : '#333', border: 'none', borderRadius: 10, padding: 12, color: i === 1 ? '#000' : C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer', marginTop: 14 }}>{i === 0 ? 'CURRENT PLAN' : 'UPGRADE NOW'}</button>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function PPVManagerV2({ state, dispatch }) {
+  var C = COLORS;
+  var [events, setEvents] = React.useState([
+    { title: 'Washington Classic 2026 Finals', price: 9.99, date: '2026-06-15', sold: 847, live: false },
+    { title: 'Elite 7-Rock Invitational', price: 14.99, date: '2026-06-22', sold: 312, live: false },
+  ]);
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>PPV & TICKETING</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Pay-per-view event management</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+          <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>TOTAL TICKETS SOLD</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold }}>1,159</div>
+          </div>
+          <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>PPV REVENUE</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.green }}>$13,421</div>
+          </div>
+        </div>
+        <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid ' + C.gold + '44', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.gold, marginBottom: 12 }}>CREATE PPV EVENT</div>
+          <input placeholder="Event title..." style={{ width: '100%', background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+            <input placeholder="Price ($)" type="number" style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+            <input type="date" style={{ flex: 1, background: '#111', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+          </div>
+          <button style={{ width: '100%', background: C.burgundy, border: 'none', borderRadius: 8, padding: 12, color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>CREATE EVENT</button>
+        </div>
+        {events.map(function(ev, i) { return (
+          <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, marginBottom: 10 }}>
+            <div style={{ color: C.white, fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{ev.title}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: C.gold }}>${ev.price} · {ev.date}</span>
+              <span style={{ fontSize: 11, color: C.green }}>{ev.sold} sold · ${(Math.floor(ev.sold * ev.price * 0.9 * 100) / 100).toFixed(2)} earned</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ flex: 1, background: C.gold, border: 'none', borderRadius: 6, padding: 8, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>MANAGE</button>
+              <button style={{ flex: 1, background: '#1a1a2a', border: '1px solid #444', borderRadius: 6, padding: 8, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>SHARE</button>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function AffiliateV2({ state, dispatch }) {
+  var C = COLORS;
+  var refCode = 'SWANY2026';
+  var stats = { referrals: 47, active: 31, earned: 284.50, pending: 42.00 };
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>AFFILIATE & REFERRALS</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Earn 10% of referred creator revenue</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'linear-gradient(135deg,' + C.burgundy + ',#1a0a2a)', border: '1px solid ' + C.gold + '44', borderRadius: 14, padding: 18, marginBottom: 14, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 6 }}>YOUR REFERRAL CODE</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, color: C.gold, letterSpacing: 4, marginBottom: 10 }}>{refCode}</div>
+          <div style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>seewhylive.online/join?ref={refCode}</div>
+          <button style={{ background: C.gold, border: 'none', borderRadius: 8, padding: '10px 24px', color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>COPY LINK</button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+          {[
+            { label: 'TOTAL REFERRALS', value: stats.referrals, color: C.white },
+            { label: 'ACTIVE CREATORS', value: stats.active, color: C.green },
+            { label: 'TOTAL EARNED', value: '$' + stats.earned.toFixed(2), color: C.gold },
+            { label: 'PENDING', value: '$' + stats.pending.toFixed(2), color: C.orange },
+          ].map(function(s, i) { return (
+            <div key={i} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>{s.label}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: s.color }}>{s.value}</div>
+            </div>
+          );})}
+        </div>
+        <div style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 10, padding: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, marginBottom: 10 }}>HOW IT WORKS</div>
+          {['Share your referral link with creators','They sign up and go live on SeeWhy','You earn 10% of their platform revenue','Paid monthly via Direct Pay'].map(function(step, i) { return (
+            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 10 }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: C.burgundy, color: C.gold, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700 }}>{i+1}</div>
+              <div style={{ fontSize: 12, color: C.white, paddingTop: 2 }}>{step}</div>
+            </div>
+          );})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SponsorMarketV2({ state, dispatch }) {
+  var C = COLORS;
+  var deals = [
+    { brand: 'DominoKing Gear', offer: '$500/stream', type: 'Product Placement', status: 'active' },
+    { brand: 'WestCoast Dominos', offer: '$250/mo', type: 'Banner Sponsor', status: 'pending' },
+    { brand: 'Gem Energy Drink', offer: '$1,200/event', type: 'Title Sponsor', status: 'active' },
+  ];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 12px', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>SPONSOR MARKETPLACE</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Brand deals and sponsorships</div>
+      </div>
+      <div style={{ padding: 14 }}>
+        <div style={{ background: 'rgba(0,255,136,0.06)', border: '1px solid ' + C.green + '33', borderRadius: 10, padding: 14, marginBottom: 14, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>ACTIVE SPONSOR REVENUE</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: C.green }}>$1,750<span style={{ fontSize: 14, color: C.muted }}>/mo</span></div>
+        </div>
+        {deals.map(function(d, i) { return (
+          <div key={i} style={{ background: C.slate, border: '1px solid ' + (d.status === 'active' ? C.green + '44' : C.gold + '33'), borderRadius: 10, padding: 14, marginBottom: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+              <div style={{ color: C.white, fontWeight: 700, fontSize: 14 }}>{d.brand}</div>
+              <span style={{ background: d.status === 'active' ? C.green + '22' : C.gold + '22', border: '1px solid ' + (d.status === 'active' ? C.green : C.gold), borderRadius: 20, padding: '2px 8px', fontSize: 9, color: d.status === 'active' ? C.green : C.gold, fontFamily: "'Bebas Neue',sans-serif" }}>{d.status.toUpperCase()}</span>
+            </div>
+            <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>{d.type}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.gold }}>{d.offer}</div>
+          </div>
+        );})}
+        <button style={{ width: '100%', background: C.burgundy, border: 'none', borderRadius: 10, padding: 14, color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', marginTop: 6 }}>LIST YOUR CHANNEL</button>
+      </div>
+    </div>
+  );
+}
+
+function BroadcastHubPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('health');
+  var tabs = [['health','📡 HEALTH'],['fanout','🔀 FANOUT'],['scenes','🎬 SCENES'],['schedule','📅 SCHEDULE'],['moderation','🛡 MOD']];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 0', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: C.gold, letterSpacing: 2, marginBottom: 12 }}>BROADCAST HUB</div>
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 0 }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 12px', color: tab === t[0] ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'health' && <StreamHealthV2 state={state} dispatch={dispatch} />}
+        {tab === 'fanout' && <FanoutManagerV2 state={state} dispatch={dispatch} />}
+        {tab === 'scenes' && <SceneSwitcherV2 state={state} dispatch={dispatch} />}
+        {tab === 'schedule' && <StreamSchedulerV2 state={state} dispatch={dispatch} />}
+        {tab === 'moderation' && <ChatModerationV2 state={state} dispatch={dispatch} />}
+      </div>
+    </div>
+  );
+}
+
+function MonetizationHubPageV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('plans');
+  var tabs = [['plans','💎 PLANS'],['ppv','🎟 PPV'],['affiliate','🔗 AFFILIATE'],['sponsors','🤝 SPONSORS']];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a0a,#1a0a1a)', padding: '16px 14px 0', borderBottom: '1px solid #222' }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: C.gold, letterSpacing: 2, marginBottom: 12 }}>MONETIZATION HUB</div>
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 0 }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 12px', color: tab === t[0] ? C.gold : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'plans' && <CreatorPlansV2 state={state} dispatch={dispatch} />}
+        {tab === 'ppv' && <PPVManagerV2 state={state} dispatch={dispatch} />}
+        {tab === 'affiliate' && <AffiliateV2 state={state} dispatch={dispatch} />}
+        {tab === 'sponsors' && <SponsorMarketV2 state={state} dispatch={dispatch} />}
+      </div>
+    </div>
+  );
+}
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -2672,6 +3131,8 @@ export default function App() {
       {page === 'multistream' && <MultiStreamPage state={state} dispatch={dispatch} />}
       {page === 'captions' && <CaptionStudioPage state={state} dispatch={dispatch} />}
       {page === 'greenroom' && <GreenRoomPage state={state} dispatch={dispatch} />}
+      {page === 'broadcast' && <BroadcastHubPageV2 state={state} dispatch={dispatch} />}
+      {page === 'monetize' && <MonetizationHubPageV2 state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
       {/* Global modals */}
