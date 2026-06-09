@@ -2,10 +2,10 @@
 // SwanyThree Entertainment Technology LLC · June 7, 2026
 // v45: Complete consolidation — all v43 modals + v44 systems + v45 additions
 // Auth · Onboarding · Multi-user Realtime · Supabase schema-correct wiring
-// Rules: no ?. · no ?? · no localStorage · Math.floor() for money · inline styles only
+// Rules: no ?. · no || · no localStorage · Math.floor() for money · inline styles only
 // CREATOR_SPLIT = 90/10 IMMUTABLE · MAX_PANEL_GUESTS = 20 · PREVIEW_SECONDS = 120
 
-import React, { useState, useEffect, useRef, useReducer, useCallback } from 'react';
+import { useState, useEffect, useRef, useReducer, useCallback } from 'react';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const C = {
@@ -34,12 +34,12 @@ const MAX_VIDEO_SECONDS = 600;
 const MAX_DRIFT_MS = 300;
 const GUARDIAN_AUTOBAN = 0.95;
 const GUARDIAN_WARN = 0.75;
+const GUARDIAN_FLAG = 0.50;
 const CONNECTION_CHECK_INTERVAL = 2000;
 const BASE44_APP_ID = '6990f5f24823b53e21fcdc9d';
 const INGEST_URL = 'rtmp://ingest.seewhylive.online:1935/live';
 const STREAM_KEY_PREFIX = 'sw_6991033b_';
-const SUPABASE_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmeWMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcxMjAxMjQ0NCwiZXhwIjoyMDI3NTg4NDQ0fQ.B7ccAn-f6MOzOAa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+const SUPABASE_URL = 'https://xlrcibziouffgxciecvc.supabase.co';
 
 // Subscription tiers
 const TIERS = {
@@ -91,28 +91,10 @@ function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).
 function appReducer(state, action) {
   switch (action.type) {
     case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
-    case 'SET_STREAMS': return Object.assign({}, state, { streams: action.payload });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
-    case 'SET_CHAT': return Object.assign({}, state, { chatMessages: action.payload });
-    case 'ADD_CHAT': return Object.assign({}, state, { chatMessages: (state.chatMessages || []).concat(action.payload) });
-    case 'SET_IS_LIVE': return Object.assign({}, state, { streams: state.streams.map(function(s) { return s.id === action.payload.id ? Object.assign({}, s, { is_live: action.payload.is_live }) : s; }) });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
     case 'SET_MODAL': return Object.assign({}, state, { modal: action.payload });
-    case 'SIGN_IN_SUCCESS': return Object.assign({}, state, {
-      isSignedIn: true,
-      auth: Object.assign({}, state.auth, { user: action.payload, isSignedIn: true }),
-      currentUser: Object.assign({}, state.currentUser, {
-        id: action.payload.id,
-        username: action.payload.user_metadata ? (action.payload.user_metadata.username || state.currentUser.username) : state.currentUser.username,
-        name: action.payload.user_metadata ? (action.payload.user_metadata.full_name || state.currentUser.name) : state.currentUser.name,
-        avatar_url: action.payload.user_metadata ? (action.payload.user_metadata.avatar_url || null) : null
-      })
-    });
-    case 'SIGN_OUT': return Object.assign({}, state, {
-      isSignedIn: false,
-      auth: { isSignedIn: false, user: null, loading: false, error: null }
-    });
     case 'SET_TOASTS': return Object.assign({}, state, { toasts: action.payload });
     case 'ADD_TOAST': return Object.assign({}, state, { toasts: state.toasts.concat([action.payload]) });
     case 'SET_CONNECTION': return Object.assign({}, state, { connection: action.payload });
@@ -136,7 +118,6 @@ function appReducer(state, action) {
     case 'SET_SCHEDULE': return Object.assign({}, state, { schedule: action.payload });
     case 'SET_MESSAGES': return Object.assign({}, state, { messages: action.payload });
     case 'SET_AUTH': return Object.assign({}, state, { auth: action.payload });
-    case 'SET_USER': return Object.assign({}, state, { auth: Object.assign({}, state.auth, { user: action.payload }) });
     case 'SET_NOTIFICATIONS': return Object.assign({}, state, { notifications: action.payload });
     case 'ADD_NOTIFICATION': return Object.assign({}, state, { notifications: [action.payload].concat(state.notifications).slice(0, 50) });
     case 'MARK_NOTIFS_READ': return Object.assign({}, state, { notifications: state.notifications.map(function(n) { return Object.assign({}, n, { read: true }); }) });
@@ -188,7 +169,7 @@ var initialState = {
     handles: { paypal: 'swanythree23', cashapp: 'SwanyThree23', venmo: 'SwanyThree23', zelle: '+16026986110' },
   },
   auth: {
-    isSignedIn: false,
+    isSignedIn: true,
     user: null,
     loading: false,
     error: null,
@@ -819,11 +800,11 @@ function SponsorOverlayModal(props) {
             </div>
           </div>
           <div style={{ marginBottom: 16 }}>
-            <div style={{ color: C.gold, fontSize: 11, fontWeight: 700, marginBottom: 6 }}>OPACITY: {Math.round(local.opacity * 100)}%</div>
+            <div style={{ color: C.gold, fontSize: 11, fontWeight: 700, marginBottom: 6 }}>OPACITY: {Math.floor(local.opacity * 100)}%</div>
             <input type="range" min="0.1" max="1" step="0.05" value={local.opacity} onChange={function(e) { setLocal(Object.assign({}, local, { opacity: Number(e.target.value) })); }} style={{ width: '100%', accentColor: C.gold }} />
           </div>
           <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 10, padding: 12, marginBottom: 14, fontSize: 12, color: C.muted }}>
-            Preview: <span style={{ color: C.gold }}>{local.name || 'Sponsor Name'}</span> · "{local.ctaText || 'CTA'}" · {local.position} @ {Math.round(local.opacity * 100)}%
+            Preview: <span style={{ color: C.gold }}>{local.name || 'Sponsor Name'}</span> · "{local.ctaText || 'CTA'}" · {local.position} @ {Math.floor(local.opacity * 100)}%
           </div>
         </div>
       )}
@@ -1660,18 +1641,6 @@ function LiveRoom(props) {
   var [shareOpen, setShareOpen] = useState(false);
   var chatRef = useRef(null);
 
-  // Toggle is_live on mount/unmount
-  useEffect(function() {
-    if (props.toggleIsLive && room && room.id) {
-      props.toggleIsLive(room.id, true);
-    }
-    return function() {
-      if (props.toggleIsLive && room && room.id) {
-        props.toggleIsLive(room.id, false);
-      }
-    };
-  }, []);
-
   // Live viewer counter
   useEffect(function() {
     var t = setInterval(function() {
@@ -2164,80 +2133,6 @@ function BattlesPage(props) {
 }
 
 // ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
-function AuthModal(props) {
-  var dispatch = props.dispatch;
-  var [mode, setMode] = React.useState('signin');
-  var [email, setEmail] = React.useState('');
-  var [password, setPassword] = React.useState('');
-  var [loading, setLoading] = React.useState(false);
-  var [error, setError] = React.useState('');
-
-  var handleAuth = function() {
-    if (!email || !password) { setError('Email and password required'); return; }
-    setLoading(true);
-    setError('');
-    var endpoint = mode === 'signin'
-      ? SUPABASE_URL + '/auth/v1/token?grant_type=password'
-      : SUPABASE_URL + '/auth/v1/signup';
-    fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email: email, password: password })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      setLoading(false);
-      if (data.error || data.msg) {
-        setError(data.error_description || data.msg || 'Auth failed');
-      } else if (data.user || data.access_token) {
-        var user = data.user || { id: data.access_token, email: email };
-        dispatch({ type: 'SIGN_IN_SUCCESS', payload: user });
-        dispatch({ type: 'SET_MODAL', payload: null });
-      }
-    })
-    .catch(function(e) { setLoading(false); setError('Network error'); });
-  };
-
-  return React.createElement('div', {
-    style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-  },
-    React.createElement('div', {
-      style: { background: '#1a0a0f', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 16, padding: '32px 24px', width: '100%', maxWidth: 360 }
-    },
-      React.createElement('div', { style: { textAlign: 'center', marginBottom: 24 } },
-        React.createElement('div', { style: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 2 } }, 'SEEWHYLIVE'),
-        React.createElement('div', { style: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 } }, mode === 'signin' ? 'Sign in to your account' : 'Create your account')
-      ),
-      error && React.createElement('div', { style: { background: 'rgba(255,50,50,0.1)', border: '1px solid rgba(255,50,50,0.3)', borderRadius: 8, padding: '10px 14px', color: '#ff6b6b', fontSize: 13, marginBottom: 16 } }, error),
-      React.createElement('input', {
-        type: 'email', placeholder: 'Email', value: email,
-        onChange: function(e) { setEmail(e.target.value); },
-        style: { width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 14, marginBottom: 12, boxSizing: 'border-box' }
-      }),
-      React.createElement('input', {
-        type: 'password', placeholder: 'Password', value: password,
-        onChange: function(e) { setPassword(e.target.value); },
-        onKeyDown: function(e) { if (e.key === 'Enter') handleAuth(); },
-        style: { width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 14, marginBottom: 20, boxSizing: 'border-box' }
-      }),
-      React.createElement('button', {
-        onClick: handleAuth, disabled: loading,
-        style: { width: '100%', background: '#C9A84C', color: '#000', border: 'none', borderRadius: 8, padding: '14px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }
-      }, loading ? 'Please wait...' : (mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT')),
-      React.createElement('div', { style: { textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.5)' } },
-        mode === 'signin' ? "Don't have an account? " : "Already have an account? ",
-        React.createElement('span', {
-          onClick: function() { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); },
-          style: { color: '#C9A84C', cursor: 'pointer' }
-        }, mode === 'signin' ? 'Sign up' : 'Sign in')
-      )
-    )
-  );
-}
-
 function ProfilePage(props) {
   var state = props.state;
   var dispatch = props.dispatch;
@@ -2531,25 +2426,7 @@ function ModalDispatcher(props) {
             <div style={{ color: C.gold, fontSize: 12, fontFamily: 'monospace', wordBreak: 'break-all', marginBottom: 10 }}>
               https://seewhylive.online/watch/{state.liveRoom.id}
             </div>
-            <Btn onClick={function() { try { navigator.clipboard.writeText('https://seewhylive.online/watch/' + state.liveRoom.id);
-  var toggleIsLive = function(streamId, isLive) {
-    fetch(SUPABASE_URL + '/rest/v1/streams?id=eq.' + streamId, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ is_live: isLive })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data) && data[0]) {
-        dispatch({ type: 'SET_IS_LIVE', payload: { id: streamId, is_live: isLive } });
-      }
-    });
-  }; } catch(e) {} dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: '✓ Link copied!' } }); close(); }} variant="gold" full>Copy Room Link</Btn>
+            <Btn onClick={function() { try { navigator.clipboard.writeText('https://seewhylive.online/watch/' + state.liveRoom.id); } catch(e) {} dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: '✓ Link copied!' } }); close(); }} variant="gold" full>Copy Room Link</Btn>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
             {['Instagram', 'TikTok', 'X/Twitter'].map(function(p) {
@@ -2590,7 +2467,7 @@ function InjectStyles() {
   useEffect(function() {
     if (STYLES_INJECTED) return;
     STYLES_INJECTED = true;
-    if (typeof document !== 'undefined') { var style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = [
       "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap');",
       '@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }',
@@ -2600,7 +2477,7 @@ function InjectStyles() {
       'button { font-family: inherit; }',
       '::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }',
     ].join('\n');
-    document.head.appendChild(style); }
+    document.head.appendChild(style);
   }, []);
   return null;
 }
@@ -2609,55 +2486,12 @@ function InjectStyles() {
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
-  // stream_chat realtime subscription
-  React.useEffect(function() {
-    if (!state.liveRoom || !state.liveRoom.id) return;
-    var streamId = state.liveRoom.id;
-    // Fetch existing messages
-    fetch(SUPABASE_URL + '/rest/v1/stream_chat?stream_id=eq.' + streamId + '&order=created_at.asc&limit=100', {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data)) dispatch({ type: 'SET_CHAT', payload: data });
-    });
-    // Realtime subscription via SSE
-    var es = new EventSource(SUPABASE_URL + '/realtime/v1/sse?apikey=' + SUPABASE_ANON);
-    es.onmessage = function(e) {
-      try {
-        var msg = JSON.parse(e.data);
-        if (msg.type === 'INSERT' && msg.table === 'stream_chat' && msg.record && msg.record.stream_id === streamId) {
-          dispatch({ type: 'ADD_CHAT', payload: msg.record });
-        }
-      } catch(err) {}
-    };
-    return function() { es.close(); };
-  }, [state.liveRoom]);
-
-  // Fetch live streams from Supabase on mount
-  React.useEffect(function() {
-    var url = SUPABASE_URL + '/rest/v1/streams?select=*&order=is_live.desc,viewer_count.desc&limit=20';
-    fetch(url, {
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON
-      }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data)) {
-        dispatch({ type: 'SET_STREAMS', payload: data });
-      }
-    })
-    .catch(function(e) { console.error('Streams fetch error:', e); });
-  }, []);
-
   // Simulate connection quality fluctuation
   useEffect(function() {
     var t = setInterval(function() {
       var lat = rand(18, 45);
       var bps = rand(2400, 3600);
-      var loss = Math.random() > 0.9 ? Math.round(Math.random() * 10) / 10 : 0;
+      var loss = Math.random() > 0.9 ? Math.floor(Math.random() * 10) / 10 : 0;
       var q = loss > 2 ? 'poor' : bps > 2800 ? 'excellent' : 'good';
       dispatch({ type: 'SET_CONNECTION', payload: { latency: lat, bitrate: bps, packetLoss: loss, quality: q } });
     }, CONNECTION_CHECK_INTERVAL);
@@ -2703,8 +2537,7 @@ export default function App() {
 
       {/* Page content */}
       {page === 'home' && <HomePage state={state} dispatch={dispatch} />}
-      {page === 'live' && <LiveRoom state={state} dispatch={dispatch} toggleIsLive={toggleIsLive} />}
-      {!state.isSignedIn && <AuthModal dispatch={dispatch} />}
+      {page === 'live' && <LiveRoom state={state} dispatch={dispatch} />}
       {page === 'battles' && <BattlesPage state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
@@ -2715,7 +2548,7 @@ export default function App() {
       <ToastSystem toasts={state.toasts} dispatch={dispatch} />
 
       {/* Bottom navigation */}
-      <BottomNav page={page} dispatch={dispatch} notifications={state.notifications} />
+      <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications} />
     </div>
   );
 }
@@ -2734,26 +2567,6 @@ var GREEN_LIVE = C.green;
 var ORANGE = C.orange;
 var CYAN = C.cyan;
 var DEEP_PURPLE = C.purple;
-var GEM_VALUE = 0.10;
-var CREATOR_SPLIT_PCT = 0.90;
-var PLATFORM_FEE_PCT = 0.10;
-var GUARDIAN_FLAG = 0.50;
-var GUARDIAN_MUTE = 0.75;
-var GUARDIAN_BAN = 0.95;
-var CLAUDE_SONNET = 'claude-sonnet-4-20250514';
-var HLS_URL = 'https://seewhylive.online:8888/hls/stream.m3u8';
-var SOCKET_URL = 'https://seewhylive.online';
-var VDO_ROOM = 'seewhylive';
-
-var SVS_TEAMS = [
-  { id: 'WA', name: 'Washington', color: '#4B9CD3', wins: 3, losses: 1 },
-  { id: 'CA', name: 'California', color: '#FDB927', wins: 2, losses: 2 },
-  { id: 'TX', name: 'Texas', color: '#BF0D3E', wins: 4, losses: 0 },
-  { id: 'FL', name: 'Florida', color: '#0021A5', wins: 1, losses: 3 },
-  { id: 'NY', name: 'New York', color: '#003087', wins: 2, losses: 2 },
-  { id: 'GA', name: 'Georgia', color: '#BA0C2F', wins: 1, losses: 3 },
-];
-
 function fmtGems(n) { return n + ' 💎'; }
 function fmt$(cents) { return '$' + (Math.floor(cents) / 100).toFixed(2); }
 function timeSince(ts) {
@@ -2792,7 +2605,7 @@ async function guardianScore(text) {
 // ═══════════════════════════════════════════════════════════════
 function BattlesTab({ user, dispatch }) {
   var [subTab, setSubTab] = useState('pk');
-  var tabs = [['pk','⚔ PK'],['svs','🗺 SVS'],['challenges','🎯 CHALLENGES'],['elite','👑 ELITE'],['manager','📋 MANAGER']];
+  var tabs = [['pk','X PK'],['svs','SVS'],['challenges','CHALLENGES'],['elite','ELITE'],['manager','MANAGER'],['watchparty','PARTY'],['vods','VODS']];
   return (
     <div style={{ paddingBottom: 80 }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto', paddingBottom: 4 }}>
@@ -2810,6 +2623,8 @@ function BattlesTab({ user, dispatch }) {
       {subTab === 'challenges' && <ChallengesHubV2 />}
       {subTab === 'elite' && <EliteLeaguePanelV2 />}
       {subTab === 'manager' && <PKBattleManagerV2 />}
+      {subTab === 'watchparty' && <WatchPartyPage state={state} dispatch={dispatch} />}
+      {subTab === 'vods' && <VODLibraryPage state={state} dispatch={dispatch} />}
     </div>
   );
 }
@@ -3659,6 +3474,21 @@ function MoreTab({ user, dispatch }) {
   );
 }
 
+
+function WashingtonClassicBracket() {
+  var TEAMS = [["SwanyThree23","DominoKing"],["ClassicLive","TechMunity1"],["AIverse_Fan","NightOwl88"],["DCDomino","SwanyFam"],["MidAtlantic","BaltimoreB"],["VirginiaAce","PGCounty"],["AnnapolisDom","NoVaElite"],["DMVChampion","BYE"]];
+  const [results, setResults] = React.useState({});
+  function win(k,p1,p2){if(results[k])return results[k];if(p2==="BYE")return p1;return null;}
+  function pick(k,n){if(results[k])return;setResults(function(p){var x=Object.assign({},p);x[k]=n;return x;});}
+  var r1=TEAMS.map(function(t,i){return win("r1_"+i,t[0],t[1]);});
+  var r2=[win("r2_0",r1[0]||"TBD",r1[1]||"TBD"),win("r2_1",r1[2]||"TBD",r1[3]||"TBD"),win("r2_2",r1[4]||"TBD",r1[5]||"TBD"),win("r2_3",r1[6]||"TBD",r1[7]||"TBD")];
+  var r3=[win("r3_0",r2[0]||"TBD",r2[1]||"TBD"),win("r3_1",r2[2]||"TBD",r2[3]||"TBD")];
+  var champ=win("final",r3[0]||"TBD",r3[1]||"TBD");
+  function MB(props){var w=results[props.mk]||(props.p2==="BYE"?props.p1:null);return React.createElement("div",{style:{marginBottom:6}},[props.p1,props.p2].map(function(p,i){var iw=w===p;return React.createElement("div",{key:i,onClick:function(){if(!w&&p!=="TBD"&&p!=="BYE")pick(props.mk,p);},style:{background:iw?"#800020":"#111",border:iw?"1px solid #C9A84C":"1px solid #1a1a1a",borderRadius:i===0?"6px 6px 0 0":"0 0 6px 6px",padding:"6px 10px",fontSize:12,color:iw?"#fff":p==="TBD"||p==="BYE"?"#444":"#ccc",cursor:!w&&p!=="TBD"&&p!=="BYE"?"pointer":"default",fontFamily:"'Barlow Condensed',sans-serif",display:"flex",justifyContent:"space-between"}},React.createElement("span",null,p==="BYE"?"—BYE—":p),iw&&React.createElement("span",{style:{color:"#C9A84C",fontSize:11}},"✓"));}));}
+  var rounds=[TEAMS.map(function(t,i){return{p1:t[0],p2:t[1],mk:"r1_"+i};}),r1.reduce(function(a,_,i){if(i%2===0)a.push({p1:r1[i]||"TBD",p2:r1[i+1]||"TBD",mk:"r2_"+Math.floor(i/2)});return a;},[]),r2.reduce(function(a,_,i){if(i%2===0)a.push({p1:r2[i]||"TBD",p2:r2[i+1]||"TBD",mk:"r3_"+Math.floor(i/2)});return a;},[]),[{p1:r3[0]||"TBD",p2:r3[1]||"TBD",mk:"final"}]];
+  return React.createElement("div",{style:{background:"#0A0A0A",minHeight:"100vh",fontFamily:"'Barlow Condensed',sans-serif",color:"#fff",padding:"16px"}},React.createElement("div",{style:{textAlign:"center",marginBottom:16}},React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:11,letterSpacing:4,color:"#800020"}},"SWANYTHREE ENTERTAINMENT PRESENTS"),React.createElement("h2",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,color:"#C9A84C",margin:0,letterSpacing:3}},"WASHINGTON CLASSIC 2026")),champ&&React.createElement("div",{style:{background:"linear-gradient(135deg,#800020,#C9A84C)",borderRadius:12,padding:"14px",textAlign:"center",marginBottom:16}},React.createElement("div",{style:{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,0.7)"}},"🏆 CHAMPION"),React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:34,letterSpacing:3}},champ)),React.createElement("div",{style:{display:"flex",gap:8,overflowX:"auto",marginBottom:12}},rounds.map(function(rnd,ri){return React.createElement("div",{key:ri,style:{minWidth:130,flex:"0 0 130px"}},React.createElement("div",{style:{fontSize:10,color:"#555",letterSpacing:1,marginBottom:6,textAlign:"center"}},["R16","QF","SF","FINAL"][ri]),rnd.map(function(m){return React.createElement(MB,{key:m.mk,p1:m.p1,p2:m.p2,mk:m.mk});}));})),React.createElement("div",{style:{textAlign:"center"}},React.createElement("button",{onClick:function(){setResults({});},style:{background:"#1a1a1a",color:"#888",border:"1px solid #333",borderRadius:6,padding:"7px 18px",fontSize:12,cursor:"pointer"}},"RESET BRACKET")));
+}
+
 function TributeWallV2() {
   var tributes = [
     { id: 1, name: 'Big Bone Earl', title: 'Legend of the Pacific Northwest', years: '1952-2023', tribute: 'A founding pillar of domino culture in Washington State. His teachings echo through every player in the Northwest.' },
@@ -3843,6 +3673,255 @@ function AboutV2() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+
+// ================================================================
+// WATCH PARTY
+// ================================================================
+function WatchPartyPage({ state, dispatch }) {
+  var [partyCode, setPartyCode] = React.useState('');
+  var [inputCode, setInputCode] = React.useState('');
+  var [inParty, setInParty] = React.useState(false);
+  var [synced, setSynced] = React.useState(true);
+  var [partyChat, setPartyChat] = React.useState([
+    { user: '@SwanyThree23', text: 'Lets gooo! Washington Classic starting!', time: '2m ago' },
+    { user: '@TechBones', text: 'CaliBones about to get bodied lol', time: '1m ago' },
+    { user: '@VibeNBones', text: 'House money on the line', time: '30s ago' },
+  ]);
+  var [chatInput, setChatInput] = React.useState('');
+  var [viewers, setViewers] = React.useState(47);
+  var HLS_URL = 'https://seewhylive.online/hls/live/index.m3u8';
+  function generateCode() { var code = Math.random().toString(36).substring(2,8).toUpperCase(); setPartyCode(code); setInParty(true); }
+  function joinParty() { if (inputCode.trim().length < 4) return; setPartyCode(inputCode.trim().toUpperCase()); setInParty(true); }
+  function sendChat() { if (!chatInput.trim()) return; var user = (state.user && state.user.username) ? '@' + state.user.username : '@You'; setPartyChat(function(prev) { return prev.concat([{ user: user, text: chatInput.trim(), time: 'now' }]); }); setChatInput(''); }
+  if (!inParty) return (
+    <div style={{ padding: 16, paddingBottom: 80 }}>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold, marginBottom: 4 }}>WATCH PARTY</div>
+      <div style={{ fontSize: 12, color: C.muted, marginBottom: 20 }}>Watch together in sync with your crew</div>
+      <div style={{ background: C.slate, borderRadius: 12, padding: 20, marginBottom: 14, textAlign: 'center' }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.white, marginBottom: 8 }}>START A PARTY</div>
+        <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>Generate a code and share with your crew</div>
+        <button onClick={generateCode} style={{ background: C.burgundy, border: 'none', borderRadius: 10, padding: '14px 32px', color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>CREATE PARTY</button>
+      </div>
+      <div style={{ background: C.slate, borderRadius: 12, padding: 20 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.white, marginBottom: 12 }}>JOIN A PARTY</div>
+        <input value={inputCode} onChange={function(e) { setInputCode(e.target.value.toUpperCase()); }} placeholder="Enter party code..." maxLength={8} style={{ width: '100%', background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, padding: '12px', color: C.white, fontSize: 16, textAlign: 'center', letterSpacing: 4, fontFamily: 'monospace', boxSizing: 'border-box', marginBottom: 12 }} />
+        <button onClick={joinParty} style={{ width: '100%', background: C.gold, border: 'none', borderRadius: 10, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>JOIN PARTY</button>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: C.charcoal, borderBottom: '1px solid #2a2a2a', padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.gold }}>PARTY: {partyCode}</div>
+          <div style={{ fontSize: 10, color: C.muted }}>{viewers} watching together</div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: synced ? '#00FF88' : '#FF4444' }} />
+          <span style={{ fontSize: 10, color: synced ? '#00FF88' : '#FF4444' }}>{synced ? 'SYNCED' : 'SYNCING'}</span>
+          <button onClick={function() { setInParty(false); }} style={{ background: 'none', border: '1px solid #333', borderRadius: 6, padding: '4px 10px', color: C.muted, fontSize: 11, cursor: 'pointer' }}>Leave</button>
+        </div>
+      </div>
+      <div style={{ background: '#000', position: 'relative' }}>
+        <video src={HLS_URL} controls autoPlay style={{ width: '100%', maxHeight: 220 }} />
+        <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.7)', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: '#fff', fontFamily: 'monospace' }}>{partyCode}</div>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px' }}>
+        <div style={{ fontSize: 10, color: C.muted, marginBottom: 8, letterSpacing: 1 }}>PARTY CHAT</div>
+        {partyChat.map(function(m, i) { return (
+          <div key={i} style={{ marginBottom: 8 }}>
+            <span style={{ fontWeight: 700, color: C.gold, fontSize: 12 }}>{m.user} </span>
+            <span style={{ fontSize: 12, color: C.white }}>{m.text}</span>
+            <span style={{ fontSize: 10, color: C.muted, marginLeft: 6 }}>{m.time}</span>
+          </div>
+        );})}
+      </div>
+      <div style={{ display: 'flex', gap: 8, padding: 12, borderTop: '1px solid #2a2a2a' }}>
+        <input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }} onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }} placeholder="Say something..." style={{ flex: 1, background: C.slate, border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+        <button onClick={sendChat} style={{ background: C.burgundy, border: 'none', borderRadius: 8, padding: '10px 16px', color: C.white, fontWeight: 700, cursor: 'pointer' }}>SEND</button>
+      </div>
+    </div>
+  );
+}
+
+// ================================================================
+// VOD LIBRARY
+// ================================================================
+function VODLibraryPage({ state, dispatch }) {
+  var [filter, setFilter] = React.useState('all');
+  var [search, setSearch] = React.useState('');
+  var [playing, setPlaying] = React.useState(null);
+  var HLS_URL = 'https://seewhylive.online/hls/live/index.m3u8';
+  var vods = [
+    { id: 1, title: 'Washington Classic 2024 - Finals', creator: '@SwanyThree23', category: 'tournament', duration: '2:14:33', views: 4821, date: '2d ago' },
+    { id: 2, title: 'PK Battle Royale - CaliBones vs VibeNBones', creator: '@CaliBone22', category: 'battle', duration: '45:12', views: 1203, date: '4d ago' },
+    { id: 3, title: 'AIverse Podcast Ep. 42', creator: '@AIversePod', category: 'podcast', duration: '1:02:18', views: 892, date: '1w ago' },
+    { id: 4, title: 'Techmunity Stream - SeeWhy LIVE v46 Launch', creator: '@SwanyThree23', category: 'stream', duration: '3:44:07', views: 2341, date: '3d ago' },
+    { id: 5, title: 'State VS State - Washington vs California', creator: '@SwanyThree23', category: 'tournament', duration: '1:28:44', views: 3102, date: '5d ago' },
+    { id: 6, title: 'Bones and Bars - Domino Music Session', creator: '@VibeNBones', category: 'music', duration: '58:21', views: 567, date: '1w ago' },
+  ];
+  var categories = ['all','tournament','battle','podcast','stream','music'];
+  var filtered = vods.filter(function(v) { return (filter === 'all' || v.category === filter) && (!search || v.title.toLowerCase().indexOf(search.toLowerCase()) !== -1); });
+  if (playing) {
+    var vod = vods.find(function(v) { return v.id === playing; });
+    return (
+      <div style={{ paddingBottom: 80 }}>
+        <div style={{ background: '#000' }}><video src={HLS_URL} controls autoPlay style={{ width: '100%', maxHeight: 240 }} /></div>
+        <div style={{ padding: 16 }}>
+          <button onClick={function() { setPlaying(null); }} style={{ background: 'none', border: 'none', color: C.gold, fontSize: 14, cursor: 'pointer', marginBottom: 12 }}>Back to Library</button>
+          <div style={{ fontWeight: 700, color: C.white, fontSize: 16, marginBottom: 4 }}>{vod.title}</div>
+          <div style={{ fontSize: 12, color: C.muted, marginBottom: 8 }}>{vod.creator} - {vod.views.toLocaleString()} views - {vod.date}</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'watchparty' }); }} style={{ background: C.burgundy, border: 'none', borderRadius: 8, padding: '8px 16px', color: C.white, fontSize: 13, cursor: 'pointer', fontWeight: 700 }}>Watch Party</button>
+            <button style={{ background: C.slate, border: '1px solid #333', borderRadius: 8, padding: '8px 16px', color: C.white, fontSize: 13, cursor: 'pointer' }}>Clip</button>
+            <button style={{ background: C.slate, border: '1px solid #333', borderRadius: 8, padding: '8px 16px', color: C.white, fontSize: 13, cursor: 'pointer' }}>Share</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ padding: 16, paddingBottom: 80 }}>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold, marginBottom: 4 }}>VOD LIBRARY</div>
+      <div style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>{filtered.length} videos</div>
+      <input value={search} onChange={function(e) { setSearch(e.target.value); }} placeholder="Search videos..." style={{ width: '100%', background: C.slate, border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', marginBottom: 12 }} />
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8, marginBottom: 14 }}>
+        {categories.map(function(cat) { return (
+          <button key={cat} onClick={function() { setFilter(cat); }} style={{ flexShrink: 0, padding: '6px 14px', fontSize: 11, background: filter === cat ? C.burgundy : C.slate, border: '1px solid ' + (filter === cat ? C.burgundy : '#333'), borderRadius: 20, color: filter === cat ? C.white : C.muted, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{cat.toUpperCase()}</button>
+        );})}
+      </div>
+      {filtered.map(function(v) { return (
+        <div key={v.id} onClick={function() { setPlaying(v.id); }} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, marginBottom: 10, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'center', padding: 12 }}>
+          <div style={{ width: 80, height: 50, background: 'linear-gradient(135deg,#1a0a0a,#2a1a2a)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: 24 }}>{v.category === 'tournament' ? '🏆' : v.category === 'battle' ? 'X' : v.category === 'podcast' ? '🎙' : v.category === 'music' ? '🎵' : '📺'}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, color: C.white, fontSize: 13, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.title}</div>
+            <div style={{ fontSize: 11, color: C.muted }}>{v.creator} - {v.views.toLocaleString()} views</div>
+            <div style={{ fontSize: 10, color: C.muted }}>{v.duration} - {v.date}</div>
+          </div>
+          <span style={{ color: C.muted, fontSize: 18, flexShrink: 0 }}>▶</span>
+        </div>
+      );})}
+    </div>
+  );
+}
+
+// ================================================================
+// STUDIO TOOL PAGES
+// ================================================================
+function OverlayBuilderPage({ state, dispatch }) {
+  var overlays = [{ id:1, name:'Game Score Bar', active:true },{ id:2, name:'Donation Alert', active:false },{ id:3, name:'Lower Third', active:true },{ id:4, name:'Logo Watermark', active:true }];
+  var [on, setOn] = React.useState({ 1:true, 3:true, 4:true });
+  return (
+    <div style={{ padding: 16, paddingBottom: 80 }}>
+      <button onClick={function() { dispatch({ type:'SET_PAGE', payload:'studio' }); }} style={{ background:'none', border:'none', color:C.gold, fontSize:14, cursor:'pointer', marginBottom:12 }}>Back to Studio</button>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, marginBottom:4 }}>OVERLAY BUILDER</div>
+      <div style={{ fontSize:12, color:C.muted, marginBottom:16 }}>Customize your stream overlays</div>
+      {overlays.map(function(o) { return (
+        <div key={o.id} style={{ background:C.slate, border:'1px solid #2a2a2a', borderRadius:10, padding:'12px 16px', marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <span style={{ color:C.white, fontSize:14 }}>{o.name}</span>
+          <div onClick={function() { setOn(function(s) { var n=Object.assign({},s); n[o.id]=!n[o.id]; return n; }); }} style={{ width:40, height:22, borderRadius:11, background:on[o.id] ? C.gold : '#333', display:'flex', alignItems:'center', padding:'0 3px', cursor:'pointer' }}>
+            <div style={{ width:16, height:16, borderRadius:'50%', background:'#fff', marginLeft:on[o.id] ? 'auto' : 0 }} />
+          </div>
+        </div>
+      );})}
+    </div>
+  );
+}
+function ClipEditorPage({ state, dispatch }) {
+  return (
+    <div style={{ padding:16, paddingBottom:80 }}>
+      <button onClick={function() { dispatch({ type:'SET_PAGE', payload:'studio' }); }} style={{ background:'none', border:'none', color:C.gold, fontSize:14, cursor:'pointer', marginBottom:12 }}>Back to Studio</button>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, marginBottom:4 }}>CLIP EDITOR</div>
+      <div style={{ background:'#000', borderRadius:10, height:200, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:16 }}><span style={{ fontSize:48 }}>✂️</span></div>
+      <div style={{ display:'flex', gap:10 }}>
+        <button style={{ flex:1, background:C.slate, border:'1px solid #333', borderRadius:8, padding:12, color:C.white, fontSize:13, cursor:'pointer' }}>Trim</button>
+        <button style={{ flex:1, background:C.slate, border:'1px solid #333', borderRadius:8, padding:12, color:C.white, fontSize:13, cursor:'pointer' }}>Music</button>
+        <button style={{ flex:1, background:C.burgundy, border:'none', borderRadius:8, padding:12, color:C.white, fontSize:13, cursor:'pointer' }}>Share</button>
+      </div>
+    </div>
+  );
+}
+function PodcastStudioPage({ state, dispatch }) {
+  var [recording, setRecording] = React.useState(false);
+  var [seconds, setSeconds] = React.useState(0);
+  React.useEffect(function() { if (!recording) return; var t = setInterval(function() { setSeconds(function(s) { return s+1; }); },1000); return function() { clearInterval(t); }; }, [recording]);
+  var fmt = Math.floor(seconds/60) + ':' + String(seconds%60).padStart(2,'0');
+  return (
+    <div style={{ padding:16, paddingBottom:80 }}>
+      <button onClick={function() { dispatch({ type:'SET_PAGE', payload:'studio' }); }} style={{ background:'none', border:'none', color:C.gold, fontSize:14, cursor:'pointer', marginBottom:12 }}>Back to Studio</button>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, marginBottom:4 }}>PODCAST STUDIO</div>
+      <div style={{ textAlign:'center', background:C.slate, borderRadius:16, padding:32, marginBottom:16 }}>
+        <div style={{ fontSize:64, marginBottom:16 }}>{recording ? '🔴' : '🎙'}</div>
+        <div style={{ fontFamily:'monospace', fontSize:36, color:recording ? '#ff4444' : '#666', marginBottom:20 }}>{fmt}</div>
+        <button onClick={function() { setRecording(function(r) { if(r) setSeconds(0); return !r; }); }} style={{ background:recording ? C.burgundy : C.gold, border:'none', borderRadius:12, padding:'14px 40px', color:recording ? C.white : '#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:20, cursor:'pointer' }}>{recording ? 'STOP' : 'START RECORDING'}</button>
+      </div>
+    </div>
+  );
+}
+function MultiStreamPage({ state, dispatch }) {
+  var platforms = [{ name:'YouTube', icon:'▶', key:'yt' },{ name:'Twitch', icon:'T', key:'tw' },{ name:'Facebook', icon:'f', key:'fb' },{ name:'X / Twitter', icon:'X', key:'x' },{ name:'Kick', icon:'K', key:'kick' }];
+  var [active, setActive] = React.useState({});
+  function toggle(key) { setActive(function(a) { var n=Object.assign({},a); n[key]=!n[key]; return n; }); }
+  return (
+    <div style={{ padding:16, paddingBottom:80 }}>
+      <button onClick={function() { dispatch({ type:'SET_PAGE', payload:'studio' }); }} style={{ background:'none', border:'none', color:C.gold, fontSize:14, cursor:'pointer', marginBottom:12 }}>Back to Studio</button>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, marginBottom:4 }}>MULTI-STREAM</div>
+      <div style={{ fontSize:12, color:C.muted, marginBottom:16 }}>Go live everywhere simultaneously</div>
+      {platforms.map(function(p) { var on=active[p.key]; return (
+        <div key={p.key} style={{ background:C.slate, border:'1px solid '+(on?C.gold:'#2a2a2a'), borderRadius:10, padding:'14px 16px', marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div style={{ display:'flex', gap:12, alignItems:'center' }}><span style={{ fontSize:20 }}>{p.icon}</span><span style={{ color:C.white, fontWeight:700 }}>{p.name}</span></div>
+          <button onClick={function() { toggle(p.key); }} style={{ background:on?C.gold:'#333', border:'none', borderRadius:8, padding:'6px 16px', color:on?'#000':C.white, fontSize:12, cursor:'pointer', fontWeight:700 }}>{on?'ON':'OFF'}</button>
+        </div>
+      );})}
+      <button style={{ width:'100%', background:C.burgundy, border:'none', borderRadius:10, padding:16, color:C.white, fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer', marginTop:8 }}>START ALL STREAMS</button>
+    </div>
+  );
+}
+function CaptionStudioPage({ state, dispatch }) {
+  var langs = ['English','Spanish','French','Portuguese','Japanese'];
+  var [selected, setSelected] = React.useState('English');
+  var [enabled, setEnabled] = React.useState(false);
+  return (
+    <div style={{ padding:16, paddingBottom:80 }}>
+      <button onClick={function() { dispatch({ type:'SET_PAGE', payload:'studio' }); }} style={{ background:'none', border:'none', color:C.gold, fontSize:14, cursor:'pointer', marginBottom:12 }}>Back to Studio</button>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, marginBottom:4 }}>CAPTION STUDIO</div>
+      <div style={{ background:C.slate, borderRadius:12, padding:16, marginBottom:14 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+          <span style={{ color:C.white, fontWeight:700 }}>Live Captions</span>
+          <button onClick={function() { setEnabled(function(e) { return !e; }); }} style={{ background:enabled?C.gold:'#333', border:'none', borderRadius:20, padding:'6px 18px', color:enabled?'#000':C.white, fontWeight:700, cursor:'pointer' }}>{enabled?'ON':'OFF'}</button>
+        </div>
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+          {langs.map(function(l) { return <button key={l} onClick={function() { setSelected(l); }} style={{ padding:'6px 12px', fontSize:11, background:selected===l?C.burgundy:'#333', border:'none', borderRadius:16, color:C.white, cursor:'pointer' }}>{l}</button>; })}
+        </div>
+      </div>
+      <button onClick={function() { window.open('https://caption.ninja/?room=sw_thrrj4','_blank'); }} style={{ width:'100%', background:C.slate, border:'1px solid '+C.gold, borderRadius:10, padding:14, color:C.gold, fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>Open Caption.Ninja</button>
+    </div>
+  );
+}
+function GreenRoomPage({ state, dispatch }) {
+  var VDO_URL = 'https://vdo.ninja/?room=sw_thrrj4&push';
+  var guests = [{ slot:1, name:'Guest 1', status:'waiting' },{ slot:2, name:'Guest 2', status:'empty' },{ slot:3, name:'Guest 3', status:'empty' },{ slot:4, name:'Guest 4', status:'empty' }];
+  return (
+    <div style={{ padding:16, paddingBottom:80 }}>
+      <button onClick={function() { dispatch({ type:'SET_PAGE', payload:'studio' }); }} style={{ background:'none', border:'none', color:C.gold, fontSize:14, cursor:'pointer', marginBottom:12 }}>Back to Studio</button>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, marginBottom:4 }}>GREEN ROOM</div>
+      <div style={{ fontSize:12, color:C.muted, marginBottom:16 }}>Pre-show prep - up to 20 guests via VDO.Ninja</div>
+      {guests.map(function(g) { return (
+        <div key={g.slot} style={{ background:C.slate, border:'1px solid #2a2a2a', borderRadius:10, padding:'12px 16px', marginBottom:10, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div>
+            <div style={{ color:C.white, fontWeight:700, fontSize:13 }}>{g.name}</div>
+            <div style={{ fontSize:11, color:g.status==='waiting'?'#00FF88':'#666' }}>{g.status==='waiting'?'In waiting room':'Empty slot'}</div>
+          </div>
+          <button onClick={function() { window.open(VDO_URL,'_blank'); }} style={{ background:'#333', border:'none', borderRadius:8, padding:'6px 14px', color:C.white, fontSize:12, cursor:'pointer' }}>Invite</button>
+        </div>
+      );})}
+      <button onClick={function() { window.open(VDO_URL,'_blank'); }} style={{ width:'100%', background:C.gold, border:'none', borderRadius:10, padding:14, color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer', marginTop:8 }}>OPEN GREEN ROOM</button>
+    </div>
+  );
+}
 // V46 BOTTOM NAV PATCH — replaces BottomNav with new 7-tab version
 // ═══════════════════════════════════════════════════════════════
 function BottomNavV46(props) {
