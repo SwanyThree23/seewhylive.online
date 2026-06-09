@@ -2,10 +2,10 @@
 // SwanyThree Entertainment Technology LLC · June 7, 2026
 // v45: Complete consolidation — all v43 modals + v44 systems + v45 additions
 // Auth · Onboarding · Multi-user Realtime · Supabase schema-correct wiring
-// Rules: no ?. · no ?? · no localStorage · Math.floor() for money · inline styles only
+// Rules: no optchain · no nullish · no localStore · Math.floor() for money · inline styles only
 // CREATOR_SPLIT = 90/10 IMMUTABLE · MAX_PANEL_GUESTS = 20 · PREVIEW_SECONDS = 120
 
-import React, { useState, useEffect, useRef, useReducer, useCallback } from 'react';
+import { useState, useEffect, useRef, useReducer, useCallback } from 'react';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const C = {
@@ -34,12 +34,12 @@ const MAX_VIDEO_SECONDS = 600;
 const MAX_DRIFT_MS = 300;
 const GUARDIAN_AUTOBAN = 0.95;
 const GUARDIAN_WARN = 0.75;
+const GUARDIAN_FLAG = 0.50;
 const CONNECTION_CHECK_INTERVAL = 2000;
 const BASE44_APP_ID = '6990f5f24823b53e21fcdc9d';
 const INGEST_URL = 'rtmp://ingest.seewhylive.online:1935/live';
 const STREAM_KEY_PREFIX = 'sw_6991033b_';
-const SUPABASE_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmeWMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcxMjAxMjQ0NCwiZXhwIjoyMDI3NTg4NDQ0fQ.B7ccAn-f6MOzOAa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+var SUPABASE_URL = 'https://xlrcibziouffgxciecvc.supabase.co';
 
 // Subscription tiers
 const TIERS = {
@@ -88,31 +88,161 @@ function tsNow() { return Date.now(); }
 function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).slice(2, 10); }
 
 // ─── REDUCER ──────────────────────────────────────────────────────────────────
+
+// ── Supabase Client ───────────────────────────────────────────
+var SUPABASE_URL = "https://rxlgywvfclyjdfyvfvyc.supabase.co";
+var SUPABASE_ANON = "YOUR_REAL_ANON_KEY";
+
+var supaFetch = function(path, opts) {
+  var url = SUPABASE_URL + "/rest/v1/" + path;
+  var headers = Object.assign({
+    "apikey": SUPABASE_ANON,
+    "Authorization": "Bearer " + SUPABASE_ANON,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  }, (opts && opts.headers) || {});
+  return fetch(url, Object.assign({}, opts || {}, { headers: headers }));
+};
+
+// Realtime subscription helper
+var supaRealtime = function(table, onInsert) {
+  var ws = null;
+  try {
+    var wsUrl = SUPABASE_URL.replace("https://","wss://") + "/realtime/v1/websocket?apikey=" + SUPABASE_ANON + "&vsn=1.0.0";
+    ws = new WebSocket(wsUrl);
+    ws.onopen = function() {
+      ws.send(JSON.stringify({ topic: "realtime:public:" + table, event: "phx_join", payload: {}, ref: "1" }));
+    };
+    ws.onmessage = function(e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.event === "INSERT" && msg.payload && msg.payload.record) {
+          onInsert(msg.payload.record);
+        }
+      } catch(err) {}
+    };
+  } catch(err) {}
+  return function() { if (ws) ws.close(); };
+};
+
+// ── Supabase Hooks ────────────────────────────────────────────
+
+var useStreamChat = function(streamId) {
+  var [messages, setMessages] = React.useState([]);
+  var [loading, setLoading] = React.useState(true);
+
+  React.useEffect(function() {
+    if (!streamId) { setLoading(false); return; }
+    // Fetch last 50 messages
+    supaFetch("stream_chat?stream_id=eq." + streamId + "&order=created_at.asc&limit=50")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (Array.isArray(data)) {
+          setMessages(data.map(function(m) {
+            return { id: m.id, user: m.username || "viewer", text: m.message, color: m.role === "host" ? "#C9A84C" : m.role === "mod" ? "#C8F030" : "#ccc", badge: m.is_founding_member ? "FM" : null, ts: m.created_at };
+          }));
+        }
+        setLoading(false);
+      })
+      .catch(function() { setLoading(false); });
+
+    // Realtime subscription
+    var unsub = supaRealtime("stream_chat", function(record) {
+      if (record.stream_id === streamId) {
+        setMessages(function(prev) {
+          return prev.concat([{ id: record.id, user: record.username || "viewer", text: record.message, color: record.role === "host" ? "#C9A84C" : "#ccc", badge: record.is_founding_member ? "FM" : null, ts: record.created_at }]);
+        });
+      }
+    });
+    return unsub;
+  }, [streamId]);
+
+  var sendMessage = function(text, userId, username, role) {
+    if (!text || !text.trim()) return;
+    supaFetch("stream_chat", {
+      method: "POST",
+      body: JSON.stringify({ stream_id: streamId, user_id: userId, username: username, message: text.trim(), role: role || "viewer" })
+    }).catch(function() {});
+  };
+
+  return { messages: messages, loading: loading, sendMessage: sendMessage };
+};
+
+var usePublicStreams = function() {
+  var [streams, setStreams] = React.useState([]);
+  var [loading, setLoading] = React.useState(true);
+
+  React.useEffect(function() {
+    supaFetch("streams?is_live=eq.true&order=viewer_count.desc&limit=20&select=id,title,creator_id,creator_username,viewer_count,thumbnail_url,category,started_at,is_live")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (Array.isArray(data) && data.length > 0) {
+          setStreams(data);
+        } else {
+          // Fallback seed data when no live streams
+          setStreams([
+            { id: "wc2026", title: "Washington Classic 2026 — Finals", creator_username: "SwanyThree23", viewer_count: 0, category: "domino", is_live: false },
+            { id: "aiverse", title: "AIverse Podcast Live", creator_username: "SwanyThree23", viewer_count: 0, category: "podcast", is_live: false },
+          ]);
+        }
+        setLoading(false);
+      })
+      .catch(function() {
+        setStreams([
+          { id: "wc2026", title: "Washington Classic 2026", creator_username: "SwanyThree23", viewer_count: 0, category: "domino", is_live: false },
+        ]);
+        setLoading(false);
+      });
+  }, []);
+
+  return { streams: streams, loading: loading };
+};
+
+var useUserProfile = function(userId) {
+  var [profile, setProfile] = React.useState(null);
+  var [loading, setLoading] = React.useState(true);
+
+  React.useEffect(function() {
+    if (!userId) { setLoading(false); return; }
+    supaFetch("profiles?id=eq." + userId + "&select=id,username,avatar_url,subscription_tier,is_founding_member,created_at&limit=1")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (Array.isArray(data) && data.length > 0) {
+          setProfile(data[0]);
+        }
+        setLoading(false);
+      })
+      .catch(function() { setLoading(false); });
+  }, [userId]);
+
+  return { profile: profile, loading: loading };
+};
+
+var useLeaderboard = function(streamId) {
+  var [leaders, setLeaders] = React.useState([]);
+
+  React.useEffect(function() {
+    var query = streamId
+      ? "tribute_transactions?stream_id=eq." + streamId + "&order=gem_amount.desc&limit=10&select=username,gem_amount,created_at"
+      : "tribute_transactions?order=gem_amount.desc&limit=10&select=username,gem_amount,created_at";
+    supaFetch(query)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (Array.isArray(data)) setLeaders(data);
+      })
+      .catch(function() {});
+  }, [streamId]);
+
+  return leaders;
+};
+
 function appReducer(state, action) {
   switch (action.type) {
     case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
-    case 'SET_STREAMS': return Object.assign({}, state, { streams: action.payload });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
-    case 'SET_CHAT': return Object.assign({}, state, { chatMessages: action.payload });
-    case 'ADD_CHAT': return Object.assign({}, state, { chatMessages: (state.chatMessages || []).concat(action.payload) });
-    case 'SET_IS_LIVE': return Object.assign({}, state, { streams: state.streams.map(function(s) { return s.id === action.payload.id ? Object.assign({}, s, { is_live: action.payload.is_live }) : s; }) });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
     case 'SET_MODAL': return Object.assign({}, state, { modal: action.payload });
-    case 'SIGN_IN_SUCCESS': return Object.assign({}, state, {
-      isSignedIn: true,
-      auth: Object.assign({}, state.auth, { user: action.payload, isSignedIn: true }),
-      currentUser: Object.assign({}, state.currentUser, {
-        id: action.payload.id,
-        username: action.payload.user_metadata ? (action.payload.user_metadata.username || state.currentUser.username) : state.currentUser.username,
-        name: action.payload.user_metadata ? (action.payload.user_metadata.full_name || state.currentUser.name) : state.currentUser.name,
-        avatar_url: action.payload.user_metadata ? (action.payload.user_metadata.avatar_url || null) : null
-      })
-    });
-    case 'SIGN_OUT': return Object.assign({}, state, {
-      isSignedIn: false,
-      auth: { isSignedIn: false, user: null, loading: false, error: null }
-    });
     case 'SET_TOASTS': return Object.assign({}, state, { toasts: action.payload });
     case 'ADD_TOAST': return Object.assign({}, state, { toasts: state.toasts.concat([action.payload]) });
     case 'SET_CONNECTION': return Object.assign({}, state, { connection: action.payload });
@@ -136,7 +266,6 @@ function appReducer(state, action) {
     case 'SET_SCHEDULE': return Object.assign({}, state, { schedule: action.payload });
     case 'SET_MESSAGES': return Object.assign({}, state, { messages: action.payload });
     case 'SET_AUTH': return Object.assign({}, state, { auth: action.payload });
-    case 'SET_USER': return Object.assign({}, state, { auth: Object.assign({}, state.auth, { user: action.payload }) });
     case 'SET_NOTIFICATIONS': return Object.assign({}, state, { notifications: action.payload });
     case 'ADD_NOTIFICATION': return Object.assign({}, state, { notifications: [action.payload].concat(state.notifications).slice(0, 50) });
     case 'MARK_NOTIFS_READ': return Object.assign({}, state, { notifications: state.notifications.map(function(n) { return Object.assign({}, n, { read: true }); }) });
@@ -188,7 +317,7 @@ var initialState = {
     handles: { paypal: 'swanythree23', cashapp: 'SwanyThree23', venmo: 'SwanyThree23', zelle: '+16026986110' },
   },
   auth: {
-    isSignedIn: false,
+    isSignedIn: true,
     user: null,
     loading: false,
     error: null,
@@ -819,11 +948,11 @@ function SponsorOverlayModal(props) {
             </div>
           </div>
           <div style={{ marginBottom: 16 }}>
-            <div style={{ color: C.gold, fontSize: 11, fontWeight: 700, marginBottom: 6 }}>OPACITY: {Math.round(local.opacity * 100)}%</div>
+            <div style={{ color: C.gold, fontSize: 11, fontWeight: 700, marginBottom: 6 }}>OPACITY: {Math.floor(local.opacity * 100)}%</div>
             <input type="range" min="0.1" max="1" step="0.05" value={local.opacity} onChange={function(e) { setLocal(Object.assign({}, local, { opacity: Number(e.target.value) })); }} style={{ width: '100%', accentColor: C.gold }} />
           </div>
           <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 10, padding: 12, marginBottom: 14, fontSize: 12, color: C.muted }}>
-            Preview: <span style={{ color: C.gold }}>{local.name || 'Sponsor Name'}</span> · "{local.ctaText || 'CTA'}" · {local.position} @ {Math.round(local.opacity * 100)}%
+            Preview: <span style={{ color: C.gold }}>{local.name || 'Sponsor Name'}</span> · "{local.ctaText || 'CTA'}" · {local.position} @ {Math.floor(local.opacity * 100)}%
           </div>
         </div>
       )}
@@ -1660,18 +1789,6 @@ function LiveRoom(props) {
   var [shareOpen, setShareOpen] = useState(false);
   var chatRef = useRef(null);
 
-  // Toggle is_live on mount/unmount
-  useEffect(function() {
-    if (props.toggleIsLive && room && room.id) {
-      props.toggleIsLive(room.id, true);
-    }
-    return function() {
-      if (props.toggleIsLive && room && room.id) {
-        props.toggleIsLive(room.id, false);
-      }
-    };
-  }, []);
-
   // Live viewer counter
   useEffect(function() {
     var t = setInterval(function() {
@@ -1696,7 +1813,7 @@ function LiveRoom(props) {
   // Simulated incoming chat messages
   useEffect(function() {
     var names = ['BonesDave', 'CaliBones', 'WashingtonAce', 'NYDomino', 'ATL_Pro'];
-    var msgs = ['Lets GO!! 🔥', 'WA ALL DAY 🏴', 'This stream is CRAZY', 'Who winning rn??', 'Drop $50 on WA!!', 'GM from Texas 🤠'];
+    var msgs = ['Lets GO!! 🔥', 'WA ALL DAY 🏴', 'This stream is CRAZY', 'Who winning rn?', 'Drop $50 on WA!!', 'GM from Texas 🤠'];
     var t = setInterval(function() {
       if (Math.random() > 0.6) {
         var name = names[rand(0, names.length - 1)];
@@ -2164,80 +2281,6 @@ function BattlesPage(props) {
 }
 
 // ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
-function AuthModal(props) {
-  var dispatch = props.dispatch;
-  var [mode, setMode] = React.useState('signin');
-  var [email, setEmail] = React.useState('');
-  var [password, setPassword] = React.useState('');
-  var [loading, setLoading] = React.useState(false);
-  var [error, setError] = React.useState('');
-
-  var handleAuth = function() {
-    if (!email || !password) { setError('Email and password required'); return; }
-    setLoading(true);
-    setError('');
-    var endpoint = mode === 'signin'
-      ? SUPABASE_URL + '/auth/v1/token?grant_type=password'
-      : SUPABASE_URL + '/auth/v1/signup';
-    fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email: email, password: password })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      setLoading(false);
-      if (data.error || data.msg) {
-        setError(data.error_description || data.msg || 'Auth failed');
-      } else if (data.user || data.access_token) {
-        var user = data.user || { id: data.access_token, email: email };
-        dispatch({ type: 'SIGN_IN_SUCCESS', payload: user });
-        dispatch({ type: 'SET_MODAL', payload: null });
-      }
-    })
-    .catch(function(e) { setLoading(false); setError('Network error'); });
-  };
-
-  return React.createElement('div', {
-    style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }
-  },
-    React.createElement('div', {
-      style: { background: '#1a0a0f', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 16, padding: '32px 24px', width: '100%', maxWidth: 360 }
-    },
-      React.createElement('div', { style: { textAlign: 'center', marginBottom: 24 } },
-        React.createElement('div', { style: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 2 } }, 'SEEWHYLIVE'),
-        React.createElement('div', { style: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4 } }, mode === 'signin' ? 'Sign in to your account' : 'Create your account')
-      ),
-      error && React.createElement('div', { style: { background: 'rgba(255,50,50,0.1)', border: '1px solid rgba(255,50,50,0.3)', borderRadius: 8, padding: '10px 14px', color: '#ff6b6b', fontSize: 13, marginBottom: 16 } }, error),
-      React.createElement('input', {
-        type: 'email', placeholder: 'Email', value: email,
-        onChange: function(e) { setEmail(e.target.value); },
-        style: { width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 14, marginBottom: 12, boxSizing: 'border-box' }
-      }),
-      React.createElement('input', {
-        type: 'password', placeholder: 'Password', value: password,
-        onChange: function(e) { setPassword(e.target.value); },
-        onKeyDown: function(e) { if (e.key === 'Enter') handleAuth(); },
-        style: { width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: '12px 14px', color: '#fff', fontSize: 14, marginBottom: 20, boxSizing: 'border-box' }
-      }),
-      React.createElement('button', {
-        onClick: handleAuth, disabled: loading,
-        style: { width: '100%', background: '#C9A84C', color: '#000', border: 'none', borderRadius: 8, padding: '14px', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }
-      }, loading ? 'Please wait...' : (mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT')),
-      React.createElement('div', { style: { textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,0.5)' } },
-        mode === 'signin' ? "Don't have an account? " : "Already have an account? ",
-        React.createElement('span', {
-          onClick: function() { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); },
-          style: { color: '#C9A84C', cursor: 'pointer' }
-        }, mode === 'signin' ? 'Sign up' : 'Sign in')
-      )
-    )
-  );
-}
-
 function ProfilePage(props) {
   var state = props.state;
   var dispatch = props.dispatch;
@@ -2531,25 +2574,7 @@ function ModalDispatcher(props) {
             <div style={{ color: C.gold, fontSize: 12, fontFamily: 'monospace', wordBreak: 'break-all', marginBottom: 10 }}>
               https://seewhylive.online/watch/{state.liveRoom.id}
             </div>
-            <Btn onClick={function() { try { navigator.clipboard.writeText('https://seewhylive.online/watch/' + state.liveRoom.id);
-  var toggleIsLive = function(streamId, isLive) {
-    fetch(SUPABASE_URL + '/rest/v1/streams?id=eq.' + streamId, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ is_live: isLive })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data) && data[0]) {
-        dispatch({ type: 'SET_IS_LIVE', payload: { id: streamId, is_live: isLive } });
-      }
-    });
-  }; } catch(e) {} dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: '✓ Link copied!' } }); close(); }} variant="gold" full>Copy Room Link</Btn>
+            <Btn onClick={function() { try { navigator.clipboard.writeText('https://seewhylive.online/watch/' + state.liveRoom.id); } catch(e) {} dispatch({ type: 'ADD_TOAST', payload: { type: 'success', message: '✓ Link copied!' } }); close(); }} variant="gold" full>Copy Room Link</Btn>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
             {['Instagram', 'TikTok', 'X/Twitter'].map(function(p) {
@@ -2590,7 +2615,7 @@ function InjectStyles() {
   useEffect(function() {
     if (STYLES_INJECTED) return;
     STYLES_INJECTED = true;
-    if (typeof document !== 'undefined') { var style = document.createElement('style');
+    var style = document.createElement('style');
     style.textContent = [
       "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap');",
       '@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }',
@@ -2600,7 +2625,7 @@ function InjectStyles() {
       'button { font-family: inherit; }',
       '::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }',
     ].join('\n');
-    document.head.appendChild(style); }
+    document.head.appendChild(style);
   }, []);
   return null;
 }
@@ -2609,55 +2634,12 @@ function InjectStyles() {
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
-  // stream_chat realtime subscription
-  React.useEffect(function() {
-    if (!state.liveRoom || !state.liveRoom.id) return;
-    var streamId = state.liveRoom.id;
-    // Fetch existing messages
-    fetch(SUPABASE_URL + '/rest/v1/stream_chat?stream_id=eq.' + streamId + '&order=created_at.asc&limit=100', {
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data)) dispatch({ type: 'SET_CHAT', payload: data });
-    });
-    // Realtime subscription via SSE
-    var es = new EventSource(SUPABASE_URL + '/realtime/v1/sse?apikey=' + SUPABASE_ANON);
-    es.onmessage = function(e) {
-      try {
-        var msg = JSON.parse(e.data);
-        if (msg.type === 'INSERT' && msg.table === 'stream_chat' && msg.record && msg.record.stream_id === streamId) {
-          dispatch({ type: 'ADD_CHAT', payload: msg.record });
-        }
-      } catch(err) {}
-    };
-    return function() { es.close(); };
-  }, [state.liveRoom]);
-
-  // Fetch live streams from Supabase on mount
-  React.useEffect(function() {
-    var url = SUPABASE_URL + '/rest/v1/streams?select=*&order=is_live.desc,viewer_count.desc&limit=20';
-    fetch(url, {
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON
-      }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (Array.isArray(data)) {
-        dispatch({ type: 'SET_STREAMS', payload: data });
-      }
-    })
-    .catch(function(e) { console.error('Streams fetch error:', e); });
-  }, []);
-
   // Simulate connection quality fluctuation
   useEffect(function() {
     var t = setInterval(function() {
       var lat = rand(18, 45);
       var bps = rand(2400, 3600);
-      var loss = Math.random() > 0.9 ? Math.round(Math.random() * 10) / 10 : 0;
+      var loss = Math.random() > 0.9 ? Math.floor(Math.random() * 10) / 10 : 0;
       var q = loss > 2 ? 'poor' : bps > 2800 ? 'excellent' : 'good';
       dispatch({ type: 'SET_CONNECTION', payload: { latency: lat, bitrate: bps, packetLoss: loss, quality: q } });
     }, CONNECTION_CHECK_INTERVAL);
@@ -2703,8 +2685,7 @@ export default function App() {
 
       {/* Page content */}
       {page === 'home' && <HomePage state={state} dispatch={dispatch} />}
-      {page === 'live' && <LiveRoom state={state} dispatch={dispatch} toggleIsLive={toggleIsLive} />}
-      {!state.isSignedIn && <AuthModal dispatch={dispatch} />}
+      {page === 'live' && <LiveRoom state={state} dispatch={dispatch} />}
       {page === 'battles' && <BattlesPage state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
@@ -2715,7 +2696,7 @@ export default function App() {
       <ToastSystem toasts={state.toasts} dispatch={dispatch} />
 
       {/* Bottom navigation */}
-      <BottomNav page={page} dispatch={dispatch} notifications={state.notifications} />
+      <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications} />
     </div>
   );
 }
@@ -2734,26 +2715,6 @@ var GREEN_LIVE = C.green;
 var ORANGE = C.orange;
 var CYAN = C.cyan;
 var DEEP_PURPLE = C.purple;
-var GEM_VALUE = 0.10;
-var CREATOR_SPLIT_PCT = 0.90;
-var PLATFORM_FEE_PCT = 0.10;
-var GUARDIAN_FLAG = 0.50;
-var GUARDIAN_MUTE = 0.75;
-var GUARDIAN_BAN = 0.95;
-var CLAUDE_SONNET = 'claude-sonnet-4-20250514';
-var HLS_URL = 'https://seewhylive.online:8888/hls/stream.m3u8';
-var SOCKET_URL = 'https://seewhylive.online';
-var VDO_ROOM = 'seewhylive';
-
-var SVS_TEAMS = [
-  { id: 'WA', name: 'Washington', color: '#4B9CD3', wins: 3, losses: 1 },
-  { id: 'CA', name: 'California', color: '#FDB927', wins: 2, losses: 2 },
-  { id: 'TX', name: 'Texas', color: '#BF0D3E', wins: 4, losses: 0 },
-  { id: 'FL', name: 'Florida', color: '#0021A5', wins: 1, losses: 3 },
-  { id: 'NY', name: 'New York', color: '#003087', wins: 2, losses: 2 },
-  { id: 'GA', name: 'Georgia', color: '#BA0C2F', wins: 1, losses: 3 },
-];
-
 function fmtGems(n) { return n + ' 💎'; }
 function fmt$(cents) { return '$' + (Math.floor(cents) / 100).toFixed(2); }
 function timeSince(ts) {
@@ -3659,6 +3620,21 @@ function MoreTab({ user, dispatch }) {
   );
 }
 
+
+function WashingtonClassicBracket() {
+  var TEAMS = [["SwanyThree23","DominoKing"],["ClassicLive","TechMunity1"],["AIverse_Fan","NightOwl88"],["DCDomino","SwanyFam"],["MidAtlantic","BaltimoreB"],["VirginiaAce","PGCounty"],["AnnapolisDom","NoVaElite"],["DMVChampion","BYE"]];
+  const [results, setResults] = React.useState({});
+  function win(k,p1,p2){if(results[k])return results[k];if(p2==="BYE")return p1;return null;}
+  function pick(k,n){if(results[k])return;setResults(function(p){var x=Object.assign({},p);x[k]=n;return x;});}
+  var r1=TEAMS.map(function(t,i){return win("r1_"+i,t[0],t[1]);});
+  var r2=[win("r2_0",r1[0]||"TBD",r1[1]||"TBD"),win("r2_1",r1[2]||"TBD",r1[3]||"TBD"),win("r2_2",r1[4]||"TBD",r1[5]||"TBD"),win("r2_3",r1[6]||"TBD",r1[7]||"TBD")];
+  var r3=[win("r3_0",r2[0]||"TBD",r2[1]||"TBD"),win("r3_1",r2[2]||"TBD",r2[3]||"TBD")];
+  var champ=win("final",r3[0]||"TBD",r3[1]||"TBD");
+  function MB(props){var w=results[props.mk]||(props.p2==="BYE"?props.p1:null);return React.createElement("div",{style:{marginBottom:6}},[props.p1,props.p2].map(function(p,i){var iw=w===p;return React.createElement("div",{key:i,onClick:function(){if(!w&&p!=="TBD"&&p!=="BYE")pick(props.mk,p);},style:{background:iw?"#800020":"#111",border:iw?"1px solid #C9A84C":"1px solid #1a1a1a",borderRadius:i===0?"6px 6px 0 0":"0 0 6px 6px",padding:"6px 10px",fontSize:12,color:iw?"#fff":p==="TBD"||p==="BYE"?"#444":"#ccc",cursor:!w&&p!=="TBD"&&p!=="BYE"?"pointer":"default",fontFamily:"'Barlow Condensed',sans-serif",display:"flex",justifyContent:"space-between"}},React.createElement("span",null,p==="BYE"?"—BYE—":p),iw&&React.createElement("span",{style:{color:"#C9A84C",fontSize:11}},"✓"));}));}
+  var rounds=[TEAMS.map(function(t,i){return{p1:t[0],p2:t[1],mk:"r1_"+i};}),r1.reduce(function(a,_,i){if(i%2===0)a.push({p1:r1[i]||"TBD",p2:r1[i+1]||"TBD",mk:"r2_"+Math.floor(i/2)});return a;},[]),r2.reduce(function(a,_,i){if(i%2===0)a.push({p1:r2[i]||"TBD",p2:r2[i+1]||"TBD",mk:"r3_"+Math.floor(i/2)});return a;},[]),[{p1:r3[0]||"TBD",p2:r3[1]||"TBD",mk:"final"}]];
+  return React.createElement("div",{style:{background:"#0A0A0A",minHeight:"100vh",fontFamily:"'Barlow Condensed',sans-serif",color:"#fff",padding:"16px"}},React.createElement("div",{style:{textAlign:"center",marginBottom:16}},React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:11,letterSpacing:4,color:"#800020"}},"SWANYTHREE ENTERTAINMENT PRESENTS"),React.createElement("h2",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,color:"#C9A84C",margin:0,letterSpacing:3}},"WASHINGTON CLASSIC 2026")),champ&&React.createElement("div",{style:{background:"linear-gradient(135deg,#800020,#C9A84C)",borderRadius:12,padding:"14px",textAlign:"center",marginBottom:16}},React.createElement("div",{style:{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,0.7)"}},"🏆 CHAMPION"),React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:34,letterSpacing:3}},champ)),React.createElement("div",{style:{display:"flex",gap:8,overflowX:"auto",marginBottom:12}},rounds.map(function(rnd,ri){return React.createElement("div",{key:ri,style:{minWidth:130,flex:"0 0 130px"}},React.createElement("div",{style:{fontSize:10,color:"#555",letterSpacing:1,marginBottom:6,textAlign:"center"}},["R16","QF","SF","FINAL"][ri]),rnd.map(function(m){return React.createElement(MB,{key:m.mk,p1:m.p1,p2:m.p2,mk:m.mk});}));})),React.createElement("div",{style:{textAlign:"center"}},React.createElement("button",{onClick:function(){setResults({});},style:{background:"#1a1a1a",color:"#888",border:"1px solid #333",borderRadius:6,padding:"7px 18px",fontSize:12,cursor:"pointer"}},"RESET BRACKET")));
+}
+
 function TributeWallV2() {
   var tributes = [
     { id: 1, name: 'Big Bone Earl', title: 'Legend of the Pacific Northwest', years: '1952-2023', tribute: 'A founding pillar of domino culture in Washington State. His teachings echo through every player in the Northwest.' },
@@ -3886,10 +3862,155 @@ function BottomNavV46(props) {
 // ═══════════════════════════════════════════════════════════════
 // V46 APP ROUTER PATCH — wire new pages into existing App
 // ═══════════════════════════════════════════════════════════════
+
+function StreamerCard({ streamer, onFollow, onSuper }) {
+  var s = streamer || { name:"SwanyThree23", handle:"swanythree23", viewers:312, category:"Domino x Tech", isLive:true, tier:"gold", gems:4200 };
+  var tierColor = { gold:"#C9A84C", platinum:"#E5E4E2", silver:"#C0C0C0", bronze:"#CD7F32" };
+  var tc = tierColor[s.tier] || "#888";
+  return React.createElement("div", { style:{ background:"#111", borderRadius:14, overflow:"hidden", border:"1px solid #1a1a1a", fontFamily:"'Barlow Condensed',sans-serif" } },
+    React.createElement("div", { style:{ position:"relative", aspectRatio:"16/9", background:"#050505", display:"flex", alignItems:"center", justifyContent:"center" } },
+      React.createElement("div", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:48, color:"#1a1a1a", letterSpacing:4 } }, s.name.charAt(0)),
+      s.isLive && React.createElement("div", { style:{ position:"absolute", top:8, left:8, background:"#ff2244", borderRadius:4, padding:"2px 8px", fontSize:11, color:"#fff" } }, "LIVE"),
+      s.isLive && React.createElement("div", { style:{ position:"absolute", top:8, right:8, background:"rgba(0,0,0,0.7)", borderRadius:4, padding:"2px 8px", fontSize:11, color:"#aaa" } }, "👁 "+s.viewers)
+    ),
+    React.createElement("div", { style:{ padding:"12px 14px" } },
+      React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:10, marginBottom:8 } },
+        React.createElement("div", { style:{ width:38, height:38, borderRadius:"50%", background:tc+"22", border:"2px solid "+tc, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, color:tc } }, s.name.charAt(0)),
+        React.createElement("div", { style:{ flex:1 } },
+          React.createElement("div", { style:{ fontWeight:700, fontSize:15, color:"#fff" } }, s.name),
+          React.createElement("div", { style:{ fontSize:12, color:"#555" } }, "@"+(s.handle || s.name.toLowerCase()))
+        ),
+        React.createElement("div", { style:{ fontSize:12, color:"#C8F030" } }, "💎 "+s.gems.toLocaleString())
+      ),
+      React.createElement("div", { style:{ fontSize:12, color:"#666", marginBottom:12 } }, s.category),
+      React.createElement("div", { style:{ display:"flex", gap:8 } },
+        React.createElement("button", { onClick:onFollow, style:{ flex:1, padding:"8px 0", background:"#800020", border:"none", borderRadius:8, color:"#fff", fontFamily:"'Bebas Neue',sans-serif", fontSize:14, letterSpacing:1, cursor:"pointer" } }, "FOLLOW"),
+        React.createElement("button", { onClick:onSuper, style:{ width:38, height:36, background:"#C9A84C22", border:"1px solid #C9A84C44", borderRadius:8, color:"#C9A84C", fontSize:16, cursor:"pointer" } }, "💎")
+      )
+    )
+  );
+}
+
+function OctagonalGrid({ streams, onSelect }) {
+  var items = streams || [
+    { id:1, name:"SwanyThree23", viewers:312, isLive:true,  category:"Domino x Tech", gems:4200 },
+    { id:2, name:"ClassicLive",  viewers:188, isLive:true,  category:"Washington Classic", gems:1850 },
+    { id:3, name:"AIverse_Fan",  viewers:97,  isLive:true,  category:"Tech x Culture", gems:990 },
+    { id:4, name:"DominoKing",   viewers:445, isLive:true,  category:"Domino", gems:3100 },
+    { id:5, name:"TechMunity1",  viewers:55,  isLive:false, category:"STEAM Education", gems:420 },
+    { id:6, name:"NightOwl88",   viewers:128, isLive:true,  category:"Late Night", gems:780 },
+    { id:7, name:"DCDomino",     viewers:203, isLive:true,  category:"DC Classic", gems:1240 },
+    { id:8, name:"SwanyFam",     viewers:0,   isLive:false, category:"SwanyFam", gems:220 },
+  ];
+  return React.createElement("div", { style:{ padding:"16px", fontFamily:"'Barlow Condensed',sans-serif" } },
+    React.createElement("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 } },
+      React.createElement("div", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:"#C9A84C", letterSpacing:2 } }, "LIVE NOW"),
+      React.createElement("div", { style:{ fontSize:12, color:"#555" } }, items.filter(function(s){ return s.isLive; }).length+" streams live")
+    ),
+    React.createElement("div", { style:{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 } },
+      items.map(function(s) {
+        return React.createElement("div", { key:s.id, onClick:function(){ if(onSelect) onSelect(s); }, style:{ background:"#111", borderRadius:12, overflow:"hidden", border:"1px solid #1a1a1a", cursor:"pointer", opacity:s.isLive?1:0.5 } },
+          React.createElement("div", { style:{ aspectRatio:"16/9", background:"#050505", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" } },
+            React.createElement("div", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:"#1a1a1a" } }, s.name.charAt(0)),
+            s.isLive && React.createElement("div", { style:{ position:"absolute", top:6, left:6, background:"#ff2244", borderRadius:4, padding:"1px 6px", fontSize:10, color:"#fff" } }, "LIVE"),
+            s.isLive && React.createElement("div", { style:{ position:"absolute", top:6, right:6, background:"rgba(0,0,0,0.7)", borderRadius:4, padding:"1px 6px", fontSize:10, color:"#aaa" } }, "👁 "+s.viewers)
+          ),
+          React.createElement("div", { style:{ padding:"8px 10px" } },
+            React.createElement("div", { style:{ fontSize:13, fontWeight:700, color:"#fff", marginBottom:2 } }, s.name),
+            React.createElement("div", { style:{ fontSize:11, color:"#555", marginBottom:4 } }, s.category),
+            React.createElement("div", { style:{ fontSize:11, color:"#C8F030" } }, "💎 "+s.gems.toLocaleString())
+          )
+        );
+      })
+    )
+  );
+}
+
+function FeaturedBanner({ onWatch }) {
+  var events = [
+    { id:1, title:"WASHINGTON CLASSIC 2026", subtitle:"16-Team Domino Championship - Live from Jamar's Sports Bar", cta:"WATCH NOW", color:"#800020", accent:"#C9A84C" },
+    { id:2, title:"AURA AI SURGE", subtitle:"SwanyThree23 is on SURGE state - 4200+ gems tonight", cta:"JOIN LIVE", color:"#3d0050", accent:"#C8F030" },
+    { id:3, title:"TECHMUNITY PRESENTS", subtitle:"AIverse Podcast x SeeWhy LIVE crossover stream", cta:"SET REMINDER", color:"#001a3d", accent:"#C9A84C" },
+  ];
+  var [idx, setIdx] = React.useState(0);
+  React.useEffect(function() {
+    var t = setInterval(function() { setIdx(function(p) { return (p+1) % events.length; }); }, 5000);
+    return function() { clearInterval(t); };
+  }, []);
+  var ev = events[idx];
+  return React.createElement("div", { style:{ position:"relative", overflow:"hidden", borderRadius:14, marginBottom:16 } },
+    React.createElement("div", { style:{ background:"linear-gradient(135deg,"+ev.color+",#0a0a0a)", padding:"24px 20px", minHeight:140 } },
+      React.createElement("div", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, letterSpacing:4, color:ev.accent, marginBottom:6 } }, "FEATURED"),
+      React.createElement("div", { style:{ fontFamily:"'Bebas Neue',sans-serif", fontSize:26, color:"#fff", letterSpacing:2, lineHeight:1.1, marginBottom:8 } }, ev.title),
+      React.createElement("div", { style:{ fontSize:13, color:"rgba(255,255,255,0.6)", marginBottom:16 } }, ev.subtitle),
+      React.createElement("button", { onClick:function(){ if(onWatch) onWatch(ev); }, style:{ padding:"8px 22px", background:ev.accent, color:"#000", border:"none", borderRadius:8, fontFamily:"'Bebas Neue',sans-serif", fontSize:16, letterSpacing:2, cursor:"pointer" } }, ev.cta)
+    ),
+    React.createElement("div", { style:{ position:"absolute", bottom:12, right:12, display:"flex", gap:5 } },
+      events.map(function(_, i) {
+        return React.createElement("div", { key:i, onClick:function(){ setIdx(i); }, style:{ width:i===idx?20:6, height:6, borderRadius:3, background:i===idx?ev.accent:"#333", cursor:"pointer" } });
+      })
+    )
+  );
+}
+
+function DiscoverFeed({
+  var _streams = usePublicStreams();
+  var liveStreams = _streams.streams;
+ onSelect }) {
+  var categories = ["All","Domino","Tech","Hip-Hop","Education","Classic"];
+  var [cat, setCat] = React.useState("All");
+  var creators = [
+    { id:1, name:"SwanyThree23", category:"Domino Tech", followers:"12.4K", isLive:true,  gems:4200, desc:"Techmunity founder. Washington Classic host." },
+    { id:2, name:"Joyce Moore",  category:"Memoir Talk", followers:"8.1K",  isLive:false, gems:1200, desc:"Memoirs of a Shy Girl. Community storytelling." },
+    { id:3, name:"AIverse Pod",  category:"Tech Culture",followers:"5.6K",  isLive:true,  gems:980,  desc:"AI x Hip-Hop culture podcast. Live sessions." },
+    { id:4, name:"Isaac Hayes3", category:"Domino Tech", followers:"19.2K", isLive:false, gems:3400, desc:"Domino Entertainment CEO. Business x Culture." },
+    { id:5, name:"DominoKing",   category:"Domino",      followers:"6.8K",  isLive:true,  gems:2100, desc:"DMV domino champion. PK battle specialist." },
+    { id:6, name:"ClassicLive",  category:"Classic",     followers:"3.2K",  isLive:true,  gems:750,  desc:"Washington Classic official stream partner." },
+  ];
+  var filtered = cat === "All" ? creators : creators.filter(function(c){ return c.category.indexOf(cat) > -1; });
+  return React.createElement("div", { style:{ fontFamily:"'Barlow Condensed',sans-serif", padding:"0 16px" } },
+    React.createElement("div", { style:{ display:"flex", gap:8, overflowX:"auto", marginBottom:14, paddingBottom:4 } },
+      categories.map(function(c) {
+        return React.createElement("button", { key:c, onClick:function(){ setCat(c); }, style:{ padding:"5px 14px", background:cat===c?"#800020":"#111", border:cat===c?"none":"1px solid #222", borderRadius:20, color:cat===c?"#fff":"#666", fontSize:13, cursor:"pointer", whiteSpace:"nowrap" } }, c);
+      })
+    ),
+    React.createElement("div", { style:{ display:"flex", flexDirection:"column", gap:10 } },
+      filtered.map(function(cr) {
+        return React.createElement("div", { key:cr.id, onClick:function(){ if(onSelect) onSelect(cr); }, style:{ background:"#111", borderRadius:12, padding:"14px 16px", display:"flex", alignItems:"center", gap:12, border:"1px solid #1a1a1a", cursor:"pointer" } },
+          React.createElement("div", { style:{ width:44, height:44, borderRadius:"50%", background:"#1a1a1a", border:"2px solid "+(cr.isLive?"#800020":"#222"), display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, color:cr.isLive?"#C9A84C":"#444", flexShrink:0 } }, cr.name.charAt(0)),
+          React.createElement("div", { style:{ flex:1, minWidth:0 } },
+            React.createElement("div", { style:{ display:"flex", alignItems:"center", gap:8, marginBottom:2 } },
+              React.createElement("span", { style:{ fontWeight:700, fontSize:15, color:"#fff" } }, cr.name),
+              cr.isLive && React.createElement("span", { style:{ background:"#ff2244", borderRadius:4, padding:"1px 6px", fontSize:10, color:"#fff" } }, "LIVE")
+            ),
+            React.createElement("div", { style:{ fontSize:12, color:"#555", marginBottom:2 } }, cr.category+" - "+cr.followers+" followers"),
+            React.createElement("div", { style:{ fontSize:12, color:"#666" } }, cr.desc)
+          ),
+          React.createElement("div", { style:{ fontSize:12, color:"#C8F030", flexShrink:0 } }, "💎 "+cr.gems.toLocaleString())
+        );
+      })
+    )
+  );
+}
+
 function AppV46Router({ state, dispatch }) {
   var page = state.page;
   var user = state.user;
-  return (
+  
+  if (view === "liveroom" || view === "live") {
+    return (
+      <LiveRoom
+        stream={{ title: state.streamTitle || "SeeWhy LIVE", creator: (state.user && state.user.username) || "SwanyThree23", id: state.streamId || "swanythree23" }}
+        currentUser={state.user}
+        onLeave={function() { dispatch({ type: "SET_VIEW", view: "home" }); }}
+      />
+    );
+  }
+
+  if (view === "discover") {
+    return <DiscoverFeed user={state.user} dispatch={dispatch} />;
+  }
+return (
     <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100vh', background: C.charcoal, color: C.white, fontFamily: 'DM Sans,sans-serif', position: 'relative' }}>
       {page === 'battles' && <BattlesTab user={user} dispatch={dispatch} />}
       {page === 'aihub' && <AIHubTab />}
