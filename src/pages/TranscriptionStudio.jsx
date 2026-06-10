@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Download } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -242,6 +244,31 @@ export default function TranscriptionStudio() {
           </div>
         )}
       </div>
+
+        {/* Transcription panel for VOD recordings */}
+        <TranscriptionPanel recordingUrl={null} roomTitle="Live Session" />
+
+        {/* Caption.Ninja link */}
+        <div style={{ background: 'rgba(212,175,55,0.05)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+          <div>
+            <div style={{ ...T, fontSize: 14, fontWeight: 700, color: CYAN, letterSpacing: '0.05em' }}>Caption.Ninja Integration</div>
+            <div style={{ ...MONO, fontSize: 10, color: TEXTM, marginTop: 4 }}>Use Caption.Ninja browser extension to broadcast real-time captions from your stream</div>
+          </div>
+          <a
+            href="https://caption.ninja"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em',
+              background: 'rgba(212,175,55,0.15)', border: `1px solid rgba(212,175,55,0.35)`,
+              borderRadius: 8, padding: '8px 18px',
+              color: CYAN, textDecoration: 'none',
+              flexShrink: 0,
+            }}
+          >
+            OPEN CAPTION.NINJA ↗
+          </a>
+        </div>
 
       {/* Footer nav */}
       <div style={{ padding: '10px 16px', background: BG2, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

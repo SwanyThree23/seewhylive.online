@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -418,6 +419,7 @@ export default function OnboardingPage() {
     enabled: !!user?.id,
   });
   const [step, setStep] = useState(1);
+  const [flowOpen, setFlowOpen] = useState(false);
   useEffect(() => { if (onboarding) setStep(onboarding.current_step || 1); }, [onboarding]);
 
   const updateOnboarding = useMutation({
@@ -457,6 +459,7 @@ export default function OnboardingPage() {
           </motion.div>
         </AnimatePresence>
       </motion.div>
+      <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
     </div>
   );
 }
