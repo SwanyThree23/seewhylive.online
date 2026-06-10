@@ -14,6 +14,7 @@ import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TipGoalBar from '../components/monetization/TipGoalBar';
 import TopTippers from '../components/monetization/TopTippers';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
 import { toast } from 'sonner';
@@ -471,6 +472,7 @@ const TABS = [
   { id: 'payouts',     label: 'Payouts',     icon: CreditCard },
   { id: 'tiers',       label: 'Tiers',       icon: Crown },
   { id: 'analytics',   label: 'Analytics',   icon: BarChart3 },
+  { id: 'store',       label: 'Store',       icon: DollarSign },
 ];
 
 /* ─── MAIN PAGE ─────────────────────────────────────────────────────────── */
@@ -785,6 +787,12 @@ export default function MonetizationPage() {
           {tab === 'analytics' && (
             <motion.div key="analytics" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
               <MonetizationDashboard roomId={room?.id || null} />
+            </motion.div>
+          )}
+
+          {tab === 'store' && user?.id && (
+            <motion.div key="store" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+              <VirtualGoodsStore userId={user.id} />
             </motion.div>
           )}
         </AnimatePresence>

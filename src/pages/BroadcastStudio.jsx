@@ -56,6 +56,10 @@ import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import BitratePresets from '../components/streaming/BitratePresets';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1202,8 +1206,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
             {/* 📊 POLLS */}
             {activeTab === 'polls' && (
-              <div className="p-2">
+              <div className="p-2 space-y-3">
                 <LivePollWidget roomId={partyId} currentUser={user} isHost={canManage} />
+                <InteractivePollWidget roomId={partyId} isHost={canManage} />
               </div>
             )}
 
@@ -1410,6 +1415,22 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {canManage && partyId && (
                   <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
                     <GreenroomQueue roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* Stream metadata */}
+                {isHost && party && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🏷 Stream Info</p>
+                    <StreamMetadataEditor initialTitle={party.title} initialCategory={party.category || 'general'} />
+                  </div>
+                )}
+
+                {/* Streaming presets + bitrate */}
+                {isHost && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>⚡ Stream Presets</p>
+                    <StreamingPresets onApply={preset => toast.success(`Preset "${preset?.label || preset}" applied`)} />
                   </div>
                 )}
 
