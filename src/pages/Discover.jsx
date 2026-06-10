@@ -12,6 +12,7 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -368,6 +369,9 @@ export default function DiscoverPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* AI-powered content recommendations */}
+        <ContentRecommendations />
       </div>
     </div>
   );
