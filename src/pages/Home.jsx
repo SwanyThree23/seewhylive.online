@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -546,6 +547,7 @@ export default function Home() {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
+      <ZEGOMobileAppBanner />
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
