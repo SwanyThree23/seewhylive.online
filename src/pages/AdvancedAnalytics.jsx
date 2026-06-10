@@ -3,6 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Users, DollarSign, Radio, Zap, Target } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -131,20 +136,43 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Performance */}
         {activeTab === 'performance' && (
-          <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-            <p className="font-black text-sm text-white mb-1" style={T}>Top Performing Rooms</p>
-            <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>By viewer count</p>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={roomPerformance}>
-                <CartesianGrid strokeDasharray="3 3" {...GRID} />
-                <XAxis dataKey="title" tick={TICK} axisLine={false} tickLine={false} />
-                <YAxis tick={TICK} axisLine={false} tickLine={false} />
-                <Tooltip {...TOOLTIP_STYLE} />
-                <Bar dataKey="viewers" fill={CRIMSON} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-4">
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+              <p className="font-black text-sm text-white mb-1" style={T}>Top Performing Rooms</p>
+              <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>By viewer count</p>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={roomPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" {...GRID} />
+                  <XAxis dataKey="title" tick={TICK} axisLine={false} tickLine={false} />
+                  <YAxis tick={TICK} axisLine={false} tickLine={false} />
+                  <Tooltip {...TOOLTIP_STYLE} />
+                  <Bar dataKey="viewers" fill={CRIMSON} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {rooms.find(r => r.status === 'live') && (
+              <StreamAnalyticsDashboard roomId={rooms.find(r => r.status === 'live').id} />
+            )}
+            <PerformanceDashboard
+              roomId={rooms.find(r => r.status === 'live')?.id || null}
+              sessionId={rooms.find(r => r.status === 'live')?.id || null}
+            />
+            {rooms.find(r => r.status === 'live') && (
+              <>
+                <AutomatedClipGenerator
+                  streamSession={{ id: rooms.find(r => r.status === 'live').id }}
+                  isLive
+                />
+                <AutomatedHighlightReels
+                  streamSession={{ id: rooms.find(r => r.status === 'live').id }}
+                />
+              </>
+            )}
           </div>
         )}
+
+        {/* Retention Curve */}
+        {activeTab === 'retention' && (
 
         {/* Insights */}
         {activeTab === 'insights' && (
