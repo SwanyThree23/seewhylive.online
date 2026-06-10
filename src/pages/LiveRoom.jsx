@@ -30,6 +30,7 @@ import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
 import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -946,6 +947,12 @@ export default function LiveRoom() {
         {user?.id && party?.host_id && user.id !== party.host_id && (
           <div className="px-3 mb-4">
             <ViewerLoyaltyCard userId={user.id} creatorId={party.host_id} compact />
+          </div>
+        )}
+
+        {user?.id && party?.id && (
+          <div className="px-3 mb-4">
+            <PointsEarnWidget userId={user.id} creatorId={party.host_id || ''} roomId={party.id} isHost={isHost} />
           </div>
         )}
 

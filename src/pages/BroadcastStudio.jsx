@@ -52,6 +52,10 @@ import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay'
 import ShareToSocial from '../components/social/ShareToSocial';
 import GreenRoomPreflight from '../components/live/GreenRoomPreflight';
 import TippingModal from '../components/monetization/TippingModal';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -715,6 +719,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     { id: 'tips',    label: '💰 Tips',   desc: 'Golden Wall' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
     ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
+    { id: 'health',  label: '❤️ Health', desc: 'Stream stats' },
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
     { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
@@ -1394,6 +1399,20 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
+                {/* Points earn widget */}
+                {user?.id && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                    <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user.id} roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* Greenroom guest queue */}
+                {canManage && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                    <GreenroomQueue roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
+
                 {/* Danger zone */}
                 {isHost && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)' }}>
@@ -1404,6 +1423,19 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                       <LogOut className="w-3.5 h-3.5" /> End Broadcast for Everyone
                     </button>
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* ❤️ HEALTH TAB */}
+            {activeTab === 'health' && (
+              <div className="p-2 space-y-3">
+                <StreamHealthDashboard isLive={party?.status === 'live'} />
+                {partyId && (
+                  <BroadcastAnalyticsDashboard
+                    streamSession={{ id: partyId, title: party?.title }}
+                    isLive={party?.status === 'live'}
+                  />
                 )}
               </div>
             )}
