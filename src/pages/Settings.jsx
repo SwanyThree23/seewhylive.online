@@ -228,11 +228,6 @@ export default function SettingsPage() {
           </Section>
         )}
 
-        {/* Voice AI */}
-        <Section icon={Volume2} title="Voice AI" description="Configure AI persona voice & auto-speak">
-          <VoiceAISettings />
-        </Section>
-
         {/* Appearance */}
         <Section icon={Palette} title="Appearance" description="Customize your stream and app background">
           <BackgroundCustomizer />

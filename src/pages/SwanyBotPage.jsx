@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { speakReply } from '../utils/tts';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 
 const BG    = '#080B18';

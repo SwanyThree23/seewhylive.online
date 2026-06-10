@@ -173,6 +173,12 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Retention Curve */}
         {activeTab === 'retention' && (
+          <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <p className="font-black text-sm text-white mb-1" style={T}>Viewer Retention</p>
+            <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Average watch time over stream duration</p>
+            <SwanAIRecommendations roomId={null} />
+          </div>
+        )}
 
         {/* Insights */}
         {activeTab === 'insights' && (
