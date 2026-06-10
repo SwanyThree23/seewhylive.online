@@ -105,6 +105,7 @@ const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegra
 const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
 const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
+const GreenRoomPreFlight       = lazy(() => import('./pages/GreenRoomPreFlight'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -203,6 +204,7 @@ export const PAGES = {
     "NewsletterHub": NewsletterHub,
     "SocialExpo": SocialExpo,
     "SeeWhyLIVEv37": SeeWhyLIVEv37,
+    "GreenRoomPreFlight": GreenRoomPreFlight,
 }
 
 export const pagesConfig = {
