@@ -138,12 +138,13 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
           </div>
 
           <div className="flex gap-2 pt-3">
-            <Button onClick={() => setOpen(false)} className="flex-1 bg-[#d4af37] text-black hover:bg-[#e6c158]">
+            <button onClick={() => setOpen(false)} style={{ flex: 1, background: '#d4af37', color: '#000', border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>
               Done
-            </Button>
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
+      )}
     </>
   );
 }

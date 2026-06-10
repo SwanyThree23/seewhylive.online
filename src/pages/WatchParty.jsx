@@ -29,7 +29,6 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
-import WatchPartyCoStreamPanel from '../components/live/WatchPartyCoStreamPanel';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1097,7 +1096,6 @@ export default function WatchPartyPage() {
             {activePanel === 'collab' && (
               <div className="space-y-3 p-2">
                 <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={url => setVideoUrl(url)} />
-                <WatchPartyCoStreamPanel roomId={partyId} isHost={isHost} participants={members} currentUser={user} />
               </div>
             )}
             {activePanel === 'battle' && (
