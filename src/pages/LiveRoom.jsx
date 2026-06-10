@@ -20,6 +20,29 @@ import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import { DollarSign, Gift } from 'lucide-react';
+import SuperChatRail from '../components/live/SuperChatRail';
+import ClipMarker from '../components/live/ClipMarker';
+import StreamGoals from '../components/live/StreamGoals';
+import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import GoldenWall from '../components/live/GoldenWall';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+
+// ── Guardian AI chat filter ──────────────────────────────────────────────────
+const GUARDIAN_PATTERNS = [
+  /\b(hate|kill|rape|n[i1]gg[ae]r|f[a@]gg[o0]t|ch[i1]nk|sp[i1]c|k[y1]ke)\b/i,
+  /\b(fuck\s+you|piece\s+of\s+shit|stupid\s+bitch|go\s+die)\b/i,
+  /((.)\2{5,})/,                          // spam: same char 6+ times
+  /https?:\/\/[^\s]{0,40}\.ru\b/i,        // suspicious domains
+  /(buy|cheap|discount|click here|earn \$)/i,
+];
+function filterMessageWithGuardianAI(text) {
+  for (const pat of GUARDIAN_PATTERNS) {
+    if (pat.test(text)) return { blocked: true, reason: 'Message flagged by Guardian AI' };
+  }
+  return { blocked: false };
+}
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -563,6 +586,26 @@ export default function LiveRoom() {
             </div>
           )}
         </div>
+
+        {/* ── Golden Wall: live tips & gifts ───────────────────────────────── */}
+        {roomId && (
+          <div className="px-3 mb-4">
+            <GoldenWall roomId={roomId} isExpanded />
+          </div>
+        )}
+
+        {/* ── Viewer loyalty card for this creator ─────────────────────────── */}
+        {user?.id && party?.host_id && user.id !== party.host_id && (
+          <div className="px-3 mb-4">
+            <ViewerLoyaltyCard userId={user.id} creatorId={party.host_id} compact />
+          </div>
+        )}
+
+        {user?.id && party?.id && (
+          <div className="px-3 mb-4">
+            <PointsEarnWidget userId={user.id} creatorId={party.host_id || ''} roomId={party.id} isHost={isHost} />
+          </div>
+        )}
 
         {/* ── Audience section ──────────────────────────────────────────────── */}
         <div className="px-4 mb-4">
