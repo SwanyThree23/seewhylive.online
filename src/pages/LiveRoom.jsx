@@ -15,6 +15,7 @@ import DirectPayments from '../components/live/DirectPayments';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -343,6 +344,7 @@ export default function LiveRoom() {
   const [shareOpen, setShareOpen]   = useState(false);
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
+  const [animGiftOpen, setAnimGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
   const [giftLog, setGiftLog]       = useState([]);
   const [goalOpen, setGoalOpen]     = useState(false);
@@ -793,6 +795,14 @@ export default function LiveRoom() {
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      {animGiftOpen && (
+        <AnimatedGiftShop
+          recipientId={party?.host_id}
+          roomId={roomId || party?.id}
+          onClose={() => setAnimGiftOpen(false)}
+        />
+      )}
 
       {/* ── Gift ticker strip ───────────────────────────────────────────────── */}
       <div style={{ position: 'fixed', left: 12, bottom: 112, zIndex: 43, display: 'flex', flexDirection: 'column-reverse', gap: 6, pointerEvents: 'none' }}>
