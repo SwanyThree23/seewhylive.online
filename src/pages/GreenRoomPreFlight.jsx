@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Eye, EyeOff, Copy, Check, X } from 'lucide-react';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -166,17 +167,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       </div>
 
       {/* VDO.NINJA link */}
-      <div>
-        <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 900, color: GOLD, letterSpacing: '0.1em', marginBottom: 6, textTransform: 'uppercase' }}>
-          VDO.NINJA 4K Guest Link
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px' }}>
-          <span style={{ ...MONO, fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {vdoLink}
-          </span>
-          <CopyBtn value={vdoLink} />
-        </div>
-      </div>
+      <VdoNinjaGuestLink roomId={token} />
 
       {/* Session Token */}
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 14px' }}>

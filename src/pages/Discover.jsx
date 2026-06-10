@@ -13,6 +13,7 @@ import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -372,6 +373,11 @@ export default function DiscoverPage() {
 
         {/* AI-powered content recommendations */}
         <ContentRecommendations />
+
+        {/* YouTube partner content discovery */}
+        <div className="mt-8">
+          <YouTubeDiscovery />
+        </div>
       </div>
     </div>
   );
