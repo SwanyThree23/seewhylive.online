@@ -5,7 +5,7 @@
 // Rules: no ?. · no || · no localStorage · Math.floor() for money · inline styles only
 // CREATOR_SPLIT = 90/10 IMMUTABLE · MAX_PANEL_GUESTS = 20 · PREVIEW_SECONDS = 120
 
-import { useState, useEffect, useRef, useReducer, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useReducer, useCallback } from 'react';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const C = {
@@ -5224,6 +5224,17 @@ function GoLiveButtonV1({ state, dispatch, C }) {
         setArming(false);
         setCountdown(null);
         dispatch({ type: 'SET_LIVE', payload: true });
+    fetch('/api/stream-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        creator_id: state.currentUser && state.currentUser.username ? state.currentUser.username : 'swanythree23',
+        title: state.liveRoom && state.liveRoom.title ? state.liveRoom.title : 'Live Stream',
+        status: 'live',
+        viewer_count: 0,
+        category: state.liveRoom && state.liveRoom.category ? state.liveRoom.category : 'live'
+      })
+    }).catch(function(e) { console.warn('stream-sync failed', e); });
       } else {
         setCountdown(n);
       }
@@ -6772,182 +6783,6 @@ function PayoutSettingsTab({ C }) {
 //           Guardian AI + Sponsor Overlay V2 + WA Classic
 // ============================================================
 
-// ── SCHEDULE MANAGER ─────────────────────────────────────────
-
-function ScheduleManager({ state, dispatch }) {
-  var C = COLORS;
-  var [tab, setTab] = React.useState('upcoming');
-  var [showAdd, setShowAdd] = React.useState(false);
-  var tabs = [['upcoming','📅 UPCOMING'],['live','🔴 LIVE'],['past','📼 PAST'],['add','➕ ADD']];
-  var [events, setEvents] = React.useState([
-    { id: 1, title: 'Washington Classic Semis', date: 'Jun 14', time: '7:00 PM', type: 'tournament', status: 'upcoming', desc: 'Semi-final matches — top 8 players', thumb: '🏆', color: C.gold, ppv: true, price: 9.99, registered: 1204 },
-    { id: 2, title: 'PK Battle Night', date: 'Jun 16', time: '8:00 PM', type: 'pk', status: 'upcoming', desc: 'Open challenge night — all skill levels', thumb: '⚔️', color: C.burgundy, ppv: false, price: 0, registered: 486 },
-    { id: 3, title: 'VibeNBones Sunday Session', date: 'Jun 18', time: '4:00 PM', type: 'casual', status: 'upcoming', desc: 'Chill Sunday domino vibes', thumb: '🎵', color: '#9B59B6', ppv: false, price: 0, registered: 312 },
-    { id: 4, title: 'Washington Classic Finals', date: 'Jun 21', time: '6:00 PM', type: 'tournament', status: 'upcoming', desc: 'Championship match — live from Des Moines WA', thumb: '🏆', color: C.gold, ppv: true, price: 14.99, registered: 2841 },
-    { id: 5, title: 'SwanyThree23 Live Now', date: 'Today', time: 'LIVE', type: 'live', status: 'live', desc: 'Domino session in progress', thumb: '🔴', color: C.red, ppv: false, price: 0, registered: 892 },
-  ]);
-  var upcoming = events.filter(function(e) { return e.status === 'upcoming'; });
-  var live = events.filter(function(e) { return e.status === 'live'; });
-  return (
-    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
-      <div style={{ background: 'linear-gradient(135deg,#050510,#0a0a20)', padding: '16px 14px 0', borderBottom: '1px solid ' + C.gold + '33' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,' + C.gold + ',#050510)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid ' + C.gold + '44' }}>📅</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>SCHEDULE MANAGER</div>
-            <div style={{ fontSize: 11, color: C.muted }}>{upcoming.length} upcoming · {live.length} live now</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' }}>
-          {tabs.map(function(t) { return (
-            <button key={t[0]} onClick={function() { setTab(t[0]); if (t[0] === 'add') setShowAdd(true); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 12px', color: tab === t[0] ? C.gold : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
-          );})}
-        </div>
-      </div>
-      <div style={{ padding: 14 }}>
-        {live.length > 0 && tab === 'upcoming' && (
-          <div style={{ background: 'rgba(255,50,50,0.1)', border: '1px solid ' + C.red + '44', borderRadius: 14, padding: 14, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: C.red, boxShadow: '0 0 8px ' + C.red, flexShrink: 0 }}></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: C.red, letterSpacing: 1 }}>{live[0].title}</div>
-              <div style={{ fontSize: 10, color: C.muted }}>{live[0].registered.toLocaleString()} watching now</div>
-            </div>
-            <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'live' }); }} style={{ background: C.red, border: 'none', borderRadius: 8, padding: '8px 14px', color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>JOIN</button>
-          </div>
-        )}
-        {(tab === 'upcoming' ? upcoming : tab === 'live' ? live : []).map(function(ev) { return (
-          <div key={ev.id} style={{ background: '#111', border: '1px solid ' + ev.color + '33', borderRadius: 14, padding: 16, marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: ev.color + '22', border: '1px solid ' + ev.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>{ev.thumb}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.white, letterSpacing: 1 }}>{ev.title}</div>
-                <div style={{ fontSize: 11, color: ev.color, marginTop: 2 }}>{ev.date} · {ev.time}</div>
-                <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{ev.desc}</div>
-              </div>
-              {ev.ppv && <div style={{ background: C.gold + '22', border: '1px solid ' + C.gold + '44', borderRadius: 6, padding: '4px 8px', fontSize: 10, color: C.gold, fontFamily: "'Bebas Neue',sans-serif", flexShrink: 0 }}>${ev.price}</div>}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: 10, color: C.muted }}>{ev.registered.toLocaleString()} registered</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button style={{ background: 'none', border: '1px solid #333', borderRadius: 8, padding: '6px 12px', color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, cursor: 'pointer' }}>EDIT</button>
-                <button style={{ background: ev.color + '22', border: '1px solid ' + ev.color + '44', borderRadius: 8, padding: '6px 12px', color: ev.color, fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, cursor: 'pointer' }}>GO LIVE</button>
-              </div>
-            </div>
-          </div>
-        );})}
-        {tab === 'add' && (
-          <div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.gold, letterSpacing: 1, marginBottom: 14 }}>SCHEDULE NEW STREAM</div>
-            {[{l:'TITLE',p:'Stream title'},{l:'DATE',p:'Jun 14, 2026'},{l:'TIME',p:'7:00 PM PT'},{l:'DESCRIPTION',p:'What this stream is about'}].map(function(f,i) { return (
-              <div key={i} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>{f.l}</div>
-                <input placeholder={f.p} style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box' }} />
-              </div>
-            );})}
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>TYPE</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {['Tournament','PK Battle','Casual','PPV Event'].map(function(t,i) { return (
-                  <button key={i} style={{ background: i === 0 ? C.gold + '22' : 'none', border: '1px solid ' + (i === 0 ? C.gold : '#333'), borderRadius: 8, padding: '8px 14px', color: i === 0 ? C.gold : C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>{t}</button>
-                );})}
-              </div>
-            </div>
-            <button style={{ width: '100%', background: 'linear-gradient(135deg,' + C.gold + ',#8B6914)', border: 'none', borderRadius: 12, padding: 16, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 1, marginTop: 8 }}>📅 SCHEDULE STREAM</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── BREAKOUT ROOMS MODAL ──────────────────────────────────────
-
-function BreakoutRoomsModal({ state, dispatch }) {
-  var C = COLORS;
-  var [tab, setTab] = React.useState('rooms');
-  var tabs = [['rooms','🚪 ROOMS'],['assign','👥 ASSIGN'],['settings','⚙️ SETTINGS']];
-  var [rooms, setRooms] = React.useState([
-    { id: 1, name: 'Main Stage', guests: ['SwanyThree23','CaliBonesOG','VibeNBones'], capacity: 6, active: true, color: C.gold },
-    { id: 2, name: 'Bone Room A', guests: ['BigBoneEarl','SeattleSlider'], capacity: 4, active: true, color: C.cyan },
-    { id: 3, name: 'Bone Room B', guests: ['MamaJoyce'], capacity: 4, active: false, color: '#9B59B6' },
-    { id: 4, name: 'VIP Lounge', guests: [], capacity: 3, active: false, color: C.burgundy },
-  ]);
-  return (
-    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ background: 'linear-gradient(135deg,#001520,#000a15)', padding: '14px 14px 0', borderBottom: '1px solid ' + C.cyan + '33', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-          <button onClick={function() { dispatch({ type: 'CLOSE_MODAL' }); }} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 20, cursor: 'pointer', padding: 0 }}>✕</button>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.cyan, letterSpacing: 2 }}>BREAKOUT ROOMS</div>
-            <div style={{ fontSize: 10, color: C.muted }}>{rooms.filter(function(r) { return r.active; }).length} active · {rooms.reduce(function(a,r) { return a + r.guests.length; }, 0)} guests placed</div>
-          </div>
-          <button onClick={function() { setRooms(function(rs) { return rs.concat({ id: Date.now(), name: 'Room ' + (rs.length + 1), guests: [], capacity: 4, active: false, color: C.green }); }); }} style={{ background: C.cyan + '22', border: '1px solid ' + C.cyan + '44', borderRadius: 10, padding: '8px 12px', color: C.cyan, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>+ ROOM</button>
-        </div>
-        <div style={{ display: 'flex' }}>
-          {tabs.map(function(t) { return (
-            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.cyan : '2px solid transparent', padding: '8px 4px', color: tab === t[0] ? C.cyan : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
-          );})}
-        </div>
-      </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
-        {tab === 'rooms' && rooms.map(function(room) { return (
-          <div key={room.id} style={{ background: room.active ? room.color + '08' : '#111', border: '2px solid ' + (room.active ? room.color + '44' : '#2a2a2a'), borderRadius: 14, padding: 14, marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: room.color + '22', border: '1px solid ' + room.color + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🚪</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: C.white }}>{room.name}</div>
-                <div style={{ fontSize: 10, color: C.muted }}>{room.guests.length}/{room.capacity} guests</div>
-              </div>
-              <button onClick={function() { setRooms(function(rs) { return rs.map(function(r) { return r.id === room.id ? Object.assign({}, r, { active: !r.active }) : r; }); }); }} style={{ background: room.active ? room.color + '22' : 'none', border: '1px solid ' + (room.active ? room.color : '#444'), borderRadius: 8, padding: '6px 12px', color: room.active ? room.color : C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, cursor: 'pointer' }}>{room.active ? 'ACTIVE' : 'INACTIVE'}</button>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {room.guests.map(function(g, i) { return (
-                <div key={i} style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: C.white }}>{g}</div>
-              );})}
-              {room.guests.length === 0 && <div style={{ fontSize: 11, color: C.muted, fontStyle: 'italic' }}>Empty — drag guests here</div>}
-            </div>
-          </div>
-        );})}
-        {tab === 'assign' && (
-          <div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.cyan, letterSpacing: 1, marginBottom: 12 }}>DRAG GUESTS TO ROOMS</div>
-            {['CaliBonesOG','VibeNBones','BigBoneEarl','SeattleSlider','MamaJoyce','FastHandsRod'].map(function(g, i) { return (
-              <div key={i} style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: 10, padding: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: C.cyan + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.cyan }}>{g[0]}</div>
-                <div style={{ flex: 1, fontSize: 13, color: C.white }}>{g}</div>
-                <select style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: 6, padding: '6px 10px', color: C.white, fontSize: 11 }}>
-                  {rooms.map(function(r) { return <option key={r.id} value={r.id}>{r.name}</option>; })}
-                </select>
-              </div>
-            );})}
-            <button style={{ width: '100%', background: C.cyan, border: 'none', borderRadius: 12, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer', marginTop: 8 }}>APPLY ASSIGNMENTS</button>
-          </div>
-        )}
-        {tab === 'settings' && (
-          <div>
-            {[
-              { label: 'Auto-balance Rooms', sub: 'Distribute guests evenly on open', on: false },
-              { label: 'Allow Guest Movement', sub: 'Guests can move between rooms', on: true },
-              { label: 'Broadcast All Rooms', sub: 'RTMP fanout covers all active rooms', on: false },
-              { label: 'Main Stage Priority', sub: 'Main Stage always gets best bitrate', on: true },
-            ].map(function(s, i) { return (
-              <div key={i} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: C.white, fontSize: 13 }}>{s.label}</div>
-                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{s.sub}</div>
-                </div>
-                <div style={{ width: 44, height: 24, borderRadius: 12, background: s.on ? C.cyan + '33' : '#2a2a2a', border: '1px solid ' + (s.on ? C.cyan + '55' : '#333'), position: 'relative', flexShrink: 0 }}>
-                  <div style={{ position: 'absolute', top: 3, left: s.on ? 22 : 3, width: 18, height: 18, borderRadius: '50%', background: s.on ? C.cyan : '#555' }}></div>
-                </div>
-              </div>
-            );})}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── INS FORGE ─────────────────────────────────────────────────
 
 function INSForgePage({ state, dispatch }) {
@@ -6979,7 +6814,7 @@ function INSForgePage({ state, dispatch }) {
       hype: 'YO! SeeWhy LIVE is LIVE and SwanyThree23 is in the building! The Techmunity is here, the bones are HOT, and we are NOT playing games tonight — well, actually we are. DOUBLE SIX ENERGY. Drop your gems in the chat, let the creator know you see them, and LETS GET THIS BROADCAST STARTED!',
       smooth: 'Welcome back to SeeWhy LIVE — the only platform built for real domino culture. SwanyThree23 in the seat tonight, bringing you the cleanest game on the net. Sit back, send some gems, and let the bones tell the story.',
       classic: 'Ladies and gentlemen, welcome to SeeWhy LIVE. Tonight your host SwanyThree23 presents another edition of premium domino entertainment, broadcast live from the Pacific Northwest to the Techmunity worldwide.',
-      announce: 'ATTENTION SEEWHYLIVE COMMUNITY: SwanyThree23 is now broadcasting. Tonight's stream features live domino action, PK battles, and gem rewards for active participants. Stream is live at seewhylive.online.',
+      announce: 'ATTENTION SEEWHYLIVE COMMUNITY: SwanyThree23 is now broadcasting. Tonights stream features live domino action, PK battles, and gem rewards for active participants. Stream is live at seewhylive.online.',
     };
     setTimeout(function() {
       var result = responses[style] || responses.hype;
@@ -8757,20 +8592,6 @@ function MoreTab({ user, dispatch }) {
   );
 }
 
-
-function WashingtonClassicBracket() {
-  var TEAMS = [["SwanyThree23","DominoKing"],["ClassicLive","TechMunity1"],["AIverse_Fan","NightOwl88"],["DCDomino","SwanyFam"],["MidAtlantic","BaltimoreB"],["VirginiaAce","PGCounty"],["AnnapolisDom","NoVaElite"],["DMVChampion","BYE"]];
-  const [results, setResults] = React.useState({});
-  function win(k,p1,p2){if(results[k])return results[k];if(p2==="BYE")return p1;return null;}
-  function pick(k,n){if(results[k])return;setResults(function(p){var x=Object.assign({},p);x[k]=n;return x;});}
-  var r1=TEAMS.map(function(t,i){return win("r1_"+i,t[0],t[1]);});
-  var r2=[win("r2_0",r1[0]||"TBD",r1[1]||"TBD"),win("r2_1",r1[2]||"TBD",r1[3]||"TBD"),win("r2_2",r1[4]||"TBD",r1[5]||"TBD"),win("r2_3",r1[6]||"TBD",r1[7]||"TBD")];
-  var r3=[win("r3_0",r2[0]||"TBD",r2[1]||"TBD"),win("r3_1",r2[2]||"TBD",r2[3]||"TBD")];
-  var champ=win("final",r3[0]||"TBD",r3[1]||"TBD");
-  function MB(props){var w=results[props.mk]||(props.p2==="BYE"?props.p1:null);return React.createElement("div",{style:{marginBottom:6}},[props.p1,props.p2].map(function(p,i){var iw=w===p;return React.createElement("div",{key:i,onClick:function(){if(!w&&p!=="TBD"&&p!=="BYE")pick(props.mk,p);},style:{background:iw?"#800020":"#111",border:iw?"1px solid #C9A84C":"1px solid #1a1a1a",borderRadius:i===0?"6px 6px 0 0":"0 0 6px 6px",padding:"6px 10px",fontSize:12,color:iw?"#fff":p==="TBD"||p==="BYE"?"#444":"#ccc",cursor:!w&&p!=="TBD"&&p!=="BYE"?"pointer":"default",fontFamily:"'Barlow Condensed',sans-serif",display:"flex",justifyContent:"space-between"}},React.createElement("span",null,p==="BYE"?"—BYE—":p),iw&&React.createElement("span",{style:{color:"#C9A84C",fontSize:11}},"✓"));}));}
-  var rounds=[TEAMS.map(function(t,i){return{p1:t[0],p2:t[1],mk:"r1_"+i};}),r1.reduce(function(a,_,i){if(i%2===0)a.push({p1:r1[i]||"TBD",p2:r1[i+1]||"TBD",mk:"r2_"+Math.floor(i/2)});return a;},[]),r2.reduce(function(a,_,i){if(i%2===0)a.push({p1:r2[i]||"TBD",p2:r2[i+1]||"TBD",mk:"r3_"+Math.floor(i/2)});return a;},[]),[{p1:r3[0]||"TBD",p2:r3[1]||"TBD",mk:"final"}]];
-  return React.createElement("div",{style:{background:"#0A0A0A",minHeight:"100vh",fontFamily:"'Barlow Condensed',sans-serif",color:"#fff",padding:"16px"}},React.createElement("div",{style:{textAlign:"center",marginBottom:16}},React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:11,letterSpacing:4,color:"#800020"}},"SWANYTHREE ENTERTAINMENT PRESENTS"),React.createElement("h2",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,color:"#C9A84C",margin:0,letterSpacing:3}},"WASHINGTON CLASSIC 2026")),champ&&React.createElement("div",{style:{background:"linear-gradient(135deg,#800020,#C9A84C)",borderRadius:12,padding:"14px",textAlign:"center",marginBottom:16}},React.createElement("div",{style:{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,0.7)"}},"🏆 CHAMPION"),React.createElement("div",{style:{fontFamily:"'Bebas Neue',sans-serif",fontSize:34,letterSpacing:3}},champ)),React.createElement("div",{style:{display:"flex",gap:8,overflowX:"auto",marginBottom:12}},rounds.map(function(rnd,ri){return React.createElement("div",{key:ri,style:{minWidth:130,flex:"0 0 130px"}},React.createElement("div",{style:{fontSize:10,color:"#555",letterSpacing:1,marginBottom:6,textAlign:"center"}},["R16","QF","SF","FINAL"][ri]),rnd.map(function(m){return React.createElement(MB,{key:m.mk,p1:m.p1,p2:m.p2,mk:m.mk});}));})),React.createElement("div",{style:{textAlign:"center"}},React.createElement("button",{onClick:function(){setResults({});},style:{background:"#1a1a1a",color:"#888",border:"1px solid #333",borderRadius:6,padding:"7px 18px",fontSize:12,cursor:"pointer"}},"RESET BRACKET")));
-}
 
 function TributeWallV2() {
   var tributes = [
