@@ -15,6 +15,7 @@ import TipGoalBar from '../components/monetization/TipGoalBar';
 import TopTippers from '../components/monetization/TopTippers';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import TierEditor from '../components/subscriptions/TierEditor';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
 import { toast } from 'sonner';
@@ -479,6 +480,7 @@ const TABS = [
 export default function MonetizationPage() {
   const [tab, setTab]               = useState('overview');
   const [flywheelStage, setStage]   = useState('attract');
+  const [tierEditorOpen, setTierEditorOpen] = useState(false);
   const queryClient                 = useQueryClient();
 
   const { data: user } = useQuery({
@@ -781,6 +783,7 @@ export default function MonetizationPage() {
           {tab === 'tiers' && user?.id && (
             <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
               <CreatorTierManager creatorId={user.id} />
+              <TierEditor open={tierEditorOpen} onClose={() => setTierEditorOpen(false)} creatorId={user.id} existing={null} />
             </motion.div>
           )}
 

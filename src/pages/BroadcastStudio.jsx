@@ -62,6 +62,7 @@ import StreamingPresets from '../components/streaming/StreamingPresets';
 import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1478,6 +1479,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {user?.id && (
                   <GuestRTMPPanel participantId={user.id} userId={user.id} />
                 )}
+                <ZEGOGuestApprovalPanel roomId={partyId} isHost={canManage} />
               </div>
             )}
 
