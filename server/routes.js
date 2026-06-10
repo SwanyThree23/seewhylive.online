@@ -639,4 +639,49 @@ router.post('/n8n/test', function(req, res) {
   }
 });
 
+
+// ── STREAM SYNC → Supabase ────────────────────────────────────
+var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTg3NjYzNSwiZXhwIjoyMDkxNDUyNjM1fQ.jQzERNzTL002CAgzoJkzl7oj_9YnTOISta_80AsK6tk';
+
+router.post('/stream-sync', async function(req, res) {
+  try {
+    var b = req.body;
+    var creatorId = b.creator_id;
+    // If not a UUID, look up by username
+    if (creatorId && !creatorId.match(/^[0-9a-f-]{36}$/i)) {
+      var uResp = await fetch(SUPA_URL + '/rest/v1/users?username=eq.' + encodeURIComponent(creatorId) + '&select=id&limit=1', {
+        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+      });
+      var uData = await uResp.json();
+      if (uData && uData[0] && uData[0].id) { creatorId = uData[0].id; }
+      else { creatorId = null; }
+      // fallback: hardcoded known users
+      if (!creatorId && b.creator_id === 'swanythree23') { creatorId = 'fa691550-9019-4f89-8a25-b1f88c10ac9e'; }
+    }
+    var payload = { title: b.title, status: b.status || 'live', viewer_count: b.viewer_count || 0, started_at: new Date().toISOString(), category: b.category || 'live', is_live: true, host_user_id: creatorId || null };
+    if (creatorId) payload.creator_id = creatorId;
+    var resp = await fetch(SUPA_URL + '/rest/v1/streams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=representation' },
+      body: JSON.stringify(payload)
+    });
+    var data = await resp.json();
+    res.json({ ok: true, stream: data });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/stream-end', async function(req, res) {
+  try {
+    var stream_id = req.body.stream_id;
+    await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + stream_id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
+      body: JSON.stringify({ status: 'ended', ended_at: new Date().toISOString() })
+    });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 module.exports = router;
+
