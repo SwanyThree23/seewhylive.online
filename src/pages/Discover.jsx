@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter
+  Zap, Eye, Clock, ChevronRight, Filter, Youtube, Handshake
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -12,6 +12,8 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
 function usePullToRefresh(onRefresh) {
@@ -258,6 +260,8 @@ export default function DiscoverPage() {
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
+              { id: 'youtube', label: 'YouTube', icon: Youtube },
+              { id: 'collab', label: 'Collab', icon: Handshake },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -366,6 +370,19 @@ export default function DiscoverPage() {
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+          )}
+
+          {tab === 'youtube' && (
+            <motion.div key="youtube" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <YouTubeDiscovery />
+            </motion.div>
+          )}
+
+          {tab === 'collab' && (
+            <motion.div key="collab" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+              <ContentRecommendations />
+              <CollaborationMatcher />
             </motion.div>
           )}
         </AnimatePresence>
