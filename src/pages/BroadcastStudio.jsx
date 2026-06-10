@@ -68,6 +68,18 @@ import AudioPanel from '../components/live/AudioPanel';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import AuraPanel from '../components/live/AuraPanel';
 import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import BattleArenaManager from '../components/live/BattleArenaManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -347,6 +359,8 @@ export default function BroadcastStudio() {
   const [inviteSheetOpen, setInviteSheetOpen]     = useState(false);
   const [greenRoomOpen, setGreenRoomOpen]         = useState(false);
   const [tipModalOpen, setTipModalOpen]           = useState(false);
+  const [screenSharing, setScreenSharing]         = useState(false);
+  const [activeScene, setActiveScene]             = useState('main');
   const [gateComplete, setGateComplete] = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [isExclusive, setIsExclusive] = useState(false);
@@ -1207,6 +1221,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <span className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>PK Battle Tiers</span>
                   </div>
                   <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+                  <BattleArenaManager roomId={partyId} isHost={isHost} participants={members} currentUser={user} />
+                  <BattleMode roomId={partyId} isHost={isHost} hostName={party?.host_name || ''} participants={members} />
                   <div className="rounded-xl p-3 mt-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       Award tiers to panelists in real time. Points accumulate during the broadcast and reset each session.
@@ -1225,6 +1241,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <div className="p-2 space-y-3">
                 <LivePollWidget roomId={partyId} currentUser={user} isHost={canManage} />
                 <InteractivePollWidget roomId={partyId} isHost={canManage} />
+                {partyId && (
+                  <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id} isHost={canManage} />
+                )}
               </div>
             )}
 
@@ -1434,6 +1453,55 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
+                {/* Host alert center */}
+                {isHost && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                    <HostAlertCenter />
+                  </div>
+                )}
+
+                {/* Scene switcher */}
+                {isHost && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🎬 Scene</p>
+                    <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
+                  </div>
+                )}
+
+                {/* Screen share */}
+                {isHost && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🖥 Screen Share</p>
+                    <ScreenSharePanel
+                      isSharing={screenSharing}
+                      onStartShare={() => setScreenSharing(true)}
+                      onStopShare={() => setScreenSharing(false)}
+                    />
+                  </div>
+                )}
+
+                {/* Room branding */}
+                {isHost && party && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🎨 Branding</p>
+                    <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* Multi-stream config */}
+                {isHost && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <MultiStreamConfig roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* OBS Bridge */}
+                {isHost && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <OBSBridge />
+                  </div>
+                )}
+
                 {/* Stream metadata */}
                 {isHost && party && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1494,6 +1562,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <GuestRTMPPanel participantId={user.id} userId={user.id} />
                 )}
                 <ZEGOGuestApprovalPanel roomId={partyId} isHost={canManage} />
+                <GuestStreamMonitor guestName={user?.full_name || 'Host'} isStreaming={party?.status === 'live'} />
               </div>
             )}
 
@@ -1634,6 +1703,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           ))}
                         </div>
                       )}
+
+                      {/* Soundboard */}
+                      <SoundboardWidget isVisible={true} />
 
                       {/* Link to full AI Music Studio */}
                       <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
@@ -1821,6 +1893,15 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                       <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,133,74,0.2)' }}>
                         <ClipGeneratorAI sessionId={partyId} roomId={partyId} creatorId={user?.id} />
                       </div>
+                      {partyId && user?.id && (
+                        <StreamHighlightCapture
+                          roomId={partyId}
+                          sessionId={partyId}
+                          creatorId={user.id}
+                          elapsedSeconds={0}
+                          isHost={isHost}
+                        />
+                      )}
                       <div className="rounded-xl p-3" style={{ background: 'rgba(212,133,74,0.06)', border: '1px solid rgba(212,133,74,0.15)' }}>
                         <p className="text-[11px] font-black uppercase mb-1" style={{ color: '#D4854A', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Clip Generator</p>
                         <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Automatically detects highlight moments and creates shareable clips from your live session.</p>
