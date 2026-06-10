@@ -5,6 +5,9 @@ import { TrendingUp, Users, DollarSign, Radio, Zap, Target, Download } from 'luc
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -205,6 +208,21 @@ export default function AdvancedAnalyticsPage() {
             {/* Live stream analytics panel */}
             {rooms.find(r => r.status === 'live') && (
               <StreamAnalyticsDashboard roomId={rooms.find(r => r.status === 'live').id} />
+            )}
+            <PerformanceDashboard
+              roomId={rooms.find(r => r.status === 'live')?.id || null}
+              sessionId={rooms.find(r => r.status === 'live')?.id || null}
+            />
+            {rooms.find(r => r.status === 'live') && (
+              <>
+                <AutomatedClipGenerator
+                  streamSession={{ id: rooms.find(r => r.status === 'live').id }}
+                  isLive
+                />
+                <AutomatedHighlightReels
+                  streamSession={{ id: rooms.find(r => r.status === 'live').id }}
+                />
+              </>
             )}
           </div>
         )}
