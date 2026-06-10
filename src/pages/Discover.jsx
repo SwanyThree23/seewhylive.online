@@ -224,6 +224,29 @@ export default function DiscoverPage() {
         </div>
       </div>
 
+      {/* Tournament & Battle Feature Strip */}
+      <div style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', overflowX: 'auto', scrollbarWidth: 'none' }}>
+        <div style={{ display: 'flex', gap: 8, padding: '10px 16px', width: 'max-content' }}>
+          {[
+            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#1565C0' },
+            { emoji: '🏟️', label: 'Battle Arena',    sub: 'Vote Live Battles', page: 'PKBattleArena',  color: '#C0392B' },
+            { emoji: '🏆', label: 'Live Battles',    sub: 'PK Showdowns',   page: 'LiveBattles',     color: '#D4854A' },
+            { emoji: '👑', label: 'Elite League',    sub: 'Creator Rankings', page: 'Leaderboard',    color: '#D4AF37' },
+            { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',  page: 'TributeWall',     color: '#8B6F47' },
+            { emoji: '🎬', label: 'VOD Library',     sub: 'Past Streams',   page: 'VODLibrary',      color: '#D4854A' },
+            { emoji: '🎟️', label: 'PPV Events',      sub: 'Pay-Per-View',   page: 'PayPerViewEvents',color: '#8B6F00' },
+          ].map(item => (
+            <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{ width: 96, padding: '8px 6px', background: item.color + '12', border: `1px solid ${item.color}28`, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontSize: 18 }}>{item.emoji}</span>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 10, color: '#fff', textAlign: 'center', letterSpacing: '0.02em', lineHeight: 1.2 }}>{item.label}</span>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 8, color: item.color, textAlign: 'center', opacity: 0.9 }}>{item.sub}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}

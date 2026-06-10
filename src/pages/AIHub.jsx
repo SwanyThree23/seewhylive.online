@@ -919,6 +919,48 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Aura AI + SwanyBot + Voice Settings row ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
+            <div style={{ background: BG2, border: '1px solid rgba(212,175,55,0.15)', borderRadius: 16, borderLeft: `3px solid ${GOLD}`, padding: '14px 14px' }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>✨</div>
+              <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.06em' }}>AURA AI</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.4, fontFamily: 'Space Mono, monospace' }}>Premium co-host · Brand & content</div>
+            </div>
+          </Link>
+          <Link to={createPageUrl('SwanyBotPage')} style={{ textDecoration: 'none' }}>
+            <div style={{ background: BG2, border: '1px solid rgba(204,119,85,0.2)', borderRadius: 16, borderLeft: `3px solid #CC7755`, padding: '14px 14px' }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>🎮</div>
+              <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#CC7755', letterSpacing: '0.06em' }}>SWANYBOT</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.4, fontFamily: 'Space Mono, monospace' }}>Domino culture · SVS expert</div>
+            </div>
+          </Link>
+        </div>
+        <Link to={createPageUrl('VoiceAISettings')} style={{ textDecoration: 'none' }}>
+          <div style={{ background: BG2, border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16, borderLeft: `3px solid ${GOLD}`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, ${GOLD}, #8A6F2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🔊</div>
+              <div>
+                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.06em' }}>VOICE AI SETTINGS</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Mono, monospace', marginTop: 2 }}>TTS · Voice selector · Volume · Speed</div>
+              </div>
+            </div>
+            <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900, letterSpacing: '0.06em' }}>Configure →</span>
+          </div>
+        </Link>
+        <Link to={createPageUrl('TranscriptionStudio')} style={{ textDecoration: 'none' }}>
+          <div style={{ background: BG2, border: '1px solid rgba(74,124,89,0.2)', borderRadius: 16, borderLeft: `3px solid #4A7C59`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #4A7C59, #2A5C39)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📝</div>
+              <div>
+                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#6DBF7E', letterSpacing: '0.06em' }}>TRANSCRIPTION STUDIO</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Mono, monospace', marginTop: 2 }}>Live captions · SRT export · Multi-language</div>
+              </div>
+            </div>
+            <span style={{ ...T, fontSize: 12, color: '#6DBF7E', fontWeight: 900, letterSpacing: '0.06em' }}>Open →</span>
+          </div>
+        </Link>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,

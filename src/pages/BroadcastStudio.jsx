@@ -1072,11 +1072,13 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           <div className="shrink-0 flex items-center gap-2 px-3 py-2 overflow-x-auto"
             style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
             {[
-              { icon: '🎁', label: 'Gifts',  action: () => setGiftOpen(true) },
-              { icon: '📊', label: 'Poll',   action: () => { window.location.href = '/PollManager'; } },
-              { icon: '🔔', label: 'Alert',  action: () => toast.info('Alert sent to audience!') },
-              { icon: '📱', label: 'QR',     action: () => toast.info(window.location.href) },
-              { icon: '🎵', label: 'Music',  action: () => { window.location.href = '/AIMusic'; } },
+              { icon: '🎁', label: 'Gifts',   action: () => setGiftOpen(true) },
+              { icon: '📊', label: 'Poll',    action: () => { window.location.href = '/PollManager'; } },
+              { icon: '🔔', label: 'Alert',   action: () => toast.info('Alert sent to audience!') },
+              { icon: '📱', label: 'QR',      action: () => toast.info(window.location.href) },
+              { icon: '🎵', label: 'Music',   action: () => { window.location.href = '/AIMusic'; } },
+              { icon: '📝', label: 'Captions',action: () => { window.location.href = '/TranscriptionStudio'; } },
+              { icon: '🎛️', label: 'Control', action: () => { window.location.href = '/ControlRoom'; } },
             ].map(item => (
               <button key={item.label}
                 onClick={item.action}

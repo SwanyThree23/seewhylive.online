@@ -823,6 +823,28 @@ export default function StateVsState() {
       {tab === 'LIVE MATCH' && <LiveMatchView />}
       {tab === 'STANDINGS' && <StandingsView />}
       {tab === 'JUDGES' && <JudgesView />}
+
+      {/* Cross-navigation footer */}
+      <div style={{ padding: '16px 16px 32px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {[
+          { to: '/SwanyBotPage',    label: '🤖 SwanyBot AI',  bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
+          { to: '/Leaderboard',     label: '👑 Elite League', bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
+          { to: '/PKBattleManager', label: '🥊 PK Battle',    bg: 'rgba(192,57,43,0.1)',    border: 'rgba(192,57,43,0.25)', color: '#C0392B' },
+          { to: '/PKBattleArena',   label: '⚔️ Battle Arena', bg: 'rgba(192,57,43,0.08)',   border: 'rgba(192,57,43,0.2)',  color: '#C0392B' },
+          { to: '/TributeWall',     label: '🕊️ Tribute Wall', bg: 'rgba(139,111,71,0.1)',   border: 'rgba(139,111,71,0.25)',color: '#8B6F47' },
+        ].map(function(item) {
+          return (
+            <Link key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
+              <button style={{
+                padding: '8px 16px', borderRadius: 999, border: `1px solid ${item.border}`,
+                background: item.bg, color: item.color, cursor: 'pointer',
+                fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+                fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
+              }}>{item.label}</button>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

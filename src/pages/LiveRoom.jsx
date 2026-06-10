@@ -16,6 +16,9 @@ import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import { DollarSign, Gift } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
@@ -126,7 +129,14 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
 
       {/* Name + role label */}
       <div className="text-center" style={{ maxWidth: size + 8 }}>
-        <p className="text-[11px] font-bold text-white leading-none truncate">{p.name}</p>
+        <div className="flex items-center justify-center gap-1">
+          <p className="text-[11px] font-bold text-white leading-none truncate">{p.name}</p>
+          {p.fm && (
+            <span style={{ fontSize: 8, fontWeight: 900, color: GOLD, background: `${GOLD}22`, border: `1px solid ${GOLD}55`, borderRadius: 4, padding: '1px 4px', letterSpacing: '0.04em', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>
+              FM{p.fmNum ? `#${p.fmNum}` : ''}
+            </span>
+          )}
+        </div>
         {(isHost || isCohost) && (
           <p className="text-[11px] mt-0.5 font-semibold" style={{ color: GOLD + 'BB' }}>
             {isHost ? 'Host' : 'Co-host'}
@@ -152,9 +162,14 @@ function AudienceTile({ p }) {
           </span>
         </div>
       </div>
-      <p className="text-[11px] text-white/35 truncate leading-none" style={{ maxWidth: 48 }}>
-        {p.name.split(' ')[0]}
-      </p>
+      <div className="flex items-center gap-1 justify-center" style={{ maxWidth: 52 }}>
+        <p className="text-[11px] text-white/35 truncate leading-none">{p.name.split(' ')[0]}</p>
+        {p.fm && (
+          <span style={{ fontSize: 7, fontWeight: 900, color: GOLD, background: `${GOLD}22`, border: `1px solid ${GOLD}44`, borderRadius: 3, padding: '1px 3px', letterSpacing: '0.03em', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>
+            FM
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -279,11 +294,13 @@ export default function LiveRoom() {
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
         muted:    m.is_audio_enabled === false,
+        fm:       m.is_founding_member || false,
+        fmNum:    m.founding_member_number || null,
       }))
     : DEMO_STAGE;
 
   const audience = roomId && members.length > 6
-    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
+    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer', fm: m.is_founding_member || false, fmNum: m.founding_member_number || null }))
     : DEMO_AUDIENCE;
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
@@ -304,7 +321,22 @@ export default function LiveRoom() {
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
+  const [giftLog, setGiftLog]       = useState([]);
+  const [goalOpen, setGoalOpen]     = useState(false);
   const lastGiftTsRef               = useRef(0);
+
+  // Connection quality stats (simulated — replace with real WebRTC getStats() when available)
+  const [connStats, setConnStats] = useState({ latency: 39, bitrate: 3312, loss: 0, quality: 'EXCELLENT' });
+  useEffect(() => {
+    const t = setInterval(() => {
+      const lat  = 28 + Math.floor(Math.random() * 48);
+      const br   = 2800 + Math.floor(Math.random() * 900);
+      const loss = Math.random() < 0.12 ? Math.floor(Math.random() * 3) : 0;
+      const quality = lat < 60 && loss === 0 ? 'EXCELLENT' : lat < 100 && loss < 2 ? 'GOOD' : lat < 160 ? 'FAIR' : 'POOR';
+      setConnStats({ latency: lat, bitrate: br, loss, quality });
+    }, 4000);
+    return () => clearInterval(t);
+  }, []);
 
   // Sync stage when real data arrives
   useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
@@ -453,6 +485,31 @@ export default function LiveRoom() {
             <span className="text-[11px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
           </div>
         </div>
+
+        {/* ── Connection status bar ────────────────────────────────────────── */}
+        {isLive && (() => {
+          const qColor = connStats.quality === 'EXCELLENT' ? '#6DBF7E' : connStats.quality === 'GOOD' ? '#D4AF37' : connStats.quality === 'FAIR' ? '#D4854A' : '#EF4444';
+          return (
+            <div className="px-4 pb-2">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '5px 10px', flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, fontWeight: 700, color: qColor, letterSpacing: '0.06em' }}>
+                  ● {connStats.quality}
+                </span>
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.latency}ms
+                </span>
+                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.bitrate.toLocaleString()}kbps
+                </span>
+                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: connStats.loss > 0 ? '#EF4444' : 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.loss}% loss
+                </span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Stage header ─────────────────────────────────────────────────── */}
         <div className="px-4 mb-3 flex items-center justify-between">
@@ -693,6 +750,52 @@ export default function LiveRoom() {
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      {/* ── Gift ticker strip ───────────────────────────────────────────────── */}
+      <div style={{ position: 'fixed', left: 12, bottom: 112, zIndex: 43, display: 'flex', flexDirection: 'column-reverse', gap: 6, pointerEvents: 'none' }}>
+        <AnimatePresence>
+          {giftLog.map((ev, i) => (
+            <motion.div key={ev.id}
+              initial={{ x: -60, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 - i * 0.2 }}
+              exit={{ x: -60, opacity: 0 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '5px 10px 5px 6px', borderRadius: 20,
+                backdropFilter: 'blur(12px)', background: 'rgba(8,7,16,0.82)',
+                border: `1px solid ${ev.gift?.color ?? GOLD}44`, maxWidth: 180,
+              }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{ev.gift?.emoji ?? '🎁'}</span>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 10, fontWeight: 900, color: ev.gift?.color ?? GOLD, fontFamily: 'Barlow Condensed, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.senderName}</p>
+                <p style={{ margin: 0, fontSize: 9, color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>sent {ev.gift?.name ?? 'a gift'}</p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Quick Poll Launcher (hosts) ─────────────────────────────────────── */}
+      {isHost && roomId && (
+        <div style={{ position: 'fixed', bottom: 88, left: 12, zIndex: 44 }}>
+          <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />
+        </div>
+      )}
+
+      {/* ── Stream Goal Widget ──────────────────────────────────────────────── */}
+      {goalOpen && isHost && (
+        <div style={{ position: 'fixed', bottom: 90, right: 12, zIndex: 44, width: 280 }}>
+          <LiveGoalWidget
+            memberCount={0}
+            tipTotal={giftLog.reduce((s, g) => s + (g.amount || 0), 0)}
+            subCount={0}
+          />
+        </div>
+      )}
+
+      {/* ── Host Alert Center ───────────────────────────────────────────────── */}
+      {isHost && <HostAlertCenter />}
 
       {showExclusiveGate && (
         <div style={{
