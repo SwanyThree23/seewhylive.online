@@ -830,6 +830,7 @@ export default function StateVsState() {
           { to: '/SwanyBotPage',    label: '🤖 SwanyBot AI',  bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
           { to: '/Leaderboard',     label: '👑 Elite League', bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
           { to: '/PKBattleManager', label: '🥊 PK Battle',    bg: 'rgba(192,57,43,0.1)',    border: 'rgba(192,57,43,0.25)', color: '#C0392B' },
+          { to: '/PKBattleArena',   label: '⚔️ Battle Arena', bg: 'rgba(192,57,43,0.08)',   border: 'rgba(192,57,43,0.2)',  color: '#C0392B' },
           { to: '/TributeWall',     label: '🕊️ Tribute Wall', bg: 'rgba(139,111,71,0.1)',   border: 'rgba(139,111,71,0.25)',color: '#8B6F47' },
         ].map(function(item) {
           return (
