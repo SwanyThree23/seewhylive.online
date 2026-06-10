@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/AuthContext';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -220,6 +221,13 @@ export default function SettingsPage() {
             ))}
           </div>
         </Section>
+
+        {/* My Subscriptions */}
+        {user && (
+          <Section icon={Bell} title="My Subscriptions" description="Creators you're subscribed to">
+            <MySubscriptions userId={user.id} />
+          </Section>
+        )}
 
         {/* Social Links */}
         {user && (

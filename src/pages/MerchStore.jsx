@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Package, Plus, X, Check, Tag, BarChart2, Truck } from 'lucide-react';
+import ShopDashboard from '../components/merch/ShopDashboard';
 import { toast } from 'sonner';
 
 const BG      = '#080B18';
@@ -288,9 +289,10 @@ export default function MerchStorePage() {
 
   const TABS = isOwnStore
     ? [
-        { id: 'store',    label: 'Public Store', icon: ShoppingBag },
-        { id: 'manage',   label: 'Manage Items', icon: Package },
-        { id: 'orders',   label: `Orders (${orders.length})`, icon: Truck },
+        { id: 'store',     label: 'Public Store', icon: ShoppingBag },
+        { id: 'manage',    label: 'Manage Items', icon: Package },
+        { id: 'orders',    label: `Orders (${orders.length})`, icon: Truck },
+        { id: 'dashboard', label: 'Dashboard',    icon: BarChart2 },
       ]
     : [{ id: 'store', label: 'Store', icon: ShoppingBag }];
 
@@ -509,6 +511,12 @@ export default function MerchStorePage() {
             })}
           </div>
         )}
+
+        {/* ── DASHBOARD TAB ─────────────────────────────── */}
+        {activeTab === 'dashboard' && isOwnStore && targetCreatorId && (
+          <ShopDashboard creatorId={targetCreatorId} />
+        )}
+
       </div>
 
       {/* Product Sheet */}

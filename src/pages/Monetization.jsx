@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 import PayPerViewManager from '@/components/monetization/PayPerViewManager';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import TipGoalBar from '../components/monetization/TipGoalBar';
+import TopTippers from '../components/monetization/TopTippers';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
 import { toast } from 'sonner';
@@ -467,6 +470,7 @@ const TABS = [
   { id: 'subscribers', label: 'Subscribers', icon: Users },
   { id: 'payouts',     label: 'Payouts',     icon: CreditCard },
   { id: 'tiers',       label: 'Tiers',       icon: Crown },
+  { id: 'analytics',   label: 'Analytics',   icon: BarChart3 },
 ];
 
 /* ─── MAIN PAGE ─────────────────────────────────────────────────────────── */
@@ -652,6 +656,18 @@ export default function MonetizationPage() {
                 </div>
               </div>
 
+              {/* Tip goal + top tippers */}
+              {room?.id && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                  <div style={{ ...card(), flex: '1 1 240px' }}>
+                    <TipGoalBar roomId={room.id} goal={500} label="Stream Goal" />
+                  </div>
+                  <div style={{ ...card(), flex: '1 1 240px' }}>
+                    <TopTippers roomId={room.id} limit={5} />
+                  </div>
+                </div>
+              )}
+
               {/* 90/10 split bar */}
               <div style={card()}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: G, margin: '0 0 12px', ...T }}>90/10 Platform Split</p>
@@ -763,6 +779,12 @@ export default function MonetizationPage() {
           {tab === 'tiers' && user?.id && (
             <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
               <CreatorTierManager creatorId={user.id} />
+            </motion.div>
+          )}
+
+          {tab === 'analytics' && (
+            <motion.div key="analytics" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+              <MonetizationDashboard roomId={room?.id || null} />
             </motion.div>
           )}
         </AnimatePresence>
