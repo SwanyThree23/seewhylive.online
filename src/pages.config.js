@@ -94,6 +94,9 @@ const StateVsState        = lazy(() => import('./pages/StateVsState'));
 const TributeWall         = lazy(() => import('./pages/TributeWall'));
 const INSForge            = lazy(() => import('./pages/INSForge'));
 const JoyceAI             = lazy(() => import('./pages/JoyceAI'));
+const AuraAI              = lazy(() => import('./pages/AuraAI'));
+const SwanyBotPage        = lazy(() => import('./pages/SwanyBotPage'));
+const VoiceAISettings     = lazy(() => import('./pages/VoiceAISettings'));
 const GuardianAI          = lazy(() => import('./pages/GuardianAI'));
 const StreamRefDash            = lazy(() => import('./pages/StreamRefDash'));
 const StreamInfraRef           = lazy(() => import('./pages/StreamInfraRef'));
@@ -189,6 +192,9 @@ export const PAGES = {
     "TributeWall": TributeWall,
     "INSForge": INSForge,
     "JoyceAI": JoyceAI,
+    "AuraAI": AuraAI,
+    "SwanyBotPage": SwanyBotPage,
+    "VoiceAISettings": VoiceAISettings,
     "GuardianAI": GuardianAI,
     "StreamRefDash": StreamRefDash,
     "StreamInfraRef": StreamInfraRef,
