@@ -129,7 +129,14 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
 
       {/* Name + role label */}
       <div className="text-center" style={{ maxWidth: size + 8 }}>
-        <p className="text-[11px] font-bold text-white leading-none truncate">{p.name}</p>
+        <div className="flex items-center justify-center gap-1">
+          <p className="text-[11px] font-bold text-white leading-none truncate">{p.name}</p>
+          {p.fm && (
+            <span style={{ fontSize: 8, fontWeight: 900, color: GOLD, background: `${GOLD}22`, border: `1px solid ${GOLD}55`, borderRadius: 4, padding: '1px 4px', letterSpacing: '0.04em', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>
+              FM{p.fmNum ? `#${p.fmNum}` : ''}
+            </span>
+          )}
+        </div>
         {(isHost || isCohost) && (
           <p className="text-[11px] mt-0.5 font-semibold" style={{ color: GOLD + 'BB' }}>
             {isHost ? 'Host' : 'Co-host'}
@@ -155,9 +162,14 @@ function AudienceTile({ p }) {
           </span>
         </div>
       </div>
-      <p className="text-[11px] text-white/35 truncate leading-none" style={{ maxWidth: 48 }}>
-        {p.name.split(' ')[0]}
-      </p>
+      <div className="flex items-center gap-1 justify-center" style={{ maxWidth: 52 }}>
+        <p className="text-[11px] text-white/35 truncate leading-none">{p.name.split(' ')[0]}</p>
+        {p.fm && (
+          <span style={{ fontSize: 7, fontWeight: 900, color: GOLD, background: `${GOLD}22`, border: `1px solid ${GOLD}44`, borderRadius: 3, padding: '1px 3px', letterSpacing: '0.03em', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>
+            FM
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -282,11 +294,13 @@ export default function LiveRoom() {
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
         muted:    m.is_audio_enabled === false,
+        fm:       m.is_founding_member || false,
+        fmNum:    m.founding_member_number || null,
       }))
     : DEMO_STAGE;
 
   const audience = roomId && members.length > 6
-    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
+    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer', fm: m.is_founding_member || false, fmNum: m.founding_member_number || null }))
     : DEMO_AUDIENCE;
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
