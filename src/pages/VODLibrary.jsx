@@ -4,6 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Film, Scissors } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
+import VODCard from '../components/vod/VODCard';
+import RecordingManager from '../components/content/RecordingManager';
+import ChapterEditor from '../components/vod/ChapterEditor';
+import VODTrimEditor from '../components/vod/VODTrimEditor';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 
 const G = '#D4AF37';
 const BG = '#0A0710';

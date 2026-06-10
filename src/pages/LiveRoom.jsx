@@ -25,6 +25,10 @@ import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import MobileStreamControls from '../components/live/MobileStreamControls';
 import ReportModal from '../components/moderation/ReportModal';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PaywallGate from '../components/live/PaywallGate';
+import PointsNotification from '../components/live/PointsNotification';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import GiftAnimation from '../components/live/GiftAnimation';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -850,6 +854,22 @@ export default function LiveRoom() {
       {/* Subscription gate */}
       {party?.host_id && (
         <SubscriptionGate creatorId={party.host_id} roomId={roomId || party?.id} />
+      )}
+
+      {/* PPV gate */}
+      {!isHost && (roomId || party?.id) && (
+        <PayPerViewGate roomId={roomId || party?.id} ppvPrice={4.99} onPurchase={() => {}} />
+      )}
+
+      {/* Paywall gate */}
+      <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={isHost} />
+
+      {/* Points notification */}
+      {user?.id && <PointsNotification userId={user.id} />}
+
+      {/* Loyalty badge */}
+      {user?.id && party?.host_id && (
+        <LoyaltyBadge userId={user.id} creatorId={party.host_id} />
       )}
 
       {/* Report modal */}
