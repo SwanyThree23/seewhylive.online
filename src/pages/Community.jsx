@@ -6,11 +6,17 @@ import { Users, MessageSquare } from 'lucide-react';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import ReferralProgram from '@/components/community/ReferralProgram';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import CreatePollModal from '../components/community/CreatePollModal';
+import PollCard from '../components/community/PollCard';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 
 const G = '#D4AF37';
 const BG = '#080B18';
 
 export default function CommunityPage() {
+  const [pollModalOpen, setPollModalOpen] = useState(false);
+  const [modModalOpen, setModModalOpen] = useState(false);
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -71,6 +77,13 @@ export default function CommunityPage() {
           </div>
         )}
       </div>
+      {community?.id && (
+        <>
+          <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
+          <PollCard poll={null} />
+          <ModerationActionModal isOpen={modModalOpen} onClose={() => setModModalOpen(false)} targetUser={null} roomId={null} communityId={community.id} moderatorId={user?.id} />
+        </>
+      )}
     </div>
   );
 }
