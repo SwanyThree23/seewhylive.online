@@ -35,4 +35,6 @@ dist-ssr
 
 # Deployment tooling
 .netlify
-.vercel
+.vercelfrontend/src/App.jsx.bak*
+server/*.save*
+server/*_backup*
