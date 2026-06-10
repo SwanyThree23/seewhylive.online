@@ -17,6 +17,12 @@ import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import TippingOverlay from '../components/live/TippingOverlay';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import SuperChatBar from '../components/live/SuperChatBar';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import GiftAnimation from '../components/live/GiftAnimation';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -610,6 +616,34 @@ export default function LiveRoom() {
           </div>
         )}
 
+        {/* Virtual currency tips */}
+        {user?.id && party?.host_id && (
+          <div className="px-3 mb-4">
+            <VirtualCurrencyTips roomId={party.id} creatorId={party.host_id} currentUser={user} isHost={isHost} />
+          </div>
+        )}
+
+        {/* Super chat bar */}
+        {user?.id && party?.host_id && (
+          <div className="px-3 mb-4">
+            <SuperChatBar roomId={party.id} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+          </div>
+        )}
+
+        {/* Realtime leaderboard */}
+        {party?.id && party?.host_id && (
+          <div className="px-3 mb-4">
+            <RealtimeLeaderboard roomId={party.id} creatorId={party.host_id} />
+          </div>
+        )}
+
+        {/* Leaderboard panel */}
+        {party?.id && (
+          <div className="px-3 mb-4">
+            <LeaderboardPanel roomId={party.id} />
+          </div>
+        )}
+
         {/* ── Audience section ──────────────────────────────────────────────── */}
         <div className="px-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
@@ -803,6 +837,16 @@ export default function LiveRoom() {
           roomId={roomId || party?.id}
           onClose={() => setAnimGiftOpen(false)}
         />
+      )}
+
+      {/* Tipping overlay (viewer) */}
+      {user?.id && party?.host_id && !isHost && (
+        <TippingOverlay roomId={roomId || party?.id} creatorId={party.host_id} isVisible />
+      )}
+
+      {/* Subscription gate */}
+      {party?.host_id && (
+        <SubscriptionGate creatorId={party.host_id} roomId={roomId || party?.id} />
       )}
 
       {!zegoJoined && user?.id && (roomId || party?.id) && (

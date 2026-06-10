@@ -9,6 +9,8 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
 import PKBattleInterface from '../components/pk/PKBattleInterface';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import BattleScoreboard from '../components/live/BattleScoreboard';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import AggregatedChat from '../components/live/AggregatedChat';
 import { useLocalMedia } from '../hooks/useLocalMedia';
@@ -553,6 +555,13 @@ export default function PKBattlePage() {
       {battleId && (
         <div className="absolute top-2 left-2 z-30 max-w-xs">
           <PKBattleInterface roomId={battleId} />
+        </div>
+      )}
+
+      {battleId && (
+        <div className="absolute top-2 right-2 z-30 max-w-xs space-y-2">
+          <BattleScoreboard roomId={battleId} />
+          <PKBattleSoundboard battleId={battleId} isBattleActive={!!battle} />
         </div>
       )}
 
