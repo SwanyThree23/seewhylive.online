@@ -7,6 +7,7 @@ import {
   Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown
 } from 'lucide-react';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import VideoLibrary from '../components/vod/VideoLibrary';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -252,6 +253,13 @@ export default function CreatorChannel() {
             <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.5)' }}>
               <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
             </div>
+            <TierSubscribeCard
+              tier={null}
+              currentSub={null}
+              userId={currentUser?.id}
+              creatorId={userId}
+              isHighlighted={false}
+            />
           </div>
         )}
 
