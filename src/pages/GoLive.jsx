@@ -463,7 +463,7 @@ export default function GoLive() {
             {FORMATS.map(fmt => <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />)}
 
             <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.12)' }}>
-              <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+              <Link to={createPageUrl('GreenRoomPreFlight')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
                 <span style={{ fontSize: 28 }}>🎬</span>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Green Room</div>

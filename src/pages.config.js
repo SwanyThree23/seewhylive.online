@@ -94,6 +94,9 @@ const StateVsState        = lazy(() => import('./pages/StateVsState'));
 const TributeWall         = lazy(() => import('./pages/TributeWall'));
 const INSForge            = lazy(() => import('./pages/INSForge'));
 const JoyceAI             = lazy(() => import('./pages/JoyceAI'));
+const AuraAI              = lazy(() => import('./pages/AuraAI'));
+const SwanyBotPage        = lazy(() => import('./pages/SwanyBotPage'));
+const VoiceAISettings     = lazy(() => import('./pages/VoiceAISettings'));
 const GuardianAI          = lazy(() => import('./pages/GuardianAI'));
 const StreamRefDash            = lazy(() => import('./pages/StreamRefDash'));
 const StreamInfraRef           = lazy(() => import('./pages/StreamInfraRef'));
@@ -102,6 +105,9 @@ const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegra
 const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
 const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
+const GreenRoomPreFlight       = lazy(() => import('./pages/GreenRoomPreFlight'));
+const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
+const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -189,6 +195,9 @@ export const PAGES = {
     "TributeWall": TributeWall,
     "INSForge": INSForge,
     "JoyceAI": JoyceAI,
+    "AuraAI": AuraAI,
+    "SwanyBotPage": SwanyBotPage,
+    "VoiceAISettings": VoiceAISettings,
     "GuardianAI": GuardianAI,
     "StreamRefDash": StreamRefDash,
     "StreamInfraRef": StreamInfraRef,
@@ -197,6 +206,9 @@ export const PAGES = {
     "NewsletterHub": NewsletterHub,
     "SocialExpo": SocialExpo,
     "SeeWhyLIVEv37": SeeWhyLIVEv37,
+    "GreenRoomPreFlight": GreenRoomPreFlight,
+    "PKBattleArena": PKBattleArena,
+    "TranscriptionStudio": TranscriptionStudio,
 }
 
 export const pagesConfig = {

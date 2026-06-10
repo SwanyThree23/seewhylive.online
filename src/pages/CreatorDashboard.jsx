@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, FileText, Sliders } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
@@ -108,9 +108,41 @@ export default function CreatorDashboardPage() {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.04))`,
-      border: 'rgba(0,212,255,0.3)',
-      iconColor: '#00d4ff',
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.04))`,
+      border: 'rgba(212,175,55,0.3)',
+      iconColor: G,
+    },
+    {
+      icon: Sliders,
+      label: 'Pre-Flight',
+      href: createPageUrl('GreenRoomPreFlight'),
+      gradient: `linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.04))`,
+      border: 'rgba(34,197,94,0.3)',
+      iconColor: '#22c55e',
+    },
+    {
+      icon: FileText,
+      label: 'Captions',
+      href: createPageUrl('TranscriptionStudio'),
+      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
+      border: 'rgba(109,191,126,0.3)',
+      iconColor: '#6DBF7E',
+    },
+    {
+      icon: Bot,
+      label: 'Aura AI',
+      href: createPageUrl('AuraAI'),
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
+      border: 'rgba(212,175,55,0.35)',
+      iconColor: G,
+    },
+    {
+      icon: BarChart3,
+      label: 'Control',
+      href: createPageUrl('ControlRoom'),
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.04))`,
+      border: 'rgba(212,175,55,0.32)',
+      iconColor: G,
     },
   ];
 

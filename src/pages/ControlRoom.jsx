@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -352,6 +354,27 @@ export default function ControlRoomPage() {
             <Copy className="w-3 h-3 text-white/40" />
           </button>
         </div>
+      </div>
+
+      {/* Quick Tools Toolbar */}
+      <div className="px-4 md:px-8 py-2 flex items-center gap-2 flex-wrap"
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.07)' }}>
+        {[
+          { label: '🎨 Scenes',       page: 'SceneTemplates',       color: 'rgba(212,175,55,0.12)' },
+          { label: '🔔 Alerts',       page: 'StreamAlerts',         color: 'rgba(212,133,74,0.12)' },
+          { label: '🛡️ Guardian AI',  page: 'GuardianAI',           color: 'rgba(192,57,43,0.12)' },
+          { label: '📡 Multi-Stream', page: 'MultiStreamManager',   color: 'rgba(109,191,126,0.1)' },
+          { label: '📊 Analytics',    page: 'AdvancedAnalytics',    color: 'rgba(212,175,55,0.08)' },
+          { label: '📅 Schedule',     page: 'StreamScheduler',      color: 'rgba(107,124,74,0.12)' },
+          { label: '📝 Captions',     page: 'TranscriptionStudio',  color: 'rgba(74,124,89,0.12)'  },
+        ].map(t => (
+          <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
+            <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
+              style={{ background: t.color, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+              {t.label}
+            </button>
+          </Link>
+        ))}
       </div>
 
       {/* ZEGOCLOUD Health Card */}
