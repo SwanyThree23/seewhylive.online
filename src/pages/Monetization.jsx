@@ -11,8 +11,6 @@ import {
 } from 'lucide-react';
 import PayPerViewManager from '@/components/monetization/PayPerViewManager';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
-import TipGoalBar from '../components/monetization/TipGoalBar';
-import TopTippers from '../components/monetization/TopTippers';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import TierEditor from '../components/subscriptions/TierEditor';

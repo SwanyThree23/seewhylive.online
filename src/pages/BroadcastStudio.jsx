@@ -71,16 +71,14 @@ import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
-import BattleArenaManager from '../components/live/BattleArenaManager';
 import OBSBridge from '../components/obs/OBSBridge';
 import BattleMode from '../components/streaming/BattleMode';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
-import GuestStreamingPermissions from '../components/streaming/GuestStreamingPermissions';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import LiveTranscription from '../components/live/LiveTranscription';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
 import ChatOverlay from '../components/live/ChatOverlay';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
-import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 import GuestGrid from '../components/live/GuestGrid';
 import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
 import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
@@ -1212,7 +1210,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <span className="text-[10px] font-black uppercase" style={{ color: GOLD, ...T }}>PK Battle Tiers</span>
                   </div>
                   <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
-                  <BattleArenaManager roomId={partyId} isHost={isHost} participants={members} currentUser={user} />
                   <BattleMode roomId={partyId} isHost={isHost} hostName={party?.host_name || ''} participants={members} />
                   <div className="rounded-xl p-3 mt-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
@@ -1624,15 +1621,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {members.length > 0 && (
                   <GuestStreamingPermissions participant={members[0]} isHost={isHost} onUpdate={() => {}} />
                 )}
-                <GuestCoStreamDashboard
-                  participants={members}
-                  roomId={partyId}
-                  isHost={isHost}
-                  onSpotlight={id => setSpotlit(id)}
-                  spotlitId={spotlit}
-                  raisedHands={raisedHands}
-                  onLockRoom={() => {}}
-                />
                 <GuestGrid
                   participants={members}
                   isHost={isHost}
