@@ -95,6 +95,7 @@ function appReducer(state, action) {
   switch (action.type) {
     case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
     case 'SET_BRIDGE_TOKEN': return Object.assign({}, state, { bridgeToken: action.payload.token, bridgeCreator: action.payload.creator, bridgeReturn: action.payload.returnUrl });
+    case 'COMPLETE_ONBOARDING': return Object.assign({}, state, { onboardingComplete: true, creatorProfile: action.payload.profile, creatorPayment: action.payload.payment, streamKey: action.payload.streamKey, fanoutDestinations: action.payload.fanout });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
@@ -135,6 +136,7 @@ function appReducer(state, action) {
 }
 
 var initialState = {
+  onboardingComplete: true,
     activeModal: null,
   page: 'home',
   prevPage: null,
@@ -2146,6 +2148,7 @@ function HomePage(props) {
     { icon: '💼', label: 'Sponsors', action: function() { dispatch({ type: 'SET_PAGE', payload: 'sponsors' }); } },
     { icon: '🏆', label: 'Bracket', action: function() { dispatch({ type: 'SET_PAGE', payload: 'bracket' }); } },
     { icon: '🔗', label: 'App Hub', action: function() { dispatch({ type: 'SET_PAGE', payload: 'hub' }); } },
+    { icon: '📡', label: 'RTMP Fanout', action: function() { dispatch({ type: 'SET_PAGE', payload: 'fanout' }); } },
             { icon: '📅', label: 'Schedule', action: function() { dispatch({ type: 'SET_PAGE', payload: 'schedule' }); } },
           ].map(function(tool) {
             return (
@@ -7498,6 +7501,348 @@ function PlatformStatusBar({ state, dispatch }) {
     </div>
   );
 }
+
+// ============================================================
+// BATCH O — Onboarding Gate (5-step) + RTMP Fanout UI
+// ============================================================
+
+// ── ONBOARDING GATE ──────────────────────────────────────────
+
+function OnboardingGate({ state, dispatch }) {
+  var C = COLORS;
+  var [step, setStep] = React.useState(1);
+  var [profile, setProfile] = React.useState({ username: 'SwanyThree23', displayName: '', bio: '' });
+  var [payment, setPayment] = React.useState({ paypal: '', cashapp: '', venmo: '', zelle: '', chime: '' });
+  var [streamKey] = React.useState('SWY-' + (Math.random().toString(36).substring(2,8)).toUpperCase());
+  var [fanout, setFanout] = React.useState({ tiktok_url: '', tiktok_key: '', youtube_url: '', youtube_key: '', facebook_url: '', facebook_key: '', kick_url: '', kick_key: '' });
+  var [agreed, setAgreed] = React.useState(false);
+  var [done, setDone] = React.useState(false);
+  var RTMP_URL = 'rtmp://2.24.194.112:1935/live';
+  var totalSteps = 5;
+
+  function hasPayment() {
+    return payment.paypal || payment.cashapp || payment.venmo || payment.zelle || payment.chime;
+  }
+
+  function canProceed() {
+    if (step === 1) return profile.username.trim().length > 0;
+    if (step === 2) return hasPayment();
+    if (step === 3) return true;
+    if (step === 4) return agreed;
+    return true;
+  }
+
+  function complete() {
+    dispatch({ type: 'COMPLETE_ONBOARDING', payload: { profile, payment, streamKey, fanout } });
+    setDone(true);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+  }
+
+  if (done) return null;
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.97)', zIndex: 99999, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+      <div style={{ background: 'linear-gradient(135deg,#0C0806,#150a00)', borderBottom: '2px solid ' + C.gold, padding: '16px 16px 12px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <div style={{ fontSize: 28 }}>🎬</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 3 }}>SEEWHY LIVE SETUP</div>
+            <div style={{ fontSize: 10, color: C.muted }}>Step {step} of {totalSteps}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {[1,2,3,4,5].map(function(s) { return (
+            <div key={s} style={{ flex: 1, height: 4, borderRadius: 2, background: s <= step ? C.gold : '#2a2a2a', transition: 'background 0.3s' }}></div>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, padding: 16, paddingBottom: 100 }}>
+
+        {step === 1 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: C.gold, letterSpacing: 2, marginBottom: 4 }}>YOUR PROFILE</div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 20 }}>This is how the Techmunity sees you</div>
+            {[
+              { label: 'USERNAME', key: 'username', placeholder: 'SwanyThree23' },
+              { label: 'DISPLAY NAME', key: 'displayName', placeholder: 'Your name on stream' },
+            ].map(function(f) { return (
+              <div key={f.key} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>{f.label}</div>
+                <input value={profile[f.key]} onChange={function(e) { var v = e.target.value; setProfile(function(p) { return Object.assign({}, p, { [f.key]: v }); }); }} placeholder={f.placeholder} style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 10, padding: '12px 14px', color: C.white, fontSize: 14, boxSizing: 'border-box' }} />
+              </div>
+            );})}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>BIO <span style={{ color: '#444' }}>(160 chars)</span></div>
+              <textarea value={profile.bio} onChange={function(e) { var v = e.target.value.substring(0,160); setProfile(function(p) { return Object.assign({}, p, { bio: v }); }); }} placeholder="Tell the Techmunity who you are..." style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 10, padding: '12px 14px', color: C.white, fontSize: 13, boxSizing: 'border-box', minHeight: 80, resize: 'none' }} />
+              <div style={{ fontSize: 10, color: C.muted, textAlign: 'right', marginTop: 4 }}>{profile.bio.length}/160</div>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: C.gold, letterSpacing: 2, marginBottom: 4 }}>GET PAID</div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>Creator keeps 90% — platform takes 10%. Always.</div>
+            <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid ' + C.gold + '33', borderRadius: 10, padding: '10px 12px', marginBottom: 20, fontSize: 11, color: C.muted }}>Direct payments only — no platform wallet. At least one method required.</div>
+            {[
+              { label: 'PAYPAL EMAIL', key: 'paypal', placeholder: 'you@paypal.com', link: 'https://paypal.com', linkLabel: 'PayPal' },
+              { label: 'CASHAPP $CASHTAG', key: 'cashapp', placeholder: '$SwanyThree23', link: 'https://cash.app', linkLabel: 'CashApp' },
+              { label: 'VENMO @HANDLE', key: 'venmo', placeholder: '@SwanyThree23', link: 'https://venmo.com', linkLabel: 'Venmo' },
+              { label: 'ZELLE PHONE/EMAIL', key: 'zelle', placeholder: '+1 206 555 0100', link: 'https://zellepay.com', linkLabel: 'Zelle' },
+              { label: 'CHIME $HANDLE', key: 'chime', placeholder: '$SwanyThree23', link: 'https://chime.com', linkLabel: 'Chime' },
+            ].map(function(f) { return (
+              <div key={f.key} style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>{f.label}</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input value={payment[f.key]} onChange={function(e) { var v = e.target.value; setPayment(function(p) { return Object.assign({}, p, { [f.key]: v }); }); }} placeholder={f.placeholder} style={{ flex: 1, background: '#111', border: '1px solid ' + (payment[f.key] ? C.green + '55' : '#2a2a2a'), borderRadius: 10, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+                  <a href={f.link} target="_blank" style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: 8, padding: '0 12px', display: 'flex', alignItems: 'center', fontSize: 10, color: C.muted, textDecoration: 'none', flexShrink: 0, fontFamily: "'Bebas Neue',sans-serif" }}>{f.linkLabel}</a>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: C.gold, letterSpacing: 2, marginBottom: 4 }}>BROADCAST SETUP</div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 20 }}>Stream once, broadcast everywhere</div>
+            <div style={{ background: '#111', border: '1px solid ' + C.gold + '33', borderRadius: 12, padding: 14, marginBottom: 16 }}>
+              <div style={{ fontSize: 10, color: C.gold, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 1, marginBottom: 8 }}>YOUR RTMP URL</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ flex: 1, fontFamily: "'Space Mono',monospace", fontSize: 11, color: C.cyan, wordBreak: 'break-all' }}>{RTMP_URL}</div>
+                <button onClick={function() { copyText(RTMP_URL); }} style={{ background: C.cyan + '22', border: '1px solid ' + C.cyan + '44', borderRadius: 6, padding: '6px 10px', color: C.cyan, fontSize: 10, cursor: 'pointer', flexShrink: 0, fontFamily: "'Bebas Neue',sans-serif" }}>COPY</button>
+              </div>
+            </div>
+            <div style={{ background: '#111', border: '1px solid ' + C.gold + '33', borderRadius: 12, padding: 14, marginBottom: 20 }}>
+              <div style={{ fontSize: 10, color: C.gold, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 1, marginBottom: 8 }}>YOUR STREAM KEY</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ flex: 1, fontFamily: "'Space Mono',monospace", fontSize: 13, color: C.white }}>{streamKey}</div>
+                <button onClick={function() { copyText(streamKey); }} style={{ background: C.gold + '22', border: '1px solid ' + C.gold + '44', borderRadius: 6, padding: '6px 10px', color: C.gold, fontSize: 10, cursor: 'pointer', flexShrink: 0, fontFamily: "'Bebas Neue',sans-serif" }}>COPY</button>
+              </div>
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.muted, letterSpacing: 1, marginBottom: 12 }}>RTMP FANOUT DESTINATIONS <span style={{ fontSize: 10, color: '#444' }}>(OPTIONAL)</span></div>
+            {[
+              { platform: 'TIKTOK LIVE', icon: '🎵', urlKey: 'tiktok_url', keyKey: 'tiktok_key', color: '#ff0050' },
+              { platform: 'YOUTUBE', icon: '▶️', urlKey: 'youtube_url', keyKey: 'youtube_key', color: '#ff0000' },
+              { platform: 'FACEBOOK', icon: '📘', urlKey: 'facebook_url', keyKey: 'facebook_key', color: '#1877f2' },
+              { platform: 'KICK', icon: '🟩', urlKey: 'kick_url', keyKey: 'kick_key', color: '#53fc18' },
+            ].map(function(p) { return (
+              <div key={p.platform} style={{ background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 10, padding: 12, marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 16 }}>{p.icon}</span>
+                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: p.color, letterSpacing: 1 }}>{p.platform}</span>
+                </div>
+                <input value={fanout[p.urlKey]} onChange={function(e) { var v = e.target.value; setFanout(function(f) { return Object.assign({}, f, { [p.urlKey]: v }); }); }} placeholder="RTMP URL (rtmp://...)" style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: C.white, fontSize: 11, boxSizing: 'border-box', marginBottom: 6 }} />
+                <input value={fanout[p.keyKey]} onChange={function(e) { var v = e.target.value; setFanout(function(f) { return Object.assign({}, f, { [p.keyKey]: v }); }); }} placeholder="Stream Key" style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '8px 10px', color: C.white, fontSize: 11, boxSizing: 'border-box' }} />
+              </div>
+            );})}
+          </div>
+        )}
+
+        {step === 4 && (
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: C.gold, letterSpacing: 2, marginBottom: 4 }}>THE CODE</div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 20 }}>SeeWhy LIVE community standards</div>
+            {[
+              "Creator keeps 90% — platform takes 10%. Always.",
+              "No virtual gifts — direct payments only (PayPal, CashApp, Venmo, Zelle, Chime)",
+              "Respect the Techmunity — Guardian AI enforces community standards",
+              "No hate speech, harassment, or illegal content",
+              "Washington Classic rules apply to all tournament streams",
+              "Stream key is personal — do not share it publicly",
+            ].map(function(rule, i) { return (
+              <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14, marginBottom: 8 }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: C.gold + '22', border: '1px solid ' + C.gold + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: 2, background: C.gold }}></div>
+                </div>
+                <div style={{ fontSize: 13, color: C.white, lineHeight: 1.5 }}>{rule}</div>
+              </div>
+            );})}
+            <div onClick={function() { setAgreed(function(a) { return !a; }); }} style={{ display: 'flex', gap: 14, alignItems: 'center', background: agreed ? 'rgba(212,175,55,0.1)' : '#111', border: '2px solid ' + (agreed ? C.gold : '#2a2a2a'), borderRadius: 12, padding: 16, marginTop: 20, cursor: 'pointer' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: agreed ? C.gold : '#1a1a1a', border: '2px solid ' + (agreed ? C.gold : '#333'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 16 }}>{agreed ? '✓' : ''}</div>
+              <div style={{ fontSize: 13, color: agreed ? C.gold : C.muted, fontWeight: agreed ? 700 : 400 }}>I have read and agree to The Code</div>
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 64, marginBottom: 16 }}>🎬</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold, letterSpacing: 3, marginBottom: 8 }}>YOU'RE IN THE BUILDING</div>
+            <div style={{ fontSize: 13, color: C.muted, marginBottom: 24, lineHeight: 1.7 }}>Welcome to SeeWhy LIVE.<br />The Techmunity is waiting.</div>
+            <div style={{ background: '#111', border: '1px solid ' + C.gold + '33', borderRadius: 14, padding: 16, marginBottom: 24, textAlign: 'left' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.muted, letterSpacing: 1, marginBottom: 12 }}>YOUR SETUP SUMMARY</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: C.gold + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.gold }}>{(profile.username || 'S')[0]}</div>
+                <div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.white }}>{profile.username}</div>
+                  <div style={{ fontSize: 11, color: C.muted }}>{profile.displayName}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                {payment.paypal && <span style={{ background: '#003087', borderRadius: 6, padding: '4px 10px', fontSize: 10, color: C.white }}>💳 PayPal</span>}
+                {payment.cashapp && <span style={{ background: '#00d632', borderRadius: 6, padding: '4px 10px', fontSize: 10, color: '#000' }}>💚 CashApp</span>}
+                {payment.venmo && <span style={{ background: '#3d95ce', borderRadius: 6, padding: '4px 10px', fontSize: 10, color: C.white }}>💙 Venmo</span>}
+                {payment.zelle && <span style={{ background: '#6d1ed4', borderRadius: 6, padding: '4px 10px', fontSize: 10, color: C.white }}>⚡ Zelle</span>}
+                {payment.chime && <span style={{ background: '#1ec677', borderRadius: 6, padding: '4px 10px', fontSize: 10, color: '#000' }}>🏦 Chime</span>}
+              </div>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: C.cyan }}>Key: {streamKey.substring(0,12)}****</div>
+            </div>
+            <button onClick={function() { window.open('https://seewhylive.online', '_blank'); complete(); }} style={{ width: '100%', background: 'linear-gradient(135deg,' + C.gold + ',#8B6914)', border: 'none', borderRadius: 14, padding: 18, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, cursor: 'pointer', letterSpacing: 2, marginBottom: 12 }}>🔴 GO LIVE — BROADCAST CONSOLE</button>
+            <button onClick={complete} style={{ width: '100%', background: 'none', border: '1px solid #333', borderRadius: 14, padding: 14, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, cursor: 'pointer' }}>EXPLORE THE APP FIRST</button>
+          </div>
+        )}
+      </div>
+
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#0C0806', borderTop: '1px solid #2a2a2a', padding: '12px 16px', display: 'flex', gap: 10 }}>
+        {step > 1 && <button onClick={function() { setStep(function(s) { return s - 1; }); }} style={{ flex: 1, background: 'none', border: '1px solid #333', borderRadius: 12, padding: 14, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, cursor: 'pointer' }}>← BACK</button>}
+        {step < 5 && <button onClick={function() { if (canProceed()) setStep(function(s) { return s + 1; }); }} disabled={!canProceed()} style={{ flex: 2, background: canProceed() ? 'linear-gradient(135deg,' + C.gold + ',#8B6914)' : '#1a1a1a', border: 'none', borderRadius: 12, padding: 14, color: canProceed() ? '#000' : C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: canProceed() ? 'pointer' : 'default', letterSpacing: 1 }}>CONTINUE →</button>}
+        {step === 5 && <button onClick={complete} style={{ flex: 2, background: C.green, border: 'none', borderRadius: 12, padding: 14, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, cursor: 'pointer', letterSpacing: 1 }}>✓ COMPLETE SETUP</button>}
+      </div>
+    </div>
+  );
+}
+
+// ── RTMP FANOUT MANAGER ───────────────────────────────────────
+
+function RTMPFanoutManager({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('destinations');
+  var tabs = [['destinations','📡 DESTINATIONS'],['status','🔴 STATUS'],['logs','📋 LOGS']];
+  var [fanoutActive, setFanoutActive] = React.useState(false);
+  var [destinations, setDestinations] = React.useState([
+    { id: 1, platform: 'TikTok Live', icon: '🎵', color: '#ff0050', url: 'rtmp://push.tiktokv.com/live/', key: '', enabled: false, status: 'idle' },
+    { id: 2, platform: 'YouTube', icon: '▶️', color: '#ff0000', url: 'rtmp://a.rtmp.youtube.com/live2/', key: '', enabled: false, status: 'idle' },
+    { id: 3, platform: 'Facebook', icon: '📘', color: '#1877f2', url: 'rtmp://live-api-s.facebook.com:80/rtmp/', key: '', enabled: false, status: 'idle' },
+    { id: 4, platform: 'Kick', icon: '🟩', color: '#53fc18', url: 'rtmp://fa723fc1b171.global-contribute.live-video.net/app/', key: '', enabled: false, status: 'idle' },
+    { id: 5, platform: 'Twitch', icon: '💜', color: '#9146ff', url: 'rtmp://live.twitch.tv/live/', key: '', enabled: false, status: 'idle' },
+  ]);
+  var [logs, setLogs] = React.useState([
+    { time: '08:01:24', msg: 'Fanout engine initialized', type: 'info' },
+    { time: '08:01:25', msg: 'MediaMTX RTMP ingest: rtmp://2.24.194.112:1935/live', type: 'info' },
+    { time: '08:01:25', msg: 'Waiting for stream input...', type: 'info' },
+  ]);
+  var enabledCount = destinations.filter(function(d) { return d.enabled && d.key; }).length;
+
+  function toggleFanout() {
+    if (!fanoutActive && enabledCount === 0) return;
+    setFanoutActive(function(a) { return !a; });
+    var msg = fanoutActive ? 'Fanout stopped' : 'Fanout started — broadcasting to ' + enabledCount + ' destination(s)';
+    setLogs(function(l) { return [{ time: new Date().toTimeString().substring(0,8), msg: msg, type: fanoutActive ? 'warn' : 'success' }].concat(l); });
+    if (!fanoutActive) {
+      setDestinations(function(ds) { return ds.map(function(d) { return d.enabled && d.key ? Object.assign({}, d, { status: 'live' }) : d; }); });
+    } else {
+      setDestinations(function(ds) { return ds.map(function(d) { return Object.assign({}, d, { status: 'idle' }); }); });
+    }
+  }
+
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#100008,#050010)', padding: '16px 14px 0', borderBottom: '1px solid #ff005033' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg,#ff0050,#100008)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, border: '2px solid #ff005055' }}>📡</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#ff0050', letterSpacing: 2 }}>RTMP FANOUT</div>
+            <div style={{ fontSize: 11, color: C.muted }}>{enabledCount} destination{enabledCount !== 1 ? 's' : ''} armed · MediaMTX engine</div>
+          </div>
+          <button onClick={toggleFanout} style={{ background: fanoutActive ? C.red + '22' : C.green + '22', border: '2px solid ' + (fanoutActive ? C.red : C.green), borderRadius: 12, padding: '10px 16px', color: fanoutActive ? C.red : C.green, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: enabledCount > 0 || fanoutActive ? 'pointer' : 'default', opacity: enabledCount > 0 || fanoutActive ? 1 : 0.4 }}>{fanoutActive ? '⏹ STOP' : '▶ START'}</button>
+        </div>
+        {fanoutActive && (
+          <div style={{ background: 'rgba(255,0,80,0.1)', border: '1px solid #ff005044', borderRadius: 10, padding: '8px 12px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.red, boxShadow: '0 0 8px ' + C.red }}></div>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.red, letterSpacing: 1 }}>FANOUT ACTIVE — BROADCASTING TO {enabledCount} PLATFORM{enabledCount !== 1 ? 'S' : ''}</span>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 2 }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid #ff0050' : '2px solid transparent', padding: '8px 4px', color: tab === t[0] ? '#ff0050' : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ padding: 14 }}>
+        {tab === 'destinations' && (
+          <div>
+            <div style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid ' + C.gold + '22', borderRadius: 10, padding: '10px 12px', marginBottom: 16, fontSize: 11, color: C.muted, lineHeight: 1.6 }}>
+              Stream to <span style={{ color: C.cream }}>rtmp://2.24.194.112:1935/live</span> — fanout handles the rest. Enter your stream keys below.
+            </div>
+            {destinations.map(function(dest) { return (
+              <div key={dest.id} style={{ background: dest.enabled && dest.key ? dest.color + '08' : '#111', border: '1px solid ' + (dest.enabled && dest.key ? dest.color + '33' : '#1e1e1e'), borderRadius: 14, padding: 14, marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: dest.enabled ? 12 : 0 }}>
+                  <span style={{ fontSize: 20 }}>{dest.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: dest.status === 'live' ? dest.color : C.white, letterSpacing: 1 }}>{dest.platform}</div>
+                    {dest.status === 'live' && <div style={{ fontSize: 10, color: dest.color }}>● LIVE</div>}
+                  </div>
+                  <div onClick={function() { setDestinations(function(ds) { return ds.map(function(d) { return d.id === dest.id ? Object.assign({}, d, { enabled: !d.enabled }) : d; }); }); }} style={{ width: 44, height: 24, borderRadius: 12, background: dest.enabled ? dest.color + '33' : '#2a2a2a', border: '1px solid ' + (dest.enabled ? dest.color + '55' : '#333'), position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', top: 3, left: dest.enabled ? 22 : 3, width: 18, height: 18, borderRadius: '50%', background: dest.enabled ? dest.color : '#555', transition: 'left 0.2s' }}></div>
+                  </div>
+                </div>
+                {dest.enabled && (
+                  <div>
+                    <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>STREAM KEY</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input value={dest.key} onChange={function(e) { var v = e.target.value; setDestinations(function(ds) { return ds.map(function(d) { return d.id === dest.id ? Object.assign({}, d, { key: v }) : d; }); }); }} placeholder={'Enter ' + dest.platform + ' stream key'} style={{ flex: 1, background: '#0d0d0d', border: '1px solid ' + (dest.key ? dest.color + '44' : '#2a2a2a'), borderRadius: 8, padding: '8px 10px', color: C.white, fontSize: 12 }} />
+                    </div>
+                    <div style={{ fontSize: 10, color: C.muted, marginTop: 6 }}>URL: {dest.url}</div>
+                  </div>
+                )}
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'status' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+              <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: fanoutActive ? C.red : C.muted }}>{fanoutActive ? 'LIVE' : 'IDLE'}</div>
+                <div style={{ fontSize: 9, color: C.muted }}>FANOUT STATE</div>
+              </div>
+              <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#ff0050' }}>{enabledCount}</div>
+                <div style={{ fontSize: 9, color: C.muted }}>DESTINATIONS</div>
+              </div>
+              <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.cyan }}>1935</div>
+                <div style={{ fontSize: 9, color: C.muted }}>INGEST PORT</div>
+              </div>
+              <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.green }}>MediaMTX</div>
+                <div style={{ fontSize: 9, color: C.muted }}>ENGINE</div>
+              </div>
+            </div>
+            <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.muted, letterSpacing: 1, marginBottom: 10 }}>INGEST URL</div>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: C.cyan, marginBottom: 14 }}>rtmp://2.24.194.112:1935/live</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.muted, letterSpacing: 1, marginBottom: 10 }}>DESTINATION STATUS</div>
+              {destinations.map(function(d) { return (
+                <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 14 }}>{d.icon}</span>
+                  <span style={{ flex: 1, fontSize: 12, color: C.white }}>{d.platform}</span>
+                  <span style={{ fontSize: 10, color: d.status === 'live' ? d.color : C.muted, fontFamily: "'Bebas Neue',sans-serif" }}>{d.status === 'live' ? '● LIVE' : d.enabled && d.key ? 'ARMED' : 'OFF'}</span>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {tab === 'logs' && (
+          <div style={{ background: '#050505', border: '1px solid #1a1a1a', borderRadius: 12, padding: 14 }}>
+            {logs.map(function(log, i) { return (
+              <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
+                <span style={{ fontFamily: "'Space Mono',monospace", fontSize: 9, color: '#444', flexShrink: 0 }}>{log.time}</span>
+                <span style={{ fontFamily: "'Space Mono',monospace", fontSize: 10, color: log.type === 'success' ? C.green : log.type === 'warn' ? C.gold : log.type === 'error' ? C.red : C.muted }}>{log.msg}</span>
+              </div>
+            );})}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -7600,6 +7945,7 @@ export default function App() {
         {page === 'sponsors' && <SponsorOverlayV2 state={state} dispatch={dispatch} />}
         {page === 'bracket' && <WashingtonClassicBracket state={state} dispatch={dispatch} />}
         {page === 'hub' && <PlatformBridgePage state={state} dispatch={dispatch} />}
+        {page === 'fanout' && <RTMPFanoutManager state={state} dispatch={dispatch} />}
       {page === 'monetize' && <MonetizationHubPageV2 state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
@@ -9081,6 +9427,7 @@ function AppV46Router({ state, dispatch }) {
       <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} />
       {state.activeModal === 'pk_battle' && <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999 }}><PKBattleModalV2 state={state} dispatch={dispatch} /></div>}
       <PlatformStatusBar state={state} dispatch={dispatch} />
+      {!state.onboardingComplete && <OnboardingGate state={state} dispatch={dispatch} />}
       {state.activeModal === 'breakout' && <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999 }}><BreakoutRoomsModal state={state} dispatch={dispatch} /></div>}
       {state.activeModal === 'green_room' && <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999 }}><GreenRoomModalV2 state={state} dispatch={dispatch} /></div>}
     </div>
