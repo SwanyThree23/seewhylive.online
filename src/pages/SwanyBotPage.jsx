@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
+import { speakReply } from '../utils/tts';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -108,7 +109,9 @@ export default function SwanyBotPage() {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: SWANYBOT_SYSTEM + '\n\nConversation:\n' + history + '\n\nRespond as SwanyBot. Be authentic, hype the culture, keep it broadcast-ready.'
       });
-      setMessages(m => [...m, { role: 'assistant', text: res || 'Dropped a bone in the yard — try that again, homie! 🎲' }]);
+      const swanyReply = res || 'Dropped a bone in the yard — try that again, homie! 🎲';
+      setMessages(m => [...m, { role: 'assistant', text: swanyReply }]);
+      speakReply(swanyReply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: 'Signal got locked! Pull from the boneyard and try again. 🎲' }]);
     }

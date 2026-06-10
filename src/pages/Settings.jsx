@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, ShieldX, Palette, Youtube } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, ShieldX, Palette, Youtube, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { useAuth } from '@/lib/AuthContext';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
+import VoiceAISettings from '../components/settings/VoiceAISettings';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -226,6 +227,11 @@ export default function SettingsPage() {
             <CreatorBridge user={user} />
           </Section>
         )}
+
+        {/* Voice AI */}
+        <Section icon={Volume2} title="Voice AI" description="Configure AI persona voice & auto-speak">
+          <VoiceAISettings />
+        </Section>
 
         {/* Appearance */}
         <Section icon={Palette} title="Appearance" description="Customize your stream and app background">

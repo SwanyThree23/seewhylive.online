@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
+import { speakReply } from '../utils/tts';
 
 const BG = '#080B18';
 const BG2 = '#0D0A14';
@@ -104,7 +105,9 @@ export default function JoyceAI() {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + history + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
       });
-      setMessages(m => [...m, { role: 'assistant', text: res || "Let's keep it moving — what do you need?" }]);
+      const joycReply = res || "Let's keep it moving — what do you need?";
+      setMessages(m => [...m, { role: 'assistant', text: joycReply }]);
+      speakReply(joycReply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "I'm thinking... try me again in a sec! The stream must go on. 🎙️" }]);
     }

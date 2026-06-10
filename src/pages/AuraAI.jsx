@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
+import { speakReply } from '../utils/tts';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -168,7 +169,9 @@ export default function AuraAI() {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: mode.system + '\n\nConversation:\n' + history + '\n\nRespond as AURA. Be focused and on-brand for the current mode.'
       });
-      setMessages(m => [...m, { role: 'assistant', text: res || 'Analyzing your broadcast strategy — try again in a moment.' }]);
+      const auraReply = res || 'Analyzing your broadcast strategy — try again in a moment.';
+      setMessages(m => [...m, { role: 'assistant', text: auraReply }]);
+      speakReply(auraReply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: 'Broadcast signal interrupted — let\'s try that again. 📡' }]);
     }
