@@ -60,6 +60,8 @@ import InteractivePollWidget from '../components/streaming/InteractivePollWidget
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1174,6 +1176,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <div className="flex-1 min-h-0">
                     <AggregatedChat roomId={partyId} currentUser={user} isHost={canManage} onMessagesChange={setChatMessages} slowMode={slowMode} slowModeCooldown={slowModeCooldown} />
                   </div>
+                  {chatMessages.length > 0 && (
+                    <div className="shrink-0 px-2 pb-2">
+                      <LiveTranslationWidget
+                        chatMessage={chatMessages[chatMessages.length - 1]}
+                        onTranslation={() => {}}
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-32">
@@ -1463,8 +1473,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
             {/* 🎙 GUEST QUEUE */}
             {activeTab === 'queue' && canManage && (
-              <div className="p-2">
+              <div className="p-2 space-y-3">
                 <GuestQueue roomId={partyId} isHost={canManage} />
+                {user?.id && (
+                  <GuestRTMPPanel participantId={user.id} userId={user.id} />
+                )}
               </div>
             )}
 

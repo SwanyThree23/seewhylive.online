@@ -21,6 +21,7 @@ import RoomEntryGate from '../components/RoomEntryGate';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import { DollarSign, Gift } from 'lucide-react';
 import SuperChatRail from '../components/live/SuperChatRail';
@@ -415,6 +416,7 @@ export default function LiveRoom() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
+  const [animGiftOpen, setAnimGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
   const lastGiftTsRef               = useRef(0);
   const [joinNotif, setJoinNotif]   = useState(null);
@@ -1284,6 +1286,14 @@ export default function LiveRoom() {
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      {animGiftOpen && (
+        <AnimatedGiftShop
+          recipientId={party?.host_id}
+          roomId={roomId || party?.id}
+          onClose={() => setAnimGiftOpen(false)}
+        />
+      )}
 
       {/* Invite sheet */}
       <InviteSheet

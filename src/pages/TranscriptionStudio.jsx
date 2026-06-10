@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from '@/api/base44Client';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -369,6 +370,9 @@ export default function TranscriptionStudio() {
             </div>
           </div>
         )}
+
+        {/* Transcription panel for VOD recordings */}
+        <TranscriptionPanel recordingUrl={null} roomTitle="Live Session" />
 
         {/* Caption.Ninja link */}
         <div style={{ background: 'rgba(212,175,55,0.05)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
