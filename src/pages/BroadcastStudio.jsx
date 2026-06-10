@@ -63,6 +63,11 @@ import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import AudioMixer from '../components/live/AudioMixer';
+import AudioPanel from '../components/live/AudioPanel';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import AuraPanel from '../components/live/AuraPanel';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1469,6 +1474,15 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     isLive={party?.status === 'live'}
                   />
                 )}
+                {partyId && user?.id && (
+                  <ZEGOLiveRoom
+                    roomId={partyId}
+                    userId={user.id}
+                    userName={user.full_name || user.email || 'Host'}
+                    isHost={isHost}
+                    onStreamHealth={() => {}}
+                  />
+                )}
               </div>
             )}
 
@@ -1497,6 +1511,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     { id: 'clips',     icon: '✂️',  label: 'Clips' },
                     { id: 'persona',   icon: '✨', label: 'Persona' },
                     { id: 'countdown', icon: '⏱', label: 'Count' },
+                    { id: 'aura',      icon: '🌊', label: 'Aura' },
+                    { id: 'audio',     icon: '🎚', label: 'Audio' },
                   ].map(t => (
                     <button key={t.id} onClick={() => setAiSubTab(t.id)}
                       className="flex-1 py-2 flex flex-col items-center gap-0.5 transition-all"
@@ -1826,6 +1842,38 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                       currentUser={user}
                       onGoLive={() => toast.success('You\'re live! 🎙')}
                     />
+                  )}
+
+                  {aiSubTab === 'aura' && partyId && (
+                    <div className="space-y-3">
+                      <AuraPanel
+                        roomId={partyId}
+                        isHost={isHost}
+                        streamTitle={party?.title}
+                        viewerCount={members.length}
+                        isLive={party?.status === 'live'}
+                        userTier="creator"
+                      />
+                      <AuraEmotionDisplay
+                        roomId={partyId}
+                        sessionId={partyId}
+                        auraPersona="hype"
+                      />
+                    </div>
+                  )}
+
+                  {aiSubTab === 'audio' && (
+                    <div className="space-y-3">
+                      <AudioMixer
+                        micMuted={!audioEnabled}
+                        onMicToggle={toggleAudio}
+                      />
+                      <AudioPanel
+                        micMuted={!audioEnabled}
+                        onMicToggle={toggleAudio}
+                        participants={members}
+                      />
+                    </div>
                   )}
 
                 </div>
