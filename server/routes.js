@@ -683,5 +683,57 @@ router.post('/stream-end', async function(req, res) {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+
+// ── RTMP FANOUT ENGINE ────────────────────────────────────────
+var { spawn } = require('child_process');
+var activeFanouts = {};
+
+router.post('/fanout-start', async function(req, res) {
+  try {
+    var b = req.body;
+    var streamId = b.stream_id || 'default';
+    var ingestUrl = 'rtmp://localhost:1935/live/' + (b.stream_key || 'stream');
+    var destinations = b.destinations || [];
+    if (activeFanouts[streamId]) {
+      activeFanouts[streamId].kill();
+      delete activeFanouts[streamId];
+    }
+    var ffmpegArgs = ['-re', '-i', ingestUrl];
+    var hasDestination = false;
+    destinations.forEach(function(d) {
+      if (d.url && d.key && d.enabled) {
+        ffmpegArgs.push('-c', 'copy', '-f', 'flv', d.url + d.key);
+        hasDestination = true;
+      }
+    });
+    if (!hasDestination) {
+      return res.json({ ok: false, error: 'No enabled destinations with keys' });
+    }
+    var ffmpeg = spawn('ffmpeg', ffmpegArgs, { detached: false });
+    activeFanouts[streamId] = ffmpeg;
+    ffmpeg.on('exit', function(code) {
+      console.log('[fanout] exited:', code);
+      delete activeFanouts[streamId];
+    });
+    res.json({ ok: true, stream_id: streamId, destinations: destinations.filter(function(d) { return d.enabled && d.key; }).length });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/fanout-stop', function(req, res) {
+  var streamId = req.body.stream_id || 'default';
+  if (activeFanouts[streamId]) {
+    activeFanouts[streamId].kill('SIGTERM');
+    delete activeFanouts[streamId];
+    res.json({ ok: true, stopped: streamId });
+  } else {
+    res.json({ ok: false, error: 'No active fanout for ' + streamId });
+  }
+});
+
+router.get('/fanout-status', function(req, res) {
+  var active = Object.keys(activeFanouts);
+  res.json({ ok: true, active_streams: active, count: active.length });
+});
+
 module.exports = router;
 
