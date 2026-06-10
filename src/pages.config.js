@@ -106,6 +106,8 @@ const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
 const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
 const GreenRoomPreFlight       = lazy(() => import('./pages/GreenRoomPreFlight'));
+const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
+const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -205,6 +207,8 @@ export const PAGES = {
     "SocialExpo": SocialExpo,
     "SeeWhyLIVEv37": SeeWhyLIVEv37,
     "GreenRoomPreFlight": GreenRoomPreFlight,
+    "PKBattleArena": PKBattleArena,
+    "TranscriptionStudio": TranscriptionStudio,
 }
 
 export const pagesConfig = {

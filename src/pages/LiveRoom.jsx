@@ -325,6 +325,19 @@ export default function LiveRoom() {
   const [goalOpen, setGoalOpen]     = useState(false);
   const lastGiftTsRef               = useRef(0);
 
+  // Connection quality stats (simulated — replace with real WebRTC getStats() when available)
+  const [connStats, setConnStats] = useState({ latency: 39, bitrate: 3312, loss: 0, quality: 'EXCELLENT' });
+  useEffect(() => {
+    const t = setInterval(() => {
+      const lat  = 28 + Math.floor(Math.random() * 48);
+      const br   = 2800 + Math.floor(Math.random() * 900);
+      const loss = Math.random() < 0.12 ? Math.floor(Math.random() * 3) : 0;
+      const quality = lat < 60 && loss === 0 ? 'EXCELLENT' : lat < 100 && loss < 2 ? 'GOOD' : lat < 160 ? 'FAIR' : 'POOR';
+      setConnStats({ latency: lat, bitrate: br, loss, quality });
+    }, 4000);
+    return () => clearInterval(t);
+  }, []);
+
   // Sync stage when real data arrives
   useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
 
@@ -472,6 +485,31 @@ export default function LiveRoom() {
             <span className="text-[11px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
           </div>
         </div>
+
+        {/* ── Connection status bar ────────────────────────────────────────── */}
+        {isLive && (() => {
+          const qColor = connStats.quality === 'EXCELLENT' ? '#6DBF7E' : connStats.quality === 'GOOD' ? '#D4AF37' : connStats.quality === 'FAIR' ? '#D4854A' : '#EF4444';
+          return (
+            <div className="px-4 pb-2">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '5px 10px', flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, fontWeight: 700, color: qColor, letterSpacing: '0.06em' }}>
+                  ● {connStats.quality}
+                </span>
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.latency}ms
+                </span>
+                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.bitrate.toLocaleString()}kbps
+                </span>
+                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: connStats.loss > 0 ? '#EF4444' : 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.loss}% loss
+                </span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Stage header ─────────────────────────────────────────────────── */}
         <div className="px-4 mb-3 flex items-center justify-between">
