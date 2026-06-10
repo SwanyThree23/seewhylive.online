@@ -948,6 +948,18 @@ export default function AIHub() {
             <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900, letterSpacing: '0.06em' }}>Configure →</span>
           </div>
         </Link>
+        <Link to={createPageUrl('TranscriptionStudio')} style={{ textDecoration: 'none' }}>
+          <div style={{ background: BG2, border: '1px solid rgba(74,124,89,0.2)', borderRadius: 16, borderLeft: `3px solid #4A7C59`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #4A7C59, #2A5C39)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📝</div>
+              <div>
+                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#6DBF7E', letterSpacing: '0.06em' }}>TRANSCRIPTION STUDIO</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Mono, monospace', marginTop: 2 }}>Live captions · SRT export · Multi-language</div>
+              </div>
+            </div>
+            <span style={{ ...T, fontSize: 12, color: '#6DBF7E', fontWeight: 900, letterSpacing: '0.06em' }}>Open →</span>
+          </div>
+        </Link>
 
         {/* ── Bottom info strip ── */}
         <p style={{
