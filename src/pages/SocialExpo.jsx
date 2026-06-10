@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from '../utils';
 import { FEATURED_VIDEOS } from '../components/home/FeaturedContent';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
@@ -687,6 +688,11 @@ export default function SocialExpo() {
           )}
 
         </AnimatePresence>
+
+        {/* Collaboration opportunities */}
+        <div style={{ padding: '0 0 32px' }}>
+          <CollaborationMatcher />
+        </div>
       </div>
     </div>
   );
