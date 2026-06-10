@@ -89,6 +89,9 @@ function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).
 
 // ─── REDUCER ──────────────────────────────────────────────────────────────────
 function appReducer(state, action) {
+  if (action.type === 'OPEN_MODAL') { return Object.assign({}, state, { activeModal: action.payload }); }
+  if (action.type === 'CLOSE_MODAL') { return Object.assign({}, state, { activeModal: null }); }
+
   switch (action.type) {
     case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
@@ -131,6 +134,7 @@ function appReducer(state, action) {
 }
 
 var initialState = {
+    activeModal: null,
   page: 'home',
   prevPage: null,
   modal: null,
@@ -2127,6 +2131,13 @@ function HomePage(props) {
     { icon: '🤖', label: 'AI Hub', action: function() { dispatch({ type: 'SET_PAGE', payload: 'aihub' }); } },
     { icon: '📊', label: 'Dashboard', action: function() { dispatch({ type: 'SET_PAGE', payload: 'creatordash' }); } },
     { icon: '⚙', label: 'Settings', action: function() { dispatch({ type: 'SET_PAGE', payload: 'settings' }); } },
+    { icon: '⚡', label: 'InSForge', action: function() { dispatch({ type: 'SET_PAGE', payload: 'insforge' }); } },
+    { icon: '🎥', label: 'Studio', action: function() { dispatch({ type: 'SET_PAGE', payload: 'studio' }); } },
+    { icon: '🗺', label: 'SVS', action: function() { dispatch({ type: 'SET_PAGE', payload: 'svs' }); } },
+    { icon: '📱', label: 'Mobile', action: function() { dispatch({ type: 'SET_PAGE', payload: 'mobile' }); } },
+    { icon: '📊', label: 'Analytics', action: function() { dispatch({ type: 'SET_PAGE', payload: 'analytics' }); } },
+    { icon: '🕯', label: 'Legends', action: function() { dispatch({ type: 'SET_PAGE', payload: 'fallenlegends' }); } },
+    { icon: '💰', label: 'Payout', action: function() { dispatch({ type: 'SET_PAGE', payload: 'payout' }); } },
             { icon: '📅', label: 'Schedule', action: function() { dispatch({ type: 'SET_PAGE', payload: 'schedule' }); } },
           ].map(function(tool) {
             return (
@@ -4863,6 +4874,1890 @@ function PayoutSetupV2({ state, dispatch }) {
     </div>
   );
 }
+
+// ============================================================
+// v50 — INSFORGE AI CONTENT GENERATION STUDIO
+// ============================================================
+
+function InSForgeStudioV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('generate');
+  var tabs = [['generate','✨ FORGE'],['library','📁 LIBRARY'],['templates','🗂 TEMPLATES'],['scheduler','📅 SCHEDULE']];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0a1a,#1a0a2a)', padding: '16px 14px 0', borderBottom: '1px solid #9B59B633' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,#9B59B6,#1a0a2a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid #9B59B644' }}>⚡</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#9B59B6', letterSpacing: 2 }}>INSFORGE STUDIO</div>
+            <div style={{ fontSize: 11, color: C.muted }}>AI Content Engine · Powered by Claude Sonnet</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 2, overflowX: 'auto' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid #9B59B6' : '2px solid transparent', padding: '8px 10px', color: tab === t[0] ? '#9B59B6' : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'generate' && <InSForgeGeneratorV2 state={state} dispatch={dispatch} />}
+        {tab === 'library' && <InSForgeLibraryV2 state={state} dispatch={dispatch} />}
+        {tab === 'templates' && <InSForgeTemplatesV2 state={state} dispatch={dispatch} />}
+        {tab === 'scheduler' && <InSForgeSchedulerV2 state={state} dispatch={dispatch} />}
+      </div>
+    </div>
+  );
+}
+
+function InSForgeGeneratorV2({ state, dispatch }) {
+  var C = COLORS;
+  var purple = '#9B59B6';
+  var [contentType, setContentType] = React.useState('caption');
+  var [platform, setPlatform] = React.useState('instagram');
+  var [context, setContext] = React.useState('');
+  var [tone, setTone] = React.useState('hype');
+  var [output, setOutput] = React.useState('');
+  var [loading, setLoading] = React.useState(false);
+  var [saved, setSaved] = React.useState(false);
+
+  var contentTypes = [
+    { id: 'caption', label: 'Social Caption', icon: '📝' },
+    { id: 'title', label: 'Stream Title', icon: '🎯' },
+    { id: 'recap', label: 'Tournament Recap', icon: '🏆' },
+    { id: 'script', label: 'Highlight Script', icon: '🎬' },
+    { id: 'bio', label: 'Creator Bio', icon: '👤' },
+    { id: 'hype', label: 'Hype Post', icon: '🔥' },
+    { id: 'announcement', label: 'Event Announcement', icon: '📣' },
+    { id: 'thread', label: 'Twitter Thread', icon: '🧵' },
+  ];
+
+  var platforms = ['instagram','twitter','tiktok','youtube','facebook','all'];
+  var tones = [
+    { id: 'hype', label: 'HYPE' },
+    { id: 'professional', label: 'PRO' },
+    { id: 'community', label: 'COMMUNITY' },
+    { id: 'domino', label: 'DOMINO CULTURE' },
+    { id: 'griot', label: 'GRIOT' },
+  ];
+
+  var systemPrompts = {
+    caption: 'You are InSForge, the AI content engine for SeeWhy LIVE — the premier domino entertainment streaming platform. Generate a compelling social media caption for the given context. The platform features the Washington Classic tournament, creators like SwanyThree23, CaliBonesOG, VibeNBones, Big Bone Earl, Mama Joyce Thompson, and Fast Hands Rodriguez. Use domino culture language, relevant emojis, and hashtags. Keep it under 150 words.',
+    title: 'You are InSForge, the AI content engine for SeeWhy LIVE. Generate 5 punchy stream title options for the given context. Each title should be under 60 characters, attention-grabbing, and reflect domino culture. Number each option.',
+    recap: 'You are InSForge, the AI content engine for SeeWhy LIVE. Write a short, exciting tournament recap (under 200 words) for the given context. Use domino terminology, highlight key moments, and end with a call to action to watch on SeeWhy LIVE.',
+    script: 'You are InSForge, the AI content engine for SeeWhy LIVE. Write a 60-second highlight reel script for the given context. Format as: [HOOK] [HIGHLIGHT 1] [HIGHLIGHT 2] [HIGHLIGHT 3] [CTA]. Use energetic, broadcast-style language.',
+    bio: 'You are InSForge, the AI content engine for SeeWhy LIVE. Write a compelling creator bio for the given context. Under 100 words. Should include domino culture references, the platform, and a strong personal brand statement.',
+    hype: 'You are InSForge, the AI content engine for SeeWhy LIVE. Write a maximum hype post for the given context. Short, punchy, uses caps for emphasis, 2-3 relevant emojis, and 3-5 hashtags. Pure energy.',
+    announcement: 'You are InSForge, the AI content engine for SeeWhy LIVE. Write a professional event announcement for the given context. Include: what, when, where, why it matters, and a call to action. Under 150 words.',
+    thread: 'You are InSForge, the AI content engine for SeeWhy LIVE. Write a 5-tweet Twitter/X thread for the given context. Number each tweet 1/ through 5/. Each tweet under 280 characters. Build narrative momentum.',
+  };
+
+  var toneModifiers = {
+    hype: ' Write with maximum energy and hype. Use exclamation points, caps for emphasis.',
+    professional: ' Write in a polished, professional tone suitable for a sports broadcast.',
+    community: ' Write with warmth and community spirit, like talking to family.',
+    domino: ' Write deeply embedded in Black domino culture — reference bones, rocks, sets, the culture.',
+    griot: ' Write like a griot — storytelling, cultural pride, historical context, wisdom.',
+  };
+
+  function generate() {
+    if (!context.trim() || loading) return;
+    setLoading(true);
+    setOutput('');
+    setSaved(false);
+    var ct = contentTypes.find(function(c) { return c.id === contentType; });
+    var systemPrompt = (systemPrompts[contentType] || systemPrompts.caption) + toneModifiers[tone] + ' Platform target: ' + platform + '.';
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: context }]
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      var reply = data.content && data.content[0] ? data.content[0].text : 'Generation failed. Try again.';
+      setOutput(reply);
+      setLoading(false);
+    }).catch(function() {
+      setOutput('Connection error. Please try again.');
+      setLoading(false);
+    });
+  }
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 8, letterSpacing: 1 }}>CONTENT TYPE</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {contentTypes.map(function(ct) { return (
+            <div key={ct.id} onClick={function() { setContentType(ct.id); }} style={{ background: contentType === ct.id ? 'rgba(155,89,182,0.15)' : C.slate, border: '2px solid ' + (contentType === ct.id ? purple : '#2a2a2a'), borderRadius: 10, padding: '10px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>{ct.icon}</span>
+              <span style={{ color: contentType === ct.id ? purple : C.white, fontSize: 12, fontWeight: 700 }}>{ct.label}</span>
+            </div>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 8, letterSpacing: 1 }}>PLATFORM</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {platforms.map(function(p) { return (
+            <button key={p} onClick={function() { setPlatform(p); }} style={{ background: platform === p ? purple : 'none', border: '1px solid ' + (platform === p ? purple : '#444'), borderRadius: 20, padding: '5px 12px', color: platform === p ? '#fff' : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{p.toUpperCase()}</button>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 8, letterSpacing: 1 }}>TONE</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {tones.map(function(t) { return (
+            <button key={t.id} onClick={function() { setTone(t.id); }} style={{ background: tone === t.id ? 'rgba(155,89,182,0.2)' : 'none', border: '1px solid ' + (tone === t.id ? purple : '#444'), borderRadius: 20, padding: '5px 12px', color: tone === t.id ? purple : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.label}</button>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 8, letterSpacing: 1 }}>TELL INSFORGE WHAT TO CREATE</div>
+        <textarea value={context} onChange={function(e) { setContext(e.target.value); }} placeholder={'e.g. "SwanyThree23 just won the Washington Classic semifinals vs CaliBone22, final score 7-4 in 3 sets. Stream was live on SeeWhy LIVE with 4,800 viewers."'} style={{ width: '100%', background: '#111', border: '1px solid ' + (context ? purple + '66' : '#333'), borderRadius: 10, padding: '12px 14px', color: C.white, fontSize: 13, boxSizing: 'border-box', minHeight: 100, resize: 'none', lineHeight: 1.5 }} />
+      </div>
+
+      <button onClick={generate} disabled={!context.trim() || loading} style={{ width: '100%', background: loading ? '#333' : 'linear-gradient(135deg,' + purple + ',#6a0dad)', border: 'none', borderRadius: 10, padding: 16, color: loading ? C.muted : '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, cursor: loading ? 'default' : 'pointer', marginBottom: 16, letterSpacing: 1 }}>{loading ? '⚡ FORGING...' : '⚡ FORGE CONTENT'}</button>
+
+      {output !== '' && (
+        <div style={{ background: 'rgba(155,89,182,0.08)', border: '1px solid ' + purple + '44', borderRadius: 12, padding: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: purple, letterSpacing: 1 }}>FORGED OUTPUT</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={function() { setSaved(true); }} style={{ background: saved ? C.green + '22' : 'none', border: '1px solid ' + (saved ? C.green : '#444'), borderRadius: 6, padding: '4px 10px', color: saved ? C.green : C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{saved ? '✓ SAVED' : 'SAVE'}</button>
+              <button onClick={generate} style={{ background: 'none', border: '1px solid ' + purple + '44', borderRadius: 6, padding: '4px 10px', color: purple, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>RETRY</button>
+            </div>
+          </div>
+          <div style={{ fontSize: 13, color: C.white, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{output}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InSForgeLibraryV2({ state, dispatch }) {
+  var C = COLORS;
+  var purple = '#9B59B6';
+  var [filter, setFilter] = React.useState('all');
+  var library = [
+    { id: 1, type: 'caption', platform: 'instagram', title: 'WA Classic Semifinals Cap...', preview: 'The bones dont lie. SwanyThree23 put on a CLINIC tonight...', date: 'Jun 7', platform_icon: '📸' },
+    { id: 2, type: 'title', platform: 'youtube', title: '5 Stream Title Options', preview: '1. "SwanyThree23 ROCKS OUT in WA Classic Semis 🎯"...', date: 'Jun 7', platform_icon: '▶' },
+    { id: 3, type: 'hype', platform: 'twitter', title: 'Pre-stream Hype Post', preview: 'WE GOING LIVE IN 30 MINUTES 🔴🎯 WASHINGTON CLASSIC...', date: 'Jun 6', platform_icon: '🐦' },
+    { id: 4, type: 'recap', platform: 'all', title: 'Tournament Recap - Quarters', preview: 'What a night on SeeWhy LIVE. The quarterfinals...', date: 'Jun 5', platform_icon: '🏆' },
+    { id: 5, type: 'script', platform: 'tiktok', title: '60-sec Highlight Script', preview: '[HOOK] You thought dominos was just a game?...', date: 'Jun 4', platform_icon: '🎵' },
+  ];
+  var types = ['all','caption','title','hype','recap','script'];
+  var filtered = filter === 'all' ? library : library.filter(function(i) { return i.type === filter; });
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+        {types.map(function(t) { return (
+          <button key={t} onClick={function() { setFilter(t); }} style={{ background: filter === t ? purple : 'none', border: '1px solid ' + (filter === t ? purple : '#444'), borderRadius: 20, padding: '5px 12px', color: filter === t ? '#fff' : C.muted, fontSize: 11, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t.toUpperCase()}</button>
+        );})}
+      </div>
+      {filtered.map(function(item) { return (
+        <div key={item.id} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 14, marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>{item.platform_icon}</span>
+              <div>
+                <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{item.title}</div>
+                <div style={{ fontSize: 10, color: purple, marginTop: 2 }}>{item.type.toUpperCase()} · {item.platform.toUpperCase()}</div>
+              </div>
+            </div>
+            <span style={{ fontSize: 10, color: C.muted, flexShrink: 0 }}>{item.date}</span>
+          </div>
+          <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5, marginBottom: 10 }}>{item.preview}</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button style={{ flex: 1, background: 'none', border: '1px solid #444', borderRadius: 8, padding: 8, color: C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>COPY</button>
+            <button style={{ flex: 1, background: 'none', border: '1px solid ' + purple + '44', borderRadius: 8, padding: 8, color: purple, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>EDIT</button>
+            <button style={{ flex: 1, background: purple, border: 'none', borderRadius: 8, padding: 8, color: '#fff', fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>USE</button>
+          </div>
+        </div>
+      );})}
+    </div>
+  );
+}
+
+function InSForgeTemplatesV2({ state, dispatch }) {
+  var C = COLORS;
+  var purple = '#9B59B6';
+  var templates = [
+    { id: 1, name: 'Washington Classic Hype', type: 'hype', icon: '🏆', desc: 'Pre-tournament energy post for WA Classic events', uses: 47 },
+    { id: 2, name: 'Go Live Announcement', type: 'announcement', icon: '🔴', desc: 'Stream start announcement across all platforms', uses: 124 },
+    { id: 3, name: 'PK Battle Callout', type: 'hype', icon: '⚔', desc: 'Challenge another creator to a PK Battle', uses: 38 },
+    { id: 4, name: 'Gem Thank You', type: 'caption', icon: '💎', desc: 'Thank your community for gem support', uses: 89 },
+    { id: 5, name: 'Tournament Bracket Drop', type: 'announcement', icon: '📊', desc: 'Announce bracket reveal with creator details', uses: 21 },
+    { id: 6, name: 'SVS State Pride Post', type: 'hype', icon: '🗺', desc: 'State vs State community pride content', uses: 33 },
+    { id: 7, name: 'Stream Recap Thread', type: 'thread', icon: '🧵', desc: '5-tweet recap thread after a big stream', uses: 15 },
+    { id: 8, name: 'Creator Spotlight', type: 'caption', icon: '⭐', desc: 'Feature another creator in your community', uses: 29 },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ fontSize: 11, color: C.muted, marginBottom: 14 }}>Pre-built prompts for SeeWhy LIVE content. Tap to load into the generator.</div>
+      {templates.map(function(t) { return (
+        <div key={t.id} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 12, padding: 14, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(155,89,182,0.15)', border: '1px solid ' + purple + '33', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>{t.icon}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: C.white, fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{t.name}</div>
+            <div style={{ fontSize: 11, color: C.muted }}>{t.desc}</div>
+            <div style={{ fontSize: 10, color: purple, marginTop: 4 }}>{t.type.toUpperCase()} · {t.uses} uses</div>
+          </div>
+          <button style={{ background: purple, border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>USE</button>
+        </div>
+      );})}
+    </div>
+  );
+}
+
+function InSForgeSchedulerV2({ state, dispatch }) {
+  var C = COLORS;
+  var purple = '#9B59B6';
+  var [scheduled, setScheduled] = React.useState([
+    { id: 1, content: 'Washington Classic Finals TONIGHT 🎯🔴 Watch live on SeeWhy LIVE...', platform: 'instagram', time: 'Jun 15, 6:00 PM', status: 'scheduled', icon: '📸' },
+    { id: 2, content: 'BRACKET IS SET. 8 players. One champion. Washington Classic 2026 starts NOW...', platform: 'twitter', time: 'Jun 15, 5:30 PM', status: 'scheduled', icon: '🐦' },
+    { id: 3, content: '🏆 SwanyThree23 wins the Washington Classic Semifinals in DOMINANT fashion...', platform: 'instagram', time: 'Jun 7, 11:00 PM', status: 'posted', icon: '📸' },
+  ]);
+  var statusColor = { scheduled: C.gold, posted: C.green, failed: C.red };
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ background: 'rgba(155,89,182,0.08)', border: '1px solid ' + purple + '33', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>Schedule forged content to post automatically across your connected platforms. Connect accounts in Settings.</div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: purple, letterSpacing: 1 }}>SCHEDULED POSTS</div>
+        <button style={{ background: purple, border: 'none', borderRadius: 8, padding: '6px 14px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>+ SCHEDULE</button>
+      </div>
+      {scheduled.map(function(post) { return (
+        <div key={post.id} style={{ background: C.slate, border: '1px solid ' + (post.status === 'scheduled' ? purple + '33' : '#2a2a2a'), borderRadius: 12, padding: 14, marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 16 }}>{post.icon}</span>
+              <span style={{ fontSize: 11, color: C.muted }}>{post.platform.toUpperCase()}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 10, color: C.muted }}>{post.time}</span>
+              <span style={{ background: statusColor[post.status] + '22', border: '1px solid ' + statusColor[post.status] + '44', borderRadius: 4, padding: '2px 8px', fontSize: 10, color: statusColor[post.status], fontFamily: "'Bebas Neue',sans-serif" }}>{post.status.toUpperCase()}</span>
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5, marginBottom: post.status === 'scheduled' ? 10 : 0 }}>{post.content}</div>
+          {post.status === 'scheduled' && (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button style={{ flex: 1, background: 'none', border: '1px solid #444', borderRadius: 6, padding: 8, color: C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>EDIT</button>
+              <button onClick={function() { setScheduled(function(s) { return s.filter(function(p) { return p.id !== post.id; }); }); }} style={{ flex: 1, background: 'none', border: '1px solid ' + C.red + '44', borderRadius: 6, padding: 8, color: C.red, fontSize: 11, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>CANCEL</button>
+            </div>
+          )}
+        </div>
+      );})}
+    </div>
+  );
+}
+
+// ============================================================
+// BATCH K — STUDIO CONTROLS + SVS ARENA + MOBILE HARDENING
+// ============================================================
+
+// ── A: STUDIO CONTROLS + GO-LIVE ENGINE ──────────────────────
+
+function StudioControlsV1({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('preflight');
+  var tabs = [['preflight','✅ PRE-FLIGHT'],['controls','🎛 CONTROLS'],['scenes','🎬 SCENES'],['health','📡 HEALTH']];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a0500,#1a0a00)', padding: '16px 14px 0', borderBottom: '1px solid ' + C.gold + '33' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,' + C.burgundy + ',#0a0500)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid ' + C.gold + '44' }}>🎛</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>STUDIO CONTROLS</div>
+            <div style={{ fontSize: 11, color: C.muted }}>Go-Live Engine · SeeWhy LIVE</div>
+          </div>
+          <GoLiveButtonV1 state={state} dispatch={dispatch} C={C} />
+        </div>
+        <div style={{ display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 10px', color: tab === t[0] ? C.gold : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'preflight' && <StudioPreflightV1 state={state} dispatch={dispatch} C={C} />}
+        {tab === 'controls' && <StudioLiveControlsV1 state={state} dispatch={dispatch} C={C} />}
+        {tab === 'scenes' && <StudioScenesV1 state={state} dispatch={dispatch} C={C} />}
+        {tab === 'health' && <StudioHealthV1 state={state} dispatch={dispatch} C={C} />}
+      </div>
+    </div>
+  );
+}
+
+function GoLiveButtonV1({ state, dispatch, C }) {
+  var isLive = state.isLive || false;
+  var [countdown, setCountdown] = React.useState(null);
+  var [arming, setArming] = React.useState(false);
+
+  function handlePress() {
+    if (isLive) {
+      dispatch({ type: 'SET_LIVE', payload: false });
+      return;
+    }
+    if (arming) return;
+    setArming(true);
+    setCountdown(3);
+    var n = 3;
+    var iv = setInterval(function() {
+      n = n - 1;
+      if (n <= 0) {
+        clearInterval(iv);
+        setArming(false);
+        setCountdown(null);
+        dispatch({ type: 'SET_LIVE', payload: true });
+      } else {
+        setCountdown(n);
+      }
+    }, 1000);
+  }
+
+  return (
+    <button onClick={handlePress} style={{ background: isLive ? 'rgba(200,0,0,0.2)' : arming ? 'rgba(201,168,76,0.2)' : 'linear-gradient(135deg,' + C.burgundy + ',#8B0000)', border: '2px solid ' + (isLive ? C.red : arming ? C.gold : C.burgundy), borderRadius: 12, padding: '10px 16px', color: isLive ? C.red : arming ? C.gold : C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: isLive ? 13 : 16, cursor: 'pointer', flexShrink: 0, letterSpacing: 1, minWidth: 80, textAlign: 'center' }}>
+      {isLive ? '⏹ END' : arming ? ('LIVE IN ' + countdown) : '🔴 GO LIVE'}
+    </button>
+  );
+}
+
+function StudioPreflightV1({ state, dispatch, C }) {
+  var [checks, setChecks] = React.useState([
+    { id: 'cam',     label: 'Camera',          sub: 'Primary camera feed',         status: 'ok',      icon: '📹' },
+    { id: 'mic',     label: 'Microphone',      sub: 'Audio input detected',        status: 'ok',      icon: '🎤' },
+    { id: 'rtmp',    label: 'RTMP Connection', sub: 'rtmp://ingest.seewhylive.online:1935/live', status: 'ok', icon: '📡' },
+    { id: 'stream',  label: 'Stream Key',      sub: 'sw_6991033b_n8gf2vyf · VaultPro encrypted', status: 'ok', icon: '🔐' },
+    { id: 'net',     label: 'Network',         sub: '24.8 Mbps upload',            status: 'ok',      icon: '📶' },
+    { id: 'backup',  label: 'Backup Ingest',   sub: 'Secondary endpoint standby',  status: 'warn',    icon: '⚠️' },
+    { id: 'guardian',label: 'Guardian AI',     sub: 'Moderation armed · claude-haiku-4-5', status: 'ok', icon: '🛡' },
+    { id: 'overlay', label: 'Lower Thirds',    sub: 'Overlay package loaded',      status: 'ok',      icon: '🎞' },
+  ]);
+
+  var statusColor = { ok: C.green, warn: C.gold, err: C.red };
+  var allOk = checks.every(function(c) { return c.status === 'ok'; });
+  var warnMsg = warnCount > 1 ? 'WARNINGS' : 'WARNING';
+  var errMsg = errCount > 0 ? ' - ' + errCount + ' ERROR' : '';
+  var statusLabel = allOk ? 'READY TO BROADCAST' : (warnCount + ' ' + warnMsg + errMsg);
+  var warnCount = checks.filter(function(c) { return c.status === 'warn'; }).length;
+  var errCount = checks.filter(function(c) { return c.status === 'err'; }).length;
+
+  function recheck(id) {
+    setChecks(function(cs) {
+      return cs.map(function(c) {
+        if (c.id !== id) return c;
+        return Object.assign({}, c, { status: Math.random() > 0.2 ? 'ok' : 'warn' });
+      });
+    });
+  }
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ background: allOk ? 'rgba(0,200,100,0.08)' : 'rgba(201,168,76,0.08)', border: '1px solid ' + (allOk ? C.green : C.gold) + '44', borderRadius: 12, padding: 14, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ fontSize: 28 }}>{allOk ? '✅' : '⚠️'}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: allOk ? C.green : C.gold, letterSpacing: 1 }}>{statusLabel}</div>
+          <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{allOk ? "All systems nominal. You're clear to go live." : "Resolve warnings before broadcasting."}</div>
+        </div>
+      </div>
+      {checks.map(function(check) {
+        return (
+          <div key={check.id} style={{ background: '#111', border: '1px solid ' + (check.status === 'ok' ? '#1e1e1e' : statusColor[check.status] + '33'), borderRadius: 12, padding: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontSize: 20, width: 28, textAlign: 'center', flexShrink: 0 }}>{check.icon}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{check.label}</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{check.sub}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor[check.status] || C.muted, boxShadow: '0 0 6px ' + (statusColor[check.status] || C.muted) }}></div>
+              <span style={{ fontSize: 10, color: statusColor[check.status], fontFamily: "'Bebas Neue',sans-serif" }}>{check.status.toUpperCase()}</span>
+              {check.status !== 'ok' && <button onClick={function() { recheck(check.id); }} style={{ background: 'none', border: '1px solid #444', borderRadius: 6, padding: '3px 8px', color: C.muted, fontSize: 10, cursor: 'pointer' }}>↻</button>}
+            </div>
+          </div>
+        );
+      })}
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginTop: 8 }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>STREAM DESTINATION</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {[['SeeWhy LIVE', true, C.gold], ['YouTube', false, C.red], ['Twitch', false, '#9B59B6'], ['Facebook', false, C.cyan]].map(function(dest, i) {
+            return (
+              <div key={i} style={{ background: dest[1] ? dest[2] + '15' : 'none', border: '1px solid ' + (dest[1] ? dest[2] + '44' : '#333'), borderRadius: 8, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: dest[1] ? dest[2] : '#444' }}></div>
+                <span style={{ fontSize: 11, color: dest[1] ? dest[2] : C.muted, fontFamily: "'Bebas Neue',sans-serif" }}>{dest[0]}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StudioLiveControlsV1({ state, dispatch, C }) {
+  var [micVol, setMicVol] = React.useState(85);
+  var [camVol, setCamVol] = React.useState(100);
+  var [muteAll, setMuteAll] = React.useState(false);
+  var [camOff, setCamOff] = React.useState(false);
+  var [showBanner, setShowBanner] = React.useState(false);
+  var [bannerText, setBannerText] = React.useState('Washington Classic 2026 — LIVE on SeeWhy LIVE');
+  var [bannerActive, setBannerActive] = React.useState(false);
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {[
+          { label: muteAll ? 'UNMUTE ALL' : 'MUTE ALL', icon: muteAll ? '🔇' : '🎤', color: muteAll ? C.red : C.muted, action: function() { setMuteAll(function(v) { return !v; }); } },
+          { label: camOff ? 'CAM ON' : 'CAM OFF', icon: camOff ? '📵' : '📹', color: camOff ? C.red : C.muted, action: function() { setCamOff(function(v) { return !v; }); } },
+          { label: 'LOWER THIRD', icon: '🎞', color: C.cyan, action: function() { setShowBanner(function(v) { return !v; }); } },
+          { label: 'SCREENSHOT', icon: '📸', color: C.gold, action: function() {} },
+          { label: 'PANIC CUT', icon: '✂️', color: C.red, action: function() {} },
+          { label: 'BREAK CARD', icon: '☕', color: '#9B59B6', action: function() {} },
+        ].map(function(btn, i) {
+          return (
+            <button key={i} onClick={btn.action} style={{ background: btn.color + '15', border: '1px solid ' + btn.color + '44', borderRadius: 12, padding: 14, color: btn.color, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 22 }}>{btn.icon}</span>
+              {btn.label}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 12, letterSpacing: 1 }}>AUDIO LEVELS</div>
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontSize: 11, color: C.white }}>🎤 Host Mic</span>
+            <span style={{ fontSize: 11, color: C.gold, fontFamily: "'Bebas Neue',sans-serif" }}>{micVol}%</span>
+          </div>
+          <input type="range" min={0} max={100} value={micVol} onChange={function(e) { setMicVol(Number(e.target.value)); }} style={{ width: '100%', accentColor: C.gold }} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontSize: 11, color: C.white }}>🎵 Stream Audio</span>
+            <span style={{ fontSize: 11, color: C.cyan, fontFamily: "'Bebas Neue',sans-serif" }}>{camVol}%</span>
+          </div>
+          <input type="range" min={0} max={100} value={camVol} onChange={function(e) { setCamVol(Number(e.target.value)); }} style={{ width: '100%', accentColor: C.cyan }} />
+        </div>
+      </div>
+      {showBanner && (
+        <div style={{ background: '#111', border: '1px solid ' + C.cyan + '44', borderRadius: 12, padding: 14 }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 10, letterSpacing: 1 }}>LOWER THIRD / BANNER</div>
+          <input value={bannerText} onChange={function(e) { setBannerText(e.target.value); }} style={{ width: '100%', background: '#0a0a0a', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', marginBottom: 10 }} />
+          <div style={{ background: 'rgba(0,0,0,0.8)', border: '2px solid ' + C.gold + '66', borderRadius: 6, padding: '8px 14px', marginBottom: 10 }}>
+            <div style={{ fontSize: 9, color: C.gold, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 2, marginBottom: 2 }}>SEEWHY LIVE</div>
+            <div style={{ fontSize: 13, color: C.white, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 1 }}>{bannerText}</div>
+          </div>
+          <button onClick={function() { setBannerActive(function(v) { return !v; }); }} style={{ width: '100%', background: bannerActive ? C.cyan + '22' : C.gold, border: bannerActive ? '1px solid ' + C.cyan : 'none', borderRadius: 8, padding: 12, color: bannerActive ? C.cyan : '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>{bannerActive ? '✕ HIDE BANNER' : 'SHOW BANNER'}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StudioScenesV1({ state, dispatch, C }) {
+  var [activeScene, setActiveScene] = React.useState(0);
+  var [transitioning, setTransitioning] = React.useState(false);
+  var scenes = [
+    { id: 0, name: 'MAIN BROADCAST', icon: '🎮', desc: 'Full panel + game view', layout: '16:9 + guests' },
+    { id: 1, name: 'FACE CAM ONLY', icon: '👤', desc: 'Host close-up', layout: 'Solo host' },
+    { id: 2, name: 'GAME FOCUS', icon: '🎯', desc: 'Domino table full screen', layout: 'Table cam' },
+    { id: 3, name: 'SPLIT SCREEN', icon: '⚔️', desc: 'Host + opponent side by side', layout: 'PK Battle' },
+    { id: 4, name: 'BRACKET VIEW', icon: '📊', desc: 'Tournament bracket display', layout: 'WA Classic' },
+    { id: 5, name: 'BE RIGHT BACK', icon: '☕', desc: 'Break card + music', layout: 'Interstitial' },
+    { id: 6, name: 'OUTRO', icon: '🎬', desc: 'End screen + social links', layout: 'End card' },
+  ];
+
+  function cut(id) {
+    if (id === activeScene || transitioning) return;
+    setTransitioning(true);
+    setTimeout(function() {
+      setActiveScene(id);
+      setTransitioning(false);
+    }, 400);
+  }
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ background: C.slate, border: '1px solid ' + C.gold + '33', borderRadius: 12, padding: 12, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.red, boxShadow: '0 0 8px ' + C.red, flexShrink: 0 }}></div>
+        <div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.white, letterSpacing: 1 }}>LIVE: {scenes[activeScene].name}</div>
+          <div style={{ fontSize: 10, color: C.muted }}>{scenes[activeScene].desc}</div>
+        </div>
+        {transitioning && <div style={{ marginLeft: 'auto', fontSize: 10, color: C.gold }}>CUTTING...</div>}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {scenes.map(function(scene) {
+          var isActive = scene.id === activeScene;
+          return (
+            <div key={scene.id} onClick={function() { cut(scene.id); }} style={{ background: isActive ? C.gold + '15' : '#111', border: '2px solid ' + (isActive ? C.gold : '#2a2a2a'), borderRadius: 12, padding: 14, cursor: isActive ? 'default' : 'pointer', position: 'relative', transition: 'border-color 0.2s' }}>
+              {isActive && <div style={{ position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: '50%', background: C.red, boxShadow: '0 0 6px ' + C.red }}></div>}
+              <div style={{ fontSize: 24, marginBottom: 6 }}>{scene.icon}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: isActive ? C.gold : C.white, letterSpacing: 0.5, marginBottom: 3 }}>{scene.name}</div>
+              <div style={{ fontSize: 10, color: C.muted }}>{scene.layout}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function StudioHealthV1({ state, dispatch, C }) {
+  var [health] = React.useState({
+    bitrate: 6240, bitrateTarget: 6000, fps: 60, fpsTarget: 60, dropped: 0,
+    latency: 1.4, viewers: 4823, peakViewers: 6102, uptime: '01:42:17',
+    bandwidth: 24.8, cpu: 34, gpu: 51, memory: 62,
+  });
+  var bitrateOk = health.bitrate >= health.bitrateTarget * 0.9;
+  var fpsOk = health.fps >= health.fpsTarget * 0.95;
+
+  function StatRow(props) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #1a1a1a' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 16 }}>{props.icon}</span>
+          <span style={{ fontSize: 12, color: C.muted }}>{props.label}</span>
+        </div>
+        <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: props.color || C.white, letterSpacing: 0.5 }}>{props.value}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {[
+          { label: 'VIEWERS', value: health.viewers.toLocaleString(), icon: '👁', color: C.cyan },
+          { label: 'UPTIME', value: health.uptime, icon: '⏱', color: C.green },
+          { label: 'PEAK', value: health.peakViewers.toLocaleString(), icon: '🏔', color: C.gold },
+          { label: 'DROPPED', value: health.dropped + ' frames', icon: '⚡', color: health.dropped === 0 ? C.green : C.red },
+        ].map(function(stat, i) {
+          return (
+            <div key={i} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+              <div style={{ fontSize: 22, marginBottom: 4 }}>{stat.icon}</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: stat.color, letterSpacing: 1 }}>{stat.value}</div>
+              <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>{stat.label}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14 }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 4, letterSpacing: 1 }}>STREAM DIAGNOSTICS</div>
+        <StatRow icon="📡" label="Bitrate" value={health.bitrate + ' kbps'} color={bitrateOk ? C.green : C.red} />
+        <StatRow icon="🎞" label="Frame Rate" value={health.fps + ' fps'} color={fpsOk ? C.green : C.red} />
+        <StatRow icon="⏱" label="Stream Latency" value={health.latency + 's'} color={C.cyan} />
+        <StatRow icon="📶" label="Upload Bandwidth" value={health.bandwidth + ' Mbps'} color={C.green} />
+        <StatRow icon="🖥" label="CPU Usage" value={health.cpu + '%'} color={health.cpu < 70 ? C.green : C.red} />
+        <StatRow icon="🎮" label="GPU Usage" value={health.gpu + '%'} color={health.gpu < 80 ? C.green : C.gold} />
+        <StatRow icon="💾" label="Memory" value={health.memory + '%'} color={health.memory < 80 ? C.green : C.gold} />
+      </div>
+    </div>
+  );
+}
+
+// ── B: SVS STATE VS STATE ARENA ───────────────────────────────
+
+function SVSArenaV1({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('bracket');
+  var tabs = [['bracket','🏆 BRACKET'],['scoring','🎯 SCORING'],['rosters','👥 ROSTERS'],['history','📜 HISTORY']];
+
+  var [bracket] = React.useState({
+    title: 'Washington Classic 2026',
+    format: '7 Rock / 5-150 / Double Elimination',
+    venue: "Jamar's Sports Bar & Grill, Des Moines, WA",
+    rounds: [
+      {
+        name: 'QUARTERFINALS',
+        matches: [
+          { id: 1, stateA: 'WA', stateB: 'CA', scoreA: 7, scoreB: 4, status: 'complete', winner: 'WA' },
+          { id: 2, stateA: 'TX', stateB: 'FL', scoreA: 5, scoreB: 7, status: 'complete', winner: 'FL' },
+          { id: 3, stateA: 'NY', stateB: 'GA', scoreA: 7, scoreB: 3, status: 'complete', winner: 'NY' },
+          { id: 4, stateA: 'IL', stateB: 'NC', scoreA: 6, scoreB: 7, status: 'complete', winner: 'NC' },
+        ]
+      },
+      {
+        name: 'SEMIFINALS',
+        matches: [
+          { id: 5, stateA: 'WA', stateB: 'FL', scoreA: 0, scoreB: 0, status: 'live', winner: null },
+          { id: 6, stateA: 'NY', stateB: 'NC', scoreA: 0, scoreB: 0, status: 'upcoming', winner: null },
+        ]
+      },
+      {
+        name: 'FINALS',
+        matches: [
+          { id: 7, stateA: 'TBD', stateB: 'TBD', scoreA: 0, scoreB: 0, status: 'upcoming', winner: null },
+        ]
+      },
+    ]
+  });
+
+  var stateColors = { WA: '#4B9CD3', CA: '#003DA5', TX: '#BF0A30', FL: '#FF6600', NY: '#003087', GA: '#BA0C2F', IL: '#00A3E0', NC: '#4B9CD3' };
+
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#050A1A,#0A1A0A)', padding: '16px 14px 0', borderBottom: '1px solid #4B9CD333' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,#003DA5,#050A1A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid #4B9CD344' }}>🗺</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.white, letterSpacing: 2 }}>STATE VS STATE</div>
+            <div style={{ fontSize: 10, color: C.muted }}>{bracket.venue}</div>
+          </div>
+        </div>
+        <div style={{ background: 'rgba(75,156,211,0.1)', border: '1px solid #4B9CD333', borderRadius: 8, padding: '8px 12px', marginBottom: 10, display: 'flex', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: C.white, letterSpacing: 1 }}>{bracket.title}</div>
+            <div style={{ fontSize: 10, color: C.muted }}>{bracket.format}</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.red, boxShadow: '0 0 6px ' + C.red }}></div>
+            <span style={{ fontSize: 10, color: C.red, fontFamily: "'Bebas Neue',sans-serif" }}>LIVE</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid #4B9CD3' : '2px solid transparent', padding: '8px 4px', color: tab === t[0] ? '#4B9CD3' : C.muted, fontSize: 9, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer', letterSpacing: 0.5 }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'bracket' && <SVSBracketV1 bracket={bracket} stateColors={stateColors} C={C} />}
+        {tab === 'scoring' && <SVSScoringV1 bracket={bracket} stateColors={stateColors} C={C} />}
+        {tab === 'rosters' && <SVSRostersV1 stateColors={stateColors} C={C} />}
+        {tab === 'history' && <SVSHistoryV1 C={C} />}
+      </div>
+    </div>
+  );
+}
+
+function SVSBracketV1({ bracket, stateColors, C }) {
+  var statusColor = { complete: C.green, live: C.red, upcoming: C.muted };
+  var statusLabel = { complete: 'FINAL', live: '🔴 LIVE', upcoming: 'UPCOMING' };
+
+  return (
+    <div style={{ padding: 14 }}>
+      {bracket.rounds.map(function(round, ri) {
+        return (
+          <div key={ri} style={{ marginBottom: 20 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#4B9CD3', letterSpacing: 2, marginBottom: 10 }}>{round.name}</div>
+            {round.matches.map(function(match) {
+              var isLive = match.status === 'live';
+              return (
+                <div key={match.id} style={{ background: isLive ? 'rgba(200,0,0,0.08)' : '#111', border: '2px solid ' + (isLive ? C.red + '66' : '#2a2a2a'), borderRadius: 14, padding: 14, marginBottom: 10, position: 'relative' }}>
+                  {isLive && <div style={{ position: 'absolute', top: 10, right: 12, fontSize: 10, color: C.red, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 1 }}>🔴 LIVE</div>}
+                  {match.status === 'complete' && <div style={{ position: 'absolute', top: 10, right: 12, fontSize: 9, color: C.green, fontFamily: "'Bebas Neue',sans-serif" }}>FINAL</div>}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: (stateColors[match.stateA] || '#333') + '22', border: '2px solid ' + (stateColors[match.stateA] || '#333') + '66', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: stateColors[match.stateA] || C.muted }}>{match.stateA}</div>
+                        <div style={{ flex: 1, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: match.winner === match.stateA ? C.white : C.muted }}>{match.stateA}</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: match.winner === match.stateA ? C.gold : C.white, minWidth: 24, textAlign: 'right' }}>{match.scoreA}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: (stateColors[match.stateB] || '#333') + '22', border: '2px solid ' + (stateColors[match.stateB] || '#333') + '66', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: stateColors[match.stateB] || C.muted }}>{match.stateB}</div>
+                        <div style={{ flex: 1, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: match.winner === match.stateB ? C.white : C.muted }}>{match.stateB}</div>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: match.winner === match.stateB ? C.gold : C.white, minWidth: 24, textAlign: 'right' }}>{match.scoreB}</div>
+                      </div>
+                    </div>
+                  </div>
+                  {match.winner && <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 14, height: 14, borderRadius: '50%', background: stateColors[match.winner] || C.gold, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🏆</div>
+                    <span style={{ fontSize: 10, color: C.gold, fontFamily: "'Bebas Neue',sans-serif" }}>{match.winner} ADVANCES</span>
+                  </div>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SVSScoringV1({ bracket, stateColors, C }) {
+  var liveMatch = null;
+  for (var ri = 0; ri < bracket.rounds.length; ri++) {
+    for (var mi = 0; mi < bracket.rounds[ri].matches.length; mi++) {
+      if (bracket.rounds[ri].matches[mi].status === 'live') {
+        liveMatch = bracket.rounds[ri].matches[mi];
+        break;
+      }
+    }
+  }
+  var [scoreA, setScoreA] = React.useState(liveMatch ? liveMatch.scoreA : 0);
+  var [scoreB, setScoreB] = React.useState(liveMatch ? liveMatch.scoreB : 0);
+  var [round, setRound] = React.useState(1);
+  var [events, setEvents] = React.useState([
+    { id: 1, time: '6:48', state: 'WA', event: 'Double-6 opening drop', pts: 0 },
+    { id: 2, time: '6:49', state: 'FL', event: 'Block — WA forced to draw 3', pts: 0 },
+    { id: 3, time: '6:51', state: 'WA', event: 'ROUND WIN — domino!', pts: 7 },
+  ]);
+
+  var stA = liveMatch ? liveMatch.stateA : 'WA';
+  var stB = liveMatch ? liveMatch.stateB : 'FL';
+  var colorA = stateColors[stA] || '#4B9CD3';
+  var colorB = stateColors[stB] || C.red;
+
+  function addEvent(st, text, pts) {
+    setEvents(function(ev) { return [{ id: Date.now(), time: 'Now', state: st, event: text, pts: pts }].concat(ev); });
+    if (st === stA) { setScoreA(function(s) { return s + pts; }); }
+    else { setScoreB(function(s) { return s + pts; }); }
+  }
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ background: 'linear-gradient(135deg,#0a1020,#1a0a00)', border: '1px solid #2a2a2a', borderRadius: 16, padding: 20, marginBottom: 14 }}>
+        <div style={{ textAlign: 'center', fontSize: 10, color: C.muted, marginBottom: 12, fontFamily: "'Bebas Neue',sans-serif", letterSpacing: 2 }}>SEMIFINALS · ROUND {round} · BEST OF 7</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 56, color: colorA, lineHeight: 1 }}>{scoreA}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.white, marginTop: 4 }}>{stA}</div>
+          </div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.muted }}>VS</div>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 56, color: colorB, lineHeight: 1 }}>{scoreB}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.white, marginTop: 4 }}>{stB}</div>
+          </div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+        <button onClick={function() { addEvent(stA, 'Round win', 1); }} style={{ background: colorA + '22', border: '1px solid ' + colorA + '44', borderRadius: 10, padding: 12, color: colorA, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>+1 {stA}</button>
+        <button onClick={function() { addEvent(stB, 'Round win', 1); }} style={{ background: colorB + '22', border: '1px solid ' + colorB + '44', borderRadius: 10, padding: 12, color: colorB, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>+1 {stB}</button>
+      </div>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: C.muted, letterSpacing: 1, marginBottom: 10 }}>MATCH LOG</div>
+      {events.map(function(ev) {
+        return (
+          <div key={ev.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
+            <div style={{ fontSize: 9, color: C.muted, flexShrink: 0, paddingTop: 2, minWidth: 30 }}>{ev.time}</div>
+            <div style={{ width: 28, height: 28, borderRadius: 6, background: (stateColors[ev.state] || '#333') + '22', border: '1px solid ' + (stateColors[ev.state] || '#333') + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontFamily: "'Bebas Neue',sans-serif", color: stateColors[ev.state] || C.muted, flexShrink: 0 }}>{ev.state}</div>
+            <div style={{ fontSize: 12, color: C.white, flex: 1 }}>{ev.event}</div>
+            {ev.pts > 0 && <div style={{ fontSize: 11, color: C.gold, fontFamily: "'Bebas Neue',sans-serif", flexShrink: 0 }}>+{ev.pts}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SVSRostersV1({ stateColors, C }) {
+  var [selectedState, setSelectedState] = React.useState('WA');
+  var rosters = {
+    WA: [
+      { name: 'SwanyThree23', handle: '@SwanyThree23', role: 'CAPTAIN', gems: 312, wins: 8 },
+      { name: 'PNW Bones', handle: '@PNWBones', role: 'ANCHOR', gems: 178, wins: 5 },
+      { name: 'Seattle Slider', handle: '@SeattleSlider', role: 'PLAYER', gems: 94, wins: 3 },
+      { name: 'Tacoma T-Bone', handle: '@TacomaT', role: 'PLAYER', gems: 67, wins: 4 },
+    ],
+    FL: [
+      { name: 'CaliBonesOG', handle: '@CaliBonesOG', role: 'CAPTAIN', gems: 241, wins: 6 },
+      { name: 'Sunshine Rock', handle: '@SunshineRock', role: 'ANCHOR', gems: 156, wins: 4 },
+      { name: 'Miami Marble', handle: '@MiamiMarble', role: 'PLAYER', gems: 88, wins: 3 },
+    ],
+  };
+  var states = Object.keys(stateColors);
+  var roster = rosters[selectedState] || [];
+
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+        {states.map(function(st) { return (
+          <button key={st} onClick={function() { setSelectedState(st); }} style={{ background: selectedState === st ? (stateColors[st] || '#333') + '22' : 'none', border: '1px solid ' + (selectedState === st ? stateColors[st] || '#333' : '#444'), borderRadius: 20, padding: '5px 14px', color: selectedState === st ? stateColors[st] || C.white : C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>{st}</button>
+        );})}
+      </div>
+      {roster.length > 0 ? roster.map(function(player, i) {
+        return (
+          <div key={i} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: (stateColors[selectedState] || '#333') + '22', border: '2px solid ' + (stateColors[selectedState] || '#333') + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: stateColors[selectedState] || C.white, flexShrink: 0 }}>{(player.name[0] || '?').toUpperCase()}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{player.name}</div>
+              <div style={{ fontSize: 10, color: C.muted }}>{player.handle}</div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <span style={{ fontSize: 9, color: stateColors[selectedState] || C.gold, fontFamily: "'Bebas Neue',sans-serif", background: (stateColors[selectedState] || '#333') + '22', borderRadius: 4, padding: '2px 6px' }}>{player.role}</span>
+                <span style={{ fontSize: 9, color: C.gold }}>💎 {player.gems}</span>
+                <span style={{ fontSize: 9, color: C.green }}>W: {player.wins}</span>
+              </div>
+            </div>
+          </div>
+        );
+      }) : (
+        <div style={{ textAlign: 'center', padding: 40, color: C.muted, fontSize: 13 }}>No roster data for {selectedState} yet.</div>
+      )}
+    </div>
+  );
+}
+
+function SVSHistoryV1({ C }) {
+  var history = [
+    { year: 2025, winner: 'TX', runnerUp: 'CA', score: '7-5', event: 'Washington Classic 2025', viewers: '3,812' },
+    { year: 2024, winner: 'WA', runnerUp: 'NY', score: '7-3', event: 'Washington Classic 2024', viewers: '2,441' },
+    { year: 2023, winner: 'IL', runnerUp: 'FL', score: '7-6', event: 'Washington Classic 2023', viewers: '1,889' },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      {history.map(function(h) {
+        return (
+          <div key={h.year} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 14, padding: 16, marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.gold, letterSpacing: 1 }}>{h.event}</div>
+                <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{h.viewers} peak viewers</div>
+              </div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.muted }}>{h.year}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ flex: 1, background: C.gold + '15', border: '1px solid ' + C.gold + '44', borderRadius: 10, padding: 10, textAlign: 'center' }}>
+                <div style={{ fontSize: 9, color: C.muted, marginBottom: 4 }}>CHAMPION</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.gold }}>🏆 {h.winner}</div>
+              </div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.muted }}>{h.score}</div>
+              <div style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 10, padding: 10, textAlign: 'center' }}>
+                <div style={{ fontSize: 9, color: C.muted, marginBottom: 4 }}>RUNNER-UP</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.muted }}>{h.runnerUp}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── D: MOBILE WEBVIEW HARDENING ───────────────────────────────
+
+function MobileWebViewHardeningInit() {
+  React.useEffect(function() {
+    // Safe-area CSS variables
+    var style = document.createElement('style');
+    style.innerHTML = [
+      ':root {',
+      '  --sat: env(safe-area-inset-top, 0px);',
+      '  --sar: env(safe-area-inset-right, 0px);',
+      '  --sab: env(safe-area-inset-bottom, 0px);',
+      '  --sal: env(safe-area-inset-left, 0px);',
+      '}',
+      'body { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; overscroll-behavior: none; }',
+      'input, textarea, select { font-size: 16px !important; }',
+      '* { -webkit-overflow-scrolling: touch; }',
+    ].join('\n');
+    document.head.appendChild(style);
+
+    // Viewport meta patch
+    var existing = document.querySelector('meta[name="viewport"]');
+    if (existing) { existing.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no'); }
+    else {
+      var meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no';
+      document.head.appendChild(meta);
+    }
+
+    // Prevent rubber-band scroll on iOS
+    function preventPull(e) { if (e.touches.length > 1) { e.preventDefault(); } }
+    document.addEventListener('touchstart', preventPull, { passive: false });
+
+    // Keyboard avoidance — push content up when keyboard opens
+    function onFocus() {
+      setTimeout(function() {
+        if (document.activeElement && document.activeElement.scrollIntoView) {
+          document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+    document.addEventListener('focusin', onFocus);
+
+    // Bridge: PostMessage API for native app shell
+    window.SeeWhyBridge = {
+      postToNative: function(event, payload) {
+        try {
+          if (window.ReactNativeWebView) { window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, payload: payload })); }
+          else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.seewhyBridge) { window.webkit.messageHandlers.seewhyBridge.postMessage({ event: event, payload: payload }); }
+        } catch (e) {}
+      },
+      onMessage: function(data) {
+        try {
+          var parsed = typeof data === 'string' ? JSON.parse(data) : data;
+          window.dispatchEvent(new CustomEvent('sw_native_message', { detail: parsed }));
+        } catch (e) {}
+      }
+    };
+
+    // Deeplink handler
+    function handleDeeplink(e) {
+      var url = e.detail && e.detail.url ? e.detail.url : '';
+      if (!url) return;
+      if (url.indexOf('seewhylive://stream/') === 0) { window.dispatchEvent(new CustomEvent('sw_deeplink_stream', { detail: { id: url.replace('seewhylive://stream/', '') } })); }
+      else if (url.indexOf('seewhylive://tournament/') === 0) { window.dispatchEvent(new CustomEvent('sw_deeplink_tournament', { detail: { id: url.replace('seewhylive://tournament/', '') } })); }
+    }
+    window.addEventListener('sw_deeplink', handleDeeplink);
+
+    return function() {
+      document.removeEventListener('touchstart', preventPull);
+      document.removeEventListener('focusin', onFocus);
+      window.removeEventListener('sw_deeplink', handleDeeplink);
+    };
+  }, []);
+  return null;
+}
+
+function MobileHardeningDashboard({ state, dispatch }) {
+  var C = COLORS;
+  var [tested, setTested] = React.useState({});
+  var checks = [
+    { id: 'safearea',   label: 'Safe Area Insets',      sub: 'env(safe-area-inset-*) applied to nav + bottom bar', icon: '📐' },
+    { id: 'viewport',   label: 'Viewport Fit Cover',    sub: 'viewport-fit=cover + user-scalable=no patched', icon: '📱' },
+    { id: 'keyboard',   label: 'Keyboard Avoidance',    sub: 'focusin listener scrolls input into view', icon: '⌨️' },
+    { id: 'font16',     label: 'Input Font 16px',       sub: 'Prevents iOS zoom on input focus', icon: '🔤' },
+    { id: 'overscroll', label: 'Overscroll Disabled',   sub: 'overscroll-behavior: none on body', icon: '🚫' },
+    { id: 'bridge',     label: 'Native Bridge',         sub: 'window.SeeWhyBridge · ReactNativeWebView + WKWebView', icon: '🌉' },
+    { id: 'deeplink',   label: 'Deeplink Handler',      sub: 'seewhylive://stream/* and seewhylive://tournament/*', icon: '🔗' },
+    { id: 'taphl',      label: 'Tap Highlight Off',     sub: '-webkit-tap-highlight-color: transparent', icon: '👆' },
+    { id: 'rubberband', label: 'Rubber-Band Blocked',   sub: 'Multi-touch touchstart preventDefault', icon: '🔒' },
+  ];
+
+  function test(id) {
+    setTested(function(t) {
+      var n = Object.assign({}, t);
+      n[id] = Math.random() > 0.1 ? 'pass' : 'fail';
+      return n;
+    });
+  }
+
+  var passCount = Object.values(tested).filter(function(v) { return v === 'pass'; }).length;
+  var totalTested = Object.keys(tested).length;
+
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#050A05,#0a1a0a)', padding: '16px 14px 12px', borderBottom: '1px solid #00ff6633' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,#00ff66,#050A05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid #00ff6644' }}>📱</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00ff66', letterSpacing: 2 }}>MOBILE HARDENING</div>
+            <div style={{ fontSize: 11, color: C.muted }}>App Store · Google Play · WebView Patches</div>
+          </div>
+        </div>
+        {totalTested > 0 && (
+          <div style={{ background: 'rgba(0,255,102,0.08)', border: '1px solid #00ff6633', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#00ff66' }}>{passCount}/{totalTested}</div>
+            <div style={{ fontSize: 11, color: C.muted }}>checks passed</div>
+            <div style={{ marginLeft: 'auto', width: 100, height: 6, borderRadius: 3, background: '#1a1a1a', overflow: 'hidden' }}>
+              <div style={{ width: (passCount / totalTested * 100) + '%', height: '100%', background: '#00ff66', borderRadius: 3, transition: 'width 0.3s' }}></div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div style={{ padding: 14 }}>
+        {checks.map(function(check) {
+          var result = tested[check.id];
+          return (
+            <div key={check.id} style={{ background: '#111', border: '1px solid ' + (result === 'pass' ? '#00ff6633' : result === 'fail' ? C.red + '33' : '#1e1e1e'), borderRadius: 12, padding: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ fontSize: 20, flexShrink: 0 }}>{check.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{check.label}</div>
+                <div style={{ fontSize: 10, color: C.muted, marginTop: 2, lineHeight: 1.4 }}>{check.sub}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                {result && <span style={{ fontSize: 9, color: result === 'pass' ? '#00ff66' : C.red, fontFamily: "'Bebas Neue',sans-serif" }}>{result === 'pass' ? '✓ PASS' : '✕ FAIL'}</span>}
+                <button onClick={function() { test(check.id); }} style={{ background: 'none', border: '1px solid ' + (result ? (result === 'pass' ? '#00ff6633' : C.red + '44') : '#333'), borderRadius: 6, padding: '3px 10px', color: result ? (result === 'pass' ? '#00ff66' : C.red) : C.muted, fontSize: 10, cursor: 'pointer', fontFamily: "'Bebas Neue',sans-serif" }}>{result ? 'RETEST' : 'TEST'}</button>
+              </div>
+            </div>
+          );
+        })}
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginTop: 16 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#00ff66', letterSpacing: 1, marginBottom: 12 }}>SUBMISSION CHECKLIST</div>
+          {[
+            { label: 'Bundle ID', value: 'online.seewhylive.app', done: true },
+            { label: 'App Name', value: 'SeeWhy LIVE', done: true },
+            { label: 'Icons', value: '1024x1024 required (iOS) · Adaptive (Android)', done: false },
+            { label: 'Splash Screen', value: 'Black + Gold · 2732x2732 (iOS) · 1242x2208', done: false },
+            { label: 'Privacy Policy', value: 'Required for App Store approval', done: false },
+            { label: 'Push Notifications', value: 'APNS (iOS) · FCM (Android) keys', done: false },
+            { label: 'RTMP Entitlement', value: 'iOS requires com.apple.security.network.client', done: true },
+            { label: 'Minimum OS', value: 'iOS 15+ · Android 8.0 (API 26)+', done: true },
+          ].map(function(item, i) {
+            return (
+              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 10 }}>
+                <div style={{ width: 16, height: 16, borderRadius: 4, background: item.done ? '#00ff6622' : '#1a1a1a', border: '1px solid ' + (item.done ? '#00ff6644' : '#333'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: item.done ? '#00ff66' : C.muted, flexShrink: 0, marginTop: 1 }}>{item.done ? '✓' : ''}</div>
+                <div>
+                  <div style={{ color: item.done ? C.white : C.muted, fontSize: 12 }}>{item.label}</div>
+                  <div style={{ fontSize: 10, color: C.muted, marginTop: 1 }}>{item.value}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// BATCH L — ALL FIVE COMPONENTS
+// ============================================================
+
+// ── C: CREATOR ANALYTICS DEEP DIVE ───────────────────────────
+
+function CreatorAnalyticsDashboard({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('overview');
+  var [range, setRange] = React.useState('7d');
+  var tabs = [['overview','📊 OVERVIEW'],['revenue','💰 REVENUE'],['gems','💎 GEMS'],['viewers','👁 VIEWERS'],['tippers','🏆 TIPPERS']];
+  var ranges = ['24h','7d','30d','90d','all'];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#050510,#0a0520)', padding: '16px 14px 0', borderBottom: '1px solid ' + C.gold + '33' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,' + C.gold + ',#050510)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid ' + C.gold + '44' }}>📊</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>CREATOR ANALYTICS</div>
+            <div style={{ fontSize: 11, color: C.muted }}>@SwanyThree23 · SeeWhy LIVE</div>
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {ranges.map(function(r) { return (
+              <button key={r} onClick={function() { setRange(r); }} style={{ background: range === r ? C.gold + '22' : 'none', border: '1px solid ' + (range === r ? C.gold : '#333'), borderRadius: 6, padding: '4px 8px', color: range === r ? C.gold : C.muted, fontSize: 9, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{r.toUpperCase()}</button>
+            );})}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.gold : '2px solid transparent', padding: '8px 10px', color: tab === t[0] ? C.gold : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'overview' && <AnalyticsOverviewTab C={C} range={range} />}
+        {tab === 'revenue' && <AnalyticsRevenueTab C={C} range={range} />}
+        {tab === 'gems' && <AnalyticsGemsTab C={C} range={range} />}
+        {tab === 'viewers' && <AnalyticsViewersTab C={C} range={range} />}
+        {tab === 'tippers' && <AnalyticsTippersTab C={C} range={range} />}
+      </div>
+    </div>
+  );
+}
+
+function MiniBarChart({ data, color, height, C }) {
+  var max = Math.max.apply(null, data.map(function(d) { return d.v; }));
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: height || 48 }}>
+      {data.map(function(d, i) {
+        var pct = max > 0 ? Math.floor((d.v / max) * 100) : 0;
+        return (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, height: '100%', justifyContent: 'flex-end' }}>
+            <div style={{ width: '100%', background: color, borderRadius: '3px 3px 0 0', height: pct + '%', minHeight: d.v > 0 ? 3 : 0, opacity: 0.85 }}></div>
+            {d.label && <div style={{ fontSize: 7, color: C.muted, whiteSpace: 'nowrap' }}>{d.label}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function StatCard({ icon, label, value, sub, color, C }) {
+  return (
+    <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+      <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: color || C.white, letterSpacing: 1 }}>{value}</div>
+      <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>{label}</div>
+      {sub && <div style={{ fontSize: 9, color: color || C.muted, marginTop: 3 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function AnalyticsOverviewTab({ C, range }) {
+  var stats = [
+    { icon: '💰', label: 'TOTAL REVENUE', value: '$4,812', sub: '+23% vs last period', color: C.gold },
+    { icon: '👁', label: 'TOTAL VIEWERS', value: '28,441', sub: '+11% vs last period', color: C.cyan },
+    { icon: '💎', label: 'GEMS RECEIVED', value: '6,230', sub: '623 unique senders', color: '#9B59B6' },
+    { icon: '📺', label: 'STREAMS', value: '14', sub: 'Avg 2.1h each', color: C.green },
+    { icon: '⏱', label: 'WATCH TIME', value: '8,842h', sub: '21.4 min avg session', color: C.volt },
+    { icon: '🔔', label: 'NEW FOLLOWERS', value: '1,204', sub: '+18% vs last period', color: C.burgundy },
+  ];
+  var weekData = [
+    { label: 'M', v: 312 }, { label: 'T', v: 480 }, { label: 'W', v: 290 },
+    { label: 'T', v: 620 }, { label: 'F', v: 890 }, { label: 'S', v: 1240 }, { label: 'S', v: 980 },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {stats.map(function(s, i) { return <StatCard key={i} C={C} icon={s.icon} label={s.label} value={s.value} sub={s.sub} color={s.color} />; })}
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.gold, letterSpacing: 1 }}>VIEWER TREND</div>
+          <div style={{ fontSize: 10, color: C.muted }}>This week</div>
+        </div>
+        <MiniBarChart data={weekData} color={C.gold} height={64} C={C} />
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.gold, letterSpacing: 1, marginBottom: 12 }}>TOP STREAMS THIS PERIOD</div>
+        {[
+          { title: 'Washington Classic Semis', date: 'Jun 7', viewers: 4823, revenue: '$892', gems: 1240 },
+          { title: 'PK Battle vs CaliBone22', date: 'Jun 4', viewers: 3102, revenue: '$541', gems: 780 },
+          { title: 'VibeN Bones Sunday Session', date: 'Jun 2', viewers: 2441, revenue: '$388', gems: 512 },
+          { title: 'Washington Classic Preview', date: 'May 30', viewers: 2108, revenue: '$312', gems: 420 },
+        ].map(function(s, i) { return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 10, marginBottom: 10, borderBottom: i < 3 ? '1px solid #1a1a1a' : 'none' }}>
+            <div style={{ width: 28, height: 28, borderRadius: 6, background: C.gold + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.gold, flexShrink: 0 }}>{i + 1}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: C.white, fontSize: 12, fontWeight: 700 }}>{s.title}</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{s.date} · {s.viewers.toLocaleString()} viewers</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 12, color: C.gold, fontFamily: "'Bebas Neue',sans-serif" }}>{s.revenue}</div>
+              <div style={{ fontSize: 9, color: '#9B59B6' }}>💎 {s.gems}</div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsRevenueTab({ C, range }) {
+  var months = [
+    { label: 'Jan', v: 280 }, { label: 'Feb', v: 340 }, { label: 'Mar', v: 520 },
+    { label: 'Apr', v: 490 }, { label: 'May', v: 710 }, { label: 'Jun', v: 892 },
+  ];
+  var breakdown = [
+    { label: 'Gem Conversions', amount: '$2,841', pct: 59, color: '#9B59B6' },
+    { label: 'Subscriptions', amount: '$1,240', pct: 26, color: C.gold },
+    { label: 'PPV Events', amount: '$480', pct: 10, color: C.cyan },
+    { label: 'Tips (Direct)', amount: '$251', pct: 5, color: C.green },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <StatCard icon="💰" label="GROSS" value="$5,346" C={C} color={C.gold} />
+        <StatCard icon="✂️" label="PLATFORM" value="-$535" sub="10% fee" C={C} color={C.red} />
+        <StatCard icon="🏦" label="YOUR CUT" value="$4,812" sub="90%" C={C} color={C.green} />
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.gold, letterSpacing: 1, marginBottom: 12 }}>MONTHLY REVENUE</div>
+        <MiniBarChart data={months} color={C.gold} height={80} C={C} />
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.gold, letterSpacing: 1, marginBottom: 12 }}>REVENUE BREAKDOWN</div>
+        {breakdown.map(function(b, i) { return (
+          <div key={i} style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 12, color: C.white }}>{b.label}</span>
+              <span style={{ fontSize: 12, color: b.color, fontFamily: "'Bebas Neue',sans-serif" }}>{b.amount}</span>
+            </div>
+            <div style={{ height: 6, background: '#1a1a1a', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: b.pct + '%', height: '100%', background: b.color, borderRadius: 3 }}></div>
+            </div>
+            <div style={{ fontSize: 9, color: C.muted, marginTop: 3 }}>{b.pct}% of total</div>
+          </div>
+        );})}
+      </div>
+      <div style={{ background: 'rgba(0,200,100,0.08)', border: '1px solid ' + C.green + '33', borderRadius: 12, padding: 14 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.green, letterSpacing: 1, marginBottom: 6 }}>CREATOR SPLIT GUARANTEE</div>
+        <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.6 }}>CREATOR_SPLIT = 0.90 is immutable across all payment rails. Enforced at DB trigger, API middleware, and Stripe application_fee_amount layers.</div>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsGemsTab({ C, range }) {
+  var gemData = [
+    { label: 'M', v: 420 }, { label: 'T', v: 680 }, { label: 'W', v: 310 },
+    { label: 'T', v: 890 }, { label: 'F', v: 1240 }, { label: 'S', v: 1680 }, { label: 'S', v: 1010 },
+  ];
+  var gemTypes = [
+    { name: 'Ruby Gem', icon: '🔴', count: 2841, value: '$1,420', color: C.red },
+    { name: 'Gold Gem', icon: '🟡', count: 1440, value: '$720', color: C.gold },
+    { name: 'Diamond', icon: '💎', count: 580, value: '$580', color: C.cyan },
+    { name: 'Purple Gem', icon: '🟣', count: 890, value: '$445', color: '#9B59B6' },
+    { name: 'Bone Gem', icon: '🦴', count: 480, value: '$240', color: C.muted },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <StatCard icon="💎" label="GEMS RECEIVED" value="6,231" C={C} color="#9B59B6" />
+        <StatCard icon="👥" label="UNIQUE SENDERS" value="623" sub="+41 new" C={C} color={C.cyan} />
+        <StatCard icon="📈" label="PEAK GEM RATE" value="48/min" sub="WA Classic Semis" C={C} color={C.gold} />
+        <StatCard icon="🔄" label="CONVERTED" value="$2,841" sub="90% to you" C={C} color={C.green} />
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#9B59B6', letterSpacing: 1, marginBottom: 12 }}>GEM FLOW THIS WEEK</div>
+        <MiniBarChart data={gemData} color="#9B59B6" height={72} C={C} />
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#9B59B6', letterSpacing: 1, marginBottom: 12 }}>GEM TYPE BREAKDOWN</div>
+        {gemTypes.map(function(g, i) { return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>{g.icon}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 12, color: C.white }}>{g.name}</span>
+                <span style={{ fontSize: 11, color: g.color, fontFamily: "'Bebas Neue',sans-serif" }}>{g.value}</span>
+              </div>
+              <div style={{ height: 4, background: '#1a1a1a', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ width: Math.floor(g.count / 28.41) + '%', height: '100%', background: g.color, borderRadius: 2 }}></div>
+              </div>
+              <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>{g.count.toLocaleString()} gems</div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsViewersTab({ C, range }) {
+  var retentionData = [
+    { label: '0m', v: 100 }, { label: '5m', v: 88 }, { label: '10m', v: 74 },
+    { label: '20m', v: 61 }, { label: '30m', v: 52 }, { label: '45m', v: 44 },
+    { label: '60m', v: 38 }, { label: '90m', v: 31 }, { label: '120m', v: 26 },
+  ];
+  var sources = [
+    { label: 'Direct / seewhylive.online', pct: 42, color: C.gold },
+    { label: 'YouTube', pct: 28, color: C.red },
+    { label: 'Twitter / X', pct: 14, color: C.cyan },
+    { label: 'Instagram', pct: 10, color: '#E1306C' },
+    { label: 'Other', pct: 6, color: C.muted },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <StatCard icon="👁" label="PEAK VIEWERS" value="6,102" sub="WA Classic Semis" C={C} color={C.cyan} />
+        <StatCard icon="📊" label="AVG CONCURRENT" value="2,841" C={C} color={C.green} />
+        <StatCard icon="⏱" label="AVG SESSION" value="21.4m" C={C} color={C.gold} />
+        <StatCard icon="🔁" label="RETURN RATE" value="68%" sub="+4% vs last" C={C} color="#9B59B6" />
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.cyan, letterSpacing: 1, marginBottom: 4 }}>VIEWER RETENTION CURVE</div>
+        <div style={{ fontSize: 10, color: C.muted, marginBottom: 12 }}>% of viewers still watching by minute</div>
+        <MiniBarChart data={retentionData} color={C.cyan} height={72} C={C} />
+      </div>
+      <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.cyan, letterSpacing: 1, marginBottom: 12 }}>TRAFFIC SOURCES</div>
+        {sources.map(function(s, i) { return (
+          <div key={i} style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+              <span style={{ fontSize: 11, color: C.white }}>{s.label}</span>
+              <span style={{ fontSize: 11, color: s.color, fontFamily: "'Bebas Neue',sans-serif" }}>{s.pct}%</span>
+            </div>
+            <div style={{ height: 5, background: '#1a1a1a', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: s.pct + '%', height: '100%', background: s.color, borderRadius: 3 }}></div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsTippersTab({ C, range }) {
+  var tippers = [
+    { rank: 1, name: 'BigBoneEarl', handle: '@BigBoneEarl', gems: 1240, value: '$620', streams: 8, badge: '👑' },
+    { rank: 2, name: 'CaliBonesOG', handle: '@CaliBonesOG', gems: 890, value: '$445', streams: 6, badge: '🥈' },
+    { rank: 3, name: 'MamaJoyce', handle: '@MamaJoyce', gems: 640, value: '$320', streams: 11, badge: '🥉' },
+    { rank: 4, name: 'VibeNBones', handle: '@VibeNBones', gems: 480, value: '$240', streams: 5, badge: null },
+    { rank: 5, name: 'SeattleSlider', handle: '@SeattleSlider', gems: 380, value: '$190', streams: 4, badge: null },
+    { rank: 6, name: 'PNW_Domino', handle: '@PNW_Domino', gems: 310, value: '$155', streams: 7, badge: null },
+    { rank: 7, name: 'TacomaTBone', handle: '@TacomaTBone', gems: 280, value: '$140', streams: 3, badge: null },
+    { rank: 8, name: 'FastHandsRod', handle: '@FastHandsRod', gems: 240, value: '$120', streams: 5, badge: null },
+  ];
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <StatCard icon="🏆" label="TOP TIPPER" value="Earl" sub="1,240 gems" C={C} color={C.gold} />
+        <StatCard icon="💎" label="TOTAL GEMS" value="6,231" C={C} color="#9B59B6" />
+        <StatCard icon="👥" label="SUPPORTERS" value="623" C={C} color={C.cyan} />
+      </div>
+      {tippers.map(function(t) { return (
+        <div key={t.rank} style={{ background: t.rank <= 3 ? C.gold + '08' : '#111', border: '1px solid ' + (t.rank <= 3 ? C.gold + '33' : '#1e1e1e'), borderRadius: 12, padding: 14, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: t.rank <= 3 ? C.gold + '22' : '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: t.badge ? 18 : 14, color: C.gold, flexShrink: 0 }}>{t.badge || t.rank}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{t.name}</div>
+            <div style={{ fontSize: 10, color: C.muted }}>{t.handle} · {t.streams} streams</div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#9B59B6' }}>💎 {t.gems.toLocaleString()}</div>
+            <div style={{ fontSize: 11, color: C.gold }}>{t.value}</div>
+          </div>
+        </div>
+      );})}
+    </div>
+  );
+}
+
+// ── FALLEN LEGENDS TRIBUTE ────────────────────────────────────
+
+function FallenLegendsTributeV1({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('wall');
+  var [selected, setSelected] = React.useState(null);
+  var [showAdd, setShowAdd] = React.useState(false);
+  var tabs = [['wall','🕯 WALL'],['submit','✍️ SUBMIT'],['ceremony','🏆 CEREMONY']];
+
+  var [legends, setLegends] = React.useState([
+    { id: 1, name: 'Big Bone Bobby', years: '1961 - 2019', region: 'Pacific Northwest', quote: 'Let the bones speak for themselves.', games: 847, titles: 3, photo: 'BB', color: C.gold, tributes: 124, candles: 89 },
+    { id: 2, name: 'Domino Queen Vera', years: '1955 - 2021', region: 'California', quote: 'Every rock tells a story.', games: 1204, titles: 7, photo: 'VQ', color: '#9B59B6', tributes: 203, candles: 156 },
+    { id: 3, name: 'Slim Shake Johnson', years: '1968 - 2020', region: 'Texas', quote: 'Patience is the double-six.', games: 632, titles: 2, photo: 'SJ', color: C.cyan, tributes: 87, candles: 64 },
+    { id: 4, name: 'Mama Rose Washington', years: '1949 - 2022', region: 'Georgia', quote: 'We play for those who came before.', games: 1891, titles: 12, photo: 'MR', color: C.burgundy, tributes: 312, candles: 241 },
+  ]);
+
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#050305,#0d0508)', padding: '16px 14px 0', borderBottom: '1px solid #55223344' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,#552233,#050305)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid #55223344' }}>🕯</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A0A0', letterSpacing: 2 }}>FALLEN LEGENDS</div>
+            <div style={{ fontSize: 11, color: C.muted }}>Washington Classic · In Memoriam</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid #C9A0A0' : '2px solid transparent', padding: '8px 4px', color: tab === t[0] ? '#C9A0A0' : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+
+      {tab === 'wall' && (
+        <div style={{ padding: 14 }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(85,34,51,0.2),transparent)', border: '1px solid #55223344', borderRadius: 12, padding: 14, marginBottom: 16, textAlign: 'center' }}>
+            <div style={{ fontSize: 24, marginBottom: 6 }}>🕯</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A0A0', letterSpacing: 2, marginBottom: 4 }}>IN LOVING MEMORY</div>
+            <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.6 }}>We honor those who shaped domino culture. Their rocks echo in every game played on SeeWhy LIVE.</div>
+          </div>
+          {legends.map(function(legend) {
+            var isSelected = selected && selected.id === legend.id;
+            return (
+              <div key={legend.id} style={{ background: isSelected ? 'rgba(85,34,51,0.15)' : '#111', border: '1px solid ' + (isSelected ? '#55223388' : '#1e1e1e'), borderRadius: 14, padding: 16, marginBottom: 12, cursor: 'pointer' }} onClick={function() { setSelected(isSelected ? null : legend); }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 12, background: legend.color + '22', border: '2px solid ' + legend.color + '55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: legend.color, flexShrink: 0 }}>{legend.photo}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A0A0', letterSpacing: 1 }}>{legend.name}</div>
+                    <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{legend.years} · {legend.region}</div>
+                    <div style={{ fontSize: 11, color: C.muted, fontStyle: 'italic', marginTop: 6, lineHeight: 1.5 }}>"{legend.quote}"</div>
+                  </div>
+                </div>
+                {isSelected && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #2a2a2a' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: legend.color }}>{legend.games}</div>
+                        <div style={{ fontSize: 9, color: C.muted }}>GAMES</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.gold }}>{legend.titles}</div>
+                        <div style={{ fontSize: 9, color: C.muted }}>TITLES</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A0A0' }}>{legend.tributes}</div>
+                        <div style={{ fontSize: 9, color: C.muted }}>TRIBUTES</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={function(e) { e.stopPropagation(); setLegends(function(ls) { return ls.map(function(l) { return l.id === legend.id ? Object.assign({}, l, { candles: l.candles + 1 }) : l; }); }); }} style={{ flex: 1, background: 'rgba(85,34,51,0.3)', border: '1px solid #55223355', borderRadius: 8, padding: 10, color: '#C9A0A0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>🕯 LIGHT CANDLE ({legend.candles})</button>
+                      <button onClick={function(e) { e.stopPropagation(); setTab('submit'); }} style={{ flex: 1, background: 'none', border: '1px solid #333', borderRadius: 8, padding: 10, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>✍️ TRIBUTE</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {tab === 'submit' && (
+        <div style={{ padding: 14 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#C9A0A0', letterSpacing: 1, marginBottom: 14 }}>SUBMIT A TRIBUTE OR NOMINATION</div>
+          {[
+            { label: 'FULL NAME', placeholder: 'Player name as known in the community' },
+            { label: 'YEARS', placeholder: 'e.g. 1955 - 2021' },
+            { label: 'REGION / STATE', placeholder: 'e.g. Pacific Northwest, California' },
+            { label: 'THEIR SAYING', placeholder: 'A quote or phrase they were known for' },
+          ].map(function(field, i) { return (
+            <div key={i} style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>{field.label}</div>
+              <input placeholder={field.placeholder} style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box' }} />
+            </div>
+          );})}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, color: C.muted, marginBottom: 6, letterSpacing: 1 }}>YOUR TRIBUTE MESSAGE</div>
+            <textarea placeholder="Share a memory, story, or tribute..." style={{ width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13, boxSizing: 'border-box', minHeight: 100, resize: 'none' }} />
+          </div>
+          <button style={{ width: '100%', background: 'linear-gradient(135deg,#552233,#3a1525)', border: 'none', borderRadius: 10, padding: 16, color: '#C9A0A0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 1 }}>🕯 SUBMIT TRIBUTE</button>
+        </div>
+      )}
+
+      {tab === 'ceremony' && (
+        <div style={{ padding: 14 }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(85,34,51,0.2),transparent)', border: '1px solid #55223344', borderRadius: 14, padding: 20, marginBottom: 16, textAlign: 'center' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🏆</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#C9A0A0', letterSpacing: 2, marginBottom: 6 }}>OPENING CEREMONY</div>
+            <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.7 }}>The Washington Classic 2026 opens with a moment of silence and a live tribute segment honoring our Fallen Legends. Their names will be displayed on stream during the ceremony.</div>
+          </div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A0A0', letterSpacing: 1, marginBottom: 12 }}>2026 HONORED LEGENDS</div>
+          {legends.map(function(legend) { return (
+            <div key={legend.id} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ fontSize: 20 }}>🕯</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A0A0' }}>{legend.name}</div>
+                <div style={{ fontSize: 10, color: C.muted }}>{legend.years} · {legend.region}</div>
+              </div>
+              <div style={{ fontSize: 10, color: '#C9A0A0', fontFamily: "'Bebas Neue',sans-serif" }}>🕯 {legend.candles}</div>
+            </div>
+          );})}
+          <button style={{ width: '100%', background: 'rgba(85,34,51,0.3)', border: '1px solid #55223355', borderRadius: 10, padding: 14, color: '#C9A0A0', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer', marginTop: 8, letterSpacing: 1 }}>▶ TRIGGER CEREMONY OVERLAY</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── PK BATTLE MODAL V2 ────────────────────────────────────────
+
+function PKBattleModalV2({ state, dispatch }) {
+  var C = COLORS;
+  var [phase, setPhase] = React.useState('lobby');
+  var [scoreA, setScoreA] = React.useState(0);
+  var [scoreB, setScoreB] = React.useState(0);
+  var [round, setRound] = React.useState(1);
+  var [log, setLog] = React.useState([]);
+  var [challenged, setChallenged] = React.useState(null);
+  var [challengeInput, setChallengeInput] = React.useState('');
+
+  var host = { name: 'SwanyThree23', handle: '@SwanyThree23', color: C.gold, avatar: 'SW', wins: 47, losses: 12 };
+  var opponent = challenged || { name: 'CaliBone22', handle: '@CaliBone22', color: C.cyan, avatar: 'CB', wins: 31, losses: 18 };
+
+  var maxScore = 7;
+  var hostPct = Math.floor((scoreA / maxScore) * 100);
+  var oppPct = Math.floor((scoreB / maxScore) * 100);
+
+  function addPoint(who) {
+    var newA = who === 'host' ? scoreA + 1 : scoreA;
+    var newB = who === 'opp' ? scoreB + 1 : scoreB;
+    var entry = { id: Date.now(), round: round, scorer: who === 'host' ? host.name : opponent.name, time: 'R' + round };
+    setLog(function(l) { return [entry].concat(l); });
+    if (who === 'host') { setScoreA(newA); } else { setScoreB(newB); }
+    if (newA >= maxScore || newB >= maxScore) { setPhase('result'); }
+    else { setRound(function(r) { return r + 1; }); }
+  }
+
+  function reset() { setScoreA(0); setScoreB(0); setRound(1); setLog([]); setPhase('lobby'); }
+
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'linear-gradient(135deg,#1a0500,#0a0010)', padding: '14px 14px 12px', borderBottom: '1px solid ' + C.burgundy + '44', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={function() { dispatch({ type: 'CLOSE_MODAL' }); }} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 20, cursor: 'pointer', padding: 0 }}>✕</button>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.white, letterSpacing: 2 }}>⚔️ PK BATTLE</div>
+            <div style={{ fontSize: 10, color: C.muted }}>First to {maxScore} wins · Round {round}</div>
+          </div>
+          {phase === 'active' && <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.red, boxShadow: '0 0 6px ' + C.red }}></div>
+            <span style={{ fontSize: 10, color: C.red, fontFamily: "'Bebas Neue',sans-serif" }}>LIVE</span>
+          </div>}
+        </div>
+      </div>
+
+      {phase === 'lobby' && (
+        <div style={{ flex: 1, padding: 14 }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(139,0,0,0.1),rgba(0,0,100,0.1))', border: '1px solid #2a2a2a', borderRadius: 16, padding: 20, marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, background: host.color + '22', border: '2px solid ' + host.color + '66', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: host.color, margin: '0 auto 8px' }}>{host.avatar}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.white }}>{host.name}</div>
+                <div style={{ fontSize: 9, color: C.muted }}>{host.wins}W - {host.losses}L</div>
+              </div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.muted, padding: '0 10px' }}>VS</div>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, background: opponent.color + '22', border: '2px solid ' + opponent.color + '66', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: opponent.color, margin: '0 auto 8px' }}>{opponent.avatar}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: C.white }}>{opponent.name}</div>
+                <div style={{ fontSize: 9, color: C.muted }}>{opponent.wins}W - {opponent.losses}L</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: C.muted, marginBottom: 10, letterSpacing: 1 }}>CHALLENGE SOMEONE</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input value={challengeInput} onChange={function(e) { setChallengeInput(e.target.value); }} placeholder="@handle or search..." style={{ flex: 1, background: '#0a0a0a', border: '1px solid #333', borderRadius: 8, padding: '10px 12px', color: C.white, fontSize: 13 }} />
+              <button onClick={function() { if (challengeInput.trim()) { setChallenged({ name: challengeInput.replace('@',''), handle: '@' + challengeInput.replace('@',''), color: C.cyan, avatar: challengeInput.replace('@','')[0].toUpperCase(), wins: 0, losses: 0 }); setChallengeInput(''); }}} style={{ background: C.burgundy, border: 'none', borderRadius: 8, padding: '10px 16px', color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>CALL OUT</button>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+            {[['First to 7', 7],['First to 5', 5],['First to 10', 10],['First to 3', 3]].map(function(opt, i) { return (
+              <button key={i} style={{ background: opt[1] === maxScore ? C.gold + '22' : 'none', border: '1px solid ' + (opt[1] === maxScore ? C.gold : '#333'), borderRadius: 10, padding: 12, color: opt[1] === maxScore ? C.gold : C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>{opt[0]}</button>
+            );})}
+          </div>
+          <button onClick={function() { setPhase('active'); }} style={{ width: '100%', background: 'linear-gradient(135deg,' + C.burgundy + ',#8B0000)', border: 'none', borderRadius: 12, padding: 18, color: C.white, fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, cursor: 'pointer', letterSpacing: 2 }}>⚔️ START BATTLE</button>
+        </div>
+      )}
+
+      {phase === 'active' && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '16px 14px', background: 'linear-gradient(135deg,#1a0500,#00001a)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 64, color: host.color, lineHeight: 1 }}>{scoreA}</div>
+                <div style={{ fontSize: 12, color: C.white, fontFamily: "'Bebas Neue',sans-serif" }}>{host.name}</div>
+              </div>
+              <div style={{ textAlign: 'center', padding: '0 10px' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: C.muted }}>VS</div>
+                <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>R{round}</div>
+              </div>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 64, color: opponent.color, lineHeight: 1 }}>{scoreB}</div>
+                <div style={{ fontSize: 12, color: C.white, fontFamily: "'Bebas Neue',sans-serif" }}>{opponent.name}</div>
+              </div>
+            </div>
+            <div style={{ height: 8, background: '#1a1a1a', borderRadius: 4, overflow: 'hidden', display: 'flex' }}>
+              <div style={{ width: hostPct + '%', background: host.color, transition: 'width 0.3s' }}></div>
+              <div style={{ flex: 1, background: '#1a1a1a' }}></div>
+              <div style={{ width: oppPct + '%', background: opponent.color, transition: 'width 0.3s' }}></div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '14px 14px 0' }}>
+            <button onClick={function() { addPoint('host'); }} style={{ background: host.color + '22', border: '2px solid ' + host.color + '66', borderRadius: 14, padding: 20, color: host.color, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>+1 {host.name.split(/(?=[A-Z])/)[0]}</button>
+            <button onClick={function() { addPoint('opp'); }} style={{ background: opponent.color + '22', border: '2px solid ' + opponent.color + '66', borderRadius: 14, padding: 20, color: opponent.color, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer' }}>+1 {opponent.name.split(/(?=[A-Z])/)[0]}</button>
+          </div>
+          <div style={{ padding: '14px 14px 0', flex: 1, overflowY: 'auto' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: C.muted, letterSpacing: 1, marginBottom: 8 }}>MATCH LOG</div>
+            {log.map(function(entry) { return (
+              <div key={entry.id} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 9, color: C.muted, minWidth: 20 }}>{entry.time}</span>
+                <span style={{ fontSize: 12, color: C.white }}>{entry.scorer}</span>
+                <span style={{ fontSize: 11, color: C.gold, marginLeft: 'auto' }}>+1</span>
+              </div>
+            );})}
+          </div>
+          <div style={{ padding: 14 }}>
+            <button onClick={reset} style={{ width: '100%', background: 'none', border: '1px solid ' + C.red + '44', borderRadius: 10, padding: 12, color: C.red, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer' }}>FORFEIT BATTLE</button>
+          </div>
+        </div>
+      )}
+
+      {phase === 'result' && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ fontSize: 56, marginBottom: 12 }}>🏆</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: C.gold, letterSpacing: 2, marginBottom: 4 }}>{scoreA >= maxScore ? host.name : opponent.name}</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.muted, marginBottom: 16 }}>WINS THE PK BATTLE</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: C.white, letterSpacing: 8, marginBottom: 24 }}>{scoreA} - {scoreB}</div>
+          <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+            <button onClick={reset} style={{ flex: 1, background: C.gold, border: 'none', borderRadius: 12, padding: 16, color: '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>REMATCH</button>
+            <button onClick={function() { dispatch({ type: 'CLOSE_MODAL' }); }} style={{ flex: 1, background: 'none', border: '1px solid #444', borderRadius: 12, padding: 16, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, cursor: 'pointer' }}>CLOSE</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── GREEN ROOM MODAL V2 ───────────────────────────────────────
+
+function GreenRoomModalV2({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('queue');
+  var tabs = [['queue','🎬 QUEUE'],['holding','⏳ HOLDING'],['settings','⚙️ SETTINGS']];
+
+  var [queue, setQueue] = React.useState([
+    { id: 1, name: 'CaliBonesOG', handle: '@CaliBonesOG', role: 'Co-Host', status: 'ready', wait: '2m', avatar: 'CB', color: C.cyan, mic: true, cam: true },
+    { id: 2, name: 'VibeNBones', handle: '@VibeNBones', role: 'Guest', status: 'waiting', wait: '5m', avatar: 'VB', color: '#9B59B6', mic: true, cam: false },
+    { id: 3, name: 'BigBoneEarl', handle: '@BigBoneEarl', role: 'Guest', status: 'ready', wait: '1m', avatar: 'BE', color: C.gold, mic: false, cam: true },
+    { id: 4, name: 'SeattleSlider', handle: '@SeattleSlider', role: 'Guest', status: 'connecting', wait: '8m', avatar: 'SS', color: C.green, mic: false, cam: false },
+  ]);
+
+  var [holding, setHolding] = React.useState([
+    { id: 5, name: 'MamaJoyce', handle: '@MamaJoyce', role: 'Viewer', status: 'hold', wait: '12m', avatar: 'MJ', color: C.muted },
+    { id: 6, name: 'FastHandsRod', handle: '@FastHandsRod', role: 'Guest', status: 'hold', wait: '15m', avatar: 'FR', color: C.volt },
+  ]);
+
+  var statusColor = { ready: C.green, waiting: C.gold, connecting: C.cyan, hold: C.muted };
+  var statusLabel = { ready: 'READY', waiting: 'WAITING', connecting: 'CONNECTING', hold: 'ON HOLD' };
+
+  function admit(person) {
+    setQueue(function(q) { return q.filter(function(p) { return p.id !== person.id; }); });
+  }
+
+  function holdPerson(person) {
+    setQueue(function(q) { return q.filter(function(p) { return p.id !== person.id; }); });
+    setHolding(function(h) { return h.concat(Object.assign({}, person, { status: 'hold' })); });
+  }
+
+  function admitFromHold(person) {
+    setHolding(function(h) { return h.filter(function(p) { return p.id !== person.id; }); });
+    setQueue(function(q) { return [Object.assign({}, person, { status: 'waiting' })].concat(q); });
+  }
+
+  var readyCount = queue.filter(function(p) { return p.status === 'ready'; }).length;
+
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: 'linear-gradient(135deg,#001a0a,#051505)', padding: '14px 14px 0', borderBottom: '1px solid ' + C.green + '33', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <button onClick={function() { dispatch({ type: 'CLOSE_MODAL' }); }} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 20, cursor: 'pointer', padding: 0 }}>✕</button>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.green, letterSpacing: 2 }}>GREEN ROOM</div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 2 }}>
+              <span style={{ fontSize: 10, color: readyCount > 0 ? C.green : C.muted }}>{readyCount} READY</span>
+              <span style={{ fontSize: 10, color: C.muted }}>· {queue.length} IN QUEUE · {holding.length} ON HOLD</span>
+            </div>
+          </div>
+          <button style={{ background: C.green + '22', border: '1px solid ' + C.green + '44', borderRadius: 10, padding: '8px 14px', color: C.green, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>ADMIT ALL READY</button>
+        </div>
+        <div style={{ display: 'flex' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flex: 1, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.green : '2px solid transparent', padding: '8px 4px', color: tab === t[0] ? C.green : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
+        {tab === 'queue' && (
+          <div>
+            {queue.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: C.muted, fontSize: 13 }}>Queue is empty. Guests will appear here when they join.</div>}
+            {queue.map(function(person) { return (
+              <div key={person.id} style={{ background: person.status === 'ready' ? 'rgba(0,200,100,0.08)' : '#111', border: '2px solid ' + (person.status === 'ready' ? C.green + '44' : '#2a2a2a'), borderRadius: 14, padding: 14, marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 10, background: person.color + '22', border: '2px solid ' + person.color + '55', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: person.color, flexShrink: 0 }}>{person.avatar}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{person.name}</div>
+                    <div style={{ fontSize: 10, color: C.muted }}>{person.handle} · {person.role}</div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                      <span style={{ fontSize: 9, color: statusColor[person.status], fontFamily: "'Bebas Neue',sans-serif" }}>{statusLabel[person.status]}</span>
+                      <span style={{ fontSize: 9, color: C.muted }}>Waiting {person.wait}</span>
+                      <span style={{ fontSize: 9, color: person.mic ? C.green : C.red }}>🎤 {person.mic ? 'OK' : 'OFF'}</span>
+                      <span style={{ fontSize: 9, color: person.cam ? C.green : C.red }}>📹 {person.cam ? 'OK' : 'OFF'}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={function() { admit(person); }} style={{ flex: 2, background: person.status === 'ready' ? C.green : C.green + '22', border: '1px solid ' + C.green + '44', borderRadius: 8, padding: 10, color: person.status === 'ready' ? '#000' : C.green, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>ADMIT TO PANEL</button>
+                  <button onClick={function() { holdPerson(person); }} style={{ flex: 1, background: 'none', border: '1px solid #444', borderRadius: 8, padding: 10, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>HOLD</button>
+                  <button style={{ flex: 1, background: 'none', border: '1px solid ' + C.red + '44', borderRadius: 8, padding: 10, color: C.red, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer' }}>REMOVE</button>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+
+        {tab === 'holding' && (
+          <div>
+            {holding.length === 0 && <div style={{ textAlign: 'center', padding: 40, color: C.muted, fontSize: 13 }}>No one on hold.</div>}
+            {holding.map(function(person) { return (
+              <div key={person.id} style={{ background: '#111', border: '1px solid #2a2a2a', borderRadius: 14, padding: 14, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: '#1a1a1a', border: '2px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: C.muted, flexShrink: 0 }}>{person.avatar}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{person.name}</div>
+                  <div style={{ fontSize: 10, color: C.muted }}>{person.handle} · On hold {person.wait}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={function() { admitFromHold(person); }} style={{ background: C.green + '22', border: '1px solid ' + C.green + '44', borderRadius: 8, padding: '6px 12px', color: C.green, fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, cursor: 'pointer' }}>MOVE TO QUEUE</button>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+
+        {tab === 'settings' && (
+          <div>
+            {[
+              { label: 'Auto-admit Ready Guests', sub: 'Automatically bring in guests when status is READY', on: false },
+              { label: 'Require Camera', sub: 'Block admission if camera is off', on: true },
+              { label: 'Require Mic', sub: 'Block admission if mic is off', on: false },
+              { label: 'Hold Latecomers', sub: 'Move guests to hold if they join after stream starts', on: true },
+              { label: 'Max Panel Size', sub: 'Hard cap at 20 guests (MAX_PANEL_GUESTS)', on: true },
+              { label: 'Notify on Join', sub: 'Alert host when a new guest enters the green room', on: true },
+            ].map(function(setting, i) { return (
+              <div key={i} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: C.white, fontSize: 13 }}>{setting.label}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{setting.sub}</div>
+                </div>
+                <div style={{ width: 44, height: 24, borderRadius: 12, background: setting.on ? C.green + '33' : '#2a2a2a', border: '1px solid ' + (setting.on ? C.green + '55' : '#333'), cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+                  <div style={{ position: 'absolute', top: 3, left: setting.on ? 22 : 3, width: 18, height: 18, borderRadius: '50%', background: setting.on ? C.green : '#555', transition: 'left 0.2s' }}></div>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── PAYOUT DASHBOARD ──────────────────────────────────────────
+
+function PayoutDashboardV1({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('summary');
+  var tabs = [['summary','💰 SUMMARY'],['history','📜 HISTORY'],['stripe','💳 STRIPE'],['settings','⚙️ SETTINGS']];
+  return (
+    <div style={{ background: C.obsidian, minHeight: '100vh', paddingBottom: 80 }}>
+      <div style={{ background: 'linear-gradient(135deg,#020a00,#0a1400)', padding: '16px 14px 0', borderBottom: '1px solid ' + C.green + '33' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,' + C.green + ',#020a00)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '1px solid ' + C.green + '44' }}>💰</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: C.green, letterSpacing: 2 }}>PAYOUT CENTER</div>
+            <div style={{ fontSize: 11, color: C.muted }}>Stripe Connect · acct_1Svbvv2N0KWn0OQu</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {tabs.map(function(t) { return (
+            <button key={t[0]} onClick={function() { setTab(t[0]); }} style={{ flexShrink: 0, background: 'none', border: 'none', borderBottom: tab === t[0] ? '2px solid ' + C.green : '2px solid transparent', padding: '8px 10px', color: tab === t[0] ? C.green : C.muted, fontSize: 10, fontFamily: "'Bebas Neue',sans-serif", cursor: 'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div>
+        {tab === 'summary' && <PayoutSummaryTab C={C} />}
+        {tab === 'history' && <PayoutHistoryTab C={C} />}
+        {tab === 'stripe' && <PayoutStripeTab C={C} />}
+        {tab === 'settings' && <PayoutSettingsTab C={C} />}
+      </div>
+    </div>
+  );
+}
+
+function PayoutSummaryTab({ C }) {
+  var [requesting, setRequesting] = React.useState(false);
+  var [requested, setRequested] = React.useState(false);
+  function requestPayout() {
+    setRequesting(true);
+    setTimeout(function() { setRequesting(false); setRequested(true); }, 1800);
+  }
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ background: 'linear-gradient(135deg,rgba(0,200,100,0.12),transparent)', border: '1px solid ' + C.green + '44', borderRadius: 16, padding: 20, marginBottom: 16, textAlign: 'center' }}>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 6, letterSpacing: 2 }}>AVAILABLE BALANCE</div>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 52, color: C.green, letterSpacing: 2, lineHeight: 1 }}>$4,812</div>
+        <div style={{ fontSize: 11, color: C.muted, marginTop: 6 }}>After 10% platform fee · 90% creator split</div>
+        <button onClick={requestPayout} disabled={requesting || requested} style={{ marginTop: 16, background: requested ? C.green + '22' : requesting ? '#333' : C.green, border: requested ? '1px solid ' + C.green + '44' : 'none', borderRadius: 12, padding: '14px 40px', color: requested ? C.green : requesting ? C.muted : '#000', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: requesting || requested ? 'default' : 'pointer', letterSpacing: 1 }}>{requested ? '✓ PAYOUT REQUESTED' : requesting ? 'PROCESSING...' : 'REQUEST PAYOUT'}</button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.gold }}>$5,346</div>
+          <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>GROSS THIS MONTH</div>
+        </div>
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.red }}>-$534</div>
+          <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>PLATFORM FEE (10%)</div>
+        </div>
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: C.cyan }}>$1,240</div>
+          <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>PENDING CLEARANCE</div>
+        </div>
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 14, textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#9B59B6' }}>$28,441</div>
+          <div style={{ fontSize: 9, color: C.muted, marginTop: 2 }}>LIFETIME EARNINGS</div>
+        </div>
+      </div>
+      <div style={{ background: 'rgba(0,200,100,0.06)', border: '1px solid ' + C.green + '33', borderRadius: 12, padding: 14 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: C.green, letterSpacing: 1, marginBottom: 8 }}>SPLIT ENFORCEMENT LOG</div>
+        {[
+          { layer: 'PostgreSQL Trigger', status: 'ENFORCED', detail: 'assertCreatorSplit() on every transaction' },
+          { layer: 'API Middleware', status: 'ENFORCED', detail: 'assertSplit() blocks any non-90 payout' },
+          { layer: 'Stripe application_fee_amount', status: 'ENFORCED', detail: '10% fee hardcoded at payment intent creation' },
+        ].map(function(item, i) { return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.green, flexShrink: 0 }}></div>
+            <div style={{ flex: 1, fontSize: 11, color: C.muted }}>{item.layer}</div>
+            <span style={{ fontSize: 9, color: C.green, fontFamily: "'Bebas Neue',sans-serif", background: C.green + '22', borderRadius: 4, padding: '2px 6px' }}>{item.status}</span>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+function PayoutHistoryTab({ C }) {
+  var payouts = [
+    { id: 'po_001', date: 'Jun 1', amount: '$3,241', status: 'paid', method: 'Bank Transfer', streams: 12 },
+    { id: 'po_002', date: 'May 1', amount: '$2,890', status: 'paid', method: 'Bank Transfer', streams: 10 },
+    { id: 'po_003', date: 'Apr 1', amount: '$1,980', status: 'paid', method: 'Bank Transfer', streams: 8 },
+    { id: 'po_004', date: 'Mar 1', amount: '$1,540', status: 'paid', method: 'Bank Transfer', streams: 7 },
+    { id: 'po_005', date: 'Jun 15 (pending)', amount: '$4,812', status: 'pending', method: 'Bank Transfer', streams: 14 },
+  ];
+  var statusColor = { paid: C.green, pending: C.gold, failed: C.red };
+  return (
+    <div style={{ padding: 14 }}>
+      {payouts.map(function(p) { return (
+        <div key={p.id} style={{ background: '#111', border: '1px solid ' + (p.status === 'pending' ? C.gold + '33' : '#1e1e1e'), borderRadius: 12, padding: 14, marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: p.status === 'paid' ? C.green : C.gold }}>{p.amount}</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{p.date} · {p.method}</div>
+            </div>
+            <span style={{ background: statusColor[p.status] + '22', border: '1px solid ' + statusColor[p.status] + '44', borderRadius: 6, padding: '4px 10px', fontSize: 10, color: statusColor[p.status], fontFamily: "'Bebas Neue',sans-serif" }}>{p.status.toUpperCase()}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <span style={{ fontSize: 10, color: C.muted }}>{p.streams} streams</span>
+            <span style={{ fontSize: 10, color: C.muted }}>{p.id}</span>
+          </div>
+        </div>
+      );})}
+    </div>
+  );
+}
+
+function PayoutStripeTab({ C }) {
+  return (
+    <div style={{ padding: 14 }}>
+      <div style={{ background: '#111', border: '1px solid #6772E544', borderRadius: 14, padding: 16, marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: '#6772E522', border: '1px solid #6772E544', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>💳</div>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#6772E5', letterSpacing: 1 }}>STRIPE CONNECT</div>
+            <div style={{ fontSize: 10, color: C.green }}>● CONNECTED</div>
+          </div>
+        </div>
+        {[
+          { label: 'Account ID', value: 'acct_1Svbvv2N0KWn0OQu' },
+          { label: 'Account Type', value: 'Express Connected' },
+          { label: 'Payout Schedule', value: 'Monthly (1st of month)' },
+          { label: 'Bank on File', value: '••••••••1234' },
+          { label: 'Currency', value: 'USD' },
+          { label: 'Application Fee', value: '10% (CREATOR_SPLIT = 0.90)' },
+        ].map(function(item, i) { return (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 5 ? '1px solid #1a1a1a' : 'none' }}>
+            <span style={{ fontSize: 11, color: C.muted }}>{item.label}</span>
+            <span style={{ fontSize: 11, color: C.white, fontFamily: "'Bebas Neue',sans-serif" }}>{item.value}</span>
+          </div>
+        );})}
+      </div>
+      <button style={{ width: '100%', background: '#6772E522', border: '1px solid #6772E544', borderRadius: 10, padding: 14, color: '#6772E5', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, cursor: 'pointer', marginBottom: 10 }}>OPEN STRIPE DASHBOARD</button>
+      <button style={{ width: '100%', background: 'none', border: '1px solid #333', borderRadius: 10, padding: 14, color: C.muted, fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, cursor: 'pointer' }}>UPDATE BANK ACCOUNT</button>
+    </div>
+  );
+}
+
+function PayoutSettingsTab({ C }) {
+  return (
+    <div style={{ padding: 14 }}>
+      {[
+        { label: 'Auto-Payout', sub: 'Automatically request payout when balance exceeds $1,000', on: true },
+        { label: 'Payout Notifications', sub: 'Email + push when payout is processed', on: true },
+        { label: 'Weekly Summary Email', sub: 'Revenue breakdown every Monday', on: false },
+        { label: 'Tax Document Alerts', sub: 'Notify when 1099 forms are available', on: true },
+        { label: '2FA for Payouts', sub: 'Require two-factor auth for payout requests', on: true },
+      ].map(function(setting, i) { return (
+        <div key={i} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: C.white, fontSize: 13 }}>{setting.label}</div>
+            <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{setting.sub}</div>
+          </div>
+          <div style={{ width: 44, height: 24, borderRadius: 12, background: setting.on ? C.green + '33' : '#2a2a2a', border: '1px solid ' + (setting.on ? C.green + '55' : '#333'), cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+            <div style={{ position: 'absolute', top: 3, left: setting.on ? 22 : 3, width: 18, height: 18, borderRadius: '50%', background: setting.on ? C.green : '#555', transition: 'left 0.2s' }}></div>
+          </div>
+        </div>
+      );})}
+      <div style={{ background: 'rgba(0,200,100,0.06)', border: '1px solid ' + C.green + '22', borderRadius: 10, padding: 14, marginTop: 16 }}>
+        <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.7 }}>CREATOR_SPLIT = 0.90 is an immutable platform constant. It cannot be changed through settings. Contact support@seewhylive.online to discuss enterprise arrangements.</div>
+      </div>
+    </div>
+  );
+}
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -4950,6 +6845,14 @@ export default function App() {
         {page === 'settings' && <SettingsPageV2 state={state} dispatch={dispatch} />}
         {page === 'streamkeys' && <StreamKeysPageV2 state={state} dispatch={dispatch} />}
         {page === 'payoutsetup' && <PayoutSetupV2 state={state} dispatch={dispatch} />}
+        {page === 'insforge' && <InSForgeStudioV2 state={state} dispatch={dispatch} />}
+        <MobileWebViewHardeningInit />
+        {page === 'studio' && <StudioControlsV1 state={state} dispatch={dispatch} />}
+        {page === 'svs' && <SVSArenaV1 state={state} dispatch={dispatch} />}
+        {page === 'mobile' && <MobileHardeningDashboard state={state} dispatch={dispatch} />}
+        {page === 'analytics' && <CreatorAnalyticsDashboard state={state} dispatch={dispatch} />}
+        {page === 'fallenlegends' && <FallenLegendsTributeV1 state={state} dispatch={dispatch} />}
+        {page === 'payout' && <PayoutDashboardV1 state={state} dispatch={dispatch} />}
       {page === 'monetize' && <MonetizationHubPageV2 state={state} dispatch={dispatch} />}
       {page === 'profile' && <ProfilePage state={state} dispatch={dispatch} />}
 
@@ -5095,7 +6998,7 @@ function PKBattleArenaV2({ user, dispatch }) {
                 {[5,10,25,50,100,250].map(function(w) { return <option key={w} value={w}>{w} 💎 (${(w * GEM_VALUE).toFixed(2)})</option>; })}
               </select>
             </div>
-            <button onClick={function() { if (challenger.trim()) { setBattleState('live'); setScores({ creator: 0, challenger: 0 }); } }}
+            <button onClick={function() { if (challenger.trim()) { setBattleState('live'); setScores({ creator: 0, challenger: 0 }); dispatch({ type: 'OPEN_MODAL', payload: 'pk_battle' }); } }}
               style={{ background: C.gold, color: '#000', border: 'none', padding: '10px 20px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, cursor: 'pointer', borderRadius: 2, width: '100%' }}>
               ⚔ CHALLENGE
             </button>
@@ -6443,6 +8346,8 @@ function AppV46Router({ state, dispatch }) {
       {page === 'wallet' && <WalletTabV2 />}
       {page === 'more' && <MoreTab user={user} dispatch={dispatch} />}
       <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} />
+      {state.activeModal === 'pk_battle' && <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999 }}><PKBattleModalV2 state={state} dispatch={dispatch} /></div>}
+      {state.activeModal === 'green_room' && <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, zIndex:9999 }}><GreenRoomModalV2 state={state} dispatch={dispatch} /></div>}
     </div>
   );
 }
