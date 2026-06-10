@@ -6,6 +6,7 @@ import QuickActionPanel from '../components/shared/QuickActionPanel';
 import GridLines from '../components/home/GridLines';
 import NebulaBg from '../components/home/NebulaBg';
 import StarField from '../components/home/StarField';
+import NotificationBell from '../components/shared/NotificationBell';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -558,6 +559,7 @@ export default function Home() {
       <NebulaBg />
       <GridLines />
       <ZEGOMobileAppBanner />
+      <NotificationBell />
       <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
       <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
       {/* Pull-to-refresh indicator */}
