@@ -35,6 +35,7 @@ import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import PointsNotification from '../components/live/PointsNotification';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GiftAnimation from '../components/live/GiftAnimation';
 import { DollarSign, Gift } from 'lucide-react';
 import SuperChatRail from '../components/live/SuperChatRail';
@@ -1363,6 +1364,9 @@ export default function LiveRoom() {
       {user?.id && party?.host_id && (
         <LoyaltyBadge userId={user.id} creatorId={party.host_id} />
       )}
+
+      {/* Moderation appeal panel */}
+      <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId || party?.id} onClose={() => {}} />
 
       {/* Report modal */}
       <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={null} messageId={null} />

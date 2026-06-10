@@ -98,6 +98,14 @@ import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import PrivatePanel from '../components/live/PrivatePanel';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import PointsNotification from '../components/live/PointsNotification';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import GuestConnector from '../components/live/GuestConnector';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import WebhookHooks from '../components/live/WebhookHooks';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1224,6 +1232,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   )}
                   <UnifiedChat roomId={partyId} currentUser={user} isHost={canManage} />
                   <ChatOverlay roomId={partyId} isVisible />
+                  {user?.id && (
+                    <EnhancedStreamChat
+                      roomId={partyId}
+                      userId={user.id}
+                      userName={user.full_name || user.email || 'Host'}
+                      userRole={isHost ? 'host' : 'viewer'}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-32">
@@ -1267,6 +1283,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 <InteractivePollingSystem roomId={partyId} isHost={canManage} currentUser={user} />
                 <PollLaunchBar roomId={partyId} hostId={party?.host_id} activePoll={null} isHost={canManage} />
                 <QuickPollLauncher roomId={partyId} hostId={party?.host_id} isHost={canManage} />
+                <LivePollOverlay roomId={partyId} currentUser={user} isHost={canManage} position="bottom-left" />
               </div>
             )}
 
@@ -1515,6 +1532,41 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* WebRTC setup banner */}
                 <WebRTCSetupBanner error={null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={() => {}} />
 
+                {/* Webhook hooks */}
+                {isHost && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <WebhookHooks roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* Evmux web source */}
+                {isHost && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <EvmuxWebSource isActive={party?.status === 'live'} onClose={() => {}} />
+                  </div>
+                )}
+
+                {/* Local video tile */}
+                {localStream && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || 'You'} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* Octagonal video window */}
+                {isHost && (
+                  <OctagonalVideoWindow
+                    title={party?.title || 'Live'}
+                    isMuted={!audioEnabled}
+                    isVideoOff={!videoEnabled}
+                    onMicToggle={toggleAudio}
+                    onVideoToggle={toggleVideo}
+                    onShareScreen={() => setScreenSharing(v => !v)}
+                    streamUrl={null}
+                    label="Host"
+                  />
+                )}
+
                 {/* Scene switcher */}
                 {isHost && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1639,6 +1691,10 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   onInvite={() => setInviteOpen(true)}
                   hostId={party?.host_id}
                 />
+                <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
+                {members[0]?.user_id && (
+                  <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
+                )}
               </div>
             )}
 
