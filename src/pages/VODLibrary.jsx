@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Film, Scissors, Archive, BookOpen, Sparkles, ChevronDown } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
+import VODCard from '../components/vod/VODCard';
 import RecordingManager from '../components/content/RecordingManager';
 import ChapterEditor from '../components/vod/ChapterEditor';
 import VODTrimEditor from '../components/vod/VODTrimEditor';
@@ -117,7 +118,14 @@ export default function VODLibraryPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        {activeTab === 'library' && user?.id && <VODLibraryComponent creatorId={user.id} />}
+        {activeTab === 'library' && user?.id && (
+          <div className="space-y-4">
+            <VODLibraryComponent creatorId={user.id} />
+            {myVODs.map(v => (
+              <VODCard key={v.id} vod={v} onEdit={() => {}} onTrim={() => setSelectedForTrim(v)} onChapters={() => setSelectedForChapters(v)} onPublish={() => {}} />
+            ))}
+          </div>
+        )}
 
         {activeTab === 'recordings' && user?.id && <RecordingManager userId={user.id} />}
 
