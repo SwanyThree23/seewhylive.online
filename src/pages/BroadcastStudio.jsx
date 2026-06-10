@@ -78,6 +78,21 @@ import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import GuestStreamingPermissions from '../components/streaming/GuestStreamingPermissions';
 import LiveTranscription from '../components/live/LiveTranscription';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import ChatOverlay from '../components/live/ChatOverlay';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
+import GuestGrid from '../components/live/GuestGrid';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import StreamChatbot from '../components/live/StreamChatbot';
+import UnifiedChat from '../components/live/UnifiedChat';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import PrivatePanel from '../components/live/PrivatePanel';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import PointsNotification from '../components/live/PointsNotification';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1162,6 +1177,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                       />
                     </div>
                   )}
+                  <UnifiedChat roomId={partyId} currentUser={user} isHost={canManage} />
+                  <ChatOverlay roomId={partyId} isVisible />
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-32">
@@ -1202,6 +1219,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {partyId && (
                   <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id} isHost={canManage} />
                 )}
+                <InteractivePollingSystem roomId={partyId} isHost={canManage} currentUser={user} />
+                <PollLaunchBar roomId={partyId} hostId={party?.host_id} activePoll={null} isHost={canManage} />
+                <QuickPollLauncher roomId={partyId} hostId={party?.host_id} isHost={canManage} />
               </div>
             )}
 
@@ -1411,6 +1431,38 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
+                {/* Enhanced room controls */}
+                {isHost && party && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <EnhancedRoomControls
+                      isHost={isHost}
+                      roomData={party}
+                      micMuted={!audioEnabled}
+                      onMicToggle={toggleAudio}
+                      onAudioSettingsChange={() => {}}
+                      onBrandingChange={() => {}}
+                    />
+                  </div>
+                )}
+
+                {/* Private panel */}
+                {isHost && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <PrivatePanel isHost={isHost} currentUser={user} />
+                  </div>
+                )}
+
+                {/* Lower thirds banner */}
+                {isHost && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>📺 Lower Thirds</p>
+                    <LowerThirdsBanner onBannerChange={() => {}} />
+                  </div>
+                )}
+
+                {/* WebRTC setup banner */}
+                <WebRTCSetupBanner error={null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={() => {}} />
+
                 {/* Scene switcher */}
                 {isHost && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -1520,6 +1572,21 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {members.length > 0 && (
                   <GuestStreamingPermissions participant={members[0]} isHost={isHost} onUpdate={() => {}} />
                 )}
+                <GuestCoStreamDashboard
+                  participants={members}
+                  roomId={partyId}
+                  isHost={isHost}
+                  onSpotlight={id => setSpotlit(id)}
+                  spotlitId={spotlit}
+                  raisedHands={raisedHands}
+                  onLockRoom={() => {}}
+                />
+                <GuestGrid
+                  participants={members}
+                  isHost={isHost}
+                  onInvite={() => setInviteOpen(true)}
+                  hostId={party?.host_id}
+                />
               </div>
             )}
 
@@ -1664,6 +1731,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                       {/* Soundboard */}
                       <SoundboardWidget isVisible={true} />
 
+                      {/* Panel music player */}
+                      <PanelMusicPlayer />
+
                       {/* Link to full AI Music Studio */}
                       <a href="/AIMusic" target="_blank" rel="noopener noreferrer"
                         className="flex items-center justify-between px-3 py-2 rounded-xl"
@@ -1726,6 +1796,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           </div>
                         )}
                       </div>
+                      {/* Stream chatbot */}
+                      <StreamChatbot roomId={partyId} isHost={canManage} elapsedSeconds={elapsed} hostName={party?.host_name || ''} room={party} />
                     </div>
                   )}
 
@@ -1907,6 +1979,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                         micMuted={!audioEnabled}
                         onMicToggle={toggleAudio}
                         participants={members}
+                      />
+                      <EnhancedAudioMixer
+                        micMuted={!audioEnabled}
+                        onMicToggle={toggleAudio}
+                        onAudioSettingsChange={() => {}}
                       />
                     </div>
                   )}

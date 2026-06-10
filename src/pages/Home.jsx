@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import GridLines from '../components/home/GridLines';
+import NebulaBg from '../components/home/NebulaBg';
+import StarField from '../components/home/StarField';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -515,6 +520,8 @@ function applyFilter(rooms, filter) {
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
   var [activeFilter, setActiveFilter] = useState('All');
+  var [activityOpen, setActivityOpen] = useState(false);
+  var [quickActionsOpen, setQuickActionsOpen] = useState(false);
   var qc = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {
     await qc.invalidateQueries();
@@ -541,13 +548,18 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{ background: '#080B18' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
+      <StarField />
+      <NebulaBg />
+      <GridLines />
       <ZEGOMobileAppBanner />
+      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}

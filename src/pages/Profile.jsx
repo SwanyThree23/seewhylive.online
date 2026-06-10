@@ -8,6 +8,8 @@ import {
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import OnlinePresenceDot from '../components/shared/OnlinePresence';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -88,6 +90,7 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab]         = useState('Overview');
   const [isOnline]                        = useState(true);
+  const [setupOpen, setSetupOpen]         = useState(false);
   const fileRef = useRef();
 
   /* ── queries ── */
@@ -560,6 +563,13 @@ export default function ProfilePage() {
         )}
 
       </div>
+
+      {user && (
+        <>
+          <CreatorProfileSetup user={user} isOpen={setupOpen} onClose={() => setSetupOpen(false)} />
+          <OnlinePresenceDot isOnline size="sm" />
+        </>
+      )}
     </div>
   );
 }
