@@ -99,6 +99,7 @@ import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import WebhookHooks from '../components/live/WebhookHooks';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1631,6 +1632,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {members[0]?.user_id && (
                   <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
                 )}
+                <VdoNinjaGuestLink roomId={partyId} />
               </div>
             )}
 

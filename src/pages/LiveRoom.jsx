@@ -36,6 +36,7 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import { DollarSign, Gift } from 'lucide-react';
 import SuperChatRail from '../components/live/SuperChatRail';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
 import GoldenWall from '../components/live/GoldenWall';
@@ -355,6 +356,7 @@ export default function LiveRoom() {
   const [likeCount, setLikeCount]   = useState(3);
   const [handRaised, setHandRaised] = useState(false);
   const [shareOpen, setShareOpen]   = useState(false);
+  const [embedOpen, setEmbedOpen]   = useState(false);
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
   const [animGiftOpen, setAnimGiftOpen] = useState(false);
@@ -465,6 +467,9 @@ export default function LiveRoom() {
         </button>
         <button className="w-7 h-7 flex items-center justify-center" onClick={() => setShareOpen(true)}>
           <Share2 className="w-4 h-4 text-white/40" />
+        </button>
+        <button className="w-7 h-7 flex items-center justify-center" title="Embed stream" onClick={() => setEmbedOpen(v => !v)}>
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>{`</>`}</span>
         </button>
         <button className="w-7 h-7 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.07)' }}>
@@ -796,6 +801,27 @@ export default function LiveRoom() {
             url={`${window.location.origin}/LiveRoom?id=${roomId || 'demo'}`}
             title={roomTitle}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Embed player panel */}
+      <AnimatePresence>
+        {embedOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            style={{ position: 'fixed', bottom: 80, left: 0, right: 0, zIndex: 60, padding: '0 12px' }}
+          >
+            <EmbedPlayer
+              roomId={roomId || party?.id}
+              creatorName={hostName}
+              creatorAvatar={party?.host_avatar_url}
+              streamTitle={roomTitle}
+              viewerCount={party?.viewer_count || 0}
+              isLive={party?.status === 'live'}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
 
