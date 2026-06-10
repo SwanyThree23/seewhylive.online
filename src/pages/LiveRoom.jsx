@@ -16,6 +16,7 @@ import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import GiftAnimation from '../components/live/GiftAnimation';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -24,7 +25,6 @@ import { DollarSign, Gift } from 'lucide-react';
 import SuperChatRail from '../components/live/SuperChatRail';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
-import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
 import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
@@ -345,6 +345,7 @@ export default function LiveRoom() {
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
   const [animGiftOpen, setAnimGiftOpen] = useState(false);
+  const [zegoJoined, setZegoJoined]   = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
   const [giftLog, setGiftLog]       = useState([]);
   const [goalOpen, setGoalOpen]     = useState(false);
@@ -801,6 +802,15 @@ export default function LiveRoom() {
           recipientId={party?.host_id}
           roomId={roomId || party?.id}
           onClose={() => setAnimGiftOpen(false)}
+        />
+      )}
+
+      {!zegoJoined && user?.id && (roomId || party?.id) && (
+        <ZEGOGuestJoin
+          roomId={roomId || party?.id}
+          userId={user.id}
+          userName={user.full_name || user.email || 'Guest'}
+          onJoined={() => setZegoJoined(true)}
         />
       )}
 
