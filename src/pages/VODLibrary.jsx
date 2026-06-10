@@ -9,6 +9,7 @@ import RecordingManager from '../components/content/RecordingManager';
 import ChapterEditor from '../components/vod/ChapterEditor';
 import VODTrimEditor from '../components/vod/VODTrimEditor';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -66,6 +67,21 @@ export default function VODLibraryPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {user?.id && <VODLibraryComponent creatorId={user.id} />}
+
+        {/* Embed player preview — PPV-aware with embed code generation */}
+        {user?.id && (
+          <div className="mt-8">
+            <p className="text-xs font-black uppercase mb-3" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+              Embed Player Preview
+            </p>
+            <EmbedPlayer
+              roomId={user.id}
+              creatorName={user.full_name || user.email || 'Creator'}
+              streamTitle="VOD Preview"
+              isLive={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
