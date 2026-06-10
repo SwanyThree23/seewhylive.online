@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeUp, fadeIn, scaleIn, stagger, staggerFast } from '../lib/animations';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -113,6 +114,7 @@ export default function ProfilePage() {
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
   const [isEditing, setIsEditing]         = useState(false);
+  const [setupOpen, setSetupOpen]         = useState(false);
   const [bio, setBio]                     = useState('');
   const [displayName, setDisplayName]     = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -253,12 +255,20 @@ export default function ProfilePage() {
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <h1 className="font-black text-lg text-white" style={T}>My Profile</h1>
-        <button
-          onClick={() => setIsEditing(e => !e)}
-          className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
-          style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
-          {isEditing ? 'Cancel' : 'Edit Profile'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSetupOpen(true)}
+            className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
+            style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.4)', color: '#c0392b', ...T }}>
+            Creator Setup
+          </button>
+          <button
+            onClick={() => setIsEditing(e => !e)}
+            className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
+            style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+            {isEditing ? 'Cancel' : 'Edit Profile'}
+          </button>
+        </div>
       </div>
 
       {/* ── hero banner ── */}
@@ -730,6 +740,10 @@ export default function ProfilePage() {
         </AnimatePresence>
 
       </div>
+
+      {user && (
+        <CreatorProfileSetup user={user} isOpen={setupOpen} onClose={() => setSetupOpen(false)} />
+      )}
     </div>
   );
 }

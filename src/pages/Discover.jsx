@@ -12,6 +12,7 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { formatDistanceToNow } from 'date-fns';
 
 function usePullToRefresh(onRefresh) {
@@ -276,6 +277,7 @@ export default function DiscoverPage() {
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
               { id: 'recommended', label: 'Picks', icon: Sparkles },
+              { id: 'collabs', label: 'Collabs', icon: Users },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -451,6 +453,12 @@ export default function DiscoverPage() {
           {tab === 'recommended' && (
             <motion.div key="recommended" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <ContentRecommendations />
+            </motion.div>
+          )}
+
+          {tab === 'collabs' && (
+            <motion.div key="collabs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <CollaborationMatcher />
             </motion.div>
           )}
         </AnimatePresence>
