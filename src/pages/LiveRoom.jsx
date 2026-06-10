@@ -16,6 +16,9 @@ import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import { DollarSign, Gift } from 'lucide-react';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
@@ -304,6 +307,8 @@ export default function LiveRoom() {
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
+  const [giftLog, setGiftLog]       = useState([]);
+  const [goalOpen, setGoalOpen]     = useState(false);
   const lastGiftTsRef               = useRef(0);
 
   // Sync stage when real data arrives
@@ -693,6 +698,52 @@ export default function LiveRoom() {
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      {/* ── Gift ticker strip ───────────────────────────────────────────────── */}
+      <div style={{ position: 'fixed', left: 12, bottom: 112, zIndex: 43, display: 'flex', flexDirection: 'column-reverse', gap: 6, pointerEvents: 'none' }}>
+        <AnimatePresence>
+          {giftLog.map((ev, i) => (
+            <motion.div key={ev.id}
+              initial={{ x: -60, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 - i * 0.2 }}
+              exit={{ x: -60, opacity: 0 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '5px 10px 5px 6px', borderRadius: 20,
+                backdropFilter: 'blur(12px)', background: 'rgba(8,7,16,0.82)',
+                border: `1px solid ${ev.gift?.color ?? GOLD}44`, maxWidth: 180,
+              }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{ev.gift?.emoji ?? '🎁'}</span>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 10, fontWeight: 900, color: ev.gift?.color ?? GOLD, fontFamily: 'Barlow Condensed, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.senderName}</p>
+                <p style={{ margin: 0, fontSize: 9, color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>sent {ev.gift?.name ?? 'a gift'}</p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Quick Poll Launcher (hosts) ─────────────────────────────────────── */}
+      {isHost && roomId && (
+        <div style={{ position: 'fixed', bottom: 88, left: 12, zIndex: 44 }}>
+          <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />
+        </div>
+      )}
+
+      {/* ── Stream Goal Widget ──────────────────────────────────────────────── */}
+      {goalOpen && isHost && (
+        <div style={{ position: 'fixed', bottom: 90, right: 12, zIndex: 44, width: 280 }}>
+          <LiveGoalWidget
+            memberCount={0}
+            tipTotal={giftLog.reduce((s, g) => s + (g.amount || 0), 0)}
+            subCount={0}
+          />
+        </div>
+      )}
+
+      {/* ── Host Alert Center ───────────────────────────────────────────────── */}
+      {isHost && <HostAlertCenter />}
 
       {showExclusiveGate && (
         <div style={{
