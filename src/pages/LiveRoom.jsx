@@ -23,6 +23,8 @@ import SuperChatBar from '../components/live/SuperChatBar';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import ReportModal from '../components/moderation/ReportModal';
 import GiftAnimation from '../components/live/GiftAnimation';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -352,6 +354,7 @@ export default function LiveRoom() {
   const [giftOpen, setGiftOpen]     = useState(false);
   const [animGiftOpen, setAnimGiftOpen] = useState(false);
   const [zegoJoined, setZegoJoined]   = useState(false);
+  const [reportOpen, setReportOpen]   = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
   const [giftLog, setGiftLog]       = useState([]);
   const [goalOpen, setGoalOpen]     = useState(false);
@@ -848,6 +851,18 @@ export default function LiveRoom() {
       {party?.host_id && (
         <SubscriptionGate creatorId={party.host_id} roomId={roomId || party?.id} />
       )}
+
+      {/* Report modal */}
+      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={null} messageId={null} />
+
+      {/* Mobile stream controls */}
+      <MobileStreamControls
+        micMuted={false}
+        onMicToggle={() => {}}
+        onReact={() => {}}
+        onQuickTip={() => setGiftOpen(true)}
+        roomId={roomId || party?.id}
+      />
 
       {!zegoJoined && user?.id && (roomId || party?.id) && (
         <ZEGOGuestJoin
