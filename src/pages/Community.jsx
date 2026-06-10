@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Users, MessageSquare } from 'lucide-react';
+import { Users, MessageSquare, BarChart2 } from 'lucide-react';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import ReferralProgram from '@/components/community/ReferralProgram';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import CreatePollModal from '../components/community/CreatePollModal';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -38,6 +40,7 @@ function usePullToRefresh(onRefresh) {
 
 export default function CommunityPage() {
   const qc = useQueryClient();
+  const [pollModalOpen, setPollModalOpen] = useState(false);
   const { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async () => {
     await qc.invalidateQueries();
   });
@@ -89,39 +92,53 @@ export default function CommunityPage() {
             </h1>
           </div>
           <p className="text-white/60">Connect with your audience, share content, and build relationships</p>
+          {community?.id && user?.id === community.creator_id && (
+            <button onClick={() => setPollModalOpen(true)}
+              className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-[11px]"
+              style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <BarChart2 className="w-3.5 h-3.5" /> Create Poll
+            </button>
+          )}
         </motion.div>
       </div>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {community?.id ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Main Feed */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="md:col-span-2"
-            >
-              <DiscussionFeed communityId={community.id} />
-            </motion.div>
+          <>
+            <SpotlightBanner communityId={community.id} isAdmin={user?.id === community.creator_id} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
+              {/* Main Feed */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="md:col-span-2"
+              >
+                <DiscussionFeed communityId={community.id} />
+              </motion.div>
 
-            {/* Sidebar */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
-            >
-              <SpotlightSection communityId={community.id} />
-              <ReferralProgram communityId={community.id} />
-            </motion.div>
-          </div>
+              {/* Sidebar */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="space-y-4"
+              >
+                <SpotlightSection communityId={community.id} />
+                <ReferralProgram communityId={community.id} />
+              </motion.div>
+            </div>
+          </>
+
         ) : (
           <div className="text-center py-12">
             <p className="text-white/40">Create a community to get started</p>
           </div>
         )}
       </div>
+      {community?.id && (
+        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
+      )}
     </div>
   );
 }

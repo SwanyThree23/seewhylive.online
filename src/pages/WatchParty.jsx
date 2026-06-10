@@ -30,6 +30,8 @@ import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
+import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1043,6 +1045,7 @@ export default function WatchPartyPage() {
               { id: 'polls',       label: '📊 Polls' },
               ...(isHost ? [{ id: 'analytics', label: '📈 Stats' }] : []),
               { id: 'viewers',     label: '👥 Viewers' },
+              { id: 'collab',      label: '🎬 Collab' },
               { id: 'screen',      label: '🖥️ Screen' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActivePanel(tab.id)}
@@ -1109,10 +1112,13 @@ export default function WatchPartyPage() {
               />
             )}
             {activePanel === 'analytics' && (
-              <PartyAnalyticsDashboard
-                partyId={partyId}
-                isHost={isHost}
-              />
+              <>
+                <WatchPartyAnalytics party={party} members={members} pollCount={pollCount} reactionCount={reactionCount} />
+                <PartyAnalyticsDashboard
+                  partyId={partyId}
+                  isHost={isHost}
+                />
+              </>
             )}
             {activePanel === 'viewers' && (
               <PanelGrid
@@ -1126,6 +1132,9 @@ export default function WatchPartyPage() {
                 remoteStreams={remoteStreams}
                 peerUserIds={peerUserIds}
               />
+            )}
+            {activePanel === 'collab' && (
+              <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={url => setVideoUrl(url)} />
             )}
             {activePanel === 'battle' && (
               <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />

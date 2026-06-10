@@ -13,6 +13,7 @@ import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import { formatDistanceToNow } from 'date-fns';
 
 function usePullToRefresh(onRefresh) {
@@ -277,7 +278,8 @@ export default function DiscoverPage() {
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
               { id: 'recommended', label: 'Picks', icon: Sparkles },
-              { id: 'collabs', label: 'Collabs', icon: Users },
+              { id: 'collabs',  label: 'Collabs',  icon: Users },
+              { id: 'youtube',  label: 'YouTube',  icon: TrendingUp },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -459,6 +461,12 @@ export default function DiscoverPage() {
           {tab === 'collabs' && (
             <motion.div key="collabs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <CollaborationMatcher />
+            </motion.div>
+          )}
+
+          {tab === 'youtube' && (
+            <motion.div key="youtube" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <YouTubeDiscovery />
             </motion.div>
           )}
         </AnimatePresence>
