@@ -50,6 +50,8 @@ import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import ShareToSocial from '../components/social/ShareToSocial';
+import GreenRoomPreflight from '../components/live/GreenRoomPreflight';
+import TippingModal from '../components/monetization/TippingModal';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -326,7 +328,9 @@ export default function BroadcastStudio() {
   const [guardianStats, setGuardianStats] = useState({ blocked: 0, warned: 0, muted: 0 });
   const [ariaEnabled, setAriaEnabled] = useState(false);
   const [linkCopied, setLinkCopied]     = useState(false);
-  const [inviteSheetOpen, setInviteSheetOpen] = useState(false);
+  const [inviteSheetOpen, setInviteSheetOpen]     = useState(false);
+  const [greenRoomOpen, setGreenRoomOpen]         = useState(false);
+  const [tipModalOpen, setTipModalOpen]           = useState(false);
   const [gateComplete, setGateComplete] = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [isExclusive, setIsExclusive] = useState(false);
@@ -748,6 +752,22 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {/* TIP button — viewers can tip the host */}
+            {!isHost && party?.host_id && (
+              <button onClick={() => setTipModalOpen(true)}
+                className="h-7 px-2.5 rounded-full font-black text-[11px] flex items-center gap-1 transition-all active:scale-95"
+                style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', color: '#000', ...T }}>
+                💲 TIP
+              </button>
+            )}
+            {/* Green Room pre-flight (host only) */}
+            {isHost && (
+              <button onClick={() => setGreenRoomOpen(true)}
+                className="h-7 px-2.5 rounded-full font-black text-[11px] flex items-center gap-1 transition-all active:scale-95"
+                style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.35)', color: '#22c55e', ...T }}>
+                🟢 Green Room
+              </button>
+            )}
             <button onClick={() => setInviteSheetOpen(true)}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD }} title="Invite people">
@@ -1968,6 +1988,21 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         onClose={() => setPayOpen(false)}
         creatorName={user?.full_name || user?.email || 'Creator'}
       />
+      <GreenRoomPreflight
+        isOpen={greenRoomOpen}
+        onClose={() => setGreenRoomOpen(false)}
+        onGoLive={() => {}}
+        party={party}
+        user={user}
+      />
+      {!isHost && party?.host_id && (
+        <TippingModal
+          isOpen={tipModalOpen}
+          onClose={() => setTipModalOpen(false)}
+          recipient={{ id: party.host_id }}
+          roomId={partyId}
+        />
+      )}
     </div>
   );
 }
