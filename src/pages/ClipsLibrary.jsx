@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#FFB800'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
@@ -127,6 +129,14 @@ export default function ClipsLibraryPage() {
             </div>
           </div>
         )}
+        {/* AI Clip Generator */}
+        <div style={{ marginTop: 32 }}>
+          <AutomatedClipGenerator roomId={null} />
+        </div>
+        {/* AI Highlight Reels */}
+        <div style={{ marginTop: 16 }}>
+          <AutomatedHighlightReels />
+        </div>
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
     </div>
