@@ -37,6 +37,8 @@ import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import { DollarSign, Gift } from 'lucide-react';
 import SuperChatRail from '../components/live/SuperChatRail';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import StreamEventBus from '../components/live/StreamEventBus';
+import ViewerCount from '../components/live/ViewerCount';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
 import GoldenWall from '../components/live/GoldenWall';
@@ -358,6 +360,8 @@ export default function LiveRoom() {
   const [shareOpen, setShareOpen]   = useState(false);
   const [embedOpen, setEmbedOpen]   = useState(false);
   const [payOpen, setPayOpen]       = useState(false);
+  const [liveViewers, setLiveViewers] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
   const [giftOpen, setGiftOpen]     = useState(false);
   const [animGiftOpen, setAnimGiftOpen] = useState(false);
   const [zegoJoined, setZegoJoined]   = useState(false);
@@ -494,7 +498,7 @@ export default function LiveRoom() {
           <div className="flex items-center gap-2 text-[10px] text-white/35">
             <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{liveCount}</span>
             <span>•</span>
-            <span>{liveCount} here now</span>
+            <ViewerCount count={liveViewers || party?.viewer_count || liveCount} peakViewers={peakViewers} />
           </div>
           {/* Active speaker */}
           {activeSpeaker && (
@@ -803,6 +807,16 @@ export default function LiveRoom() {
           />
         )}
       </AnimatePresence>
+
+      {/* Real-time event bus */}
+      {(roomId || party?.id) && (
+        <StreamEventBus
+          roomId={roomId || party?.id}
+          isHost={isHost}
+          sessionId={user?.id}
+          onViewerUpdate={n => { setLiveViewers(n); setPeakViewers(p => Math.max(p, n)); }}
+        />
+      )}
 
       {/* Embed player panel */}
       <AnimatePresence>

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -294,6 +295,7 @@ export default function ViewerDashboard() {
         {/* DISCOVER */}
         {activeTab === 'discover' && (
           <div className="space-y-3">
+            <ContentRecommendations />
             <h2 className="font-black text-white text-sm flex items-center gap-2" style={T}>
               <TrendingUp className="w-4 h-4" style={{ color: GOLD }} /> Trending Streams
             </h2>
