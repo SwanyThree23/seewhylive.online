@@ -12,7 +12,8 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3001,
         UV_THREADPOOL_SIZE: 16,
-        DEPLOY_TOKEN: 'sw33-7ed4b3a370219c60bfea'
+        DEPLOY_TOKEN: 'sw33-7ed4b3a370219c60bfea',
+      ANTHROPIC_API_KEY: 'sk-ant-YOURREALKEYHERE'
       },
       error_file: '/var/log/seewhy/server-error.log',
       out_file:   '/var/log/seewhy/server-out.log',
