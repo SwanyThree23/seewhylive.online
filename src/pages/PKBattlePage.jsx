@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import AggregatedChat from '../components/live/AggregatedChat';
 import { useLocalMedia } from '../hooks/useLocalMedia';
@@ -547,6 +548,13 @@ export default function PKBattlePage() {
       <AnimatePresence>
         {winner && <WinnerOverlay winner={winner} onClose={() => setWinner(null)} />}
       </AnimatePresence>
+
+      {/* PKBattleInterface widget — battle controls */}
+      {battleId && (
+        <div className="absolute top-2 left-2 z-30 max-w-xs">
+          <PKBattleInterface roomId={battleId} />
+        </div>
+      )}
 
       <CountdownOverlay countdown={countdown} />
 

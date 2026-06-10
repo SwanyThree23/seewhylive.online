@@ -39,7 +39,18 @@ import AIModeration from '../components/live/AIModeration';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
-import { Hand } from 'lucide-react';
+import GoldenWall from '../components/live/GoldenWall';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ShareToSocial from '../components/social/ShareToSocial';
+import TippingModal from '../components/monetization/TippingModal';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -680,6 +691,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     { id: 'viewers', label: '👥 Panel',  desc: 'Manage' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
     ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
+    { id: 'health',  label: '❤️ Health', desc: 'Stream stats' },
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
     { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
@@ -1323,6 +1335,28 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   />
                 </div>
 
+                {/* Reward redemption queue */}
+                {isHost && user?.id && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🔔 Reward Queue</p>
+                    <RedemptionQueue creatorId={user.id} roomId={partyId} />
+                  </div>
+                )}
+
+                {/* Points earn widget */}
+                {user?.id && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                    <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user.id} roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* Greenroom guest queue */}
+                {canManage && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                    <GreenroomQueue roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
+
                 {/* Danger zone */}
                 {isHost && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)' }}>
@@ -1333,6 +1367,19 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                       <LogOut className="w-3.5 h-3.5" /> End Broadcast for Everyone
                     </button>
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* ❤️ HEALTH TAB */}
+            {activeTab === 'health' && (
+              <div className="p-2 space-y-3">
+                <StreamHealthDashboard isLive={party?.status === 'live'} />
+                {partyId && (
+                  <BroadcastAnalyticsDashboard
+                    streamSession={{ id: partyId, title: party?.title }}
+                    isLive={party?.status === 'live'}
+                  />
                 )}
               </div>
             )}
