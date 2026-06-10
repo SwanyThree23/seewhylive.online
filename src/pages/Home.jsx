@@ -267,6 +267,91 @@ function SpotlightStrip() {
   );
 }
 
+// ── Washington Classic 2026 Hero Card ─────────────────────────────────────
+function WashingtonClassicHero() {
+  return (
+    <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
+      <motion.div
+        whileTap={{ scale: 0.985 }}
+        style={{
+          margin: '0 16px',
+          borderRadius: 20,
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #0A0005 0%, #1A0008 40%, #0D0A00 100%)',
+          border: '1px solid rgba(212,175,55,0.28)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(212,175,55,0.12)',
+          position: 'relative',
+        }}
+      >
+        {/* Background texture lines */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+
+        {/* Top badges row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0', position: 'relative' }}>
+          <span style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 10,
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: '#D4AF37', background: 'rgba(212,175,55,0.12)',
+            border: '1px solid rgba(212,175,55,0.3)', borderRadius: 99,
+            padding: '3px 10px',
+          }}>
+            🏆 UPCOMING EVENT
+          </span>
+          <span style={{
+            fontFamily: 'Space Mono, monospace', fontWeight: 700, fontSize: 10,
+            color: '#6DBF7E', background: 'rgba(109,191,126,0.12)',
+            border: '1px solid rgba(109,191,126,0.3)', borderRadius: 99,
+            padding: '3px 10px', letterSpacing: '0.06em',
+          }}>
+            WA #1 RANKED
+          </span>
+        </div>
+
+        {/* Title block */}
+        <div style={{ padding: '10px 16px 4px', position: 'relative' }}>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 28, color: '#F0E8D4', letterSpacing: '0.02em', lineHeight: 1.05 }}>
+            Washington Classic
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 22, color: '#D4AF37', letterSpacing: '0.04em', lineHeight: 1, marginTop: 2 }}>
+            2026
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 6, letterSpacing: '0.02em' }}>
+            State vs State · 7 Rock Format · Double Elimination
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(212,175,55,0.1)', margin: '10px 16px' }} />
+
+        {/* Info row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px 14px', position: 'relative' }}>
+          <div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Venue</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>Jamar's Sports Bar</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Des Moines, WA</div>
+          </div>
+          <div style={{ width: 1, height: 36, background: 'rgba(212,175,55,0.15)' }} />
+          <div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Format</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>5-pt / 150-pt Games</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Live on SeeWhy LIVE</div>
+          </div>
+          <div style={{ marginLeft: 'auto' }}>
+            <div style={{
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13,
+              color: '#000', background: 'linear-gradient(135deg, #D4AF37, #C9A84C)',
+              borderRadius: 10, padding: '8px 14px', letterSpacing: '0.06em',
+              textTransform: 'uppercase', boxShadow: '0 2px 12px rgba(212,175,55,0.4)',
+            }}>
+              View →
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
+  );
+}
+
 // ── Domino Social Expo partner data ───────────────────────────────────────
 var DOMINO_VIDEOS = [
   { id: 'sn-X0avptY0' },
@@ -500,6 +585,11 @@ export default function Home() {
             Go Live →
           </motion.div>
         </Link>
+      </div>
+
+      {/* ── WASHINGTON CLASSIC 2026 HERO ── */}
+      <div style={{ padding: '14px 0 10px' }}>
+        <WashingtonClassicHero />
       </div>
 
       {/* ── DOMINO SOCIAL EXPO FEATURED PARTNER ── */}
