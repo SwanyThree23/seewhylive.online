@@ -94,6 +94,7 @@ function appReducer(state, action) {
 
   switch (action.type) {
     case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
+    case 'SET_BRIDGE_TOKEN': return Object.assign({}, state, { bridgeToken: action.payload.token, bridgeCreator: action.payload.creator, bridgeReturn: action.payload.returnUrl });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
