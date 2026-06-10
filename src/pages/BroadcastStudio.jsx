@@ -80,6 +80,9 @@ import BattleArenaManager from '../components/live/BattleArenaManager';
 import OBSBridge from '../components/obs/OBSBridge';
 import BattleMode from '../components/streaming/BattleMode';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import GuestStreamingPermissions from '../components/streaming/GuestStreamingPermissions';
+import LiveTranscription from '../components/live/LiveTranscription';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1551,6 +1554,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     onStreamHealth={() => {}}
                   />
                 )}
+                {isHost && partyId && user?.id && (
+                  <VideoShortRecorder roomId={partyId} creatorId={user.id} />
+                )}
               </div>
             )}
 
@@ -1563,6 +1569,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 )}
                 <ZEGOGuestApprovalPanel roomId={partyId} isHost={canManage} />
                 <GuestStreamMonitor guestName={user?.full_name || 'Host'} isStreaming={party?.status === 'live'} />
+                {members.length > 0 && (
+                  <GuestStreamingPermissions participant={members[0]} isHost={isHost} onUpdate={() => {}} />
+                )}
               </div>
             )}
 
@@ -1883,6 +1892,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           viewerCount={members.length}
                           elapsedSeconds={elapsed}
                         />
+                      </div>
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                        <LiveTranscription isLive={party?.status === 'live'} roomId={partyId} />
                       </div>
                     </div>
                   )}

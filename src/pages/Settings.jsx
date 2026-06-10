@@ -10,6 +10,7 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -245,6 +246,13 @@ export default function SettingsPage() {
         <Section icon={Palette} title="Appearance" description="Customize your stream and app background">
           <BackgroundCustomizer />
         </Section>
+
+        {/* Payment Methods */}
+        {user && (
+          <Section icon={SettingsIcon} title="Payment Methods" description="Manage your saved payment methods">
+            <PaymentMethodSelector creatorId={user.id} roomId={null} onPaymentComplete={() => {}} />
+          </Section>
+        )}
 
         {/* Data Export */}
         <Section icon={Download} title="Data Export" description="Download your data as PDF, CSV, or JSON">

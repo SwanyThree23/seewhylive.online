@@ -8,6 +8,8 @@ import SpotlightSection from '@/components/community/SpotlightSection';
 import ReferralProgram from '@/components/community/ReferralProgram';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import CreatePollModal from '../components/community/CreatePollModal';
+import PollCard from '../components/community/PollCard';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -41,6 +43,7 @@ function usePullToRefresh(onRefresh) {
 export default function CommunityPage() {
   const qc = useQueryClient();
   const [pollModalOpen, setPollModalOpen] = useState(false);
+  const [modModalOpen, setModModalOpen] = useState(false);
   const { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async () => {
     await qc.invalidateQueries();
   });
@@ -137,7 +140,11 @@ export default function CommunityPage() {
         )}
       </div>
       {community?.id && (
-        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
+        <>
+          <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
+          <PollCard poll={null} />
+          <ModerationActionModal isOpen={modModalOpen} onClose={() => setModModalOpen(false)} targetUser={null} roomId={null} communityId={community.id} moderatorId={user?.id} />
+        </>
       )}
     </div>
   );

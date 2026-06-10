@@ -16,6 +16,11 @@ import TopTippers from '../components/monetization/TopTippers';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import TierEditor from '../components/subscriptions/TierEditor';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
 import { toast } from 'sonner';
@@ -777,13 +782,25 @@ export default function MonetizationPage() {
             <motion.div key="payouts" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <PayoutPanel netEarnings={netEarnings} />
               {user?.id && <RevenueDashboard userId={user.id} />}
+              {user?.id && <StripeConnectButton creatorId={user.id} />}
+              {user?.id && <RewardShopEditor creatorId={user.id} />}
+              <StreamerMonetizationCenter />
             </motion.div>
           )}
 
           {tab === 'tiers' && user?.id && (
-            <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <CreatorTierManager creatorId={user.id} />
               <TierEditor open={tierEditorOpen} onClose={() => setTierEditorOpen(false)} creatorId={user.id} existing={null} />
+              <SubscriptionTiers communityId={null} userId={user.id} />
+              <SubscriptionCard
+                tier="bronze"
+                price={4.99}
+                benefits={['Exclusive badges', 'Early access']}
+                communityId={null}
+                creatorId={user.id}
+                isSubscribed={false}
+              />
             </motion.div>
           )}
 

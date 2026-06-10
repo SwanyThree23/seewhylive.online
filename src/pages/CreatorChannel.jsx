@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierBadge from '../components/subscriptions/TierBadge';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import VideoLibrary from '../components/vod/VideoLibrary';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -313,6 +315,10 @@ export default function CreatorChannel() {
               creatorId={userId}
               isHighlighted={false}
             />
+            {currentUser?.id && (
+              <StripeSubscribeButton creatorId={userId} creatorName={displayName} currentUserId={currentUser.id} />
+            )}
+            <TierBadge tier="bronze" size="sm" showName />
           </div>
         )}
 

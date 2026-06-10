@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
 import { speakReply } from '../utils/tts';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -252,6 +253,7 @@ export default function SwanyBotPage() {
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.08em', marginTop: 8, textAlign: 'center' }}>
           ENTER to send · SHIFT+ENTER for new line
         </div>
+        <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
       </div>
     </div>
   );
