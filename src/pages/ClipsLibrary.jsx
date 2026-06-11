@@ -5,6 +5,10 @@ import { motion } from 'framer-motion';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import VODCard from '../components/vod/VODCard';
+import VODTrimEditor from '../components/vod/VODTrimEditor';
+import ChapterEditor from '../components/vod/ChapterEditor';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#FFB800'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
@@ -48,9 +52,17 @@ export default function ClipsLibraryPage() {
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
   const [clipSheetOpen, setClipSheetOpen] = useState(false);
+  const [trimVod, setTrimVod] = useState(null);
+  const [chapterVod, setChapterVod] = useState(null);
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+
+  const { data: vods = [] } = useQuery({
+    queryKey: ['vod-videos', user?.id],
+    queryFn: () => base44.entities.VODVideo.filter({ creator_id: user.id }, '-created_date', 20),
+    enabled: !!user?.id,
+  });
   const { data: clips=[], isLoading } = useQuery({
     queryKey: ['clips', user?.id, filter],
     queryFn: async () => {
@@ -139,8 +151,52 @@ export default function ClipsLibraryPage() {
         <div style={{ marginTop: 16 }}>
           <AutomatedHighlightReels />
         </div>
+
+        {/* VOD Library */}
+        {vods.length > 0 && (
+          <div style={{ marginTop: 32 }}>
+            <h2 style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.gold, marginBottom:12, letterSpacing:2 }}>🎬 VOD LIBRARY</h2>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:12 }}>
+              {vods.map(v => (
+                <VODCard
+                  key={v.id}
+                  vod={v}
+                  onEdit={() => {}}
+                  onTrim={() => setTrimVod(v)}
+                  onChapters={() => setChapterVod(v)}
+                  onPublish={() => qc.invalidateQueries({ queryKey: ['vod-videos'] })}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Video Short Recorder */}
+        {user?.id && (
+          <div style={{ marginTop: 24 }}>
+            <VideoShortRecorder roomId={null} creatorId={user.id} />
+          </div>
+        )}
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+
+      {/* VOD Trim Editor */}
+      {trimVod && (
+        <VODTrimEditor
+          video={trimVod}
+          onSave={() => { setTrimVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
+          onCancel={() => setTrimVod(null)}
+        />
+      )}
+
+      {/* VOD Chapter Editor */}
+      {chapterVod && (
+        <ChapterEditor
+          video={chapterVod}
+          onSave={() => { setChapterVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
+          onCancel={() => setChapterVod(null)}
+        />
+      )}
 
       {/* Clip creator sheet */}
       {clipSheetOpen && (
