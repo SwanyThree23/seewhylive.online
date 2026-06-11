@@ -63,6 +63,7 @@ var DRAWER_CREATE = [
   { name: 'Analytics',        icon: BarChart,        href: createPageUrl('Analytics') },
   { name: 'Stream Scheduler', icon: Calendar,        href: createPageUrl('StreamScheduler') },
   { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Enhancement Suite', icon: Sparkles,       href: createPageUrl('EnhancementSuite') },
   { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
   { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },
   { name: 'AI Music Studio',  icon: Radio,           href: createPageUrl('AIMusic') },
@@ -97,11 +98,14 @@ var DRAWER_ACCOUNT = [
 ];
 
 var DRAWER_ADMIN = [
-  { name: 'AdminDashboard',  icon: Shield, href: createPageUrl('AdminDashboard') },
-  { name: 'Guardian AI',     icon: Shield, href: createPageUrl('GuardianAI') },
-  { name: 'StageCleanup',    icon: Layers, href: createPageUrl('StageCleanup') },
-  { name: 'RTMPServer',      icon: Server, href: createPageUrl('RTMPServer') },
-  { name: 'Infra Reference', icon: Server, href: createPageUrl('StreamInfraRef') },
+  { name: 'AdminDashboard',    icon: Shield,         href: createPageUrl('AdminDashboard') },
+  { name: 'Guardian AI',       icon: Shield,         href: createPageUrl('GuardianAI') },
+  { name: 'Moderation',        icon: Shield,         href: createPageUrl('ModerationDashboard') },
+  { name: 'Scene Templates',   icon: Layers,         href: createPageUrl('SceneTemplates') },
+  { name: 'Viewer Dashboard',  icon: LayoutDashboard,href: createPageUrl('ViewerDashboard') },
+  { name: 'StageCleanup',      icon: Layers,         href: createPageUrl('StageCleanup') },
+  { name: 'RTMPServer',        icon: Server,         href: createPageUrl('RTMPServer') },
+  { name: 'Infra Reference',   icon: Server,         href: createPageUrl('StreamInfraRef') },
 ];
 
 export default function Layout({ children, currentPageName }) {
