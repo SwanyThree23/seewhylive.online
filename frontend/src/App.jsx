@@ -4865,6 +4865,193 @@ function PayoutSetupV2({ state, dispatch }) {
     </div>
   );
 }
+
+// ============================================================
+// BATCH P — Founding Member System + Elite League Leaderboard
+// ============================================================
+
+// ── FOUNDING MEMBER GATE ─────────────────────────────────────
+
+function FoundingMemberGate({ state, dispatch }) {
+  var C = COLORS;
+  var [code, setCode] = React.useState('');
+  var [checking, setChecking] = React.useState(false);
+  var [error, setError] = React.useState('');
+  var [success, setSuccess] = React.useState(false);
+  var VALID_CODES = [
+    'CALIBONESOG','SWANYTHREE23','VIBENBONE S','DJCIPHER','JOYCEMLLC',
+    'TECHMUNITY','WASHINGTONCLASSIC','SEEWHY100'
+  ];
+
+  function check() {
+    if (!code.trim()) return;
+    setChecking(true);
+    setError('');
+    setTimeout(function() {
+      var upper = code.trim().toUpperCase();
+      var isNumbered = upper.match(/^SWY-FOUNDING-\d{3}$/);
+      var isShortcode = VALID_CODES.indexOf(upper.replace(/\s/g,'')) >= 0;
+      if (isNumbered || isShortcode) {
+        setSuccess(true);
+        dispatch({ type: 'SET_FOUNDING_MEMBER', payload: { code: upper } });
+      } else {
+        setError('Invalid code. Check your invite and try again.');
+      }
+      setChecking(false);
+    }, 1200);
+  }
+
+  if (success) return (
+    <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.97)', zIndex:99998, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:24 }}>
+      <div style={{ fontSize:64, marginBottom:16 }}>👑</div>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:32, color:C.gold, letterSpacing:3, marginBottom:8, textAlign:'center' }}>FOUNDING MEMBER</div>
+      <div style={{ fontSize:13, color:C.muted, textAlign:'center', marginBottom:24, lineHeight:1.7 }}>You are one of the first 100.<br/>Your legacy is locked in.</div>
+      <div style={{ background:'rgba(212,175,55,0.1)', border:'2px solid '+C.gold, borderRadius:14, padding:16, marginBottom:24, textAlign:'center', width:'100%', maxWidth:300 }}>
+        <div style={{ fontFamily:"'Space Mono',monospace", fontSize:14, color:C.gold }}>SWY FOUNDING MEMBER</div>
+        <div style={{ fontSize:11, color:C.muted, marginTop:4 }}>Creator keeps 90% — forever</div>
+      </div>
+      <button onClick={function(){ dispatch({ type:'CLOSE_FOUNDING_GATE' }); }} style={{ background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:'16px 40px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:20, cursor:'pointer', letterSpacing:2 }}>ENTER THE BUILDING →</button>
+    </div>
+  );
+
+  return (
+    <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.97)', zIndex:99998, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:24 }}>
+      <div style={{ fontSize:48, marginBottom:16 }}>🎬</div>
+      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, letterSpacing:3, marginBottom:8, textAlign:'center' }}>SEEWHY LIVE</div>
+      <div style={{ fontSize:13, color:C.muted, textAlign:'center', marginBottom:32, lineHeight:1.7 }}>Creator-first live streaming.<br />Founding Member access only during beta.</div>
+      <div style={{ width:'100%', maxWidth:320 }}>
+        <div style={{ fontSize:10, color:C.muted, marginBottom:8, letterSpacing:1 }}>INVITE CODE</div>
+        <input
+          value={code}
+          onChange={function(e){ setCode(e.target.value); setError(''); }}
+          onKeyDown={function(e){ if(e.key==='Enter') check(); }}
+          placeholder="SWY-FOUNDING-001 or shortcode"
+          style={{ width:'100%', background:'#111', border:'1px solid '+(error ? C.red : code ? C.gold+'44' : '#2a2a2a'), borderRadius:10, padding:'14px 16px', color:C.white, fontSize:15, boxSizing:'border-box', marginBottom:8, fontFamily:"'Space Mono',monospace" }}
+        />
+        {error && <div style={{ fontSize:11, color:C.red, marginBottom:8 }}>{error}</div>}
+        <button onClick={check} disabled={checking || !code.trim()} style={{ width:'100%', background:code.trim() ? 'linear-gradient(135deg,'+C.gold+',#8B6914)' : '#1a1a1a', border:'none', borderRadius:12, padding:16, color:code.trim() ? '#000' : C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:code.trim() ? 'pointer' : 'default', letterSpacing:1 }}>{checking ? 'CHECKING...' : 'ENTER WITH CODE'}</button>
+        <div style={{ textAlign:'center', marginTop:16, fontSize:11, color:C.muted }}>Don't have a code? <span style={{ color:C.gold, cursor:'pointer' }} onClick={function(){ window.open('https://app.seewhylive.online/Onboarding','_blank'); }}>Join the waitlist →</span></div>
+      </div>
+    </div>
+  );
+}
+
+// ── ELITE LEAGUE LEADERBOARD ──────────────────────────────────
+
+function EliteLeagueLeaderboard({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('gems');
+  var tabs = [['gems','💎 GEMS'],['battles','⚔️ BATTLES'],['streams','📺 STREAMS'],['founding','👑 FOUNDING']];
+  var gemLeaders = [
+    { rank:1, name:'BigBoneEarl', gems:12840, badge:'👑', tier:'gold', change:'+240' },
+    { rank:2, name:'SeattleSlider', gems:9420, badge:'💎', tier:'gold', change:'+180' },
+    { rank:3, name:'SwanyThree23', gems:8840, badge:'🔥', tier:'gold', change:'+120' },
+    { rank:4, name:'MamaJoyce', gems:6210, badge:'⭐', tier:'silver', change:'+90' },
+    { rank:5, name:'VibeNBones', gems:5890, badge:'🎵', tier:'silver', change:'+60' },
+    { rank:6, name:'CaliBonesOG', gems:4420, badge:'🦴', tier:'silver', change:'+45' },
+    { rank:7, name:'FastHandsRod', gems:3210, badge:'⚡', tier:'bronze', change:'+30' },
+    { rank:8, name:'PNW_Domino', gems:2840, badge:'🎯', tier:'bronze', change:'+20' },
+    { rank:9, name:'TacomaTBone', gems:1920, badge:'🔷', tier:'bronze', change:'+15' },
+    { rank:10, name:'DJ_Cipher', gems:1440, badge:'🎧', tier:'bronze', change:'+10' },
+  ];
+  var battleLeaders = [
+    { rank:1, name:'SwanyThree23', wins:24, losses:3, streak:8, badge:'👑' },
+    { rank:2, name:'CaliBonesOG', wins:19, losses:6, streak:4, badge:'⚔️' },
+    { rank:3, name:'BigBoneEarl', wins:16, losses:8, streak:2, badge:'🔥' },
+    { rank:4, name:'VibeNBones', wins:14, losses:9, streak:0, badge:'💪' },
+    { rank:5, name:'FastHandsRod', wins:11, losses:7, streak:3, badge:'⚡' },
+  ];
+  var tierColor = { gold: C.gold, silver: '#C0C0C0', bronze: C.terracotta };
+  var rankColor = ['#FFD700','#C0C0C0','#CD7F32'];
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#0a0800,#150d00)', padding:'16px 14px 0', borderBottom:'1px solid '+C.gold+'44' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
+          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,'+C.gold+',#800020)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid '+C.gold+'55' }}>🏆</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.gold, letterSpacing:2 }}>ELITE LEAGUE</div>
+            <div style={{ fontSize:11, color:C.muted }}>SeeWhy LIVE · Season 1 · Washington Classic</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:2, overflowX:'auto', scrollbarWidth:'none' }}>
+          {tabs.map(function(t){ return (
+            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flexShrink:0, background:'none', border:'none', borderBottom:tab===t[0] ? '2px solid '+C.gold : '2px solid transparent', padding:'8px 12px', color:tab===t[0] ? C.gold : C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ padding:14 }}>
+        {tab === 'gems' && (
+          <div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:16 }}>
+              {gemLeaders.slice(0,3).map(function(p,i){ return (
+                <div key={i} style={{ background:i===0?'rgba(212,175,55,0.15)':'#111', border:'2px solid '+(rankColor[i]||'#333'), borderRadius:14, padding:14, textAlign:'center' }}>
+                  <div style={{ fontSize:24, marginBottom:4 }}>{p.badge}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:rankColor[i]||C.muted, letterSpacing:1, marginBottom:4 }}>#{p.rank}</div>
+                  <div style={{ fontSize:11, color:C.white, fontWeight:700, marginBottom:4 }}>{p.name}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold }}>{p.gems.toLocaleString()}</div>
+                  <div style={{ fontSize:9, color:C.muted }}>gems</div>
+                </div>
+              );})}
+            </div>
+            {gemLeaders.slice(3).map(function(p){ return (
+              <div key={p.rank} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:12, marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ width:28, height:28, borderRadius:8, background:tierColor[p.tier]+'22', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:13, color:tierColor[p.tier], flexShrink:0 }}>#{p.rank}</div>
+                <div style={{ fontSize:18, flexShrink:0 }}>{p.badge}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, color:C.white, fontWeight:700 }}>{p.name}</div>
+                  <div style={{ fontSize:10, color:tierColor[p.tier], fontFamily:"'Bebas Neue',sans-serif" }}>{p.tier.toUpperCase()}</div>
+                </div>
+                <div style={{ textAlign:'right' }}>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold }}>{p.gems.toLocaleString()}</div>
+                  <div style={{ fontSize:9, color:C.green }}>{p.change} today</div>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'battles' && (
+          <div>
+            {battleLeaders.map(function(p){ return (
+              <div key={p.rank} style={{ background:p.rank===1?'rgba(212,175,55,0.1)':'#111', border:'1px solid '+(p.rank===1?C.gold+'44':'#1e1e1e'), borderRadius:12, padding:14, marginBottom:10, display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ width:32, height:32, borderRadius:8, background:p.rank===1?C.gold+'22':'#1a1a1a', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:p.rank===1?C.gold:C.muted }}>{p.badge}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:15, color:C.white }}>{p.name}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>{p.wins}W · {p.losses}L · {p.streak} streak</div>
+                </div>
+                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:p.rank===1?C.gold:C.white }}>#{p.rank}</div>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'streams' && (
+          <div style={{ textAlign:'center', padding:40 }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>📺</div>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.muted, letterSpacing:1 }}>STREAM HOURS LEADERBOARD</div>
+            <div style={{ fontSize:11, color:C.muted, marginTop:8 }}>Season 1 begins with the Washington Classic Finals · Jun 21</div>
+          </div>
+        )}
+        {tab === 'founding' && (
+          <div>
+            <div style={{ background:'rgba(212,175,55,0.1)', border:'2px solid '+C.gold+'44', borderRadius:14, padding:16, marginBottom:16, textAlign:'center' }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.gold, letterSpacing:2, marginBottom:4 }}>FOUNDING 100</div>
+              <div style={{ fontSize:11, color:C.muted }}>The first creators to build SeeWhy LIVE</div>
+            </div>
+            {['SwanyThree23','CaliBonesOG','VibeNBones','DJ Cipher','JoyceM LLC'].map(function(name,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid '+C.gold+'22', borderRadius:12, padding:14, marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ width:32, height:32, borderRadius:8, background:C.gold+'22', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:13, color:C.gold }}>#{i+1}</div>
+                <div style={{ flex:1, fontFamily:"'Bebas Neue',sans-serif", fontSize:15, color:C.white }}>{name}</div>
+                <div style={{ fontSize:16 }}>👑</div>
+              </div>
+            );})}
+            <div style={{ textAlign:'center', marginTop:16, fontSize:11, color:C.muted }}>{95} spots remaining</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
