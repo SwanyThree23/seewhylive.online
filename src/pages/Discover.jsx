@@ -389,6 +389,11 @@ export default function DiscoverPage() {
 
         {/* AI-powered content recommendations */}
         <ContentRecommendations />
+
+        {/* YouTube partner content discovery */}
+        <div className="mt-8">
+          <YouTubeDiscovery />
+        </div>
       </div>
     </div>
   );
