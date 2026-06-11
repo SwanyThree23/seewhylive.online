@@ -1819,7 +1819,7 @@ function LiveRoom(props) {
         {/* Host controls — Row 2: Stream tools */}
         <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
           {[
-            { label: '⚙️ WebRTC', modal: 'webrtc-config' },
+            { label: '⚙️ WebRTC', modal: 'webrtc-config', action: function(){ dispatch({ type:'SET_PAGE', payload:'zegoroom' }); } },
             { label: '💼 Sponsor', modal: 'sponsor-overlay' },
             { label: '🖥️ Screen', modal: 'screen-share' },
             { label: '📺 Embed', modal: 'media-embed' },
