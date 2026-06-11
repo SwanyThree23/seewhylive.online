@@ -6,14 +6,14 @@ import { Eye, EyeOff, Copy, Check, X } from 'lucide-react';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
+const BG2   = '#0D0A08';
 const BG3   = '#111218';
 const GOLD  = '#D4AF37';
 const GREEN = '#22c55e';
 const RED   = '#EF4444';
-const SLATE = '#2A2438';
-const TEXT  = '#F0EAF8';
-const TEXTM = '#8A7A94';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTM = '#8A7A62';
 const FONT  = 'Barlow Condensed, sans-serif';
 const MONO  = { fontFamily: 'Space Mono, monospace' };
 

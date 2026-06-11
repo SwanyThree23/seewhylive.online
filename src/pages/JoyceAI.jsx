@@ -22,16 +22,16 @@ function speakText(text) {
 }
 
 const BG = '#080B18';
-const BG2 = '#0D0A14';
-const BG3 = '#13101C';
+const BG2 = '#0D0A08';
+const BG3 = '#13100A';
 const GOLD = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#2A2438';
-const SLATEL = '#3D3555';
-const TEXT = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
-const GREEN = '#22c55e';
+const SLATE = '#2A2010';
+const SLATEL = '#3D3520';
+const TEXT = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
+const GREEN = '#6DBF7E';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
 const CYAN = '#D4AF37';

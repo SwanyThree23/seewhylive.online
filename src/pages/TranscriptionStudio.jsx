@@ -7,14 +7,14 @@ import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GREEN = '#22c55e';
 const SCARL = '#C0392B';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO  = { fontFamily: 'Space Mono, monospace' };
 
