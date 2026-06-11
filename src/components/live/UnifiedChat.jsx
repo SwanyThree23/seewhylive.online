@@ -132,7 +132,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                     {slowMode && (
                       <select value={slowInterval} onChange={(e) => setSlowInterval(Number(e.target.value))}
                         className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5">
-                        {[3,5,10,30].map(s => <option key={s} value={s} className="bg-[#0d0618]">{s}s</option>)}
+                        {[3,5,10,30].map(s => <option key={s} value={s} className="bg-[#080B18]">{s}s</option>)}
                       </select>
                     )}
                   </div>
@@ -240,7 +240,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
         {showEmojiPicker && (
           <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }}
             className="mx-3 mb-1 rounded-2xl p-3 grid grid-cols-5 gap-2 z-20"
-            style={{ background: '#0d0618', border: '1px solid rgba(212,175,55,0.2)' }}>
+            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)' }}>
             {EMOJIS.map(e => (
               <button key={e} onClick={() => { setInput(prev => prev + e); setShowEmojiPicker(false); }}
                 className="text-xl text-center py-1 rounded-lg active:scale-90 transition-transform hover:bg-white/5">

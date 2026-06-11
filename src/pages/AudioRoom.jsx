@@ -19,10 +19,10 @@ const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const BG      = '#080B18';
-const BG2     = '#0d0618';
+const BG2     = '#0D1022';
 const GREEN   = '#6DBF7E';
 
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B3A','#7C4A3A','#6B5C3A','#A6263A','#EF6C00'];
 
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
@@ -453,7 +453,7 @@ export default function AudioRoom() {
       )}
 
       {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.97)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none' }}>
           <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             📡 Go Live

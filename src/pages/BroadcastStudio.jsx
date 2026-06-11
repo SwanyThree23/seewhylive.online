@@ -1052,7 +1052,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         </div>
 
         {/* ── RIGHT: Tabbed tools panel ─────────────────────────────────── */}
-        <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: 296, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0D0618' }}>
+        <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: 296, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#080B18' }}>
 
           {/* Exclusive Live toggle */}
           <div className="shrink-0 flex items-center gap-2 px-3 py-2"

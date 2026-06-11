@@ -52,7 +52,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }} onClick={onClose} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', maxHeight: '85vh', overflowY: 'auto', background: '#0d0618', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', maxHeight: '85vh', overflowY: 'auto', background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#d4af37' }}>
             <DollarSign className="w-5 h-5" />

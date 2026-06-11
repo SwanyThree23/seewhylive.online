@@ -56,7 +56,7 @@ const FORMATS = [
     title: 'Audio Room',
     subtitle: 'Clubhouse-style stage. Speakers + listeners.',
     features: ['🎤 Stage', '✋ Hand Raise', '❤️ Love Tap', '📌 Pin Video'],
-    color: '#26A69A',
+    color: '#6DBF7E',
     dest: 'AudioRoom',
   },
 ];

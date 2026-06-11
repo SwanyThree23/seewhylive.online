@@ -36,7 +36,7 @@ function OctCamTile({ stream, label, isLocal }) {
   return (
     <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
       <div className="absolute inset-0" style={{ clipPath: OCT, background: isLocal ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)' }} />
-      <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: '#0d0618' }}>
+      <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: '#080B18' }}>
         {stream ? (
           <video ref={ref} autoPlay playsInline muted={isLocal}
             className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
@@ -430,7 +430,7 @@ export default function PKBattlePage() {
 
   if (!battleId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0d0618] via-[#1a0030] to-[#0d0618] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#080B18] via-[#001428] to-[#080B18] flex items-center justify-center px-4">
         <div className="w-full max-w-lg">
           <Link to={createPageUrl('Home')}>
             <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 24, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>

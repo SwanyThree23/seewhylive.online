@@ -21,7 +21,7 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2 }}>
       <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 12, overflow: 'hidden', color: '#fff' }}>
         {/* Thumbnail */}
-        <div className="relative h-36 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0a20, #0d0618)' }}>
+        <div className="relative h-36 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0a20, #080B18)' }}>
           {vod.thumbnail_url
             ? <img src={vod.thumbnail_url} alt={vod.title} className="w-full h-full object-cover" />
             : <Play className="w-10 h-10 text-white/10" />

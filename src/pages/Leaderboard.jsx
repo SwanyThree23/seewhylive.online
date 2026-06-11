@@ -11,7 +11,7 @@ const SVS_STATES = [
   { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
   { id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20', w: 3, l: 2, pts: 1650 },
   { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C', w: 3, l: 2, pts: 1610 },
-  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#4A148C', w: 2, l: 3, pts: 1380 },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#1B3D7B', w: 2, l: 3, pts: 1380 },
   { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#BF360C', w: 1, l: 4, pts: 1120 },
 ];
 
@@ -40,7 +40,7 @@ function OctAvatar({ size = 60, src, initials, rankColor = GOLD, glow = false })
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />

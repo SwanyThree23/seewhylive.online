@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin } from 'lucide-react';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 
-var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B7C', '#7C4A6B', '#6B4A4A'];
+var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B3A', '#7C4A3A', '#6B4A4A'];
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 function getColor(name) {
@@ -116,7 +116,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
         className="absolute inset-[2px] overflow-hidden"
         style={{
           clipPath: OCT,
-          background: 'linear-gradient(135deg, #1A0F0A, #0d0618)',
+          background: 'linear-gradient(135deg, #1A0F0A, #080B18)',
         }}
       >
         {stream ? (
@@ -223,7 +223,7 @@ function SpotlitView({ member, hostId, stream, isLocal, onUnpin }) {
   }, [stream]);
 
   return (
-    <div className="flex-1 rounded-xl overflow-hidden relative" style={{ border: '2px solid rgba(212,175,55,0.4)', background: '#0d0618' }}>
+    <div className="flex-1 rounded-xl overflow-hidden relative" style={{ border: '2px solid rgba(212,175,55,0.4)', background: '#080B18' }}>
       {stream ? (
         <video
           ref={videoRef}
@@ -353,7 +353,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
 
   if (compact) {
     return (
-      <div className="flex overflow-x-auto gap-2 px-2 py-1" style={{ background: '#0d0618' }}>
+      <div className="flex overflow-x-auto gap-2 px-2 py-1" style={{ background: '#080B18' }}>
         {members.slice(0, 20).map(function(m) {
           var { stream, isLocal } = resolveStream(m, currentUser, localStream, remoteStreams, peerUserIds);
           var isSpeaking = m.is_audio_enabled !== false;
@@ -366,7 +366,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#0d0618' }}>
+    <div className="flex flex-col h-full" style={{ background: '#080B18' }}>
       <div className="flex items-center gap-2 px-2 py-1.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <span style={{ fontSize: 11, background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 99, padding: '2px 8px' }}>
           {members.length}/{maxSlots} panelists

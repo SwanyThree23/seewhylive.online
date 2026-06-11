@@ -146,7 +146,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
             onClick={() => setShowMessage(null)}>
             <motion.div initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }}
               onClick={e => e.stopPropagation()}
-              style={{ width:'100%', maxWidth:384, borderRadius:16, padding:20, background:'#0d0618', border:'1px solid rgba(212,175,55,0.2)', display:'flex', flexDirection:'column', gap:16 }}>
+              style={{ width:'100%', maxWidth:384, borderRadius:16, padding:20, background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', display:'flex', flexDirection:'column', gap:16 }}>
               <p style={{ fontSize:14, fontWeight:700, color:'#fff', margin:0 }}>
                 {showMessage.reward_type === 'song_request' ? '🎵 Request a Song' : '📌 Pin Your Message'}
               </p>

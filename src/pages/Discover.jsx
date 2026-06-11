@@ -163,7 +163,7 @@ export default function DiscoverPage() {
         )}
       </motion.div>
       {/* Dark header */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #0d0618 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #080B18 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 opacity-[0.025]" style={{
           backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',

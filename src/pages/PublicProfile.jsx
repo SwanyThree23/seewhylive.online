@@ -57,7 +57,7 @@ export default function PublicProfile() {
   return (
     <div className="min-h-screen" style={{ background: BG }}>
       {/* Banner */}
-      <div className="relative h-48 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #0d0618 60%, #080B18 100%)` }}>
+      <div className="relative h-48 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #080B18 60%, #080B18 100%)` }}>
         {profile.banner_url && (
           <img src={profile.banner_url} className="w-full h-full object-cover absolute inset-0" alt="banner" />
         )}
@@ -72,7 +72,7 @@ export default function PublicProfile() {
           {/* OCT Avatar */}
           <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
             <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
-            <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
+            <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.display_name} style={{ clipPath: OCT }} />
                 : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.display_name?.charAt(0)}</span>

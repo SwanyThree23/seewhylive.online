@@ -367,7 +367,7 @@ const STATES_DATA = [
   {id:"CA",name:"California",color:"#1B5E20",record:{w:2,l:1},pts:178,players:["West Coast Bone","SunsetSlayer","Bay Bone","LA King","Valley Boss"]},
   {id:"TX",name:"Texas",color:"#B71C1C",record:{w:2,l:1},pts:165,players:["Lone Star Domino","Houston Hustle","Dallas King","Rio Bone","Alamo Ace"]},
   {id:"FL",name:"Florida",color:"#E65100",record:{w:1,l:2},pts:140,players:["Sunshine Bone","Miami Domino","Tallahassee T","Tampa King","Gator Slide"]},
-  {id:"NY",name:"New York",color:"#4A148C",record:{w:1,l:2},pts:132,players:["Empire Bone","Bronx King","Brooklyn Shuffle","Harlem Hustle","Queens Bone"]},
+  {id:"NY",name:"New York",color:"#1B3D7B",record:{w:1,l:2},pts:132,players:["Empire Bone","Bronx King","Brooklyn Shuffle","Harlem Hustle","Queens Bone"]},
   {id:"GA",name:"Georgia",color:"#BF360C",record:{w:0,l:3},pts:88,players:["ATL Domino","Peach State Bone","Savannah Slide","Augusta Ace","Macon Masher"]},
 ];
 

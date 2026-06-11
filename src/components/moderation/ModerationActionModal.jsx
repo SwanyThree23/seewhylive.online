@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Shield } from 'lucide-react';
 
 const OVERLAY = { position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 };
-const MODAL = { background:'#0d0618', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:480, boxShadow:'0 24px 64px rgba(0,0,0,0.8)' };
+const MODAL = { background:'#080B18', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:480, boxShadow:'0 24px 64px rgba(0,0,0,0.8)' };
 const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 const TEXTAREA_STYLE = { ...INPUT_STYLE, resize:'none', minHeight:80 };
 const SELECT_STYLE = { ...INPUT_STYLE };

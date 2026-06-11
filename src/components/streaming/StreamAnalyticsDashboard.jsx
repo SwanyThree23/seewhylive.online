@@ -248,7 +248,7 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
                 </defs>
                 <XAxis dataKey="t" hide />
                 <Tooltip
-                  contentStyle={{ background: '#0d0618', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, fontSize: 10 }}
+                  contentStyle={{ background: '#080B18', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, fontSize: 10 }}
                   labelStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}
                   formatter={(v) => [v, 'Viewers']}
                 />

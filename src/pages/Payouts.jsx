@@ -54,7 +54,7 @@ function CustomTooltip({ active, payload, label }) {
   return (
     <div style={{
       ...T,
-      background: '#0d0618',
+      background: '#080B18',
       border: `1px solid ${GOLD}44`,
       borderRadius: 8,
       padding: '8px 14px',

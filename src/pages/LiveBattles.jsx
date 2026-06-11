@@ -25,7 +25,7 @@ function BattleCard({ battle, index }) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} whileHover={{ y: -3 }}
       className="rounded-2xl overflow-hidden transition-all"
-      style={{ background: 'linear-gradient(135deg, #0d0618, #15021f)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      style={{ background: 'linear-gradient(135deg, #080B18, #0D1528)', border: '1px solid rgba(212,175,55,0.15)' }}>
       {/* Status bar */}
       <div className="h-1 w-full" style={{ background: isActive ? `linear-gradient(90deg, #800020, ${GOLD})` : 'rgba(255,255,255,0.06)', animation: isActive ? 'pulse 2s infinite' : 'none' }} />
 
@@ -113,7 +113,7 @@ export default function LiveBattles() {
 
   return (
     <div className="min-h-screen text-white pb-10"
-      style={{ background: 'linear-gradient(135deg, #0d0618 0%, #15021f 50%, #0d0618 100%)' }}>
+      style={{ background: 'linear-gradient(135deg, #080B18 0%, #0D1528 50%, #080B18 100%)' }}>
       {/* Header */}
       <div className="sticky top-0 z-20 border-b"
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
@@ -199,7 +199,7 @@ export default function LiveBattles() {
       </div>
 
       {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
         {[
           ['PKBattleArena',   '⚔️ Battle Arena'],
           ['PKBattleManager', '⚙️ Manage'],

@@ -130,7 +130,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
       <div className="overflow-hidden" style={{ 
         clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
         border: `3px solid ${getRoleColor(participant?.role)}`,
-        background: '#0d0618',
+        background: '#080B18',
         aspectRatio: '4/3',
         boxShadow: `0 0 30px ${getRoleColor(participant?.role)}66, inset 0 0 20px ${getRoleColor(participant?.role)}33`
       }}>

@@ -88,7 +88,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background:'#0d0618', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:448, color:'#fff' }}
+      <div style={{ background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:448, color:'#fff' }}
         onClick={e => e.stopPropagation()}>
         <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
           <span style={{ color:'#d4af37', fontWeight:700, fontSize:18 }}>🔴 Share Your Live</span>

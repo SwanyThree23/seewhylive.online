@@ -38,7 +38,7 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />

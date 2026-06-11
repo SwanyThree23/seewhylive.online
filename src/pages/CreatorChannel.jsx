@@ -14,7 +14,7 @@ import VideoLibrary from '../components/vod/VideoLibrary';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
-const BG = '#0d0618';
+const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -77,7 +77,7 @@ export default function CreatorChannel() {
   return (
     <div className="min-h-screen text-white" style={{ background: BG }}>
       {/* Hero Banner */}
-      <div className="relative h-56 md:h-72 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #0d0618 100%)` }}>
+      <div className="relative h-56 md:h-72 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #080B18 100%)` }}>
         {bannerUrl && <img src={bannerUrl} alt="banner" className="w-full h-full object-cover absolute inset-0" />}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(13,6,24,0.95) 100%)' }} />
         {liveRoom && (
@@ -97,7 +97,7 @@ export default function CreatorChannel() {
           <div className="relative shrink-0" style={{ width: 112, height: 112 }}>
             <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
             <div className="absolute inset-[3px] flex items-center justify-center overflow-hidden"
-              style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
+              style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={displayName} />
                 : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{displayName.charAt(0)}</span>
@@ -176,7 +176,7 @@ export default function CreatorChannel() {
           <div className="pb-16">
             {liveRoom ? (
               <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CRIMSON}44, #0d0618)` }}>
+                <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CRIMSON}44, #080B18)` }}>
                   <div className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />

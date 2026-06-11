@@ -14,7 +14,7 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
   }, [stream]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#0d0618]" style={{
+    <div className="relative w-full h-full overflow-hidden bg-[#080B18]" style={{
       clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
       border: '3px solid #d4af37',
       boxShadow: '0 0 30px rgba(212,175,55,0.6), inset 0 0 20px rgba(212,175,55,0.3)'
