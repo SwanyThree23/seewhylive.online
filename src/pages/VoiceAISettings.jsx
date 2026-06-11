@@ -81,7 +81,11 @@ export default function VoiceAISettings() {
       {/* Header */}
       <div style={{ padding: '16px 20px', background: BG2, borderBottom: `1px solid ${SLATE}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="/AIHub" style={{ display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 11, ...T, fontWeight: 700, letterSpacing: '0.06em' }}>← AI Hub</a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <a href="/AIHub" style={{ display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 11, ...T, fontWeight: 700, letterSpacing: '0.06em' }}>← AI Hub</a>
+            <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none', color: 'rgba(212,175,55,0.5)', fontSize: 11, ...T, fontWeight: 700, letterSpacing: '0.06em' }}>Studio →</Link>
+            <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', color: 'rgba(212,175,55,0.35)', fontSize: 11, ...T, fontWeight: 700, letterSpacing: '0.06em' }}>Settings →</Link>
+          </div>
           <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🔊</div>
           <div>
             <div style={{ ...T, fontSize: 20, fontWeight: 900, color: TEXT, letterSpacing: '0.06em', lineHeight: 1 }}>VOICE AI</div>
