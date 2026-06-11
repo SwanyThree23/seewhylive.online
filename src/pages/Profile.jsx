@@ -391,9 +391,10 @@ export default function ProfilePage() {
                   { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: GOLD },
                   { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#D4854A' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
-                ].map(item => (
-                  <Link key={item.href} to={item.href}>
-                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110"
+                  { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
+                ].map(item => {
+                  const inner = (
+                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110 cursor-pointer"
                       style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                         style={{ background: `${item.color}18`, border: `1px solid ${item.color}30` }}>
@@ -401,8 +402,11 @@ export default function ProfilePage() {
                       </div>
                       <p className="font-black text-[11px] text-white" style={T}>{item.label}</p>
                     </div>
-                  </Link>
-                ))}
+                  );
+                  return item.href
+                    ? <Link key={item.label} to={item.href}>{inner}</Link>
+                    : <div key={item.label} onClick={item.onClick}>{inner}</div>;
+                })}
               </div>
             </DarkCard>
           </>
