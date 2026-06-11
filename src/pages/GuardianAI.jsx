@@ -7,14 +7,14 @@ import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-r
 import { toast } from 'sonner';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#2A2438';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
 const GREEN = '#22c55e';
 const WARN  = '#F59E0B';
 const ORANGE= '#F97316';
@@ -383,22 +383,22 @@ export default function GuardianAI() {
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             🤖 AI Hub
           </button>
         </Link>
         <Link to={createPageUrl('JoyceAI')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             🤖 Joyce AI
           </button>
         </Link>
         <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             ✨ Aura AI
           </button>
         </Link>
         <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             🎙️ Live Room
           </button>
         </Link>

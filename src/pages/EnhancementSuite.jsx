@@ -236,7 +236,7 @@ const GLOBAL_STYLES = css`
   }
   .chat-msg-name { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: ${CV.gold}; margin-bottom: 3px; }
   .chat-msg-name.mod { color: ${CV.cyan}; }
-  .chat-msg-name.sub { color: #A855F7; }
+  .chat-msg-name.sub { color: #D4854A; }
   .chat-msg-text { font-family: 'Cormorant Garamond', serif; font-size: 0.92rem; color: ${CV.text}; line-height: 1.4; }
 
   .quick-reactions {

@@ -832,7 +832,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: Tribute Wall ── */}
-        <Card accentColor="#7B5EA7">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🕊️ Tribute Wall</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Honor the legends who built domino culture. Read bios, leave tributes, and register for the memorial gaming event.
@@ -847,7 +847,7 @@ export default function AIHub() {
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
               background: 'rgba(123,94,167,0.2)', border: '1px solid rgba(123,94,167,0.5)',
-              color: '#A07BC4', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+              color: '#C9A84C', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
               Visit Tribute Wall →

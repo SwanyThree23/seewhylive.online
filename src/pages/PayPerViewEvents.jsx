@@ -8,7 +8,7 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
 const BG   = '#080B18';
-const BG2  = '#0D0A14';
+const BG2  = '#0D0A08';
 const GOLD = '#D4AF37';
 const CRIM = '#800020';
 const AMB  = '#D4854A';

@@ -7,12 +7,12 @@ const BG2     = '#0D1022';
 const BG3     = '#13182C';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PURPLE  = '#7B5EA7';
-const PURPLE_L= '#A07BC4';
+const PURPLE  = '#800020';
+const PURPLE_L= '#C9A84C';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const GLOBAL_CSS = `
-@keyframes glowTribute{0%,100%{box-shadow:0 0 8px #7B5EA744;}50%{box-shadow:0 0 28px #7B5EA799;}}
+@keyframes glowTribute{0%,100%{box-shadow:0 0 8px #80002044;}50%{box-shadow:0 0 28px #80002099;}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .glow-tribute{animation:glowTribute 2.5s ease infinite;}
 `;

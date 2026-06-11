@@ -8,7 +8,7 @@ const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const CYAN   = '#D4854A';
-const PURPLE = '#8B44B0';
+const PURPLE = '#D4854A';
 const GREEN  = '#5A7A4A';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
