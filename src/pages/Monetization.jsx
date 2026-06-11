@@ -21,6 +21,7 @@ import StripeConnectButton from '../components/monetization/StripeConnectButton'
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
+import PayPerViewCard from '@/components/monetization/PayPerViewCard';
 import { toast } from 'sonner';
 
 const G       = '#D4AF37';
@@ -519,6 +520,12 @@ export default function MonetizationPage() {
     enabled: !!user?.id,
   });
 
+  const { data: ppvEvents = [] } = useQuery({
+    queryKey: ['ppv-events-monetization', user?.id],
+    queryFn: () => base44.entities.PayPerViewEvent.filter({ creator_id: user.id }, '-event_date', 3),
+    enabled: !!user?.id,
+  });
+
   // Revenue calculations (90/10 split)
   const grossEarnings  = transactions.reduce((s, t) => s + (t.amount || 0), 0);
   const platformFee    = grossEarnings * 0.10;
@@ -710,6 +717,16 @@ export default function MonetizationPage() {
                 <div style={card()}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Pay-Per-View Events</p>
                   <PayPerViewManager roomId={room.id} />
+                </div>
+              )}
+
+              {/* PPV Event Cards */}
+              {ppvEvents.length > 0 && (
+                <div style={card()}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Recent PPV Events</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                    {ppvEvents.map(ev => <PayPerViewCard key={ev.id} event={ev} />)}
+                  </div>
                 </div>
               )}
 
