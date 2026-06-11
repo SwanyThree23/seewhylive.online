@@ -3072,7 +3072,7 @@ process.on('SIGINT', function() {
 module.exports = { app, server, io };
 
 // ZEGO token generation endpoint
-app.get('/api/zego/token', function(req, res) {
+app.post('/api/zego/token', function(req, res) {
   var appId = parseInt(process.env.ZEGO_APP_ID);
   var secret = process.env.ZEGO_SERVER_SECRET;
   var userId = req.query.userId || 'guest_' + Date.now();

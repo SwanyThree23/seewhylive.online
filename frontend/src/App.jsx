@@ -3803,6 +3803,7 @@ function CommunityHubPageV2({ state, dispatch }) {
       <div>
         {tab === 'leaderboards' && <LeaderboardsV2 state={state} dispatch={dispatch} />}
         {tab === 'vods' && <VODLibraryV2 state={state} dispatch={dispatch} />}
+        {tab === 'scoring' && <WashingtonClassicScoring state={state} dispatch={dispatch} />}
         {tab === 'messages' && <DirectMessagesV2 state={state} dispatch={dispatch} />}
       </div>
     </div>
@@ -5366,6 +5367,223 @@ function WashingtonClassicScoring({ state, dispatch }) {
     </div>
   );
 }
+
+// ── ZEGO WEBRTC LIVE ROOM ────────────────────────────────────
+
+function ZegoLiveRoom({ state, dispatch }) {
+  var C = COLORS;
+  var [token, setToken] = React.useState(null);
+  var [joined, setJoined] = React.useState(false);
+  var [camOn, setCamOn] = React.useState(true);
+  var [micOn, setMicOn] = React.useState(true);
+  var [error, setError] = React.useState('');
+  var [loading, setLoading] = React.useState(false);
+  var roomId = (state.liveRoom && state.liveRoom.id) ? state.liveRoom.id : 'room_' + Math.floor(Date.now()/1000);
+  var userId = state.currentUser && state.currentUser.username ? state.currentUser.username : 'guest_' + Math.floor(Date.now()/1000);
+
+  React.useEffect(function() {
+    if (token) return;
+    setLoading(true);
+    fetch('/api/zego/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: userId, roomId: roomId })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (d.token) setToken(d);
+      setLoading(false);
+    }).catch(function(e) {
+      setError('Token fetch failed: ' + e.message);
+      setLoading(false);
+    });
+  }, []);
+
+  React.useEffect(function() {
+    if (!token || joined) return;
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js';
+    script.onload = function() {
+      try {
+        var kitToken = ZegoUIKitPrebuilt.generateKitTokenForProduction(
+          token.appId, token.token, token.roomId, token.userId, userId
+        );
+        var zp = ZegoUIKitPrebuilt.create(kitToken);
+        zp.joinRoom({
+          container: document.getElementById('zego-room-container'),
+          scenario: { mode: ZegoUIKitPrebuilt.LiveStreaming },
+          showPreJoinView: false,
+          onLeaveRoom: function() {
+            dispatch({ type: 'SET_LIVE', payload: false });
+            dispatch({ type: 'SET_PAGE', payload: 'home' });
+          }
+        });
+        setJoined(true);
+      } catch(e) {
+        setError('ZEGO init failed: ' + e.message);
+      }
+    };
+    script.onerror = function() { setError('Failed to load ZEGO SDK'); };
+    document.head.appendChild(script);
+  }, [token]);
+
+  return (
+    <div style={{ background:'#000', minHeight:'100vh', display:'flex', flexDirection:'column' }}>
+      <div style={{ background:'linear-gradient(135deg,#0a0a0a,#1a0000)', padding:'12px 14px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid '+C.burgundy+'44' }}>
+        <div style={{ width:8, height:8, borderRadius:'50%', background:C.red, boxShadow:'0 0 8px '+C.red }}></div>
+        <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.red, letterSpacing:2 }}>ZEGO LIVE</span>
+        <span style={{ fontSize:11, color:C.muted, marginLeft:4 }}>{roomId}</span>
+        <div style={{ flex:1 }}></div>
+        <button onClick={function(){ dispatch({ type:'SET_PAGE', payload:'home' }); }} style={{ background:'none', border:'1px solid #333', borderRadius:8, padding:'4px 10px', color:C.muted, fontSize:11, cursor:'pointer' }}>EXIT</button>
+      </div>
+      {loading && <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:16, letterSpacing:2 }}>CONNECTING...</div>}
+      {error && <div style={{ padding:20, color:C.red, fontSize:12, textAlign:'center' }}>{error}</div>}
+      <div id="zego-room-container" style={{ flex:1, minHeight:400 }}></div>
+      {!joined && !loading && token && (
+        <div style={{ padding:14, display:'flex', gap:10 }}>
+          <div style={{ background:'#111', border:'1px solid #222', borderRadius:12, padding:12, flex:1, fontSize:11, color:C.muted }}>
+            <div style={{ color:C.gold, fontFamily:"'Bebas Neue',sans-serif", fontSize:12, marginBottom:4 }}>ROOM INFO</div>
+            <div>ID: {roomId}</div>
+            <div>User: {userId}</div>
+            <div style={{ color:C.green, marginTop:4 }}>Token ready ✓</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ── STRIPE CONNECT PAYOUT PAGE ───────────────────────────────
+
+function StripePayoutPage({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('earnings');
+  var tabs = [['earnings','💰 EARNINGS'],['connect','🔗 CONNECT'],['history','📋 HISTORY']];
+  var [connecting, setConnecting] = React.useState(false);
+  var [earnings, setEarnings] = React.useState({
+    total: 0, creator: 0, platform: 0, pending: 0
+  });
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+
+  React.useEffect(function() {
+    var user = state.currentUser;
+    if (!user) return;
+    fetch(SUPA_URL + '/rest/v1/streams?creator_id=eq.' + user.id + '&select=tip_total,viewer_count', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (!Array.isArray(d)) return;
+      var total = d.reduce(function(a, s) { return a + (s.tip_total || 0); }, 0);
+      var creator = Math.floor(total * 90 / 100);
+      var platform = total - creator;
+      setEarnings({ total: total, creator: creator, platform: platform, pending: creator });
+    }).catch(function() {});
+  }, [state.currentUser]);
+
+  function handleConnect() {
+    setConnecting(true);
+    var email = state.currentUser && state.currentUser.email ? state.currentUser.email : 'swanythree23@gmail.com';
+    fetch('/api/stripe/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      setConnecting(false);
+      if (d.onboardingUrl) window.open(d.onboardingUrl, '_blank');
+      else if (d.error) dispatch({ type: 'ADD_TOAST', payload: { type: 'error', message: d.error } });
+    }).catch(function(e) {
+      setConnecting(false);
+      dispatch({ type: 'ADD_TOAST', payload: { type: 'error', message: 'Connect failed: ' + e.message } });
+    });
+  }
+
+  var mockHistory = [
+    { id:1, date:'2026-06-14', type:'TIP', amount:500, creator_cut:450, status:'paid' },
+    { id:2, date:'2026-06-12', type:'PPV', amount:999, creator_cut:899, status:'paid' },
+    { id:3, date:'2026-06-11', type:'TIP', amount:200, creator_cut:180, status:'pending' },
+  ];
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#050a00,#0a1400)', padding:'16px 14px 0', borderBottom:'2px solid '+C.green+'44' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
+          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,'+C.green+',#050a00)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid '+C.green+'55' }}>💰</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.green, letterSpacing:2 }}>STRIPE PAYOUTS</div>
+            <div style={{ fontSize:11, color:C.muted }}>90/10 Creator Split · Powered by Stripe Connect</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:2 }}>
+          {tabs.map(function(t){ return (
+            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flex:1, background:'none', border:'none', borderBottom:tab===t[0]?'2px solid '+C.green:'2px solid transparent', padding:'8px 4px', color:tab===t[0]?C.green:C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding:14 }}>
+        {tab === 'earnings' && (
+          <div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:16 }}>
+              {[
+                { label:'TOTAL TIPS', value:'$' + (earnings.total/100).toFixed(2), color:C.gold },
+                { label:'YOUR CUT (90%)', value:'$' + (earnings.creator/100).toFixed(2), color:C.green },
+                { label:'PLATFORM (10%)', value:'$' + (earnings.platform/100).toFixed(2), color:C.muted },
+                { label:'PENDING PAYOUT', value:'$' + (earnings.pending/100).toFixed(2), color:C.cyan },
+              ].map(function(s,i){ return (
+                <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14 }}>
+                  <div style={{ fontSize:9, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", letterSpacing:1, marginBottom:6 }}>{s.label}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:s.color }}>{s.value}</div>
+                </div>
+              );})}
+            </div>
+            <div style={{ background:'rgba(200,240,48,0.06)', border:'1px solid '+C.green+'33', borderRadius:12, padding:14, fontSize:11, color:C.muted, lineHeight:1.7 }}>
+              <span style={{ color:C.green, fontFamily:"'Bebas Neue',sans-serif" }}>90/10 SPLIT ENFORCED</span> — Every tip and PPV payment uses <span style={{ color:C.white, fontFamily:"'DM Mono',monospace" }}>Math.floor(amount * 90 / 100)</span> at the database, API, Stripe, and UI layers. Never rounded up against creators.
+            </div>
+          </div>
+        )}
+        {tab === 'connect' && (
+          <div>
+            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:14, padding:20, marginBottom:16, textAlign:'center' }}>
+              <div style={{ fontSize:40, marginBottom:12 }}>🔗</div>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.white, letterSpacing:1, marginBottom:8 }}>CONNECT YOUR BANK</div>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:20, lineHeight:1.7 }}>Link your Stripe account to receive direct payouts. Your 90% creator share deposits automatically after each stream.</div>
+              <button onClick={handleConnect} style={{ background:connecting?'#333':'linear-gradient(135deg,'+C.green+',#4a9900)', border:'none', borderRadius:12, padding:'14px 28px', color:connecting?C.muted:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:connecting?'default':'pointer', width:'100%' }}>
+                {connecting ? 'CONNECTING...' : 'CONNECT STRIPE ACCOUNT →'}
+              </button>
+            </div>
+            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:10 }}>PAYOUT SCHEDULE</div>
+              {[
+                { label:'Tips', schedule:'Instant after stream ends' },
+                { label:'PPV Revenue', schedule:'T+2 business days' },
+                { label:'Minimum payout', schedule:'$10.00' },
+                { label:'Currency', schedule:'USD' },
+              ].map(function(s,i){ return (
+                <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:i<3?'1px solid #1a1a1a':'none' }}>
+                  <span style={{ fontSize:12, color:C.muted }}>{s.label}</span>
+                  <span style={{ fontSize:12, color:C.white }}>{s.schedule}</span>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {tab === 'history' && (
+          <div>
+            {mockHistory.map(function(h){ return (
+              <div key={h.id} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:14, marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ width:36, height:36, borderRadius:10, background:h.type==='TIP'?C.gold+'22':C.cyan+'22', border:'1px solid '+(h.type==='TIP'?C.gold:C.cyan)+'44', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>{h.type==='TIP'?'💎':'🎬'}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:12, color:C.white }}>{h.type} · {h.date}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>Total: ${(h.amount/100).toFixed(2)} · Your cut: <span style={{ color:C.green }}>${(h.creator_cut/100).toFixed(2)}</span></div>
+                </div>
+                <div style={{ background:h.status==='paid'?C.green+'22':'#333', border:'1px solid '+(h.status==='paid'?C.green+'44':'#444'), borderRadius:6, padding:'4px 8px', fontSize:9, color:h.status==='paid'?C.green:C.muted, fontFamily:"'Bebas Neue',sans-serif" }}>{h.status.toUpperCase()}</div>
+              </div>
+            );})}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -7015,6 +7233,8 @@ function AppV46Router({ state, dispatch }) {
         {page === 'leaderboard' && <EliteLeagueLeaderboard state={state} dispatch={dispatch} />}
         {page === 'vod' && <VODPipelinePage state={state} dispatch={dispatch} />}
         {page === 'scoring' && <WashingtonClassicScoring state={state} dispatch={dispatch} />}
+        {page === 'zegoroom' && <ZegoLiveRoom state={state} dispatch={dispatch} />}
+        {page === 'payouts' && <StripePayoutPage state={state} dispatch={dispatch} />}
       <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} />
     </div>
   );
