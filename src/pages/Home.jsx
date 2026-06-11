@@ -544,8 +544,16 @@ export default function Home() {
     queryFn: function() { return base44.auth.me(); },
   });
 
-  var liveCount = liveRooms.length;
-  var filteredRooms = applyFilter(liveRooms, activeFilter);
+  var { data: onboarding } = useQuery({
+    queryKey: ['onboarding-check', user?.id],
+    queryFn: async function() {
+      var list = await base44.entities.CreatorOnboarding.filter({ user_id: user.id });
+      return list[0] || null;
+    },
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  var showOnboardingBanner = user?.id && onboarding !== undefined && (!onboarding || !onboarding.step_1_profile);
 
   return (
     <div
@@ -574,6 +582,38 @@ export default function Home() {
           />
         )}
       </motion.div>
+
+      {/* ── NEW USER ONBOARDING BANNER ── */}
+      {showOnboardingBanner && (
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-20 mx-4 mt-3 mb-1 rounded-2xl overflow-hidden cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.35) 0%, rgba(212,175,55,0.18) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}
+          onClick={() => { window.location.href = '/Onboarding'; }}
+        >
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' }}>
+              <span style={{ fontSize: 20 }}>📡</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-white text-sm leading-tight"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>
+                Complete Your Creator Setup
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Set up profile, stream key &amp; 90/10 payout in 5 min
+              </p>
+            </div>
+            <div className="px-3 py-1.5 rounded-full font-black text-xs shrink-0"
+              style={{ background: '#D4AF37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+              START →
+            </div>
+          </div>
+          <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #800020, #D4AF37, #6DBF7E, #D4AF37)' }} />
+        </motion.div>
+      )}
 
       {/* ── HERO STRIP ── */}
       <div className="flex items-center justify-between px-4"
