@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -97,8 +99,15 @@ export default function ClipsLibraryPage() {
     <div style={{ minHeight:'100vh', background:C.obs, color:C.white }}>
       {toast && <div style={{ position:'fixed', top:20, right:20, zIndex:999, padding:'10px 18px', background:'rgba(13,6,24,0.97)', border:`1px solid ${C.gold}`, borderRadius:8, fontFamily:'Barlow Condensed', fontSize:13, color:C.gold }}>{toast}</div>}
       <div style={{ padding:'24px 20px', borderBottom:'1px solid rgba(212,175,55,0.12)', background:'rgba(128,0,32,0.06)' }}>
-        <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
-        <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 }}>
+          <div>
+            <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
+            <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
+          </div>
+          <Link to={createPageUrl('VideoPost')} style={{ padding:'8px 16px', borderRadius:8, background:'rgba(212,175,55,0.12)', border:'1px solid rgba(212,175,55,0.3)', color:C.gold, fontFamily:'Barlow Condensed', fontSize:12, fontWeight:700, letterSpacing:1, textDecoration:'none', textTransform:'uppercase' }}>
+            📤 Post Video
+          </Link>
+        </div>
       </div>
       {/* Filters */}
       <div style={{ padding:'12px 20px', display:'flex', gap:8, flexWrap:'wrap', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>

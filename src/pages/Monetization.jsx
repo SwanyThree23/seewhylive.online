@@ -23,6 +23,8 @@ import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import PayPerViewCard from '@/components/monetization/PayPerViewCard';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
 const G       = '#D4AF37';
@@ -779,6 +781,16 @@ export default function MonetizationPage() {
                 </div>
               </div>
             </motion.div>
+          )}
+
+          {/* ─── SUBSCRIPTIONS MANAGEMENT LINK ─── */}
+          {tab === 'subscribers' && (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 16px 16px' }}>
+              <Link to={createPageUrl('CreatorSubscriptions')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 12, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', textDecoration: 'none', textTransform: 'uppercase' }}>
+                ⭐ Manage Subscription Tiers →
+              </Link>
+            </div>
           )}
 
           {/* ─── PAYOUTS TAB ─── */}
