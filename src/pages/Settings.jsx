@@ -151,6 +151,9 @@ export default function SettingsPage() {
     { label: 'Newsletter Hub',    href: 'NewsletterHub' },
     { label: 'Social Expo',       href: 'SocialExpo' },
     { label: 'Multi-Platform+',   href: 'MultiPlatformIntegration' },
+    { label: 'Voice AI Settings', href: 'VoiceAISettings' },
+    { label: 'Advanced Analytics',href: 'AdvancedAnalytics' },
+    { label: 'Stream Analytics',  href: 'StreamAnalytics' },
   ];
 
   return (

@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
 import AggregatedChat from '../components/live/AggregatedChat';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
 import ViewerRail from '../components/watchparty/ViewerRail';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ShareButtons from '../components/shared/ShareButtons';
@@ -1046,6 +1048,9 @@ export default function WatchPartyPage() {
                   <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+                {party?.host_id && (
+                  <SuperChatBar roomId={partyId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+                )}
                 {members.length < 10 && (
                   <InviteCard partyUrl={window.location.href} />
                 )}
@@ -1078,6 +1083,7 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'analytics' && (
               <div className="space-y-3">
+                {partyId && <StreamGoals roomId={partyId} isHost={isHost} />}
                 <WatchPartyAnalytics
                   party={party}
                   members={members}
