@@ -97,7 +97,7 @@ function FanbaseRoomCard({ room }) {
   var categoryColor = {
     Music: '#C0392B', Gaming: '#D4AF37', Tech: '#D4AF37',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
-    Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
+    Lifestyle: '#D4854A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
   var tag = room.tags && room.tags[0];
   var tagColor = tag ? (categoryColor[tag] || '#D4AF37') : '#D4AF37';

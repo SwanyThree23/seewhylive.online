@@ -46,7 +46,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
