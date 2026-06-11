@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import {
   LineChart, Line, BarChart, Bar,
   AreaChart, Area, PieChart, Pie, Cell,
@@ -333,6 +335,12 @@ export default function StreamAnalytics() {
               </ResponsiveContainer>
             </div>
           </ChartCard>
+        </div>
+
+        {/* Health + broadcast analytics panels */}
+        <div className="mt-6 space-y-4">
+          <StreamHealthDashboard />
+          <BroadcastAnalyticsDashboard />
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -353,6 +355,12 @@ export default function AnalyticsPage() {
             </DarkCard>
           </div>
         )}
+
+        {/* Revenue + Stream dashboards */}
+        <div className="mt-4 space-y-4">
+          <RevenueDashboard />
+          <StreamAnalyticsDashboard />
+        </div>
       </div>
     </div>
   );
