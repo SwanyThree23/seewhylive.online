@@ -5063,8 +5063,48 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
 //           Founding Sync + WA Classic Live Scoring
 // ============================================================
 
+// ── LIVE VIEWER COUNTER HOOK ──────────────────────────────────
 
+function useLiveViewerCount(streamId) {
+  var [count, setCount] = React.useState(0);
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+  React.useEffect(function() {
+    if (!streamId) return;
+    function fetchCount() {
+      fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + streamId + '&select=viewer_count', {
+        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d && d[0]) setCount(d[0].viewer_count || 0);
+      }).catch(function() {});
+    }
+    fetchCount();
+    var interval = setInterval(fetchCount, 5000);
+    return function() { clearInterval(interval); };
+  }, [streamId]);
+  return count;
+}
 
+// ── VOD PIPELINE PAGE ─────────────────────────────────────────
+
+function VODPipelinePage({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('library');
+  var tabs = [['library','🎬 LIBRARY'],['record','⏺ RECORD'],['clips','✂️ CLIPS']];
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+  var [vods, setVods] = React.useState([]);
+  var [loading, setLoading] = React.useState(true);
+  var [recording, setRecording] = React.useState(false);
+
+  React.useEffect(function() {
+    fetch(SUPA_URL + '/rest/v1/vods?select=*&order=created_at.desc&limit=20', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      setVods(Array.isArray(d) ? d : []);
+      setLoading(false);
+    }).catch(function() { setLoading(false); });
+  }, []);
 
   var mockVods = [
     { id:1, title:'Washington Classic Semi-Finals', duration_seconds:3840, view_count:1204, created_at:'2026-06-14', is_public:true, thumbnail_url:null },
@@ -5164,8 +5204,44 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
   );
 }
 
+// ── FOUNDING MEMBER SYNC UTILITY ─────────────────────────────
 
+function useFoundingMemberSync(code, userId) {
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
 
+  React.useEffect(function() {
+    if (!code) return;
+    // Validate code against Supabase
+    fetch(SUPA_URL + '/rest/v1/invite_codes?code=eq.' + encodeURIComponent(code) + '&select=id,used,use_count,max_uses', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (!d || !d[0]) return;
+      var inv = d[0];
+      if (inv.used && inv.use_count >= inv.max_uses) return;
+      // Mark code as used
+      fetch(SUPA_URL + '/rest/v1/invite_codes?id=eq.' + inv.id, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ used: true, used_at: new Date().toISOString(), use_count: (inv.use_count||0) + 1 })
+      }).catch(function() {});
+    }).catch(function() {});
+  }, [code]);
+}
+
+// ── WASHINGTON CLASSIC LIVE SCORING ───────────────────────────
+
+function WashingtonClassicScoring({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('live');
+  var tabs = [['live','🔴 LIVE'],['bracket','🏆 BRACKET'],['stats','📊 STATS']];
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+  var [match, setMatch] = React.useState({
+    p1: { name:'SwanyThree23', seed:1, score:3, color:C.gold },
+    p2: { name:'BigBoneEarl', seed:4, score:2, color:C.cyan },
+    round:'SEMI-FINAL', bestOf:7, status:'live', location:'Des Moines, WA'
+  });
   var [updating, setUpdating] = React.useState(false);
   var [lastUpdate, setLastUpdate] = React.useState('');
 
@@ -5510,351 +5586,26 @@ function StripePayoutPage({ state, dispatch }) {
 }
 
 
-// ============================================================
-// BATCH Q — Live Viewer Counter + VOD Pipeline +
-//           Founding Sync + WA Classic Live Scoring
-// ============================================================
-
-// ── LIVE VIEWER COUNTER HOOK ──────────────────────────────────
-
-function useLiveViewerCount(streamId) {
-  var [count, setCount] = React.useState(0);
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-  React.useEffect(function() {
-    if (!streamId) return;
-    function fetchCount() {
-      fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + streamId + '&select=viewer_count', {
-        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-      }).then(function(r) { return r.json(); }).then(function(d) {
-        if (d && d[0]) setCount(d[0].viewer_count || 0);
-      }).catch(function() {});
-    }
-    fetchCount();
-    var interval = setInterval(fetchCount, 5000);
-    return function() { clearInterval(interval); };
-  }, [streamId]);
-  return count;
-}
-
-// ── VOD PIPELINE PAGE ─────────────────────────────────────────
-
-function VODPipelinePage({ state, dispatch }) {
-  var C = COLORS;
-  var [tab, setTab] = React.useState('library');
-  var tabs = [['library','🎬 LIBRARY'],['record','⏺ RECORD'],['clips','✂️ CLIPS']];
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-  var [vods, setVods] = React.useState([]);
-  var [loading, setLoading] = React.useState(true);
-  var [recording, setRecording] = React.useState(false);
-
-  React.useEffect(function() {
-    fetch(SUPA_URL + '/rest/v1/vods?select=*&order=created_at.desc&limit=20', {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-    }).then(function(r) { return r.json(); }).then(function(d) {
-      setVods(Array.isArray(d) ? d : []);
-      setLoading(false);
-    }).catch(function() { setLoading(false); });
-  }, []);
-
-  var mockVods = [
-    { id:1, title:'Washington Classic Semi-Finals', duration_seconds:3840, view_count:1204, created_at:'2026-06-14', is_public:true, thumbnail_url:null },
-    { id:2, title:'PK Battle Night — SwanyThree23 vs CaliBonesOG', duration_seconds:2160, view_count:892, created_at:'2026-06-12', is_public:true, thumbnail_url:null },
-    { id:3, title:'VibeNBones Sunday Session', duration_seconds:5400, view_count:486, created_at:'2026-06-11', is_public:true, thumbnail_url:null },
-  ];
-
-  function fmtDur(s) {
-    var h = Math.floor(s/3600);
-    var m = Math.floor((s%3600)/60);
-    var sec = s%60;
-    if (h > 0) return h + 'h ' + m + 'm';
-    return m + ':' + (sec < 10 ? '0' : '') + sec;
-  }
-
-  var displayVods = vods.length > 0 ? vods : mockVods;
-
-  return (
-    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
-      <div style={{ background:'linear-gradient(135deg,#050a20,#000510)', padding:'16px 14px 0', borderBottom:'1px solid '+C.cyan+'33' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
-          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,'+C.cyan+',#050a20)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid '+C.cyan+'55' }}>🎬</div>
-          <div style={{ flex:1 }}>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.cyan, letterSpacing:2 }}>VOD PIPELINE</div>
-            <div style={{ fontSize:11, color:C.muted }}>{displayVods.length} recordings · Supabase Storage</div>
-          </div>
-          <button onClick={function(){ window.open('https://app.seewhylive.online/VODLibrary','_blank'); }} style={{ background:C.cyan+'22', border:'1px solid '+C.cyan+'44', borderRadius:10, padding:'8px 12px', color:C.cyan, fontFamily:"'Bebas Neue',sans-serif", fontSize:11, cursor:'pointer' }}>APP →</button>
-        </div>
-        <div style={{ display:'flex', gap:2 }}>
-          {tabs.map(function(t){ return (
-            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flex:1, background:'none', border:'none', borderBottom:tab===t[0]?'2px solid '+C.cyan:'2px solid transparent', padding:'8px 4px', color:tab===t[0]?C.cyan:C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer' }}>{t[1]}</button>
-          );})}
-        </div>
-      </div>
-      <div style={{ padding:14 }}>
-        {tab === 'library' && (
-          <div>
-            {loading && <div style={{ textAlign:'center', padding:40, color:C.muted }}>Loading...</div>}
-            {displayVods.map(function(v,i){ return (
-              <div key={v.id||i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:14, overflow:'hidden', marginBottom:12 }}>
-                <div style={{ height:80, background:'linear-gradient(135deg,#0a0a1a,#1a0a0a)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
-                  <div style={{ fontSize:32 }}>🎬</div>
-                  <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.8)', borderRadius:4, padding:'2px 6px', fontSize:10, color:C.white, fontFamily:"'Space Mono',monospace" }}>{fmtDur(v.duration_seconds||0)}</div>
-                  {v.is_public && <div style={{ position:'absolute', top:8, left:8, background:C.green+'cc', borderRadius:4, padding:'2px 6px', fontSize:9, color:'#000', fontFamily:"'Bebas Neue',sans-serif" }}>PUBLIC</div>}
-                </div>
-                <div style={{ padding:12 }}>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white, letterSpacing:1, marginBottom:4 }}>{v.title}</div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                    <span style={{ fontSize:10, color:C.muted }}>{v.view_count||0} views · {v.created_at ? v.created_at.toString().substring(0,10) : ''}</span>
-                    <button style={{ background:C.cyan+'22', border:'1px solid '+C.cyan+'44', borderRadius:6, padding:'4px 10px', color:C.cyan, fontFamily:"'Bebas Neue',sans-serif", fontSize:10, cursor:'pointer' }}>PLAY</button>
-                  </div>
-                </div>
-              </div>
-            );})}
-          </div>
-        )}
-        {tab === 'record' && (
-          <div>
-            <div style={{ background:'rgba(0,200,200,0.06)', border:'1px solid '+C.cyan+'22', borderRadius:12, padding:14, marginBottom:16, fontSize:11, color:C.muted, lineHeight:1.7 }}>
-              Streams auto-record when you go live. Recordings save to Supabase Storage and appear in the VOD Library on <span style={{ color:C.cyan }}>app.seewhylive.online/VODLibrary</span>
-            </div>
-            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:12 }}>
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:1, marginBottom:10 }}>RECORDING STATUS</div>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={{ width:10, height:10, borderRadius:'50%', background:recording?C.red:C.muted, boxShadow:recording?'0 0 8px '+C.red:'' }}></div>
-                <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:recording?C.red:C.muted }}>{recording?'RECORDING':'STANDBY'}</span>
-              </div>
-            </div>
-            {[
-              { label:'Auto-record streams', sub:'Save all streams to VOD library', on:true },
-              { label:'Auto-generate clips', sub:'AI clips best 60s moments', on:false },
-              { label:'Auto-publish VODs', sub:'Make recordings public immediately', on:true },
-              { label:'Notify followers', sub:'Alert followers when VOD is ready', on:true },
-            ].map(function(s,i){ return (
-              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:14, marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ flex:1 }}>
-                  <div style={{ color:C.white, fontSize:13 }}>{s.label}</div>
-                  <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{s.sub}</div>
-                </div>
-                <div style={{ width:44, height:24, borderRadius:12, background:s.on?C.cyan+'33':'#2a2a2a', border:'1px solid '+(s.on?C.cyan+'55':'#333'), position:'relative', flexShrink:0 }}>
-                  <div style={{ position:'absolute', top:3, left:s.on?22:3, width:18, height:18, borderRadius:'50%', background:s.on?C.cyan:'#555' }}></div>
-                </div>
-              </div>
-            );})}
-          </div>
-        )}
-        {tab === 'clips' && (
-          <div style={{ textAlign:'center', padding:40 }}>
-            <div style={{ fontSize:40, marginBottom:12 }}>✂️</div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.muted, letterSpacing:1 }}>CLIP MANAGER</div>
-            <div style={{ fontSize:11, color:C.muted, marginTop:8, marginBottom:20 }}>Create and share highlight clips from your streams</div>
-            <button onClick={function(){ window.open('https://app.seewhylive.online/ClipsLibrary','_blank'); }} style={{ background:C.cyan, border:'none', borderRadius:12, padding:'14px 28px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>OPEN CLIPS LIBRARY →</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── FOUNDING MEMBER SYNC UTILITY ─────────────────────────────
-
-function useFoundingMemberSync(code, userId) {
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-
-  React.useEffect(function() {
-    if (!code) return;
-    // Validate code against Supabase
-    fetch(SUPA_URL + '/rest/v1/invite_codes?code=eq.' + encodeURIComponent(code) + '&select=id,used,use_count,max_uses', {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-    }).then(function(r) { return r.json(); }).then(function(d) {
-      if (!d || !d[0]) return;
-      var inv = d[0];
-      if (inv.used && inv.use_count >= inv.max_uses) return;
-      // Mark code as used
-      fetch(SUPA_URL + '/rest/v1/invite_codes?id=eq.' + inv.id, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ used: true, used_at: new Date().toISOString(), use_count: (inv.use_count||0) + 1 })
-      }).catch(function() {});
-    }).catch(function() {});
-  }, [code]);
-}
-
-// ── WASHINGTON CLASSIC LIVE SCORING ───────────────────────────
-
-function WashingtonClassicScoring({ state, dispatch }) {
-  var C = COLORS;
-  var [tab, setTab] = React.useState('live');
-  var tabs = [['live','🔴 LIVE'],['bracket','🏆 BRACKET'],['stats','📊 STATS']];
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-  var [match, setMatch] = React.useState({
-    p1: { name:'SwanyThree23', seed:1, score:3, color:C.gold },
-    p2: { name:'BigBoneEarl', seed:4, score:2, color:C.cyan },
-    round:'SEMI-FINAL', bestOf:7, status:'live', location:'Des Moines, WA'
-  });
-  var [updating, setUpdating] = React.useState(false);
-  var [lastUpdate, setLastUpdate] = React.useState('');
-
-  function addPoint(player) {
-    setMatch(function(m) {
-      var nm = Object.assign({}, m, {
-        p1: Object.assign({}, m.p1),
-        p2: Object.assign({}, m.p2)
-      });
-      if (player === 1) nm.p1.score += 1;
-      else nm.p2.score += 1;
-      var needed = Math.ceil(nm.bestOf / 2);
-      if (nm.p1.score >= needed) nm.status = 'p1_wins';
-      if (nm.p2.score >= needed) nm.status = 'p2_wins';
-      return nm;
-    });
-    setLastUpdate(new Date().toLocaleTimeString());
-    // Sync to Supabase pk_battles table
-    fetch(SUPA_URL + '/rest/v1/pk_battles', {
-      method: 'POST',
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({
-        challenger_username: match.p1.name,
-        opponent_username: match.p2.name,
-        status: 'active',
-        round: match.round
-      })
-    }).catch(function() {});
-  }
-
-  var needed = Math.ceil(match.bestOf / 2);
-  var isLive = match.status === 'live';
-
-  return (
-    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
-      <div style={{ background:'linear-gradient(135deg,#0a0800,#150d00)', padding:'16px 14px 0', borderBottom:'2px solid '+C.gold+'55' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-          <div style={{ fontSize:22 }}>🏆</div>
-          <div style={{ flex:1 }}>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:C.gold, letterSpacing:2 }}>WASHINGTON CLASSIC 2026</div>
-            <div style={{ fontSize:10, color:C.muted }}>{match.location} · SeeWhy LIVE · {match.round}</div>
-          </div>
-          {isLive && <div style={{ display:'flex', alignItems:'center', gap:6, background:C.red+'22', border:'1px solid '+C.red+'44', borderRadius:8, padding:'6px 10px' }}>
-            <div style={{ width:7, height:7, borderRadius:'50%', background:C.red, boxShadow:'0 0 6px '+C.red }}></div>
-            <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.red }}>LIVE</span>
-          </div>}
-        </div>
-        <div style={{ display:'flex', gap:2 }}>
-          {tabs.map(function(t){ return (
-            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flex:1, background:'none', border:'none', borderBottom:tab===t[0]?'2px solid '+C.gold:'2px solid transparent', padding:'8px 4px', color:tab===t[0]?C.gold:C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer' }}>{t[1]}</button>
-          );})}
-        </div>
-      </div>
-
-      <div style={{ padding:14 }}>
-        {tab === 'live' && (
-          <div>
-            <div style={{ background:isLive?'rgba(255,50,50,0.06)':'rgba(212,175,55,0.06)', border:'2px solid '+(isLive?C.red:C.gold)+'44', borderRadius:16, padding:20, marginBottom:16 }}>
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:2, textAlign:'center', marginBottom:16 }}>BEST OF {match.bestOf} · FIRST TO {needed}</div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr auto 1fr', gap:16, alignItems:'center' }}>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ width:56, height:56, borderRadius:14, background:match.p1.color+'22', border:'2px solid '+match.p1.color+'55', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:match.p1.color, margin:'0 auto 10px' }}>{match.p1.name[0]}</div>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white, letterSpacing:1 }}>{match.p1.name}</div>
-                  <div style={{ fontSize:10, color:C.muted }}>Seed #{match.p1.seed}</div>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:48, color:match.p1.color, lineHeight:1, marginTop:8 }}>{match.p1.score}</div>
-                </div>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:C.muted }}>VS</div>
-                </div>
-                <div style={{ textAlign:'center' }}>
-                  <div style={{ width:56, height:56, borderRadius:14, background:match.p2.color+'22', border:'2px solid '+match.p2.color+'55', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:match.p2.color, margin:'0 auto 10px' }}>{match.p2.name[0]}</div>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white, letterSpacing:1 }}>{match.p2.name}</div>
-                  <div style={{ fontSize:10, color:C.muted }}>Seed #{match.p2.seed}</div>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:48, color:match.p2.color, lineHeight:1, marginTop:8 }}>{match.p2.score}</div>
-                </div>
-              </div>
-              {isLive && (
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:20 }}>
-                  <button onClick={function(){ addPoint(1); }} style={{ background:match.p1.color+'22', border:'2px solid '+match.p1.color+'44', borderRadius:12, padding:14, color:match.p1.color, fontFamily:"'Bebas Neue',sans-serif", fontSize:14, cursor:'pointer' }}>+1 {match.p1.name.split('').slice(0,8).join('')}</button>
-                  <button onClick={function(){ addPoint(2); }} style={{ background:match.p2.color+'22', border:'2px solid '+match.p2.color+'44', borderRadius:12, padding:14, color:match.p2.color, fontFamily:"'Bebas Neue',sans-serif", fontSize:14, cursor:'pointer' }}>+1 {match.p2.name.split('').slice(0,8).join('')}</button>
-                </div>
-              )}
-              {!isLive && (
-                <div style={{ textAlign:'center', marginTop:16 }}>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:C.gold, letterSpacing:2 }}>
-                    {match.status === 'p1_wins' ? match.p1.name + ' WINS!' : match.p2.name + ' WINS!'}
-                  </div>
-                </div>
-              )}
-            </div>
-            {lastUpdate && <div style={{ textAlign:'center', fontSize:10, color:C.muted }}>Last update: {lastUpdate}</div>}
-            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginTop:12 }}>
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:10 }}>MATCH CONTROLS</div>
-              <div style={{ display:'flex', gap:8 }}>
-                <button onClick={function(){ setMatch(function(m){ return Object.assign({},m,{p1:Object.assign({},m.p1,{score:0}),p2:Object.assign({},m.p2,{score:0}),status:'live'}); }); }} style={{ flex:1, background:'none', border:'1px solid #333', borderRadius:8, padding:10, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:12, cursor:'pointer' }}>RESET</button>
-                <button onClick={function(){ setMatch(function(m){ return Object.assign({},m,{status:m.status==='live'?'paused':'live'}); }); }} style={{ flex:1, background:C.gold+'22', border:'1px solid '+C.gold+'44', borderRadius:8, padding:10, color:C.gold, fontFamily:"'Bebas Neue',sans-serif", fontSize:12, cursor:'pointer' }}>{match.status==='paused'?'RESUME':'PAUSE'}</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {tab === 'bracket' && (
-          <div style={{ textAlign:'center', padding:20 }}>
-            <button onClick={function(){ dispatch({ type:'SET_PAGE', payload:'bracket' }); }} style={{ background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:'14px 28px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>VIEW FULL BRACKET →</button>
-          </div>
-        )}
-        {tab === 'stats' && (
-          <div>
-            {[
-              { label:'Total Matches', value:'7', color:C.gold },
-              { label:'Completed', value:'4', color:C.green },
-              { label:'Live Now', value:'1', color:C.red },
-              { label:'Upcoming', value:'2', color:C.cyan },
-              { label:'Total Viewers', value:'4,882', color:'#9B59B6' },
-              { label:'Prize Pool', value:'$500', color:C.gold },
-            ].map(function(s,i){ return (
-              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:14, marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <span style={{ fontSize:13, color:C.muted }}>{s.label}</span>
-                <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:s.color }}>{s.value}</span>
-              </div>
-            );})}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// BATCH R — Stripe Connect + Push Notifications +
-//           WA Classic Registration
-// ============================================================
-
-// ── STRIPE CONNECT DASHBOARD ──────────────────────────────────
+// ── STRIPE CONNECT DASHBOARD ─────────────────────────────────
 
 function StripeConnectDashboard({ state, dispatch }) {
   var C = COLORS;
   var [tab, setTab] = React.useState('connect');
   var tabs = [['connect','💳 CONNECT'],['payouts','💰 PAYOUTS'],['history','📋 HISTORY']];
   var [connected, setConnected] = React.useState(false);
-  var [stripeId, setStripeId] = React.useState('');
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-
   var payoutHistory = [
     { date:'Jun 9', amount:'$142.80', streams:3, gems:2856, status:'paid' },
     { date:'Jun 2', amount:'$89.10', streams:2, gems:1782, status:'paid' },
     { date:'May 26', amount:'$203.40', streams:5, gems:4068, status:'paid' },
-    { date:'May 19', amount:'$67.50', streams:1, gems:1350, status:'paid' },
   ];
-
   return (
     <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
-      <div style={{ background:'linear-gradient(135deg,#050a05,#0a1500)', padding:'16px 14px 0', borderBottom:'1px solid #00c85344' }}>
+      <div style={{ background:'linear-gradient(135deg,#050a05,#0a1500)', padding:'16px 14px 0', borderBottom:'1px solid #635BFF44' }}>
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
           <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,#635BFF,#050a05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid #635BFF55' }}>💳</div>
           <div style={{ flex:1 }}>
             <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:'#635BFF', letterSpacing:2 }}>STRIPE CONNECT</div>
-            <div style={{ fontSize:11, color:C.muted }}>Creator keeps 90% — 10% platform fee · Always</div>
-          </div>
-          <div style={{ background:connected?C.green+'22':C.red+'22', border:'1px solid '+(connected?C.green:C.red)+'44', borderRadius:8, padding:'6px 12px' }}>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:connected?C.green:C.red }}>{connected?'CONNECTED':'NOT CONNECTED'}</div>
+            <div style={{ fontSize:11, color:C.muted }}>Creator keeps 90% — 10% platform fee</div>
           </div>
         </div>
         <div style={{ display:'flex', gap:2 }}>
@@ -5869,32 +5620,22 @@ function StripeConnectDashboard({ state, dispatch }) {
             <div style={{ background:'rgba(99,91,255,0.08)', border:'1px solid #635BFF33', borderRadius:14, padding:20, marginBottom:16, textAlign:'center' }}>
               <div style={{ fontSize:40, marginBottom:12 }}>💳</div>
               <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:'#635BFF', letterSpacing:2, marginBottom:8 }}>DIRECT PAYOUTS VIA STRIPE</div>
-              <div style={{ fontSize:12, color:C.muted, lineHeight:1.7, marginBottom:16 }}>Connect your Stripe account to receive automatic weekly payouts. Every Monday, 90% of your gem revenue is deposited directly to your bank.</div>
-              <div style={{ display:'flex', justifyContent:'center', gap:16, marginBottom:20 }}>
+              <div style={{ display:'flex', justifyContent:'center', gap:24, marginBottom:20 }}>
                 <div style={{ textAlign:'center' }}>
                   <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.green }}>90%</div>
                   <div style={{ fontSize:10, color:C.muted }}>CREATOR</div>
                 </div>
-                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.muted, alignSelf:'center' }}>|</div>
                 <div style={{ textAlign:'center' }}>
                   <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold }}>10%</div>
                   <div style={{ fontSize:10, color:C.muted }}>PLATFORM</div>
                 </div>
               </div>
-              {!connected ? (
-                <button onClick={function(){ window.open('https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_SeeWhyLIVE&scope=read_write&redirect_uri=https://app.seewhylive.online/stripe-callback','_blank'); }} style={{ background:'linear-gradient(135deg,#635BFF,#4B44CC)', border:'none', borderRadius:12, padding:'16px 32px', color:C.white, fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer', letterSpacing:1, width:'100%' }}>CONNECT STRIPE ACCOUNT →</button>
-              ) : (
-                <div style={{ background:C.green+'22', border:'1px solid '+C.green+'44', borderRadius:12, padding:14 }}>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.green }}>✓ STRIPE CONNECTED</div>
-                  <div style={{ fontSize:11, color:C.muted, marginTop:4 }}>{stripeId}</div>
-                </div>
-              )}
+              <button onClick={function(){ window.open('https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_SeeWhyLIVE&scope=read_write','_blank'); }} style={{ background:'linear-gradient(135deg,#635BFF,#4B44CC)', border:'none', borderRadius:12, padding:'16px 32px', color:C.white, fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer', width:'100%' }}>CONNECT STRIPE ACCOUNT</button>
             </div>
             {[
               { icon:'📅', label:'Payout Schedule', value:'Every Monday' },
               { icon:'💰', label:'Minimum Payout', value:'$10.00' },
               { icon:'🏦', label:'Payout Method', value:'Direct bank deposit' },
-              { icon:'⚡', label:'Processing Time', value:'2-3 business days' },
             ].map(function(item,i){ return (
               <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:14, marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
                 <span style={{ fontSize:20 }}>{item.icon}</span>
@@ -5907,27 +5648,9 @@ function StripeConnectDashboard({ state, dispatch }) {
         {tab === 'payouts' && (
           <div>
             <div style={{ background:'rgba(16,185,129,0.08)', border:'1px solid '+C.green+'33', borderRadius:14, padding:16, marginBottom:16 }}>
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:1, marginBottom:4 }}>TOTAL EARNED (ALL TIME)</div>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:1, marginBottom:4 }}>TOTAL EARNED</div>
               <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:36, color:C.green }}>$502.80</div>
-              <div style={{ fontSize:11, color:C.muted }}>90% creator share · 10% platform fee deducted</div>
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:16 }}>
-              <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, textAlign:'center' }}>
-                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:C.gold }}>$142.80</div>
-                <div style={{ fontSize:9, color:C.muted }}>THIS WEEK</div>
-              </div>
-              <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, textAlign:'center' }}>
-                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:C.cyan }}>10,056</div>
-                <div style={{ fontSize:9, color:C.muted }}>TOTAL GEMS</div>
-              </div>
-            </div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:1, marginBottom:10 }}>NEXT PAYOUT</div>
-            <div style={{ background:'rgba(212,175,55,0.08)', border:'1px solid '+C.gold+'33', borderRadius:12, padding:14, marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <div>
-                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:C.gold }}>Monday, Jun 16</div>
-                <div style={{ fontSize:11, color:C.muted }}>Estimated payout</div>
-              </div>
-              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:C.green }}>$142.80</div>
+              <div style={{ fontSize:11, color:C.muted }}>90% creator share</div>
             </div>
           </div>
         )}
@@ -5935,15 +5658,12 @@ function StripeConnectDashboard({ state, dispatch }) {
           <div>
             {payoutHistory.map(function(p,i){ return (
               <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:40, height:40, borderRadius:10, background:C.green+'22', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>💰</div>
+                <div style={{ width:40, height:40, borderRadius:10, background:C.green+'22', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>💰</div>
                 <div style={{ flex:1 }}>
                   <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white }}>{p.date}</div>
-                  <div style={{ fontSize:10, color:C.muted }}>{p.streams} streams · {p.gems.toLocaleString()} gems</div>
+                  <div style={{ fontSize:10, color:C.muted }}>{p.streams} streams</div>
                 </div>
-                <div style={{ textAlign:'right' }}>
-                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:C.green }}>{p.amount}</div>
-                  <div style={{ fontSize:9, color:C.green, fontFamily:"'Bebas Neue',sans-serif" }}>{p.status.toUpperCase()}</div>
-                </div>
+                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:C.green }}>{p.amount}</div>
               </div>
             );})}
           </div>
@@ -5953,26 +5673,18 @@ function StripeConnectDashboard({ state, dispatch }) {
   );
 }
 
-// ── PUSH NOTIFICATIONS MANAGER ────────────────────────────────
+// ── PUSH NOTIFICATIONS MANAGER ───────────────────────────────
 
 function PushNotificationsManager({ state, dispatch }) {
   var C = COLORS;
   var [permission, setPermission] = React.useState('default');
   var [settings, setSettings] = React.useState({
-    streamAlerts: true,
-    followAlerts: true,
-    classicAlerts: true,
-    gemMilestones: true,
-    pkBattles: false,
-    payouts: true,
+    streamAlerts: true, followAlerts: true, classicAlerts: true,
+    gemMilestones: true, pkBattles: false, payouts: true,
   });
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
 
   React.useEffect(function() {
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-    }
+    if ('Notification' in window) setPermission(Notification.permission);
   }, []);
 
   function requestPermission() {
@@ -5980,21 +5692,9 @@ function PushNotificationsManager({ state, dispatch }) {
     Notification.requestPermission().then(function(perm) {
       setPermission(perm);
       if (perm === 'granted') {
-        new Notification('SeeWhy LIVE', {
-          body: 'Notifications enabled! You'll be notified when creators go live. 🎬',
-          icon: '/favicon.svg'
-        });
+        new Notification('SeeWhy LIVE', { body: 'Notifications enabled!', icon: '/favicon.svg' });
       }
     });
-  }
-
-  function testNotification() {
-    if (permission === 'granted') {
-      new Notification('SeeWhy LIVE', {
-        body: 'Notifications are working! 🎬 Washington Classic is June 21.',
-        icon: '/favicon.svg'
-      });
-    }
   }
 
   function toggle(key) {
@@ -6002,11 +5702,11 @@ function PushNotificationsManager({ state, dispatch }) {
   }
 
   var notifSettings = [
-    { key:'streamAlerts', label:'Stream Alerts', sub:'When creators you follow go live', icon:'🔴' },
-    { key:'followAlerts', label:'New Followers', sub:'When someone follows your stream', icon:'👥' },
-    { key:'classicAlerts', label:'Washington Classic', sub:'Match updates and score changes', icon:'🏆' },
-    { key:'gemMilestones', label:'Gem Milestones', sub:'100, 500, 1000 gem achievements', icon:'💎' },
-    { key:'pkBattles', label:'PK Battle Challenges', sub:'When someone challenges you', icon:'⚔️' },
+    { key:'streamAlerts', label:'Stream Alerts', sub:'When creators go live', icon:'🔴' },
+    { key:'followAlerts', label:'New Followers', sub:'When someone follows you', icon:'👥' },
+    { key:'classicAlerts', label:'Washington Classic', sub:'Match updates', icon:'🏆' },
+    { key:'gemMilestones', label:'Gem Milestones', sub:'Achievement alerts', icon:'💎' },
+    { key:'pkBattles', label:'PK Battle Challenges', sub:'When challenged', icon:'⚔️' },
     { key:'payouts', label:'Payout Notifications', sub:'Weekly payout confirmations', icon:'💰' },
   ];
 
@@ -6017,7 +5717,7 @@ function PushNotificationsManager({ state, dispatch }) {
           <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,'+C.cyan+',#050a15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid '+C.cyan+'55' }}>🔔</div>
           <div style={{ flex:1 }}>
             <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.cyan, letterSpacing:2 }}>NOTIFICATIONS</div>
-            <div style={{ fontSize:11, color:C.muted }}>Status: {permission === 'granted' ? '✅ Enabled' : permission === 'denied' ? '❌ Blocked' : '⚠️ Not set'}</div>
+            <div style={{ fontSize:11, color:C.muted }}>Status: {permission === 'granted' ? 'Enabled' : permission === 'denied' ? 'Blocked' : 'Not set'}</div>
           </div>
         </div>
       </div>
@@ -6025,13 +5725,9 @@ function PushNotificationsManager({ state, dispatch }) {
         {permission !== 'granted' && (
           <div style={{ background:'rgba(212,175,55,0.08)', border:'1px solid '+C.gold+'33', borderRadius:14, padding:16, marginBottom:16, textAlign:'center' }}>
             <div style={{ fontSize:32, marginBottom:8 }}>🔔</div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold, letterSpacing:1, marginBottom:8 }}>{permission === 'denied' ? 'NOTIFICATIONS BLOCKED' : 'ENABLE NOTIFICATIONS'}</div>
-            <div style={{ fontSize:11, color:C.muted, marginBottom:14, lineHeight:1.6 }}>{permission === 'denied' ? 'Enable in your browser settings to receive stream alerts.' : 'Get notified when your favorite creators go live and Washington Classic match updates.'}</div>
-            {permission !== 'denied' && <button onClick={requestPermission} style={{ background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:10, padding:'12px 28px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>ENABLE NOTIFICATIONS</button>}
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold, marginBottom:8 }}>{permission === 'denied' ? 'NOTIFICATIONS BLOCKED' : 'ENABLE NOTIFICATIONS'}</div>
+            {permission !== 'denied' && <button onClick={requestPermission} style={{ background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:10, padding:'12px 28px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>ENABLE</button>}
           </div>
-        )}
-        {permission === 'granted' && (
-          <button onClick={testNotification} style={{ width:'100%', background:C.cyan+'22', border:'1px solid '+C.cyan+'44', borderRadius:10, padding:12, color:C.cyan, fontFamily:"'Bebas Neue',sans-serif", fontSize:14, cursor:'pointer', marginBottom:16 }}>🔔 SEND TEST NOTIFICATION</button>
         )}
         {notifSettings.map(function(s){ return (
           <div key={s.key} onClick={function(){ toggle(s.key); }} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:8, display:'flex', alignItems:'center', gap:12, cursor:'pointer' }}>
@@ -6041,7 +5737,7 @@ function PushNotificationsManager({ state, dispatch }) {
               <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{s.sub}</div>
             </div>
             <div style={{ width:44, height:24, borderRadius:12, background:settings[s.key]?C.cyan+'33':'#2a2a2a', border:'1px solid '+(settings[s.key]?C.cyan+'55':'#333'), position:'relative', flexShrink:0 }}>
-              <div style={{ position:'absolute', top:3, left:settings[s.key]?22:3, width:18, height:18, borderRadius:'50%', background:settings[s.key]?C.cyan:'#555', transition:'left 0.2s' }}></div>
+              <div style={{ position:'absolute', top:3, left:settings[s.key]?22:3, width:18, height:18, borderRadius:'50%', background:settings[s.key]?C.cyan:'#555' }}></div>
             </div>
           </div>
         );})}
@@ -6050,7 +5746,7 @@ function PushNotificationsManager({ state, dispatch }) {
   );
 }
 
-// ── WASHINGTON CLASSIC REGISTRATION ───────────────────────────
+// ── WASHINGTON CLASSIC REGISTRATION ──────────────────────────
 
 function WashingtonClassicRegistration({ state, dispatch }) {
   var C = COLORS;
@@ -6062,19 +5758,10 @@ function WashingtonClassicRegistration({ state, dispatch }) {
   var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
   var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
 
-  React.useEffect(function() {
-    fetch(SUPA_URL + '/rest/v1/wa_classic_registrations?select=id', {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'count=exact' }
-    }).then(function(r) {
-      var count = r.headers.get('content-range');
-      if (count) setRegCount(parseInt(count.split('/')[1]) || 47);
-    }).catch(function() {});
-  }, []);
-
   var tiers = [
-    { id:'general', name:'GENERAL ADMISSION', price:0, priceLabel:'FREE', color:C.cyan, icon:'📺', perks:['Watch the stream live','Chat access','Bracket updates in real-time'], highlight:false },
-    { id:'vip', name:'VIP VIEWING', price:999, priceLabel:'$9.99', color:C.gold, icon:'⭐', perks:['HD stream priority','Exclusive VIP chat room','Live bracket updates','Replay access 48hrs'], highlight:true },
-    { id:'player', name:'PLAYER ENTRY', price:2500, priceLabel:'$25.00', color:C.burgundy, icon:'🏆', perks:['Compete in tournament','VIP viewing access','Certificate of participation','Prize pool eligibility'], highlight:false },
+    { id:'general', name:'GENERAL ADMISSION', price:0, priceLabel:'FREE', color:C.cyan, icon:'📺', perks:['Watch the stream live','Chat access','Bracket updates'] },
+    { id:'vip', name:'VIP VIEWING', price:999, priceLabel:'$9.99', color:C.gold, icon:'⭐', perks:['HD stream priority','VIP chat room','Replay access 48hrs'] },
+    { id:'player', name:'PLAYER ENTRY', price:2500, priceLabel:'$25.00', color:C.burgundy, icon:'🏆', perks:['Compete in tournament','VIP viewing access','Prize pool eligibility'] },
   ];
 
   function register() {
@@ -6088,37 +5775,28 @@ function WashingtonClassicRegistration({ state, dispatch }) {
     setRegCount(function(c){ return c + 1; });
   }
 
-  function paymentLink(method) {
+  function payLink(method) {
     var tier = tiers.find(function(t){ return t.id === selectedTier; });
-    var amount = tier ? (tier.price / 100).toFixed(2) : '0.00';
-    var note = encodeURIComponent('Washington Classic 2026 - ' + (selectedTier||'').toUpperCase());
-    if (method === 'paypal') return 'https://paypal.me/SeeWhyLIVE/' + amount;
-    if (method === 'cashapp') return 'https://cash.app/$SwanyThree23/' + amount;
-    if (method === 'venmo') return 'https://venmo.com/SwanyThree23?txn=pay&amount=' + amount + '&note=' + note;
-    return '#';
+    var amt = tier ? (tier.price / 100).toFixed(2) : '0.00';
+    if (method === 'cashapp') return 'https://cash.app/$SwanyThree23/' + amt;
+    if (method === 'venmo') return 'https://venmo.com/SwanyThree23?txn=pay&amount=' + amt;
+    return 'https://paypal.me/SeeWhyLIVE/' + amt;
   }
 
   if (registered) return (
     <div style={{ background:C.obsidian, minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:24 }}>
       <div style={{ fontSize:64, marginBottom:16 }}>🏆</div>
       <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:C.gold, letterSpacing:3, marginBottom:8, textAlign:'center' }}>YOU'RE REGISTERED!</div>
-      <div style={{ fontSize:13, color:C.muted, textAlign:'center', marginBottom:24, lineHeight:1.7 }}>Washington Classic 2026<br/>June 21 · Des Moines, WA<br/>Jamar's Sports Bar & Grill</div>
-      <div style={{ background:'rgba(212,175,55,0.1)', border:'2px solid '+C.gold+'44', borderRadius:14, padding:16, marginBottom:24, width:'100%', maxWidth:320, textAlign:'center' }}>
-        <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold, letterSpacing:1 }}>{(tiers.find(function(t){ return t.id===selectedTier; })||{}).name}</div>
-        <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>{form.username}</div>
-      </div>
-      <button onClick={function(){ dispatch({ type:'SET_PAGE', payload:'scoring' }); }} style={{ background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:'14px 32px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer', letterSpacing:1, marginBottom:12, width:'100%', maxWidth:320 }}>VIEW LIVE BRACKET →</button>
-      <button onClick={function(){ setRegistered(false); setStep('tiers'); }} style={{ background:'none', border:'1px solid #333', borderRadius:12, padding:'12px 32px', color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:14, cursor:'pointer', width:'100%', maxWidth:320 }}>BACK TO EVENT</button>
+      <div style={{ fontSize:13, color:C.muted, textAlign:'center', marginBottom:24, lineHeight:1.7 }}>Washington Classic 2026 · June 21 · Des Moines, WA</div>
+      <button onClick={function(){ dispatch({ type:'SET_PAGE', payload:'home' }); }} style={{ background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:'14px 32px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer', width:'100%', maxWidth:320 }}>GO HOME</button>
     </div>
   );
 
   return (
     <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
       <div style={{ background:'linear-gradient(135deg,#0a0800,#150d00)', padding:'16px 14px 0', borderBottom:'2px solid '+C.gold+'55' }}>
-        <div style={{ marginBottom:10 }}>
-          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.gold, letterSpacing:2 }}>WASHINGTON CLASSIC 2026</div>
-          <div style={{ fontSize:11, color:C.muted }}>June 21 · Des Moines, WA · Jamar's Sports Bar & Grill</div>
-        </div>
+        <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.gold, letterSpacing:2, marginBottom:4 }}>WASHINGTON CLASSIC 2026</div>
+        <div style={{ fontSize:11, color:C.muted, marginBottom:12 }}>June 21 · Des Moines, WA · Jamar's Sports Bar</div>
         <div style={{ display:'flex', gap:16, marginBottom:12 }}>
           <div style={{ textAlign:'center' }}>
             <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:C.gold }}>{regCount}</div>
@@ -6128,23 +5806,18 @@ function WashingtonClassicRegistration({ state, dispatch }) {
             <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:C.green }}>$500</div>
             <div style={{ fontSize:9, color:C.muted }}>PRIZE POOL</div>
           </div>
-          <div style={{ textAlign:'center' }}>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:C.cyan }}>8</div>
-            <div style={{ fontSize:9, color:C.muted }}>PLAYER SLOTS</div>
-          </div>
         </div>
       </div>
       <div style={{ padding:14 }}>
         {step === 'tiers' && (
           <div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:2, marginBottom:14 }}>SELECT YOUR REGISTRATION TIER</div>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:2, marginBottom:14 }}>SELECT YOUR TIER</div>
             {tiers.map(function(tier){ return (
-              <div key={tier.id} onClick={function(){ setSelectedTier(tier.id); setStep(tier.price > 0 ? 'payment' : 'form'); }} style={{ background:selectedTier===tier.id?tier.color+'12':'#111', border:'2px solid '+(selectedTier===tier.id?tier.color+'66':'#2a2a2a'), borderRadius:14, padding:16, marginBottom:12, cursor:'pointer', position:'relative' }}>
-                {tier.highlight && <div style={{ position:'absolute', top:-1, right:12, background:C.gold, borderRadius:'0 0 8px 8px', padding:'3px 12px', fontSize:9, color:'#000', fontFamily:"'Bebas Neue',sans-serif" }}>MOST POPULAR</div>}
-                <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
+              <div key={tier.id} onClick={function(){ setSelectedTier(tier.id); setStep(tier.price > 0 ? 'payment' : 'form'); }} style={{ background:'#111', border:'2px solid '+(selectedTier===tier.id?tier.color+'66':'#2a2a2a'), borderRadius:14, padding:16, marginBottom:12, cursor:'pointer' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:8 }}>
                   <span style={{ fontSize:28 }}>{tier.icon}</span>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:tier.color, letterSpacing:1 }}>{tier.name}</div>
+                    <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:tier.color }}>{tier.name}</div>
                   </div>
                   <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:tier.price===0?C.green:C.gold }}>{tier.priceLabel}</div>
                 </div>
@@ -6160,50 +5833,39 @@ function WashingtonClassicRegistration({ state, dispatch }) {
         )}
         {step === 'payment' && (
           <div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold, letterSpacing:1, marginBottom:16 }}>COMPLETE PAYMENT</div>
-            <div style={{ background:'rgba(212,175,55,0.08)', border:'1px solid '+C.gold+'33', borderRadius:12, padding:14, marginBottom:16, display:'flex', justifyContent:'space-between' }}>
-              <span style={{ fontSize:13, color:C.muted }}>{(tiers.find(function(t){return t.id===selectedTier;})||{}).name}</span>
-              <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold }}>{(tiers.find(function(t){return t.id===selectedTier;})||{}).priceLabel}</span>
-            </div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:12 }}>PAY VIA</div>
-            {[
-              { method:'paypal', label:'PayPal', color:'#003087', emoji:'💳' },
-              { method:'cashapp', label:'Cash App', color:'#00d632', emoji:'💚' },
-              { method:'venmo', label:'Venmo', color:'#3d95ce', emoji:'💙' },
-            ].map(function(p){ return (
-              <a key={p.method} href={paymentLink(p.method)} target="_blank" style={{ display:'block', background:p.color+'22', border:'1px solid '+p.color+'44', borderRadius:12, padding:16, marginBottom:10, display:'flex', alignItems:'center', gap:12, textDecoration:'none' }}>
-                <span style={{ fontSize:24 }}>{p.emoji}</span>
-                <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.white, flex:1 }}>PAY WITH {p.label.toUpperCase()}</span>
-                <span style={{ color:C.muted, fontSize:16 }}>→</span>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold, marginBottom:16 }}>COMPLETE PAYMENT</div>
+            {['cashapp','venmo','paypal'].map(function(m){ return (
+              <a key={m} href={payLink(m)} target="_blank" style={{ display:'flex', alignItems:'center', gap:12, background:'#111', border:'1px solid #2a2a2a', borderRadius:12, padding:16, marginBottom:10, textDecoration:'none' }}>
+                <span style={{ fontSize:24 }}>{m==='cashapp'?'💚':m==='venmo'?'💙':'💳'}</span>
+                <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.white, flex:1 }}>PAY WITH {m.toUpperCase()}</span>
+                <span style={{ color:C.muted }}>→</span>
               </a>
             );})}
-            <div style={{ fontSize:11, color:C.muted, textAlign:'center', marginBottom:16, lineHeight:1.6 }}>After payment, click below to complete registration</div>
-            <button onClick={function(){ setStep('form'); }} style={{ width:'100%', background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:14, color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>I'VE PAID — CONTINUE →</button>
-            <button onClick={function(){ setStep('tiers'); }} style={{ width:'100%', background:'none', border:'1px solid #333', borderRadius:12, padding:12, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:13, cursor:'pointer', marginTop:8 }}>← BACK</button>
+            <button onClick={function(){ setStep('form'); }} style={{ width:'100%', background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:14, color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer', marginTop:8 }}>I'VE PAID — CONTINUE</button>
+            <button onClick={function(){ setStep('tiers'); }} style={{ width:'100%', background:'none', border:'1px solid #333', borderRadius:12, padding:12, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:13, cursor:'pointer', marginTop:8 }}>BACK</button>
           </div>
         )}
         {step === 'form' && (
           <div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold, letterSpacing:1, marginBottom:16 }}>YOUR DETAILS</div>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold, marginBottom:16 }}>YOUR DETAILS</div>
             {[
               { label:'USERNAME', key:'username', placeholder:'Your SeeWhy LIVE username' },
               { label:'EMAIL', key:'email', placeholder:'your@email.com' },
               { label:'PHONE', key:'phone', placeholder:'+1 (206) 555-0100' },
-            ].map(function(f){ return (
-              <div key={f.key} style={{ marginBottom:14 }}>
-                <div style={{ fontSize:10, color:C.muted, marginBottom:6, letterSpacing:1 }}>{f.label}</div>
-                <input value={form[f.key]} onChange={function(e){ var v = e.target.value; setForm(function(fm){ return Object.assign({}, fm, { [f.key]: v }); }); }} placeholder={f.placeholder} style={{ width:'100%', background:'#111', border:'1px solid #2a2a2a', borderRadius:10, padding:'12px 14px', color:C.white, fontSize:13, boxSizing:'border-box' }} />
+            ].map(function(fi){ return (
+              <div key={fi.key} style={{ marginBottom:14 }}>
+                <div style={{ fontSize:10, color:C.muted, marginBottom:6, letterSpacing:1 }}>{fi.label}</div>
+                <input value={form[fi.key]} onChange={function(e){ var v=e.target.value; setForm(function(fm){ return Object.assign({},fm,{[fi.key]:v}); }); }} placeholder={fi.placeholder} style={{ width:'100%', background:'#111', border:'1px solid #2a2a2a', borderRadius:10, padding:'12px 14px', color:C.white, fontSize:13, boxSizing:'border-box' }} />
               </div>
             );})}
-            <button onClick={register} style={{ width:'100%', background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:16, color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer', letterSpacing:1 }}>🏆 COMPLETE REGISTRATION</button>
-            <button onClick={function(){ setStep(selectedTier&&tiers.find(function(t){return t.id===selectedTier;}).price>0?'payment':'tiers'); }} style={{ width:'100%', background:'none', border:'1px solid #333', borderRadius:12, padding:12, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:13, cursor:'pointer', marginTop:8 }}>← BACK</button>
+            <button onClick={register} style={{ width:'100%', background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:16, color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:'pointer' }}>COMPLETE REGISTRATION</button>
+            <button onClick={function(){ setStep('tiers'); }} style={{ width:'100%', background:'none', border:'1px solid #333', borderRadius:12, padding:12, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:13, cursor:'pointer', marginTop:8 }}>BACK</button>
           </div>
         )}
       </div>
     </div>
   );
 }
-
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -7856,8 +7518,6 @@ function AppV46Router({ state, dispatch }) {
         {page === 'stripe' && <StripeConnectDashboard state={state} dispatch={dispatch} />}
         {page === 'notifications' && <PushNotificationsManager state={state} dispatch={dispatch} />}
         {page === 'register' && <WashingtonClassicRegistration state={state} dispatch={dispatch} />}
-        {page === 'vod' && <VODPipelinePage state={state} dispatch={dispatch} />}
-        {page === 'scoring' && <WashingtonClassicScoring state={state} dispatch={dispatch} />}
         {page === 'zegoroom' && <ZegoLiveRoom state={state} dispatch={dispatch} />}
         {page === 'payouts' && <StripePayoutPage state={state} dispatch={dispatch} />}
       <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} />
