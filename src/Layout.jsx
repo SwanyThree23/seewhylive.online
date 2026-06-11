@@ -7,7 +7,8 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
+  Film, FileText, Calendar, Sliders, Scissors, Bell
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -40,6 +41,9 @@ var DRAWER_WATCH = [
   { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
   { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
   { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
+  { name: 'VOD Library',      icon: Film,    href: createPageUrl('VODLibrary') },
+  { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
+  { name: 'PK Arena',         icon: Trophy,  href: createPageUrl('PKBattleArena') },
 ];
 
 var DRAWER_CREATE = [
@@ -59,6 +63,13 @@ var DRAWER_CREATE = [
   { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
+  { name: 'Aura AI',          icon: Sparkles,        href: createPageUrl('AuraAI') },
+  { name: 'Pre-Flight',       icon: Sliders,         href: createPageUrl('GreenRoomPreFlight') },
+  { name: 'Overlay Editor',   icon: Layers,          href: createPageUrl('OverlayEditor') },
+  { name: 'Stream Alerts',    icon: Bell,            href: createPageUrl('StreamAlerts') },
+  { name: 'Captions',         icon: FileText,        href: createPageUrl('TranscriptionStudio') },
+  { name: 'Clips',            icon: Scissors,        href: createPageUrl('ClipsLibrary') },
+  { name: 'Content Calendar', icon: Calendar,        href: createPageUrl('ContentCalendar') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 
@@ -69,6 +80,8 @@ var DRAWER_ACCOUNT = [
   { name: 'Terms',    icon: Video,      href: createPageUrl('TermsOfService') },
   { name: 'Privacy',  icon: Video,      href: createPageUrl('PrivacyPolicy') },
   { name: 'BetaStatus', icon: Radio,   href: createPageUrl('BetaStatus') },
+  { name: 'Payouts',    icon: DollarSign, href: createPageUrl('Payouts') },
+  { name: 'Notifications', icon: Bell, href: createPageUrl('Notifications') },
 ];
 
 var DRAWER_ADMIN = [
