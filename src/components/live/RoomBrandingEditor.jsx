@@ -42,7 +42,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
       {open && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
           onClick={e => e.target === e.currentTarget && setOpen(false)}>
-          <div style={{ background:'#0A0710', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:640, maxHeight:'80vh', overflowY:'auto' }}
+          <div style={{ background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:640, maxHeight:'80vh', overflowY:'auto' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
               <Palette className="w-5 h-5" style={{ color:'#d4af37' }} />

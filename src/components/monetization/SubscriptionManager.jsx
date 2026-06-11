@@ -71,7 +71,7 @@ export default function SubscriptionManager({ creatorId }) {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0F0B1A', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
+            style={{ background: '#0D1022', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
           />
           <input
             type="number"
@@ -81,7 +81,7 @@ export default function SubscriptionManager({ creatorId }) {
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0F0B1A', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
+            style={{ background: '#0D1022', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
           />
           <div className="flex gap-2">
             <motion.button

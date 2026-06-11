@@ -32,7 +32,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
       {open && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }} onClick={() => setOpen(false)} />
-          <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', background: '#0A0710', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
+          <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{participant?.user_name} — Stream Permissions</span>
               <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}><X className="w-4 h-4" /></button>

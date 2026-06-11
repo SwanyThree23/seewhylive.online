@@ -6,7 +6,7 @@ import { Bell, Volume2, Trash2, Play } from 'lucide-react';
 import SelectSheet from '@/components/shared/SelectSheet';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const SOUND_PRESETS = ['cash_register', 'fanfare', 'chime', 'explosion', 'coin', 'alert', 'level_up'];
@@ -79,7 +79,7 @@ export default function AlertConfig({ creatorId }) {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0A0710', border: `1px solid ${BORDER}`, color: 'white' }}
+            style={{ background: '#080B18', border: `1px solid ${BORDER}`, color: 'white' }}
           />
 
           <div className="grid grid-cols-2 gap-2">
@@ -99,7 +99,7 @@ export default function AlertConfig({ creatorId }) {
               value={formData.trigger_value}
               onChange={(e) => setFormData({ ...formData, trigger_value: parseFloat(e.target.value) || 0 })}
               className="px-3 py-2 rounded text-sm outline-none"
-              style={{ background: '#0A0710', border: `1px solid ${BORDER}`, color: 'white' }}
+              style={{ background: '#080B18', border: `1px solid ${BORDER}`, color: 'white' }}
             />
           </div>
 

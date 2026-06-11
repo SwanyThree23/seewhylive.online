@@ -12,7 +12,7 @@ import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
+const BG = '#080B18';
 
 export default function VODLibraryPage() {
   const { data: user } = useQuery({

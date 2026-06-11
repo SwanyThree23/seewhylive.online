@@ -7,7 +7,7 @@ import AlertConfig from '@/components/live/AlertConfig';
 import OverlayThemeBuilder from '@/components/live/OverlayThemeBuilder';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
+const BG = '#080B18';
 
 export default function OverlayEditorPage() {
   const { data: user } = useQuery({
