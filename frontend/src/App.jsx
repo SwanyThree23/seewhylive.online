@@ -2134,6 +2134,10 @@ function HomePage(props) {
     { icon: '📊', label: 'Dashboard', action: function() { dispatch({ type: 'SET_PAGE', payload: 'creatordash' }); } },
     { icon: '⚙', label: 'Settings', action: function() { dispatch({ type: 'SET_PAGE', payload: 'settings' }); } },
             { icon: '📅', label: 'Schedule', action: function() { dispatch({ type: 'SET_PAGE', payload: 'schedule' }); } },
+        { icon: '📈', label: 'Creator Stats', action: function() { dispatch({ type: 'SET_PAGE', payload: 'creator-analytics' }); } },
+        { icon: '⏺', label: 'VOD Record', action: function() { dispatch({ type: 'SET_PAGE', payload: 'vod-record' }); } },
+        { icon: '✂️', label: 'AI Clips', action: function() { dispatch({ type: 'SET_PAGE', payload: 'ai-clips' }); } },
+        { icon: '📱', label: 'Mobile App', action: function() { dispatch({ type: 'SET_PAGE', payload: 'mobile-app' }); } },
           ].map(function(tool) {
             return (
               <button key={tool.label} onClick={tool.action} style={{ background: C.slate, border: '1px solid rgba(201,168,76,0.2)', borderRadius: 12, padding: '16px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
