@@ -69,7 +69,7 @@ export default function AdminDashboard() {
   const [auditLog, setAuditLog] = useState([
     { icon: '🛡️', action: 'Guardian AI enabled for all rooms', time: 'Jun 1, 7:00 PM', color: '#6DBF7E', severity: 'info' },
     { icon: '📋', action: 'Reports dashboard accessed', time: 'Jun 1, 6:45 PM', color: '#D4AF37', severity: 'low' },
-    { icon: '⚙️', action: 'Rate limits verified — all healthy', time: 'Jun 1, 6:30 PM', color: '#00C8C8', severity: 'info' },
+    { icon: '⚙️', action: 'Rate limits verified — all healthy', time: 'Jun 1, 6:30 PM', color: '#6DBF7E', severity: 'info' },
   ]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -463,7 +463,7 @@ export default function AdminDashboard() {
             <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(0,200,200,0.12)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">⚡</span>
-                <span className="text-sm font-black uppercase" style={{ color: '#00C8C8', ...T }}>Rate Limiting</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#6DBF7E', ...T }}>Rate Limiting</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[

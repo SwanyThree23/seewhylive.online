@@ -77,7 +77,7 @@ const FEATURES = [
     title: 'Tribute Wall',
     description: 'Honor fallen domino legends with tribute posts, memorial events, and nomination system.',
     icon: '🕊️',
-    color: '#7B5EA7',
+    color: '#800020',
     highlights: ['Legend cards', 'Tribute messages', 'Memorial fund'],
     link: '/TributeWall',
   },
