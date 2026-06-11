@@ -3056,3 +3056,18 @@ process.on('SIGINT', function() {
 });
 
 module.exports = { app, server, io };
+
+// ZEGO token generation endpoint
+app.post('/api/zego/token', function(req, res) {
+  var appId = parseInt(process.env.ZEGO_APP_ID);
+  var secret = process.env.ZEGO_SERVER_SECRET;
+  var userId = req.query.userId || 'guest_' + Date.now();
+  var roomId = req.query.roomId || 'room_1';
+  var expire = Math.floor(Date.now() / 1000) + 3600;
+  var nonce = Math.floor(Math.random() * 2147483647);
+  var crypto = require('crypto');
+  var plain = 'appid=' + appId + '&expire=' + expire + '&nonce=' + nonce + '&roomid=' + roomId + '&timestamp=' + Math.floor(Date.now() / 1000) + '&userid=' + userId + '&version=1';
+  var hmac = crypto.createHmac('sha256', secret).update(plain).digest('hex');
+  res.json({ token: hmac, appId: appId, userId: userId, roomId: roomId, expire: expire });
+});
+>>>>>>> origin/main
