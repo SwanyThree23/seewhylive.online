@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import AudioMixer from '../components/live/AudioMixer';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -1195,6 +1197,9 @@ export default function PodcastStudio() {
         {tab === 'record' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
+            {/* Audio Mixer */}
+            <AudioMixer micMuted={false} onMicToggle={() => {}} />
+
             {/* Panel slots */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
@@ -1430,6 +1435,12 @@ export default function PodcastStudio() {
           </div>
         )}
       </div>
+
+      {tab === 'library' && library.length > 0 && (
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
+          <TranscriptionPanel recordingUrl={library[0]?.audio_url} roomTitle={library[0]?.title || 'Podcast Episode'} />
+        </div>
+      )}
 
       <Toast message={toast} />
     </div>

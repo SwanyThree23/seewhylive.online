@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUS_COLORS = { draft:C.gray, scheduled:'#FFB800', sent:'#6DBF7E' };
@@ -240,6 +241,9 @@ export default function NewsletterHubPage() {
             ))}
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
+        <ShareToSocial content={{ title: 'SeeWhy LIVE Newsletter', url: window.location.href }} />
       </div>
     </div>
   );

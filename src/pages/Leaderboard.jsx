@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
@@ -368,7 +369,12 @@ export default function LeaderboardPage() {
             style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No data yet</p>
           </div>
-        ) : activeTab !== 'svs' && rest.length > 0 && (
+        ) : activeTab === 'earnings' && (
+          <div className="mb-4">
+            <RealtimeLeaderboard creatorId={null} roomId={null} />
+          </div>
+        )}
+        {activeTab !== 'svs' && rest.length > 0 && (
           <div className="rounded-2xl overflow-hidden"
             style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="flex items-center gap-2 px-4 py-3"
