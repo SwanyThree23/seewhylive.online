@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Download, FileText, Table, FileSpreadsheet, CheckCircle, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 
@@ -141,6 +143,19 @@ export default function DataExportPage() {
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             All exports contain only <strong style={{ color: 'rgba(255,255,255,0.6)' }}>your own data</strong>. Files are generated locally in your browser and never sent to any server.
           </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+          {[
+            { label: '← Settings',           href: 'Settings'          },
+            { label: '📊 Analytics',          href: 'Analytics'         },
+            { label: '📈 Adv. Analytics',     href: 'AdvancedAnalytics' },
+            { label: '💰 Monetization',       href: 'Monetization'      },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
