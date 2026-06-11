@@ -27,7 +27,7 @@ const REWARD_TYPES = [
   { id: 'custom_emote', label: '😎 Custom Emote', icon: '😎' },
 ];
 
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#00d4ff', '#a78bfa'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#D4854A', '#C0392B'];
 
 export default function LoyaltyProgram() {
   const qc = useQueryClient();
@@ -142,8 +142,8 @@ export default function LoyaltyProgram() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { label: 'Total Points Distributed', value: totalDistributed.toLocaleString(), color: GOLD, icon: Star },
-                { label: 'Active Viewers', value: leaderboard.length, color: '#00d4ff', icon: Users },
-                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#00ff88', icon: Gift },
+                { label: 'Active Viewers', value: leaderboard.length, color: GOLD, icon: Users },
+                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#6DBF7E', icon: Gift },
               ].map(stat => (
                 <div key={stat.label} className="rounded-2xl p-4"
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>

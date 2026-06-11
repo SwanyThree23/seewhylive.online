@@ -13,7 +13,7 @@ import OnlinePresenceDot from '../components/shared/OnlinePresence';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -388,8 +388,8 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#a78bfa' },
-                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#00d4ff' },
+                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: GOLD },
+                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#D4854A' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
                 ].map(item => (
                   <Link key={item.href} to={item.href}>
@@ -448,8 +448,8 @@ export default function ProfilePage() {
                       )}
                       <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                         style={{
-                          background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isLive ? 'rgba(255,21,100,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          background: isLive ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)',
+                          border: `1px solid ${isLive ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
                           color: isLive ? PINK : 'rgba(255,255,255,0.4)',
                           ...T,
                         }}>

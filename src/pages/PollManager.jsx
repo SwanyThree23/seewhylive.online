@@ -86,8 +86,8 @@ export default function PollManager() {
                   <input placeholder={`Option ${idx + 1}`} value={opt} onChange={e => handleOptionChange(idx, e.target.value)} style={{ ...inp, flex: 1 }} />
                   {formData.options.length > 2 && (
                     <button onClick={() => handleRemoveOption(idx)}
-                      className="px-3 rounded-lg" style={{ background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', cursor: 'pointer' }}>
-                      <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                      className="px-3 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', cursor: 'pointer' }}>
+                      <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                     </button>
                   )}
                 </div>
@@ -144,13 +144,13 @@ export default function PollManager() {
                 <div>
                   <h3 className="font-black text-sm text-white" style={T}>{template.name}</h3>
                   <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase mt-1 inline-block"
-                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#a78bfa' }}>
+                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
                     {categories[template.category]}
                   </span>
                 </div>
                 <button onClick={() => deleteTemplateMutation.mutate(template.id)}
-                  className="p-1.5 rounded-lg" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)', cursor: 'pointer' }}>
-                  <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                  className="p-1.5 rounded-lg" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', cursor: 'pointer' }}>
+                  <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                 </button>
               </div>
               <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{template.question}</p>

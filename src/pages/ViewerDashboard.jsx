@@ -162,7 +162,7 @@ export default function ViewerDashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{liveRooms.length}</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.4)', color: '#ff9999', ...T }}>{liveRooms.length}</span>
               </div>
               {liveRooms.length === 0 ? (
                 <p className="text-sm py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No one is live right now</p>
@@ -187,7 +187,7 @@ export default function ViewerDashboard() {
                         </div>
                         <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`} className="block mt-3">
                           <button className="w-full py-2 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-                            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
+                            style={{ background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(128,0,32,0.5)', color: '#ff9999', ...T }}>
                             <Radio className="w-3.5 h-3.5" /> Join Now
                           </button>
                         </Link>
@@ -201,19 +201,19 @@ export default function ViewerDashboard() {
             {/* Upcoming */}
             <div className="space-y-3">
               <h2 className="font-black text-white text-sm flex items-center gap-2" style={T}>
-                <Clock className="w-4 h-4" style={{ color: '#00d4ff' }} /> Upcoming Streams
+                <Clock className="w-4 h-4" style={{ color: GOLD }} /> Upcoming Streams
               </h2>
               {scheduledRooms.slice(0, 4).map(room => (
                 <div key={room.id} className="flex items-center gap-3 p-3 rounded-xl transition-all"
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(0,212,255,0.1)' }}>
-                    <Clock className="w-5 h-5" style={{ color: '#00d4ff' }} />
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.08)' }}>
+                    <Clock className="w-5 h-5" style={{ color: GOLD }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
-                    <p className="text-xs" style={{ color: '#00d4ff' }}>{getCountdown(room.scheduled_start)}</p>
+                    <p className="text-xs" style={{ color: GOLD }}>{getCountdown(room.scheduled_start)}</p>
                   </div>
-                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>Upcoming</span>
                 </div>
               ))}
             </div>
@@ -247,10 +247,10 @@ export default function ViewerDashboard() {
         {activeTab === 'activity' && (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color="#a78bfa" />
-              <StatTile label="Clips" value={myClips.length} icon={Scissors} color="#a78bfa" />
+              <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color={GOLD} />
+              <StatTile label="Clips" value={myClips.length} icon={Scissors} color={GOLD} />
               <StatTile label="Notifications" value={notifications.length} icon={Bell} color={GOLD} />
-              <StatTile label="Live Now" value={liveRooms.length} icon={Heart} color="#f472b6" />
+              <StatTile label="Live Now" value={liveRooms.length} icon={Heart} color="#D4854A" />
             </div>
 
             {/* Subscriptions */}
@@ -261,13 +261,13 @@ export default function ViewerDashboard() {
                 : mySubscriptions.map(s => (
                   <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl mb-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.15)' }}>
-                      <Star className="w-4 h-4" style={{ color: '#a78bfa' }} />
+                      <Star className="w-4 h-4" style={{ color: GOLD }} />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-black text-white" style={T}>{s.tier_name || 'Subscription'}</p>
                       <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>${s.price}/mo · since {s.start_date ? new Date(s.start_date).toLocaleDateString() : new Date(s.created_date).toLocaleDateString()}</p>
                     </div>
-                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#00ff88', ...T }}>Active</span>
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E', ...T }}>Active</span>
                   </div>
                 ))
               }
@@ -275,12 +275,12 @@ export default function ViewerDashboard() {
 
             {/* My Clips */}
             <DarkTile style={{ padding: 16 }}>
-              <p className="text-xs font-black uppercase mb-3" style={{ color: '#a78bfa', ...T }}>My Clips</p>
+              <p className="text-xs font-black uppercase mb-3" style={{ color: GOLD, ...T }}>My Clips</p>
               {myClips.length === 0
                 ? <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No clips yet — create one during a stream!</p>
                 : myClips.map(c => (
                   <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl mb-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div className="w-10 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm" style={{ background: 'rgba(167,139,250,0.1)' }}>✂️</div>
+                    <div className="w-10 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm" style={{ background: 'rgba(212,175,55,0.08)' }}>✂️</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate" style={T}>{c.title}</p>
                       <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{c.duration_seconds}s · {c.view_count || 0} views</p>
@@ -361,7 +361,7 @@ export default function ViewerDashboard() {
                   <div className="flex items-start gap-3 p-3 rounded-xl border transition-all"
                     style={{ background: !n.is_read ? 'rgba(212,175,55,0.04)' : 'rgba(13,6,24,0.9)', borderColor: !n.is_read ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)' }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                      style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(255,21,100,0.12)' : 'rgba(255,255,255,0.06)' }}>
+                      style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(192,57,43,0.12)' : 'rgba(255,255,255,0.06)' }}>
                       {n.type === 'tip' ? '💰' : n.type === 'room_invite' ? '🔴' : n.type === 'subscription' ? '⭐' : '🔔'}
                     </div>
                     <div className="flex-1 min-w-0">

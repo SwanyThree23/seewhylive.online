@@ -72,7 +72,7 @@ export default function ChallengeAnalytics({ communityId }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
         <StatCard label="Total Challenges" value={challenges.length} icon={Trophy} sub={`${activeChallenges.length} active`} />
         <StatCard label="Total Participants" value={totalParticipations} color="#60a5fa" icon={Users} sub="All challenges" />
-        <StatCard label="Avg Participants" value={avgParticipantsPerChallenge} color="#a78bfa" icon={TrendingUp} sub="Per challenge" />
+        <StatCard label="Avg Participants" value={avgParticipantsPerChallenge} color="#D4AF37" icon={TrendingUp} sub="Per challenge" />
         <StatCard label="Completion Rate" value={`${completionRate}%`} color="#4ade80" icon={Award} sub="Success rate" />
       </div>
 
@@ -127,10 +127,10 @@ export default function ChallengeAnalytics({ communityId }) {
 
                     <div style={{ background:'rgba(212,175,55,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, marginBottom:4 }}>
-                        <Target style={{ width:16, height:16, color:'#a78bfa' }} />
-                        <span style={{ fontSize:12, color:'#a78bfa', fontWeight:600 }}>Rate</span>
+                        <Target style={{ width:16, height:16, color:'#D4AF37' }} />
+                        <span style={{ fontSize:12, color:'#D4AF37', fontWeight:600 }}>Rate</span>
                       </div>
-                      <p style={{ fontSize:24, fontWeight:900, color:'#a78bfa', margin:0, fontFamily:'Barlow Condensed, sans-serif' }}>{challenge.completionRate}%</p>
+                      <p style={{ fontSize:24, fontWeight:900, color:'#D4AF37', margin:0, fontFamily:'Barlow Condensed, sans-serif' }}>{challenge.completionRate}%</p>
                     </div>
                   </div>
 
@@ -181,10 +181,10 @@ export default function ChallengeAnalytics({ communityId }) {
           </div>
 
           <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(212,175,55,0.08)', borderRadius:8, border:'1px solid rgba(212,175,55,0.2)' }}>
-            <Users style={{ width:20, height:20, color:'#a78bfa', marginTop:2 }} />
+            <Users style={{ width:20, height:20, color:'#D4AF37', marginTop:2 }} />
             <div>
               <p style={{ fontWeight:600, color:'#c4b5fd', margin:'0 0 2px' }}>Community Engagement</p>
-              <p style={{ fontSize:13, color:'#a78bfa', margin:0 }}>
+              <p style={{ fontSize:13, color:'#D4AF37', margin:0 }}>
                 {totalParticipations} total participations across {challenges.length} challenges
               </p>
             </div>

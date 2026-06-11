@@ -36,7 +36,7 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
   ]);
 
   const [engagementData, setEngagementData] = useState([
-    { label: 'Likes', value: 1240, color: '#FF1564' },
+    { label: 'Likes', value: 1240, color: '#C0392B' },
     { label: 'Comments', value: 580, color: '#C9A84C' },
     { label: 'Shares', value: 320, color: '#d4af37' },
     { label: 'Tips', value: 890, color: '#6DBF7E' },
@@ -75,7 +75,7 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
           <StatCard icon={Users} label="Current Viewers" value={totalViewers} trend={12} color="#C9A84C" />
           <StatCard icon={Eye} label="Peak Viewers" value={peakViewers} trend={8} color="#d4af37" />
           <StatCard icon={MessageSquare} label="Messages" value={engagementData[1]?.value} trend={-5} color="#D4AF37" />
-          <StatCard icon={Heart} label="Total Engagement" value={totalEngagement} trend={15} color="#FF1564" />
+          <StatCard icon={Heart} label="Total Engagement" value={totalEngagement} trend={15} color="#C0392B" />
         </div>
 
         {/* Viewer Trend Chart */}

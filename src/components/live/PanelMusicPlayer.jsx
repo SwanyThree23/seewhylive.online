@@ -4,7 +4,7 @@ import { Play, Pause } from 'lucide-react';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
-const PURPLE = '#a78bfa';
+const PURPLE = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function WaveformVisualizer({ playing, color = GOLD, bars = 16, height = 28 }) {

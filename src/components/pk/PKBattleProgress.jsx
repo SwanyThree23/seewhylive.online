@@ -57,15 +57,15 @@ export default function PKBattleProgress({ battleId }) {
       <div className="px-4 py-3 flex items-center justify-between"
         style={{ background: 'rgba(0,0,0,0.3)', borderBottom: `1px solid ${BORDER}` }}>
         <div className="flex items-center gap-2">
-          <Flame className="w-5 h-5" style={{ color: '#FF1564' }} />
+          <Flame className="w-5 h-5" style={{ color: '#C0392B' }} />
           <h3 className="font-black text-sm" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
             PK BATTLE
           </h3>
         </div>
         <div className="text-xs px-2 py-1 rounded-full"
           style={{
-            background: isActive ? 'rgba(109,191,126,0.15)' : isEnded ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)',
-            color: isActive ? '#6DBF7E' : isEnded ? '#FF1564' : G,
+            background: isActive ? 'rgba(109,191,126,0.15)' : isEnded ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.15)',
+            color: isActive ? '#6DBF7E' : isEnded ? '#C0392B' : G,
             fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 'bold',
           }}>
@@ -109,7 +109,7 @@ export default function PKBattleProgress({ battleId }) {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="h-full rounded-full"
               style={{
-                background: 'linear-gradient(90deg, #FF1564, #FFB800)',
+                background: 'linear-gradient(90deg, #C0392B, #FFB800)',
               }}
             />
           </div>
@@ -194,7 +194,7 @@ export default function PKBattleProgress({ battleId }) {
           <button
             style={{
               fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
-              background: 'rgba(255,21,100,0.2)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.3)',
+              background: 'rgba(192,57,43,0.2)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)',
             }}
           >
             💰 Tip Creator

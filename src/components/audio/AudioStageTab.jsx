@@ -428,7 +428,7 @@ export default function AudioStageTab({
               minWidth: 16,
               height: 16,
               borderRadius: 8,
-              background: '#FF1564',
+              background: '#C0392B',
               color: '#fff',
               fontSize: 11,
               fontWeight: 900,
