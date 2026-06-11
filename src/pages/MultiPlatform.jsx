@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import DestinationsManager from '../components/streaming/DestinationsManager';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -84,6 +87,7 @@ function ProgressBar({ value, max, color }) {
 }
 
 export default function MultiPlatform() {
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('platforms');
   const [connections, setConnections] = useState(() => {
     try { return JSON.parse(localStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
@@ -179,6 +183,11 @@ export default function MultiPlatform() {
             {tab === 'platforms' && (
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                 <MultiStreamConfig roomId={null} isHost={true} />
+                {user?.id && (
+                  <div style={{ background:BG2, borderRadius:16, border:`1px solid ${GOLD}25`, padding:'20px 18px' }}>
+                    <DestinationsManager userId={user.id} />
+                  </div>
+                )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {
                   const isConn = !!connections[p.id];
