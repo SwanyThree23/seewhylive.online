@@ -10,7 +10,7 @@ import PKInviteModal from '@/components/pk/PKInviteModal';
 function Button({children,onClick,disabled,className='',style={},size,variant,type='button'}){return <button type={type} onClick={onClick} disabled={disabled} className={className} style={style}>{children}</button>}
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function PKBattlePage() {

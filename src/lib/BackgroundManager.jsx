@@ -42,7 +42,7 @@ export function BackgroundProvider({ children }) {
       backdropFilter: 'blur(20px)',
     },
     faded_earth: {
-      background: '#0A0710',
+      background: '#080B18',
       backgroundImage: `url('https://images.unsplash.com/photo-1516869122079-fcffe0fb4bcc?w=1600&h=2000&fit=crop')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -55,7 +55,7 @@ export function BackgroundProvider({ children }) {
                         radial-gradient(circle at 80% 80%, rgba(0, 245, 255, 0.08) 0%, transparent 50%)`,
     },
     faded_terracotta: {
-      background: '#0A0710',
+      background: '#080B18',
       backgroundImage: `linear-gradient(135deg, 
         rgba(10, 7, 16, 0.95) 0%, 
         rgba(44, 24, 16, 0.92) 50%,

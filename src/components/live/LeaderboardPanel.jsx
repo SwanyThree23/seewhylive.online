@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Trophy, Zap, Users, TrendingUp, Crown, Flame } from 'lucide-react';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const BADGE_ICONS = {
