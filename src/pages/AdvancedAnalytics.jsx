@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Users, DollarSign, Radio, Zap, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
@@ -225,6 +227,19 @@ export default function AdvancedAnalyticsPage() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '📊 Analytics',          href: 'Analytics'       },
+            { label: '📡 Stream Analytics',   href: 'StreamAnalytics' },
+            { label: '📤 Export Data',        href: 'DataExport'      },
+            { label: '💰 Monetization',       href: 'Monetization'    },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
