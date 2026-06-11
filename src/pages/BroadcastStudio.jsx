@@ -102,6 +102,7 @@ import WebhookHooks from '../components/live/WebhookHooks';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import StreamEventBus from '../components/live/StreamEventBus';
 import ViewerCount from '../components/live/ViewerCount';
+import GuestControls from '../components/live/GuestControls';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1630,6 +1631,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   isHost={isHost}
                   onInvite={() => setInviteOpen(true)}
                   hostId={party?.host_id}
+                />
+                <GuestControls
+                  participants={members}
+                  onMuteGuest={(guestId) => console.log('mute', guestId)}
+                  onRemoveGuest={(guestId) => console.log('remove', guestId)}
                 />
                 <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
                 {members[0]?.user_id && (
