@@ -12,9 +12,9 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const VIOLATION_STYLE = {
   spam:         { bg: 'rgba(255,200,0,0.1)',   border: 'rgba(255,200,0,0.3)',   color: '#ffc800' },
   harassment:   { bg: 'rgba(255,100,0,0.1)',   border: 'rgba(255,100,0,0.3)',   color: '#ff6400' },
-  hate_speech:  { bg: 'rgba(255,21,100,0.1)',  border: 'rgba(255,21,100,0.3)',  color: '#FF1564' },
+  hate_speech:  { bg: 'rgba(192,57,43,0.1)',  border: 'rgba(192,57,43,0.3)',  color: '#C0392B' },
   inappropriate:{ bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD },
-  safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#00ff88' },
+  safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#6DBF7E' },
 };
 
 const TABS = ['pending', 'reviewed', 'insights'];
@@ -136,8 +136,8 @@ export default function AIModerationPage() {
           {[
             { label: 'Total Scanned', value: stats.total, icon: Shield, color: GOLD },
             { label: 'Pending Review', value: stats.pending, icon: AlertTriangle, color: '#ff6400' },
-            { label: 'Safe Content', value: stats.safe, icon: CheckCircle, color: '#00ff88' },
-            { label: 'Violations', value: stats.violations, icon: XCircle, color: '#FF1564' },
+            { label: 'Safe Content', value: stats.safe, icon: CheckCircle, color: '#6DBF7E' },
+            { label: 'Violations', value: stats.violations, icon: XCircle, color: '#C0392B' },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4 flex flex-col gap-2"
               style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -199,13 +199,13 @@ export default function AIModerationPage() {
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'upheld', action: 'hidden' })}
                         disabled={reviewMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', cursor: 'pointer' }}>
                         <CheckCircle className="w-3.5 h-3.5" /> Uphold
                       </button>
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'reversed', action: 'none' })}
                         disabled={reviewMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', color: '#FF1564', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', cursor: 'pointer' }}>
                         <XCircle className="w-3.5 h-3.5" /> Reverse
                       </button>
                     </div>
@@ -231,7 +231,7 @@ export default function AIModerationPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <ViolationBadge type={mod.violation_type} />
                     <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                      style={{ ...T, background: mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.06)', border: `1px solid ${mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.12)'}`, color: mod.override_decision === 'upheld' ? '#00ff88' : 'rgba(255,255,255,0.45)' }}>
+                      style={{ ...T, background: mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.06)', border: `1px solid ${mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.12)'}`, color: mod.override_decision === 'upheld' ? '#6DBF7E' : 'rgba(255,255,255,0.45)' }}>
                       {mod.override_decision}
                     </span>
                     <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
@@ -280,8 +280,8 @@ export default function AIModerationPage() {
                 <div className="space-y-4">
                   {[
                     { label: 'Average Confidence', value: moderations.reduce((acc, m) => acc + (m.ai_confidence || 0), 0) / moderations.length * 100, color: GOLD },
-                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#00d4ff' },
-                    { label: 'Violation Rate', value: (stats.violations / stats.total) * 100, color: '#FF1564' },
+                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#D4AF37' },
+                    { label: 'Violation Rate', value: (stats.violations / stats.total) * 100, color: '#C0392B' },
                   ].map(({ label, value, color }) => (
                     <div key={label}>
                       <div className="flex justify-between text-xs mb-1.5">

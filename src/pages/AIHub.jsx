@@ -9,9 +9,9 @@ const BG     = '#080B18';
 const BG2    = 'rgba(13,6,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK   = '#FF1564';
-const CYAN   = '#00d4ff';
-const PURPLE = '#a78bfa';
+const PINK    = '#C0392B';
+const CYAN   = '#D4AF37';
+const PURPLE = '#D4AF37';
 const GREEN  = '#22c55e';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -228,7 +228,7 @@ export default function AIHub() {
 
   // Real status bar values
   const statusItems = [
-    { dot: guardianOn ? '#00ff88' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
+    { dot: guardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
     { dot: ariaOn ? GOLD : 'rgba(255,255,255,0.2)',           label: ariaOn ? 'ARIA Online' : 'ARIA Offline' },
     { dot: djTrack ? CYAN : 'rgba(255,255,255,0.2)',          label: djTrack ? `DJ: ${djTrack.title}` : 'No DJ Track' },
     { dot: PINK,                                              label: '0 panel members' },
@@ -339,7 +339,7 @@ export default function AIHub() {
             onClick={() => showToast('Set active track in Music Studio first')}
             style={{
               ...T, width: '100%', padding: '10px 0', borderRadius: 12, marginBottom: 14,
-              background: 'rgba(0,212,255,0.06)', border: `1px solid ${CYAN}30`,
+              background: 'rgba(212,175,55,0.06)', border: `1px solid ${CYAN}30`,
               color: CYAN, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}
@@ -453,7 +453,7 @@ export default function AIHub() {
         <Card accentColor={PINK}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>🛡️ Guardian AI Moderation</p>
-            <Toggle value={guardianOn} onChange={setGuardianOn} activeColor="#00ff88" />
+            <Toggle value={guardianOn} onChange={setGuardianOn} activeColor="#6DBF7E" />
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Real-time chat moderation. Auto-removes hate speech, spam, and toxic content.
@@ -474,7 +474,7 @@ export default function AIHub() {
                   onClick={scanGuardian}
                   style={{
                     ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
-                    background: guardianLoading ? 'rgba(255,21,100,0.06)' : 'rgba(255,21,100,0.12)',
+                    background: guardianLoading ? 'rgba(192,57,43,0.06)' : 'rgba(192,57,43,0.12)',
                     border: `1px solid ${PINK}40`,
                     color: PINK, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
                     textTransform: 'uppercase', cursor: guardianLoading ? 'not-allowed' : 'pointer',
@@ -542,7 +542,7 @@ export default function AIHub() {
                 whileTap={{ scale: 0.97 }}
                 style={{
                   ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
-                  background: 'rgba(255,21,100,0.12)', border: `1px solid ${PINK}40`,
+                  background: 'rgba(192,57,43,0.12)', border: `1px solid ${PINK}40`,
                   color: PINK, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em',
                   textTransform: 'uppercase', cursor: 'pointer',
                 }}
@@ -690,7 +690,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 6: AI Analytics ── */}
-        <Card accentColor="#00ff88">
+        <Card accentColor="#6DBF7E">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📊 AI Insights</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
             AI-powered stream analytics and growth recommendations.
@@ -699,7 +699,7 @@ export default function AIHub() {
           {/* Metric cards */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             {[
-              { label: 'Avg Session',   value: '23min',        color: '#00ff88' },
+              { label: 'Avg Session',   value: '23min',        color: '#6DBF7E' },
               { label: 'Retention',     value: '68%',          color: CYAN },
               { label: 'Peak Viewers',  value: 'calculating…', color: GOLD },
               { label: 'Best Time',     value: '7–9pm',        color: PURPLE },
@@ -720,7 +720,7 @@ export default function AIHub() {
               style={{
                 ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
                 background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)',
-                color: '#00ff88', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+                color: '#6DBF7E', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
                 textTransform: 'uppercase', cursor: 'pointer',
               }}
             >
@@ -859,7 +859,7 @@ export default function AIHub() {
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📋 Content Review Queue</p>
-            <span style={{ ...T, fontSize: 11, color: '#FF1564', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN TOOL</span>
+            <span style={{ ...T, fontSize: 11, color: '#C0392B', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN TOOL</span>
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
             Review AI-flagged messages, approve or dismiss violations, and track moderation history for your streams.
@@ -867,18 +867,18 @@ export default function AIHub() {
           <Link to={createPageUrl('AIModeration')} style={{ textDecoration: 'none', display: 'block' }}>
             <div style={{
               margin: '0 16px 16px',
-              background: 'rgba(255,21,100,0.08)',
-              border: '1px solid rgba(255,21,100,0.2)', borderRadius: 10,
+              background: 'rgba(192,57,43,0.08)',
+              border: '1px solid rgba(192,57,43,0.2)', borderRadius: 10,
               padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
                 <div>
-                  <div style={{ ...T, fontSize: 12, color: '#FF1564', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
+                  <div style={{ ...T, fontSize: 12, color: '#C0392B', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>AI MODERATION · ADMIN</div>
                 </div>
               </div>
-              <span style={{ ...T, fontSize: 13, color: '#FF1564', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              <span style={{ ...T, fontSize: 13, color: '#C0392B', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                 Review →
               </span>
             </div>

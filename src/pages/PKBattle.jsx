@@ -44,7 +44,7 @@ export default function PKBattlePage() {
       <div className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center gap-3 mb-2">
-            <Swords className="w-6 h-6" style={{ color: '#FF1564' }} />
+            <Swords className="w-6 h-6" style={{ color: '#C0392B' }} />
             <h1 className="text-4xl font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
               PK Battles
             </h1>

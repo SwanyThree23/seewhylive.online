@@ -5,8 +5,8 @@ import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucid
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
-const PINK    = "#FF1564";
-const CYAN    = "#00d4ff";
+const PINK    = "#C0392B";
+const CYAN    = "#D4AF37";
 const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
 const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 

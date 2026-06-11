@@ -217,7 +217,7 @@ export default function EmbedPlayer({
                   Already a member? Sign In
                 </button>
                 {!previewExtended && (
-                  <button onClick={extendPreview} className="text-xs text-[#00d4ff] hover:text-white underline">
+                  <button onClick={extendPreview} className="text-xs text-[#D4AF37] hover:text-white underline">
                     Watch 15s more free
                   </button>
                 )}
@@ -240,7 +240,7 @@ export default function EmbedPlayer({
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <pre className="bg-black/50 rounded-lg p-3 text-xs text-[#00d4ff] font-mono overflow-x-auto whitespace-pre-wrap mb-3">
+            <pre className="bg-black/50 rounded-lg p-3 text-xs text-[#D4AF37] font-mono overflow-x-auto whitespace-pre-wrap mb-3">
               {embedCode}
             </pre>
             <button

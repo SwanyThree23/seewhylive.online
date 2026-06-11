@@ -390,7 +390,7 @@ export default function GreenroomPage() {
                   <p className="font-black text-sm text-white truncate">{room.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded"
-                      style={{ background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#FF1564' : 'rgba(255,255,255,0.4)' }}>
+                      style={{ background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
                       {room.status}
                     </span>
                     <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
