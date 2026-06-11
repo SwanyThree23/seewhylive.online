@@ -33,7 +33,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
         <div className="flex items-center gap-2">
           <Headphones className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Audio Panel</span>
-          {bgMusic && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(88,28,135,0.5)', color: '#d8b4fe', border: '1px solid rgba(126,34,206,0.3)' }}>♪ Music</span>}
+          {bgMusic && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(128,0,32,0.5)', color: '#C9A84C', border: '1px solid rgba(128,0,32,0.3)' }}>♪ Music</span>}
         </div>
         <span className="text-white/30 text-[10px]">{expanded ? '▲' : '▼'}</span>
       </button>

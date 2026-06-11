@@ -18,7 +18,7 @@ const DEFAULT_TIERS = [
     id: 'fan',
     name: 'Fan',
     price: 4.99,
-    color: '#5B6EF5',
+    color: '#D4854A',
     emoji: '⭐',
     description: 'Support your favorite creator',
     perks: ['Subscriber badge in chat', 'Access to subscriber-only rooms', 'Early stream notifications'],
