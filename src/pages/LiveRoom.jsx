@@ -128,14 +128,14 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
 
         {/* Dark content shell */}
         <div className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
-          style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, ${BG2})` }}>
+          style={{ clipPath: OCT, background: `linear-gradient(145deg, rgba(30,15,30,0.95), rgba(20,10,28,0.95))` }}>
 
           {stream ? (
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-black border-2 shrink-0"
-              style={{ background: avatarColor(p.name) + '55', borderColor: avatarColor(p.name), color: '#fff' }}>
+              style={{ background: avatarColor(p.name), borderColor: avatarColor(p.name) + 'CC', color: '#fff', boxShadow: `0 0 12px ${avatarColor(p.name)}66` }}>
               {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
             </div>
           )}
@@ -299,7 +299,7 @@ export default function LiveRoom() {
   const roomId    = urlParams.get('id');
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
+  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
@@ -403,7 +403,9 @@ export default function LiveRoom() {
 
   const activeSpeaker = stageData.find(s => s.speaking);
   const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;
-  const tileSize = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
+  const tileSize = stageData.length === 1 ? Math.min(320, window.innerWidth * 0.9)
+    : stageData.length === 2 ? Math.min(170, window.innerWidth * 0.44)
+    : stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
 
   function resolveStream(memberId, userId) {
     if (userId === user?.id) return { stream: localStream, isLocal: true };
@@ -603,7 +605,8 @@ export default function LiveRoom() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}>
+            <div className={stageData.length <= 2 ? "flex justify-center gap-0.5" : `grid gap-4`}
+              style={stageData.length > 2 ? { gridTemplateColumns: `repeat(${stageCols}, 1fr)` } : {}}>
               <AnimatePresence>
                 {stageData.map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);

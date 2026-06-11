@@ -58,17 +58,15 @@ export default function WelcomePage() {
       </header>
 
       {/* Hero */}
-      <main className="relative overflow-hidden">
+      <main className="relative overflow-hidden" style={{ minHeight: '100vh' }}>
         {/* Background with gradient overlay */}
         <div className="absolute inset-0" style={{
-          background: `linear-gradient(180deg, 
-            rgba(10, 7, 16, 0.95) 0%,
-            rgba(20, 15, 30, 0.85) 50%,
-            rgba(10, 7, 16, 0.95) 100%)`,
-          backgroundImage: `url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=2000&fit=crop')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
+          background: `linear-gradient(160deg, #0A0710 0%, #150820 30%, #1a0510 60%, #0A0710 100%)`,
+        }} />
+        {/* Subtle SVG grid pattern overlay */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(212,175,55,0.04) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(128,0,32,0.06) 0%, transparent 50%)`,
+          backgroundSize: '100% 100%',
         }} />
 
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-70px)] px-4 py-12 md:py-20">
