@@ -27,13 +27,13 @@ const C = {
   green:   "#2ECC71",
   red:     "#E74C3C",
   blue:    "#3498DB",
-  purple:  "#8B44B0",
+  purple:  "#D4854A",
   cyan:    "#D4854A",
   orange:  "#FF6B35",
   teal:    "#6DBF7E",
   warn:    "#F39C12",
-  tribute: "#7B5EA7",
-  tribL:   "#A07BC4",
+  tribute: "#800020",
+  tribL:   "#C9A84C",
   state1:  "#1565C0",
   state2:  "#C62828",
 };
@@ -109,7 +109,7 @@ function Btn({ label, icon, onClick, variant="gold", size="md", disabled, style 
     state:   `linear-gradient(135deg,${C.state1},${C.state2})`,
     cyan:    `linear-gradient(135deg,${C.cyan}CC,${C.blue})`,
     green:   `linear-gradient(135deg,${C.teal},${C.green})`,
-    purple:  `linear-gradient(135deg,${C.purple},#7D3C98)`,
+    purple:  `linear-gradient(135deg,${C.purple},#800020)`,
     orange:  `linear-gradient(135deg,${C.orange},#E55100)`,
   };
   const colors = {
