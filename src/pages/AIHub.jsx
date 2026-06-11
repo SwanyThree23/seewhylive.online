@@ -6,7 +6,7 @@ import { base44 } from '@/api/base44Client';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
-const BG2    = 'rgba(13,6,24,0.9)';
+const BG2    = 'rgba(8,11,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
@@ -49,7 +49,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, ...T,
             fontWeight: 700, letterSpacing: '0.04em',

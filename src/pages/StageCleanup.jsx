@@ -88,7 +88,7 @@ export default function StageCleanupPage() {
         </div>
 
         {/* Controls */}
-        <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+        <div style={{ background:'rgba(8,11,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-muted-foreground" />
@@ -125,7 +125,7 @@ export default function StageCleanupPage() {
             { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, iconColor: '#16a34a' },
             { label: 'Cleaned Up', value: deletedCount, icon: Trash2, iconColor: '#64748b' },
           ].map(({ label, value, icon: Icon, iconColor }) => (
-            <div key={label} style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+            <div key={label} style={{ background:'rgba(8,11,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
               <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginBottom:6 }}>{label}</div>
               <div style={{ fontSize:30, fontWeight:700, display:'flex', alignItems:'center', gap:8, color:'#fff' }}>
                 <Icon style={{ width:24, height:24, color: iconColor }} />
@@ -137,11 +137,11 @@ export default function StageCleanupPage() {
 
         {/* Ghost Stage List */}
         {isLoading ? (
-          <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+          <div style={{ background:'rgba(8,11,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
             <div style={{ padding:'48px 0', textAlign:'center', color:'rgba(255,255,255,0.5)' }}>Loading stages...</div>
           </div>
         ) : ghostStages.length === 0 ? (
-          <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+          <div style={{ background:'rgba(8,11,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
             <div style={{ padding:'64px 0', textAlign:'center' }} className="space-y-3">
               <CheckCircle className="w-14 h-14 mx-auto text-green-500" />
               <p className="text-lg font-semibold">All clean!</p>
@@ -154,7 +154,7 @@ export default function StageCleanupPage() {
               const { label, color } = getRoomStatus(stage.room_id);
               const room = roomMap[stage.room_id];
               return (
-                <div key={stage.id} style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(255,165,0,0.15)', borderRadius:16, padding:16 }}>
+                <div key={stage.id} style={{ background:'rgba(8,11,24,0.9)', border:'1px solid rgba(255,165,0,0.15)', borderRadius:16, padding:16 }}>
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">

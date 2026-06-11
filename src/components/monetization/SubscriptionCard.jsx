@@ -56,7 +56,7 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
   });
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 12, background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 12, background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: config.gradient }} />
 
       <div style={{ padding: '20px 20px 12px' }}>

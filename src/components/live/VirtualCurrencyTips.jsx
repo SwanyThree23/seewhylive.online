@@ -145,7 +145,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   }
 
   return (
-    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
+    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
       {/* Floating tip animations */}
       <AnimatePresence>
         {floatingTips.map(tip => (

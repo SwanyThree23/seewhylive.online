@@ -17,7 +17,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
 
   if (isHost) {
     return (
-      <div className="bg-[rgba(13,6,24,0.9)] border border-[#d4af37]/20 rounded-xl p-4 space-y-3">
+      <div className="bg-[rgba(8,11,24,0.9)] border border-[#d4af37]/20 rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Lock className="w-4 h-4 text-[#d4af37]" />
@@ -51,7 +51,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
                 value={customPrice}
                 onChange={e => setCustomPrice(e.target.value)}
                 placeholder="Custom price $"
-                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
               />
               <button style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontSize:12, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
                 Add Tier
@@ -74,7 +74,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
   }
 
   return (
-    <div className="bg-[rgba(13,6,24,0.97)] border border-[#d4af37]/30 rounded-xl p-5 space-y-4 text-center">
+    <div className="bg-[rgba(8,11,24,0.97)] border border-[#d4af37]/30 rounded-xl p-5 space-y-4 text-center">
       <div className="w-14 h-14 rounded-full bg-[#d4af37]/10 flex items-center justify-center mx-auto">
         <Crown className="w-7 h-7 text-[#d4af37]" />
       </div>

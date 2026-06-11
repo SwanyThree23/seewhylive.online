@@ -76,7 +76,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
 
   if (!isHost) {
     return (
-      <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl p-4 text-center">
+      <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl p-4 text-center">
         <p className="text-xs text-white/40">Only hosts can configure multi-streaming</p>
       </div>
     );
@@ -105,7 +105,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
       )}
 
       {/* Destinations List */}
-      <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+      <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-[#d4af37]" />

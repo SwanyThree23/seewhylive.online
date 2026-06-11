@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Copy, Eye, EyeOff, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 import { toast } from 'sonner';
 import BitratePresets from './BitratePresets';
 import GuestStreamMonitor from './GuestStreamMonitor';
@@ -40,7 +40,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
   if (!isHost) return null;
 
   return (
-    <div className="bg-[rgba(13,6,24,0.95)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(8,11,24,0.95)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-white/5 bg-[rgba(7,7,15,0.7)]">
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-[#d4af37]" />

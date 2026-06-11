@@ -596,7 +596,7 @@ export default function OnboardingPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ background: 'rgba(13,6,24,0.97)', borderRadius: 16, border: '1px solid rgba(212,175,55,0.12)', overflow: 'hidden', margin: '0 12px' }}
+          style={{ background: 'rgba(8,11,24,0.97)', borderRadius: 16, border: '1px solid rgba(212,175,55,0.12)', overflow: 'hidden', margin: '0 12px' }}
         >
           <StepProgress step={step} onboarding={onboarding} />
           <AnimatePresence mode="wait">

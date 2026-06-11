@@ -98,7 +98,7 @@ export default function BetaStatusPage() {
             { label: 'Revenue Split', value: '90/10', color: '#D4AF37' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="text-3xl font-black" style={{ fontFamily: 'Orbitron, monospace', color }}>{value}</p>
               <p className="text-[10px] font-black uppercase mt-1" style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{label}</p>
             </div>
@@ -106,7 +106,7 @@ export default function BetaStatusPage() {
         </div>
 
         {/* Feature checklist */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4" style={{ color: '#6DBF7E' }} />
@@ -144,7 +144,7 @@ export default function BetaStatusPage() {
         </div>
 
         {/* Getting started guide */}
-        <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <p className="font-black text-sm text-white mb-4" style={T}>Getting Started Guide</p>
           <div className="space-y-3">
             {[

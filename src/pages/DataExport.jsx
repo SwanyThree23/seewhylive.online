@@ -100,7 +100,7 @@ export default function DataExportPage() {
       <div className="max-w-3xl mx-auto px-4 md:px-6 pt-6 space-y-4">
         {EXPORT_SETS.map(set => (
           <div key={set.id} className="rounded-2xl p-5"
-            style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.1)` }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.1)` }}>
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="font-black text-sm text-white" style={T}>{set.label}</p>
@@ -136,7 +136,7 @@ export default function DataExportPage() {
 
         {/* Privacy note */}
         <div className="rounded-2xl p-4 flex items-start gap-3"
-          style={{ background: 'rgba(13,6,24,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ background: 'rgba(8,11,24,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#6DBF7E' }} />
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             All exports contain only <strong style={{ color: 'rgba(255,255,255,0.6)' }}>your own data</strong>. Files are generated locally in your browser and never sent to any server.

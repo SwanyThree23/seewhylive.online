@@ -125,7 +125,7 @@ function PresetCard({ preset, isActive, onApply }) {
       whileHover={{ scale: 1.015 }}
       transition={{ duration: 0.2 }}
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid ${isActive ? `rgba(212,175,55,0.45)` : 'rgba(212,175,55,0.1)'}`,
         borderRadius: '16px',
         padding: '14px',
@@ -194,7 +194,7 @@ function CustomCard({ tpl, isActive, onApply, onEdit, onDelete }) {
       whileHover={{ scale: 1.015 }}
       transition={{ duration: 0.2 }}
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid ${isActive ? `rgba(212,175,55,0.45)` : 'rgba(212,175,55,0.1)'}`,
         borderRadius: '16px',
         padding: '14px',
@@ -546,7 +546,7 @@ export default function SceneTemplates() {
             </div>
           ) : customTemplates.length === 0 ? (
             <div style={{
-              background: 'rgba(13,6,24,0.7)',
+              background: 'rgba(8,11,24,0.7)',
               border: '1px dashed rgba(212,175,55,0.15)',
               borderRadius: '14px',
               padding: '32px',
@@ -622,7 +622,7 @@ export default function SceneTemplates() {
                 style={{ overflow: 'hidden' }}
               >
                 <div style={{
-                  background: 'rgba(13,6,24,0.9)',
+                  background: 'rgba(8,11,24,0.9)',
                   border: '1px solid rgba(212,175,55,0.12)',
                   borderTop: 'none',
                   borderRadius: '0 0 14px 14px',

@@ -113,7 +113,7 @@ function FanbaseRoomCard({ room }) {
     <Link to={`/LiveRoom?id=${room.id}`}>
       <motion.div whileTap={{ scale: 0.98 }}
         className="rounded-2xl overflow-hidden cursor-pointer"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
 
         {/* Top row: LIVE + TRENDING badges | Join */}
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
@@ -144,7 +144,7 @@ function FanbaseRoomCard({ room }) {
               <Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} />
             </div>
           )}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
         </div>
 
         {/* Room title + host */}
@@ -700,7 +700,7 @@ export default function Home() {
               return (
                 <Link key={c.id} to={createPageUrl('Communities')}>
                   <motion.div whileTap={{ scale: 0.97 }} className="rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
                     <div className="h-20 flex items-center justify-center"
                       style={{ background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
                       <Users className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />

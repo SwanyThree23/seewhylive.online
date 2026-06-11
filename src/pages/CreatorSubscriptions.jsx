@@ -70,7 +70,7 @@ function TierCard({ tier, isCurrentTier, onSubscribe, onCancel, loading, isDefau
       style={{
         position: 'relative',
         borderRadius: 20,
-        background: 'rgba(13,6,24,0.95)',
+        background: 'rgba(8,11,24,0.95)',
         border: `1px solid ${tier.popular || tier.is_featured ? tier.color + '55' : 'rgba(255,255,255,0.08)'}`,
         overflow: 'hidden',
         display: 'flex',

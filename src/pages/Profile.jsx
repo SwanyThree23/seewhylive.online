@@ -22,7 +22,7 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 function DarkCard({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-2xl ${className}`}
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
       {children}
     </div>
   );

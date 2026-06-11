@@ -24,7 +24,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
   );
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-all"

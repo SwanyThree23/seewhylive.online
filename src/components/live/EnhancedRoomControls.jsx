@@ -21,7 +21,7 @@ export default function EnhancedRoomControls({
   return (
     <div className="space-y-2">
       {/* Audio Mixer Section */}
-      <div className="bg-[rgba(13,6,24,0.95)] rounded-lg border border-[rgba(212,175,55,0.15)] overflow-hidden">
+      <div className="bg-[rgba(8,11,24,0.95)] rounded-lg border border-[rgba(212,175,55,0.15)] overflow-hidden">
         <button
           onClick={() => toggleSection('audio')}
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-all"
@@ -53,7 +53,7 @@ export default function EnhancedRoomControls({
 
       {/* Room Branding Section */}
       {isHost && (
-        <div className="bg-[rgba(13,6,24,0.95)] rounded-lg border border-[rgba(212,175,55,0.15)] overflow-hidden">
+        <div className="bg-[rgba(8,11,24,0.95)] rounded-lg border border-[rgba(212,175,55,0.15)] overflow-hidden">
           <button
             onClick={() => toggleSection('branding')}
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-all"

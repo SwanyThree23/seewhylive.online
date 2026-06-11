@@ -178,7 +178,7 @@ function TierLadderPanel({ subCount }) {
             style={{
               border: `1px solid ${isHover ? tier.color : tier.color + '30'}`,
               borderRadius: 12, padding: '12px 16px',
-              background: isHover ? `${tier.color}10` : 'rgba(13,6,24,0.7)',
+              background: isHover ? `${tier.color}10` : 'rgba(8,11,24,0.7)',
               cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 12,
             }}
           >
@@ -248,7 +248,7 @@ function RevenueStreamsPanel({ transactions, subscriptions }) {
         const pct   = gross > 0 ? (stream.amount / gross) * 100 : 0;
         return (
           <div key={stream.id} style={{
-            background: 'rgba(13,6,24,0.8)', border: `1px solid ${stream.color}25`,
+            background: 'rgba(8,11,24,0.8)', border: `1px solid ${stream.color}25`,
             borderRadius: 12, padding: 16,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -285,7 +285,7 @@ function PayoutPanel({ netEarnings }) {
   })();
 
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${G}20`, borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${G}20`, borderRadius: 16, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Calendar style={{ width: 16, height: 16, color: G }} />
         <span style={{ fontWeight: 700, color: G, fontSize: 15, ...T }}>Payout Schedule</span>
@@ -335,7 +335,7 @@ function PayoutPanel({ netEarnings }) {
 function MilestonesPanel({ subCount }) {
   const count = subCount || 0;
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${PINK}20`, borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${PINK}20`, borderRadius: 16, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Award style={{ width: 16, height: 16, color: PINK }} />
         <span style={{ fontWeight: 700, color: PINK, fontSize: 15, ...T }}>Growth Milestones</span>
@@ -395,7 +395,7 @@ function ConversionFunnel({ totalViewers, subscribers, tips, activePPV }) {
   ];
 
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${TEAL}20`, borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${TEAL}20`, borderRadius: 16, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <Activity style={{ width: 16, height: 16, color: TEAL }} />
         <span style={{ fontWeight: 700, color: TEAL, fontSize: 15, ...T }}>Conversion Funnel</span>
@@ -444,7 +444,7 @@ function StreakWidget({ transactions }) {
   const bonusPct = Math.min(streak * 2, 20);
 
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${CRIMSON}25`, borderRadius: 16, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${CRIMSON}25`, borderRadius: 16, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
       <motion.div
         animate={{ scale: [1, 1.08, 1] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -546,7 +546,7 @@ export default function MonetizationPage() {
   }, [flywheelStage]);
 
   const card = (children, extra = {}) => ({
-    background: 'rgba(13,6,24,0.85)',
+    background: 'rgba(8,11,24,0.85)',
     border: '1px solid rgba(212,175,55,0.1)',
     borderRadius: 16,
     padding: 20,

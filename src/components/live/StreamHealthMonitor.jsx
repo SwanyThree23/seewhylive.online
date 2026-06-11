@@ -42,7 +42,7 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
   return (
     <motion.div
       layout
-      className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden"
+      className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden"
       style={{ backdropFilter: 'blur(12px)' }}
     >
       <button

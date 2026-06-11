@@ -78,7 +78,7 @@ function FormatCard({ fmt, onSelect }) {
         width: '100%',
         padding: '16px 18px',
         borderRadius: 16,
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid rgba(255,255,255,0.08)`,
         borderLeft: `4px solid ${fmt.color}`,
         cursor: 'pointer',

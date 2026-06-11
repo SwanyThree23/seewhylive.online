@@ -79,7 +79,7 @@ export default function CreatorChannel() {
       {/* Hero Banner */}
       <div className="relative h-56 md:h-72 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #080B18 100%)` }}>
         {bannerUrl && <img src={bannerUrl} alt="banner" className="w-full h-full object-cover absolute inset-0" />}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(13,6,24,0.95) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(8,11,24,0.95) 100%)' }} />
         {liveRoom && (
           <div className="absolute top-4 right-4">
             <span className="px-3 py-1.5 rounded-full text-xs font-black animate-pulse flex items-center gap-1.5"
@@ -175,7 +175,7 @@ export default function CreatorChannel() {
         {activeTab === 'live' && (
           <div className="pb-16">
             {liveRoom ? (
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
                 <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CRIMSON}44, #080B18)` }}>
                   <div className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-2">
@@ -213,7 +213,7 @@ export default function CreatorChannel() {
         {activeTab === 'schedule' && (
           <div className="pb-16 space-y-3">
             {(profile?.stream_schedule || []).map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+              <div key={i} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
                   <Calendar className="w-5 h-5" style={{ color: GOLD }} />
                 </div>
@@ -228,7 +228,7 @@ export default function CreatorChannel() {
               </div>
             ))}
             {scheduledRooms.map(r => (
-              <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+              <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
                   <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
                 </div>
@@ -252,7 +252,7 @@ export default function CreatorChannel() {
               <Crown className="w-5 h-5" style={{ color: GOLD }} />
               <h3 className="text-lg font-black text-white" style={T}>Support {displayName}</h3>
             </div>
-            <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.5)' }}>
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.5)' }}>
               <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
             </div>
             <TierSubscribeCard
@@ -272,7 +272,7 @@ export default function CreatorChannel() {
         {/* About */}
         {activeTab === 'about' && (
           <div className="pb-16">
-            <div className="rounded-2xl p-6 space-y-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+            <div className="rounded-2xl p-6 space-y-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div>
                 <p className="text-xs font-black uppercase mb-2" style={{ color: GOLD, ...T }}>About</p>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>{bio}</p>

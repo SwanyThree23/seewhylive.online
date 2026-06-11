@@ -119,7 +119,7 @@ export default function AIModerationPage() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 space-y-5">
         {/* Scan progress */}
         {isScanning && (
-          <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
             <div className="flex items-center gap-2 mb-2 text-xs" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>
               <MessageSquare className="w-4 h-4 animate-pulse" />
               Analyzing messages with AI…
@@ -140,7 +140,7 @@ export default function AIModerationPage() {
             { label: 'Violations', value: stats.violations, icon: XCircle, color: '#C0392B' },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4 flex flex-col gap-2"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <div className="flex items-center gap-2">
                 <Icon className="w-4 h-4" style={{ color }} />
                 <span className="text-[10px] font-black uppercase" style={{ ...T, color: 'rgba(255,255,255,0.4)' }}>{label}</span>
@@ -174,7 +174,7 @@ export default function AIModerationPage() {
             <div className="space-y-3">
               {flagged.map(mod => (
                 <div key={mod.id} className="rounded-2xl p-4"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -227,7 +227,7 @@ export default function AIModerationPage() {
             <div className="space-y-3">
               {reviewed.slice(0, 30).map(mod => (
                 <div key={mod.id} className="rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <div className="flex items-center gap-2 flex-wrap">
                     <ViolationBadge type={mod.violation_type} />
                     <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
@@ -247,7 +247,7 @@ export default function AIModerationPage() {
         {/* Insights */}
         {activeTab === 'insights' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <p className="font-black text-sm text-white mb-1" style={T}>Violation Distribution</p>
               <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Breakdown of detected content types</p>
               {moderations.length === 0 ? (
@@ -271,7 +271,7 @@ export default function AIModerationPage() {
               )}
             </div>
 
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <p className="font-black text-sm text-white mb-1" style={T}>AI Performance</p>
               <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Scan accuracy and review metrics</p>
               {moderations.length === 0 ? (

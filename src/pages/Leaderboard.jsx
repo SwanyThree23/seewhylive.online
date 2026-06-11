@@ -111,7 +111,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
       style={{
         background: isCurrentUser
           ? 'rgba(212,175,55,0.08)'
-          : isEven ? 'rgba(17,8,34,0.6)' : 'rgba(13,6,24,0.4)',
+          : isEven ? 'rgba(8,11,24,0.6)' : 'rgba(8,11,24,0.4)',
         border: `1px solid ${isCurrentUser ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.04)'}`,
       }}>
       {/* rank number */}
@@ -281,7 +281,7 @@ export default function LeaderboardPage() {
         {activeTab === 'svs' && (
           <>
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div className="flex items-center gap-2 px-4 py-3"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <Swords className="w-4 h-4" style={{ color: GOLD }} />
@@ -335,7 +335,7 @@ export default function LeaderboardPage() {
         {/* ── top-3 podium ── */}
         {activeTab !== 'svs' && top3.length > 0 && (
           <div className="rounded-2xl p-5"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
             {/* reorder: 2nd | 1st | 3rd */}
             <div className="flex items-end justify-center gap-4">
               {top3[1] && (
@@ -366,7 +366,7 @@ export default function LeaderboardPage() {
         {/* ── rank list (4th+) ── */}
         {activeTab !== 'svs' && list.length === 0 ? (
           <div className="rounded-2xl flex items-center justify-center py-16"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No data yet</p>
           </div>
         ) : activeTab === 'earnings' && (
@@ -376,7 +376,7 @@ export default function LeaderboardPage() {
         )}
         {activeTab !== 'svs' && rest.length > 0 && (
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="flex items-center gap-2 px-4 py-3"
               style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
               <Trophy className="w-4 h-4" style={{ color: 'rgba(212,175,55,0.5)' }} />

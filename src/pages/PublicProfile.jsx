@@ -130,7 +130,7 @@ export default function PublicProfile() {
 
         {/* Recent Rooms */}
         {rooms.length > 0 && (
-          <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-xs font-black uppercase mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
               <Video className="w-4 h-4" /> Recent Streams
             </p>

@@ -45,8 +45,8 @@ var ET = {
   clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
-  darkEarth: 'rgba(13,6,24,0.95)',
-  midEarth: 'rgba(17,8,34,0.9)',
+  darkEarth: 'rgba(8,11,24,0.95)',
+  midEarth: 'rgba(8,11,24,0.9)',
   bg: '#080B18',
 };
 

@@ -22,12 +22,12 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const CHART_THEME = {
   cartesian: { stroke: 'rgba(255,255,255,0.06)' },
   tick: { fill: 'rgba(255,255,255,0.35)', fontSize: 10 },
-  tooltip: { contentStyle: { background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
+  tooltip: { contentStyle: { background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
 };
 
 function StatCard({ label, value, icon: Icon, color, badge, sub }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)', borderRadius: 14, padding: '14px 16px', position: 'relative' }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)', borderRadius: 14, padding: '14px 16px', position: 'relative' }}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>{label}</p>
@@ -45,14 +45,14 @@ function StatCard({ label, value, icon: Icon, color, badge, sub }) {
 
 function DarkCard({ title, children }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
       {title && <p className="font-black text-sm text-white mb-4" style={T}>{title}</p>}
       {children}
     </div>
   );
 }
 
-const BG2 = 'rgba(13,6,24,0.9)';
+const BG2 = 'rgba(8,11,24,0.9)';
 const TABS = ['overview', 'users', 'rooms', 'reports', 'revenue', 'security', 'audit'];
 
 export default function AdminDashboard() {
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                <input style={{ width: '100%', padding: '9px 12px 9px 38px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', boxSizing: 'border-box' }}
+                <input style={{ width: '100%', padding: '9px 12px 9px 38px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', boxSizing: 'border-box' }}
                   placeholder="Search users…" value={userSearch} onChange={e => setUserSearch(e.target.value)} />
               </div>
               <span className="text-[10px] font-black px-2.5 py-1 rounded-full" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, ...T }}>{filteredUsers.length} users</span>
@@ -328,7 +328,7 @@ export default function AdminDashboard() {
           ) : (
             <div className="space-y-3">
               {reports.map(report => (
-                <div key={report.id} className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.25)' : 'rgba(212,175,55,0.1)'}` }}>
+                <div key={report.id} className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.25)' : 'rgba(212,175,55,0.1)'}` }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">

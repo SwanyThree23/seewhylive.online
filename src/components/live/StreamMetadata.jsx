@@ -82,7 +82,7 @@ export default function StreamMetadata({ room, isHost }) {
           value={title}
           onChange={e => setTitle(e.target.value.slice(0, 100))}
           placeholder="Stream title..."
-          style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+          style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
         />
       </div>
 
@@ -110,7 +110,7 @@ export default function StreamMetadata({ room, isHost }) {
             onChange={e => setTagInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addTag()}
             placeholder="Add a tag..."
-            style={{ flex:1, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
           />
           <button onClick={addTag} className="w-8 h-8 rounded-lg bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] hover:bg-[#d4af37]/20">
             <Plus className="w-3.5 h-3.5" />

@@ -46,7 +46,7 @@ function FlaggedItem({ mod, onAction, user }) {
   const vStyle = VIOLATION_STYLES[mod.violation_type] || VIOLATION_STYLES.inappropriate;
   return (
     <div className="rounded-xl p-3 space-y-2"
-      style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${vStyle.border}` }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${vStyle.border}` }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5 items-center">
           <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
@@ -151,7 +151,7 @@ function ReportItem({ report, onAction, user }) {
   const pri = PRIORITY_STYLES[report.priority] || PRIORITY_STYLES.medium;
   return (
     <div className="rounded-xl p-3 space-y-2"
-      style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${pri.color}25` }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${pri.color}25` }}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
@@ -257,7 +257,7 @@ export default function ModerationDashboardPage() {
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Header */}
       <div className="px-4 md:px-8 py-4 flex items-center justify-between"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2.5">
           <Shield className="w-5 h-5" style={{ color: GOLD }} />
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>

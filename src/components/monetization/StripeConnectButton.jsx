@@ -78,7 +78,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
   const cardStyle = {
     border: `2px solid ${isConnected ? '#22c55e' : '#e2e8f0'}`,
     borderRadius: 12,
-    background: 'rgba(13,6,24,0.95)',
+    background: 'rgba(8,11,24,0.95)',
     color: '#fff',
     fontFamily: 'Barlow Condensed, sans-serif',
     overflow: 'hidden',

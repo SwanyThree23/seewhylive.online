@@ -51,7 +51,7 @@ export default function MySubscriptions({ userId }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {subs.map((sub, idx) => (
         <motion.div key={sub.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
-          <div style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <div style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, fontFamily: 'Barlow Condensed, sans-serif' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                 <span style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>{sub.tier_name}</span>

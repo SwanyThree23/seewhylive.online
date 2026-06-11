@@ -1020,7 +1020,7 @@ export default function LiveRoom() {
         }}>
           <div style={{
             width: '100%', maxWidth: 360,
-            background: 'rgba(13,6,24,0.98)',
+            background: 'rgba(8,11,24,0.98)',
             border: '1px solid rgba(212,175,55,0.3)',
             borderRadius: 20,
             padding: 32,
