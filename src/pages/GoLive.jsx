@@ -676,6 +676,24 @@ export default function GoLive() {
         )}
       </AnimatePresence>
 
+      {/* Quick-links before the go-live button */}
+      {step === 'setup' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '0 16px 80px', justifyContent: 'center' }}>
+          {[
+            { label: '📅 Scheduler', href: 'StreamScheduler' },
+            { label: '📡 Multi-Platform', href: 'MultiPlatform' },
+            { label: '🎛 Control Room', href: 'ControlRoom' },
+            { label: '📊 Analytics', href: 'StreamAnalytics' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: FONT, fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }}>
+                {item.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+
       {step === 'setup' && (
         <div style={{
           position: 'fixed', bottom: 0, inset: 0, top: 'auto',
