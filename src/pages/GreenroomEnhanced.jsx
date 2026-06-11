@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import DevicePreview from '../components/greenroom/DevicePreview';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -11,6 +14,7 @@ const GREEN = '#6DBF7E';
 export default function GreenroomEnhanced() {
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
+  const [webrtcError, setWebrtcError] = useState(null);
   const [audioLevel, setAudioLevel] = useState(0);
   const [checklist, setChecklist] = useState([
     { id: 'cam',   label: 'Camera connected & working', done: false, auto: true },
@@ -196,6 +200,22 @@ export default function GreenroomEnhanced() {
             </button>
           )}
         </div>
+
+        {/* Device Preview */}
+        <DevicePreview user={null} onDeviceState={() => {}} />
+
+        {/* WebRTC Setup Banner (shows if camera/mic fails) */}
+        {webrtcError && (
+          <WebRTCSetupBanner
+            error={webrtcError}
+            audioEnabled={audioLevel > 0}
+            videoEnabled={!!cameraStream}
+            onRetry={() => setWebrtcError(null)}
+          />
+        )}
+
+        {/* RTMP / WHIP Ingest Panel */}
+        <EnhancedIngestPanel roomId={null} isHost={true} />
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
