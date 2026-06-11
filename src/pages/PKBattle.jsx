@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Swords, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import PKBattleProgress from '@/components/pk/PKBattleProgress';
 import PKBattleVotePanel from '@/components/pk/PKBattleVotePanel';
 import PKInviteModal from '@/components/pk/PKInviteModal';
@@ -199,6 +201,28 @@ export default function PKBattlePage() {
         onClose={() => setShowInviteModal(false)}
         creators={creators}
       />
+
+      {/* Quick links */}
+      <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6 flex gap-3 flex-wrap pb-6">
+        <Link to={createPageUrl('PKBattleManager')} style={{ textDecoration: 'none' }}>
+          <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: G, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+            ⚙️ Battle Manager
+          </span>
+        </Link>
+        <Link to={createPageUrl('Leaderboard')} style={{ textDecoration: 'none' }}>
+          <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: G, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+            🏆 Leaderboard
+          </span>
+        </Link>
+        <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none' }}>
+          <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+            style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+            🗺 State vs State
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -16,6 +16,7 @@ import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
 import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import TippingOverlay from '../components/live/TippingOverlay';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
@@ -975,6 +976,11 @@ export default function LiveRoom() {
 
       {/* Points notification */}
       {user?.id && <PointsNotification userId={user.id} />}
+
+      {/* Live auction (host can run auctions during stream) */}
+      {isHost && party?.id && (
+        <LiveAuctionWidget roomId={party.id} currentUser={user} isHost={isHost} />
+      )}
 
       {/* Loyalty badge */}
       {user?.id && party?.host_id && (
