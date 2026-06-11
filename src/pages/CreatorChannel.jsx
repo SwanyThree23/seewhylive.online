@@ -11,6 +11,7 @@ import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import TierBadge from '../components/subscriptions/TierBadge';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import VideoLibrary from '../components/vod/VideoLibrary';
+import RewardShop from '../components/loyalty/RewardShop';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -266,6 +267,9 @@ export default function CreatorChannel() {
               <StripeSubscribeButton creatorId={userId} creatorName={displayName} currentUserId={currentUser.id} />
             )}
             <TierBadge tier="bronze" size="sm" showName />
+            {currentUser?.id && (
+              <RewardShop creatorId={userId} roomId={null} currentUser={currentUser} />
+            )}
           </div>
         )}
 
