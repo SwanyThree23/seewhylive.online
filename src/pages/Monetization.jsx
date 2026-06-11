@@ -21,18 +21,19 @@ import StripeConnectButton from '../components/monetization/StripeConnectButton'
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
+import ShopDashboard from '../components/merch/ShopDashboard';
 import PayPerViewCard from '@/components/monetization/PayPerViewCard';
 import { toast } from 'sonner';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
-const TEAL    = '#00F5FF';
+const PINK    = '#C0392B';
+const TEAL    = '#D4854A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const FLYWHEEL_STAGES = [
-  { id: 'attract',  label: 'ATTRACT',  icon: Eye,         color: '#6366f1', desc: 'Free content hooks new viewers' },
+  { id: 'attract',  label: 'ATTRACT',  icon: Eye,         color: '#C0392B', desc: 'Free content hooks new viewers' },
   { id: 'engage',   label: 'ENGAGE',   icon: Heart,       color: PINK,      desc: 'Chat, reactions & live interaction' },
   { id: 'convert',  label: 'CONVERT',  icon: ArrowRight,  color: TEAL,      desc: 'Free → Subscriber upgrade' },
   { id: 'monetize', label: 'MONETIZE', icon: DollarSign,  color: G,         desc: 'Tips, PPV, subs, gifts, AI music' },
@@ -53,7 +54,7 @@ const REVENUE_STREAMS = [
   { id: 'tips',          label: 'Live Tips',     icon: Heart,      color: PINK,       desc: 'Real-time tip alerts',    split: '90%' },
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
   { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#f97316', desc: 'Animated gift shop',       split: '80%' },
-  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#a855f7', desc: 'Stream your AI tracks',    split: '70%' },
+  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#D4854A', desc: 'Stream your AI tracks',    split: '70%' },
   { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#22c55e', desc: 'CPM-based display ads',    split: '65%' },
 ];
 
@@ -63,7 +64,7 @@ const MILESTONES = [
   { subs: 100,  reward: 'Custom Channel Banner',  icon: Award,  color: G },
   { subs: 500,  reward: 'Staff Pick Feature',     icon: Zap,    color: PINK },
   { subs: 1000, reward: 'Revenue Share Boost +5%',icon: Rocket, color: TEAL },
-  { subs: 5000, label: 'Partner Status',          icon: Crown,  color: '#a855f7' },
+  { subs: 5000, label: 'Partner Status',          icon: Crown,  color: '#D4854A' },
 ];
 
 function exportCSV(transactions, subscriptions) {
@@ -387,7 +388,7 @@ function ConversionFunnel({ totalViewers, subscribers, tips, activePPV }) {
   const convRate = viewers > 0 ? ((subs / viewers) * 100).toFixed(1) : '0.0';
 
   const stages = [
-    { label: 'Total Viewers',   val: viewers,  color: '#6366f1', pct: 100 },
+    { label: 'Total Viewers',   val: viewers,  color: '#C0392B', pct: 100 },
     { label: 'Subscribers',     val: subs,     color: TEAL,      pct: viewers > 0 ? Math.min((subs / viewers) * 100, 100) : 0 },
     { label: 'Active Tippers',  val: tippers,  color: PINK,      pct: subs > 0 ? Math.min((tippers / subs) * 100, 100) : 0 },
     { label: 'PPV Buyers',      val: ppv,      color: G,         pct: viewers > 0 ? Math.min((ppv / viewers) * 100, 100) : 0 },
@@ -814,8 +815,9 @@ export default function MonetizationPage() {
           )}
 
           {tab === 'store' && user?.id && (
-            <motion.div key="store" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            <motion.div key="store" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-8">
               <VirtualGoodsStore userId={user.id} />
+              <ShopDashboard creatorId={user.id} />
             </motion.div>
           )}
         </AnimatePresence>

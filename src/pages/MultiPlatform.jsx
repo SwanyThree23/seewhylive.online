@@ -6,7 +6,7 @@ const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK   = '#FF1564';
+const PINK    = '#C0392B';
 const CYAN   = '#D4854A';
 const PURPLE = '#8B44B0';
 const GREEN  = '#5A7A4A';
@@ -315,7 +315,7 @@ export default function MultiPlatform() {
                               {wh.events.map(ev => <span key={ev} style={{ ...T, fontSize:10, padding:'1px 7px', borderRadius:999, background:`${CYAN}15`, border:`1px solid ${CYAN}30`, color:CYAN }}>{ev}</span>)}
                             </div>
                           </div>
-                          <button onClick={() => { saveWebhooks(webhooks.filter(w=>w.id!==wh.id)); showToast('Webhook deleted'); }} style={{ background:'none', border:'none', color:'rgba(255,21,100,0.6)', cursor:'pointer', fontSize:13, fontWeight:700, ...T }}>✕</button>
+                          <button onClick={() => { saveWebhooks(webhooks.filter(w=>w.id!==wh.id)); showToast('Webhook deleted'); }} style={{ background:'none', border:'none', color:'rgba(192,57,43,0.6)', cursor:'pointer', fontSize:13, fontWeight:700, ...T }}>✕</button>
                         </div>
                       ))}
                     </div>

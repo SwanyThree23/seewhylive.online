@@ -5,7 +5,7 @@ import { Sparkles, Zap, Heart, BarChart2, Smile, Volume2, VolumeX, RefreshCw } f
 import { toast } from 'sonner';
 
 const MODES = [
-  { id: 'SASSY', label: 'Sassy', emoji: '💅', color: '#FF1564', desc: 'Sharp & witty' },
+  { id: 'SASSY', label: 'Sassy', emoji: '💅', color: '#C0392B', desc: 'Sharp & witty' },
   { id: 'HYPE', label: 'Hype', emoji: '🔥', color: '#FF8C00', desc: 'High energy' },
   { id: 'CALM', label: 'Calm', emoji: '🧠', color: '#C9A84C', desc: 'Analytical' },
   { id: 'KIND', label: 'Kind', emoji: '💜', color: '#D4AF37', desc: 'Warm & uplifting' },

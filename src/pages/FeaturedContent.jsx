@@ -205,7 +205,7 @@ export default function FeaturedContent() {
             </div>
           </div>
           <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noopener noreferrer">
-            <button style={{ background: '#FF1564', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button style={{ background: '#C0392B', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               <ExternalLink className="w-4 h-4" />
               Visit Studio Pro
             </button>

@@ -83,7 +83,7 @@ export default function CreatorChannel() {
         {liveRoom && (
           <div className="absolute top-4 right-4">
             <span className="px-3 py-1.5 rounded-full text-xs font-black animate-pulse flex items-center gap-1.5"
-              style={{ background: 'rgba(255,21,100,0.85)', color: '#fff', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.85)', color: '#fff', ...T }}>
               <div className="w-2 h-2 rounded-full bg-white" /> LIVE NOW
             </span>
           </div>
@@ -108,7 +108,7 @@ export default function CreatorChannel() {
           <div className="flex-1 min-w-0 pb-2">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-black text-white" style={T}>{displayName}</h1>
-              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#00d4ff' }} />}
+              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase capitalize"
                 style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                 {category}
@@ -125,7 +125,7 @@ export default function CreatorChannel() {
             {liveRoom ? (
               <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', cursor: 'pointer', ...T }}>
+                  style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                   <Radio className="w-4 h-4" /> Watch Now
                 </button>
               </Link>
@@ -180,7 +180,7 @@ export default function CreatorChannel() {
                   <div className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="font-black text-sm uppercase" style={{ color: '#FF1564', ...T }}>LIVE NOW</span>
+                      <span className="font-black text-sm uppercase" style={{ color: '#C0392B', ...T }}>LIVE NOW</span>
                     </div>
                     <h3 className="text-xl font-black text-white" style={T}>{liveRoom.title}</h3>
                     <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{liveRoom.viewer_count || 0} viewers watching</p>
@@ -189,7 +189,7 @@ export default function CreatorChannel() {
                 <div className="p-4">
                   <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                     <button className="w-full py-3 rounded-xl font-black uppercase text-sm flex items-center justify-center gap-2"
-                      style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', cursor: 'pointer', ...T }}>
+                      style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                       <Play className="w-4 h-4" /> Join Stream
                     </button>
                   </Link>
@@ -229,14 +229,14 @@ export default function CreatorChannel() {
             ))}
             {scheduledRooms.map(r => (
               <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)' }}>
-                  <Clock className="w-5 h-5" style={{ color: '#00d4ff' }} />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                  <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
                 </div>
                 <div className="flex-1">
                   <p className="font-black text-sm text-white" style={T}>{r.title}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : 'Scheduled'}</p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', ...T }}>Upcoming</span>
               </div>
             ))}
             {!profile?.stream_schedule?.length && !scheduledRooms.length && (

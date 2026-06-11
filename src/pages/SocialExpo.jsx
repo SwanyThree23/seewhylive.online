@@ -12,8 +12,8 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
-const TEAL    = '#00F5FF';
+const PINK    = '#C0392B';
+const TEAL    = '#D4854A';
 const BG      = '#080B18';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -298,7 +298,7 @@ export default function SocialExpo() {
                       return (
                         <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                           <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(13,6,24,0.9)',
-                            border: '1px solid rgba(255,21,100,0.15)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+                            border: '1px solid rgba(192,57,43,0.15)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
                             <div style={{ position: 'relative', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0010, #0d0620)' }}>
                               <img src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} alt={video.title}
                                 onError={e => { e.target.style.display = 'none'; }}

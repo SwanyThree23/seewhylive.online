@@ -46,7 +46,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#FF1564', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -71,7 +71,7 @@ function FanbaseRoomCard({ room }) {
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-          style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
         </div>
         {viewers > 0 && (
@@ -176,9 +176,9 @@ export default function DiscoverPage() {
               Discover
             </h1>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FF1564] animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
               <span className="text-sm font-bold text-white/70" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                {liveRooms.length} <span style={{ color: '#FF1564' }}>LIVE</span>
+                {liveRooms.length} <span style={{ color: '#C0392B' }}>LIVE</span>
               </span>
             </div>
           </div>
@@ -405,7 +405,7 @@ function TrendingCard({ room, rank }) {
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#FF1564]/30 transition-all cursor-pointer"
+        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#C0392B]/30 transition-all cursor-pointer"
         style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
       >
         {room.thumbnail_url && (
@@ -413,12 +413,12 @@ function TrendingCard({ room, rank }) {
         )}
         {!room.thumbnail_url && (
           <div className="w-full h-28 bg-gradient-to-br from-[#1a0010] to-[#0B0B18] flex items-center justify-center">
-            <Radio className="w-10 h-10 text-[#FF1564]/30" />
+            <Radio className="w-10 h-10 text-[#C0392B]/30" />
           </div>
         )}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           <span className="text-xs font-black font-mono" style={{ color: rankColors[rank - 1] }}>#{rank}</span>
-          <span style={{ background: '#FF1564', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+          <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
           </span>
         </div>
@@ -468,7 +468,7 @@ function CreatorCard({ creator }) {
         style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-            style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
           </div>
         )}
