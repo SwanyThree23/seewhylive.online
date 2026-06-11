@@ -5585,6 +5585,317 @@ function StripePayoutPage({ state, dispatch }) {
   );
 }
 
+
+// ============================================================
+// BATCH Q — Live Viewer Counter + VOD Pipeline +
+//           Founding Sync + WA Classic Live Scoring
+// ============================================================
+
+// ── LIVE VIEWER COUNTER HOOK ──────────────────────────────────
+
+function useLiveViewerCount(streamId) {
+  var [count, setCount] = React.useState(0);
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+  React.useEffect(function() {
+    if (!streamId) return;
+    function fetchCount() {
+      fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + streamId + '&select=viewer_count', {
+        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        if (d && d[0]) setCount(d[0].viewer_count || 0);
+      }).catch(function() {});
+    }
+    fetchCount();
+    var interval = setInterval(fetchCount, 5000);
+    return function() { clearInterval(interval); };
+  }, [streamId]);
+  return count;
+}
+
+// ── VOD PIPELINE PAGE ─────────────────────────────────────────
+
+function VODPipelinePage({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('library');
+  var tabs = [['library','🎬 LIBRARY'],['record','⏺ RECORD'],['clips','✂️ CLIPS']];
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+  var [vods, setVods] = React.useState([]);
+  var [loading, setLoading] = React.useState(true);
+  var [recording, setRecording] = React.useState(false);
+
+  React.useEffect(function() {
+    fetch(SUPA_URL + '/rest/v1/vods?select=*&order=created_at.desc&limit=20', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      setVods(Array.isArray(d) ? d : []);
+      setLoading(false);
+    }).catch(function() { setLoading(false); });
+  }, []);
+
+  var mockVods = [
+    { id:1, title:'Washington Classic Semi-Finals', duration_seconds:3840, view_count:1204, created_at:'2026-06-14', is_public:true, thumbnail_url:null },
+    { id:2, title:'PK Battle Night — SwanyThree23 vs CaliBonesOG', duration_seconds:2160, view_count:892, created_at:'2026-06-12', is_public:true, thumbnail_url:null },
+    { id:3, title:'VibeNBones Sunday Session', duration_seconds:5400, view_count:486, created_at:'2026-06-11', is_public:true, thumbnail_url:null },
+  ];
+
+  function fmtDur(s) {
+    var h = Math.floor(s/3600);
+    var m = Math.floor((s%3600)/60);
+    var sec = s%60;
+    if (h > 0) return h + 'h ' + m + 'm';
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  var displayVods = vods.length > 0 ? vods : mockVods;
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#050a20,#000510)', padding:'16px 14px 0', borderBottom:'1px solid '+C.cyan+'33' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
+          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,'+C.cyan+',#050a20)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid '+C.cyan+'55' }}>🎬</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.cyan, letterSpacing:2 }}>VOD PIPELINE</div>
+            <div style={{ fontSize:11, color:C.muted }}>{displayVods.length} recordings · Supabase Storage</div>
+          </div>
+          <button onClick={function(){ window.open('https://app.seewhylive.online/VODLibrary','_blank'); }} style={{ background:C.cyan+'22', border:'1px solid '+C.cyan+'44', borderRadius:10, padding:'8px 12px', color:C.cyan, fontFamily:"'Bebas Neue',sans-serif", fontSize:11, cursor:'pointer' }}>APP →</button>
+        </div>
+        <div style={{ display:'flex', gap:2 }}>
+          {tabs.map(function(t){ return (
+            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flex:1, background:'none', border:'none', borderBottom:tab===t[0]?'2px solid '+C.cyan:'2px solid transparent', padding:'8px 4px', color:tab===t[0]?C.cyan:C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding:14 }}>
+        {tab === 'library' && (
+          <div>
+            {loading && <div style={{ textAlign:'center', padding:40, color:C.muted }}>Loading...</div>}
+            {displayVods.map(function(v,i){ return (
+              <div key={v.id||i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:14, overflow:'hidden', marginBottom:12 }}>
+                <div style={{ height:80, background:'linear-gradient(135deg,#0a0a1a,#1a0a0a)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+                  <div style={{ fontSize:32 }}>🎬</div>
+                  <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.8)', borderRadius:4, padding:'2px 6px', fontSize:10, color:C.white, fontFamily:"'Space Mono',monospace" }}>{fmtDur(v.duration_seconds||0)}</div>
+                  {v.is_public && <div style={{ position:'absolute', top:8, left:8, background:C.green+'cc', borderRadius:4, padding:'2px 6px', fontSize:9, color:'#000', fontFamily:"'Bebas Neue',sans-serif" }}>PUBLIC</div>}
+                </div>
+                <div style={{ padding:12 }}>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white, letterSpacing:1, marginBottom:4 }}>{v.title}</div>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <span style={{ fontSize:10, color:C.muted }}>{v.view_count||0} views · {v.created_at ? v.created_at.toString().substring(0,10) : ''}</span>
+                    <button style={{ background:C.cyan+'22', border:'1px solid '+C.cyan+'44', borderRadius:6, padding:'4px 10px', color:C.cyan, fontFamily:"'Bebas Neue',sans-serif", fontSize:10, cursor:'pointer' }}>PLAY</button>
+                  </div>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'record' && (
+          <div>
+            <div style={{ background:'rgba(0,200,200,0.06)', border:'1px solid '+C.cyan+'22', borderRadius:12, padding:14, marginBottom:16, fontSize:11, color:C.muted, lineHeight:1.7 }}>
+              Streams auto-record when you go live. Recordings save to Supabase Storage and appear in the VOD Library on <span style={{ color:C.cyan }}>app.seewhylive.online/VODLibrary</span>
+            </div>
+            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:12 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:1, marginBottom:10 }}>RECORDING STATUS</div>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ width:10, height:10, borderRadius:'50%', background:recording?C.red:C.muted, boxShadow:recording?'0 0 8px '+C.red:'' }}></div>
+                <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:recording?C.red:C.muted }}>{recording?'RECORDING':'STANDBY'}</span>
+              </div>
+            </div>
+            {[
+              { label:'Auto-record streams', sub:'Save all streams to VOD library', on:true },
+              { label:'Auto-generate clips', sub:'AI clips best 60s moments', on:false },
+              { label:'Auto-publish VODs', sub:'Make recordings public immediately', on:true },
+              { label:'Notify followers', sub:'Alert followers when VOD is ready', on:true },
+            ].map(function(s,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:14, marginBottom:8, display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ flex:1 }}>
+                  <div style={{ color:C.white, fontSize:13 }}>{s.label}</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{s.sub}</div>
+                </div>
+                <div style={{ width:44, height:24, borderRadius:12, background:s.on?C.cyan+'33':'#2a2a2a', border:'1px solid '+(s.on?C.cyan+'55':'#333'), position:'relative', flexShrink:0 }}>
+                  <div style={{ position:'absolute', top:3, left:s.on?22:3, width:18, height:18, borderRadius:'50%', background:s.on?C.cyan:'#555' }}></div>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'clips' && (
+          <div style={{ textAlign:'center', padding:40 }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>✂️</div>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.muted, letterSpacing:1 }}>CLIP MANAGER</div>
+            <div style={{ fontSize:11, color:C.muted, marginTop:8, marginBottom:20 }}>Create and share highlight clips from your streams</div>
+            <button onClick={function(){ window.open('https://app.seewhylive.online/ClipsLibrary','_blank'); }} style={{ background:C.cyan, border:'none', borderRadius:12, padding:'14px 28px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>OPEN CLIPS LIBRARY →</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── FOUNDING MEMBER SYNC UTILITY ─────────────────────────────
+
+function useFoundingMemberSync(code, userId) {
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+
+  React.useEffect(function() {
+    if (!code) return;
+    // Validate code against Supabase
+    fetch(SUPA_URL + '/rest/v1/invite_codes?code=eq.' + encodeURIComponent(code) + '&select=id,used,use_count,max_uses', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      if (!d || !d[0]) return;
+      var inv = d[0];
+      if (inv.used && inv.use_count >= inv.max_uses) return;
+      // Mark code as used
+      fetch(SUPA_URL + '/rest/v1/invite_codes?id=eq.' + inv.id, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ used: true, used_at: new Date().toISOString(), use_count: (inv.use_count||0) + 1 })
+      }).catch(function() {});
+    }).catch(function() {});
+  }, [code]);
+}
+
+// ── WASHINGTON CLASSIC LIVE SCORING ───────────────────────────
+
+function WashingtonClassicScoring({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('live');
+  var tabs = [['live','🔴 LIVE'],['bracket','🏆 BRACKET'],['stats','📊 STATS']];
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+  var [match, setMatch] = React.useState({
+    p1: { name:'SwanyThree23', seed:1, score:3, color:C.gold },
+    p2: { name:'BigBoneEarl', seed:4, score:2, color:C.cyan },
+    round:'SEMI-FINAL', bestOf:7, status:'live', location:'Des Moines, WA'
+  });
+  var [updating, setUpdating] = React.useState(false);
+  var [lastUpdate, setLastUpdate] = React.useState('');
+
+  function addPoint(player) {
+    setMatch(function(m) {
+      var nm = Object.assign({}, m, {
+        p1: Object.assign({}, m.p1),
+        p2: Object.assign({}, m.p2)
+      });
+      if (player === 1) nm.p1.score += 1;
+      else nm.p2.score += 1;
+      var needed = Math.ceil(nm.bestOf / 2);
+      if (nm.p1.score >= needed) nm.status = 'p1_wins';
+      if (nm.p2.score >= needed) nm.status = 'p2_wins';
+      return nm;
+    });
+    setLastUpdate(new Date().toLocaleTimeString());
+    // Sync to Supabase pk_battles table
+    fetch(SUPA_URL + '/rest/v1/pk_battles', {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        challenger_username: match.p1.name,
+        opponent_username: match.p2.name,
+        status: 'active',
+        round: match.round
+      })
+    }).catch(function() {});
+  }
+
+  var needed = Math.ceil(match.bestOf / 2);
+  var isLive = match.status === 'live';
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#0a0800,#150d00)', padding:'16px 14px 0', borderBottom:'2px solid '+C.gold+'55' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+          <div style={{ fontSize:22 }}>🏆</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, color:C.gold, letterSpacing:2 }}>WASHINGTON CLASSIC 2026</div>
+            <div style={{ fontSize:10, color:C.muted }}>{match.location} · SeeWhy LIVE · {match.round}</div>
+          </div>
+          {isLive && <div style={{ display:'flex', alignItems:'center', gap:6, background:C.red+'22', border:'1px solid '+C.red+'44', borderRadius:8, padding:'6px 10px' }}>
+            <div style={{ width:7, height:7, borderRadius:'50%', background:C.red, boxShadow:'0 0 6px '+C.red }}></div>
+            <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.red }}>LIVE</span>
+          </div>}
+        </div>
+        <div style={{ display:'flex', gap:2 }}>
+          {tabs.map(function(t){ return (
+            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flex:1, background:'none', border:'none', borderBottom:tab===t[0]?'2px solid '+C.gold:'2px solid transparent', padding:'8px 4px', color:tab===t[0]?C.gold:C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+
+      <div style={{ padding:14 }}>
+        {tab === 'live' && (
+          <div>
+            <div style={{ background:isLive?'rgba(255,50,50,0.06)':'rgba(212,175,55,0.06)', border:'2px solid '+(isLive?C.red:C.gold)+'44', borderRadius:16, padding:20, marginBottom:16 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:2, textAlign:'center', marginBottom:16 }}>BEST OF {match.bestOf} · FIRST TO {needed}</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr auto 1fr', gap:16, alignItems:'center' }}>
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ width:56, height:56, borderRadius:14, background:match.p1.color+'22', border:'2px solid '+match.p1.color+'55', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:match.p1.color, margin:'0 auto 10px' }}>{match.p1.name[0]}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white, letterSpacing:1 }}>{match.p1.name}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>Seed #{match.p1.seed}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:48, color:match.p1.color, lineHeight:1, marginTop:8 }}>{match.p1.score}</div>
+                </div>
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:C.muted }}>VS</div>
+                </div>
+                <div style={{ textAlign:'center' }}>
+                  <div style={{ width:56, height:56, borderRadius:14, background:match.p2.color+'22', border:'2px solid '+match.p2.color+'55', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:match.p2.color, margin:'0 auto 10px' }}>{match.p2.name[0]}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white, letterSpacing:1 }}>{match.p2.name}</div>
+                  <div style={{ fontSize:10, color:C.muted }}>Seed #{match.p2.seed}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:48, color:match.p2.color, lineHeight:1, marginTop:8 }}>{match.p2.score}</div>
+                </div>
+              </div>
+              {isLive && (
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:20 }}>
+                  <button onClick={function(){ addPoint(1); }} style={{ background:match.p1.color+'22', border:'2px solid '+match.p1.color+'44', borderRadius:12, padding:14, color:match.p1.color, fontFamily:"'Bebas Neue',sans-serif", fontSize:14, cursor:'pointer' }}>+1 {match.p1.name.split('').slice(0,8).join('')}</button>
+                  <button onClick={function(){ addPoint(2); }} style={{ background:match.p2.color+'22', border:'2px solid '+match.p2.color+'44', borderRadius:12, padding:14, color:match.p2.color, fontFamily:"'Bebas Neue',sans-serif", fontSize:14, cursor:'pointer' }}>+1 {match.p2.name.split('').slice(0,8).join('')}</button>
+                </div>
+              )}
+              {!isLive && (
+                <div style={{ textAlign:'center', marginTop:16 }}>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:C.gold, letterSpacing:2 }}>
+                    {match.status === 'p1_wins' ? match.p1.name + ' WINS!' : match.p2.name + ' WINS!'}
+                  </div>
+                </div>
+              )}
+            </div>
+            {lastUpdate && <div style={{ textAlign:'center', fontSize:10, color:C.muted }}>Last update: {lastUpdate}</div>}
+            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginTop:12 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:10 }}>MATCH CONTROLS</div>
+              <div style={{ display:'flex', gap:8 }}>
+                <button onClick={function(){ setMatch(function(m){ return Object.assign({},m,{p1:Object.assign({},m.p1,{score:0}),p2:Object.assign({},m.p2,{score:0}),status:'live'}); }); }} style={{ flex:1, background:'none', border:'1px solid #333', borderRadius:8, padding:10, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:12, cursor:'pointer' }}>RESET</button>
+                <button onClick={function(){ setMatch(function(m){ return Object.assign({},m,{status:m.status==='live'?'paused':'live'}); }); }} style={{ flex:1, background:C.gold+'22', border:'1px solid '+C.gold+'44', borderRadius:8, padding:10, color:C.gold, fontFamily:"'Bebas Neue',sans-serif", fontSize:12, cursor:'pointer' }}>{match.status==='paused'?'RESUME':'PAUSE'}</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {tab === 'bracket' && (
+          <div style={{ textAlign:'center', padding:20 }}>
+            <button onClick={function(){ dispatch({ type:'SET_PAGE', payload:'bracket' }); }} style={{ background:'linear-gradient(135deg,'+C.gold+',#8B6914)', border:'none', borderRadius:12, padding:'14px 28px', color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer' }}>VIEW FULL BRACKET →</button>
+          </div>
+        )}
+        {tab === 'stats' && (
+          <div>
+            {[
+              { label:'Total Matches', value:'7', color:C.gold },
+              { label:'Completed', value:'4', color:C.green },
+              { label:'Live Now', value:'1', color:C.red },
+              { label:'Upcoming', value:'2', color:C.cyan },
+              { label:'Total Viewers', value:'4,882', color:'#9B59B6' },
+              { label:'Prize Pool', value:'$500', color:C.gold },
+            ].map(function(s,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:14, marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:13, color:C.muted }}>{s.label}</span>
+                <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, color:s.color }}>{s.value}</span>
+              </div>
+            );})}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -7232,6 +7543,8 @@ function AppV46Router({ state, dispatch }) {
       {page === 'more' && <MoreTab user={user} dispatch={dispatch} />}
         {page === 'fanout' && <RTMPFanoutManager state={state} dispatch={dispatch} />}
         {page === 'leaderboard' && <EliteLeagueLeaderboard state={state} dispatch={dispatch} />}
+        {page === 'vod' && <VODPipelinePage state={state} dispatch={dispatch} />}
+        {page === 'scoring' && <WashingtonClassicScoring state={state} dispatch={dispatch} />}
         {page === 'vod' && <VODPipelinePage state={state} dispatch={dispatch} />}
         {page === 'scoring' && <WashingtonClassicScoring state={state} dispatch={dispatch} />}
         {page === 'zegoroom' && <ZegoLiveRoom state={state} dispatch={dispatch} />}
