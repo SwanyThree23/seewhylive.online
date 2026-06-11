@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import RewardShop from '../components/loyalty/RewardShop';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -238,7 +240,17 @@ export default function LoyaltyHubPage() {
             )}
 
             {activeTab === 'rewards' && (
-              <div className="space-y-2">
+              <div className="space-y-4">
+                {/* Reward Shop */}
+                {user?.id && mainLoyalty?.creator_id && (
+                  <RewardShop creatorId={mainLoyalty.creator_id} roomId={null} currentUser={user} />
+                )}
+
+                {/* Redemption Queue */}
+                {user?.id && mainLoyalty?.creator_id && (
+                  <RedemptionQueue creatorId={mainLoyalty.creator_id} />
+                )}
+
                 {allRewards.length === 0
                   ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No rewards available</p>
                   : allRewards.map((r, i) => {
