@@ -50,6 +50,7 @@ import { MerchStrip } from '../components/merch/MerchWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
 import ChatModeration from '../components/live/ChatModeration';
 import ClipCreator from '../components/live/ClipCreator';
+import StreamMetadata from '../components/live/StreamMetadata';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1068,11 +1069,12 @@ export default function LiveRoom() {
         </div>
       )}
 
-      {/* ── Chat Moderation + Clip Creator (host only) ─────────────────────── */}
+      {/* ── Chat Moderation + Clip Creator + Stream Metadata (host only) ────── */}
       {isHost && (
         <div style={{ padding: '0 16px 16px' }}>
           <ChatModeration collapsed />
           {party?.id && <ClipCreator roomId={party.id} creatorId={user?.id} streamTitle={party.title} elapsedSeconds={0} currentUser={user} />}
+          {party && <StreamMetadata room={party} isHost={isHost} />}
         </div>
       )}
 
