@@ -48,6 +48,8 @@ import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import { MerchStrip } from '../components/merch/MerchWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
+import ChatModeration from '../components/live/ChatModeration';
+import ClipCreator from '../components/live/ClipCreator';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1063,6 +1065,14 @@ export default function LiveRoom() {
       {isHost && party && (
         <div style={{ position: 'fixed', bottom: 148, right: 12, zIndex: 44 }}>
           <RaidPanelButton room={party} currentUser={user} isHost={isHost} />
+        </div>
+      )}
+
+      {/* ── Chat Moderation + Clip Creator (host only) ─────────────────────── */}
+      {isHost && (
+        <div style={{ padding: '0 16px 16px' }}>
+          <ChatModeration collapsed />
+          {party?.id && <ClipCreator roomId={party.id} creatorId={user?.id} streamTitle={party.title} elapsedSeconds={0} currentUser={user} />}
         </div>
       )}
 
