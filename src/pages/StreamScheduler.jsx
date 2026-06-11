@@ -473,6 +473,22 @@ export default function StreamScheduler() {
       </AnimatePresence>
 
       <ShareToSocial />
+
+      {/* Quick navigation to related stream tools */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '8px 16px 32px', justifyContent: 'center' }}>
+        {[
+          { label: '🔴 Go Live',           href: 'GoLive'            },
+          { label: '📡 Multi-Platform',    href: 'MultiPlatform'     },
+          { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'   },
+          { label: '📊 Stream Analytics', href: 'StreamAnalytics'    },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
