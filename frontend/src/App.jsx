@@ -91,6 +91,8 @@ function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).
 function appReducer(state, action) {
   switch (action.type) {
     case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
+    case 'SET_FOUNDING_MEMBER': return Object.assign({}, state, { foundingMemberVerified: true, foundingCode: action.payload.code });
+    case 'CLOSE_FOUNDING_GATE': return Object.assign({}, state, { foundingMemberVerified: true });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
@@ -132,6 +134,7 @@ function appReducer(state, action) {
 }
 
 var initialState = {
+  foundingMemberVerified: true,
   voiceSettings: { enabled: true, autoSpeak: true, micEnabled: true, voice: 'nova', volume: 0.8, speed: 1.0 },
   page: 'home',
   prevPage: null,
@@ -6697,6 +6700,8 @@ function AppV46Router({ state, dispatch }) {
       {page === 'aihub' && <AIHubTab />}
       {page === 'wallet' && <WalletTabV2 />}
       {page === 'more' && <MoreTab user={user} dispatch={dispatch} />}
+        {page === 'fanout' && <RTMPFanoutManager state={state} dispatch={dispatch} />}
+        {page === 'leaderboard' && <EliteLeagueLeaderboard state={state} dispatch={dispatch} />}
       <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} />
     </div>
   );
