@@ -27,12 +27,12 @@ export default function PKBattleSoundboard({ battleId, isBattleActive = false })
             style={{ background: 'rgba(0,0,0,0.2)', borderBottom: isExpanded ? `1px solid ${BORDER}` : 'none' }}
           >
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4" style={{ color: '#FF1564' }} />
+              <Zap className="w-4 h-4" style={{ color: '#C0392B' }} />
               <span className="text-xs font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
                 HYPE SOUNDS
               </span>
             </div>
-            <span className="text-xs" style={{ color: '#FF1564' }}>
+            <span className="text-xs" style={{ color: '#C0392B' }}>
               {isExpanded ? '▼' : '▶'}
             </span>
           </motion.button>

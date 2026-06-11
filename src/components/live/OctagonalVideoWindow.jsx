@@ -27,7 +27,7 @@ export default function OctagonalVideoWindow({
         className="absolute inset-0 rounded-lg"
         style={{
           clipPath,
-          background: 'linear-gradient(135deg, #d4af37, #FF1564)',
+          background: 'linear-gradient(135deg, #d4af37, #C0392B)',
           padding: '3px',
           opacity: 0.5,
           filter: 'blur(8px)',

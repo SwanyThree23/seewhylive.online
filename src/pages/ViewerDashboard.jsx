@@ -361,7 +361,7 @@ export default function ViewerDashboard() {
                   <div className="flex items-start gap-3 p-3 rounded-xl border transition-all"
                     style={{ background: !n.is_read ? 'rgba(212,175,55,0.04)' : 'rgba(13,6,24,0.9)', borderColor: !n.is_read ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)' }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                      style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(255,21,100,0.12)' : 'rgba(255,255,255,0.06)' }}>
+                      style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(192,57,43,0.12)' : 'rgba(255,255,255,0.06)' }}>
                       {n.type === 'tip' ? '💰' : n.type === 'room_invite' ? '🔴' : n.type === 'subscription' ? '⭐' : '🔔'}
                     </div>
                     <div className="flex-1 min-w-0">

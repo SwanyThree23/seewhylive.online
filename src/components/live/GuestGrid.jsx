@@ -129,7 +129,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
       <div
         className={`w-full h-full rounded-lg border-2 overflow-hidden bg-gradient-to-br from-[#1a0a20] to-[#0d0618] flex flex-col relative transition-all duration-200 ${
           speaking && !compact
-            ? 'border-[#00d4ff] shadow-[0_0_16px_rgba(0,212,255,0.4)]'
+            ? 'border-[#D4AF37] shadow-[0_0_16px_rgba(212,175,55,0.4)]'
             : 'border-white/10 group-hover:border-[#d4af37]/40'
         }`}
       >
@@ -145,7 +145,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
                   key={i}
                   animate={{ height: [h, h * 1.8, h] }}
                   transition={{ duration: 0.3, repeat: Infinity, delay: i * 0.05 }}
-                  className="w-0.5 rounded-full bg-[#00d4ff]"
+                  className="w-0.5 rounded-full bg-[#D4AF37]"
                   style={{ height: h }}
                 />
               ))}
