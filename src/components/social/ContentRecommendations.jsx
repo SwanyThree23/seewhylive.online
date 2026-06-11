@@ -62,7 +62,7 @@ export default function ContentRecommendations() {
       className="space-y-3"
     >
       <div className="flex items-center gap-2 px-4">
-        <Brain className="w-4 h-4 text-cyan-400" />
+        <Brain className="w-4 h-4 text-[#6DBF7E]" />
         <h3 className="text-sm font-bold text-white">Recommended for You</h3>
       </div>
 
@@ -100,7 +100,7 @@ export default function ContentRecommendations() {
               <h4 className="text-xs font-bold text-white truncate">{rec.title}</h4>
               <p className="text-[11px] text-white/60">{rec.channel}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[11px] text-cyan-400/70">{rec.duration}</span>
+                <span className="text-[11px] text-[#6DBF7E]/70">{rec.duration}</span>
                 <span className="text-[11px] text-white/40">•</span>
                 <span className="text-[11px] text-white/40">{rec.views} views</span>
               </div>

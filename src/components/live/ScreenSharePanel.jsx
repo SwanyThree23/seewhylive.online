@@ -53,7 +53,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
           <Share2 className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Screen Share</span>
           {isSharing && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-purple-900/60 text-purple-300 animate-pulse">
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#800020]/60 text-[#C9A84C] animate-pulse">
               ACTIVE
             </span>
           )}

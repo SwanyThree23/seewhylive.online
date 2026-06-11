@@ -205,7 +205,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
 
   const getRoleColor = (role) => {
     switch(role) {
-      case 'host': return 'bg-purple-500';
+      case 'host': return 'bg-[#800020]';
       case 'co-host': return 'bg-blue-500';
       case 'speaker': return 'bg-green-500';
       case 'guest': return 'bg-yellow-500';

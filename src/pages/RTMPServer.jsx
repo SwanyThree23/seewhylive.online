@@ -164,7 +164,7 @@ export default function RTMPServer() {
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Tv2 className="w-4 h-4 text-purple-400" />
+                    <Tv2 className="w-4 h-4 text-[#D4854A]" />
                     <h2 className="font-bold text-sm">HLS Playback</h2>
                   </div>
                   <CopyField label="HLS URL" value={PLAYBACK_URL} />

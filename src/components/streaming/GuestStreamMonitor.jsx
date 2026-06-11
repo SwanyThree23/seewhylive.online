@@ -70,7 +70,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
         </div>
 
         <div className="flex items-center gap-1.5 bg-white/5 rounded p-1.5">
-          <Zap className="w-3 h-3 text-cyan-400" />
+          <Zap className="w-3 h-3 text-[#6DBF7E]" />
           <div>
             <p className="text-white/40">Latency</p>
             <p className="text-white font-semibold">{Math.round(stats.latency)}ms</p>

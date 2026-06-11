@@ -14,9 +14,9 @@ var G = {
   gold: "#d4af37",
   crimson: "#8B0000",
   crimsonBright: "#C41E3A",
-  cyan: "#00E5FF",
+  cyan: "#6DBF7E",
   volt: "#D4AF37",
-  purple: "#BF5FFF",
+  purple: "#D4854A",
   gray: "#888",
   grayDim: "#444",
 };
@@ -24,19 +24,19 @@ var G = {
 var BADGE_COLORS = {
   super_fan: { color: "#FFD700", bg: "rgba(255,215,0,0.15)", icon: "👑" },
   top_supporter: { color: "#FF6B6B", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  raid_master: { color: "#00E5FF", bg: "rgba(0,229,255,0.12)", icon: "⚡" },
-  poll_champion: { color: "#BF5FFF", bg: "rgba(191,95,255,0.15)", icon: "🏆" },
-  chat_legend: { color: "#D4AF37", bg: "rgba(200,255,0,0.1)", icon: "💬" },
-  watch_streak: { color: "#FF9500", bg: "rgba(255,149,0,0.15)", icon: "🔥" },
-  gifter: { color: "#FF69B4", bg: "rgba(255,105,180,0.12)", icon: "🎁" },
+  raid_master: { color: "#D4AF37", bg: "rgba(212,175,55,0.12)", icon: "⚡" },
+  poll_champion: { color: "#800020", bg: "rgba(128,0,32,0.15)", icon: "🏆" },
+  chat_legend: { color: "#D4AF37", bg: "rgba(212,175,55,0.1)", icon: "💬" },
+  watch_streak: { color: "#D4854A", bg: "rgba(212,133,74,0.15)", icon: "🔥" },
+  gifter: { color: "#C9A84C", bg: "rgba(201,168,76,0.12)", icon: "🎁" },
   first_subscriber: { color: "#d4af37", bg: "rgba(212,175,55,0.15)", icon: "⭐" },
 };
 
 var RARITY_COLORS = {
   common: "#888",
-  rare: "#00E5FF",
-  epic: "#BF5FFF",
-  legendary: "#FFD700",
+  rare: "#D4AF37",
+  epic: "#800020",
+  legendary: "#C9A84C",
 };
 
 function StatCard({ icon: Icon, label, value, color }) {
