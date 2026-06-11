@@ -44,6 +44,8 @@ var DRAWER_WATCH = [
   { name: 'VOD Library',      icon: Film,    href: createPageUrl('VODLibrary') },
   { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
   { name: 'PK Arena',         icon: Trophy,  href: createPageUrl('PKBattleArena') },
+  { name: 'PPV Events',       icon: Lock,    href: createPageUrl('PayPerViewEvents') },
+  { name: 'Featured Content', icon: Tv2,     href: createPageUrl('FeaturedContent') },
 ];
 
 var DRAWER_CREATE = [
