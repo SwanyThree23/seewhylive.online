@@ -490,113 +490,45 @@ export default function LiveRoom() {
       {/* ── Scrollable content ──────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 88 }}>
 
-        {/* Room meta row */}
-        <div className="px-4 pt-3 pb-1 flex items-center gap-3 flex-wrap">
-          {/* Host */}
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
-              style={{ background: avatarColor(hostName) + '55', color: avatarColor(hostName), border: `1.5px solid ${avatarColor(hostName)}` }}>
-              {hostName.charAt(0)}
-            </div>
-            <span className="text-xs font-semibold text-white/60">{hostName}</span>
-          </div>
-          {/* Counts */}
-          <div className="flex items-center gap-2 text-[10px] text-white/35">
-            <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{liveCount}</span>
-            <span>•</span>
-            <ViewerCount count={liveViewers || party?.viewer_count || liveCount} peakViewers={peakViewers} />
-          </div>
-          {/* Active speaker */}
-          {activeSpeaker && (
-            <div className="ml-auto flex items-center gap-1.5">
-              <div className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black"
-                style={{ background: avatarColor(activeSpeaker.name) + '55', color: avatarColor(activeSpeaker.name) }}>
-                {activeSpeaker.name.charAt(0)}
-              </div>
-              <span className="text-[10px] text-white/40">{activeSpeaker.name.split(' ')[0]} is speaking</span>
-            </div>
-          )}
-        </div>
-
-        {/* LIVE + SeeWhy badge row */}
-        <div className="px-4 pb-3 flex items-center gap-2">
-          {isLive ? (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-              style={{ background: `${PINK}1A`, border: `1px solid ${PINK}44` }}>
-              <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
-                animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 0.9, repeat: Infinity }} />
-              <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.25)' }} />
-              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>Waiting to go live</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Radio className="w-2.5 h-2.5" style={{ color: GOLD }} />
-            <span className="text-[11px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
-          </div>
-        </div>
-
-        {/* ── Connection status bar ────────────────────────────────────────── */}
-        {isLive && (() => {
-          const qColor = connStats.quality === 'EXCELLENT' ? '#6DBF7E' : connStats.quality === 'GOOD' ? '#D4AF37' : connStats.quality === 'FAIR' ? '#D4854A' : '#EF4444';
-          return (
-            <div className="px-4 pb-2">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '5px 10px', flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, fontWeight: 700, color: qColor, letterSpacing: '0.06em' }}>
-                  ● {connStats.quality}
-                </span>
-                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
-                  {connStats.latency}ms
-                </span>
-                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
-                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
-                  {connStats.bitrate.toLocaleString()}kbps
-                </span>
-                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
-                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: connStats.loss > 0 ? '#EF4444' : 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
-                  {connStats.loss}% loss
-                </span>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* ── Viewer count widget ──────────────────────────────────────────── */}
-        {isLive && (
-          <div className="px-4 pb-3 flex items-center justify-center">
-            <ViewerCount count={liveCount} peakViewers={Math.max(liveCount, 20)} />
-          </div>
-        )}
-
-        {/* ── Stage header ─────────────────────────────────────────────────── */}
-        <div className="px-4 mb-3 flex items-center justify-between">
+        {/* ── STAGE FIRST — visible without scrolling ───────────────────────── */}
+        {/* Stage header */}
+        <div className="px-4 pt-3 mb-2 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <span className="text-[17px] font-black text-white">Stage</span>
             <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
               {stageData.length}/20
             </span>
+            {/* LIVE badge inline with Stage header */}
+            {isLive ? (
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+                style={{ background: `${PINK}1A`, border: `1px solid ${PINK}44` }}>
+                <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
+                  animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 0.9, repeat: Infinity }} />
+                <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
+              </div>
+            ) : (
+              <span className="text-[11px] text-white/30">Waiting…</span>
+            )}
           </div>
-          <button
-            onClick={() => setSpotlit(null)}
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <LayoutGrid className="w-3.5 h-3.5 text-white/40" />
-          </button>
+          <div className="flex items-center gap-2">
+            <ViewerCount count={liveViewers || party?.viewer_count || liveCount} peakViewers={peakViewers} />
+            <button
+              onClick={() => setSpotlit(null)}
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <LayoutGrid className="w-3.5 h-3.5 text-white/40" />
+            </button>
+          </div>
         </div>
 
         {/* ── Stage grid ────────────────────────────────────────────────────── */}
-        <div className="px-3 mb-5">
+        <div className="px-3 mb-4">
           {spotlit ? (
-            /* Spotlight mode — host tile large, others scroll below */
-            <div className="space-y-4">
-              <div className="flex justify-center py-3">
+            /* Spotlight mode — hero tile fills screen width, others strip below */
+            <div className="space-y-3">
+              <div className="flex justify-center">
                 {(() => { const { stream, isLocal } = resolveStream(spotlit.id, spotlit.userId); return (
-                  <StageTile p={spotlit} size={170} stream={stream} isLocal={isLocal} onClick={() => setSpotlit(null)} />
+                  <StageTile p={spotlit} size={288} stream={stream} isLocal={isLocal} onClick={() => setSpotlit(null)} />
                 ); })()}
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 px-1">
@@ -630,6 +562,59 @@ export default function LiveRoom() {
             </div>
           )}
         </div>
+
+        {/* ── Room meta row (below stage) ───────────────────────────────────── */}
+        <div className="px-4 pb-1 flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
+              style={{ background: avatarColor(hostName) + '55', color: avatarColor(hostName), border: `1.5px solid ${avatarColor(hostName)}` }}>
+              {hostName.charAt(0)}
+            </div>
+            <span className="text-xs font-semibold text-white/60">{hostName}</span>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] text-white/35">
+            <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{liveCount}</span>
+          </div>
+          {activeSpeaker && (
+            <div className="ml-auto flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-black"
+                style={{ background: avatarColor(activeSpeaker.name) + '55', color: avatarColor(activeSpeaker.name) }}>
+                {activeSpeaker.name.charAt(0)}
+              </div>
+              <span className="text-[10px] text-white/40">{activeSpeaker.name.split(' ')[0]} is speaking</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Radio className="w-2.5 h-2.5" style={{ color: GOLD }} />
+            <span className="text-[11px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
+          </div>
+        </div>
+
+        {/* ── Connection status bar (compact) ─────────────────────────────────── */}
+        {isLive && (() => {
+          const qColor = connStats.quality === 'EXCELLENT' ? '#6DBF7E' : connStats.quality === 'GOOD' ? '#D4AF37' : connStats.quality === 'FAIR' ? '#D4854A' : '#EF4444';
+          return (
+            <div className="px-4 pb-3">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '5px 10px', flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, fontWeight: 700, color: qColor, letterSpacing: '0.06em' }}>
+                  ● {connStats.quality}
+                </span>
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.latency}ms
+                </span>
+                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.bitrate.toLocaleString()}kbps
+                </span>
+                <span style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.1)', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: connStats.loss > 0 ? '#EF4444' : 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                  {connStats.loss}% loss
+                </span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Golden Wall: live tips & gifts ───────────────────────────────── */}
         {roomId && (
