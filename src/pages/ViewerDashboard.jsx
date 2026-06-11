@@ -24,7 +24,7 @@ const TABS = [
 
 function DarkTile({ children, style = {} }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)', borderRadius: 16, ...style }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)', borderRadius: 16, ...style }}>
       {children}
     </div>
   );
@@ -205,7 +205,7 @@ export default function ViewerDashboard() {
               </h2>
               {scheduledRooms.slice(0, 4).map(room => (
                 <div key={room.id} className="flex items-center gap-3 p-3 rounded-xl transition-all"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.08)' }}>
                     <Clock className="w-5 h-5" style={{ color: GOLD }} />
                   </div>
@@ -303,7 +303,7 @@ export default function ViewerDashboard() {
               <motion.div key={room.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
                 <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`}>
                   <div className="flex items-center gap-3 p-3 rounded-xl transition-all"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}>
                     <span className="font-mono text-sm w-5 text-center" style={{ color: 'rgba(212,175,55,0.4)' }}>{i + 1}</span>
@@ -359,7 +359,7 @@ export default function ViewerDashboard() {
               ) : filteredNotifs.map((n, i) => (
                 <motion.div key={n.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
                   <div className="flex items-start gap-3 p-3 rounded-xl border transition-all"
-                    style={{ background: !n.is_read ? 'rgba(212,175,55,0.04)' : 'rgba(13,6,24,0.9)', borderColor: !n.is_read ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)' }}>
+                    style={{ background: !n.is_read ? 'rgba(212,175,55,0.04)' : 'rgba(8,11,24,0.9)', borderColor: !n.is_read ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)' }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
                       style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(192,57,43,0.12)' : 'rgba(255,255,255,0.06)' }}>
                       {n.type === 'tip' ? '💰' : n.type === 'room_invite' ? '🔴' : n.type === 'subscription' ? '⭐' : '🔔'}

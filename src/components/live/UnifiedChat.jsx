@@ -111,7 +111,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(13,6,24,0.97)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.97)' }}>
 
       {/* Host controls toggle */}
       {isHost && (

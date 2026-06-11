@@ -101,7 +101,7 @@ export default function UserMenu({ user, isAdmin }) {
           <div
             style={{
               position:'absolute', top:'calc(100% + 8px)', right:0, zIndex:100,
-              background:'rgba(13,6,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
+              background:'rgba(8,11,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
               borderRadius:12, boxShadow:'0 12px 40px rgba(0,0,0,0.7)',
               width:224, maxHeight:'85vh', overflowY:'auto',
             }}

@@ -160,7 +160,7 @@ export default function HybridStreamRoom() {
         </div>
 
         {/* Right: Chat & Participants */}
-        <div className="w-80 flex flex-col" style={{ borderLeft: '1px solid rgba(212,175,55,0.08)', background: 'rgba(13,6,24,0.7)' }}>
+        <div className="w-80 flex flex-col" style={{ borderLeft: '1px solid rgba(212,175,55,0.08)', background: 'rgba(8,11,24,0.7)' }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             {/* Tab bar */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', flexShrink: 0, background: 'rgba(8,11,24,0.8)', borderBottom: '1px solid rgba(212,175,55,0.08)', height: 40 }}>

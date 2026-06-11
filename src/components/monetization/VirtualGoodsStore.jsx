@@ -98,7 +98,7 @@ export default function VirtualGoodsStore({ userId }) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {goods.map((good) => (
-              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                 <div style={{ padding: '16px 16px 8px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1 }}>

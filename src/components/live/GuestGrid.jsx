@@ -43,7 +43,7 @@ export default React.memo(function GuestGrid({ participants = [], isHost, onInvi
   const spotlightGuest = spotlightId ? speakers.find(s => s.id === spotlightId) : null;
 
   return (
-    <div className="h-full bg-[rgba(13,6,24,0.7)] rounded-xl border border-[rgba(212,175,55,0.15)] flex flex-col overflow-hidden">
+    <div className="h-full bg-[rgba(8,11,24,0.7)] rounded-xl border border-[rgba(212,175,55,0.15)] flex flex-col overflow-hidden">
       {/* Per-guest destinations panel (host only) */}
       {isHost && showDestsFor && (
         <div className="shrink-0 px-2 pt-2">
@@ -127,7 +127,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
       className={`relative group ${isSpotlight ? 'flex-1' : compact ? 'h-full' : 'aspect-video'}`}
     >
       <div
-        className={`w-full h-full rounded-lg border-2 overflow-hidden bg-gradient-to-br from-[#1a0a20] to-[#080B18] flex flex-col relative transition-all duration-200 ${
+        className={`w-full h-full rounded-lg border-2 overflow-hidden bg-gradient-to-br from-[#0F1428] to-[#080B18] flex flex-col relative transition-all duration-200 ${
           speaking && !compact
             ? 'border-[#D4AF37] shadow-[0_0_16px_rgba(212,175,55,0.4)]'
             : 'border-white/10 group-hover:border-[#d4af37]/40'

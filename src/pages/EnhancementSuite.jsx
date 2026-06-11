@@ -36,7 +36,7 @@ const MOCK_VODS = [
     id: "vod-001", title: "Late Night Lo-Fi Beats & Chill Session",
     creator: "DJ SwanyThree", creatorAvatar: "🎧",
     duration: "3:24:17", views: "12.4K", date: "2 days ago",
-    thumbnail_color: "#1a0a20", chapters: [
+    thumbnail_color: "#0F1428", chapters: [
       { time: "0:00", label: "Intro & Setup" },
       { time: "12:30", label: "Lo-Fi Set Begins" },
       { time: "1:04:15", label: "Q&A Break" },
@@ -437,7 +437,7 @@ const GLOBAL_STYLES = css`
   .share-card-sub { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: ${CV.textMid}; text-transform: uppercase; letter-spacing: 0.06em; }
   .share-card-body { padding: 20px; }
   .stream-og-card { background: ${CV.bgPanel}; border: 1px solid ${CV.border}; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-  .stream-og-thumb { height: 120px; background: linear-gradient(135deg, #1a0a20, #0a1020); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative; }
+  .stream-og-thumb { height: 120px; background: linear-gradient(135deg, #0F1428, #0D1022); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative; }
   .stream-og-live-badge { position: absolute; top: 10px; left: 10px; background: ${CV.live}; color: #fff; font-family: 'DM Mono', monospace; font-size: 0.6rem; padding: 2px 8px; border-radius: 3px; letter-spacing: 0.1em; display: flex; align-items: center; gap: 4px; }
   .stream-og-body { padding: 12px; }
   .stream-og-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: ${CV.text}; margin-bottom: 4px; }

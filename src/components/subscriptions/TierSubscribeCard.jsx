@@ -74,7 +74,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
       <div
         style={{
           position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%',
-          background: 'rgba(13,6,24,0.95)',
+          background: 'rgba(8,11,24,0.95)',
           border: isHighlighted ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
           borderRadius: 12,
           boxShadow: isHighlighted ? '0 4px 20px rgba(245,158,11,0.2)' : 'none',

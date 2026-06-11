@@ -32,7 +32,7 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
   }, [micMuted]);
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"

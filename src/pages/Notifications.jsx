@@ -113,7 +113,7 @@ export default function NotificationsPage() {
                   key={notif.id}
                   className="rounded-2xl flex items-start gap-3 p-4 transition-all cursor-pointer hover:brightness-110"
                   style={{
-                    background: notif.is_read ? 'rgba(13,6,24,0.6)' : 'rgba(13,6,24,0.95)',
+                    background: notif.is_read ? 'rgba(8,11,24,0.6)' : 'rgba(8,11,24,0.95)',
                     border: `1px solid ${notif.is_read ? 'rgba(255,255,255,0.06)' : `${cfg.color}35`}`,
                   }}
                   onClick={() => handleNotifClick(notif)}

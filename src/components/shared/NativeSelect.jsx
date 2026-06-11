@@ -40,7 +40,7 @@ function DesktopSelect({ value, onChange, options, placeholder, disabled, style 
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '10px 14px', borderRadius: 8, cursor: disabled ? 'not-allowed' : 'pointer',
-          background: 'rgba(17,8,34,0.85)', border: `1px solid ${open ? G + '60' : 'rgba(255,255,255,0.1)'}`,
+          background: 'rgba(8,11,24,0.85)', border: `1px solid ${open ? G + '60' : 'rgba(255,255,255,0.1)'}`,
           color: selected ? '#fff' : 'rgba(255,255,255,0.35)', fontSize: 13, outline: 'none',
           opacity: disabled ? 0.45 : 1, transition: 'border-color 0.2s', ...T,
         }}
@@ -60,7 +60,7 @@ function DesktopSelect({ value, onChange, options, placeholder, disabled, style 
             transition={{ duration: 0.14 }}
             style={{
               position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 300,
-              background: 'rgba(13,6,24,0.98)', border: `1px solid ${G}30`,
+              background: 'rgba(8,11,24,0.98)', border: `1px solid ${G}30`,
               borderRadius: 10, overflow: 'hidden', transformOrigin: 'top',
               boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
             }}
@@ -107,7 +107,7 @@ function MobileSelect({ value, onChange, options, placeholder, disabled, style }
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '12px 14px', borderRadius: 8, cursor: disabled ? 'not-allowed' : 'pointer',
-          background: 'rgba(17,8,34,0.85)', border: `1px solid rgba(255,255,255,0.1)`,
+          background: 'rgba(8,11,24,0.85)', border: `1px solid rgba(255,255,255,0.1)`,
           color: selected ? '#fff' : 'rgba(255,255,255,0.35)', fontSize: 14, outline: 'none',
           opacity: disabled ? 0.45 : 1, minHeight: 44, ...T, ...style,
         }}
@@ -132,7 +132,7 @@ function MobileSelect({ value, onChange, options, placeholder, disabled, style }
               transition={{ type: 'spring', damping: 30, stiffness: 320 }}
               style={{
                 position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 501,
-                background: 'rgba(13,6,24,0.99)', borderTop: `1px solid ${G}25`,
+                background: 'rgba(8,11,24,0.99)', borderTop: `1px solid ${G}25`,
                 borderRadius: '20px 20px 0 0',
                 paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
               }}

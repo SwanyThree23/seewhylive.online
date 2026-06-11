@@ -4,7 +4,7 @@ import { createPageUrl } from '../utils';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
 
 const BG = '#080B18';
-const BG2 = 'rgba(13,6,24,0.9)';
+const BG2 = 'rgba(8,11,24,0.9)';
 const GOLD = '#D4AF37';
 const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -62,7 +62,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pb-4">
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
       <div className="relative w-full max-w-sm rounded-2xl p-5 space-y-4 z-10"
-        style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}>
+        style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}>
         <p className="font-black text-base text-white" style={T}>{title}</p>
         {children}
         <button onClick={onClose} className="w-full py-2 rounded-xl text-xs font-black uppercase"

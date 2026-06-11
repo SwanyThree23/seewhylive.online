@@ -7,7 +7,7 @@ import { DollarSign, Heart, Star, Award } from 'lucide-react';
 const inputStyle = {
   width: '100%',
   padding: '10px 14px',
-  background: 'rgba(17,8,34,0.85)',
+  background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 8,
   color: '#fff',
@@ -78,7 +78,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Send a Tip</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const BG     = '#080B18';
-const BG2    = '#0D0620';
+const BG2    = '#0D1022';
 const GOLD   = '#D4AF37';
 const CRIMSON= '#800020';
 const PINK    = '#C0392B';

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const GOLD = '#D4AF37';
-const BG2 = 'rgba(13,6,24,0.9)';
+const BG2 = 'rgba(8,11,24,0.9)';
 
 export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }) {
   const [devices, setDevices] = useState([]);

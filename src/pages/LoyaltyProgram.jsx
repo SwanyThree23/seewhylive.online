@@ -17,7 +17,7 @@ const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 
 const REWARD_TYPES = [
   { id: 'badge', label: '🏅 Badge', icon: '🏅' },
@@ -146,13 +146,13 @@ export default function LoyaltyProgram() {
                 { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#6DBF7E', icon: Gift },
               ].map(stat => (
                 <div key={stat.label} className="rounded-2xl p-4"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <p className="text-[10px] font-black uppercase mb-1" style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{stat.label}</p>
                   <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: stat.color }}>{stat.value}</p>
                 </div>
               ))}
             </div>
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="font-black text-sm mb-3" style={{ ...T, color: GOLD }}>Points Earn Rate</p>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {[
@@ -176,7 +176,7 @@ export default function LoyaltyProgram() {
 
         {/* Viewer View */}
         {tab === 'viewer' && !isOwnProgram && (
-          <div className="rounded-2xl p-6" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
+          <div className="rounded-2xl p-6" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center"
                 style={{ background: `linear-gradient(135deg, ${GOLD}, ${CRIMSON})` }}>
@@ -209,7 +209,7 @@ export default function LoyaltyProgram() {
         {/* Rewards */}
         {tab === 'rewards' && (
           sortedRewards.length === 0 ? (
-            <div className="text-center py-16 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="text-center py-16 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <Gift className="w-12 h-12 mx-auto opacity-20 mb-3" style={{ color: GOLD }} />
               <p className="font-black uppercase text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>No rewards configured yet</p>
             </div>
@@ -220,7 +220,7 @@ export default function LoyaltyProgram() {
                 return (
                   <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                     <div className="rounded-2xl p-4 flex items-center gap-4 transition-all"
-                      style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${canClaim ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.06)'}` }}>
+                      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${canClaim ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.06)'}` }}>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
                         style={{ background: `${TIER_COLORS[i % 5]}20`, border: `1px solid ${TIER_COLORS[i % 5]}40` }}>
                         {REWARD_TYPES.find(rt => rt.id === r.reward_type)?.icon || '🎁'}
@@ -270,7 +270,7 @@ export default function LoyaltyProgram() {
 
         {/* Leaderboard */}
         {tab === 'leaderboard' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="px-5 py-4 flex items-center gap-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <Trophy className="w-4 h-4" style={{ color: GOLD }} />
               <p className="font-black text-sm text-white" style={T}>Top Viewers</p>
@@ -305,7 +305,7 @@ export default function LoyaltyProgram() {
               onClick={() => setShowRewardForm(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-2xl overflow-hidden z-50"
-              style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.25)' }}>
+              style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.25)' }}>
               <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
                 <p className="font-black text-sm text-white" style={T}>Create Reward</p>
                 <button onClick={() => setShowRewardForm(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>

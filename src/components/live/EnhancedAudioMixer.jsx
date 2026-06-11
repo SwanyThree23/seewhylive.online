@@ -63,7 +63,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   const levelColor = avgLevel > 0.8 ? '#ef4444' : avgLevel > 0.5 ? '#f59e0b' : '#22c55e';
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"

@@ -215,7 +215,7 @@ export default function StreamAlerts() {
               <div
                 style={{
                   borderRadius: 16,
-                  background: 'rgba(13,6,24,0.9)',
+                  background: 'rgba(8,11,24,0.9)',
                   border: '1px solid rgba(212,175,55,0.1)',
                   padding: 24,
                 }}
@@ -245,7 +245,7 @@ export default function StreamAlerts() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 16,
-                        background: 'rgba(13,6,24,0.85)',
+                        background: 'rgba(8,11,24,0.85)',
                         border: '1px solid rgba(212,175,55,0.08)',
                         borderRadius: 14,
                         padding: '14px 18px',

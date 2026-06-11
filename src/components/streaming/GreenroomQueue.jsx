@@ -111,7 +111,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
         placeholder="Search guests…"
         value={guestSearch}
         onChange={e => setGuestSearch(e.target.value)}
-        style={{ width:'100%', padding:'6px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:10, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+        style={{ width:'100%', padding:'6px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:10, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
       />
 
       {/* Waiting queue */}

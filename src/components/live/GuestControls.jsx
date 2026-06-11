@@ -16,7 +16,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
   };
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}

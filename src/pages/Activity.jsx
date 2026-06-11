@@ -49,7 +49,7 @@ export default function ActivityPage() {
               const Icon = cfg.icon;
               return (
                 <div key={activity.id} className="flex items-start gap-3 p-3 rounded-xl"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                     style={{ background: `${cfg.color}15`, border: `1px solid ${cfg.color}25` }}>
                     <Icon className="w-4 h-4" style={{ color: cfg.color }} />

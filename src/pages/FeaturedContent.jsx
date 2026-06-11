@@ -103,7 +103,7 @@ export default function FeaturedContent() {
   const [activeChannel, setActiveChannel] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#1a0a30] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0F1428] py-8 px-4">
       <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Header */}

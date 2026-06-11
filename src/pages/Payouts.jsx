@@ -19,7 +19,7 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── tiny helpers ─────────────────────────────────────────────────────── */
 const card = {
-  background: 'rgba(13,6,24,0.9)',
+  background: 'rgba(8,11,24,0.9)',
   border: `1px solid rgba(212,175,55,0.1)`,
   borderRadius: 16,
   padding: '20px 20px',

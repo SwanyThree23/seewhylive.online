@@ -16,7 +16,7 @@ function ClipCard({ clip, onDelete, onShare }) {
   const emoji = emojis[parseInt(clip.id?.slice(-1), 16) % emojis.length] || '🎬';
   return (
     <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}
-      style={{ borderRadius:10, overflow:'hidden', border:'1px solid rgba(255,255,255,0.06)', background:'rgba(13,6,24,0.9)', cursor:'pointer' }}>
+      style={{ borderRadius:10, overflow:'hidden', border:'1px solid rgba(255,255,255,0.06)', background:'rgba(8,11,24,0.9)', cursor:'pointer' }}>
       {/* Thumbnail */}
       <div style={{ height:110, background:`linear-gradient(135deg, ${C.burg}33, ${C.obs})`, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
         <span style={{ fontSize:36 }}>{emoji}</span>
@@ -81,7 +81,7 @@ export default function ClipsLibraryPage() {
 
   return (
     <div style={{ minHeight:'100vh', background:C.obs, color:C.white }}>
-      {toast && <div style={{ position:'fixed', top:20, right:20, zIndex:999, padding:'10px 18px', background:'rgba(13,6,24,0.97)', border:`1px solid ${C.gold}`, borderRadius:8, fontFamily:'Barlow Condensed', fontSize:13, color:C.gold }}>{toast}</div>}
+      {toast && <div style={{ position:'fixed', top:20, right:20, zIndex:999, padding:'10px 18px', background:'rgba(8,11,24,0.97)', border:`1px solid ${C.gold}`, borderRadius:8, fontFamily:'Barlow Condensed', fontSize:13, color:C.gold }}>{toast}</div>}
       <div style={{ padding:'24px 20px', borderBottom:'1px solid rgba(212,175,55,0.12)', background:'rgba(128,0,32,0.06)' }}>
         <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
         <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
@@ -117,7 +117,7 @@ export default function ClipsLibraryPage() {
             <h2 style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.gold, marginBottom:12, letterSpacing:2 }}>⚡ AI-DETECTED HIGHLIGHTS</h2>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {highlights.map(h => (
-                <div key={h.id} style={{ padding:'12px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.06)', background:'rgba(13,6,24,0.9)', display:'flex', alignItems:'center', gap:12 }}>
+                <div key={h.id} style={{ padding:'12px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.06)', background:'rgba(8,11,24,0.9)', display:'flex', alignItems:'center', gap:12 }}>
                   <div style={{ padding:'3px 8px', borderRadius:4, background:`rgba(200,255,0,0.08)`, border:`1px solid rgba(200,255,0,0.2)`, fontFamily:'Barlow Condensed', fontSize:11, color:C.volt, letterSpacing:1, flexShrink:0 }}>{(h.highlight_type||'MOMENT').toUpperCase().replace('_',' ')}</div>
                   <div style={{ flex:1 }}>
                     <div style={{ fontFamily:'Barlow Condensed', fontSize:12, color:C.white }}>{h.description || 'AI-detected moment'}</div>

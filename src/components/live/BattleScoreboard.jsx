@@ -48,7 +48,7 @@ export default function BattleScoreboard({ roomId }) {
     : null;
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(204,119,85,0.3)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(204,119,85,0.3)' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2" style={{ background: 'rgba(204,119,85,0.1)', borderBottom: '1px solid rgba(204,119,85,0.2)' }}>
         <div className="flex items-center gap-1.5">

@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
 };
@@ -177,7 +177,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <select value={form.goal_type} onChange={e => setForm(f => ({ ...f, goal_type: e.target.value }))}
-                  style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                  style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
                   {Object.entries(GOAL_ICONS).map(([k, v]) => (
                     <option key={k} value={k}>{v} {k}</option>
                   ))}

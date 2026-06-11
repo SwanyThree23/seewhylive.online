@@ -297,13 +297,13 @@ export default function SocialExpo() {
                       const wpUrl = `${createPageUrl('WatchParty')}?videoUrl=${encodeURIComponent(ytUrl)}&title=${encodeURIComponent(video.title + ' — Watch Party')}`;
                       return (
                         <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-                          <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(13,6,24,0.9)',
+                          <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(8,11,24,0.9)',
                             border: '1px solid rgba(192,57,43,0.15)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-                            <div style={{ position: 'relative', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0010, #0d0620)' }}>
+                            <div style={{ position: 'relative', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0010, #0D1022)' }}>
                               <img src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} alt={video.title}
                                 onError={e => { e.target.style.display = 'none'; }}
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 55%)' }} />
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 55%)' }} />
                               <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 11, fontWeight: 700,
                                 padding: '2px 8px', borderRadius: 99, background: `${video.tagColor}30`,
                                 color: video.tagColor, border: `1px solid ${video.tagColor}50`, ...T }}>{video.tag}</span>

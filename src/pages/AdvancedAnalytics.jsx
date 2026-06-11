@@ -15,7 +15,7 @@ const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TOOLTIP_STYLE = {
-  contentStyle: { background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 },
+  contentStyle: { background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 },
   cursor: { fill: 'rgba(212,175,55,0.06)' },
 };
 const TICK = { fill: 'rgba(255,255,255,0.35)', fontSize: 10 };
@@ -79,7 +79,7 @@ export default function AdvancedAnalyticsPage() {
             { label: 'Avg. Engagement', value: `${metrics.length > 0 ? (metrics.reduce((a, m) => a + m.value, 0) / metrics.length).toFixed(1) : 0}%`, icon: Zap, color: GOLD },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="w-4 h-4" style={{ color }} />
                 <span className="text-[10px] font-black uppercase" style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{label}</span>
@@ -102,7 +102,7 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Revenue */}
         {activeTab === 'revenue' && (
-          <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="font-black text-sm text-white mb-1" style={T}>Revenue Over Time</p>
             <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Last 14 days</p>
             <ResponsiveContainer width="100%" height={300}>
@@ -119,7 +119,7 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Engagement */}
         {activeTab === 'engagement' && (
-          <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="font-black text-sm text-white mb-1" style={T}>User Engagement Trend</p>
             <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Daily engagement metrics</p>
             <ResponsiveContainer width="100%" height={300}>
@@ -137,7 +137,7 @@ export default function AdvancedAnalyticsPage() {
         {/* Performance */}
         {activeTab === 'performance' && (
           <div className="space-y-4">
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <p className="font-black text-sm text-white mb-1" style={T}>Top Performing Rooms</p>
               <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>By viewer count</p>
               <ResponsiveContainer width="100%" height={300}>
@@ -173,7 +173,7 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Retention Curve */}
         {activeTab === 'retention' && (
-          <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="font-black text-sm text-white mb-1" style={T}>Viewer Retention</p>
             <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Average watch time over stream duration</p>
             <SwanAIRecommendations roomId={null} />
@@ -183,7 +183,7 @@ export default function AdvancedAnalyticsPage() {
         {/* Insights */}
         {activeTab === 'insights' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-4 h-4" style={{ color: GOLD }} />
                 <p className="font-black text-sm text-white" style={T}>Growth Opportunities</p>
@@ -203,7 +203,7 @@ export default function AdvancedAnalyticsPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <p className="font-black text-sm text-white mb-4" style={T}>Platform Health</p>
               <div className="space-y-4">
                 {[

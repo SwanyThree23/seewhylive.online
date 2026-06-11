@@ -54,7 +54,7 @@ function FanbaseRoomCard({ room }) {
   var viewers = room.viewer_count || room.participant_count || 0;
   return (
     <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
         <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full"
           style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -69,7 +69,7 @@ function FanbaseRoomCard({ room }) {
         {room.thumbnail_url
           ? <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
           style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
@@ -465,7 +465,7 @@ function CreatorCard({ creator }) {
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
       <motion.div whileTap={{ scale: 0.97 }}
         className="relative p-4 rounded-2xl cursor-pointer text-center"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
             style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>

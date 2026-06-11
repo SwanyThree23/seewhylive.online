@@ -447,7 +447,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   exit={{ opacity: 0, scale: 0.9, y: -4 }}
                   style={{
                     position: 'absolute', right: 0, top: 36, zIndex: 30,
-                    background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
+                    background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
                     borderRadius: 12, overflow: 'hidden', minWidth: 150,
                     boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                   }}
@@ -656,7 +656,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 700, letterSpacing: '0.04em',

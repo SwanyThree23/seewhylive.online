@@ -75,7 +75,7 @@ export default function SubscriptionTiers({ communityId, userId }) {
           const isCurrentTier = currentSubscription?.tier === tier.name.toLowerCase();
 
           return (
-            <div key={tier.id} style={{ border: isCurrentTier ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)', borderRadius: 12, background: 'rgba(13,6,24,0.95)', overflow: 'hidden' }}>
+            <div key={tier.id} style={{ border: isCurrentTier ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)', borderRadius: 12, background: 'rgba(8,11,24,0.95)', overflow: 'hidden' }}>
               <div style={{ padding: 20 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 12, background: config.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                   <Icon style={{ width: 24, height: 24, color: '#fff' }} />

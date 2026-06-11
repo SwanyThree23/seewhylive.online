@@ -423,7 +423,7 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           onClick={() => setLangSheetOpen(false)}
         >
           <div
-            style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
+            style={{ width: '100%', maxWidth: 480, background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>

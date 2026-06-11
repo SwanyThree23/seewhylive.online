@@ -140,7 +140,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.customTitle}
                     onChange={(e) => handleChange('customTitle', e.target.value)}
                     placeholder="Stream title override"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 
@@ -150,7 +150,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.customSubtitle}
                     onChange={(e) => handleChange('customSubtitle', e.target.value)}
                     placeholder="Tagline or description"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
               </div>
@@ -170,7 +170,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.backgroundUrl}
                     onChange={(e) => handleChange('backgroundUrl', e.target.value)}
                     placeholder="https://..."
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 

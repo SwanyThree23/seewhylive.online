@@ -99,7 +99,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
               {/* Clip title */}
               <input value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="Clip title..."
-                style={{ width: '100%', padding: '6px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }} />
+                style={{ width: '100%', padding: '6px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }} />
 
               {/* Timeline scrubber */}
               <div className="space-y-2">
