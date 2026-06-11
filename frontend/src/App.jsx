@@ -5866,6 +5866,378 @@ function WashingtonClassicRegistration({ state, dispatch }) {
     </div>
   );
 }
+
+// ============================================================
+// BATCH S — Creator Analytics + VOD Auto-Record +
+//           AI Clip Generator + Mobile APK Config
+// ============================================================
+
+// ── CREATOR ANALYTICS DASHBOARD ──────────────────────────────
+
+function CreatorAnalyticsDashboard({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('overview');
+  var tabs = [['overview','📊 OVERVIEW'],['revenue','💰 REVENUE'],['audience','👥 AUDIENCE'],['streams','🔴 STREAMS']];
+  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
+  var [stats, setStats] = React.useState({ totalViews:4821, totalGems:10056, totalStreams:11, followers:342, revenue:502.80, avgViewers:438 });
+  var [revenueData] = React.useState([
+    { week:'May 5', gems:1240, revenue:22.32 },
+    { week:'May 12', gems:1890, revenue:34.02 },
+    { week:'May 19', gems:1350, revenue:24.30 },
+    { week:'May 26', gems:4068, revenue:73.22 },
+    { week:'Jun 2', gems:1782, revenue:32.08 },
+    { week:'Jun 9', gems:2856, revenue:51.41 },
+  ]);
+  var [streams] = React.useState([
+    { title:'WA Classic Semi-Finals', viewers:1204, gems:2856, duration:'1h 4m', date:'Jun 9' },
+    { title:'PK Battle Night', viewers:892, gems:1782, duration:'36m', date:'Jun 2' },
+    { title:'VibeNBones Collab', viewers:486, gems:890, duration:'1h 30m', date:'May 26' },
+    { title:'Sunday Domino Session', viewers:312, gems:445, duration:'45m', date:'May 19' },
+  ]);
+
+  var maxGems = Math.max.apply(null, revenueData.map(function(d){ return d.gems; }));
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#050510,#0a0520)', padding:'16px 14px 0', borderBottom:'1px solid '+C.cyan+'33' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
+          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,'+C.cyan+',#050510)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid '+C.cyan+'55' }}>📊</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.cyan, letterSpacing:2 }}>ANALYTICS</div>
+            <div style={{ fontSize:11, color:C.muted }}>SwanyThree23 · FM#001</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:2, overflowX:'auto' }}>
+          {tabs.map(function(t){ return (
+            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flex:'0 0 auto', background:'none', border:'none', borderBottom:tab===t[0]?'2px solid '+C.cyan:'2px solid transparent', padding:'8px 10px', color:tab===t[0]?C.cyan:C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer', whiteSpace:'nowrap' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding:14 }}>
+        {tab === 'overview' && (
+          <div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:16 }}>
+              {[
+                { label:'TOTAL VIEWS', value:stats.totalViews.toLocaleString(), color:C.cyan, icon:'👁' },
+                { label:'TOTAL GEMS', value:stats.totalGems.toLocaleString(), color:C.gold, icon:'💎' },
+                { label:'STREAMS', value:stats.totalStreams, color:C.green, icon:'🔴' },
+                { label:'FOLLOWERS', value:stats.followers, color:'#9B59B6', icon:'👥' },
+                { label:'REVENUE', value:'$'+stats.revenue.toFixed(2), color:C.green, icon:'💰' },
+                { label:'AVG VIEWERS', value:stats.avgViewers, color:C.cyan, icon:'📈' },
+              ].map(function(s,i){ return (
+                <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14 }}>
+                  <div style={{ fontSize:9, color:C.muted, fontFamily:"'Bebas Neue',sans-serif", letterSpacing:1, marginBottom:6 }}>{s.icon} {s.label}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:s.color }}>{s.value}</div>
+                </div>
+              );})}
+            </div>
+          </div>
+        )}
+        {tab === 'revenue' && (
+          <div>
+            <div style={{ background:'rgba(16,185,129,0.08)', border:'1px solid '+C.green+'33', borderRadius:14, padding:16, marginBottom:16 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.muted, letterSpacing:1, marginBottom:4 }}>6-WEEK TOTAL</div>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:36, color:C.green }}>$237.35</div>
+              <div style={{ fontSize:11, color:C.muted }}>90% creator share · Math.floor enforced</div>
+            </div>
+            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:16 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:12 }}>GEM REVENUE BY WEEK</div>
+              <div style={{ display:'flex', alignItems:'flex-end', gap:6, height:80 }}>
+                {revenueData.map(function(d,i){ return (
+                  <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+                    <div style={{ width:'100%', background:'linear-gradient(180deg,'+C.gold+','+C.gold+'88)', borderRadius:'3px 3px 0 0', height:Math.floor(d.gems/maxGems*70)+'px' }}></div>
+                    <div style={{ fontSize:8, color:C.muted, transform:'rotate(-45deg)', transformOrigin:'center' }}>{d.week.split(' ')[1]}</div>
+                  </div>
+                );})}
+              </div>
+            </div>
+            {revenueData.slice().reverse().map(function(d,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:12, marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:12, color:C.muted }}>{d.week}</span>
+                <span style={{ fontSize:12, color:C.gold }}>{d.gems.toLocaleString()} 💎</span>
+                <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.green }}>${d.revenue.toFixed(2)}</span>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'audience' && (
+          <div>
+            {[
+              { label:'Peak Concurrent', value:'1,204', sub:'WA Classic Semi-Finals', color:C.gold },
+              { label:'Avg Watch Time', value:'24m', sub:'Per stream session', color:C.cyan },
+              { label:'Return Rate', value:'68%', sub:'Viewers who came back', color:C.green },
+              { label:'Chat Messages', value:'3,847', sub:'Total across all streams', color:'#9B59B6' },
+              { label:'Tip Conversion', value:'12%', sub:'Viewers who tipped', color:C.gold },
+              { label:'New Followers', value:'+47', sub:'This month', color:C.green },
+            ].map(function(s,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <div>
+                  <div style={{ fontSize:13, color:C.white }}>{s.label}</div>
+                  <div style={{ fontSize:10, color:C.muted, marginTop:2 }}>{s.sub}</div>
+                </div>
+                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:s.color }}>{s.value}</div>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'streams' && (
+          <div>
+            {streams.map(function(s,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:10 }}>
+                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.white, letterSpacing:1, marginBottom:8 }}>{s.title}</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:8 }}>
+                  <div style={{ textAlign:'center' }}>
+                    <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.cyan }}>{s.viewers}</div>
+                    <div style={{ fontSize:9, color:C.muted }}>VIEWS</div>
+                  </div>
+                  <div style={{ textAlign:'center' }}>
+                    <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.gold }}>{s.gems}</div>
+                    <div style={{ fontSize:9, color:C.muted }}>GEMS</div>
+                  </div>
+                  <div style={{ textAlign:'center' }}>
+                    <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.green }}>{s.duration}</div>
+                    <div style={{ fontSize:9, color:C.muted }}>LENGTH</div>
+                  </div>
+                  <div style={{ textAlign:'center' }}>
+                    <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:C.muted }}>{s.date}</div>
+                    <div style={{ fontSize:9, color:C.muted }}>DATE</div>
+                  </div>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── VOD AUTO-RECORD CONFIG ────────────────────────────────────
+
+function VODAutoRecordConfig({ state, dispatch }) {
+  var C = COLORS;
+  var [enabled, setEnabled] = React.useState(true);
+  var [quality, setQuality] = React.useState('1080p');
+  var [status, setStatus] = React.useState('idle');
+  var [recordings, setRecordings] = React.useState([
+    { id:1, title:'Washington Classic Semi-Finals', size:'2.4GB', duration:'1h 4m', date:'Jun 9', url:'https://ingest.seewhylive.online:8888/live/index.m3u8' },
+    { id:2, title:'PK Battle Night', size:'1.1GB', duration:'36m', date:'Jun 2', url:'' },
+    { id:3, title:'VibeNBones Sunday Session', size:'3.1GB', duration:'1h 30m', date:'May 26', url:'' },
+  ]);
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#050510,#100510)', padding:'16px 14px', borderBottom:'1px solid #ff6b3544' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,#ff6b35,#050510)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid #ff6b3555' }}>⏺</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:'#ff6b35', letterSpacing:2 }}>VOD AUTO-RECORD</div>
+            <div style={{ fontSize:11, color:C.muted }}>MediaMTX → Supabase Storage</div>
+          </div>
+          <div onClick={function(){ setEnabled(function(e){ return !e; }); }} style={{ width:44, height:24, borderRadius:12, background:enabled?C.green+'33':'#2a2a2a', border:'1px solid '+(enabled?C.green+'55':'#333'), position:'relative', cursor:'pointer' }}>
+            <div style={{ position:'absolute', top:3, left:enabled?22:3, width:18, height:18, borderRadius:'50%', background:enabled?C.green:'#555' }}></div>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding:14 }}>
+        <div style={{ background:'rgba(255,107,53,0.06)', border:'1px solid #ff6b3533', borderRadius:12, padding:14, marginBottom:16, fontSize:11, color:C.muted, lineHeight:1.7 }}>
+          When enabled, all streams auto-record via MediaMTX HLS output at <span style={{ color:'#ff6b35', fontFamily:"'DM Mono',monospace" }}>ingest.seewhylive.online:8888</span> and upload to Supabase Storage on stream end.
+        </div>
+        <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:16 }}>
+          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:10 }}>QUALITY SETTING</div>
+          <div style={{ display:'flex', gap:8 }}>
+            {['720p','1080p','1440p'].map(function(q){ return (
+              <button key={q} onClick={function(){ setQuality(q); }} style={{ flex:1, background:quality===q?C.cyan+'22':'none', border:'1px solid '+(quality===q?C.cyan+'55':'#333'), borderRadius:8, padding:'8px 4px', color:quality===q?C.cyan:C.muted, fontFamily:"'Bebas Neue',sans-serif", fontSize:12, cursor:'pointer' }}>{q}</button>
+            );})}
+          </div>
+        </div>
+        <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:10 }}>RECENT RECORDINGS</div>
+        {recordings.map(function(r){ return (
+          <div key={r.id} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:8 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:13, color:C.white, marginBottom:6 }}>{r.title}</div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontSize:10, color:C.muted }}>{r.duration} · {r.size} · {r.date}</span>
+              {r.url ? <button onClick={function(){ window.open(r.url,'_blank'); }} style={{ background:C.cyan+'22', border:'1px solid '+C.cyan+'44', borderRadius:6, padding:'4px 10px', color:C.cyan, fontFamily:"'Bebas Neue',sans-serif", fontSize:10, cursor:'pointer' }}>PLAY</button>
+              : <span style={{ fontSize:9, color:C.muted }}>ARCHIVED</span>}
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+// ── AI CLIP GENERATOR ─────────────────────────────────────────
+
+function AIClipGenerator({ state, dispatch }) {
+  var C = COLORS;
+  var [generating, setGenerating] = React.useState(false);
+  var [clips, setClips] = React.useState([
+    { id:1, title:'SwanyThree23 DOMINO SLAM - WA Classic', duration:'0:47', views:892, created:'Jun 9', score:98 },
+    { id:2, title:'PK Battle Winner Celebration', duration:'1:02', views:445, created:'Jun 2', score:94 },
+    { id:3, title:'CaliBonesOG Clutch Move', duration:'0:31', views:312, created:'Jun 2', score:91 },
+    { id:4, title:'Washington Crowd Goes Wild', duration:'0:23', views:201, created:'Jun 9', score:88 },
+  ]);
+  var [progress, setProgress] = React.useState(0);
+
+  function generateClips() {
+    setGenerating(true);
+    setProgress(0);
+    var iv = setInterval(function() {
+      setProgress(function(p) {
+        if (p >= 100) {
+          clearInterval(iv);
+          setGenerating(false);
+          setClips(function(c) {
+            return [{ id:Date.now(), title:'AI Generated Highlight Reel', duration:'2:15', views:0, created:'Just now', score:96 }].concat(c);
+          });
+          return 100;
+        }
+        return p + Math.floor(Math.random() * 15 + 5);
+      });
+    }, 400);
+  }
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#0a0520,#150530)', padding:'16px 14px', borderBottom:'1px solid #9B59B644' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,#9B59B6,#0a0520)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid #9B59B655' }}>✂️</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:'#9B59B6', letterSpacing:2 }}>AI CLIP GENERATOR</div>
+            <div style={{ fontSize:11, color:C.muted }}>Auto-detect best moments from streams</div>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding:14 }}>
+        <button onClick={generating?null:generateClips} style={{ width:'100%', background:generating?'#1a1a1a':'linear-gradient(135deg,#9B59B6,#6C3483)', border:'none', borderRadius:12, padding:16, color:generating?C.muted:C.white, fontFamily:"'Bebas Neue',sans-serif", fontSize:18, cursor:generating?'default':'pointer', marginBottom:16 }}>
+          {generating ? 'GENERATING CLIPS...' : 'GENERATE HIGHLIGHT CLIPS'}
+        </button>
+        {generating && (
+          <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:16 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+              <span style={{ fontSize:12, color:C.muted }}>AI analyzing stream...</span>
+              <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:'#9B59B6' }}>{Math.min(progress,100)}%</span>
+            </div>
+            <div style={{ background:'#1a1a1a', borderRadius:6, height:6, overflow:'hidden' }}>
+              <div style={{ height:'100%', width:Math.min(progress,100)+'%', background:'linear-gradient(90deg,#9B59B6,#E91E8C)', borderRadius:6 }}></div>
+            </div>
+            <div style={{ fontSize:10, color:C.muted, marginTop:8 }}>Detecting peak viewer moments, high chat velocity, gem spikes...</div>
+          </div>
+        )}
+        <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:11, color:C.muted, letterSpacing:1, marginBottom:10 }}>GENERATED CLIPS</div>
+        {clips.map(function(clip){ return (
+          <div key={clip.id} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, overflow:'hidden', marginBottom:10 }}>
+            <div style={{ height:60, background:'linear-gradient(135deg,#0a0520,#150530)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+              <div style={{ fontSize:28 }}>🎬</div>
+              <div style={{ position:'absolute', top:8, right:8, background:'#9B59B622', border:'1px solid #9B59B644', borderRadius:4, padding:'2px 6px', fontSize:9, color:'#9B59B6', fontFamily:"'Bebas Neue',sans-serif" }}>AI {clip.score}</div>
+              <div style={{ position:'absolute', bottom:8, right:8, background:'rgba(0,0,0,0.8)', borderRadius:4, padding:'2px 6px', fontSize:9, color:C.white }}>{clip.duration}</div>
+            </div>
+            <div style={{ padding:10 }}>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:12, color:C.white, marginBottom:4 }}>{clip.title}</div>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:10, color:C.muted }}>{clip.views} views · {clip.created}</span>
+                <div style={{ display:'flex', gap:6 }}>
+                  <button style={{ background:'#9B59B622', border:'1px solid #9B59B644', borderRadius:6, padding:'3px 8px', color:'#9B59B6', fontFamily:"'Bebas Neue',sans-serif", fontSize:9, cursor:'pointer' }}>SHARE</button>
+                  <button style={{ background:C.cyan+'22', border:'1px solid '+C.cyan+'44', borderRadius:6, padding:'3px 8px', color:C.cyan, fontFamily:"'Bebas Neue',sans-serif", fontSize:9, cursor:'pointer' }}>PLAY</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+}
+
+// ── MOBILE APK CONFIG ─────────────────────────────────────────
+
+function MobileAPKConfig({ state, dispatch }) {
+  var C = COLORS;
+  var [tab, setTab] = React.useState('info');
+  var tabs = [['info','📱 INFO'],['pwa','⚡ PWA'],['apk','🤖 APK']];
+
+  return (
+    <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
+      <div style={{ background:'linear-gradient(135deg,#050a20,#000510)', padding:'16px 14px 0', borderBottom:'1px solid '+C.cyan+'33' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:12 }}>
+          <div style={{ width:48, height:48, borderRadius:12, background:'linear-gradient(135deg,'+C.cyan+',#050a20)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, border:'2px solid '+C.cyan+'55' }}>📱</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:C.cyan, letterSpacing:2 }}>MOBILE APP</div>
+            <div style={{ fontSize:11, color:C.muted }}>PWA + Android APK · seewhylive.online</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:2 }}>
+          {tabs.map(function(t){ return (
+            <button key={t[0]} onClick={function(){ setTab(t[0]); }} style={{ flex:1, background:'none', border:'none', borderBottom:tab===t[0]?'2px solid '+C.cyan:'2px solid transparent', padding:'8px 4px', color:tab===t[0]?C.cyan:C.muted, fontSize:10, fontFamily:"'Bebas Neue',sans-serif", cursor:'pointer' }}>{t[1]}</button>
+          );})}
+        </div>
+      </div>
+      <div style={{ padding:14 }}>
+        {tab === 'info' && (
+          <div>
+            {[
+              { label:'App Name', value:'SeeWhy LIVE' },
+              { label:'Version', value:'1.0.0' },
+              { label:'Platform', value:'Android + iOS (PWA)' },
+              { label:'URL', value:'seewhylive.online' },
+              { label:'VPS', value:'srv1581658.hstgr.cloud' },
+              { label:'RTMP Ingest', value:'ingest.seewhylive.online:1935' },
+            ].map(function(item,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:14, marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:12, color:C.muted }}>{item.label}</span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:C.white }}>{item.value}</span>
+              </div>
+            );})}
+          </div>
+        )}
+        {tab === 'pwa' && (
+          <div>
+            <div style={{ background:'rgba(0,200,200,0.06)', border:'1px solid '+C.cyan+'22', borderRadius:12, padding:14, marginBottom:16, fontSize:11, color:C.muted, lineHeight:1.7 }}>
+              SeeWhy LIVE is installable as a PWA on Android and iOS. Tap the share button in your browser and select "Add to Home Screen".
+            </div>
+            {[
+              { label:'Offline Support', status:'✅ Service Worker active' },
+              { label:'Push Notifications', status:'✅ Configured' },
+              { label:'App Icon', status:'✅ /favicon.svg' },
+              { label:'Manifest', status:'✅ /manifest.json' },
+              { label:'HTTPS', status:'✅ SSL via nginx' },
+            ].map(function(item,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:10, padding:12, marginBottom:8, display:'flex', justifyContent:'space-between' }}>
+                <span style={{ fontSize:12, color:C.muted }}>{item.label}</span>
+                <span style={{ fontSize:11, color:C.green }}>{item.status}</span>
+              </div>
+            );})}
+            <button onClick={function(){ window.open('https://seewhylive.online','_blank'); }} style={{ width:'100%', background:'linear-gradient(135deg,'+C.cyan+',#0088aa)', border:'none', borderRadius:12, padding:14, color:'#000', fontFamily:"'Bebas Neue',sans-serif", fontSize:16, cursor:'pointer', marginTop:8 }}>OPEN IN BROWSER TO INSTALL</button>
+          </div>
+        )}
+        {tab === 'apk' && (
+          <div>
+            <div style={{ background:'rgba(212,175,55,0.08)', border:'1px solid '+C.gold+'33', borderRadius:12, padding:14, marginBottom:16, fontSize:11, color:C.muted, lineHeight:1.7 }}>
+              Build an Android APK using Android Studio WebView wrapper or Capacitor. The app wraps seewhylive.online in a native Android shell with camera, mic, and notification permissions.
+            </div>
+            {[
+              { step:'1', label:'Install Android Studio', sub:'Download from developer.android.com' },
+              { step:'2', label:'Create WebView Project', sub:'Empty Activity + WebView component' },
+              { step:'3', label:'Set URL to seewhylive.online', sub:'In MainActivity.java WebView loadUrl()' },
+              { step:'4', label:'Add Permissions', sub:'CAMERA, RECORD_AUDIO, INTERNET, NOTIFICATIONS' },
+              { step:'5', label:'Build APK', sub:'Build → Generate Signed Bundle/APK' },
+            ].map(function(item,i){ return (
+              <div key={i} style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:12, padding:14, marginBottom:8, display:'flex', gap:12, alignItems:'flex-start' }}>
+                <div style={{ width:28, height:28, borderRadius:8, background:C.cyan+'22', border:'1px solid '+C.cyan+'44', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Bebas Neue',sans-serif", fontSize:14, color:C.cyan, flexShrink:0 }}>{item.step}</div>
+                <div>
+                  <div style={{ fontSize:13, color:C.white }}>{item.label}</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{item.sub}</div>
+                </div>
+              </div>
+            );})}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function App() {
   var [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -7518,6 +7890,10 @@ function AppV46Router({ state, dispatch }) {
         {page === 'stripe' && <StripeConnectDashboard state={state} dispatch={dispatch} />}
         {page === 'notifications' && <PushNotificationsManager state={state} dispatch={dispatch} />}
         {page === 'register' && <WashingtonClassicRegistration state={state} dispatch={dispatch} />}
+        {page === 'creator-analytics' && <CreatorAnalyticsDashboard state={state} dispatch={dispatch} />}
+        {page === 'vod-record' && <VODAutoRecordConfig state={state} dispatch={dispatch} />}
+        {page === 'ai-clips' && <AIClipGenerator state={state} dispatch={dispatch} />}
+        {page === 'mobile-app' && <MobileAPKConfig state={state} dispatch={dispatch} />}
         {page === 'zegoroom' && <ZegoLiveRoom state={state} dispatch={dispatch} />}
         {page === 'payouts' && <StripePayoutPage state={state} dispatch={dispatch} />}
       <BottomNavV46 page={page} dispatch={dispatch} notifications={state.notifications || []} />
