@@ -5063,31 +5063,9 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
 //           Founding Sync + WA Classic Live Scoring
 // ============================================================
 
-// ── LIVE VIEWER COUNTER HOOK ──────────────────────────────────
 
-function useLiveViewerCount(streamId) {
-  var [count, setCount] = React.useState(0);
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-  React.useEffect(function() {
-    if (!streamId) return;
-    function fetchCount() {
-      fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + streamId + '&select=viewer_count', {
-        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-      }).then(function(r) { return r.json(); }).then(function(d) {
-        if (d && d[0]) setCount(d[0].viewer_count || 0);
-      }).catch(function() {});
-    }
-    fetchCount();
-    var interval = setInterval(fetchCount, 5000);
-    return function() { clearInterval(interval); };
-  }, [streamId]);
-  return count;
-}
 
-// ── VOD PIPELINE PAGE ─────────────────────────────────────────
-
-function VODPipelinePage({ state, dispatch }) {
+) {
   var C = COLORS;
   var [tab, setTab] = React.useState('library');
   var tabs = [['library','🎬 LIBRARY'],['record','⏺ RECORD'],['clips','✂️ CLIPS']];
@@ -5204,34 +5182,9 @@ function VODPipelinePage({ state, dispatch }) {
   );
 }
 
-// ── FOUNDING MEMBER SYNC UTILITY ─────────────────────────────
 
-function useFoundingMemberSync(code, userId) {
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
 
-  React.useEffect(function() {
-    if (!code) return;
-    // Validate code against Supabase
-    fetch(SUPA_URL + '/rest/v1/invite_codes?code=eq.' + encodeURIComponent(code) + '&select=id,used,use_count,max_uses', {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-    }).then(function(r) { return r.json(); }).then(function(d) {
-      if (!d || !d[0]) return;
-      var inv = d[0];
-      if (inv.used && inv.use_count >= inv.max_uses) return;
-      // Mark code as used
-      fetch(SUPA_URL + '/rest/v1/invite_codes?id=eq.' + inv.id, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ used: true, used_at: new Date().toISOString(), use_count: (inv.use_count||0) + 1 })
-      }).catch(function() {});
-    }).catch(function() {});
-  }, [code]);
-}
-
-// ── WASHINGTON CLASSIC LIVE SCORING ───────────────────────────
-
-function WashingtonClassicScoring({ state, dispatch }) {
+) {
   var C = COLORS;
   var [tab, setTab] = React.useState('live');
   var tabs = [['live','🔴 LIVE'],['bracket','🏆 BRACKET'],['stats','📊 STATS']];
