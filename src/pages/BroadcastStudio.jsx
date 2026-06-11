@@ -398,6 +398,7 @@ export default function BroadcastStudio() {
   const [ariaTopicIdx, setAriaTopicIdx] = useState(0);
   const [musicVolume, setMusicVolume] = useState(70);
   const streamStartRef = useRef(Date.now());
+  const [bitratePreset, setBitratePreset] = useState(3000);
   const [tipTotal, setTipTotal] = useState(0);
   const [superchats, setSuperchats] = useState([]);
   const [raisedHands, setRaisedHands] = useState(new Set());
@@ -1374,6 +1375,20 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
+                {/* Golden wall — live gift/superchat feed */}
+                {partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                    <GoldenWall roomId={partyId} isExpanded />
+                  </div>
+                )}
+
+                {/* Engagement badges */}
+                {partyId && user?.id && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                    <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user.id} />
+                  </div>
+                )}
+
                 {/* Stream goal */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
@@ -1581,6 +1596,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>⚡ Stream Presets</p>
                     <StreamingPresets onApply={preset => toast.success(`Preset "${preset?.label || preset}" applied`)} />
+                    <div className="mt-3">
+                      <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+                    </div>
                   </div>
                 )}
 
@@ -1602,6 +1620,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             {activeTab === 'health' && (
               <div className="p-2 space-y-3">
                 <StreamHealthDashboard isLive={party?.status === 'live'} />
+                {partyId && (
+                  <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={liveViewers || members.length} />
+                )}
                 {partyId && (
                   <BroadcastAnalyticsDashboard
                     streamSession={{ id: partyId, title: party?.title }}
@@ -2062,6 +2083,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <div className="p-3 space-y-3">
                 <div className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Share Your Live Session</div>
 
+                {/* ShareToSocial quick-share widget */}
+                <ShareToSocial content={{ url: window.location.href, title: party?.title ? `🔴 ${party.title} — Join me LIVE on SeeWhy!` : '🔴 Join me LIVE on SeeWhy!' }} />
+
                 {/* Copy link */}
                 <div className="flex gap-2">
                   <div className="flex-1 h-9 px-3 flex items-center rounded-xl text-[10px] truncate"
@@ -2258,6 +2282,17 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      {/* Points notification overlay — shows animated badge when points are awarded */}
+      {user?.id && <PointsNotification userId={user.id} />}
+
+      {/* Tipping modal — opened via tipModalOpen state */}
+      <TippingModal
+        isOpen={tipModalOpen}
+        onClose={() => setTipModalOpen(false)}
+        recipient={{ id: party?.host_id, name: party?.host_name || 'Creator' }}
+        roomId={partyId}
+      />
     </div>
   );
 }
