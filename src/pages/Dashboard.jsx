@@ -18,6 +18,7 @@ import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
 import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -273,6 +274,11 @@ function AnalyticsTab({ user }) {
 
       {/* Earnings Breakdown */}
       {user?.id && <EarningsBreakdown creatorId={user.id} />}
+
+      {/* Room Analytics Panel (most recent stream) */}
+      {roomAnalytics[0]?.room_id && (
+        <RoomAnalyticsPanel roomId={roomAnalytics[0].room_id} />
+      )}
     </div>
   );
 }

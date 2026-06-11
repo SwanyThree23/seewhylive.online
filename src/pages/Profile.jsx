@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -410,6 +411,10 @@ export default function ProfilePage() {
               </div>
             </DarkCard>
           </>
+        )}
+
+        {activeTab === 'Overview' && user?.id && (
+          <MySubscriptions userId={user.id} />
         )}
 
         {activeTab === 'Streams' && (
