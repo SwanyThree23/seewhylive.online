@@ -2125,6 +2125,7 @@ function HomePage(props) {
             { icon: '🚀', label: 'Go Live', action: function() { dispatch({ type: 'SET_PAGE', payload: 'greenroom' }); } },
             { icon: '📊', label: 'Analytics', action: function() { dispatch({ type: 'SET_PAGE', payload: 'analytics' }); } },
             { icon: '💳', label: 'Wallet', action: function() { dispatch({ type: 'SET_PAGE', payload: 'wallet' }); } },
+    { icon: '💰', label: 'Payouts', action: function() { dispatch({ type: 'SET_PAGE', payload: 'payouts' }); } },
     { icon: '📡', label: 'Broadcast', action: function() { dispatch({ type: 'SET_PAGE', payload: 'broadcast' }); } },
     { icon: '💰', label: 'Monetize', action: function() { dispatch({ type: 'SET_PAGE', payload: 'monetize' }); } },
     { icon: '🎯', label: 'Domino', action: function() { dispatch({ type: 'SET_PAGE', payload: 'domino' }); } },
