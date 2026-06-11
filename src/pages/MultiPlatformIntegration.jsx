@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,
@@ -589,6 +591,19 @@ export default function MultiPlatformIntegration() {
       </div>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🌐 Multi-Platform',    href: 'MultiPlatform'   },
+          { label: '🔴 Go Live',           href: 'GoLive'          },
+          { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio' },
+          { label: '📊 Stream Analytics', href: 'StreamAnalytics'  },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
