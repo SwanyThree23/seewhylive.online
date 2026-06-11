@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import {
@@ -360,6 +362,19 @@ export default function AnalyticsPage() {
         <div className="mt-4 space-y-4">
           <RevenueDashboard />
           <StreamAnalyticsDashboard />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingBottom: 24 }}>
+          {[
+            { label: '📈 Advanced Analytics', href: 'AdvancedAnalytics' },
+            { label: '📊 Stream Analytics',  href: 'StreamAnalytics'   },
+            { label: '💰 Monetization',      href: 'Monetization'      },
+            { label: '📤 Export Data',       href: 'DataExport'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Trophy, Star, Flame, Gift, Clock, ChevronDown, ChevronUp, Users, MessageSquare, DollarSign, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
@@ -340,6 +342,19 @@ export default function LoyaltyHubPage() {
             )}
           </motion.div>
         </AnimatePresence>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 32px' }}>
+          {[
+            { label: '🏆 Loyalty Program', href: 'LoyaltyProgram' },
+            { label: '🛍 Reward Shop',     href: 'RewardShop'    },
+            { label: '🎁 Gift Shop',       href: 'Home'          },
+            { label: '🔴 Go Live',         href: 'GoLive'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: `rgba(212,175,55,0.07)`, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

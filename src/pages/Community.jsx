@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Users, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import ReferralProgram from '@/components/community/ReferralProgram';
@@ -130,6 +132,19 @@ export default function CommunityPage() {
             <p className="text-white/40">Create a community to get started</p>
           </div>
         )}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '👥 All Communities',   href: 'Communities'       },
+            { label: '⚙️ Admin',             href: 'CommunityAdmin'    },
+            { label: '📈 Growth',            href: 'CommunityGrowth'   },
+            { label: '⚡ Settings',          href: 'CommunitySettings' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {community?.id && (
