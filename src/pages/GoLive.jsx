@@ -10,6 +10,8 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import DestinationsManager from '../components/streaming/DestinationsManager';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -659,6 +661,17 @@ export default function GoLive() {
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, textAlign: 'center' }}>
               Configure OBS: Server → <code style={{ color: 'rgba(255,255,255,0.35)' }}>rtmp://ingest.seewhylive.online/live</code>
             </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Stream Health</span>
+              <StreamHealthMonitor isStreaming={false} />
+            </div>
+
+            {user?.id && (
+              <div style={{ background: 'rgba(13,6,24,0.9)', borderRadius: 14, border: '1px solid rgba(212,175,55,0.12)', padding: '16px' }}>
+                <DestinationsManager userId={user.id} />
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

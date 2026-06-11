@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import {
   LineChart, Line, BarChart, Bar,
   AreaChart, Area, PieChart, Pie, Cell,
@@ -341,6 +342,7 @@ export default function StreamAnalytics() {
         <div className="mt-6 space-y-4">
           <StreamHealthDashboard />
           <BroadcastAnalyticsDashboard />
+          <PerformanceDashboard />
         </div>
       </div>
     </div>
