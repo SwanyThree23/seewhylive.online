@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
   MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
-  Film, FileText, Calendar, Sliders, Scissors, Bell
+  Film, FileText, Calendar, Sliders, Scissors, Bell, Star
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -41,6 +41,7 @@ var DRAWER_WATCH = [
   { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
   { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
   { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
+  { name: 'Loyalty Hub',      icon: Star,    href: createPageUrl('LoyaltyHub') },
   { name: 'VOD Library',      icon: Film,    href: createPageUrl('VODLibrary') },
   { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
   { name: 'PK Arena',         icon: Trophy,  href: createPageUrl('PKBattleArena') },
@@ -62,6 +63,7 @@ var DRAWER_CREATE = [
   { name: 'Podcast Studio',   icon: Mic2,            href: createPageUrl('PodcastStudio') },
   { name: 'Multi-Platform',   icon: Globe,           href: createPageUrl('MultiPlatform') },
   { name: 'Multi-Platform+',  icon: Globe,           href: createPageUrl('MultiPlatformIntegration') },
+  { name: 'Multi-Stream Mgr', icon: Globe,          href: createPageUrl('MultiStreamManager') },
   { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
