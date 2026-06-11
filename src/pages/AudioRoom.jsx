@@ -14,6 +14,7 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import LoveTap from '../components/live/LoveTap';
+import LivePoll from '../components/live/LivePoll';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -450,6 +451,13 @@ export default function AudioRoom() {
           creatorId={party?.host_id}
           creatorName={hostName}
         />
+      )}
+
+      {/* Live Poll (host can launch polls) */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LivePoll roomId={roomId} isHost={isHost} />
+        </div>
       )}
 
       {/* Cross-nav footer */}
