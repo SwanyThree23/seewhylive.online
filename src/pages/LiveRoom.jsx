@@ -47,6 +47,7 @@ import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import { MerchStrip } from '../components/merch/MerchWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1057,6 +1058,13 @@ export default function LiveRoom() {
 
       {/* ── Host Alert Center ───────────────────────────────────────────────── */}
       {isHost && <HostAlertCenter />}
+
+      {/* ── Raid Panel (host only) ──────────────────────────────────────────── */}
+      {isHost && party && (
+        <div style={{ position: 'fixed', bottom: 148, right: 12, zIndex: 44 }}>
+          <RaidPanelButton room={party} currentUser={user} isHost={isHost} />
+        </div>
+      )}
 
       {showExclusiveGate && (
         <div style={{
