@@ -45,6 +45,8 @@ import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import { MerchStrip } from '../components/merch/MerchWidget';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -369,6 +371,7 @@ export default function LiveRoom() {
   const [giftEvent, setGiftEvent]   = useState(null);
   const [giftLog, setGiftLog]       = useState([]);
   const [goalOpen, setGoalOpen]     = useState(false);
+  const [whisperTarget, setWhisperTarget] = useState(null);
   const lastGiftTsRef               = useRef(0);
 
   // Connection quality stats (simulated — replace with real WebRTC getStats() when available)
@@ -668,6 +671,11 @@ export default function LiveRoom() {
           </div>
         )}
 
+        {/* ── Merch strip ───────────────────────────────────────────────────── */}
+        {party?.host_id && (
+          <MerchStrip roomId={roomId || party?.id} currentUser={user} hostId={party.host_id} />
+        )}
+
         {/* ── Audience section ──────────────────────────────────────────────── */}
         <div className="px-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
@@ -682,7 +690,7 @@ export default function LiveRoom() {
           </div>
           <div className="grid grid-cols-5 gap-x-2 gap-y-3">
             {audience.map(p => (
-              <div key={p.id} className="flex justify-center">
+              <div key={p.id} className="flex justify-center" onClick={() => p.id !== user?.id && setWhisperTarget({ id: p.id, name: p.name })} style={{ cursor: p.id !== user?.id ? 'pointer' : 'default' }}>
                 <AudienceTile p={p} />
               </div>
             ))}
@@ -925,6 +933,17 @@ export default function LiveRoom() {
 
       {/* Report modal */}
       <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={null} messageId={null} />
+
+      {/* Whisper DM panel */}
+      {whisperTarget && (roomId || party?.id) && (
+        <WhisperPanel
+          roomId={roomId || party?.id}
+          currentUser={user}
+          recipientId={whisperTarget.id}
+          recipientName={whisperTarget.name}
+          onClose={() => setWhisperTarget(null)}
+        />
+      )}
 
       {/* Mobile stream controls */}
       <MobileStreamControls
