@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 
@@ -536,6 +538,19 @@ export default function MultiPlatform() {
       </div>
 
       <Toast message={toast} />
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 24px' }}>
+        {[
+          { label: '🔴 Go Live',               href: 'GoLive'                   },
+          { label: '🎬 Broadcast Studio',      href: 'BroadcastStudio'          },
+          { label: '🌐 Multi-Platform+',       href: 'MultiPlatformIntegration' },
+          { label: '📊 Stream Analytics',     href: 'StreamAnalytics'           },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
