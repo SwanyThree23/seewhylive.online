@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#FFB800'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
@@ -46,6 +47,7 @@ export default function ClipsLibraryPage() {
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
+  const [clipSheetOpen, setClipSheetOpen] = useState(false);
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
@@ -123,7 +125,7 @@ export default function ClipsLibraryPage() {
                     <div style={{ fontFamily:'Barlow Condensed', fontSize:12, color:C.white }}>{h.description || 'AI-detected moment'}</div>
                     <div style={{ fontSize:10, color:C.gray }}>Confidence: {Math.round((h.ai_confidence||0.8)*100)}%</div>
                   </div>
-                  <button style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>CREATE CLIP</button>
+                  <button onClick={() => setClipSheetOpen(true)} style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>CREATE CLIP</button>
                 </div>
               ))}
             </div>
@@ -139,6 +141,18 @@ export default function ClipsLibraryPage() {
         </div>
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+
+      {/* Clip creator sheet */}
+      {clipSheetOpen && (
+        <ClipCreatorSheet
+          roomId={null}
+          sessionId={user?.id}
+          creatorId={user?.id}
+          elapsedSeconds={0}
+          roomTitle="My Stream"
+          onClose={() => setClipSheetOpen(false)}
+        />
+      )}
     </div>
   );
 }
