@@ -5065,7 +5065,7 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
 
 
 
-) {
+function VODPipelinePage({ state, dispatch }) {
   var C = COLORS;
   var [tab, setTab] = React.useState('library');
   var tabs = [['library','🎬 LIBRARY'],['record','⏺ RECORD'],['clips','✂️ CLIPS']];
