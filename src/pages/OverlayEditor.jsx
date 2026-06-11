@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Layers, Bell, Palette } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import AlertConfig from '@/components/live/AlertConfig';
 import OverlayThemeBuilder from '@/components/live/OverlayThemeBuilder';
 
@@ -45,6 +47,23 @@ export default function OverlayEditorPage() {
             </motion.div>
           </div>
         )}
+
+        {/* Quick-links to related creator tools */}
+        <div className="flex flex-wrap gap-3 mt-8">
+          {[
+            { label: '🎬 Broadcast Studio', href: 'BroadcastStudio' },
+            { label: '🖼 Scene Templates',  href: 'SceneTemplates'  },
+            { label: '🔔 Stream Alerts',    href: 'StreamAlerts'    },
+            { label: '🏷 Lower Thirds',     href: 'OverlayBuilder'  },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+                style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: G, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+                {item.label}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
