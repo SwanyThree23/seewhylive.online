@@ -38,7 +38,7 @@ function BattleCard({ battle, index }) {
             <div>
               {isActive && (
                 <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
-                  style={{ ...T, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564' }}>
+                  style={{ ...T, background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B' }}>
                   ⚡ LIVE
                 </span>
               )}

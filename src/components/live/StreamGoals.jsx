@@ -29,7 +29,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
       const pct = current / goal.target;
       if (pct >= 1 && !goal.completed) {
         setGoals(prev => prev.map(g => g.id === goal.id ? { ...g, completed: true } : g));
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#22c55e', '#d4af37', '#00d4ff'] });
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#22c55e', '#d4af37', '#D4AF37'] });
         fireAlert({ type: 'milestone', duration: 8000, title: `🎯 GOAL REACHED: ${goal.title}!`, body: goal.reward_text });
       }
     });

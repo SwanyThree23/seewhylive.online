@@ -30,7 +30,7 @@ const StreamerMonetizationCenter = () => {
   const [activeTab, setActiveTab] = useState('subscriptions');
 
   const revenueBreakdown = [
-    { label: 'Tips', amount: 1250, growth: 35, color: '#FF1564' },
+    { label: 'Tips', amount: 1250, growth: 35, color: '#C0392B' },
     { label: 'Subscriptions', amount: 3420, growth: 22, color: '#C9A84C' },
     { label: 'Virtual Goods', amount: 890, growth: 15, color: GOLD },
     { label: 'Sponsorships', amount: 2100, growth: 48, color: '#D4AF37' }

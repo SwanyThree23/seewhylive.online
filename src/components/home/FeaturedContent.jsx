@@ -6,8 +6,8 @@ import { createPageUrl } from '../../utils';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
-const TEAL    = '#00F5FF';
+const PINK    = '#C0392B';
+const TEAL    = '#D4854A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── Partner channel definitions ───────────────────────────────────────── */
@@ -51,7 +51,7 @@ export const FEATURED_VIDEOS = [
     channelId: 'aiversepodcast',
     channelColor: TEAL,
     tag: 'Interview',
-    tagColor: '#a855f7',
+    tagColor: '#D4854A',
   },
   {
     id: '7HwU_IDVKuc',

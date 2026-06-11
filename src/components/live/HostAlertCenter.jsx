@@ -28,12 +28,12 @@ export default function HostAlertCenter() {
 
   const typeStyle = {
     tip: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '💰', iconColor: '#d4af37' },
-    sub: { bg: 'from-purple-900/90 to-violet-900/70', border: 'border-purple-400', icon: '⭐', iconColor: '#a78bfa' },
-    stage: { bg: 'from-blue-900/90 to-cyan-900/70', border: 'border-[#00d4ff]', icon: '🎤', iconColor: '#00d4ff' },
+    sub: { bg: 'from-purple-900/90 to-violet-900/70', border: 'border-purple-400', icon: '⭐', iconColor: '#D4AF37' },
+    stage: { bg: 'from-blue-900/90 to-cyan-900/70', border: 'border-[#D4AF37]', icon: '🎤', iconColor: '#D4AF37' },
     health: { bg: 'from-yellow-900/90 to-orange-900/70', border: 'border-yellow-500', icon: '⚠️', iconColor: '#f59e0b' },
     moderation: { bg: 'from-red-900/90 to-rose-900/70', border: 'border-red-500', icon: '🚫', iconColor: '#ef4444' },
     milestone: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '🎉', iconColor: '#d4af37' },
-    clip: { bg: 'from-cyan-900/90 to-teal-900/70', border: 'border-[#00d4ff]', icon: '✂️', iconColor: '#00d4ff' },
+    clip: { bg: 'from-cyan-900/90 to-teal-900/70', border: 'border-[#D4AF37]', icon: '✂️', iconColor: '#D4AF37' },
   };
 
   return (

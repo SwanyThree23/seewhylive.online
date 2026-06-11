@@ -101,8 +101,8 @@ function FlyingGift({ emoji, side }) {
 
 function ComboBadge({ combo }) {
   if (!combo || combo < 2) return null;
-  var color = combo >= 10 ? '#FF1564' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
-  var glow = combo >= 10 ? '0 0 12px rgba(255,21,100,0.8)' : 'none';
+  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
+  var glow = combo >= 10 ? '0 0 12px rgba(192,57,43,0.8)' : 'none';
   return (
     <motion.div
       key={combo}
