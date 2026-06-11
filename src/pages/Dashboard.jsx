@@ -822,6 +822,23 @@ function MonetizationTab({ user }) {
           })}
         </div>
       )}
+
+      {/* Deep links to monetization pages */}
+      <div className="flex flex-wrap gap-3 pt-2">
+        {[
+          { label: '💰 Monetization',       href: 'Monetization'        },
+          { label: '⭐ Subscriptions',       href: 'CreatorSubscriptions' },
+          { label: '🎛 Widgets',             href: 'MonetizationWidgets' },
+          { label: '📊 Revenue Analytics',  href: 'Analytics'           },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+              style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
