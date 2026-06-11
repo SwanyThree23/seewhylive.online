@@ -388,7 +388,7 @@ export default function CreatorPublicProfile() {
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           <StatCard icon={Users} label="FOLLOWERS" value={followerCount} color={G.cyan} />
           <StatCard icon={Video} label="STREAMS" value={totalStreams} color={G.gold} />
-          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#30D158" />
+          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#6DBF7E" />
         </div>
       </div>
 
@@ -512,7 +512,7 @@ export default function CreatorPublicProfile() {
                     {t.payment_method?.toUpperCase()}
                   </div>
                 </div>
-                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#30D158" }}>
+                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#6DBF7E" }}>
                   ${t.creator_payout?.toFixed(2) || "—"}
                 </div>
               </div>

@@ -149,7 +149,7 @@ export default function DiscoverPage() {
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
-    <div className="min-h-screen bg-[#03030A] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div className="min-h-screen bg-[#080B18] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -303,7 +303,7 @@ export default function DiscoverPage() {
               {loadingLive ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#16162A]" />
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#0D1022]" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
@@ -405,8 +405,8 @@ function TrendingCard({ room, rank }) {
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#C0392B]/30 transition-all cursor-pointer"
-        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
+        className="relative rounded-xl overflow-hidden border border-[#0D1022] hover:border-[#C0392B]/30 transition-all cursor-pointer"
+        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #0D1022 100%)' }}
       >
         {room.thumbnail_url && (
           <img src={room.thumbnail_url} alt="" className="w-full h-28 object-cover opacity-60" />
@@ -439,9 +439,9 @@ function ScheduledRow({ room }) {
     <Link to={`${createPageUrl('Room')}?id=${room.id}`}>
       <motion.div
         whileHover={{ x: 4 }}
-        className="flex items-center gap-4 p-4 rounded-xl border border-[#16162A] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
+        className="flex items-center gap-4 p-4 rounded-xl border border-[#0D1022] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
       >
-        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#16162A] flex items-center justify-center shrink-0">
+        <div className="w-12 h-12 rounded-lg bg-[#0D1022] border border-[#0D1022] flex items-center justify-center shrink-0">
           <Calendar className="w-5 h-5 text-[#FFB800]" />
         </div>
         <div className="flex-1 min-w-0">

@@ -45,7 +45,7 @@ export default function BrandChyron() {
     <div
       className="fixed bottom-0 left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden"
       style={{
-        background: 'linear-gradient(90deg, #03030A 0%, #07070F 50%, #03030A 100%)',
+        background: 'linear-gradient(90deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
         borderTop: '1px solid rgba(192,57,43,0.25)',
       }}
     >

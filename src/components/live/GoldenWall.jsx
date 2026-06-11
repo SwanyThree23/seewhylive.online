@@ -120,7 +120,7 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
   return (
     <div className="rounded-xl border border-[#FFB800]/20 bg-[#0B0B18] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-[#FFB800]/10 bg-[#07070F]">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-[#FFB800]/10 bg-[#0D1022]">
         <div className="w-4 h-4 rounded-full bg-[#FFB800] flex items-center justify-center">
           <Zap className="w-2.5 h-2.5 text-black" />
         </div>
