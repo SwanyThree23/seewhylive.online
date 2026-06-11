@@ -45,6 +45,7 @@ import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { MerchStrip } from '../components/merch/MerchWidget';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -624,6 +625,20 @@ export default function LiveRoom() {
         {roomId && (
           <div className="px-3 mb-4">
             <GoldenWall roomId={roomId} isExpanded />
+          </div>
+        )}
+
+        {/* ── Stream Goals ─────────────────────────────────────────────────── */}
+        {roomId && (
+          <div className="px-3 mb-4">
+            <StreamGoals roomId={roomId} isHost={isHost} />
+          </div>
+        )}
+
+        {/* ── Live Merch Strip ─────────────────────────────────────────────── */}
+        {party?.host_id && (
+          <div className="mb-4">
+            <MerchStrip roomId={roomId} currentUser={user} hostId={party.host_id} />
           </div>
         )}
 

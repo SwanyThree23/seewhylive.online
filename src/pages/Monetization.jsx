@@ -21,6 +21,7 @@ import StripeConnectButton from '../components/monetization/StripeConnectButton'
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
+import ShopDashboard from '../components/merch/ShopDashboard';
 import PayPerViewCard from '@/components/monetization/PayPerViewCard';
 import { toast } from 'sonner';
 
@@ -814,8 +815,9 @@ export default function MonetizationPage() {
           )}
 
           {tab === 'store' && user?.id && (
-            <motion.div key="store" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            <motion.div key="store" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-8">
               <VirtualGoodsStore userId={user.id} />
+              <ShopDashboard creatorId={user.id} />
             </motion.div>
           )}
         </AnimatePresence>
