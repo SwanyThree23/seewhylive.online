@@ -15,6 +15,9 @@ import {
   Crown, Layers
 } from 'lucide-react';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -261,6 +264,15 @@ function AnalyticsTab({ user }) {
           </div>
         </Card>
       )}
+
+      {/* Analytics Overview */}
+      {user?.id && <AnalyticsOverview creatorId={user.id} />}
+
+      {/* Audience Insights */}
+      {user?.id && <AudienceInsights creatorId={user.id} />}
+
+      {/* Earnings Breakdown */}
+      {user?.id && <EarningsBreakdown creatorId={user.id} />}
     </div>
   );
 }
