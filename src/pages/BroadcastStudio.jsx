@@ -99,6 +99,9 @@ import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import WebhookHooks from '../components/live/WebhookHooks';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import StreamEventBus from '../components/live/StreamEventBus';
+import ViewerCount from '../components/live/ViewerCount';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -386,6 +389,8 @@ export default function BroadcastStudio() {
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent] = useState(null);
   const [guardianWords, setGuardianWords] = useState([]);
+  const [liveViewers, setLiveViewers] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
   const [guardianWordInput, setGuardianWordInput] = useState('');
   const [ariaSuggestions] = useState(['What do you think about this topic?', 'Drop a ❤️ if you agree!', 'Questions? Type them below!']);
   const [ariaTopicIdx, setAriaTopicIdx] = useState(0);
@@ -848,8 +853,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           </div>
           <span className="text-[10px] text-white/50 truncate max-w-[80px]" style={T}>{user?.full_name || 'Host'}</span>
           <span className="text-white/15 mx-0.5">·</span>
-          <Users className="w-3 h-3 shrink-0" style={{ color: GOLD }} />
-          <span className="text-[10px] font-bold shrink-0" style={{ color: GOLD, ...T }}>{members.length}/20</span>
+          <ViewerCount count={liveViewers || members.length} peakViewers={peakViewers} />
           <div className="flex items-center gap-1 ml-1">
             {[
               { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
@@ -897,7 +901,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           startTime={streamStartRef.current}
           memberCount={members.length}
           tipTotal={tipTotal}
-          peakViewers={members.length}
+          peakViewers={peakViewers || members.length}
         />
       </div>
 
@@ -1631,6 +1635,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {members[0]?.user_id && (
                   <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
                 )}
+                <VdoNinjaGuestLink roomId={partyId} />
               </div>
             )}
 
@@ -2208,6 +2213,16 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
       {partyId && (
         <LoveHearts roomId={partyId} currentUser={user} creatorId={party?.host_id} />
+      )}
+
+      {partyId && (
+        <StreamEventBus
+          roomId={partyId}
+          isHost={isHost}
+          sessionId={user?.id}
+          onViewerUpdate={n => { setLiveViewers(n); setPeakViewers(p => Math.max(p, n)); }}
+          onTipReceived={msg => { const amt = msg.tip_amount || 0; if (amt > 0) setTipTotal(prev => prev + amt); }}
+        />
       )}
 
       <GiftShop

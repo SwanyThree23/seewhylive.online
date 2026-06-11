@@ -229,6 +229,8 @@ if (giftCount.c === 0) {
 var app    = express();
 var server = createServer(app);
 app.set('trust proxy', 1);
+app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
+app.get('*', function(req, res) { res.sendFile(require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html')); });
 
 // Stripe webhook needs raw body - register BEFORE express.json()
 app.post(
@@ -1007,21 +1009,6 @@ var apiRoutes = null;
 try {
   apiRoutes = require('./routes');
   app.use('/api', apiRoutes);
-
-// ── INLINE FANOUT ROUTES (before static) ─────────────────────
-var activeFanouts = {};
-app.get('/api/fanout-status', function(req, res) {
-  res.json({ ok: true, active_streams: Object.keys(activeFanouts), count: Object.keys(activeFanouts).length });
-});
-app.post('/api/fanout-start', function(req, res) {
-  res.json({ ok: true, msg: 'fanout armed', destinations: (req.body.destinations || []).length });
-});
-app.post('/api/fanout-stop', function(req, res) {
-  res.json({ ok: true, msg: 'fanout stopped' });
-});
-// ─────────────────────────────────────────────────────────────
-
-app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
   logger.info('[routes] New API routes mounted at /api');
 } catch (routesErr) {
   logger.warn('[routes] Failed to load routes.js: ' + routesErr.message);
@@ -3022,7 +3009,6 @@ var PORT = parseInt(process.env.PORT || '3001', 10);
 mediasoup.createWorkers()
   .then(function() {
     logger.info('mediasoup workers ready');
-app.get('*', function(req, res) { res.sendFile(require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html')); });
     server.listen(PORT, '0.0.0.0', function() {
       logger.info('SeeWhy LIVE v33.0 server listening on port ' + PORT);
     });
@@ -3084,3 +3070,4 @@ app.post('/api/zego/token', function(req, res) {
   var hmac = crypto.createHmac('sha256', secret).update(plain).digest('hex');
   res.json({ token: hmac, appId: appId, userId: userId, roomId: roomId, expire: expire });
 });
+>>>>>>> origin/main

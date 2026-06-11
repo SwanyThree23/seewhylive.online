@@ -8,8 +8,8 @@ import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -317,8 +317,11 @@ export default function CreatorDashboardPage() {
           </>
         )}
 
-        <CollaborationMatcher />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <CollaborationMatcher />
+        </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Link to={createPageUrl('ContentCalendar')}>
