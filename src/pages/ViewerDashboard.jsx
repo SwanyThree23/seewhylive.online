@@ -9,6 +9,7 @@ import {
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -246,6 +247,9 @@ export default function ViewerDashboard() {
         {/* MY ACTIVITY */}
         {activeTab === 'activity' && (
           <>
+            {user?.id && (
+              <ViewerLoyaltyCard userId={user.id} />
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color={GOLD} />
               <StatTile label="Clips" value={myClips.length} icon={Scissors} color={GOLD} />
