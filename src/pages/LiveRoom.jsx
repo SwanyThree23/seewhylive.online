@@ -65,7 +65,7 @@ function filterMessageWithGuardianAI(text) {
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const BG      = '#080B18';
 const BG2     = '#0d0618';
 const BG3     = '#110822';
@@ -711,7 +711,7 @@ export default function LiveRoom() {
               { label: 'Auction',      icon: '🏆', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
               { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)'  },
-              { label: 'Pay',          icon: '💸', bg: 'rgba(255,21,100,0.08)', action: () => setPayOpen(true) },
+              { label: 'Pay',          icon: '💸', bg: 'rgba(192,57,43,0.08)', action: () => setPayOpen(true) },
               { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
             ].map(s => (

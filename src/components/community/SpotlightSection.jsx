@@ -42,7 +42,7 @@ export default function SpotlightSection({ communityId }) {
             className="flex gap-3"
           >
             {/* Avatar */}
-            <div className="w-12 h-12 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(135deg, #FF1564, #D4AF37)' }} />
+            <div className="w-12 h-12 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(135deg, #C0392B, #D4AF37)' }} />
 
             {/* Info */}
             <div className="flex-1 min-w-0">

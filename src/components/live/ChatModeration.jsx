@@ -34,9 +34,9 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
-          <Shield className="w-3 h-3 text-[#00d4ff]" />
+          <Shield className="w-3 h-3 text-[#D4AF37]" />
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Auto-Moderation</span>
-          <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
+          <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
             {stats.blocks + stats.timeouts + stats.deletes} today
           </span>
         </div>

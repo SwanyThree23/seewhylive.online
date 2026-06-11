@@ -14,7 +14,7 @@ const TYPE_COLORS = {
   shoutout:   { color: '#D4AF37', label: 'SHOUTOUT' },
   custom_art: { color: '#FF6B00', label: 'ART' },
   coaching:   { color: '#6DBF7E', label: 'COACHING' },
-  experience: { color: '#FF1564', label: 'EXPERIENCE' },
+  experience: { color: '#C0392B', label: 'EXPERIENCE' },
 };
 
 function Countdown({ endsAt, onExpired }) {

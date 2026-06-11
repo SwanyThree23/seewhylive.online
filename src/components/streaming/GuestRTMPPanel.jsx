@@ -133,7 +133,7 @@ function DestinationRow({ dest, userId, onRemove }) {
         <div className="flex gap-1.5 pt-0.5">
           <button
             onClick={validate} disabled={validating}
-            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(0,212,255,0.2)', color:'#00d4ff', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(212,175,55,0.2)', color:'#D4AF37', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             {validating ? <RefreshCw className="w-2.5 h-2.5 animate-spin" /> : <Wifi className="w-2.5 h-2.5" />}
             {validating ? 'Testing…' : 'Validate'}

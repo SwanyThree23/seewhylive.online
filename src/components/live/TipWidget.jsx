@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
+const PINK = '#C0392B';
 const BG = '#080B18';
 const BG2 = 'rgba(13,6,24,0.97)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -16,13 +16,13 @@ const TIERS = [
   { amount: 1,   label: 'Bronze', color: '#CD7F32', icon: '🪙', glow: 'rgba(205,127,50,0.4)' },
   { amount: 5,   label: 'Silver', color: '#C0C0C0', icon: '⭐', glow: 'rgba(192,192,192,0.4)' },
   { amount: 15,  label: 'Gold',   color: G,         icon: '💛', glow: 'rgba(212,175,55,0.5)' },
-  { amount: 50,  label: 'Plat',   color: '#00d4ff', icon: '💎', glow: 'rgba(0,212,255,0.5)' },
-  { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(255,21,100,0.6)' },
+  { amount: 50,  label: 'Plat',   color: '#D4AF37', icon: '💎', glow: 'rgba(212,175,55,0.5)' },
+  { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(192,57,43,0.6)' },
 ];
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];
 
-const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00d4ff', '#a78bfa', '#22c55e'];
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#D4AF37', '#D4AF37', '#22c55e'];
 
 function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;
