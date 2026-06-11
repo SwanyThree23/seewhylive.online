@@ -136,7 +136,7 @@ function FanbaseRoomCard({ room }) {
         </div>
 
         {/* Thumbnail / placeholder */}
-        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
           {room.thumbnail_url ? (
             <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           ) : (
@@ -702,7 +702,7 @@ export default function Home() {
                   <motion.div whileTap={{ scale: 0.97 }} className="rounded-2xl overflow-hidden"
                     style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
                     <div className="h-20 flex items-center justify-center"
-                      style={{ background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+                      style={{ background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
                       <Users className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
                     </div>
                     <div className="p-2.5">

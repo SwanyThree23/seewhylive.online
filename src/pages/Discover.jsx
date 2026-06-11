@@ -65,7 +65,7 @@ function FanbaseRoomCard({ room }) {
           Join
         </span>
       </div>
-      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
         {room.thumbnail_url
           ? <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
