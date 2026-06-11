@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -176,6 +177,8 @@ export default function MultiPlatform() {
 
             {/* ── PLATFORMS ── */}
             {tab === 'platforms' && (
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                <MultiStreamConfig roomId={null} isHost={true} />
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {
                   const isConn = !!connections[p.id];
@@ -204,6 +207,7 @@ export default function MultiPlatform() {
                     </motion.div>
                   );
                 })}
+              </div>
               </div>
             )}
 
