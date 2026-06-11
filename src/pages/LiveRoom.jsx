@@ -134,10 +134,26 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
           ) : (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-black border-2 shrink-0"
-              style={{ background: avatarColor(p.name), borderColor: avatarColor(p.name) + 'CC', color: '#fff', boxShadow: `0 0 12px ${avatarColor(p.name)}66` }}>
-              {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
-            </div>
+            <>
+              {/* Subtle ambient glow behind avatar */}
+              <div className="absolute inset-0" style={{ background: `radial-gradient(circle, ${avatarColor(p.name)}22 0%, transparent 70%)` }} />
+              <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
+                style={{ background: `linear-gradient(135deg, ${avatarColor(p.name)}, ${avatarColor(p.name)}99)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(255,255,255,0.15)' }}>
+                {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
+              </div>
+              {/* Audio-only mic indicator */}
+              {!p.muted && (
+                <motion.div className="absolute bottom-3 left-0 right-0 flex justify-center items-end gap-[2px]"
+                  initial={{ opacity: 0 }} animate={{ opacity: p.speaking ? 1 : 0.35 }}>
+                  {[2,4,3,5,2].map((h, i) => (
+                    <motion.div key={i} className="w-[2px] rounded-full"
+                      style={{ background: p.speaking ? GOLD : 'rgba(255,255,255,0.4)', height: h }}
+                      animate={p.speaking ? { height: [h, h * 3, h] } : {}}
+                      transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.08 }} />
+                  ))}
+                </motion.div>
+              )}
+            </>
           )}
 
           {/* Speaking waveform bars */}
