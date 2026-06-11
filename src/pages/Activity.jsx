@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Activity as ActivityIcon, Radio, Users, Trophy, Gift, Award } from 'lucide-react';
 import { format } from 'date-fns';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -23,8 +24,11 @@ export default function ActivityPage() {
     queryFn: () => base44.entities.Activity.list('-created_date', 100),
   });
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   return (
     <div className="min-h-screen pb-8" style={{ background: '#080B18' }}>
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
       {/* Sticky header */}
       <div className="sticky top-0 z-20 flex items-center gap-2 px-4 py-3"
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
