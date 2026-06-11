@@ -74,9 +74,9 @@ export default function TipAlert({ roomId, recipientId }) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl font-bold">${alert.amount}</span>
-                    <span className="text-purple-100">Tip Received!</span>
+                    <span className="text-[#C9A84C]">Tip Received!</span>
                   </div>
-                  <p className="text-sm text-purple-100">
+                  <p className="text-sm text-[#C9A84C]">
                     From User {alert.from.slice(0, 8)}
                   </p>
                   {alert.message && (

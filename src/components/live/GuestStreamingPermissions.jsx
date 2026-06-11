@@ -113,7 +113,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
             <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-cyan-400" /> : <EyeOff className="w-4 h-4 text-red-400" />}
+                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#6DBF7E]" /> : <EyeOff className="w-4 h-4 text-red-400" />}
                   <div>
                     <p className="text-xs font-semibold text-white">Visible to Viewers</p>
                     <p className="text-[10px] text-white/40">Show this guest in the public stream?</p>
@@ -122,10 +122,10 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                 <button
                   onClick={() => handlePermissionToggle('visibleToViewers')}
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-                    permissions.visibleToViewers ? 'bg-cyan-600/30 border border-cyan-500' : 'bg-gray-600/30 border border-gray-500'
+                    permissions.visibleToViewers ? 'bg-[#6DBF7E]/20 border border-[#6DBF7E]' : 'bg-gray-600/30 border border-gray-500'
                   }`}
                 >
-                  {permissions.visibleToViewers && <CheckCircle2 className="w-4 h-4 text-cyan-400" />}
+                  {permissions.visibleToViewers && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
                 </button>
               </div>
             </div>

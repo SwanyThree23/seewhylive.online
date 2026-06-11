@@ -103,7 +103,7 @@ export default function OctagonalVideoWindow({
           <motion.button
             whileHover={{ scale: 1.1 }}
             onClick={onShareScreen}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-purple-900/50 border border-purple-600 text-purple-400 transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#800020]/30 border border-[#800020] text-[#D4854A] transition-all"
           >
             <Share2 className="w-3.5 h-3.5" />
           </motion.button>

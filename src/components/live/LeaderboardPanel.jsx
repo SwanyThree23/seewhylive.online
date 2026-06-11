@@ -147,7 +147,7 @@ export default function LeaderboardPanel({ roomId }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white truncate">User {viewer.user_id?.slice(0, 8)}</p>
-                  <p className="text-[10px] text-cyan-300">{Math.round(viewer.watch_minutes)} min • {viewer.points || 0} pts</p>
+                  <p className="text-[10px] text-[#6DBF7E]">{Math.round(viewer.watch_minutes)} min • {viewer.points || 0} pts</p>
                 </div>
               </motion.div>
             ))}

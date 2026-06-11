@@ -107,7 +107,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
                 <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                   style={{ background: msg.is_moderator ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.1)' }}>
                   {msg.is_moderator ? (
-                    <Shield className="w-3 h-3 text-purple-400" />
+                    <Shield className="w-3 h-3 text-[#D4854A]" />
                   ) : (
                     <User className="w-3 h-3 text-white/40" />
                   )}
