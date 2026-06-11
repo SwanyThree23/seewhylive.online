@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
@@ -491,6 +493,19 @@ export default function Messages() {
           </div>
         </div>
       )}
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🏠 Home',        href: 'Home'        },
+          { label: '👤 Profile',     href: 'Profile'     },
+          { label: '🔔 Alerts',      href: 'Notifications' },
+          { label: '👥 Communities', href: 'Communities' },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
