@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
   MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
-  Film, FileText, Calendar, Sliders, Scissors, Bell, Star
+  Film, FileText, Calendar, Sliders, Scissors, Bell, Star, Users, BarChart
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -42,6 +42,8 @@ var DRAWER_WATCH = [
   { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
   { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
   { name: 'Loyalty Hub',      icon: Star,    href: createPageUrl('LoyaltyHub') },
+  { name: 'Communities',      icon: Users,   href: createPageUrl('Communities') },
+  { name: 'Challenges',       icon: Trophy,  href: createPageUrl('ChallengesHub') },
   { name: 'VOD Library',      icon: Film,    href: createPageUrl('VODLibrary') },
   { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
   { name: 'PK Arena',         icon: Trophy,  href: createPageUrl('PKBattleArena') },
@@ -57,6 +59,10 @@ var DRAWER_CREATE = [
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
   { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'Stream Analytics', icon: BarChart,        href: createPageUrl('StreamAnalytics') },
+  { name: 'Analytics',        icon: BarChart,        href: createPageUrl('Analytics') },
+  { name: 'Stream Scheduler', icon: Calendar,        href: createPageUrl('StreamScheduler') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
   { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
   { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },
   { name: 'AI Music Studio',  icon: Radio,           href: createPageUrl('AIMusic') },
@@ -85,6 +91,8 @@ var DRAWER_ACCOUNT = [
   { name: 'Privacy',  icon: Video,      href: createPageUrl('PrivacyPolicy') },
   { name: 'BetaStatus', icon: Radio,   href: createPageUrl('BetaStatus') },
   { name: 'Payouts',    icon: DollarSign, href: createPageUrl('Payouts') },
+  { name: 'Activity',   icon: Bell,       href: createPageUrl('Activity') },
+  { name: 'Data Export', icon: FileText,  href: createPageUrl('DataExport') },
   { name: 'Notifications', icon: Bell, href: createPageUrl('Notifications') },
 ];
 
