@@ -148,7 +148,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
       {/* Selected Gift Preview */}
       {selectedGift && (
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50">
+        <Card className="bg-gradient-to-br from-[#0D1022] to-[#0F1428]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

@@ -114,7 +114,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
   const getRoleColor = (role) => {
     switch(role) {
       case 'host': return '#d4af37';
-      case 'co-host': return '#60a5fa';
+      case 'co-host': return '#D4AF37';
       case 'speaker': return '#34d399';
       default: return '#D4AF37';
     }
@@ -181,7 +181,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           <button
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: videoEnabled ? 'rgba(96,165,250,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${videoEnabled ? '#60a5fa' : '#ef4444'}` }}>
+            style={{ background: videoEnabled ? 'rgba(212,175,55,0.3)', border: `1px solid ${videoEnabled ? '#D4AF37' : '#ef4444'}` }}>
             {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
         </div>

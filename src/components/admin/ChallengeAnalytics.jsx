@@ -71,7 +71,7 @@ export default function ChallengeAnalytics({ communityId }) {
       {/* Overview Stats */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
         <StatCard label="Total Challenges" value={challenges.length} icon={Trophy} sub={`${activeChallenges.length} active`} />
-        <StatCard label="Total Participants" value={totalParticipations} color="#60a5fa" icon={Users} sub="All challenges" />
+        <StatCard label="Total Participants" value={totalParticipations} color="#D4AF37" icon={Users} sub="All challenges" />
         <StatCard label="Avg Participants" value={avgParticipantsPerChallenge} color="#D4AF37" icon={TrendingUp} sub="Per challenge" />
         <StatCard label="Completion Rate" value={`${completionRate}%`} color="#4ade80" icon={Award} sub="Success rate" />
       </div>
@@ -111,10 +111,10 @@ export default function ChallengeAnalytics({ communityId }) {
                   <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16, marginBottom:12 }}>
                     <div style={{ background:'rgba(59,130,246,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, marginBottom:4 }}>
-                        <Users style={{ width:16, height:16, color:'#60a5fa' }} />
-                        <span style={{ fontSize:12, color:'#60a5fa', fontWeight:600 }}>Participants</span>
+                        <Users style={{ width:16, height:16, color:'#D4AF37' }} />
+                        <span style={{ fontSize:12, color:'#D4AF37', fontWeight:600 }}>Participants</span>
                       </div>
-                      <p style={{ fontSize:24, fontWeight:900, color:'#60a5fa', margin:0, fontFamily:'Barlow Condensed, sans-serif' }}>{challenge.participantCount}</p>
+                      <p style={{ fontSize:24, fontWeight:900, color:'#D4AF37', margin:0, fontFamily:'Barlow Condensed, sans-serif' }}>{challenge.participantCount}</p>
                     </div>
 
                     <div style={{ background:'rgba(34,197,94,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
@@ -159,11 +159,11 @@ export default function ChallengeAnalytics({ communityId }) {
           </div>
         </div>
         <div style={{ padding:'0 20px 20px', display:'flex', flexDirection:'column', gap:16 }}>
-          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(59,130,246,0.08)', borderRadius:8, border:'1px solid rgba(59,130,246,0.2)' }}>
-            <TrendingUp style={{ width:20, height:20, color:'#60a5fa', marginTop:2 }} />
+          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(59,130,246,0.08)', borderRadius:8, border:'1px solid rgba(212,175,55,0.2)' }}>
+            <TrendingUp style={{ width:20, height:20, color:'#D4AF37', marginTop:2 }} />
             <div>
-              <p style={{ fontWeight:600, color:'#93c5fd', margin:'0 0 2px' }}>Most Popular Challenge</p>
-              <p style={{ fontSize:13, color:'#60a5fa', margin:0 }}>
+              <p style={{ fontWeight:600, color:'#C9A84C', margin:'0 0 2px' }}>Most Popular Challenge</p>
+              <p style={{ fontSize:13, color:'#D4AF37', margin:0 }}>
                 {challengeStats[0]?.title || 'N/A'} with {challengeStats[0]?.participantCount || 0} participants
               </p>
             </div>

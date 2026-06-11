@@ -90,13 +90,13 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
-        <span style={{ color: leftColor || '#3b82f6' }}>{leftName}</span>
+        <span style={{ color: leftColor || '#D4AF37' }}>{leftName}</span>
         <span style={{ color: rightColor || '#ef4444' }}>{rightName}</span>
       </div>
       <div className="h-4 rounded-full flex overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
         <motion.div
           className="h-full rounded-l-full transition-all duration-700"
-          style={{ width: lp + '%', background: leftColor || '#3b82f6' }}
+          style={{ width: lp + '%', background: leftColor || '#D4AF37' }}
         />
         <motion.div
           className="h-full rounded-r-full transition-all duration-700"
@@ -104,7 +104,7 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
         />
       </div>
       <div className="flex items-center justify-between text-[11px] font-black font-mono">
-        <span style={{ color: leftColor || '#3b82f6' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
+        <span style={{ color: leftColor || '#D4AF37' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
         <span style={{ color: rightColor || '#ef4444' }}>{rightScore.toLocaleString()} pts ({rp}%)</span>
       </div>
     </div>

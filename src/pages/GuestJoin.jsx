@@ -74,7 +74,7 @@ export default function GuestJoin() {
     onSuccess: (_, ready) => { setReadyState(ready); toast.success(ready ? '✅ Marked as ready!' : 'Status set to waiting'); },
   });
 
-  const card = { background: 'rgba(26,13,46,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
 
   if (!roomId) {
     return (

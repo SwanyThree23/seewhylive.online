@@ -498,7 +498,7 @@ export default function PKBattlePage() {
               </div>
             </div>
             <button
-              style={{ width: '100%', background: !leftName || !rightName || createBattle.isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(90deg, #1d4ed8, #dc2626)', color: '#fff', fontWeight: 700, padding: '12px', borderRadius: 8, border: 'none', cursor: !leftName || !rightName || createBattle.isPending ? 'default' : 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', opacity: !leftName || !rightName || createBattle.isPending ? 0.5 : 1 }}
+              style={{ width: '100%', background: !leftName || !rightName || createBattle.isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(90deg, #800020, #C0392B)', color: '#fff', fontWeight: 700, padding: '12px', borderRadius: 8, border: 'none', cursor: !leftName || !rightName || createBattle.isPending ? 'default' : 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', opacity: !leftName || !rightName || createBattle.isPending ? 0.5 : 1 }}
               disabled={!leftName || !rightName || createBattle.isPending}
               onClick={() => createBattle.mutate()}
             >
@@ -709,7 +709,7 @@ export default function PKBattlePage() {
         <div className="flex-1 flex items-center gap-1.5 overflow-x-auto">
           {Array.from(leftSupporters).slice(0, 5).map((uid, i) => (
             <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              style={{ background: 'rgba(59,130,246,0.4)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.4)' }}>
+              style={{ background: 'rgba(212,175,55,0.2)', color: '#C9A84C', border: '1px solid rgba(212,175,55,0.3)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>
           ))}

@@ -199,7 +199,7 @@ export default function EmbedPlayer({
                 <button className="py-3 rounded-xl bg-gradient-to-r from-[#800020] to-[#d4af37] text-white font-bold text-sm hover:opacity-90 transition-opacity">
                   Unlock ${price} — One-time
                 </button>
-                <button className="py-3 rounded-xl bg-gradient-to-r from-purple-700 to-purple-500 text-white font-bold text-sm hover:opacity-90 transition-opacity">
+                <button className="py-3 rounded-xl bg-gradient-to-r from-[#800020] to-[#C0392B] text-white font-bold text-sm hover:opacity-90 transition-opacity">
                   Subscribe ${subscriptionPrice}/mo
                 </button>
               </div>

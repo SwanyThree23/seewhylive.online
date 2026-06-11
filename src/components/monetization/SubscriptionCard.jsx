@@ -7,8 +7,8 @@ import { CheckCircle, Star, Crown, Zap } from 'lucide-react';
 const tierConfig = {
   basic: {
     icon: Zap,
-    color: '#3b82f6',
-    gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+    color: '#D4AF37',
+    gradient: 'linear-gradient(135deg, #D4AF37, #C9A84C)',
   },
   premium: {
     icon: Star,

@@ -120,7 +120,7 @@ export default function StageCleanupPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Stages', value: stages.length, icon: Layers, iconColor: '#2563eb' },
+            { label: 'Total Stages', value: stages.length, icon: Layers, iconColor: '#D4AF37' },
             { label: 'Ghost / Orphaned', value: ghostStages.length, icon: AlertTriangle, iconColor: '#ea580c' },
             { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, iconColor: '#16a34a' },
             { label: 'Cleaned Up', value: deletedCount, icon: Trash2, iconColor: '#64748b' },
