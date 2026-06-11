@@ -35,10 +35,10 @@ import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import { DollarSign, Gift } from 'lucide-react';
+import ViewerCount from '../components/live/ViewerCount';
 import SuperChatRail from '../components/live/SuperChatRail';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import StreamEventBus from '../components/live/StreamEventBus';
-import ViewerCount from '../components/live/ViewerCount';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
 import GoldenWall from '../components/live/GoldenWall';
@@ -559,6 +559,13 @@ export default function LiveRoom() {
             </div>
           );
         })()}
+
+        {/* ── Viewer count widget ──────────────────────────────────────────── */}
+        {isLive && (
+          <div className="px-4 pb-3 flex items-center justify-center">
+            <ViewerCount count={liveCount} peakViewers={Math.max(liveCount, 20)} />
+          </div>
+        )}
 
         {/* ── Stage header ─────────────────────────────────────────────────── */}
         <div className="px-4 mb-3 flex items-center justify-between">
