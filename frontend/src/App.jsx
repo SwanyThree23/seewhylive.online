@@ -5065,23 +5065,6 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
 
 
 
-  var C = COLORS;
-  var [tab, setTab] = React.useState('library');
-  var tabs = [['library','🎬 LIBRARY'],['record','⏺ RECORD'],['clips','✂️ CLIPS']];
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-  var [vods, setVods] = React.useState([]);
-  var [loading, setLoading] = React.useState(true);
-  var [recording, setRecording] = React.useState(false);
-
-  React.useEffect(function() {
-    fetch(SUPA_URL + '/rest/v1/vods?select=*&order=created_at.desc&limit=20', {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-    }).then(function(r) { return r.json(); }).then(function(d) {
-      setVods(Array.isArray(d) ? d : []);
-      setLoading(false);
-    }).catch(function() { setLoading(false); });
-  }, []);
 
   var mockVods = [
     { id:1, title:'Washington Classic Semi-Finals', duration_seconds:3840, view_count:1204, created_at:'2026-06-14', is_public:true, thumbnail_url:null },
@@ -5183,16 +5166,6 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
 
 
 
-  var C = COLORS;
-  var [tab, setTab] = React.useState('live');
-  var tabs = [['live','🔴 LIVE'],['bracket','🏆 BRACKET'],['stats','📊 STATS']];
-  var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NzY2MzUsImV4cCI6MjA5MTQ1MjYzNX0.B7ccAn-f6M0z0Aa8KDqNDkRuEKTr4thW3EMXrJYHrVk';
-  var [match, setMatch] = React.useState({
-    p1: { name:'SwanyThree23', seed:1, score:3, color:C.gold },
-    p2: { name:'BigBoneEarl', seed:4, score:2, color:C.cyan },
-    round:'SEMI-FINAL', bestOf:7, status:'live', location:'Des Moines, WA'
-  });
   var [updating, setUpdating] = React.useState(false);
   var [lastUpdate, setLastUpdate] = React.useState('');
 
