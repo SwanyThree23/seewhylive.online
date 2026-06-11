@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mic, MicOff, MessageCircle, Heart, Hand, Crown,
+  Mic, MicOff, Video, VideoOff, MessageCircle, Heart, Hand, Crown,
   ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
   Users, LayoutGrid, Send, X,
 } from 'lucide-react';
@@ -298,7 +298,7 @@ export default function LiveRoom() {
   const roomId    = urlParams.get('id');
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
@@ -385,8 +385,13 @@ export default function LiveRoom() {
     return () => clearInterval(t);
   }, []);
 
-  // Sync stage when real data arrives
-  useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
+  // Sync stage when real data arrives; auto-spotlight the host on first load
+  useEffect(() => {
+    if (stage.length) {
+      setStageData(stage);
+      setSpotlit(prev => prev ?? stage.find(s => s.role === 'host') ?? null);
+    }
+  }, [members]);
 
   // Simulate rotating speaker in demo mode
   useEffect(() => {
@@ -587,17 +592,22 @@ export default function LiveRoom() {
         {/* ── Stage grid ────────────────────────────────────────────────────── */}
         <div className="px-3 mb-5">
           {spotlit ? (
-            /* Spotlight mode */
+            /* Spotlight mode — host tile large, others scroll below */
             <div className="space-y-4">
               <div className="flex justify-center py-3">
-                <StageTile p={spotlit} size={170} onClick={() => setSpotlit(null)} />
+                {(() => { const { stream, isLocal } = resolveStream(spotlit.id, spotlit.userId); return (
+                  <StageTile p={spotlit} size={170} stream={stream} isLocal={isLocal} onClick={() => setSpotlit(null)} />
+                ); })()}
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 px-1">
-                {stageData.filter(s => s.id !== spotlit.id).map(p => (
-                  <div key={p.id} className="shrink-0">
-                    <StageTile p={p} size={72} onClick={() => setSpotlit(p)} />
-                  </div>
-                ))}
+                {stageData.filter(s => s.id !== spotlit.id).map(p => {
+                  const { stream, isLocal } = resolveStream(p.id, p.userId);
+                  return (
+                    <div key={p.id} className="shrink-0">
+                      <StageTile p={p} size={72} stream={stream} isLocal={isLocal} onClick={() => setSpotlit(p)} />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -799,6 +809,17 @@ export default function LiveRoom() {
               {!audioEnabled
                 ? <MicOff className="w-4 h-4 text-red-400" />
                 : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
+            </div>
+            <span className="text-[11px] text-white/35"> </span>
+          </button>
+
+          {/* Camera */}
+          <button onClick={toggleVideo} className="flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+              {!videoEnabled
+                ? <VideoOff className="w-4 h-4 text-red-400" />
+                : <Video className="w-4 h-4" style={{ color: GOLD }} />}
             </div>
             <span className="text-[11px] text-white/35"> </span>
           </button>
