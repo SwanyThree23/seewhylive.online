@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import ShareToSocial from '../components/social/ShareToSocial';
 import { createPageUrl } from '../utils';
 
 const CATEGORIES = [
@@ -470,6 +471,8 @@ export default function StreamScheduler() {
           </>
         )}
       </AnimatePresence>
+
+      <ShareToSocial />
     </div>
   );
 }
