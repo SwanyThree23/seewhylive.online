@@ -23,9 +23,9 @@ const DURATIONS = [
   { label: '2 hr', value: 120 }, { label: '3 hr', value: 180 }, { label: '4 hr+', value: 240 },
 ];
 const CAT_COLORS = {
-  gaming: '#a78bfa', music: '#f472b6', education: '#60a5fa', talk: '#34d399',
-  fitness: '#fb923c', cooking: '#fbbf24', art: '#f87171', tech: '#00d4ff',
-  irl: '#22c55e', other: '#d4af37',
+  gaming: '#C0392B', music: '#D4854A', education: '#D4AF37', talk: '#6DBF7E',
+  fitness: '#fb923c', cooking: '#fbbf24', art: '#f87171', tech: '#C9A84C',
+  irl: '#6DBF7E', other: '#d4af37',
 };
 
 function getDaysInMonth(year, month) {
@@ -245,7 +245,7 @@ export default function StreamScheduler() {
                         <button onClick={() => openEdit(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
                           <Pencil className="w-3 h-3" />
                         </button>
-                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
+                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
                           <Share2 className="w-3 h-3" />
                         </button>
                       </div>
@@ -283,7 +283,7 @@ export default function StreamScheduler() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-white truncate">{s.title}</p>
                           {s.is_recurring && (
-                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#a78bfa', border: '1px solid rgba(212,175,55,0.3)' }}>
+                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
                               <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
                             </span>
                           )}
@@ -295,12 +295,12 @@ export default function StreamScheduler() {
                         </div>
                         <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs font-semibold text-[#00d4ff]">⏱ {getCountdown(s.scheduled_start)}</span>
+                          <span className="text-xs font-semibold text-[#D4AF37]">⏱ {getCountdown(s.scheduled_start)}</span>
                           <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
+                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
                           <Share2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
