@@ -13,6 +13,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -223,6 +224,27 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+
+          {/* Admin quick-links grid */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            {[
+              { label: '🛡 AI Moderation',     href: 'AIModeration'       },
+              { label: '📊 Stream Analytics',  href: 'StreamAnalytics'    },
+              { label: '📈 Adv. Analytics',    href: 'AdvancedAnalytics'  },
+              { label: '🤖 AI Hub',            href: 'AIHub'              },
+              { label: '🏆 Loyalty Program',   href: 'LoyaltyProgram'     },
+              { label: '👥 Community Admin',   href: 'CommunityAdmin'     },
+              { label: '⚔️ PK Battles',        href: 'PKBattle'           },
+              { label: '🔊 Voice AI',          href: 'VoiceAISettings'    },
+            ].map(item => (
+              <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl transition-all hover:brightness-110"
+                  style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', display: 'block', letterSpacing: '0.06em', cursor: 'pointer' }}>
+                  {item.label}
+                </span>
+              </Link>
+            ))}
+          </div>
           </div>
         )}
 
