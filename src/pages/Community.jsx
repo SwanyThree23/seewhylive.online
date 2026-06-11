@@ -10,6 +10,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import CreatePollModal from '../components/community/CreatePollModal';
 import PollCard from '../components/community/PollCard';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -17,6 +20,7 @@ const BG = '#080B18';
 export default function CommunityPage() {
   const [pollModalOpen, setPollModalOpen] = useState(false);
   const [modModalOpen, setModModalOpen] = useState(false);
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -30,6 +34,22 @@ export default function CommunityPage() {
       return communities?.[0];
     },
     enabled: !!user?.id,
+  });
+
+  const { data: activePolls = [] } = useQuery({
+    queryKey: ['communityPolls', community?.id],
+    queryFn: () => base44.entities.Poll.filter({ community_id: community.id, status: 'active' }, '-created_date', 5),
+    enabled: !!community?.id,
+  });
+
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['communityActiveChallenge', community?.id],
+    queryFn: async () => {
+      if (!community?.id) return null;
+      const challenges = await base44.entities.Challenge.filter({ community_id: community.id, status: 'active' }, 'end_date', 1);
+      return challenges?.[0] ?? null;
+    },
+    enabled: !!community?.id,
   });
 
   return (
@@ -50,37 +70,71 @@ export default function CommunityPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {community?.id ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Main Feed */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="md:col-span-2"
-            >
-              <DiscussionFeed communityId={community.id} />
+          <>
+            {/* Spotlight Banner — full width above the grid */}
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+              <SpotlightBanner communityId={community.id} isAdmin={community.creator_id === user?.id} />
             </motion.div>
 
-            {/* Sidebar */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
-            >
-              <SpotlightSection communityId={community.id} />
-              <ReferralProgram communityId={community.id} />
-            </motion.div>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Main Feed */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="md:col-span-2 space-y-6"
+              >
+                {/* Announcements */}
+                <AnnouncementFeed communityId={community.id} />
+
+                {/* Discussion */}
+                <DiscussionFeed communityId={community.id} />
+
+                {/* Active Polls */}
+                {activePolls.length > 0 && (
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-bold" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      Active Polls
+                    </h2>
+                    {activePolls.map(poll => (
+                      <PollCard key={poll.id} poll={poll} />
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Sidebar */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="space-y-4"
+              >
+                <SpotlightSection communityId={community.id} />
+
+                {/* Announcement Panel (creator tool) */}
+                {community.creator_id === user?.id && (
+                  <AnnouncementPanel communityId={community.id} userId={user?.id} />
+                )}
+
+                {/* Challenge Leaderboard */}
+                {activeChallenge?.id && (
+                  <ChallengeLeaderboard challengeId={activeChallenge.id} />
+                )}
+
+                <ReferralProgram communityId={community.id} />
+              </motion.div>
+            </div>
+          </>
         ) : (
           <div className="text-center py-12">
             <p className="text-white/40">Create a community to get started</p>
           </div>
         )}
       </div>
+
       {community?.id && (
         <>
           <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
-          <PollCard poll={null} />
           <ModerationActionModal isOpen={modModalOpen} onClose={() => setModModalOpen(false)} targetUser={null} roomId={null} communityId={community.id} moderatorId={user?.id} />
         </>
       )}
