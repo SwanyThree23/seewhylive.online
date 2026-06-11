@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import VODLibrary from '../components/vod/VODLibrary';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -322,6 +323,12 @@ export default function CreatorDashboardPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <CollaborationMatcher />
         </motion.div>
+
+        {user?.id && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <VODLibrary creatorId={user.id} />
+          </motion.div>
+        )}
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Link to={createPageUrl('ContentCalendar')}>
