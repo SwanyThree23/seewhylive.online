@@ -5065,7 +5065,6 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
 
 
 
-) {
   var C = COLORS;
   var [tab, setTab] = React.useState('library');
   var tabs = [['library','🎬 LIBRARY'],['record','⏺ RECORD'],['clips','✂️ CLIPS']];
@@ -5184,7 +5183,6 @@ function EliteLeagueLeaderboard({ state, dispatch }) {
 
 
 
-) {
   var C = COLORS;
   var [tab, setTab] = React.useState('live');
   var tabs = [['live','🔴 LIVE'],['bracket','🏆 BRACKET'],['stats','📊 STATS']];
