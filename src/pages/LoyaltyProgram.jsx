@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Star, Gift, Trophy, Users, Zap, Download, Trash2, X, Check } from 'lucide-react';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -340,6 +342,14 @@ export default function LoyaltyProgram() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Reward shop editor and redemption queue for admins */}
+      {isOwnProgram && user?.id && (
+        <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <RewardShopEditor creatorId={user.id} />
+          <RedemptionQueue creatorId={user.id} />
+        </div>
+      )}
     </div>
   );
 }
