@@ -801,6 +801,12 @@ export default function MonetizationPage() {
               {user?.id && <StripeConnectButton creatorId={user.id} />}
               {user?.id && <RewardShopEditor creatorId={user.id} />}
               <StreamerMonetizationCenter />
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Link to={createPageUrl('MonetizationWidgets')}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', textDecoration: 'none', textTransform: 'uppercase' }}>
+                  🎛 Sound Alerts & Goals Widgets →
+                </Link>
+              </div>
             </motion.div>
           )}
 

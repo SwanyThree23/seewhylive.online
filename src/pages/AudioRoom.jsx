@@ -15,6 +15,8 @@ import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import LoveTap from '../components/live/LoveTap';
 import LivePoll from '../components/live/LivePoll';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -457,6 +459,20 @@ export default function AudioRoom() {
       {roomId && (
         <div style={{ padding: '0 16px 8px' }}>
           <LivePoll roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Stream goals (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamGoals roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* SuperChat bar (viewers) */}
+      {roomId && party?.host_id && !isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <SuperChatBar roomId={roomId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
         </div>
       )}
 
