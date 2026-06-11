@@ -9,10 +9,10 @@ import { createPageUrl } from '../../utils';
 export default function QuickActionPanel({ isOpen, onClose }) {
   const quickActions = [
     { icon: Plus, label: 'Create Room', href: createPageUrl('CreateRoom'), color: 'bg-gradient-to-br from-amber-500 to-orange-600' },
-    { icon: Video, label: 'Go Live', href: createPageUrl('CreateRoom'), color: 'bg-gradient-to-br from-red-500 to-pink-600' },
+    { icon: Video, label: 'Go Live', href: createPageUrl('GoLive'), color: 'bg-gradient-to-br from-red-500 to-pink-600' },
     { icon: Users, label: 'New Community', href: createPageUrl('CreateCommunity'), color: 'bg-gradient-to-br from-blue-500 to-cyan-600' },
     { icon: Calendar, label: 'Schedule', href: createPageUrl('ContentCalendar'), color: 'bg-gradient-to-br from-green-500 to-emerald-600' },
-    { icon: DollarSign, label: 'Earnings', href: createPageUrl('Analytics'), color: 'bg-gradient-to-br from-yellow-500 to-amber-600' },
+    { icon: DollarSign, label: 'Earnings', href: createPageUrl('Monetization'), color: 'bg-gradient-to-br from-yellow-500 to-amber-600' },
     { icon: Bell, label: 'Notifications', href: createPageUrl('Notifications'), color: 'bg-gradient-to-br from-purple-500 to-pink-600' },
   ];
 
