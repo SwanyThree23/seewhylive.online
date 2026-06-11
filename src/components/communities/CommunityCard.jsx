@@ -13,10 +13,10 @@ const CATEGORY_COLORS = {
   gaming:        '#D4AF37',
   tech:          '#D4AF37',
   education:     '#4ade80',
-  business:      '#fb923c',
+  business:      '#D4854A',
   entertainment: '#D4AF37',
   sports:        '#38bdf8',
-  lifestyle:     '#f472b6',
+  lifestyle:     '#D4854A',
   all:           '#D4AF37',
 };
 

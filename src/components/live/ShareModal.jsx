@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 const PLATFORMS = [
   {
     name: 'Instagram',
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-[#800020] to-[#D4854A]',
     emoji: '📸',
     action: (url, title) => `https://www.instagram.com/`,
     note: 'Copy link → paste in your Story or Bio',

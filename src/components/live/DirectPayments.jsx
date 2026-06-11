@@ -7,7 +7,7 @@ const PAYMENT_PLATFORMS = [
   { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-blue-600 to-blue-700', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
   { id: 'cashapp', name: 'Cash App', emoji: '💚', color: 'from-green-500 to-green-600', baseUrl: 'https://cash.app/$', placeholder: 'YourCashtag' },
   { id: 'venmo', name: 'Venmo', emoji: '💙', color: 'from-sky-500 to-blue-600', baseUrl: 'https://venmo.com/', placeholder: 'your-username' },
-  { id: 'zelle', name: 'Zelle', emoji: '💜', color: 'from-purple-600 to-violet-700', baseUrl: null, placeholder: 'phone or email' },
+  { id: 'zelle', name: 'Zelle', emoji: '💜', color: 'from-[#800020] to-[#C0392B]', baseUrl: null, placeholder: 'phone or email' },
   { id: 'chime', name: 'Chime', emoji: '🟢', color: 'from-emerald-500 to-teal-600', baseUrl: 'https://chime.com/', placeholder: 'your-tag' },
   { id: 'applepay', name: 'Apple Pay', emoji: '🍎', color: 'from-gray-700 to-gray-900', baseUrl: null, placeholder: 'phone or email' },
   { id: 'googlepay', name: 'Google Pay', emoji: '🔵', color: 'from-blue-500 to-indigo-600', baseUrl: null, placeholder: 'phone or email' },

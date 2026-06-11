@@ -24,7 +24,7 @@ export default function ViewerRail({ members, hostId, maxVisible = 20 }) {
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 transition-all ${
               m.user_id === hostId
                 ? 'bg-gradient-to-br from-[#d4af37] to-orange-600 border-[#d4af37]'
-                : 'bg-gradient-to-br from-purple-700 to-blue-700 border-white/20'
+                : 'bg-gradient-to-br from-[#800020] to-[#0D1022] border-white/20'
             }`}>
               {m.user_name?.charAt(0)?.toUpperCase()}
             </div>

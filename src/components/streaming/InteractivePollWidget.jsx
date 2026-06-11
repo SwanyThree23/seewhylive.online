@@ -68,7 +68,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
     return isHost ? (
       <button
         onClick={() => setShowCreate(true)}
-        style={{ width:'100%', background:'#2563eb', color:'#fff', border:'none', borderRadius:8, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif', fontSize:13, fontWeight:600 }}
+        style={{ width:'100%', background:'#800020', color:'#fff', border:'none', borderRadius:8, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif', fontSize:13, fontWeight:600 }}
       >
         <BarChart3 className="w-3 h-3" />
         Create Poll
@@ -149,7 +149,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
               </button>
               <button
                 onClick={handleCreatePoll}
-                style={{ flex:1, background:'#2563eb', color:'#fff', border:'none', borderRadius:6, height:32, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:11, fontWeight:600 }}
+                style={{ flex:1, background:'#800020', color:'#fff', border:'none', borderRadius:6, height:32, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:11, fontWeight:600 }}
               >
                 Launch
               </button>

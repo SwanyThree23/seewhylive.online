@@ -60,7 +60,7 @@ export default function ReferralConfig({ communityId }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
         <StatCard label="Total Referrals" value={totalReferrals} icon={Users} sub="All time" />
         <StatCard label="Completed" value={completedReferrals} color="#4ade80" icon={Award} sub="Successful" />
-        <StatCard label="Pending" value={pendingReferrals} color="#fb923c" icon={TrendingUp} sub="In progress" />
+        <StatCard label="Pending" value={pendingReferrals} color="#D4854A" icon={TrendingUp} sub="In progress" />
         <StatCard label="Conversion Rate" value={`${conversionRate}%`} icon={DollarSign} sub="Success rate" />
       </div>
 
@@ -98,8 +98,8 @@ export default function ReferralConfig({ communityId }) {
               </div>
             </div>
 
-            <div style={{ background:'rgba(59,130,246,0.08)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:8, padding:16 }}>
-              <p style={{ fontSize:13, color:'#93c5fd', margin:0 }}>
+            <div style={{ background:'rgba(59,130,246,0.08)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:8, padding:16 }}>
+              <p style={{ fontSize:13, color:'#C9A84C', margin:0 }}>
                 <strong>Current Settings:</strong> Users will receive <strong>{rewardValue} {rewardType}</strong> for each successful referral.
               </p>
             </div>

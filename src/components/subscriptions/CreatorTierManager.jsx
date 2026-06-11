@@ -135,12 +135,12 @@ export default function CreatorTierManager({ creatorId }) {
                       </div>
                       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{tier.description}</div>
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {tier.has_early_access && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(59,130,246,0.15)', color: '#93c5fd' }}>Early Access</span>}
+                        {tier.has_early_access && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#C9A84C' }}>Early Access</span>}
                         {tier.has_exclusive_rooms && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#c4b5fd' }}>Exclusive Rooms</span>}
                         {tier.has_custom_badge && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(245,158,11,0.15)', color: '#fcd34d' }}>Badge</span>}
                         {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.15)', color: '#86efac' }}>Emotes</span>}
                         {tier.is_ad_free && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.15)', color: '#ffaaaa' }}>Ad-Free</span>}
-                        {tier.priority_support && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(249,115,22,0.15)', color: '#fdba74' }}>Priority Support</span>}
+                        {tier.priority_support && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,133,74,0.15)', color: '#C9A84C' }}>Priority Support</span>}
                         {tier.benefits?.slice(0, 2).map((b, i) => (
                           <span key={i} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>{b}</span>
                         ))}

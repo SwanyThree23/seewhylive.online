@@ -10,7 +10,7 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
       isWinner ? 'border-amber-400 bg-amber-400/10' : 'border-white/20 bg-white/5'
     }`}
   >
-    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A] flex items-center justify-center">
       <span className="text-xl font-bold text-white">{player?.initials || 'N/A'}</span>
     </div>
     <h3 className="font-bold text-white mb-1">{player?.name || 'Player'}</h3>

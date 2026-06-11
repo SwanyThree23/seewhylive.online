@@ -8,7 +8,7 @@
   :root {
     /* SeeWhy LIVE v16 Broadcast Maximalism Design Tokens */
     --ab: #0B0B18;          /* abyss - deepest bg */
-    --bu: #07070F;          /* bunker - card bg */
+    --bu: #0D1022;          /* bunker - card bg */
     --go: #d4af37;          /* gold - primary accent */
     --bl: #C0392B;          /* scarlet - live/alert red */
     --cy: #6DBF7E;          /* green - data/success */
@@ -114,7 +114,7 @@
   .text-purple-sw { color: #D4854A; }
 
   .bg-abyss { background-color: #0B0B18; }
-  .bg-bunker { background-color: #07070F; }
+  .bg-bunker { background-color: #0D1022; }
   .bg-gold { background-color: #d4af37; }
   .bg-blood { background-color: #C0392B; }
 

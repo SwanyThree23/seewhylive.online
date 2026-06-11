@@ -60,7 +60,7 @@ const REVENUE_STREAMS = [
 
 const MILESTONES = [
   { subs: 10,   reward: 'Bronze Creator Badge',   icon: Star,   color: '#ea580c' },
-  { subs: 50,   reward: 'Verified Creator Label', icon: Shield, color: '#3b82f6' },
+  { subs: 50,   reward: 'Verified Creator Label', icon: Shield, color: '#D4AF37' },
   { subs: 100,  reward: 'Custom Channel Banner',  icon: Award,  color: G },
   { subs: 500,  reward: 'Staff Pick Feature',     icon: Zap,    color: PINK },
   { subs: 1000, reward: 'Revenue Share Boost +5%',icon: Rocket, color: TEAL },
@@ -698,7 +698,7 @@ export default function MonetizationPage() {
                   </div>
                   <div style={{ background: 'rgba(99,102,241,0.08)', borderRadius: 8, padding: 10 }}>
                     <p style={{ color: 'rgba(255,255,255,0.5)', margin: '0 0 2px', ...T }}>Processing</p>
-                    <p style={{ color: '#818cf8', fontWeight: 700, margin: 0, fontSize: 16, ...T }}>-${processingFee.toFixed(2)}</p>
+                    <p style={{ color: '#C9A84C', fontWeight: 700, margin: 0, fontSize: 16, ...T }}>-${processingFee.toFixed(2)}</p>
                   </div>
                 </div>
               </div>

@@ -15,8 +15,8 @@ const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom
 
 const priorityBadgeColors = {
   low:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
-  normal: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
-  high:   { background:'rgba(249,115,22,0.15)',  color:'#fb923c' },
+  normal: { background:'rgba(212,175,55,0.15)',  color:'#D4AF37' },
+  high:   { background:'rgba(212,133,74,0.15)',  color:'#D4854A' },
   urgent: { background:'rgba(239,68,68,0.15)',   color:'#f87171' },
 };
 

@@ -67,7 +67,7 @@ function BattleCard({ battle, index }) {
               {leftName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{leftName}</p>
-            <p className="text-lg font-black font-mono" style={{ color: '#60a5fa' }}>{leftVotes.toLocaleString()}</p>
+            <p className="text-lg font-black font-mono" style={{ color: '#D4AF37' }}>{leftVotes.toLocaleString()}</p>
           </div>
           <div className="flex flex-col items-center gap-1">
             <span className="font-black text-sm" style={{ color: GOLD }}>VS</span>
@@ -85,13 +85,13 @@ function BattleCard({ battle, index }) {
 
         {/* Score bar */}
         <div className="h-2 rounded-full flex overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
-          <div className="transition-all duration-500" style={{ width: `${leftPct}%`, background: '#3b82f6' }} />
+          <div className="transition-all duration-500" style={{ width: `${leftPct}%`, background: '#D4AF37' }} />
           <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#ef4444' }} />
         </div>
 
         <Link to={`${createPageUrl('PKBattlePage')}?id=${battle.id}`}>
           <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl font-black uppercase text-xs"
-            style={{ ...T, background: isActive ? 'linear-gradient(90deg, #2563eb, #dc2626)' : 'rgba(255,255,255,0.05)', border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)', color: isActive ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+            style={{ ...T, background: isActive ? 'linear-gradient(90deg, #800020, #C0392B)' : 'rgba(255,255,255,0.05)', border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)', color: isActive ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
             {isActive ? <><Zap className="w-3.5 h-3.5" /> Join Battle</> : <><Trophy className="w-3.5 h-3.5" /> View Results</>}
           </button>
         </Link>
@@ -137,7 +137,7 @@ export default function LiveBattles() {
             </div>
             <Link to={createPageUrl('PKBattlePage')}>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                style={{ ...T, background: 'linear-gradient(90deg, #2563eb, #dc2626)', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                style={{ ...T, background: 'linear-gradient(90deg, #800020, #C0392B)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <Plus className="w-4 h-4" /> Start Battle
               </button>
             </Link>
@@ -184,7 +184,7 @@ export default function LiveBattles() {
             </p>
             <Link to={createPageUrl('PKBattlePage')}>
               <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase text-xs mx-auto"
-                style={{ ...T, background: 'linear-gradient(90deg, #2563eb, #dc2626)', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                style={{ ...T, background: 'linear-gradient(90deg, #800020, #C0392B)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <Plus className="w-4 h-4" /> Create First Battle
               </button>
             </Link>

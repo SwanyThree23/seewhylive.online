@@ -55,7 +55,7 @@ export default function DiscussionFeed({ communityId }) {
           style={{ background: PANEL, border: `1px solid ${BORDER}` }}
         >
           <div className="flex gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A]" />
             <textarea
               placeholder="Share your thoughts with the community..."
               value={newPost}
