@@ -503,7 +503,7 @@ export default function SocialExpo() {
               </div>
 
               {/* Tournament section */}
-              <div style={{ padding: 24, borderRadius: 16, background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.18)' }}>
+              <div style={{ padding: 24, borderRadius: 16, background: 'rgba(128,0,32,0.06)', border: '1px solid rgba(128,0,32,0.18)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                   <Trophy style={{ width: 20, height: 20, color: '#D4854A' }} />
                   <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', ...T }}>Domino Entertainment Tournaments</span>
@@ -516,7 +516,7 @@ export default function SocialExpo() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
                   {['Weekly Brackets', 'Sponsored Prize Pools', 'Community Wagers', 'Live Commentary', 'Cross-Platform Chat', 'Replay Archive'].map((f, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 12px', borderRadius: 8,
-                      background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)' }}>
+                      background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.15)' }}>
                       <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#D4854A', flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', ...T }}>{f}</span>
                     </div>

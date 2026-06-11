@@ -112,7 +112,7 @@ export default function RoomAnalyticsPanel({ roomId }) {
                 <XAxis dataKey="timestamp" hide />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="viewer_count" stroke="#8b5cf6" strokeWidth={2} />
+                <Line type="monotone" dataKey="viewer_count" stroke="#D4AF37" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

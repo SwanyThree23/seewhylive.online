@@ -46,7 +46,7 @@ const FORMATS = [
     title: 'Watch Party',
     subtitle: 'Sync a video. React together in real time.',
     features: ['🔗 Sync', '💬 Chat', '🖥️ Screen Share', '4K'],
-    color: '#5B6EF5',
+    color: '#D4854A',
     dest: 'WatchParty',
   },
   {

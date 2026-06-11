@@ -115,13 +115,13 @@ export default function ContentRecommendations() {
               whileHover={{ scale: 1.1 }}
               className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all"
               style={{
-                background: liked.has(rec.id) ? 'rgba(236,72,153,0.2)' : 'rgba(255,255,255,0.05)',
-                border: liked.has(rec.id) ? '1px solid rgba(236,72,153,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                background: liked.has(rec.id) ? 'rgba(192,57,43,0.2)' : 'rgba(255,255,255,0.05)',
+                border: liked.has(rec.id) ? '1px solid rgba(192,57,43,0.4)' : '1px solid rgba(255,255,255,0.1)',
               }}
             >
               <ThumbsUp
                 className="w-3 h-3"
-                style={{ color: liked.has(rec.id) ? '#EC4899' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#EC4899' : 'none' }}
+                style={{ color: liked.has(rec.id) ? '#C0392B' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#C0392B' : 'none' }}
               />
             </motion.button>
           </motion.a>

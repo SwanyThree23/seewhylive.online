@@ -12,7 +12,7 @@ const tierConfig = {
   },
   premium: {
     icon: Zap,
-    gradient: 'linear-gradient(135deg, #9333ea, #ec4899)',
+    gradient: 'linear-gradient(135deg, #800020, #D4854A)',
     badgeColor: '#D4854A',
   },
   elite: {

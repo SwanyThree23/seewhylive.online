@@ -82,14 +82,14 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
                 <>
                   <button
                     onClick={handleStartScreenShare}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(147,51,234,0.5)', background:'rgba(88,28,135,0.5)', color:'#c084fc', cursor:'pointer', fontSize:13 }}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(212,175,55,0.4)', background:'rgba(128,0,32,0.4)', color:'#D4AF37', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Screen
                   </button>
                   <button
                     onClick={handleStartWindowShare}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(147,51,234,0.3)', background:'rgba(88,28,135,0.3)', color:'#d8b4fe', cursor:'pointer', fontSize:13 }}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(212,175,55,0.25)', background:'rgba(128,0,32,0.25)', color:'#C9A84C', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Window

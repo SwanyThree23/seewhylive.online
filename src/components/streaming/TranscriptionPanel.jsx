@@ -135,7 +135,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
               <button
                 onClick={handleTranslate}
                 disabled={loading}
-                style={{ width:'100%', background:'#7c3aed', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
+                style={{ width:'100%', background:'#D4AF37', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
               >
                 {loading ? (
                   <>

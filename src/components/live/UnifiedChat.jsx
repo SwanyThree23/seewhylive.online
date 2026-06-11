@@ -142,7 +142,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Subs Only</span>
-                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7c3aed' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#D4AF37' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>

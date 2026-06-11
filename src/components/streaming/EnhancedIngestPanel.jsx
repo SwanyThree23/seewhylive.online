@@ -205,7 +205,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4 text-[#d4af37]" />
                   <h4 className="text-sm font-bold text-white">Guest Destinations</h4>
-                  <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(59,7,100,0.5)', color:'#d8b4fe' }}>BETA</span>
+                  <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(128,0,32,0.5)', color:'#C9A84C' }}>BETA</span>
                 </div>
 
                 <div className="space-y-3">
