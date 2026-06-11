@@ -12,6 +12,7 @@ import TierBadge from '../components/subscriptions/TierBadge';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import VideoLibrary from '../components/vod/VideoLibrary';
 import RewardShop from '../components/loyalty/RewardShop';
+import FollowButton from '../components/shared/FollowButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -137,6 +138,7 @@ export default function CreatorChannel() {
                 <Bell className="w-4 h-4" /> Notify Me
               </button>
             )}
+            <FollowButton targetUserId={userId} targetUserName={displayName} size="sm" />
             <button className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
               <Share2 className="w-4 h-4" />
