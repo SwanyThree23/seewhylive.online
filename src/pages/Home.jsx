@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import GridLines from '../components/home/GridLines';
 import NebulaBg from '../components/home/NebulaBg';
 import StarField from '../components/home/StarField';
@@ -735,6 +736,10 @@ export default function Home() {
                   Be the first → Go Live
                 </motion.div>
               </Link>
+              {/* AI recommendations when no live rooms */}
+              <div className="mt-4 w-full">
+                <SwanAIRecommendations roomId={null} currentLayout="grid" viewerCount={0} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
