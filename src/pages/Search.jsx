@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Search as SearchIcon, Radio, Users, Trophy } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import ChallengeCard from '../components/community/ChallengeCard';
@@ -108,6 +110,19 @@ export default function SearchPage() {
                 {filteredChallenges.map(ch => <ChallengeCard key={ch.id} challenge={ch} />)}
               </div>
         )}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🏠 Home',         href: 'Home'        },
+          { label: '🔍 Discover',     href: 'Discover'    },
+          { label: '👥 Communities',  href: 'Communities' },
+          { label: '🏆 Leaderboard', href: 'Leaderboard'  },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
       </div>
     </div>
   );

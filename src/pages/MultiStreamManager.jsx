@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import {
   Plus, Eye, EyeOff, RefreshCw, Wifi, WifiOff, AlertTriangle,
   Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle, PlayCircle, StopCircle
@@ -403,6 +405,19 @@ export default function MultiStreamManager() {
             </Card>
           </motion.div>
         )}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
+          {[
+            { label: '🌐 Multi-Platform',    href: 'MultiPlatform'            },
+            { label: '🌐 Platform+',         href: 'MultiPlatformIntegration' },
+            { label: '🔴 Go Live',           href: 'GoLive'                   },
+            { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'          },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
