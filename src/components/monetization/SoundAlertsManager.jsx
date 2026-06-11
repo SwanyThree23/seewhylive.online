@@ -103,7 +103,7 @@ export function SoundAlertOverlay({ alerts, onTrigger }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px', borderRadius: 16,
             boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            background: `linear-gradient(135deg, ${activeAlert.color || GOLD}22, #0d0618)`,
+            background: `linear-gradient(135deg, ${activeAlert.color || GOLD}22, #080B18)`,
             border: `1px solid ${activeAlert.color || GOLD}`,
             boxShadow: `0 0 40px ${activeAlert.color || GOLD}44`,
           }}>

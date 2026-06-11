@@ -78,7 +78,7 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
   const seconds = Math.floor((timeLeft % 60000) / 1000);
 
   return (
-    <div className="absolute inset-0 z-20 bg-[#0d0618] flex flex-col items-center justify-center overflow-hidden">
+    <div className="absolute inset-0 z-20 bg-[#080B18] flex flex-col items-center justify-center overflow-hidden">
       <Particles />
 
       <motion.div

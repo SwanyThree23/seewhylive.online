@@ -706,7 +706,7 @@ function RemoteTile({ peerId, stream, members }) {
           position: 'absolute',
           inset: 2,
           clipPath: OCT,
-          background: '#0d0618',
+          background: '#080B18',
           overflow: 'hidden',
         }}>
           {stream ? (

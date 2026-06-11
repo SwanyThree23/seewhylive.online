@@ -116,7 +116,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
   }, [compact]);
 
   const connDots = Math.floor(Math.random() * 2) + 2;
-  const gradient = `from-[${['#1a0030', '#001a2c', '#1a1a00', '#001a00'][Math.abs(participant.user_name?.charCodeAt(0) || 0) % 4]}] to-[#0d0618]`;
+  const gradient = `from-[${['#001428', '#001a2c', '#1a1a00', '#001a00'][Math.abs(participant.user_name?.charCodeAt(0) || 0) % 4]}] to-[#080B18]`;
 
   return (
     <motion.div
@@ -127,7 +127,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
       className={`relative group ${isSpotlight ? 'flex-1' : compact ? 'h-full' : 'aspect-video'}`}
     >
       <div
-        className={`w-full h-full rounded-lg border-2 overflow-hidden bg-gradient-to-br from-[#1a0a20] to-[#0d0618] flex flex-col relative transition-all duration-200 ${
+        className={`w-full h-full rounded-lg border-2 overflow-hidden bg-gradient-to-br from-[#1a0a20] to-[#080B18] flex flex-col relative transition-all duration-200 ${
           speaking && !compact
             ? 'border-[#D4AF37] shadow-[0_0_16px_rgba(212,175,55,0.4)]'
             : 'border-white/10 group-hover:border-[#d4af37]/40'

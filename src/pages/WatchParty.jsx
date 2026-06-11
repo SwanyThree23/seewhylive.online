@@ -998,7 +998,7 @@ export default function WatchPartyPage() {
           />
         </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#0d0618' }}>
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#080B18' }}>
           <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
             {[
               { id: 'chat',        label: '💬 Chat' },

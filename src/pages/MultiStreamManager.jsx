@@ -140,7 +140,7 @@ export default function MultiStreamManager() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0618] text-white p-6">
+    <div className="min-h-screen bg-[#080B18] text-white p-6">
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Header */}

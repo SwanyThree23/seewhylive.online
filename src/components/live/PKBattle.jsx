@@ -178,7 +178,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-              className="bg-[#0d0618] border border-[#d4af37]/30 rounded-2xl p-6 w-full max-w-sm"
+              className="bg-[#080B18] border border-[#d4af37]/30 rounded-2xl p-6 w-full max-w-sm"
             >
               <div className="flex items-center gap-2 mb-4">
                 <Swords className="w-5 h-5 text-[#d4af37]" />

@@ -82,7 +82,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#0d0618] border border-[#D4AF37]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#080B18] border border-[#D4AF37]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
             style={{ backdropFilter: 'blur(16px)' }}
           >
             <div className="p-4 space-y-4">

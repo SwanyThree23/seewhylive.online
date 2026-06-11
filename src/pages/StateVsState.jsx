@@ -34,7 +34,7 @@ const STATES_DATA = [
     players: ['O. Smith', 'V. Brown', 'Q. Jones', 'I. Garcia', 'E. Miller'],
   },
   {
-    id: 'ny', name: 'New York', abbr: 'NY', color: '#4A148C',
+    id: 'ny', name: 'New York', abbr: 'NY', color: '#1B3D7B',
     record: { w: 2, l: 3 }, pts: 1380,
     players: ['Z. Anderson', 'W. Thomas', 'U. Jackson', 'Y. White', 'X. Harris'],
   },

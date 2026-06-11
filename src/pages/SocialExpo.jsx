@@ -24,7 +24,7 @@ const PLATFORMS = [
   { name: 'Discord',   color: '#5865F2', icon: Users,   desc: 'Community servers & events' },
   { name: 'GoBrunch',  color: '#00B4D8', icon: Globe,   desc: 'Virtual events & networking' },
   { name: 'Poldit',    color: '#FF6B35', icon: Star,    desc: 'Debate rooms & live polls' },
-  { name: 'Calibones', color: '#8B5CF6', icon: Trophy,  desc: 'Gaming tournaments & leagues' },
+  { name: 'Calibones', color: '#D4854A', icon: Trophy,  desc: 'Gaming tournaments & leagues' },
 ];
 
 /* ─── Sponsorship tiers ──────────────────────────────────────────────────── */
@@ -79,7 +79,7 @@ const SOCIAL_LIGHTS = [
   { role: 'Host', name: 'Domino Entertainment', color: PINK,    icon: Radio },
   { role: 'Co-Host', name: 'SeeWhy LIVE',        color: G,      icon: Tv2 },
   { role: 'Guest Spotlight', name: 'A.I. Verse Podcast', color: TEAL, icon: Mic },
-  { role: 'Community Pick', name: 'Open Nomination',     color: '#8B5CF6', icon: Users },
+  { role: 'Community Pick', name: 'Open Nomination',     color: '#D4854A', icon: Users },
 ];
 
 /* ─── Ticket tiers ───────────────────────────────────────────────────────── */
@@ -189,7 +189,7 @@ export default function SocialExpo() {
               { label: '6 Platforms', icon: Globe, color: TEAL },
               { label: 'Weekly Shows', icon: Radio, color: G },
               { label: '$0.99–$4.99 Tickets', icon: Ticket, color: PINK },
-              { label: '10% Affiliate', icon: Percent, color: '#8B5CF6' },
+              { label: '10% Affiliate', icon: Percent, color: '#D4854A' },
               { label: '90% Creator Split', icon: DollarSign, color: '#22c55e' },
             ].map((s, i) => {
               const Icon = s.icon;
@@ -505,7 +505,7 @@ export default function SocialExpo() {
               {/* Tournament section */}
               <div style={{ padding: 24, borderRadius: 16, background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.18)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                  <Trophy style={{ width: 20, height: 20, color: '#8B5CF6' }} />
+                  <Trophy style={{ width: 20, height: 20, color: '#D4854A' }} />
                   <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', ...T }}>Domino Entertainment Tournaments</span>
                 </div>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', lineHeight: 1.6 }}>
@@ -517,7 +517,7 @@ export default function SocialExpo() {
                   {['Weekly Brackets', 'Sponsored Prize Pools', 'Community Wagers', 'Live Commentary', 'Cross-Platform Chat', 'Replay Archive'].map((f, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 12px', borderRadius: 8,
                       background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)' }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#8B5CF6', flexShrink: 0 }} />
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#D4854A', flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', ...T }}>{f}</span>
                     </div>
                   ))}
@@ -649,7 +649,7 @@ export default function SocialExpo() {
                   { label: 'Sponsorship Deals',  range: '$100–$500/event',        color: G,          pct: '10% of deal value' },
                   { label: 'Virtual Gifts',       range: 'Variable per gift',     color: '#f97316',  pct: '10% of gift value' },
                   { label: 'Subscriptions',       range: '$1–$50/month',          color: TEAL,       pct: '10% of sub price' },
-                  { label: 'Live Tips',           range: 'Any amount',            color: '#8B5CF6',  pct: '10% of tip amount' },
+                  { label: 'Live Tips',           range: 'Any amount',            color: '#D4854A',  pct: '10% of tip amount' },
                 ].map((stream, i) => (
                   <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
                     style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px',

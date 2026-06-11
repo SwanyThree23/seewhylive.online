@@ -37,7 +37,7 @@ export default function HostControls({ isHost, party, onUpdate }) {
   const THEMES = [
     { id: 'dark',     label: 'Dark',    color: '#0B0B18' },
     { id: 'cinema',   label: 'Cinema',  color: '#1A0F0A' },
-    { id: 'neon',     label: 'Neon',    color: '#0d0618' },
+    { id: 'neon',     label: 'Neon',    color: '#080B18' },
     { id: 'forest',   label: 'Forest',  color: '#0a1a0a' },
   ];
 

@@ -5,7 +5,7 @@ import { Trophy, Star, Zap, Crown, TrendingUp } from 'lucide-react';
 const RANK_COLORS = ['#d4af37', '#c0c0c0', '#cd7f32', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.3)'];
 const RANK_ICONS = ['👑', '🥈', '🥉', '4️⃣', '5️⃣'];
 
-const MEMBER_COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B7C', '#7C4A6B', '#6B4A4A'];
+const MEMBER_COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B3A', '#7C4A3A', '#6B4A4A'];
 function getColor(name) {
   return MEMBER_COLORS[(name ? name.charCodeAt(0) : 0) % MEMBER_COLORS.length];
 }

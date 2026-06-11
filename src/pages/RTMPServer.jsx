@@ -65,7 +65,7 @@ export default function RTMPServer() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d0618] to-[#0d1020] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0d1020] text-white">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/40 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">

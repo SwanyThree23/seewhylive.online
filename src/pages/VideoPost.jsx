@@ -119,7 +119,7 @@ export default function VideoPost() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0d0618] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#080B18] py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">

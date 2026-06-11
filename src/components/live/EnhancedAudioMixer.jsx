@@ -180,7 +180,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               onChange={(e) => setBgMusic(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white outline-none"
             >
-              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#0d0618]">{m.label}</option>)}
+              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#080B18]">{m.label}</option>)}
             </select>
           </div>
         </motion.div>

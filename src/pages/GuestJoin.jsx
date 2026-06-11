@@ -78,7 +78,7 @@ export default function GuestJoin() {
 
   if (!roomId) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0d0618' }}>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#080B18' }}>
         <div style={{ ...card, maxWidth: 360, width: '100%', textAlign: 'center' }}>
           <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: '#C0392B' }} />
           <h2 className="text-lg font-black mb-1" style={{ ...T, color: GOLD }}>Invalid Link</h2>
@@ -95,7 +95,7 @@ export default function GuestJoin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0d0618', fontFamily: 'Barlow Condensed, sans-serif' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#080B18', fontFamily: 'Barlow Condensed, sans-serif' }}>
       <div className="w-full max-w-md space-y-4">
         {/* Brand header */}
         <div className="text-center">

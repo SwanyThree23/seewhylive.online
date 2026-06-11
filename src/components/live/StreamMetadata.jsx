@@ -150,7 +150,7 @@ export default function StreamMetadata({ room, isHost }) {
         <label className="text-xs text-white/50">Stream Language</label>
         <select value={language} onChange={e => setLanguage(e.target.value)}
           className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#d4af37]/40">
-          {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#0d0618]">{l}</option>)}
+          {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#080B18]">{l}</option>)}
         </select>
       </div>
     </div>

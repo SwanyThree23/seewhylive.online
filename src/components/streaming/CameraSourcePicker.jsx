@@ -108,7 +108,7 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => { setOpen(false); if (preview) preview.getTracks().forEach(t => t.stop()); }} />
             <motion.div className="fixed inset-x-4 top-[10%] z-[201] rounded-2xl overflow-hidden"
-              style={{ background: '#0D0618', border: '1px solid rgba(212,175,55,0.2)', maxWidth: 480, margin: '0 auto' }}
+              style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', maxWidth: 480, margin: '0 auto' }}
               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
 
               {/* Header */}

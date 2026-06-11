@@ -131,7 +131,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
   const containerStyle = embedded
     ? { display: 'flex', flexDirection: 'column', gap: 12 }
-    : { minHeight: '100vh', background: '#0d0618', color: '#fff', padding: 16, maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, fontFamily: 'Barlow Condensed, sans-serif' };
+    : { minHeight: '100vh', background: '#080B18', color: '#fff', padding: 16, maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, fontFamily: 'Barlow Condensed, sans-serif' };
 
   return (
     <div style={containerStyle}>

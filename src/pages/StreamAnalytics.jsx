@@ -45,7 +45,7 @@ const SOURCE_DATA = [
 ];
 
 const TOOLTIP_STYLE = {
-  background: '#0d0618',
+  background: '#080B18',
   border: '1px solid rgba(212,175,55,0.2)',
   borderRadius: 8,
   color: 'white',
