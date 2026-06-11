@@ -3,7 +3,7 @@ import { useState } from "react";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
   burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#30D158",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace",
 };
@@ -172,7 +172,7 @@ export function StreamHealthHUD({ sessionId, onClick }) {
     { name: "YouTube", status: "healthy" },
     { name: "TikTok", status: "degraded" },
   ];
-  var statusColor = { healthy: "#30D158", degraded: "#FF9500", error: "#FF3B30" };
+  var statusColor = { healthy: "#6DBF7E", degraded: "#FF9500", error: "#FF3B30" };
 
   return (
     <div onClick={onClick} style={{
