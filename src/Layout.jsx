@@ -43,12 +43,17 @@ var DRAWER_WATCH = [
   { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
   { name: 'Loyalty Hub',      icon: Star,    href: createPageUrl('LoyaltyHub') },
   { name: 'Communities',      icon: Users,   href: createPageUrl('Communities') },
+  { name: 'Community Admin',  icon: Users,   href: createPageUrl('CommunityAdmin') },
+  { name: 'Community Growth', icon: BarChart,href: createPageUrl('CommunityGrowth') },
   { name: 'Challenges',       icon: Trophy,  href: createPageUrl('ChallengesHub') },
   { name: 'VOD Library',      icon: Film,    href: createPageUrl('VODLibrary') },
   { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
   { name: 'PK Arena',         icon: Trophy,  href: createPageUrl('PKBattleArena') },
+  { name: 'PK Battle',        icon: Swords,  href: createPageUrl('PKBattlePage') },
+  { name: 'PK Manager',       icon: Swords,  href: createPageUrl('PKBattleManager') },
   { name: 'PPV Events',       icon: Lock,    href: createPageUrl('PayPerViewEvents') },
   { name: 'Featured Content', icon: Tv2,     href: createPageUrl('FeaturedContent') },
+  { name: 'Video Post',       icon: Video,   href: createPageUrl('VideoPost') },
 ];
 
 var DRAWER_CREATE = [
@@ -82,6 +87,13 @@ var DRAWER_CREATE = [
   { name: 'Clips',            icon: Scissors,        href: createPageUrl('ClipsLibrary') },
   { name: 'Content Calendar', icon: Calendar,        href: createPageUrl('ContentCalendar') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
+  { name: 'Advanced Analytics', icon: BarChart,      href: createPageUrl('AdvancedAnalytics') },
+  { name: 'Overlay Builder',  icon: Layers,          href: createPageUrl('OverlayBuilder') },
+  { name: 'Hybrid Stream',    icon: Radio,           href: createPageUrl('HybridStreamRoom') },
+  { name: 'Voice AI',         icon: Mic2,            href: createPageUrl('VoiceAISettings') },
+  { name: 'Monetize Widgets', icon: DollarSign,      href: createPageUrl('MonetizationWidgets') },
+  { name: 'Subscriptions',    icon: Star,            href: createPageUrl('CreatorSubscriptions') },
+  { name: 'Poll Manager',     icon: BarChart,        href: createPageUrl('PollManager') },
 ];
 
 var DRAWER_ACCOUNT = [
@@ -106,6 +118,9 @@ var DRAWER_ADMIN = [
   { name: 'StageCleanup',      icon: Layers,         href: createPageUrl('StageCleanup') },
   { name: 'RTMPServer',        icon: Server,         href: createPageUrl('RTMPServer') },
   { name: 'Infra Reference',   icon: Server,         href: createPageUrl('StreamInfraRef') },
+  { name: 'AI Moderation',     icon: Shield,         href: createPageUrl('AIModeration') },
+  { name: 'Stream Ref Dash',   icon: BarChart,       href: createPageUrl('StreamRefDash') },
+  { name: 'Loyalty Program',   icon: Star,           href: createPageUrl('LoyaltyProgram') },
 ];
 
 export default function Layout({ children, currentPageName }) {
