@@ -818,15 +818,6 @@ export default function PKBattleManager() {
             {activeTab === 'analytics' && (
               <PKAnalyticsDashboard battles={battles} user={user} />
             )}
-            {activeTab === 'matchmaking' && (
-              <MatchmakingQueue user={user} />
-            )}
-            {activeTab === 'tournament' && (
-              <TournamentBracket />
-            )}
-            {activeTab === 'analytics' && (
-              <PKAnalyticsDashboard battles={battles} user={user} />
-            )}
             {activeTab === 'history' && (
               <HistoryTab battles={battles} user={user} />
             )}
