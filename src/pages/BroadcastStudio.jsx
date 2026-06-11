@@ -103,6 +103,7 @@ import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import StreamEventBus from '../components/live/StreamEventBus';
 import ViewerCount from '../components/live/ViewerCount';
 import GuestControls from '../components/live/GuestControls';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1364,6 +1365,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             {activeTab === 'manage' && canManage && (
               <div className="p-2 space-y-3">
                 <HostControls isHost={canManage} party={party} onUpdate={setHostSettings} />
+
+                {/* Gift leaderboard */}
+                {partyId && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🏆 Top Gifters</p>
+                    <GiftLeaderboard roomId={partyId} />
+                  </div>
+                )}
 
                 {/* Stream goal */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
