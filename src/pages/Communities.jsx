@@ -227,6 +227,30 @@ export default function CommunitiesPage() {
             )}
           </>
         )}
+
+        {/* Community management quick links */}
+        {mine.length > 0 && (
+          <div className="mt-6 mb-4 flex flex-wrap gap-3">
+            <Link to={createPageUrl('CommunityAdmin')} style={{ textDecoration: 'none' }}>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
+                style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.3)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                ⚙️ Community Admin
+              </button>
+            </Link>
+            <Link to={createPageUrl('CommunityGrowth')} style={{ textDecoration: 'none' }}>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
+                style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                📈 Growth Tools
+              </button>
+            </Link>
+            <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
+                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                ⚡ Settings
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
