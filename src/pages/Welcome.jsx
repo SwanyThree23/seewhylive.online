@@ -6,7 +6,7 @@ import { Radio, ChevronRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
+const BG = '#080B18';
 
 export default function WelcomePage() {
   const { data: user } = useQuery({
