@@ -154,7 +154,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>🚩</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 11, color: "#FF6B6B" }}>REPORT</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: "#C0392B" }}>REPORT</span>
             </button>
           </div>
         </div>

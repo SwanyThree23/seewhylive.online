@@ -115,7 +115,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                     onClick={() => endPollMutation.mutate(activePoll.id)}
                     disabled={endPollMutation.isPending}
                     className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase transition-all disabled:opacity-50"
-                    style={{ background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.25)', color: '#FF6B6B', ...T }}
+                    style={{ background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.25)', color: '#C0392B', ...T }}
                   >
                     <Trash2 className="w-3 h-3" /> End Poll Now
                   </button>

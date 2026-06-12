@@ -135,7 +135,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
           {isMember && isAdmin && (
             <Link to={createPageUrl(`CommunityAdmin?id=${community.id}`)} className="flex-1">
               <button className="w-full py-2 rounded-xl font-black uppercase text-[10px] transition-all"
-                style={{ background: `rgba(128,0,32,0.18)`, border: `1px solid rgba(128,0,32,0.4)`, color: '#ff6680', ...T }}>
+                style={{ background: `rgba(128,0,32,0.18)`, border: `1px solid rgba(128,0,32,0.4)`, color: '#C0392B', ...T }}>
                 Admin
               </button>
             </Link>

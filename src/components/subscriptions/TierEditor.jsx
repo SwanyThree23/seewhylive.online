@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2, X } from 'lucide-react';
 
 const ICON_OPTIONS = ['star', 'crown', 'flame', 'heart', 'zap', 'bronze', 'silver', 'gold', 'diamond'];
-const PRESET_COLORS = ['#cd7f32', '#aaa9ad', '#d4af37', '#e8c4e8', '#7ec8e3', '#ff6b6b', '#51cf66', '#339af0'];
+const PRESET_COLORS = ['#cd7f32', '#aaa9ad', '#d4af37', '#D4854A', '#C9A84C', '#C0392B', '#6DBF7E', '#D4AF37'];
 
 const TOGGLE_BENEFITS = [
   { key: 'has_early_access', label: 'Early Access to Streams' },

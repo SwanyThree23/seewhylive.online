@@ -322,7 +322,7 @@ export default function GuestQueue({ roomId, isHost }) {
                           background: 'rgba(255,68,68,0.08)',
                           border: '1px solid rgba(255,68,68,0.2)',
                           borderRadius: 6,
-                          color: '#FF6666',
+                          color: '#D4854A',
                           fontSize: 11,
                           fontWeight: 700,
                           padding: '5px 0',
@@ -445,7 +445,7 @@ export default function GuestQueue({ roomId, isHost }) {
                         borderRadius: 5,
                         padding: '4px',
                         cursor: 'pointer',
-                        color: '#FF6666',
+                        color: '#D4854A',
                         flexShrink: 0,
                         opacity: removeMutation.isPending ? 0.5 : 1,
                       }}
