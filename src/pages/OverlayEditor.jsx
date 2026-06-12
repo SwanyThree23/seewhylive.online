@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AlertConfig from '@/components/live/AlertConfig';
 import OverlayThemeBuilder from '@/components/live/OverlayThemeBuilder';
+import LowerThirdsBanner from '@/components/live/LowerThirdsBanner';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -44,6 +45,11 @@ export default function OverlayEditorPage() {
             {/* Theme */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <OverlayThemeBuilder creatorId={user.id} />
+            </motion.div>
+
+            {/* Lower Thirds */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="md:col-span-2">
+              <LowerThirdsBanner onBannerChange={() => {}} />
             </motion.div>
           </div>
         )}

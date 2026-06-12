@@ -17,6 +17,8 @@ import LoveTap from '../components/live/LoveTap';
 import LivePoll from '../components/live/LivePoll';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import LiveTranscription from '../components/live/LiveTranscription';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -466,6 +468,20 @@ export default function AudioRoom() {
       {roomId && isHost && (
         <div style={{ padding: '0 16px 8px' }}>
           <StreamGoals roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* AI Copilot (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={memberCount} />
+        </div>
+      )}
+
+      {/* Live transcription (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LiveTranscription isLive={true} roomId={roomId} />
         </div>
       )}
 

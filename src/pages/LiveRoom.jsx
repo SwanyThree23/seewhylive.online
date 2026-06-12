@@ -52,6 +52,7 @@ import RaidPanelButton from '../components/live/RaidPanel';
 import ChatModeration from '../components/live/ChatModeration';
 import ClipCreator from '../components/live/ClipCreator';
 import StreamMetadata from '../components/live/StreamMetadata';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1081,6 +1082,7 @@ export default function LiveRoom() {
           <ChatModeration collapsed />
           {party?.id && <ClipCreator roomId={party.id} creatorId={user?.id} streamTitle={party.title} elapsedSeconds={0} currentUser={user} />}
           {party && <StreamMetadata room={party} isHost={isHost} />}
+          {party?.id && <AICopilotSidebar roomId={party.id} isHost={isHost} viewerCount={members.length} />}
         </div>
       )}
 

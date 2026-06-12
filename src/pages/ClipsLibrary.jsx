@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import VODCard from '../components/vod/VODCard';
 import VODTrimEditor from '../components/vod/VODTrimEditor';
@@ -160,6 +161,12 @@ export default function ClipsLibraryPage() {
         <div style={{ marginTop: 16 }}>
           <AutomatedHighlightReels />
         </div>
+        {/* AI-powered clip suggestions */}
+        {user?.id && (
+          <div style={{ marginTop: 16 }}>
+            <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user.id} />
+          </div>
+        )}
 
         {/* VOD Library */}
         {vods.length > 0 && (
