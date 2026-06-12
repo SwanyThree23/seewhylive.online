@@ -8,6 +8,7 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 import ReferralProgram from '@/components/community/ReferralProgram';
 import CreatePollModal from '../components/community/CreatePollModal';
 
@@ -230,7 +231,8 @@ export default function CommunityPage() {
           )}
 
           {activeTab === 'spotlight' && (
-            <motion.div key="spotlight" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-16">
+            <motion.div key="spotlight" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-16 space-y-6">
+              <SpotlightBanner communityId={community.id} isAdmin={isAdmin || isOwner} />
               <SpotlightSection communityId={community.id} />
             </motion.div>
           )}

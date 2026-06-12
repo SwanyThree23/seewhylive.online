@@ -147,7 +147,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
           {[
             { icon: ListVideo,   label: 'Queued', value: analytics.total_videos_queued || 0,       color: GOLD },
             { icon: Play,        label: 'Played', value: analytics.total_queue_items_played || 0,  color: '#6DBF7E' },
-            { icon: SkipForward, label: 'Skipped', value: analytics.videos_skipped || 0,           color: '#ff6680' },
+            { icon: SkipForward, label: 'Skipped', value: analytics.videos_skipped || 0,           color: '#C0392B' },
           ].map(({ icon: IconComp, label, value, color }) => {
             const Icon = IconComp;
             return (

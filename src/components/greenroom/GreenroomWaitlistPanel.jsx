@@ -63,7 +63,7 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
             onKeyDown={e => { if (e.key === 'Enter') onDeny(entry, clampStr(denyReason, LIMITS.DENY_REASON)); }} />
           <button onClick={() => onDeny(entry, clampStr(denyReason, LIMITS.DENY_REASON))}
             className="h-7 px-3 rounded text-[11px] font-black uppercase"
-            style={{ background: `rgba(128,0,32,0.4)`, color: '#ff6680', border: '1px solid rgba(128,0,32,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: `rgba(128,0,32,0.4)`, color: '#C0392B', border: '1px solid rgba(128,0,32,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Deny
           </button>
           <button onClick={() => setDenying(false)}
@@ -81,7 +81,7 @@ function WaitlistEntry({ entry, onAdmit, onDeny }) {
           </button>
           <button onClick={() => setDenying(true)}
             className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-black uppercase text-[11px] transition-all"
-            style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.25)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <XCircle className="w-3 h-3" /> Deny
           </button>
         </div>

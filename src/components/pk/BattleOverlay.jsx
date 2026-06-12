@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const GIFTS = [
-  { emoji: '🌹', label: 'Rose',    pts: 1,   usd: 0.10, color: '#ff6b6b' },
+  { emoji: '🌹', label: 'Rose',    pts: 1,   usd: 0.10, color: '#D4AF37' },
   { emoji: '🍰', label: 'Cake',    pts: 5,   usd: 0.50, color: '#ffd93d' },
   { emoji: '💎', label: 'Diamond', pts: 10,  usd: 1.00, color: '#C9A84C' },
   { emoji: '🔥', label: 'Fire',    pts: 25,  usd: 2.50, color: '#ff8c00' },
