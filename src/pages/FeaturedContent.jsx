@@ -10,8 +10,9 @@ const CHANNELS = [
     handle: '@dominoentertainment5513',
     url: 'https://youtube.com/@dominoentertainment5513',
     description: 'Live entertainment, shows, and exclusive content',
-    color: 'from-red-900 to-orange-900',
-    accent: '#ff6b35',
+    bg: 'rgba(128,0,32,0.25)',
+    border: 'rgba(192,57,43,0.3)',
+    accent: '#C0392B',
     emoji: '🎭',
   },
   {
@@ -20,7 +21,8 @@ const CHANNELS = [
     handle: '@memoirsofashygirl',
     url: 'https://youtube.com/@memoirsofashygirl',
     description: 'Personal stories, lifestyle, and real conversations',
-    color: 'from-rose-900 to-red-900',
+    bg: 'rgba(128,0,32,0.2)',
+    border: 'rgba(128,0,32,0.35)',
     accent: '#D4854A',
     emoji: '📖',
   },
@@ -30,8 +32,9 @@ const CHANNELS = [
     handle: '@ampdupvideos',
     url: 'https://youtube.com/@ampdupvideos',
     description: 'High energy content, music videos, and entertainment',
-    color: 'from-yellow-900 to-amber-900',
-    accent: '#ffd700',
+    bg: 'rgba(212,175,55,0.1)',
+    border: 'rgba(212,175,55,0.3)',
+    accent: '#D4AF37',
     emoji: '⚡',
   },
   {
@@ -40,7 +43,8 @@ const CHANNELS = [
     handle: '@aiversepodcast',
     url: 'https://youtube.com/@aiversepodcast',
     description: 'AI, tech, and futurism — conversations that matter',
-    color: 'from-amber-900 to-yellow-900',
+    bg: 'rgba(212,175,55,0.08)',
+    border: 'rgba(212,175,55,0.2)',
     accent: '#D4AF37',
     emoji: '🤖',
   },
@@ -75,7 +79,7 @@ function YouTubeEmbed({ videoId, title }) {
           onError={e => { e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }}
         />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform" style={{ background: '#C0392B' }}>
             <Play className="w-7 h-7 text-white fill-white ml-1" />
           </div>
         </div>
@@ -103,13 +107,13 @@ export default function FeaturedContent() {
   const [activeChannel, setActiveChannel] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0F1428] py-8 px-4">
+    <div className="min-h-screen py-8 px-4" style={{ background: '#080B18' }}>
       <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: '#C0392B' }}>
               <Youtube className="w-7 h-7 text-white" />
             </div>
             <div className="text-left">
@@ -142,7 +146,8 @@ export default function FeaturedContent() {
             {CHANNELS.map(channel => (
               <div
                 key={channel.id}
-                className={`bg-gradient-to-br ${channel.color} border border-white/10 rounded-2xl p-5 space-y-3 hover:border-white/20 transition-all cursor-pointer`}
+                className="rounded-2xl p-5 space-y-3 transition-all cursor-pointer"
+              style={{ background: channel.bg, border: `1px solid ${channel.border}` }}
                 onClick={() => setActiveChannel(activeChannel === channel.id ? null : channel.id)}
               >
                 <div className="flex items-start justify-between">
@@ -158,7 +163,8 @@ export default function FeaturedContent() {
                     target="_blank"
                     rel="noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-red-700/50 hover:bg-red-600 text-white transition-all"
+                    className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg text-white transition-all"
+                    style={{ background: 'rgba(192,57,43,0.5)' }}
                   >
                     <Youtube className="w-3 h-3" />
                     Subscribe
@@ -195,7 +201,8 @@ export default function FeaturedContent() {
         </div>
 
         {/* Memoirs Studio Pro Link */}
-        <div className="bg-gradient-to-r from-rose-900/50 to-red-900/50 border border-rose-800/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+          style={{ background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(128,0,32,0.35)' }}>
           <div className="flex items-center gap-4">
             <span className="text-4xl">📖</span>
             <div>

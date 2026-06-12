@@ -74,19 +74,19 @@ function BattleCard({ battle, index }) {
             <div className="w-px h-8" style={{ background: 'rgba(212,175,55,0.2)' }} />
           </div>
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-red-300 mx-auto mb-1"
-              style={{ background: 'rgba(239,68,68,0.15)', border: '2px solid rgba(239,68,68,0.4)' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black mx-auto mb-1"
+              style={{ background: 'rgba(192,57,43,0.15)', border: '2px solid rgba(192,57,43,0.4)', color: '#C0392B' }}>
               {rightName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{rightName}</p>
-            <p className="text-lg font-black font-mono" style={{ color: '#f87171' }}>{rightVotes.toLocaleString()}</p>
+            <p className="text-lg font-black font-mono" style={{ color: '#C0392B' }}>{rightVotes.toLocaleString()}</p>
           </div>
         </div>
 
         {/* Score bar */}
         <div className="h-2 rounded-full flex overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
           <div className="transition-all duration-500" style={{ width: `${leftPct}%`, background: '#D4AF37' }} />
-          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#ef4444' }} />
+          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#C0392B' }} />
         </div>
 
         <Link to={`${createPageUrl('PKBattlePage')}?id=${battle.id}`}>
