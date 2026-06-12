@@ -22,6 +22,8 @@ import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
 import ReportModal from '../components/moderation/ReportModal';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -472,6 +474,14 @@ export default function AudioRoom() {
       {roomId && isHost && (
         <div style={{ padding: '0 16px 8px' }}>
           <StreamGoals roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Live audience pulse + Aura emotion (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={memberCount} />
+          <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="hype" />
         </div>
       )}
 

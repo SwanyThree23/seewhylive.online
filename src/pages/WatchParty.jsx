@@ -34,6 +34,7 @@ import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1090,6 +1091,7 @@ export default function WatchPartyPage() {
             {activePanel === 'analytics' && (
               <div className="space-y-3">
                 {partyId && <StreamGoals roomId={partyId} isHost={isHost} />}
+                {partyId && isHost && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
                 {partyId && isHost && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
                 {partyId && isHost && user?.id && party?.host_id && (
                   <PointsEarnWidget userId={user.id} creatorId={party.host_id} roomId={partyId} isHost={isHost} />
