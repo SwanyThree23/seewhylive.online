@@ -32,6 +32,7 @@ import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1086,6 +1087,9 @@ export default function WatchPartyPage() {
               <div className="space-y-3">
                 {partyId && <StreamGoals roomId={partyId} isHost={isHost} />}
                 {partyId && isHost && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
+                {partyId && isHost && user?.id && party?.host_id && (
+                  <PointsEarnWidget userId={user.id} creatorId={party.host_id} roomId={partyId} isHost={isHost} />
+                )}
                 <WatchPartyAnalytics
                   party={party}
                   members={members}

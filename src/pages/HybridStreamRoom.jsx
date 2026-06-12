@@ -8,6 +8,8 @@ import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
+import StreamGoals from '../components/live/StreamGoals';
+import LivePoll from '../components/live/LivePoll';
 import { toast } from 'sonner';
 
 export default function HybridStreamRoom() {
@@ -193,6 +195,18 @@ export default function HybridStreamRoom() {
           </div>
         </div>
       </div>
+
+      {/* Host tools */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamGoals roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LivePoll roomId={roomId} isHost={isHost} />
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
         {[
