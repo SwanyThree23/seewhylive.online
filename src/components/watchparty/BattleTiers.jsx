@@ -103,7 +103,7 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
     .slice(0, 5);
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)' }}>
         <Swords className="w-3.5 h-3.5 text-yellow-400" />

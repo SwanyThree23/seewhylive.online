@@ -41,11 +41,11 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
 
   return (
     <div className="bg-[rgba(8,11,24,0.95)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/5 bg-[rgba(7,7,15,0.7)]">
+      <div className="px-4 py-3 border-b border-white/5 bg-[rgba(8,11,24,0.7)]">
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-[#d4af37]" />
           <h3 className="text-sm font-semibold text-white">Stream Ingest Setup</h3>
-          <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(8,47,73,0.5)', color:'#67e8f9' }}>BETA</span>
+          <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(13,16,34,0.5)', color:'#C9A84C' }}>BETA</span>
         </div>
       </div>
 
@@ -233,7 +233,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
         </div>
       </div>
 
-      <div className="px-4 py-3 bg-[rgba(7,7,15,0.5)] border-t border-white/5 text-[10px] text-white/40">
+      <div className="px-4 py-3 bg-[rgba(8,11,24,0.5)] border-t border-white/5 text-[10px] text-white/40">
         💡 Tip: Save your RTMP key securely. Never share it publicly. Stream keys are AES-256 encrypted at rest.
       </div>
     </div>

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { safeSrc } from '@/lib/security';
 
 const G = '#d4af37';
-const BG = 'rgba(7,7,15,0.95)';
+const BG = 'rgba(8,11,24,0.95)';
 
 export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
   const [showPanel, setShowPanel] = useState(false);

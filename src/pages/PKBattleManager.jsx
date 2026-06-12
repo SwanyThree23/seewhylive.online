@@ -161,7 +161,7 @@ function WinnerOverlay({ battle, onClose }) {
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', bounce: 0.55 }}
         className="relative z-10 text-center px-8 py-12 rounded-3xl max-w-md w-full mx-4"
-        style={{ background: 'rgba(7,7,15,0.98)', border: '2px solid #d4af37' }}
+        style={{ background: 'rgba(8,11,24,0.98)', border: '2px solid #d4af37' }}
       >
         <div className="text-7xl mb-3">🏆</div>
         <Crown className="w-12 h-12 mx-auto mb-3" style={{ color: '#d4af37' }} />
@@ -323,7 +323,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       )}
 
       {/* Create invite */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
         <button
           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/2 transition-all"
           onClick={function() { setShowCreateForm(!showCreateForm); }}
@@ -410,7 +410,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       </div>
 
       {/* All battles list */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span className="text-xs font-bold text-white/60 uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>All Battles</span>
           <Badge style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: 'none' }}>{battles.length}</Badge>
@@ -571,7 +571,7 @@ function HistoryTab({ battles, user }) {
 
       {/* Win rate bar */}
       {ended.length > 0 && (
-        <div className="rounded-xl p-4" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-white/50 uppercase font-bold">Win Rate</span>
             <span className="text-sm font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#6DBF7E' }}>
@@ -588,7 +588,7 @@ function HistoryTab({ battles, user }) {
       )}
 
       {/* Battle history list */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span className="text-xs font-bold text-white/50 uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Battle History</span>
         </div>

@@ -36,14 +36,14 @@ export default function WebRTCSetupBanner({ error, audioEnabled, videoEnabled, o
             <Mic className="w-3 h-3" />
             <span>Microphone:</span>
             {audioEnabled
-              ? <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#166534', color:'#bbf7d0', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" />Active</span>
+              ? <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#4A9B5E', color:'#bbf7d0', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" />Active</span>
               : <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#7f1d1d', color:'#fca5a5' }}>Blocked</span>}
           </div>
           <div className="flex items-center gap-2">
             <Video className="w-3 h-3" />
             <span>Camera:</span>
             {videoEnabled
-              ? <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#166534', color:'#bbf7d0', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" />Active</span>
+              ? <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#4A9B5E', color:'#bbf7d0', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" />Active</span>
               : <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#7f1d1d', color:'#fca5a5' }}>Blocked</span>}
           </div>
           <p className="text-amber-400/70 mt-1">

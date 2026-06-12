@@ -81,7 +81,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
           clipPath: OCT,
           background: isHost
             ? `linear-gradient(135deg, ${CRIMSON}, #4a0012)`
-            : `rgba(30,10,30,0.9)`,
+            : `rgba(8,11,24,0.9)`,
           border: `2px solid rgba(212,175,55,0.3)`,
           position: 'relative',
           cursor: showControls ? 'pointer' : 'default',

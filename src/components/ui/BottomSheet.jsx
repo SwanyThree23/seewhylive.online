@@ -52,7 +52,7 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
             className="fixed left-0 right-0 bottom-0 z-[201] pb-safe flex flex-col"
             style={{
               maxHeight,
-              background: 'rgba(10,7,22,0.99)',
+              background: 'rgba(8,11,24,0.99)',
               border: '1px solid rgba(212,175,55,0.15)',
               borderBottom: 'none',
               borderRadius: '20px 20px 0 0',

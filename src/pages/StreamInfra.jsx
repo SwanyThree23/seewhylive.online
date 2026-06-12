@@ -29,7 +29,7 @@ function genKey(prefix, userId) {
 function PanelCard({ title, icon: Icon, color, children, className }) {
   var c = color || '#d4af37';
   return (
-    <div className={'rounded-xl overflow-hidden ' + (className || '')} style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid ' + c + '28' }}>
+    <div className={'rounded-xl overflow-hidden ' + (className || '')} style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid ' + c + '28' }}>
       <div className="flex items-center gap-2 px-4 py-2.5" style={{ borderBottom: '1px solid ' + c + '18' }}>
         {Icon && <Icon className="w-4 h-4" style={{ color: c }} />}
         <span className="text-xs font-bold uppercase tracking-wider" style={{ color: c, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
@@ -379,7 +379,7 @@ function LiveRoomTab({ user }) {
   return (
     <div className="space-y-4">
       {/* Room Header */}
-      <div className="rounded-xl p-4 flex items-center justify-between" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      <div className="rounded-xl p-4 flex items-center justify-between" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
         <div className="flex items-center gap-3">
           {roomActive ? (
             <div className="flex items-center gap-2">
@@ -598,7 +598,7 @@ function StudioTab({ user }) {
           { label: 'Idle Rooms', val: String(rooms.filter(function(r) { return r.status === 'idle'; }).length), c: '#D4AF3780' },
         ].map(function(s) {
           return (
-            <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <p className="text-2xl font-bold" style={{ fontFamily: 'Orbitron, monospace', color: s.c }}>{s.val}</p>
               <p className="text-[10px] text-white/30 uppercase mt-1">{s.label}</p>
             </div>
@@ -722,7 +722,7 @@ export default function StreamInfra() {
   return (
     <div className="min-h-screen" style={{ background: '#0B0B18', fontFamily: 'Rajdhani, sans-serif' }}>
       {/* Page header */}
-      <div style={{ background: 'rgba(7,7,15,0.98)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
+      <div style={{ background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>

@@ -224,7 +224,7 @@ export default function ViewerDashboard() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {recentVODs.slice(0, 6).map((vod, i) => (
                   <motion.div key={vod.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} className="group cursor-pointer">
-                    <div className="relative rounded-xl overflow-hidden aspect-video mb-2" style={{ background: 'rgba(26,10,32,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                    <div className="relative rounded-xl overflow-hidden aspect-video mb-2" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Play className="w-8 h-8 transition-all" style={{ color: 'rgba(255,255,255,0.25)' }} />
                       </div>

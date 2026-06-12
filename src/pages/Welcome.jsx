@@ -37,7 +37,7 @@ export default function WelcomePage() {
 
       {/* Header */}
       <header className="sticky top-[3px] z-40 px-4 py-4 md:px-8"
-        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -147,7 +147,7 @@ export default function WelcomePage() {
       </main>
 
       {/* Feature Highlights */}
-      <section className="relative z-20 py-12 px-4 md:px-8" style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
+      <section className="relative z-20 py-12 px-4 md:px-8" style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
         <div className="max-w-3xl mx-auto">
           <p className="text-center text-xs font-black uppercase tracking-widest mb-6" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>Platform Features</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -180,7 +180,7 @@ export default function WelcomePage() {
 
       {/* Footer */}
       <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
         <p>© {new Date().getFullYear()} SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split</p>
       </footer>
     </div>

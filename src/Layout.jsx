@@ -209,13 +209,13 @@ export default function Layout({ children, currentPageName }) {
       {!isFullscreen && <>
       {/* Brand accent line — sits below status bar on notch devices */}
       <div className="fixed top-0 left-0 right-0 z-[101] pt-safe"
-        style={{ background: 'rgba(7,7,15,0.97)' }}>
+        style={{ background: 'rgba(8,11,24,0.97)' }}>
         <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
       </div>
 
       {/* ── HEADER ── */}
       <header className="sticky z-50 w-full"
-        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -407,7 +407,7 @@ export default function Layout({ children, currentPageName }) {
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe"
-          style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
+          style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
           <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;
@@ -463,7 +463,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop footer */}
       <footer className="hidden md:block py-3 px-6 text-[10px]"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
           <span style={{ fontFamily: 'Share Tech Mono, monospace' }}>© {new Date().getFullYear()} SeeWhy LIVE</span>
           <div className="flex items-center gap-4">
