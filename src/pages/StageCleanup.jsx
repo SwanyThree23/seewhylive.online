@@ -63,7 +63,7 @@ export default function StageCleanupPage() {
   const getRoomStatus = (roomId) => {
     const room = roomMap[roomId];
     if (!room) return { label: 'Room Deleted', color: 'bg-red-100 text-red-700' };
-    if (room.status === 'ended') return { label: 'Room Ended', color: 'bg-orange-100 text-orange-700' };
+    if (room.status === 'ended') return { label: 'Room Ended', color: 'bg-[#D4854A]/15 text-[#D4854A]' };
     return { label: room.status, color: 'bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.5)]' };
   };
 
@@ -74,8 +74,8 @@ export default function StageCleanupPage() {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-              <Layers className="w-5 h-5 text-orange-600" />
+            <div className="w-10 h-10 bg-[#D4854A]/15 rounded-xl flex items-center justify-center">
+              <Layers className="w-5 h-5 text-[#D4854A]" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Stage Cleanup</h1>

@@ -36,7 +36,7 @@ const PLATFORMS = [
 function StatusDot({ status }) {
   const styles = {
     live: 'bg-[#6DBF7E] animate-pulse',
-    connecting: 'bg-yellow-400 animate-pulse',
+    connecting: 'bg-[#D4AF37] animate-pulse',
     error: 'bg-red-400',
     offline: 'bg-white/20',
   };

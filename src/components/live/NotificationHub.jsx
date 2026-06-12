@@ -217,7 +217,7 @@ export default function NotificationHub() {
                         <p className="text-xs font-bold text-white">{notif.title}</p>
                         <p className="text-[10px] text-white/60 mt-0.5 leading-snug">{notif.message}</p>
                         {notif.metadata?.amount && (
-                          <p className="text-[10px] text-amber-300 mt-1">
+                          <p className="text-[10px] text-[#D4AF37]/80 mt-1">
                             {notif.metadata.amount}
                           </p>
                         )}

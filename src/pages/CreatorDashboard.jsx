@@ -103,7 +103,7 @@ export default function CreatorDashboardPage() {
       label: 'INS Forge',
       href: createPageUrl('INSForge'),
       gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
-      border: 'rgba(245,158,11,0.35)',
+      border: 'rgba(212,175,55,0.35)',
       iconColor: '#D4AF37',
     },
     {

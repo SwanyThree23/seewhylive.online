@@ -411,7 +411,7 @@ export default function SwanyBotWidget() {
                   style={{ background: 'linear-gradient(135deg, #800020, #6B4423)', border: `1px solid ${G}30` }}>
                   <Sparkles className="w-4 h-4" style={{ color: G }} />
                   {audioEnabled && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-black animate-pulse" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#6DBF7E] border-2 border-black animate-pulse" />
                   )}
                 </div>
                 <div>

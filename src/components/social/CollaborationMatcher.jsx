@@ -49,7 +49,7 @@ export default function CollaborationMatcher() {
       className="space-y-3"
     >
       <div className="flex items-center gap-2 px-4">
-        <Zap className="w-4 h-4 text-yellow-400" />
+        <Zap className="w-4 h-4 text-[#D4AF37]" />
         <h3 className="text-sm font-bold text-white">Collaboration Opportunities</h3>
       </div>
 

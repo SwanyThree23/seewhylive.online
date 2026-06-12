@@ -101,7 +101,7 @@ export default function LeaderboardPanel({ roomId }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white truncate">User {viewer.user_id?.slice(0, 8)}</p>
-                  <p className="text-[10px] text-amber-300">{viewer.tips_sent_count} tips</p>
+                  <p className="text-[10px] text-[#D4AF37]/80">{viewer.tips_sent_count} tips</p>
                 </div>
               </motion.div>
             ))}
@@ -124,7 +124,7 @@ export default function LeaderboardPanel({ roomId }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white truncate">{raider.creator_name}</p>
-                  <p className="text-[10px] text-emerald-300">{raider.total_viewers} viewers • {raider.raid_count} raids</p>
+                  <p className="text-[10px] text-[#6DBF7E]">{raider.total_viewers} viewers • {raider.raid_count} raids</p>
                 </div>
               </motion.div>
             ))}

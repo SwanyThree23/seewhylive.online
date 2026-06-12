@@ -52,7 +52,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/70 border border-[#6DBF7E]/20 rounded-lg p-3 space-y-2"
+      className="bg-[#0F1428]/70 border border-[#6DBF7E]/20 rounded-lg p-3 space-y-2"
     >
       <div className="flex items-center gap-2 mb-2">
         <div className="w-2 h-2 rounded-full bg-[#6DBF7E] animate-pulse" />

@@ -192,7 +192,7 @@ function GuestRow({ participant, status }) {
 
 function StatusDot({ status }) {
   const colors = {
-    waiting: 'bg-yellow-400',
+    waiting: 'bg-[#D4AF37]',
     ready: 'bg-[#6DBF7E] animate-pulse',
     admitted: 'bg-[#D4AF37]',
     rejected: 'bg-red-400',

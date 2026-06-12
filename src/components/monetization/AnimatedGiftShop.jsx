@@ -65,7 +65,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
     common: 'bg-gray-100 text-gray-800',
     rare: 'bg-[#D4AF37]/12 text-[#800020]',
     epic: 'bg-[#800020]/20 text-[#C9A84C]',
-    legendary: 'bg-yellow-100 text-yellow-800',
+    legendary: 'bg-[#D4AF37]/15 text-[#C9A84C]',
   };
 
   return (

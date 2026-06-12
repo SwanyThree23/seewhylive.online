@@ -190,12 +190,12 @@ function WinnerCelebration({ battle, onClose }) {
         <div className="p-3 rounded-2xl mb-5"
           style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)' }}>
           <div className="flex items-center justify-center gap-2 text-sm">
-            <Star className="w-4 h-4 text-yellow-400" />
+            <Star className="w-4 h-4 text-[#D4AF37]" />
             <span className="font-bold text-white">+{battle.reward_points || 500}</span>
             <span className="text-white/40 text-xs">Loyalty Points</span>
           </div>
           <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/30 mt-1">
-            <Medal className="w-3 h-3 text-yellow-600" />
+            <Medal className="w-3 h-3 text-[#C9A84C]" />
             PK Champion badge unlocked
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
         <div className="flex items-center justify-between px-2 md:px-4 py-1.5 md:py-2 text-[11px] md:text-[10px]"
           style={{ background: 'rgba(0,0,0,0.4)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="flex items-center gap-1 md:gap-2 min-w-0">
-            <Swords className="w-3 md:w-4 h-3 md:h-4 text-yellow-400 animate-pulse flex-shrink-0" />
+            <Swords className="w-3 md:w-4 h-3 md:h-4 text-[#D4AF37] animate-pulse flex-shrink-0" />
             {isActive ? (
               <span className="font-black uppercase animate-pulse truncate"
                 style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em', fontSize: '8px' }}>
@@ -397,8 +397,8 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
 
           {/* Center VS */}
           <div className="flex flex-col items-center justify-center gap-0.5">
-            <Swords className="w-4 md:w-5 h-4 md:h-5 text-yellow-400" />
-            <span className="text-[11px] md:text-xs font-black text-yellow-400"
+            <Swords className="w-4 md:w-5 h-4 md:h-5 text-[#D4AF37]" />
+            <span className="text-[11px] md:text-xs font-black text-[#D4AF37]"
               style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>VS</span>
             <span className="text-[7px] md:text-[11px] text-white/25">{totalPts.toLocaleString()}</span>
           </div>
@@ -455,7 +455,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       {tipFeed.length > 0 && (
         <div className="rounded-xl md:rounded-2xl mb-2 md:mb-3 overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center gap-1.5 md:gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <Zap className="w-2.5 md:w-3 h-2.5 md:h-3 text-yellow-400 flex-shrink-0" />
+            <Zap className="w-2.5 md:w-3 h-2.5 md:h-3 text-[#D4AF37] flex-shrink-0" />
             <span className="text-[7px] md:text-[11px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Tip Feed
             </span>

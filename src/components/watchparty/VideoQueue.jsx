@@ -69,7 +69,7 @@ function QueueItem({ item, index, total, isHost, isCurrent, onRemove, onMoveUp, 
           <button onClick={() => onPlay(item)}
             className="w-5 h-5 flex items-center justify-center rounded"
             style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.25)' }}>
-            <Play className="w-3 h-3 text-yellow-400" />
+            <Play className="w-3 h-3 text-[#D4AF37]" />
           </button>
           <button onClick={() => onRemove(index)}
             className="w-5 h-5 flex items-center justify-center rounded"
@@ -80,7 +80,7 @@ function QueueItem({ item, index, total, isHost, isCurrent, onRemove, onMoveUp, 
       )}
 
       {isCurrent && (
-        <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse shrink-0 mr-1" />
+        <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse shrink-0 mr-1" />
       )}
     </motion.div>
   );
@@ -154,7 +154,7 @@ export default function VideoQueue({ isHost, currentUser, currentVideoUrl, onPla
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <ListVideo className="w-3.5 h-3.5 text-yellow-400" />
+          <ListVideo className="w-3.5 h-3.5 text-[#D4AF37]" />
           <span className="text-[10px] font-black uppercase tracking-widest"
             style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
             Video Queue
