@@ -59,7 +59,7 @@ export default function ReferralConfig({ communityId }) {
       {/* Stats Overview */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
         <StatCard label="Total Referrals" value={totalReferrals} icon={Users} sub="All time" />
-        <StatCard label="Completed" value={completedReferrals} color="#4ade80" icon={Award} sub="Successful" />
+        <StatCard label="Completed" value={completedReferrals} color="#6DBF7E" icon={Award} sub="Successful" />
         <StatCard label="Pending" value={pendingReferrals} color="#D4854A" icon={TrendingUp} sub="In progress" />
         <StatCard label="Conversion Rate" value={`${conversionRate}%`} icon={DollarSign} sub="Success rate" />
       </div>
@@ -139,7 +139,7 @@ export default function ReferralConfig({ communityId }) {
                       </p>
                     </div>
                   </div>
-                  <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(34,197,94,0.15)', color:'#4ade80' }}>
+                  <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.15)', color:'#6DBF7E' }}>
                     {referrer.completed} successful
                   </span>
                 </div>

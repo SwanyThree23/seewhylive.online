@@ -12,7 +12,7 @@ const SLATE = '#2A2010';
 const TEXT  = '#F0E8D4';
 const TEXTD = '#C4B596';
 const TEXTM = '#8A7A62';
-const GREEN = '#22c55e';
+const GREEN = '#6DBF7E';
 const PILL  = 999;
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO  = { fontFamily: 'Space Mono, monospace' };
@@ -92,7 +92,7 @@ export default function VoiceAISettings() {
           {saved && (
             <span style={{ ...MONO, fontSize: 9, color: GREEN, letterSpacing: '0.08em' }}>✓ SAVED</span>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: PILL, background: vs.enabled ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${vs.enabled ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: PILL, background: vs.enabled ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${vs.enabled ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.1)'}` }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: vs.enabled ? GREEN : TEXTM }} />
             <span style={{ ...MONO, fontSize: 9, color: vs.enabled ? GREEN : TEXTM, fontWeight: 700 }}>{vs.enabled ? 'VOICE ON' : 'VOICE OFF'}</span>
           </div>

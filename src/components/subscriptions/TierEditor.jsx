@@ -232,7 +232,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
             <button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || !form.name || !form.price}
-              style={{ flex: 1, padding: '10px 0', background: '#f59e0b', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (saveMutation.isPending || !form.name || !form.price) ? 'not-allowed' : 'pointer', opacity: (saveMutation.isPending || !form.name || !form.price) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ flex: 1, padding: '10px 0', background: '#D4AF37', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (saveMutation.isPending || !form.name || !form.price) ? 'not-allowed' : 'pointer', opacity: (saveMutation.isPending || !form.name || !form.price) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {saveMutation.isPending ? 'Saving...' : existing ? 'Save Changes' : 'Create Tier'}
             </button>

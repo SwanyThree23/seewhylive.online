@@ -17,8 +17,8 @@ const tierConfig = {
   },
   elite: {
     icon: Crown,
-    color: '#f59e0b',
-    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    color: '#D4AF37',
+    gradient: 'linear-gradient(135deg, #D4AF37, #d97706)',
   },
 };
 
@@ -77,7 +77,7 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {benefits?.map((benefit, index) => (
             <li key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <CheckCircle style={{ width: 20, height: 20, color: '#22c55e', flexShrink: 0, marginTop: 2 }} />
+              <CheckCircle style={{ width: 20, height: 20, color: '#6DBF7E', flexShrink: 0, marginTop: 2 }} />
               <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{benefit}</span>
             </li>
           ))}

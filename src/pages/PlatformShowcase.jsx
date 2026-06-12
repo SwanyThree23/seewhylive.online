@@ -95,7 +95,7 @@ const FEATURES = [
     title: 'INS Forge',
     description: 'AI creative brief generator for SVS graphics, tribute cards, overlays, and promo assets.',
     icon: '⚡',
-    color: '#F59E0B',
+    color: '#D4AF37',
     highlights: ['SVS brackets', 'Stream overlays', 'Tribute cards'],
     link: '/INSForge',
   },

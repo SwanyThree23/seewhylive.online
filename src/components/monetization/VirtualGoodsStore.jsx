@@ -8,7 +8,7 @@ const rarityStyles = {
   common:    { background: 'rgba(107,114,128,0.15)', color: '#9ca3af', border: '1px solid rgba(107,114,128,0.3)' },
   rare:      { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
   epic:      { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
-  legendary: { background: 'rgba(245,158,11,0.15)',  color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' },
+  legendary: { background: 'rgba(245,158,11,0.15)',  color: '#D4AF37', border: '1px solid rgba(245,158,11,0.3)' },
 };
 
 const TABS = ['all', 'badge', 'emoji', 'theme', 'effect', 'frame'];
@@ -104,7 +104,7 @@ export default function VirtualGoodsStore({ userId }) {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>{good.name}</span>
-                        {good.is_limited && <Sparkles style={{ width: 16, height: 16, color: '#f59e0b' }} />}
+                        {good.is_limited && <Sparkles style={{ width: 16, height: 16, color: '#D4AF37' }} />}
                       </div>
                       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>{good.description}</p>
                     </div>

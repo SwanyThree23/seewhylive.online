@@ -165,7 +165,7 @@ export default function LoyaltyProgram() {
                   <div key={e.label} className="rounded-xl p-3 text-center"
                     style={{ background: 'rgba(255,255,255,0.04)' }}>
                     <span className="text-xl">{e.icon}</span>
-                    <p className="text-lg font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#fbbf24' }}>+{e.value}</p>
+                    <p className="text-lg font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>+{e.value}</p>
                     <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{e.label}</p>
                   </div>
                 ))}
@@ -183,7 +183,7 @@ export default function LoyaltyProgram() {
                 <Star className="w-8 h-8 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#fbbf24' }}>
+                <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>
                   {userPoints.toLocaleString()} pts
                 </p>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -195,11 +195,11 @@ export default function LoyaltyProgram() {
               <div>
                 <div className="flex justify-between text-xs mb-1.5">
                   <span style={{ color: 'rgba(255,255,255,0.4)' }}>Progress to {nextReward.name}</span>
-                  <span className="font-black" style={{ color: '#fbbf24' }}>{Math.round(progressToNext)}%</span>
+                  <span className="font-black" style={{ color: '#D4AF37' }}>{Math.round(progressToNext)}%</span>
                 </div>
                 <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <motion.div initial={{ width: 0 }} animate={{ width: `${progressToNext}%` }} transition={{ duration: 1, ease: 'easeOut' }}
-                    className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${GOLD}, #fbbf24)` }} />
+                    className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${GOLD}, #D4AF37)` }} />
                 </div>
               </div>
             )}
@@ -287,7 +287,7 @@ export default function LoyaltyProgram() {
                     <p className="text-sm text-white truncate" style={T}>{l.user_id?.slice(0, 8) || 'Anonymous'}</p>
                     <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{l.watch_minutes || 0}min watched</p>
                   </div>
-                  <p className="font-black text-sm" style={{ fontFamily: 'Orbitron, monospace', color: '#fbbf24' }}>{(l.points || 0).toLocaleString()} pts</p>
+                  <p className="font-black text-sm" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>{(l.points || 0).toLocaleString()} pts</p>
                 </div>
               ))}
               {leaderboard.length === 0 && <p className="text-center py-8" style={{ color: 'rgba(255,255,255,0.25)' }}>No viewers yet</p>}

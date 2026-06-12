@@ -148,9 +148,9 @@ export default function OBSBridge() {
         </div>
         <span style={{
           fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif',
-          background: connected ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
-          color: connected ? '#4ade80' : 'rgba(255,255,255,0.4)',
-          border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          background: connected ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+          color: connected ? '#6DBF7E' : 'rgba(255,255,255,0.4)',
+          border: `1px solid ${connected ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.1)'}`,
           display:'flex', alignItems:'center', gap:4,
         }}>
           {connected

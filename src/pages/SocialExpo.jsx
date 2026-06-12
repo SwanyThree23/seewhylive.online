@@ -190,7 +190,7 @@ export default function SocialExpo() {
               { label: 'Weekly Shows', icon: Radio, color: G },
               { label: '$0.99–$4.99 Tickets', icon: Ticket, color: PINK },
               { label: '10% Affiliate', icon: Percent, color: '#D4854A' },
-              { label: '90% Creator Split', icon: DollarSign, color: '#22c55e' },
+              { label: '90% Creator Split', icon: DollarSign, color: '#6DBF7E' },
             ].map((s, i) => {
               const Icon = s.icon;
               return (
@@ -611,11 +611,11 @@ export default function SocialExpo() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(34,197,94,0.18)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Percent style={{ width: 22, height: 22, color: '#22c55e' }} />
+                    <Percent style={{ width: 22, height: 22, color: '#6DBF7E' }} />
                   </div>
                   <div>
                     <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0, ...T }}>10% Affiliate Program</p>
-                    <p style={{ fontSize: 11, color: '#22c55e', margin: 0, letterSpacing: 2, ...T }}>SOCIAL CONTACT NETWORK</p>
+                    <p style={{ fontSize: 11, color: '#6DBF7E', margin: 0, letterSpacing: 2, ...T }}>SOCIAL CONTACT NETWORK</p>
                   </div>
                 </div>
                 <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', margin: '0 0 18px', lineHeight: 1.65 }}>
@@ -632,7 +632,7 @@ export default function SocialExpo() {
                   ].map((item, i) => (
                     <div key={i} style={{ padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.07)',
                       border: '1px solid rgba(34,197,94,0.18)' }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 3px', ...T }}>{item.label}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#6DBF7E', margin: '0 0 3px', ...T }}>{item.label}</p>
                       <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{item.sub}</p>
                     </div>
                   ))}

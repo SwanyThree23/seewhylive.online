@@ -106,7 +106,7 @@ function FanbaseRoomCard({ room }) {
   var accessStyle = accessLabel === 'PPV'
     ? { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }
     : accessLabel === 'FAN'
-    ? { background: 'rgba(128,0,32,0.2)', color: '#ff9999', border: '1px solid rgba(128,0,32,0.4)' }
+    ? { background: 'rgba(128,0,32,0.2)', color: '#D4854A', border: '1px solid rgba(128,0,32,0.4)' }
     : { background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.25)' };
 
   return (

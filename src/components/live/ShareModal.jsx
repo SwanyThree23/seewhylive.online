@@ -108,7 +108,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
             />
             <button
               onClick={handleCopy}
-              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, border:'none', background: copied ? '#16a34a' : '#d4af37', color: copied ? '#fff' : '#000', cursor:'pointer', display:'flex', alignItems:'center' }}
+              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, border:'none', background: copied ? '#4A9B5E' : '#d4af37', color: copied ? '#fff' : '#000', cursor:'pointer', display:'flex', alignItems:'center' }}
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </button>

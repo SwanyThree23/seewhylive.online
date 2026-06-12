@@ -18,7 +18,7 @@ const RevenueCard = ({ icon: IconComponent, label, amount, growth, color }) => (
       </div>
     </div>
     <p style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: '0 0 4px', ...T }}>${amount.toLocaleString()}</p>
-    <p style={{ fontSize: 11, color: '#4ade80', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
+    <p style={{ fontSize: 11, color: '#6DBF7E', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
   </motion.div>
 );
 
@@ -72,7 +72,7 @@ const StreamerMonetizationCenter = () => {
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 4px', ...T }}>Total This Month</p>
             <p style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, ...T }}>${totalRevenue.toLocaleString()}</p>
           </div>
-          <TrendingUp className="w-8 h-8" style={{ color: '#4ade80' }} />
+          <TrendingUp className="w-8 h-8" style={{ color: '#6DBF7E' }} />
         </div>
       </div>
 

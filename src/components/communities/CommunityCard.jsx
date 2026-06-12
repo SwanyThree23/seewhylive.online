@@ -12,7 +12,7 @@ const CATEGORY_COLORS = {
   music:         '#C0392B',
   gaming:        '#D4AF37',
   tech:          '#D4AF37',
-  education:     '#4ade80',
+  education:     '#6DBF7E',
   business:      '#D4854A',
   entertainment: '#D4AF37',
   sports:        '#38bdf8',

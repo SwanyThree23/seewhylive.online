@@ -54,7 +54,7 @@ export default function CreatorTierManager({ creatorId }) {
           { label: 'Monthly Revenue', value: `$${monthlyRevenue.toFixed(2)}`, icon: <DollarSign className="w-4 h-4" /> },
         ].map(s => (
           <div key={s.label} style={{ textAlign: 'center', padding: '12px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4, color: '#f59e0b' }}>{s.icon}</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4, color: '#D4AF37' }}>{s.icon}</div>
             <div style={{ fontSize: 24, fontWeight: 700 }}>{s.value}</div>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{s.label}</div>
           </div>
@@ -72,7 +72,7 @@ export default function CreatorTierManager({ creatorId }) {
           style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8,
             fontWeight: 700, fontSize: 14, cursor: 'pointer',
-            background: '#f59e0b', color: '#000', border: 'none',
+            background: '#D4AF37', color: '#000', border: 'none',
           }}
         >
           <Plus className="w-4 h-4" /> New Tier
@@ -92,7 +92,7 @@ export default function CreatorTierManager({ creatorId }) {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8,
               fontWeight: 700, fontSize: 14, cursor: 'pointer',
-              background: '#f59e0b', color: '#000', border: 'none',
+              background: '#D4AF37', color: '#000', border: 'none',
             }}
           >
             <Plus className="w-4 h-4" /> Create First Tier
@@ -138,7 +138,7 @@ export default function CreatorTierManager({ creatorId }) {
                         {tier.has_early_access && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#C9A84C' }}>Early Access</span>}
                         {tier.has_exclusive_rooms && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#c4b5fd' }}>Exclusive Rooms</span>}
                         {tier.has_custom_badge && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(245,158,11,0.15)', color: '#fcd34d' }}>Badge</span>}
-                        {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.15)', color: '#86efac' }}>Emotes</span>}
+                        {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E' }}>Emotes</span>}
                         {tier.is_ad_free && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.15)', color: '#ffaaaa' }}>Ad-Free</span>}
                         {tier.priority_support && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,133,74,0.15)', color: '#C9A84C' }}>Priority Support</span>}
                         {tier.benefits?.slice(0, 2).map((b, i) => (
