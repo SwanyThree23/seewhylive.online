@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import DestinationsManager from '../components/streaming/DestinationsManager';
+import OBSBridge from '../components/obs/OBSBridge';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -172,7 +173,7 @@ export default function MultiPlatform() {
 
       {/* Tab bar */}
       <div style={{ display:'flex', gap:8, padding:'0 16px 16px', overflowX:'auto' }} className="scrollbar-hide">
-        {[['platforms','Platforms'],['webhooks','Webhooks'],['camera','Virtual Camera'],['engagement','Engagement']].map(([id,label]) => (
+        {[['platforms','Platforms'],['webhooks','Webhooks'],['camera','Virtual Camera'],['engagement','Engagement'],['obs','OBS Bridge']].map(([id,label]) => (
           <TabBtn key={id} label={label} active={tab===id} onClick={() => setTab(id)} />
         ))}
       </div>
@@ -532,6 +533,9 @@ export default function MultiPlatform() {
                 </div>
               </div>
             )}
+
+            {/* ── OBS BRIDGE ── */}
+            {tab === 'obs' && <OBSBridge />}
 
           </motion.div>
         </AnimatePresence>
