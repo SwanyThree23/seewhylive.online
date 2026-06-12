@@ -105,7 +105,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
                 <button key={l.id} onClick={() => setLayout(l.id)} style={{
                   flex: 1, padding: "6px 4px", borderRadius: 6,
                   border: "1px solid " + (layout === l.id ? C.volt : "#333"),
-                  background: layout === l.id ? "rgba(200,255,0,0.08)" : C.surface,
+                  background: layout === l.id ? "rgba(212,175,55,0.08)" : C.surface,
                   cursor: "pointer", fontFamily: C.fMon, fontSize: 11,
                   color: layout === l.id ? C.volt : C.gray,
                 }}>{l.label}</button>
@@ -119,7 +119,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
             <button onClick={() => !handRaised && raiseMutation.mutate()} style={{
               padding: "10px", borderRadius: 8,
               border: "1px solid " + (handRaised ? C.volt : "#333"),
-              background: handRaised ? "rgba(200,255,0,0.1)" : C.surface,
+              background: handRaised ? "rgba(212,175,55,0.1)" : C.surface,
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>{handRaised ? "✋" : "🙋"}</span>

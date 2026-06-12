@@ -171,7 +171,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
         <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:16 }}>
           <button onClick={()=>setShowAsk(v=>!v)} style={{ padding:'6px 12px', borderRadius:20, border:`1px solid rgba(212,175,55,0.3)`, background:'rgba(212,175,55,0.06)', color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>💬 ASK AURA</button>
           <button onClick={hypeRoom} style={{ padding:'6px 12px', borderRadius:20, border:`1px solid rgba(128,0,32,0.4)`, background:'rgba(128,0,32,0.08)', color:'#ff6666', cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>🔥 HYPE ROOM</button>
-          <button onClick={summarize} style={{ padding:'6px 12px', borderRadius:20, border:`1px solid rgba(200,255,0,0.3)`, background:'rgba(200,255,0,0.05)', color:C.volt, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>📋 SUMMARIZE</button>
+          <button onClick={summarize} style={{ padding:'6px 12px', borderRadius:20, border:`1px solid rgba(212,175,55,0.3)`, background:'rgba(212,175,55,0.05)', color:C.volt, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>📋 SUMMARIZE</button>
         </div>
       </div>
       {/* Session controls */}
