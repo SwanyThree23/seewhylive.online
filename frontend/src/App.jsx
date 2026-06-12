@@ -8011,6 +8011,15 @@ function AppV46Router({ state, dispatch }) {
         {page === 'pwa' && <MobilePWAManager state={state} dispatch={dispatch} />}
         {page === 'livebracket' && <TournamentLiveBracket state={state} dispatch={dispatch} />}
         {page === 'aicohost' && <AICoHostStudio state={state} dispatch={dispatch} />}
+        {page === 'vod-record' && <VODAutoRecordConfig state={state} dispatch={dispatch} />}
+        {page === 'clips' && <AIClipGenerator state={state} dispatch={dispatch} />}
+        {page === 'mobile' && <MobileAPKConfig state={state} dispatch={dispatch} />}
+        {page === 'analytics' && <CreatorAnalyticsDashboard state={state} dispatch={dispatch} />}
+        {page === 'ppv' && <PPVGatePage state={state} dispatch={dispatch} />}
+        {page === 'gems' && <GemEconomyPage state={state} dispatch={dispatch} />}
+        {page === 'pwa' && <MobilePWAManager state={state} dispatch={dispatch} />}
+        {page === 'livebracket' && <TournamentLiveBracket state={state} dispatch={dispatch} />}
+        {page === 'aicohost' && <AICoHostStudio state={state} dispatch={dispatch} />}
         {page === 'analytics' && <CreatorAnalyticsDashboard state={state} dispatch={dispatch} />}
         {page === 'ppv' && <PPVGatePage state={state} dispatch={dispatch} />}
         {page === 'gems' && <GemEconomyPage state={state} dispatch={dispatch} />}
