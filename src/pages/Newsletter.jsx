@@ -104,7 +104,7 @@ export default function NewsletterPage() {
         </div>
         <button onClick={generateWithAI} disabled={generating || !selectedCommunity}
           className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-          style={{ background: generating || !selectedCommunity ? 'rgba(200,255,0,0.04)' : 'rgba(200,255,0,0.1)', border: '1px solid rgba(200,255,0,0.2)', color: '#D4AF37', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
+          style={{ background: generating || !selectedCommunity ? 'rgba(212,175,55,0.04)' : 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
           <Sparkles className="w-3.5 h-3.5" />
           {generating ? 'Generating…' : 'AI Generate'}
         </button>
