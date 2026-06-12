@@ -68,7 +68,18 @@ export default function VODLibraryPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        {user?.id && (
+          <div className="mb-8">
+            <RecordingManager userId={user.id} />
+          </div>
+        )}
+
         {user?.id && <VODLibraryComponent creatorId={user.id} />}
+
+        {/* AI highlight generator for selected content */}
+        <div className="mt-8">
+          <AIHighlightGenerator recording={null} />
+        </div>
 
         {/* Embed player preview — PPV-aware with embed code generation */}
         {user?.id && (
