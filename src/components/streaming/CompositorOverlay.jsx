@@ -10,9 +10,9 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATUS = {
   idle: { label: 'Idle', color: 'rgba(255,255,255,0.3)' },
-  connecting: { label: 'Connecting…', color: '#F59E0B' },
+  connecting: { label: 'Connecting…', color: '#D4AF37' },
   live: { label: 'LIVE', color: '#C0392B' },
-  recording: { label: 'Recording', color: '#22C55E' },
+  recording: { label: 'Recording', color: '#6DBF7E' },
   error: { label: 'Error', color: '#EF4444' },
 };
 
@@ -213,8 +213,8 @@ export default function CompositorOverlay({
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all"
         style={{
           background: open ? 'rgba(192,57,43,0.2)' : 'rgba(192,57,43,0.1)',
-          border: `1px solid ${status === 'live' ? '#C0392B' : status === 'recording' ? '#22C55E' : 'rgba(192,57,43,0.3)'}`,
-          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#22C55E' : '#FF8899',
+          border: `1px solid ${status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : 'rgba(192,57,43,0.3)'}`,
+          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#FF8899',
           ...T,
         }}
       >

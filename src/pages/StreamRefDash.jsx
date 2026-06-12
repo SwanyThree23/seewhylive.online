@@ -610,7 +610,7 @@ function StatusTab() {
           return (
             <div key={check.id} className="flex items-center gap-3 py-3 border-b border-white/5">
               <div className="w-3 h-3 rounded-full shrink-0"
-                style={{ background: isChecking ? "#D4AF37" : r ? (r.ok ? "#22c55e" : "#ef4444") : "#ffffff20" }} />
+                style={{ background: isChecking ? "#D4AF37" : r ? (r.ok ? "#6DBF7E" : "#ef4444") : "#ffffff20" }} />
               <div className="flex-1">
                 <div className="text-white/80 text-xs">{check.label}</div>
                 <div className="text-white/30 text-[10px] font-mono">{check.url}</div>

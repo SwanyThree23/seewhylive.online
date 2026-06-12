@@ -56,7 +56,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
             <div className="flex gap-1 shrink-0">
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'fulfilled' })}
                 className="w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-90"
-                style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)' }}>
                 <Check className="w-3.5 h-3.5 text-green-400" />
               </button>
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'rejected' })}

@@ -22,7 +22,7 @@ const TIERS = [
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];
 
-const CONFETTI_COLORS = [G, CRIMSON, PINK, '#D4AF37', '#D4AF37', '#22c55e'];
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#D4AF37', '#D4AF37', '#6DBF7E'];
 
 function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;

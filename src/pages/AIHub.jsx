@@ -12,7 +12,7 @@ const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const CYAN   = '#D4AF37';
 const PURPLE = '#D4AF37';
-const GREEN  = '#22c55e';
+const GREEN  = '#6DBF7E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -222,7 +222,7 @@ export default function AIHub() {
   // Guardian status badge color
   function guardianStatusColor(status) {
     if (status === 'alert')   return '#ef4444';
-    if (status === 'warning') return '#f59e0b';
+    if (status === 'warning') return '#D4AF37';
     return GREEN;
   }
 

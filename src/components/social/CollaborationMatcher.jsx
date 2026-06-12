@@ -24,7 +24,7 @@ const COLLAB_OPPORTUNITIES = [
     name: 'Domino Entertainment',
     type: 'Entertainment',
     interests: ['Comedy', 'Entertainment', 'Creative'],
-    color: '#F59E0B',
+    color: '#D4AF37',
     url: 'https://youtube.com/@dominoentertainment5513',
   },
 ];

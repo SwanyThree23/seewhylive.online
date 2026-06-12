@@ -919,9 +919,9 @@ export default function WatchPartyPage() {
                   <span style={{
                     fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 800,
                     padding: '2px 8px', borderRadius: 999, letterSpacing: '0.08em',
-                    background: wpGuardianOn ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.08)',
+                    background: wpGuardianOn ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.08)',
                     border: `1px solid ${wpGuardianOn ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                    color: wpGuardianOn ? '#22c55e' : 'rgba(255,255,255,0.3)',
+                    color: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.3)',
                     textTransform: 'uppercase',
                   }}>
                     {wpGuardianOn ? 'Active' : 'Off'}
@@ -930,7 +930,7 @@ export default function WatchPartyPage() {
                     onClick={() => setWpGuardianOn(v => !v)}
                     style={{
                       width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
-                      background: wpGuardianOn ? '#22c55e' : 'rgba(255,255,255,0.12)',
+                      background: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.12)',
                       position: 'relative', transition: 'background 0.2s', flexShrink: 0,
                     }}
                   >

@@ -40,14 +40,14 @@ export default function PointsNotification({ userId }) {
             animate={{ opacity: 1, x: 0, y: -5 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-center gap-1.5 bg-[#080B18]/90 border border-[#fbbf24]/40 rounded-full px-3 py-1.5"
+            className="flex items-center gap-1.5 bg-[#080B18]/90 border border-[#D4AF37]/40 rounded-full px-3 py-1.5"
           >
             <motion.span
               animate={{ rotate: [0, 20, -20, 0] }}
               transition={{ duration: 0.4 }}
               className="text-base"
             >🪙</motion.span>
-            <span className="text-sm font-bold text-[#fbbf24]">+{n.pts} pts</span>
+            <span className="text-sm font-bold text-[#D4AF37]">+{n.pts} pts</span>
           </motion.div>
         ))}
       </AnimatePresence>

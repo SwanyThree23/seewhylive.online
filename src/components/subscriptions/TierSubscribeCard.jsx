@@ -75,15 +75,15 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
         style={{
           position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%',
           background: 'rgba(8,11,24,0.95)',
-          border: isHighlighted ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
+          border: isHighlighted ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)',
           borderRadius: 12,
-          boxShadow: isHighlighted ? '0 4px 20px rgba(245,158,11,0.2)' : 'none',
+          boxShadow: isHighlighted ? '0 4px 20px rgba(212,175,55,0.2)' : 'none',
           opacity: (isFull && !isCurrentTier) ? 0.6 : 1,
           fontFamily: 'Barlow Condensed, sans-serif',
         }}
       >
         {isHighlighted && (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#f59e0b', color: '#000', fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 0', letterSpacing: '0.08em' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#D4AF37', color: '#000', fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 0', letterSpacing: '0.08em' }}>
             MOST POPULAR
           </div>
         )}

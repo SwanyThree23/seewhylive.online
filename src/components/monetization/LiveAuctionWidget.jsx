@@ -89,7 +89,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
     isEnded ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.1)';
 
   const statusBadge = () => {
-    if (auction.status === 'active') return { bg: 'rgba(21,128,61,0.4)', color: '#4ade80', text: '🟢 LIVE' };
+    if (auction.status === 'active') return { bg: 'rgba(21,128,61,0.4)', color: '#6DBF7E', text: '🟢 LIVE' };
     if (auction.status === 'ending_soon') return { bg: 'rgba(153,27,27,0.4)', color: '#f87171', text: '🔴 ENDING' };
     if (auction.status === 'ended') return { bg: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', text: '✓ ENDED' };
     return { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)', text: '⏳ SOON' };

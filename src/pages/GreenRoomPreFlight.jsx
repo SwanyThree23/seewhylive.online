@@ -9,7 +9,7 @@ const BG    = '#080B18';
 const BG2   = '#0D0A08';
 const BG3   = '#111218';
 const GOLD  = '#D4AF37';
-const GREEN = '#22c55e';
+const GREEN = '#6DBF7E';
 const RED   = '#EF4444';
 const SLATE = '#2A2010';
 const TEXT  = '#F0E8D4';
@@ -190,7 +190,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
         style={{
           width: '100%', padding: '16px 0', borderRadius: 14, border: 'none',
           background: allReady
-            ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+            ? 'linear-gradient(135deg, #6DBF7E, #4A9B5E)'
             : 'rgba(255,255,255,0.06)',
           color: allReady ? '#fff' : TEXTM,
           cursor: allReady ? 'pointer' : 'not-allowed',

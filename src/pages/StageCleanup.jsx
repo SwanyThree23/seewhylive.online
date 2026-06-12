@@ -122,7 +122,7 @@ export default function StageCleanupPage() {
           {[
             { label: 'Total Stages', value: stages.length, icon: Layers, iconColor: '#D4AF37' },
             { label: 'Ghost / Orphaned', value: ghostStages.length, icon: AlertTriangle, iconColor: '#ea580c' },
-            { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, iconColor: '#16a34a' },
+            { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, iconColor: '#4A9B5E' },
             { label: 'Cleaned Up', value: deletedCount, icon: Trash2, iconColor: '#64748b' },
           ].map(({ label, value, icon: Icon, iconColor }) => (
             <div key={label} style={{ background:'rgba(8,11,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>

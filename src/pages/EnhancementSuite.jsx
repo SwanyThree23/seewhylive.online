@@ -446,17 +446,17 @@ const GLOBAL_STYLES = css`
   .share-platforms { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
   .share-platform-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; border: 1px solid ${CV.border}; border-radius: 10px; cursor: pointer; background: none; transition: all 0.2s; }
   .share-platform-btn:hover { transform: translateY(-2px); border-color: ${CV.gold}; }
-  .share-platform-btn.shared { border-color: #22C55E; background: rgba(34,197,94,0.05); }
+  .share-platform-btn.shared { border-color: #6DBF7E; background: rgba(109,191,126,0.05); }
   .share-platform-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; }
   .share-platform-name { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: ${CV.textMid}; text-align: center; text-transform: uppercase; letter-spacing: 0.04em; }
-  .share-platform-btn.shared .share-platform-name { color: #22C55E; }
+  .share-platform-btn.shared .share-platform-name { color: #6DBF7E; }
   .share-message-area { width: 100%; background: ${CV.bg}; border: 1px solid ${CV.border}; border-radius: 8px; padding: 10px 14px; color: ${CV.text}; font-family: 'Cormorant Garamond', serif; font-size: 0.92rem; resize: none; outline: none; margin-bottom: 12px; min-height: 70px; line-height: 1.5; }
   .share-message-area:focus { border-color: ${CV.gold}; }
   .copy-link-row { display: flex; gap: 8px; margin-bottom: 12px; }
   .copy-link-input { flex: 1; background: ${CV.bg}; border: 1px solid ${CV.border}; border-radius: 6px; padding: 8px 12px; color: ${CV.cyan}; font-family: 'DM Mono', monospace; font-size: 0.7rem; outline: none; }
   .copy-link-btn { background: ${CV.gold}; border: none; border-radius: 6px; padding: 8px 16px; color: ${CV.bg}; font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 500; cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em; }
   .copy-link-btn:hover { background: #D4B460; }
-  .copy-link-btn.copied { background: #22C55E; color: #fff; }
+  .copy-link-btn.copied { background: #6DBF7E; color: #fff; }
   .referral-card { background: linear-gradient(135deg, ${CV.bgPanel}, ${CV.bg}); border: 1px solid ${CV.goldDim}; border-radius: 10px; padding: 16px; }
   .referral-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: ${CV.gold}; margin-bottom: 6px; }
   .referral-desc { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem; color: ${CV.textMid}; margin-bottom: 12px; }
@@ -849,7 +849,7 @@ export default function EnhancementSuite() {
                 <div className="referral-stats">
                   <div className="referral-stat"><span className="referral-stat-val">247</span><span className="referral-stat-label">Referrals</span></div>
                   <div className="referral-stat"><span className="referral-stat-val" style={{ color: CV.cyan }}>$182</span><span className="referral-stat-label">Earned</span></div>
-                  <div className="referral-stat"><span className="referral-stat-val" style={{ color: "#22C55E" }}>31</span><span className="referral-stat-label">Converted</span></div>
+                  <div className="referral-stat"><span className="referral-stat-val" style={{ color: "#6DBF7E" }}>31</span><span className="referral-stat-label">Converted</span></div>
                 </div>
               </div>
               <div className="share-card">

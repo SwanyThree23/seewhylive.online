@@ -37,7 +37,7 @@ const FLYWHEEL_STAGES = [
   { id: 'engage',   label: 'ENGAGE',   icon: Heart,       color: PINK,      desc: 'Chat, reactions & live interaction' },
   { id: 'convert',  label: 'CONVERT',  icon: ArrowRight,  color: TEAL,      desc: 'Free → Subscriber upgrade' },
   { id: 'monetize', label: 'MONETIZE', icon: DollarSign,  color: G,         desc: 'Tips, PPV, subs, gifts, AI music' },
-  { id: 'retain',   label: 'RETAIN',   icon: Repeat,      color: '#22c55e', desc: 'Perks, streaks & loyalty rewards' },
+  { id: 'retain',   label: 'RETAIN',   icon: Repeat,      color: '#6DBF7E', desc: 'Perks, streaks & loyalty rewards' },
   { id: 'grow',     label: 'GROW',     icon: TrendingUp,  color: CRIMSON,   desc: 'Word-of-mouth & referral flywheel' },
 ];
 
@@ -55,7 +55,7 @@ const REVENUE_STREAMS = [
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
   { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#f97316', desc: 'Animated gift shop',       split: '80%' },
   { id: 'music',         label: 'AI Music',      icon: Music,      color: '#D4854A', desc: 'Stream your AI tracks',    split: '70%' },
-  { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#22c55e', desc: 'CPM-based display ads',    split: '65%' },
+  { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#6DBF7E', desc: 'CPM-based display ads',    split: '65%' },
 ];
 
 const MILESTONES = [
@@ -296,9 +296,9 @@ function PayoutPanel({ netEarnings }) {
           <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', ...T }}>Available Balance</p>
           <p style={{ fontSize: 24, fontWeight: 700, color: G, margin: 0, ...T }}>${netEarnings.toFixed(2)}</p>
         </div>
-        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, padding: 14 }}>
+        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(109,191,126,0.2)', borderRadius: 10, padding: 14 }}>
           <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', ...T }}>Next Payout Date</p>
-          <p style={{ fontSize: 20, fontWeight: 700, color: '#22c55e', margin: 0, ...T }}>{nextDate}</p>
+          <p style={{ fontSize: 20, fontWeight: 700, color: '#6DBF7E', margin: 0, ...T }}>{nextDate}</p>
         </div>
       </div>
 
@@ -319,8 +319,8 @@ function PayoutPanel({ netEarnings }) {
 
       {pct >= 100 ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}>
-          <CheckCircle style={{ width: 14, height: 14, color: '#22c55e' }} />
-          <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 700, ...T }}>Payout eligible — auto-processed on {nextDate}</span>
+          <CheckCircle style={{ width: 14, height: 14, color: '#6DBF7E' }} />
+          <span style={{ fontSize: 11, color: '#6DBF7E', fontWeight: 700, ...T }}>Payout eligible — auto-processed on {nextDate}</span>
         </div>
       ) : (
         <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, ...T }}>
@@ -462,7 +462,7 @@ function StreakWidget({ transactions }) {
           {streak} <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>days</span>
         </p>
         {bonusPct > 0
-          ? <p style={{ fontSize: 11, color: '#22c55e', margin: 0, fontWeight: 700, ...T }}>+{bonusPct}% revenue boost active!</p>
+          ? <p style={{ fontSize: 11, color: '#6DBF7E', margin: 0, fontWeight: 700, ...T }}>+{bonusPct}% revenue boost active!</p>
           : <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, ...T }}>Stream today to start a streak</p>
         }
       </div>

@@ -94,7 +94,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
                   {participant.score} pts
                 </span>
                 {participant.completed && (
-                  <div style={{ fontSize: 10, color: '#4ade80', marginTop: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
+                  <div style={{ fontSize: 10, color: '#6DBF7E', marginTop: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
                     <Award className="w-3 h-3" />
                     Completed
                   </div>

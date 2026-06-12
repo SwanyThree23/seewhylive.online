@@ -277,7 +277,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Tap to vote</span>
           )}
           {myVote !== null && !ended && (
-            <span className="text-[11px]" style={{ color: '#4ADE80', ...T }}>✓ Voted</span>
+            <span className="text-[11px]" style={{ color: '#6DBF7E', ...T }}>✓ Voted</span>
           )}
           {ended && (
             <span className="text-[11px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Final</span>

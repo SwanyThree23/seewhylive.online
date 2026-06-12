@@ -22,7 +22,7 @@ const priorityBadge = {
 const statusBadge = {
   pending:      { background:'rgba(234,179,8,0.15)',   color:'#facc15' },
   under_review: { background:'rgba(212,175,55,0.15)',  color:'#D4AF37' },
-  resolved:     { background:'rgba(34,197,94,0.15)',   color:'#4ade80' },
+  resolved:     { background:'rgba(109,191,126,0.15)',   color:'#6DBF7E' },
   dismissed:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
 };
 
@@ -105,7 +105,7 @@ export default function ReportsManager({ communityId, userId }) {
       {/* Stats */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
         <StatCard label="Pending Reports" value={pendingReports.length} icon={Flag} sub="Require attention" />
-        <StatCard label="Resolved Today" value={resolvedTodayCount} color="#4ade80" icon={CheckCircle} sub="Cases handled" />
+        <StatCard label="Resolved Today" value={resolvedTodayCount} color="#6DBF7E" icon={CheckCircle} sub="Cases handled" />
         <StatCard label="Total Reports" value={reports.length} icon={Shield} sub="All time" />
       </div>
 
@@ -118,7 +118,7 @@ export default function ReportsManager({ communityId, userId }) {
         <div style={{ ...CARD_CONTENT, display:'flex', flexDirection:'column', gap:16 }}>
           {pendingReports.length === 0 ? (
             <div style={{ textAlign:'center', padding:'48px 0' }}>
-              <CheckCircle style={{ width:48, height:48, color:'#4ade80', margin:'0 auto 16px' }} />
+              <CheckCircle style={{ width:48, height:48, color:'#6DBF7E', margin:'0 auto 16px' }} />
               <p style={{ color:'rgba(255,255,255,0.4)' }}>All caught up! No pending reports.</p>
             </div>
           ) : (

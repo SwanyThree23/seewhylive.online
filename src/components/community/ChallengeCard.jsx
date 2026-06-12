@@ -33,7 +33,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
 
   const statusBadgeStyle = {
     upcoming: { background: 'rgba(212,175,55,0.2)', color: '#D4AF37' },
-    active:   { background: 'rgba(34,197,94,0.2)',  color: '#4ade80' },
+    active:   { background: 'rgba(109,191,126,0.2)',  color: '#6DBF7E' },
     completed:{ background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
   };
 
@@ -136,7 +136,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
                 Join Challenge
               </button>
             ) : isCompleted ? (
-              <button disabled style={{ ...btnBase, background: '#16a34a', color: '#fff', cursor: 'default' }}>
+              <button disabled style={{ ...btnBase, background: '#4A9B5E', color: '#fff', cursor: 'default' }}>
                 <Trophy className="w-4 h-4" /> Completed!
               </button>
             ) : (

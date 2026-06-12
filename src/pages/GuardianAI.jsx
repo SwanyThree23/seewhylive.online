@@ -15,8 +15,8 @@ const SLATE = '#2A2010';
 const TEXT  = '#F0E8D4';
 const TEXTD = '#C4B596';
 const TEXTM = '#8A7A62';
-const GREEN = '#22c55e';
-const WARN  = '#F59E0B';
+const GREEN = '#6DBF7E';
+const WARN  = '#D4AF37';
 const ORANGE= '#F97316';
 const RED   = '#E74C3C';
 const PILL  = 999;
@@ -200,7 +200,7 @@ export default function GuardianAI() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 10px', borderRadius: PILL,
-            background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)'
+            background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(109,191,126,0.3)'
           }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pulse 1.5s ease infinite' }} />
             <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>ACTIVE</span>
