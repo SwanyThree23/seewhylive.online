@@ -6403,7 +6403,7 @@ function PushNotificationsManager({ state, dispatch }) {
       setPermission(perm);
       if (perm === 'granted') {
         new Notification('SeeWhy LIVE', {
-          body: 'Notifications enabled! You'll be notified when creators go live. 🎬',
+              body: 'Notifications enabled! You will be notified when creators go live.',
           icon: '/favicon.svg'
         });
       }
