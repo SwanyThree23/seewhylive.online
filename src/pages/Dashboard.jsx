@@ -19,6 +19,8 @@ import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
 import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import RecordingManager from '../components/content/RecordingManager';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -142,6 +144,8 @@ function OverviewTab({ user }) {
             ))}
         </div>
       </Card>
+
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
 
       <div className="flex flex-wrap gap-2">
         {[
@@ -475,6 +479,13 @@ function ContentTab({ user }) {
           </>
         )}
       </AnimatePresence>
+
+      {/* Recording Manager */}
+      {user?.id && (
+        <div className="mt-4">
+          <RecordingManager userId={user.id} />
+        </div>
+      )}
     </div>
   );
 }
