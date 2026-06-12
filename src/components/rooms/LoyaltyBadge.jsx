@@ -30,7 +30,7 @@ export default function LoyaltyBadge({ userId, creatorId }) {
       case 'silver':
         return { icon: Sparkles, color: 'bg-gray-400', label: 'Silver' };
       default:
-        return { icon: Sparkles, color: 'bg-orange-600', label: 'Bronze' };
+        return { icon: Sparkles, color: 'bg-[#D4854A]', label: 'Bronze' };
     }
   };
 

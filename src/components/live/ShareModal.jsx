@@ -26,7 +26,7 @@ const PLATFORMS = [
   },
   {
     name: 'Snapchat',
-    color: 'from-yellow-400 to-yellow-500',
+    color: 'from-[#C9A84C] to-[#D4AF37]',
     emoji: '👻',
     action: (url, title) => `https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(url)}`,
     note: 'Share via Snapchat link',
