@@ -166,7 +166,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           </div>
           <div className="flex items-center gap-1">
             {audioEnabled ? <Mic className="w-3 h-3 text-green-400" /> : <MicOff className="w-3 h-3 text-red-400" />}
-            {videoEnabled ? <Video className="w-3 h-3 text-blue-400" /> : <VideoOff className="w-3 h-3 text-red-400" />}
+            {videoEnabled ? <Video className="w-3 h-3 text-[#D4AF37]" /> : <VideoOff className="w-3 h-3 text-red-400" />}
           </div>
         </div>
 
@@ -182,7 +182,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
             style={{ background: videoEnabled ? 'rgba(212,175,55,0.3)', border: `1px solid ${videoEnabled ? '#D4AF37' : '#ef4444'}` }}>
-            {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
+            {videoEnabled ? <Video className="w-3.5 h-3.5 text-[#D4AF37]" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
         </div>
       </div>
@@ -206,7 +206,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
   const getRoleColor = (role) => {
     switch(role) {
       case 'host': return 'bg-[#800020]';
-      case 'co-host': return 'bg-blue-500';
+      case 'co-host': return 'bg-[#D4AF37]/50';
       case 'speaker': return 'bg-green-500';
       case 'guest': return 'bg-yellow-500';
       default: return 'bg-gray-500';

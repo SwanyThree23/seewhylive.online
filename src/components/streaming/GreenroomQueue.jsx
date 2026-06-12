@@ -194,7 +194,7 @@ function StatusDot({ status }) {
   const colors = {
     waiting: 'bg-yellow-400',
     ready: 'bg-green-400 animate-pulse',
-    admitted: 'bg-blue-400',
+    admitted: 'bg-[#D4AF37]',
     rejected: 'bg-red-400',
   };
   return <span className={`w-1.5 h-1.5 rounded-full ${colors[status] || 'bg-white/20'}`} />;

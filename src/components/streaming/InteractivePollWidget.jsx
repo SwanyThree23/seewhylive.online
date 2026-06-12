@@ -80,11 +80,11 @@ export default function InteractivePollWidget({ roomId, isHost }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-blue-600/20 rounded-lg p-3 space-y-3"
+      className="bg-[#0F1428]/50 border border-[#D4AF37]/30/20 rounded-lg p-3 space-y-3"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-blue-400" />
+          <BarChart3 className="w-4 h-4 text-[#D4AF37]" />
           <h3 className="text-sm font-bold text-white">Live Poll</h3>
         </div>
         {isHost && (
@@ -177,11 +177,11 @@ export default function InteractivePollWidget({ roomId, isHost }) {
                 <button
                   key={optIdx}
                   onClick={() => handleVote(poll.id, optIdx)}
-                  className={`w-full text-left transition-all ${isVoted ? 'ring-1 ring-blue-400' : ''}`}
+                  className={`w-full text-left transition-all ${isVoted ? 'ring-1 ring-[#D4AF37]' : ''}`}
                 >
                   <div className="flex items-center justify-between text-[11px] mb-0.5">
                     <div className="flex items-center gap-1">
-                      {isVoted && <CheckCircle2 className="w-3 h-3 text-blue-400" />}
+                      {isVoted && <CheckCircle2 className="w-3 h-3 text-[#D4AF37]" />}
                       <span className="text-white">{option}</span>
                     </div>
                     <span className="text-white/50">{Math.round(percentage)}%</span>

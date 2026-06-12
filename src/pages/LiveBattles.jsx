@@ -62,8 +62,8 @@ function BattleCard({ battle, index }) {
         {/* VS display */}
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-blue-300 mx-auto mb-1"
-              style={{ background: 'rgba(59,130,246,0.15)', border: '2px solid rgba(59,130,246,0.4)' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-[#D4AF37] mx-auto mb-1"
+              style={{ background: 'rgba(212,175,55,0.15)', border: '2px solid rgba(212,175,55,0.4)' }}>
               {leftName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{leftName}</p>

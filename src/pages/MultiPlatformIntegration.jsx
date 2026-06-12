@@ -342,7 +342,7 @@ export default function MultiPlatformIntegration() {
               {webhookTestLoading ? 'Sending…' : 'Test Webhook'}
             </button>
             {webhookTestResult && (
-              <span style={{ ...T, fontSize: 11, color: webhookTestResult.ok ? '#6DBF7E' : '#FF6680', fontWeight: 700 }}>
+              <span style={{ ...T, fontSize: 11, color: webhookTestResult.ok ? '#6DBF7E' : '#C0392B', fontWeight: 700 }}>
                 {webhookTestResult.ok ? '✓' : '✗'} {webhookTestResult.msg}
               </span>
             )}

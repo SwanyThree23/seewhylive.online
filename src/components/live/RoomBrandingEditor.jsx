@@ -51,7 +51,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
           <div className="space-y-4">
             {/* Color Customization */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                 <Palette className="w-4 h-4 text-[#d4af37]" />
                 Color Scheme
@@ -113,7 +113,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
             </div>
 
             {/* Typography */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                 <Type className="w-4 h-4 text-[#d4af37]" />
                 Typography & Text
@@ -157,7 +157,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
             </div>
 
             {/* Visual Elements */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-[#d4af37]" />
                 Visual Elements

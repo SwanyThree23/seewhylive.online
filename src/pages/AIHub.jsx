@@ -679,7 +679,7 @@ export default function AIHub() {
             ].map(item => (
               <div key={item.title} style={{
                 padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)',
+                background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)',
               }}>
                 <div style={{ fontSize: 18, marginBottom: 4 }}>{item.icon}</div>
                 <p style={{ ...T, fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{item.title}</p>

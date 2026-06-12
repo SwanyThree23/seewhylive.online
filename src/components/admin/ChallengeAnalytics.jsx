@@ -109,7 +109,7 @@ export default function ChallengeAnalytics({ communityId }) {
                   </div>
 
                   <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16, marginBottom:12 }}>
-                    <div style={{ background:'rgba(59,130,246,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
+                    <div style={{ background:'rgba(212,175,55,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, marginBottom:4 }}>
                         <Users style={{ width:16, height:16, color:'#D4AF37' }} />
                         <span style={{ fontSize:12, color:'#D4AF37', fontWeight:600 }}>Participants</span>
@@ -159,7 +159,7 @@ export default function ChallengeAnalytics({ communityId }) {
           </div>
         </div>
         <div style={{ padding:'0 20px 20px', display:'flex', flexDirection:'column', gap:16 }}>
-          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(59,130,246,0.08)', borderRadius:8, border:'1px solid rgba(212,175,55,0.2)' }}>
+          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(212,175,55,0.08)', borderRadius:8, border:'1px solid rgba(212,175,55,0.2)' }}>
             <TrendingUp style={{ width:20, height:20, color:'#D4AF37', marginTop:2 }} />
             <div>
               <p style={{ fontWeight:600, color:'#C9A84C', margin:'0 0 2px' }}>Most Popular Challenge</p>

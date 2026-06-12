@@ -174,7 +174,7 @@ function EndStreamModal({ onConfirm, onCancel }) {
         style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
         <div className="flex items-center gap-3">
           <StopCircle className="w-8 h-8 text-red-400" />
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
         </div>
         <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.5)' }}>This will end the live stream for all viewers. This action cannot be undone.</p>
         <div className="flex gap-2">

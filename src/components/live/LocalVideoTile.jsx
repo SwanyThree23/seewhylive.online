@@ -46,7 +46,7 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
             ? <Mic className="w-3 h-3 text-green-400" />
             : <MicOff className="w-3 h-3 text-red-400" />}
           {videoEnabled
-            ? <Video className="w-3 h-3 text-blue-400" />
+            ? <Video className="w-3 h-3 text-[#D4AF37]" />
             : <VideoOff className="w-3 h-3 text-red-400" />}
         </div>
       </div>

@@ -157,7 +157,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 space-y-6">
         {/* KPI grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(99,102,241,0.8)" sub={`+${todayUsers.length} today`} />
+          <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(212,175,55,0.8)" sub={`+${todayUsers.length} today`} />
           <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(192,57,43,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
           <StatCard label="Total Rooms" value={allRooms.length} icon={Globe} color="rgba(212,175,55,0.7)" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="rgba(109,191,126,0.6)" />

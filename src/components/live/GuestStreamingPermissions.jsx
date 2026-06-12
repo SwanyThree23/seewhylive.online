@@ -40,7 +40,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* Allow Multi-Stream */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Radio className="w-4 h-4 text-[#d4af37]" />
@@ -64,7 +64,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
             </div>
 
             {/* Allow Direct Streaming */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Share2 className="w-4 h-4 text-[#d4af37]" />
@@ -85,7 +85,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
             </div>
 
             {/* Recording Control */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Eye className="w-4 h-4 text-[#d4af37]" />
@@ -97,11 +97,11 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                 <button
                   onClick={() => handlePermissionToggle('recordingAllowed')}
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-                    permissions.recordingAllowed ? 'bg-blue-600/30 border border-blue-500' : 'bg-red-600/30 border border-red-500'
+                    permissions.recordingAllowed ? 'bg-[#D4AF37]/15 border border-[#D4AF37]/40' : 'bg-red-600/30 border border-red-500'
                   }`}
                 >
                   {permissions.recordingAllowed ? (
-                    <CheckCircle2 className="w-4 h-4 text-blue-400" />
+                    <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
                   ) : (
                     <XCircle className="w-4 h-4 text-red-400" />
                   )}
@@ -110,7 +110,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
             </div>
 
             {/* Visibility Control */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#6DBF7E]" /> : <EyeOff className="w-4 h-4 text-red-400" />}

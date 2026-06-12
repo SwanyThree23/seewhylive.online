@@ -147,7 +147,7 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
       </div>
       <div className="h-3 rounded-full flex overflow-hidden bg-white/10">
         <motion.div
-          className="bg-blue-500 transition-all duration-700"
+          className="bg-[#D4AF37] transition-all duration-700"
           style={{ width: `${leftPct}%` }}
         />
         <motion.div
@@ -156,7 +156,7 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
         />
       </div>
       <div className="flex items-center justify-between text-xs font-bold mt-1">
-        <span className="text-blue-400">{leftVotes.toLocaleString()} pts</span>
+        <span className="text-[#D4AF37]">{leftVotes.toLocaleString()} pts</span>
         <span className="text-red-400">{rightVotes.toLocaleString()} pts</span>
       </div>
     </div>
@@ -449,12 +449,12 @@ export default function PKBattlePage() {
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="text-[11px] text-blue-400 font-semibold uppercase tracking-wider mb-1 block">Left Creator</label>
+                <label className="text-[11px] text-[#D4AF37] font-semibold uppercase tracking-wider mb-1 block">Left Creator</label>
                 <input
                   placeholder="Name"
                   value={leftName}
                   onChange={e => setLeftName(e.target.value)}
-                  className="w-full bg-blue-900/20 border border-blue-700/40 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-blue-500/60"
+                  className="w-full bg-[#0F1428] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF37]/50"
                 />
                 <input
                   placeholder="Stream URL (optional)"
@@ -617,18 +617,18 @@ export default function PKBattlePage() {
               <iframe src={bLeftStream} className="w-full h-full" allowFullScreen allow="autoplay" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                <div className="w-20 h-20 rounded-full bg-blue-700/40 border-2 border-blue-500/60 flex items-center justify-center text-4xl font-black text-blue-300">
+                <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37]/40 flex items-center justify-center text-4xl font-black text-[#D4AF37]">
                   {bLeftName?.charAt(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bLeftName}</p>
-                <span style={{ background: 'rgba(29,78,216,0.5)', color: '#bfdbfe', border: '1px solid rgba(37,99,235,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Left Creator</span>
+                <span style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Left Creator</span>
               </div>
             )}
             <div className="absolute top-3 left-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
               <AnimatePresence>
                 <ComboBadge combo={leftCombo} />
               </AnimatePresence>
-              <p className="text-3xl font-black text-blue-400 font-mono">{leftVotes.toLocaleString()}</p>
+              <p className="text-3xl font-black text-[#D4AF37] font-mono">{leftVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {leftSupporters.size} supporting</p>
               <OnFireBadge show={leftOnFire} />
@@ -640,7 +640,7 @@ export default function PKBattlePage() {
                 key={g.pts}
                 onClick={() => !giftsDisabled && addVote('left', g.pts, leftCombo)}
                 disabled={giftsDisabled}
-                className="flex items-center gap-1 px-2 py-1.5 bg-blue-900/40 border border-blue-700/40 rounded-lg text-[11px] text-blue-300 font-bold hover:bg-blue-700/50 transition-all shrink-0"
+                className="flex items-center gap-1 px-2 py-1.5 bg-[#0F1428]/80 border border-[#D4AF37]/30 rounded-lg text-[11px] text-[#D4AF37] font-bold hover:bg-[#800020]/50 transition-all shrink-0"
                 style={{ opacity: giftsDisabled ? 0.4 : 1 }}
               >
                 {g.emoji} +{g.pts}
@@ -714,7 +714,7 @@ export default function PKBattlePage() {
             </div>
           ))}
           {leftSupporters.size > 5 && (
-            <span className="text-[11px] text-blue-300">+{leftSupporters.size - 5}</span>
+            <span className="text-[11px] text-[#D4AF37]">+{leftSupporters.size - 5}</span>
           )}
           {leftSupporters.size === 0 && <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
         </div>
@@ -735,7 +735,7 @@ export default function PKBattlePage() {
 
       <div className="bg-black/80 border-t border-white/10 px-6 py-3 shrink-0">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-sm font-bold text-blue-400 truncate flex-1 text-right">{bLeftName}</span>
+          <span className="text-sm font-bold text-[#D4AF37] truncate flex-1 text-right">{bLeftName}</span>
           <Swords className="w-4 h-4 text-[#d4af37] shrink-0" />
           <span className="text-sm font-bold text-red-400 truncate flex-1">{bRightName}</span>
         </div>

@@ -98,7 +98,7 @@ export default function ReferralConfig({ communityId }) {
               </div>
             </div>
 
-            <div style={{ background:'rgba(59,130,246,0.08)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:8, padding:16 }}>
+            <div style={{ background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:8, padding:16 }}>
               <p style={{ fontSize:13, color:'#C9A84C', margin:0 }}>
                 <strong>Current Settings:</strong> Users will receive <strong>{rewardValue} {rewardType}</strong> for each successful referral.
               </p>

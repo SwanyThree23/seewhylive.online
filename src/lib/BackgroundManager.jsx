@@ -51,7 +51,7 @@ export function BackgroundProvider({ children }) {
     },
     faded_neon: {
       background: 'linear-gradient(135deg, rgba(10, 7, 16, 0.95), rgba(20, 15, 40, 0.92))',
-      backgroundImage: `radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+      backgroundImage: `radial-gradient(circle at 20% 50%, rgba(128,0,32, 0.1) 0%, transparent 50%),
                         radial-gradient(circle at 80% 80%, rgba(0, 245, 255, 0.08) 0%, transparent 50%)`,
     },
     faded_terracotta: {

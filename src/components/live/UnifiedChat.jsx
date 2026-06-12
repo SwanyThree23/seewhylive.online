@@ -13,7 +13,7 @@ const MSG_STYLES = {
   tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
   subscription: 'border-l-2 border-[#D4AF37] bg-[#800020]/15',
   moderation: 'border-l-2 border-red-600 bg-red-900/15',
-  qa: 'border-l-2 border-blue-500 bg-blue-900/15',
+  qa: 'border-l-2 border-[#D4AF37]/40 bg-[#0F1428]/15',
   poll: 'border-l-2 border-green-500 bg-green-900/15',
   cohost: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
 };
@@ -23,7 +23,7 @@ function MessageBadge({ type }) {
     tip: <span className="text-[11px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
     subscription: <span className="text-[11px] bg-[#800020] text-[#D4AF37] px-1 py-0.5 rounded font-black">⭐ SUB</span>,
     moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
-    qa: <span className="text-[11px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
+    qa: <span className="text-[11px] bg-[#800020] text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
     poll: <span className="text-[11px] bg-green-700 text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
     cohost: <span className="text-[11px] bg-[#d4af37]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
   };

@@ -35,7 +35,7 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4"
+      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4"
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-white">Stream Info</h3>

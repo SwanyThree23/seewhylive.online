@@ -41,7 +41,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
 
   if (!isStreaming) {
     return (
-      <div className="bg-[#1a0a2e]/50 border border-white/5 rounded-lg p-3 text-center">
+      <div className="bg-[#0F1428]/50 border border-white/5 rounded-lg p-3 text-center">
         <WifiOff className="w-4 h-4 text-white/20 mx-auto mb-1" />
         <p className="text-[11px] text-white/30">{guestName} not streaming</p>
       </div>

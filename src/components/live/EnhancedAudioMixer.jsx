@@ -119,7 +119,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 speakerMuted
                   ? 'bg-gray-800 border border-gray-600 text-gray-400'
-                  : 'bg-blue-900/30 border border-blue-600/40 text-blue-400'
+                  : 'bg-[#0F1428]/50 border border-[#D4AF37]/25 text-[#D4AF37]'
               }`}
             >
               {speakerMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}

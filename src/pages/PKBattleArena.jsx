@@ -142,10 +142,10 @@ function BattleCard({ battle, onVote, myVote }) {
             whileTap={{ scale: 0.94 }}
             onClick={() => onVote(battle.id, 'b')}
             style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
-              background: myVote === 'b' ? 'linear-gradient(135deg, #1565C0, #0D47A1)' : 'rgba(21,101,192,0.15)',
+              background: myVote === 'b' ? 'linear-gradient(135deg, #1565C0, #0D47A1)' : 'rgba(128,0,32,0.15)',
               color: myVote === 'b' ? '#fff' : '#5C8EE0',
               ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer',
-              border: '1px solid rgba(21,101,192,0.3)',
+              border: '1px solid rgba(128,0,32,0.3)',
             }}
           >
             {myVote === 'b' ? '✓ VOTED' : '⚡ VOTE'}

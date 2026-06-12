@@ -69,7 +69,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
         <div style={{ padding:16 }} className="space-y-4">
           {/* RTMP Tab */}
           {activeTab === 'rtmp' && <div className="space-y-3">
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">⚡</div>
                 <h4 className="text-sm font-bold text-white">RTMP Server</h4>
@@ -133,7 +133,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
 
           {/* WHIP Tab */}
           {activeTab === 'whip' && <div className="space-y-3">
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 rounded bg-gradient-to-br from-red-500 via-yellow-500 to-green-500 flex items-center justify-center text-xs font-bold text-white">W</div>
                 <h4 className="text-sm font-bold text-white">WHIP Ingest</h4>
@@ -183,9 +183,9 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                   </div>
                 </div>
 
-                <div className="bg-blue-900/20 border border-blue-600/30 rounded p-2 flex gap-2">
-                  <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                  <div className="text-[10px] text-blue-300">
+                <div className="bg-[#0F1428] border border-[#D4AF37]/25 rounded p-2 flex gap-2">
+                  <AlertCircle className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
+                  <div className="text-[10px] text-[#D4AF37]">
                     <p className="font-semibold">Low-Latency WebRTC</p>
                     <p className="text-white/60">Use with ffmpeg: ffmpeg -i input -c:v libx264 -c:a aac -f whip {whipUrl}</p>
                   </div>
@@ -201,7 +201,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
               <GuestStreamMonitor guestName="Alex (YouTube)" isStreaming={mockGuestStreaming} />
               <GuestStreamMonitor guestName="Jordan (Twitch)" isStreaming={false} />
 
-              <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+              <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4 text-[#d4af37]" />
                   <h4 className="text-sm font-bold text-white">Guest Destinations</h4>
