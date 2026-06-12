@@ -20,7 +20,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
 
   const getRankIcon = (rank) => {
     switch(rank) {
-      case 1: return <Trophy className="w-5 h-5" style={{ color: '#eab308' }} />;
+      case 1: return <Trophy className="w-5 h-5" style={{ color: '#D4AF37' }} />;
       case 2: return <Medal className="w-5 h-5" style={{ color: '#9ca3af' }} />;
       case 3: return <Medal className="w-5 h-5" style={{ color: '#ea580c' }} />;
       default: return <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>#{rank}</span>;
@@ -28,7 +28,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
   };
 
   const getRankBadgeStyle = (rank) => {
-    if (rank === 1) return { background: 'rgba(234,179,8,0.2)', color: '#eab308', border: '1px solid rgba(234,179,8,0.3)' };
+    if (rank === 1) return { background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' };
     if (rank === 2) return { background: 'rgba(156,163,175,0.2)', color: '#9ca3af', border: '1px solid rgba(156,163,175,0.3)' };
     if (rank === 3) return { background: 'rgba(212,133,74,0.2)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' };
     return { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' };

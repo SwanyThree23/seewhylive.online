@@ -7,7 +7,7 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     className={`flex-1 rounded-xl p-4 text-center border-2 transition-all ${
-      isWinner ? 'border-amber-400 bg-amber-400/10' : 'border-white/20 bg-white/5'
+      isWinner ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/20 bg-white/5'
     }`}
   >
     <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A] flex items-center justify-center">
@@ -23,7 +23,7 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
       </div>
       <div className="bg-white/10 rounded px-2 py-1">
         <p className="text-[11px] text-white/50">SCORE</p>
-        <p className="text-2xl font-black text-amber-400">{score || 0}</p>
+        <p className="text-2xl font-black text-[#D4AF37]">{score || 0}</p>
       </div>
     </div>
 
@@ -31,10 +31,10 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="flex items-center justify-center gap-1 bg-amber-400/20 rounded py-2"
+        className="flex items-center justify-center gap-1 bg-[#D4AF37]/15 rounded py-2"
       >
-        <Trophy className="w-4 h-4 text-amber-400" />
-        <span className="text-xs font-bold text-amber-400">WINNING</span>
+        <Trophy className="w-4 h-4 text-[#D4AF37]" />
+        <span className="text-xs font-bold text-[#D4AF37]">WINNING</span>
       </motion.div>
     )}
   </motion.div>
@@ -99,10 +99,10 @@ export default function PKBattleInterface({ roomId }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-xl p-6 text-center"
+        className="bg-[#080B18] border border-[#D4AF37]/25 rounded-xl p-6 text-center"
       >
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Swords className="w-6 h-6 text-amber-500" />
+          <Swords className="w-6 h-6 text-[#D4AF37]" />
           <h2 className="text-2xl font-black text-white">PK BATTLE</h2>
         </div>
         <p className="text-white/60 mb-6">Challenge another creator to a live battle</p>
@@ -130,13 +130,13 @@ export default function PKBattleInterface({ roomId }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/50 rounded-xl p-4 space-y-4"
+      className="bg-[#080B18] border border-[#D4AF37]/40 rounded-xl p-4 space-y-4"
     >
       {/* Timer & Status */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/50 rounded-lg px-4 py-2 mb-4">
-          <Timer className="w-5 h-5 text-amber-500 animate-pulse" />
-          <span className="text-2xl font-black text-amber-400">{formatTime(timeLeft)}</span>
+        <div className="inline-flex items-center gap-2 bg-[#D4AF37]/20 border border-[#D4AF37]/40 rounded-lg px-4 py-2 mb-4">
+          <Timer className="w-5 h-5 text-[#D4AF37] animate-pulse" />
+          <span className="text-2xl font-black text-[#D4AF37]">{formatTime(timeLeft)}</span>
         </div>
         <p className="text-[11px] text-white/60 uppercase tracking-wider">3-Minute PK Battle</p>
       </div>
@@ -153,7 +153,7 @@ export default function PKBattleInterface({ roomId }) {
         <div className="flex flex-col items-center justify-center gap-2">
           <div className="text-center">
             <p className="text-[10px] text-white/40 uppercase font-bold">VS</p>
-            <Zap className="w-5 h-5 text-amber-500 mx-auto" />
+            <Zap className="w-5 h-5 text-[#D4AF37] mx-auto" />
           </div>
           <div className="text-center">
             <p className="text-[11px] text-white/60">Creator Advantage</p>

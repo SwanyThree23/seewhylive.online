@@ -8,7 +8,7 @@ const rarityStyles = {
   common:    { background: 'rgba(107,114,128,0.15)', color: '#9ca3af', border: '1px solid rgba(107,114,128,0.3)' },
   rare:      { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
   epic:      { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
-  legendary: { background: 'rgba(245,158,11,0.15)',  color: '#D4AF37', border: '1px solid rgba(245,158,11,0.3)' },
+  legendary: { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
 };
 
 const TABS = ['all', 'badge', 'emoji', 'theme', 'effect', 'frame'];

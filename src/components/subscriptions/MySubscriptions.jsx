@@ -9,7 +9,7 @@ const statusColors = {
   active:    { background: 'rgba(109,191,126,0.15)',  color: '#6DBF7E',           border: '1px solid rgba(109,191,126,0.3)' },
   cancelled: { background: 'rgba(239,68,68,0.15)',  color: '#ef4444',           border: '1px solid rgba(239,68,68,0.3)' },
   expired:   { background: 'rgba(107,114,128,0.15)',color: '#9ca3af',           border: '1px solid rgba(107,114,128,0.3)' },
-  paused:    { background: 'rgba(234,179,8,0.15)',  color: '#eab308',           border: '1px solid rgba(234,179,8,0.3)' },
+  paused:    { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37',           border: '1px solid rgba(212,175,55,0.3)' },
 };
 
 export default function MySubscriptions({ userId }) {

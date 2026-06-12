@@ -96,7 +96,7 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
             <Stat label="Dropped" value={`${droppedFrames} fr`} color={droppedFrames > 10 ? '#ef4444' : '#6DBF7E'} />
           </div>
           {health < 50 && (
-            <div className="bg-yellow-900/40 border border-yellow-600/40 rounded px-2 py-1 text-[10px] text-yellow-400">
+            <div className="bg-[#0F1428]/60 border border-[#D4AF37]/35 rounded px-2 py-1 text-[10px] text-[#D4AF37]">
               ⚠ Consider lowering to 720p
             </div>
           )}

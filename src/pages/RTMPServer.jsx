@@ -201,7 +201,7 @@ export default function RTMPServer() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Status', value: 'Idle', color: 'text-yellow-400', icon: '⏸' },
+                { label: 'Status', value: 'Idle', color: 'text-[#D4AF37]', icon: '⏸' },
                 { label: 'Uptime', value: '—', color: 'text-white', icon: '⏱' },
                 { label: 'Bitrate', value: '—', color: 'text-white', icon: '📡' },
                 { label: 'Viewers', value: '0', color: 'text-white', icon: '👁' },

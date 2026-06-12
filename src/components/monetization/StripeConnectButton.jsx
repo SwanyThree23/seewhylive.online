@@ -132,7 +132,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: '#b45309', background: 'rgba(245,158,11,0.08)', borderRadius: 8, padding: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: '#C9A84C', background: 'rgba(212,175,55,0.08)', borderRadius: 8, padding: 12 }}>
               <AlertCircle style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Connect Stripe to receive payouts</p>

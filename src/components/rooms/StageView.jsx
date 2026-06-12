@@ -208,7 +208,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
       case 'host': return 'bg-[#800020]';
       case 'co-host': return 'bg-[#D4AF37]/50';
       case 'speaker': return 'bg-[#6DBF7E]';
-      case 'guest': return 'bg-yellow-500';
+      case 'guest': return 'bg-[#D4AF37]';
       default: return 'bg-gray-500';
     }
   };

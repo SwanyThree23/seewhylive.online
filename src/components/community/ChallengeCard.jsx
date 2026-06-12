@@ -55,7 +55,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
 
   return (
     <div style={{
-      background: isCompleted ? 'rgba(234,179,8,0.07)' : 'rgba(255,255,255,0.04)',
+      background: isCompleted ? 'rgba(212,175,55,0.07)' : 'rgba(255,255,255,0.04)',
       border: '1px solid rgba(255,255,255,0.1)',
       borderRadius: 12,
       overflow: 'hidden',
