@@ -920,7 +920,7 @@ export default function WatchPartyPage() {
                     fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 800,
                     padding: '2px 8px', borderRadius: 999, letterSpacing: '0.08em',
                     background: wpGuardianOn ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.08)',
-                    border: `1px solid ${wpGuardianOn ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                    border: `1px solid ${wpGuardianOn ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'}`,
                     color: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.3)',
                     textTransform: 'uppercase',
                   }}>

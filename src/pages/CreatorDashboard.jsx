@@ -118,7 +118,7 @@ export default function CreatorDashboardPage() {
       icon: Sliders,
       label: 'Pre-Flight',
       href: createPageUrl('GreenRoomPreFlight'),
-      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(34,197,94,0.04))`,
+      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
       border: 'rgba(109,191,126,0.3)',
       iconColor: '#6DBF7E',
     },

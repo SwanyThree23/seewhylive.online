@@ -606,10 +606,10 @@ export default function SocialExpo() {
 
               {/* Headline */}
               <div style={{ padding: 28, borderRadius: 18, marginBottom: 28,
-                background: `linear-gradient(135deg, rgba(34,197,94,0.12), rgba(0,245,255,0.08))`,
-                border: '1px solid rgba(34,197,94,0.22)' }}>
+                background: `linear-gradient(135deg, rgba(109,191,126,0.12), rgba(212,175,55,0.08))`,
+                border: '1px solid rgba(109,191,126,0.22)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(34,197,94,0.18)',
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(109,191,126,0.18)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Percent style={{ width: 22, height: 22, color: '#6DBF7E' }} />
                   </div>
@@ -630,8 +630,8 @@ export default function SocialExpo() {
                     { label: 'Instant Wallet Credit', sub: 'No 30-day delay' },
                     { label: 'Unlimited Referrals', sub: 'Earn on every one' },
                   ].map((item, i) => (
-                    <div key={i} style={{ padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.07)',
-                      border: '1px solid rgba(34,197,94,0.18)' }}>
+                    <div key={i} style={{ padding: 14, borderRadius: 10, background: 'rgba(109,191,126,0.07)',
+                      border: '1px solid rgba(109,191,126,0.18)' }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: '#6DBF7E', margin: '0 0 3px', ...T }}>{item.label}</p>
                       <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{item.sub}</p>
                     </div>

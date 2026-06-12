@@ -98,7 +98,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
       <div style={{ padding: 20 }}>
         {isConnected ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#4A9B5E', background: 'rgba(34,197,94,0.08)', borderRadius: 8, padding: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#4A9B5E', background: 'rgba(109,191,126,0.08)', borderRadius: 8, padding: 12 }}>
               <CheckCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Payouts enabled</p>
