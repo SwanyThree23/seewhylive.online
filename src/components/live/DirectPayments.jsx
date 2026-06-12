@@ -11,7 +11,7 @@ const PAYMENT_PLATFORMS = [
   { id: 'chime', name: 'Chime', emoji: '🟢', color: 'from-emerald-500 to-teal-600', baseUrl: 'https://chime.com/', placeholder: 'your-tag' },
   { id: 'applepay', name: 'Apple Pay', emoji: '🍎', color: 'from-gray-700 to-gray-900', baseUrl: null, placeholder: 'phone or email' },
   { id: 'googlepay', name: 'Google Pay', emoji: '🔵', color: 'from-blue-500 to-indigo-600', baseUrl: null, placeholder: 'phone or email' },
-  { id: 'custom', name: 'Custom Link', emoji: '🔗', color: 'from-amber-500 to-orange-600', baseUrl: '', placeholder: 'https://...' },
+  { id: 'custom', name: 'Custom Link', emoji: '🔗', color: 'from-[#800020] to-[#D4854A]', baseUrl: '', placeholder: 'https://...' },
 ];
 
 export default function DirectPayments({ isOpen, onClose, creatorName }) {

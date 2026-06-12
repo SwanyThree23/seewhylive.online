@@ -260,7 +260,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-6 w-6 bg-orange-500 hover:bg-orange-600 text-white"
+                className="h-6 w-6 text-white" style={{ background: '#D4854A' }}
                 onClick={() => onModerate('mute')}
               >
                 <Ban className="w-3 h-3" />

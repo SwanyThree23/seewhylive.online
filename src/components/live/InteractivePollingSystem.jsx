@@ -289,7 +289,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       {/* Active poll indicator */}
       {activePoll && activePoll.id !== pinnedPollId && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10">
-          <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#D4854A' }} />
           <MessageCircle className="w-3.5 h-3.5 text-white/50" />
           <p className="text-[10px] font-semibold text-white/70 flex-1">{activePoll.question}</p>
           <TrendingUp className="w-3.5 h-3.5 text-white/30" />

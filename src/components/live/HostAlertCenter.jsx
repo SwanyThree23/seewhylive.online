@@ -27,12 +27,12 @@ export default function HostAlertCenter() {
   const dismiss = (id) => setAlerts(prev => prev.filter(a => a.id !== id));
 
   const typeStyle = {
-    tip: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '💰', iconColor: '#d4af37' },
+    tip: { bg: 'from-[#1a1000]/90 to-[#0a0800]/70', border: 'border-[#d4af37]', icon: '💰', iconColor: '#d4af37' },
     sub: { bg: 'from-[#800020]/90 to-[#0D1022]/70', border: 'border-[#D4AF37]', icon: '⭐', iconColor: '#D4AF37' },
     stage: { bg: 'from-blue-900/90 to-cyan-900/70', border: 'border-[#D4AF37]', icon: '🎤', iconColor: '#D4AF37' },
     health: { bg: 'from-[#800020]/90 to-[#0D1022]/70', border: 'border-[#D4AF37]', icon: '⚠️', iconColor: '#D4AF37' },
     moderation: { bg: 'from-red-900/90 to-rose-900/70', border: 'border-red-500', icon: '🚫', iconColor: '#ef4444' },
-    milestone: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '🎉', iconColor: '#d4af37' },
+    milestone: { bg: 'from-[#1a1000]/90 to-[#0a0800]/70', border: 'border-[#d4af37]', icon: '🎉', iconColor: '#d4af37' },
     clip: { bg: 'from-[#0F1428]/90 to-[#0D1022]/70', border: 'border-[#D4AF37]', icon: '✂️', iconColor: '#D4AF37' },
   };
 

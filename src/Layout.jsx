@@ -284,7 +284,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between px-4 py-1 text-[10px] font-bold"
             style={{ background: 'rgba(180,50,30,0.12)', borderTop: '1px solid rgba(200,80,30,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}>SeeWhy LIVE</span>
               <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
               <span style={{ color: '#CC7755' }}>{liveCount} stream{liveCount !== 1 ? 's' : ''} live now</span>
