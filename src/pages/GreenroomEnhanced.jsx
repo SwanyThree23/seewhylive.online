@@ -7,6 +7,8 @@ import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -215,6 +217,12 @@ export default function GreenroomEnhanced() {
             onRetry={() => setWebrtcError(null)}
           />
         )}
+
+        {/* Stream metadata editor (title/category) */}
+        <StreamMetadataEditor />
+
+        {/* Participant queue */}
+        <GreenroomQueue roomId={null} isHost={true} />
 
         {/* RTMP / WHIP Ingest Panel */}
         <EnhancedIngestPanel roomId={null} isHost={true} />
