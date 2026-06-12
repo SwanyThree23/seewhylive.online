@@ -155,7 +155,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
-                      style={{ background: 'rgba(255,30,80,0.12)', color: 'rgba(255,80,80,0.6)', border: '1px solid rgba(255,30,80,0.2)' }}
+                      style={{ background: 'rgba(192,57,43,0.15)', color: 'rgba(212,133,74,0.8)', border: '1px solid rgba(192,57,43,0.3)' }}
                       title="Delete notification">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
