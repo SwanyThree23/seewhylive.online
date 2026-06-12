@@ -165,10 +165,10 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
             {!compact && (
               <div className="flex items-center gap-1 shrink-0">
                 {participant.is_audio_enabled !== false
-                  ? <Mic className="w-2.5 h-2.5 text-green-400" />
+                  ? <Mic className="w-2.5 h-2.5 text-[#6DBF7E]" />
                   : <MicOff className="w-2.5 h-2.5 text-red-400" />}
                 {Array.from({ length: connDots }).map((_, i) => (
-                  <div key={i} className="w-1 h-1 rounded-full bg-green-400" />
+                  <div key={i} className="w-1 h-1 rounded-full bg-[#6DBF7E]" />
                 ))}
               </div>
             )}

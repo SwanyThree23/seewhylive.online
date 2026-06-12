@@ -72,7 +72,7 @@ export default function LowerThirdsBanner({ onBannerChange }) {
         <div className="flex items-center gap-2">
           <AlignLeft className="w-3 h-3 text-[#d4af37]" />
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Lower Thirds</span>
-          {enabled && <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />}
+          {enabled && <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>

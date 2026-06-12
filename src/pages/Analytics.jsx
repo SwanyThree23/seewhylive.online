@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="Total Views" value={totalViews} icon={Eye} color="#4fc3f7" />
+          <StatCard label="Total Views" value={totalViews} icon={Eye} color="#D4AF37" />
           <StatCard label="Avg Viewers" value={avgViewers} icon={Users} color="#D4AF37" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="#6DBF7E" />
           <StatCard label="Rooms" value={rooms.length} icon={Radio} color={GOLD} />

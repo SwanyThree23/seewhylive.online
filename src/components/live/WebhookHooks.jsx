@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
 const EVENTS = [
-  { id: 'stream.start', label: 'Stream Started', color: 'text-green-400' },
+  { id: 'stream.start', label: 'Stream Started', color: 'text-[#6DBF7E]' },
   { id: 'stream.end', label: 'Stream Ended', color: 'text-red-400' },
   { id: 'viewer.join', label: 'Viewer Joined', color: 'text-[#D4AF37]' },
   { id: 'chat.message', label: 'Chat Message', color: 'text-white/60' },

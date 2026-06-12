@@ -126,7 +126,7 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
                     <button onClick={() => play(item, idx)}
                       className="w-5 h-5 rounded flex items-center justify-center"
                       style={{ background: 'rgba(107,124,74,0.2)', border: '1px solid rgba(107,124,74,0.3)' }}>
-                      <Play className="w-2.5 h-2.5 text-green-400" />
+                      <Play className="w-2.5 h-2.5 text-[#6DBF7E]" />
                     </button>
                     <button onClick={() => remove(item.id)}
                       className="w-5 h-5 rounded flex items-center justify-center"

@@ -68,7 +68,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
         </div>
         <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
           style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-          {sc.label === 'LIVE' && <span className="inline-block w-1.5 h-1.5 rounded-full mr-1 bg-green-400 animate-pulse" />}
+          {sc.label === 'LIVE' && <span className="inline-block w-1.5 h-1.5 rounded-full mr-1 bg-[#6DBF7E] animate-pulse" />}
           {sc.label}
         </span>
       </div>

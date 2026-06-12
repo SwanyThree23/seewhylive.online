@@ -91,7 +91,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
           animate={{ opacity: 1, y: 0 }}
           className={`p-3 rounded-lg border flex items-center gap-2 ${
             streamStatus.success
-              ? 'bg-green-900/20 border-green-600/50 text-green-300'
+              ? 'bg-[#0F1428]/20 border-[#6DBF7E]/35/50 text-[#6DBF7E]/80'
               : 'bg-red-900/20 border-red-600/50 text-red-300'
           }`}
         >
@@ -115,8 +115,8 @@ export default function MultiStreamConfig({ roomId, isHost }) {
             </span>
           </div>
           {isDistributing && (
-            <div className="flex items-center gap-1 text-green-400 text-xs">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <div className="flex items-center gap-1 text-[#6DBF7E] text-xs">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
               LIVE
             </div>
           )}

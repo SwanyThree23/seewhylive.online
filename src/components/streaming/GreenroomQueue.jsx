@@ -152,10 +152,10 @@ export default function GreenroomQueue({ roomId, isHost }) {
                     <button
                       onClick={() => admitMutation.mutate(p)}
                       disabled={admitMutation.isPending}
-                      className="w-6 h-6 rounded flex items-center justify-center bg-green-800/50 hover:bg-green-600 border border-green-500/30 transition-all"
+                      className="w-6 h-6 rounded flex items-center justify-center bg-[#6DBF7E]/15 hover:bg-[#4A9B5E] border border-[#6DBF7E]/30 transition-all"
                       title="Admit"
                     >
-                      <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                      <CheckCircle className="w-3.5 h-3.5 text-[#6DBF7E]" />
                     </button>
                     <button
                       onClick={() => rejectMutation.mutate(p)}
@@ -178,7 +178,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
 
 function GuestRow({ participant, status }) {
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 bg-green-900/20 border border-green-500/20 rounded-lg">
+    <div className="flex items-center gap-2 px-2 py-1.5 bg-[#0F1428]/20 border border-[#6DBF7E]/40/20 rounded-lg">
       <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
         {participant.user_name?.charAt(0)?.toUpperCase()}
       </div>
@@ -193,7 +193,7 @@ function GuestRow({ participant, status }) {
 function StatusDot({ status }) {
   const colors = {
     waiting: 'bg-yellow-400',
-    ready: 'bg-green-400 animate-pulse',
+    ready: 'bg-[#6DBF7E] animate-pulse',
     admitted: 'bg-[#D4AF37]',
     rejected: 'bg-red-400',
   };

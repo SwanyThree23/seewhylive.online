@@ -108,7 +108,7 @@ export default function PayPerViewCard({ event }) {
             <div className="text-right">
               <p className="text-2xl font-bold text-primary">${event.price}</p>
               {hasAccess && (
-                <Badge className="mt-1 bg-green-100 text-green-800">
+                <Badge className="mt-1 bg-[#6DBF7E]/15 text-[#6DBF7E]">
                   Purchased
                 </Badge>
               )}

@@ -12,7 +12,7 @@ const CREAM = '#F5E6D3';
 
 const RARITY_STYLE = {
   common:    { color: 'rgba(255,255,255,0.4)', label: 'COMMON',    shimmer: false },
-  rare:      { color: '#4FC3F7',              label: 'RARE',      shimmer: false },
+  rare:      { color: '#D4AF37',              label: 'RARE',      shimmer: false },
   epic:      { color: '#CE93D8',              label: 'EPIC',      shimmer: false },
   legendary: { color: G,                      label: 'LEGENDARY', shimmer: true  },
 };

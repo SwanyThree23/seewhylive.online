@@ -19,7 +19,7 @@ const PLATFORM_PRESETS = [
 ];
 
 const STATUS_CONFIG = {
-  live:       { dot: 'bg-green-400 animate-pulse',  text: 'LIVE',       textColor: 'text-green-400'  },
+  live:       { dot: 'bg-[#6DBF7E] animate-pulse',  text: 'LIVE',       textColor: 'text-[#6DBF7E]'  },
   connecting: { dot: 'bg-yellow-400 animate-pulse', text: 'Connecting', textColor: 'text-yellow-400' },
   error:      { dot: 'bg-red-400',                  text: 'Error',      textColor: 'text-red-400'    },
   offline:    { dot: 'bg-white/20',                 text: 'Idle',       textColor: 'text-white/30'   },

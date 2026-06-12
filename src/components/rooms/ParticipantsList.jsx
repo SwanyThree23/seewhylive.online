@@ -199,7 +199,7 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           {participant.is_audio_enabled ? (
-            <Mic className="w-3 h-3 text-green-500" />
+            <Mic className="w-3 h-3 text-[#6DBF7E]" />
           ) : (
             <MicOff className="w-3 h-3 text-muted-foreground" />
           )}
