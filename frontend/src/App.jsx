@@ -8011,6 +8011,12 @@ function AppV46Router({ state, dispatch }) {
         {page === 'pwa' && <MobilePWAManager state={state} dispatch={dispatch} />}
         {page === 'livebracket' && <TournamentLiveBracket state={state} dispatch={dispatch} />}
         {page === 'aicohost' && <AICoHostStudio state={state} dispatch={dispatch} />}
+        {page === 'analytics' && <CreatorAnalyticsDashboard state={state} dispatch={dispatch} />}
+        {page === 'ppv' && <PPVGatePage state={state} dispatch={dispatch} />}
+        {page === 'gems' && <GemEconomyPage state={state} dispatch={dispatch} />}
+        {page === 'pwa' && <MobilePWAManager state={state} dispatch={dispatch} />}
+        {page === 'livebracket' && <TournamentLiveBracket state={state} dispatch={dispatch} />}
+        {page === 'aicohost' && <AICoHostStudio state={state} dispatch={dispatch} />}
         {page === 'stripe' && <StripeConnectDashboard state={state} dispatch={dispatch} />}
         {page === 'notifications' && <PushNotificationsManager state={state} dispatch={dispatch} />}
         {page === 'register' && <WashingtonClassicRegistration state={state} dispatch={dispatch} />}
