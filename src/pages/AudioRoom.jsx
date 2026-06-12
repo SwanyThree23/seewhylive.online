@@ -19,6 +19,7 @@ import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import LiveTranscription from '../components/live/LiveTranscription';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -475,6 +476,13 @@ export default function AudioRoom() {
       {roomId && isHost && (
         <div style={{ padding: '0 16px 8px' }}>
           <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={memberCount} />
+        </div>
+      )}
+
+      {/* Points earn widget (host awards points) */}
+      {roomId && isHost && user?.id && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <PointsEarnWidget userId={user.id} creatorId={party.host_id} roomId={roomId} isHost={isHost} />
         </div>
       )}
 
