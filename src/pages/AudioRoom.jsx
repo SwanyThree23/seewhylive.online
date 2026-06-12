@@ -20,6 +20,8 @@ import StreamGoals from '../components/live/StreamGoals';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import ReportModal from '../components/moderation/ReportModal';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -144,9 +146,10 @@ export default function AudioRoom() {
     refetchInterval: 5000,
   });
 
-  const [chatOpen,   setChatOpen]   = useState(false);
-  const [handRaised, setHandRaised] = useState(false);
-  const [loveCount,  setLoveCount]  = useState(0);
+  const [chatOpen,    setChatOpen]    = useState(false);
+  const [handRaised,  setHandRaised]  = useState(false);
+  const [loveCount,   setLoveCount]   = useState(0);
+  const [reportOpen,  setReportOpen]  = useState(false);
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
@@ -499,6 +502,14 @@ export default function AudioRoom() {
           <SuperChatBar roomId={roomId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
         </div>
       )}
+
+      {/* Merch strip */}
+      {roomId && party?.host_id && (
+        <MerchStrip roomId={roomId} currentUser={user} hostId={party.host_id} />
+      )}
+
+      {/* Report modal */}
+      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId} communityId={null} messageId={null} />
 
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

@@ -33,6 +33,7 @@ import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { MerchStrip } from '../components/merch/MerchWidget';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1052,6 +1053,9 @@ export default function WatchPartyPage() {
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
                 {party?.host_id && (
                   <SuperChatBar roomId={partyId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+                )}
+                {party?.host_id && partyId && (
+                  <MerchStrip roomId={partyId} currentUser={user} hostId={party.host_id} />
                 )}
                 {members.length < 10 && (
                   <InviteCard partyUrl={window.location.href} />
