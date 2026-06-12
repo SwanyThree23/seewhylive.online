@@ -5592,7 +5592,7 @@ function StripePayoutPage({ state, dispatch }) {
 
 // ── STRIPE CONNECT DASHBOARD ─────────────────────────────────
 
-function StripeConnectDashboard({ state, dispatch }) {
+) {
   var C = COLORS;
   var [tab, setTab] = React.useState('connect');
   var tabs = [['connect','💳 CONNECT'],['payouts','💰 PAYOUTS'],['history','📋 HISTORY']];
@@ -5679,7 +5679,7 @@ function StripeConnectDashboard({ state, dispatch }) {
 
 // ── PUSH NOTIFICATIONS MANAGER ───────────────────────────────
 
-function PushNotificationsManager({ state, dispatch }) {
+) {
   var C = COLORS;
   var [permission, setPermission] = React.useState('default');
   var [settings, setSettings] = React.useState({
@@ -5752,7 +5752,7 @@ function PushNotificationsManager({ state, dispatch }) {
 
 // ── WASHINGTON CLASSIC REGISTRATION ──────────────────────────
 
-function WashingtonClassicRegistration({ state, dispatch }) {
+) {
   var C = COLORS;
   var [step, setStep] = React.useState('tiers');
   var [selectedTier, setSelectedTier] = React.useState(null);
