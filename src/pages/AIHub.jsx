@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
@@ -960,6 +961,11 @@ export default function AIHub() {
             <span style={{ ...T, fontSize: 12, color: '#6DBF7E', fontWeight: 900, letterSpacing: '0.06em' }}>Open →</span>
           </div>
         </Link>
+
+        {/* ── AI Persona Customizer ── */}
+        <div style={{ marginTop: 8 }}>
+          <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+        </div>
 
         {/* ── Bottom info strip ── */}
         <p style={{
