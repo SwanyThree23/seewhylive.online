@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 const BG     = '#080B18';
 const BG2    = '#0D0620';
@@ -640,6 +642,19 @@ export default function TestMode() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          {[
+            { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+            { label: '🔴 Go Live',          href: 'GoLive'          },
+            { label: '🎧 Audio Room',       href: 'AudioRoom'       },
+            { label: '⚔️ PK Battle',        href: 'PKBattle'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

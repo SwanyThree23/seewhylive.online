@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -743,6 +745,18 @@ export default function StreamInfraRef() {
       <div className="border-t border-white/5 mt-8 py-4 text-center">
         <div className="text-white/20 text-[10px] font-mono">
           CREATOR_SHARE 0.90 · PLATFORM_FEE 0.10 · PREVIEW_SECS 120 · MAX_PANEL_GUESTS 20
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 16px 4px', justifyContent: 'center' }}>
+          {[
+            { label: '← Admin',           href: 'AdminDashboard'  },
+            { label: '🔴 Go Live',         href: 'GoLive'          },
+            { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+            { label: '🧹 Stage Cleanup',   href: 'StageCleanup'    },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
