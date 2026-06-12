@@ -144,7 +144,7 @@ function WinnerCelebration({ battle, onClose }) {
         initial={{ scale: 0.3, rotate: -12 }} animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', bounce: 0.6, duration: 0.8 }}
         className="relative z-10 text-center px-6 py-10 rounded-3xl max-w-sm w-full mx-4"
-        style={{ background: 'rgba(7,7,15,0.99)', border: `2px solid ${winColor}`, boxShadow: `0 0 60px ${winColor}40` }}
+        style={{ background: 'rgba(8,11,24,0.99)', border: `2px solid ${winColor}`, boxShadow: `0 0 60px ${winColor}40` }}
       >
         {/* Pulse ring */}
         <motion.div className="absolute inset-0 rounded-3xl"
@@ -332,7 +332,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
 
       {/* ── MAIN SPLIT-SCREEN HEADER ─────────────────────────────────── */}
       <div className="rounded-xl md:rounded-2xl overflow-hidden mb-2 md:mb-3"
-        style={{ background: 'rgba(7,7,15,0.98)', border: '1px solid rgba(212,175,55,0.18)' }}>
+        style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.18)' }}>
 
         {/* Status bar */}
         <div className="flex items-center justify-between px-2 md:px-4 py-1.5 md:py-2 text-[11px] md:text-[10px]"
@@ -453,7 +453,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
 
       {/* ── TIP FEED ────────────────────────────────────────────────── */}
       {tipFeed.length > 0 && (
-        <div className="rounded-xl md:rounded-2xl mb-2 md:mb-3 overflow-hidden" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.1)' }}>
+        <div className="rounded-xl md:rounded-2xl mb-2 md:mb-3 overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="px-2 md:px-3 py-1.5 md:py-2 flex items-center gap-1.5 md:gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <Zap className="w-2.5 md:w-3 h-2.5 md:h-3 text-yellow-400 flex-shrink-0" />
             <span className="text-[7px] md:text-[11px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>

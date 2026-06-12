@@ -49,7 +49,7 @@ function ActivePoll({ poll, currentUser, onVote }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       className="rounded-xl overflow-hidden"
-      style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.3)' }}>
+      style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.3)' }}>
       {/* header */}
       <div className="flex items-center gap-2 px-3 py-2"
         style={{ background: 'rgba(212,175,55,0.08)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
@@ -132,7 +132,7 @@ function PollCreator({ partyId, roomId, currentUser, onPollCreated }) {
   };
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
       <button className="w-full flex items-center gap-2 px-3 py-2 transition-all"
         style={{ background: 'rgba(0,0,0,0.3)', borderBottom: open ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
         onClick={() => setOpen(v => !v)}>

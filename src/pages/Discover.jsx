@@ -254,7 +254,7 @@ export default function DiscoverPage() {
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
-          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
+          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
               { id: 'live', label: 'Live', icon: Radio },
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },

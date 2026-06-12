@@ -180,7 +180,7 @@ export default function VideoQueue({ isHost, currentUser, currentVideoUrl, onPla
         {showAdd && isHost && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden rounded-lg p-2.5 space-y-2"
-            style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
             <input
               placeholder="YouTube URL or direct video URL"
               value={urlInput}

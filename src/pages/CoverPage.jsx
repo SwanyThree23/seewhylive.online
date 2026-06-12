@@ -36,7 +36,7 @@ export default function CoverPage() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[rgba(7,7,15,0.97)] border-b border-[rgba(212,175,55,0.12)] backdrop-blur-md">
+      <header className="sticky top-0 z-50 bg-[rgba(8,11,24,0.97)] border-b border-[rgba(212,175,55,0.12)] backdrop-blur-md">
         <div className="flex h-14 items-center justify-between px-4 md:px-6">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
@@ -156,7 +156,7 @@ export default function CoverPage() {
       </section>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(7,7,15,0.98)] border-t border-white/5 px-4 py-3">
+      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(8,11,24,0.98)] border-t border-white/5 px-4 py-3">
         <div className="flex items-center justify-around max-w-md mx-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
           <span>SeeWhy</span>
           <span className="flex items-center gap-1">

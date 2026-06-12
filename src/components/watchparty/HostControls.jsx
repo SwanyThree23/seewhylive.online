@@ -42,7 +42,7 @@ export default function HostControls({ isHost, party, onUpdate }) {
   ];
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
       {/* Header toggle */}
       <button className="w-full flex items-center gap-2 px-3 py-2 transition-all"
         style={{ background: 'rgba(0,0,0,0.3)', borderBottom: open ? '1px solid rgba(255,255,255,0.06)' : 'none' }}

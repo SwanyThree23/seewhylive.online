@@ -214,7 +214,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                   required
                 />
                 <div className="flex gap-1">
-                  <button type="submit" style={{ flex:1, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Add Destination</button>
+                  <button type="submit" style={{ flex:1, background:'rgba(13,16,34,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Add Destination</button>
                   <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'rgba(255,255,255,0.5)', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Cancel</button>
                 </div>
               </motion.form>
@@ -232,7 +232,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
       {/* Control buttons */}
       {destinations.length > 0 && (
         <div className="flex gap-2">
-          <button onClick={handleStartStreaming} disabled={isDistributing || distributeMutation.isPending} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
+          <button onClick={handleStartStreaming} disabled={isDistributing || distributeMutation.isPending} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(13,16,34,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
             <Play className="w-4 h-4" />{isDistributing ? 'Streaming...' : 'Start Multi-Streaming'}
           </button>
           {isDistributing && (

@@ -113,7 +113,7 @@ export default function GuestQueue({ roomId, isHost }) {
         ...T,
         maxWidth: 300,
         width: '100%',
-        background: 'rgba(7,7,15,0.92)',
+        background: 'rgba(8,11,24,0.92)',
         border: '1px solid rgba(255,255,255,0.07)',
         borderRadius: 14,
         padding: '12px 10px',
