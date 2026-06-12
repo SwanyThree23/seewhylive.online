@@ -175,11 +175,11 @@ export default function AnnouncementPanel({ communityId, userId }) {
         </div>
 
         {/* Info */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(59,130,246,0.1)', borderRadius: 8, padding: 12, fontSize: 13 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(212,175,55,0.1)', borderRadius: 8, padding: 12, fontSize: 13 }}>
           <AlertCircle className="w-4 h-4" style={{ color: '#D4AF37', marginTop: 2, flexShrink: 0 }} />
-          <div style={{ color: 'rgba(147,197,253,0.9)' }}>
+          <div style={{ color: 'rgba(212,175,55,0.9)' }}>
             <p style={{ fontWeight: 600, margin: '0 0 2px', ...T }}>Targeting: {targetAudience.replace('_', ' ')}</p>
-            <p style={{ fontSize: 11, color: 'rgba(147,197,253,0.6)', margin: 0, ...T }}>
+            <p style={{ fontSize: 11, color: 'rgba(212,175,55,0.6)', margin: 0, ...T }}>
               This will notify members via in-app notifications
             </p>
           </div>

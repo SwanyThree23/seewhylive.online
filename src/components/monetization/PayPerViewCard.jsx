@@ -62,7 +62,7 @@ export default function PayPerViewCard({ event }) {
   });
 
   const statusColors = {
-    upcoming: 'bg-blue-100 text-blue-800',
+    upcoming: 'bg-[#D4AF37]/12 text-[#800020]',
     live: 'bg-red-100 text-red-800 animate-pulse',
     ended: 'bg-gray-100 text-gray-800',
   };

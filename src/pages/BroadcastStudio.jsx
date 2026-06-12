@@ -1287,7 +1287,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           </button>
                           <button onClick={() => dismissRaisedHand(uid)}
                             className="text-[11px] px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
+                            style={{ background: 'rgba(255,68,68,0.08)', color: '#D4854A', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
                             ✕
                           </button>
                         </div>
@@ -1324,7 +1324,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           {isOnStage ? (
                             <button onClick={() => demoteToAudience(mem)}
                               className="text-[11px] px-1.5 py-0.5 rounded"
-                              style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
+                              style={{ background: 'rgba(255,68,68,0.08)', color: '#D4854A', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
                               Remove
                             </button>
                           ) : (
@@ -1578,7 +1578,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Danger zone */}
                 {isHost && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)' }}>
-                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#FF6680', ...T }}>End Broadcast</p>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#C0392B', ...T }}>End Broadcast</p>
                     <button onClick={() => endMut.mutate()}
                       className="w-full py-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1"
                       style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>

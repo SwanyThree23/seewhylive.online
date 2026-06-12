@@ -63,7 +63,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const rarityColors = {
     common: 'bg-gray-100 text-gray-800',
-    rare: 'bg-blue-100 text-blue-800',
+    rare: 'bg-[#D4AF37]/12 text-[#800020]',
     epic: 'bg-[#800020]/20 text-[#C9A84C]',
     legendary: 'bg-yellow-100 text-yellow-800',
   };

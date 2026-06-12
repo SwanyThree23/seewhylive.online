@@ -94,7 +94,7 @@ export default function OctagonalVideoWindow({
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isVideoOff
                 ? 'bg-red-900/50 border border-red-600 text-red-400'
-                : 'bg-blue-900/50 border border-blue-600 text-blue-400'
+                : 'bg-[#0F1428]/70 border border-[#D4AF37]/40 text-[#D4AF37]'
             }`}
           >
             {isVideoOff ? <VideoOff className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}

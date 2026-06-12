@@ -531,9 +531,9 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden', borderTop: '1px solid rgba(167,139,250,0.15)' }}
+            style={{ overflow: 'hidden', borderTop: '1px solid rgba(212,175,55,0.15)' }}
           >
-            <div style={{ padding: '14px 16px', background: 'rgba(167,139,250,0.04)' }}>
+            <div style={{ padding: '14px 16px', background: 'rgba(212,175,55,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <span style={{ ...T, fontSize: 11, color: ROSE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Lyrics

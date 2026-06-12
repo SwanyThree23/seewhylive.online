@@ -82,7 +82,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         style={{ background: 'rgba(128,0,32,0.12)', border: `1px solid rgba(128,0,32,0.3)` }}>
         <X className="w-12 h-12 text-red-400" />
         <div>
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
           <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>The host isn't admitting new guests right now.</p>
           {entry?.deny_reason && <p className="text-[11px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.3)' }}>"{entry.deny_reason}"</p>}
         </div>

@@ -17,7 +17,7 @@ const Badge = ({ type, children }) => {
     live:     "bg-green-500/20 text-green-300 border border-green-500/40",
     pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
     critical: "bg-red-500/20 text-red-300 border border-red-500/40",
-    info:     "bg-blue-500/20 text-blue-300 border border-blue-500/40",
+    info:     "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30",
     gold:     "bg-yellow-600/20 text-yellow-200 border border-yellow-600/40",
     ruby:     "bg-red-900/30 text-red-200 border border-red-800/50",
   };

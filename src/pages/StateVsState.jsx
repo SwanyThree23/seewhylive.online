@@ -756,7 +756,7 @@ export default function StateVsState() {
       }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(135deg, rgba(21,101,192,0.12) 0%, rgba(198,40,40,0.12) 100%)',
+          background: 'linear-gradient(135deg, rgba(128,0,32,0.12) 0%, rgba(198,40,40,0.12) 100%)',
           pointerEvents: 'none',
         }} />
         <div style={{ position: 'relative' }}>

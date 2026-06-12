@@ -70,7 +70,7 @@ export default function PrivacyPolicy() {
               <li>Opt out of marketing communications</li>
               <li>Lodge a complaint with your local data protection authority (EU/UK residents)</li>
             </ul>
-            <p className="mt-2">To exercise these rights, contact us at <a href="mailto:privacy@seewhy.live" className="text-blue-600 underline">privacy@seewhy.live</a>.</p>
+            <p className="mt-2">To exercise these rights, contact us at <a href="mailto:privacy@seewhy.live" className="text-[#D4AF37] underline">privacy@seewhy.live</a>.</p>
           </section>
 
           <section>
@@ -90,7 +90,7 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-xl font-semibold mb-2">10. Contact</h2>
-            <p>For privacy inquiries: <a href="mailto:privacy@seewhy.live" className="text-blue-600 underline">privacy@seewhy.live</a></p>
+            <p>For privacy inquiries: <a href="mailto:privacy@seewhy.live" className="text-[#D4AF37] underline">privacy@seewhy.live</a></p>
           </section>
         </div>
 

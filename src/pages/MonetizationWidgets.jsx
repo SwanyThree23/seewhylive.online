@@ -114,7 +114,7 @@ export default function MonetizationWidgets() {
 
         {/* Auctions */}
         {activeTab === 'auctions' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(167,139,250,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="font-black text-sm" style={{ ...T, color: '#D4AF37' }}>Live Auctions</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Start real-time auctions — viewers bid live during your stream</p>

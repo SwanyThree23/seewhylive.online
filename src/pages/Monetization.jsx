@@ -696,7 +696,7 @@ export default function MonetizationPage() {
                     <p style={{ color: 'rgba(255,255,255,0.5)', margin: '0 0 2px', ...T }}>Platform Fee</p>
                     <p style={{ color: PINK, fontWeight: 700, margin: 0, fontSize: 16, ...T }}>-${platformFee.toFixed(2)}</p>
                   </div>
-                  <div style={{ background: 'rgba(99,102,241,0.08)', borderRadius: 8, padding: 10 }}>
+                  <div style={{ background: 'rgba(212,175,55,0.08)', borderRadius: 8, padding: 10 }}>
                     <p style={{ color: 'rgba(255,255,255,0.5)', margin: '0 0 2px', ...T }}>Processing</p>
                     <p style={{ color: '#C9A84C', fontWeight: 700, margin: 0, fontSize: 16, ...T }}>-${processingFee.toFixed(2)}</p>
                   </div>

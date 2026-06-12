@@ -93,7 +93,7 @@ export default function ClipsLibraryPage() {
         ))}
         <div style={{ marginLeft:'auto', display:'flex', gap:4 }}>
           {[['newest','Newest'],['views','Most Viewed'],['shares','Most Shared']].map(([v,l]) => (
-            <button key={v} onClick={()=>setSort(v)} style={{ padding:'5px 10px', borderRadius:20, border:`1px solid ${sort===v?C.burg:'#333'}`, background:sort===v?'rgba(128,0,32,0.15)':'transparent', color:sort===v?'#ff6666':C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>{l}</button>
+            <button key={v} onClick={()=>setSort(v)} style={{ padding:'5px 10px', borderRadius:20, border:`1px solid ${sort===v?C.burg:'#333'}`, background:sort===v?'rgba(128,0,32,0.15)':'transparent', color:sort===v?'#D4854A':C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>{l}</button>
           ))}
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function ClipsLibraryPage() {
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {highlights.map(h => (
                 <div key={h.id} style={{ padding:'12px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.06)', background:'rgba(8,11,24,0.9)', display:'flex', alignItems:'center', gap:12 }}>
-                  <div style={{ padding:'3px 8px', borderRadius:4, background:`rgba(200,255,0,0.08)`, border:`1px solid rgba(200,255,0,0.2)`, fontFamily:'Barlow Condensed', fontSize:11, color:C.volt, letterSpacing:1, flexShrink:0 }}>{(h.highlight_type||'MOMENT').toUpperCase().replace('_',' ')}</div>
+                  <div style={{ padding:'3px 8px', borderRadius:4, background:`rgba(109,191,126,0.08)`, border:`1px solid rgba(109,191,126,0.2)`, fontFamily:'Barlow Condensed', fontSize:11, color:C.volt, letterSpacing:1, flexShrink:0 }}>{(h.highlight_type||'MOMENT').toUpperCase().replace('_',' ')}</div>
                   <div style={{ flex:1 }}>
                     <div style={{ fontFamily:'Barlow Condensed', fontSize:12, color:C.white }}>{h.description || 'AI-detected moment'}</div>
                     <div style={{ fontSize:10, color:C.gray }}>Confidence: {Math.round((h.ai_confidence||0.8)*100)}%</div>

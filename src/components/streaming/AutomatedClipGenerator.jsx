@@ -68,7 +68,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4"
+      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4"
     >
       <div className="flex items-center gap-2 mb-4">
         <Scissors className="w-4 h-4 text-[#d4af37]" />
@@ -142,7 +142,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-semibold text-white truncate">{clip.title}</span>
                     {clip.status === 'ready' && <Check className="w-3 h-3 text-green-400" />}
-                    {clip.status === 'generating' && <Loader2 className="w-3 h-3 animate-spin text-blue-400" />}
+                    {clip.status === 'generating' && <Loader2 className="w-3 h-3 animate-spin text-[#D4AF37]" />}
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-white/50 mb-1.5">
                     <span>{clip.duration_seconds}s</span>

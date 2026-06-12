@@ -155,7 +155,7 @@ export default function RTMPServer() {
               <div className="space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Wifi className="w-4 h-4 text-blue-400" />
+                    <Wifi className="w-4 h-4 text-[#D4AF37]" />
                     <h2 className="font-bold text-sm">SRT Ingest</h2>
                     <span style={{ background: 'rgba(128,0,32,0.2)', color: '#C9A84C', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
                   </div>

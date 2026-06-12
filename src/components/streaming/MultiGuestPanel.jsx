@@ -175,7 +175,7 @@ function GuestTile({ participant, isSpotlight, onSpotlight, compact = false }) {
                       <MicOff className="w-3 h-3 text-red-400" />
                     )}
                     {participant.is_video_enabled && (
-                      <Video className="w-3 h-3 text-blue-400" />
+                      <Video className="w-3 h-3 text-[#D4AF37]" />
                     )}
                   </div>
                 )}

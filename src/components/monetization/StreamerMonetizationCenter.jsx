@@ -182,7 +182,7 @@ const StreamerMonetizationCenter = () => {
       </div>
 
       {/* Payout Info */}
-      <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: 12 }}>
+      <div style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: 12 }}>
         <p style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 11, color: '#bfdbfe', ...T }}>$3,847 on May 31, 2026</span>

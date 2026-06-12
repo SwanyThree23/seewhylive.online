@@ -239,7 +239,7 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
             }}
           />
           {error && (
-            <div style={{ ...T, fontSize: 12, color: '#ff6b6b', marginBottom: 10 }}>{error}</div>
+            <div style={{ ...T, fontSize: 12, color: '#D4854A', marginBottom: 10 }}>{error}</div>
           )}
           <button onClick={generate} disabled={loading || !prompt.trim()} style={{
             width: '100%', padding: '13px 0', borderRadius: 10, border: 'none', cursor: loading || !prompt.trim() ? 'not-allowed' : 'pointer',
