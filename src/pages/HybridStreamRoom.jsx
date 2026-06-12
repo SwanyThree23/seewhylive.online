@@ -10,6 +10,8 @@ import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import StreamGoals from '../components/live/StreamGoals';
 import LivePoll from '../components/live/LivePoll';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import { toast } from 'sonner';
 
 export default function HybridStreamRoom() {
@@ -205,6 +207,14 @@ export default function HybridStreamRoom() {
       {roomId && (
         <div style={{ padding: '0 16px 8px' }}>
           <LivePoll roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Co-streaming + Whiteboard */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <CoStreamPanel roomId={roomId} />
+          <CollaborativeWhiteboard roomId={roomId} />
         </div>
       )}
 
