@@ -117,7 +117,7 @@ export default function ChallengeAnalytics({ communityId }) {
                       <p style={{ fontSize:24, fontWeight:900, color:'#D4AF37', margin:0, fontFamily:'Barlow Condensed, sans-serif' }}>{challenge.participantCount}</p>
                     </div>
 
-                    <div style={{ background:'rgba(34,197,94,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
+                    <div style={{ background:'rgba(109,191,126,0.08)', borderRadius:8, padding:12, textAlign:'center' }}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, marginBottom:4 }}>
                         <Award style={{ width:16, height:16, color:'#6DBF7E' }} />
                         <span style={{ fontSize:12, color:'#6DBF7E', fontWeight:600 }}>Completed</span>
@@ -169,7 +169,7 @@ export default function ChallengeAnalytics({ communityId }) {
             </div>
           </div>
 
-          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(34,197,94,0.08)', borderRadius:8, border:'1px solid rgba(109,191,126,0.2)' }}>
+          <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(109,191,126,0.08)', borderRadius:8, border:'1px solid rgba(109,191,126,0.2)' }}>
             <Award style={{ width:20, height:20, color:'#6DBF7E', marginTop:2 }} />
             <div>
               <p style={{ fontWeight:600, color:'#6DBF7E', margin:'0 0 2px' }}>Best Completion Rate</p>

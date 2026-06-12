@@ -29,7 +29,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
   }, [pct]);
 
   return (
-    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(34,197,94,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(109,191,126,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
+    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(109,191,126,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(109,191,126,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 20 }}>{GOAL_ICONS[goal.goal_type] || '🎯'}</span>

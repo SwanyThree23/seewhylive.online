@@ -67,9 +67,9 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
         style={{
           ...T,
           background: activePoll
-            ? 'rgba(74,222,128,0.15)'
+            ? 'rgba(109,191,126,0.15)'
             : open ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.08)',
-          border: activePoll ? '1px solid rgba(74,222,128,0.3)' : `1px solid ${G}30`,
+          border: activePoll ? '1px solid rgba(109,191,126,0.3)' : `1px solid ${G}30`,
           color: activePoll ? '#6DBF7E' : G,
         }}
       >

@@ -48,8 +48,8 @@ function TestRow({ icon, label, status, onTest }) {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '14px 16px', borderRadius: 12,
-      background: status === 'ready' ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)',
-      border: `1px solid ${status === 'ready' ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)'}`,
+      background: status === 'ready' ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)',
+      border: `1px solid ${status === 'ready' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'}`,
       transition: 'all 0.3s',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -197,7 +197,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
           fontFamily: FONT, fontSize: 17, fontWeight: 900,
           letterSpacing: '0.08em', textTransform: 'uppercase',
           transition: 'all 0.3s',
-          boxShadow: allReady ? `0 4px 24px rgba(34,197,94,0.35)` : 'none',
+          boxShadow: allReady ? `0 4px 24px rgba(109,191,126,0.35)` : 'none',
         }}
       >
         {allReady ? '🚀 ENTER STAGE — GO LIVE' : 'COMPLETE ALL TESTS TO CONTINUE'}

@@ -200,7 +200,7 @@ export default function GuardianAI() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 10px', borderRadius: PILL,
-            background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(109,191,126,0.3)'
+            background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)'
           }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pulse 1.5s ease infinite' }} />
             <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>ACTIVE</span>

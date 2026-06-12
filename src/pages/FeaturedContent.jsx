@@ -201,7 +201,7 @@ export default function FeaturedContent() {
             <div>
               <h3 className="text-white font-bold text-lg">Memoirs Studio Pro</h3>
               <p className="text-white/50 text-sm">Professional streaming studio by Memoirs of a Shy Girl</p>
-              <p className="text-[11px] text-pink-300/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
+              <p className="text-[11px] text-[#D4854A]/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
             </div>
           </div>
           <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noopener noreferrer">
