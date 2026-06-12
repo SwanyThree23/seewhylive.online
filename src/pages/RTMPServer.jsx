@@ -84,8 +84,8 @@ export default function RTMPServer() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs text-green-400 font-semibold">Server Online</span>
+            <div className="w-2 h-2 rounded-full bg-[#6DBF7E] animate-pulse" />
+            <span className="text-xs text-[#6DBF7E] font-semibold">Server Online</span>
           </div>
         </div>
         {/* Tabs */}
@@ -219,7 +219,7 @@ export default function RTMPServer() {
                 <h2 className="font-bold text-sm">Stream Health Log</h2>
               </div>
               <div className="bg-black/60 rounded-lg p-4 font-mono text-[11px] text-white/40 min-h-32 space-y-1">
-                <p className="text-green-400/70">[2026-05-03 00:00:00] RTMP server ready on port 1935</p>
+                <p className="text-[#6DBF7E]/70">[2026-05-03 00:00:00] RTMP server ready on port 1935</p>
                 <p className="text-white/30">[2026-05-03 00:00:00] SRT server ready on port 9710</p>
                 <p className="text-white/30">[2026-05-03 00:00:00] HLS packager initialized</p>
                 <p className="text-white/20">[waiting for incoming stream...]</p>

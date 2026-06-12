@@ -86,7 +86,7 @@ export default function PublicProfile() {
                 {profile.display_name}
                 <PresenceDot userId={userId} size="md" />
               </h1>
-              {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#4fc3f7' }} />}
+              {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
               {profile.category && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                   {profile.category}

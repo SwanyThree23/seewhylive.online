@@ -162,7 +162,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
                 {roleBadge.label}
               </span>
             )}
-            {speaking ? <Mic className="w-2 h-2 text-green-400 shrink-0" /> : <MicOff className="w-2 h-2 text-white/30 shrink-0" />}
+            {speaking ? <Mic className="w-2 h-2 text-[#6DBF7E] shrink-0" /> : <MicOff className="w-2 h-2 text-white/30 shrink-0" />}
           </div>
         </div>
 

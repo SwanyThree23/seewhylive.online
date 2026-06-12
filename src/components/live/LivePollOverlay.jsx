@@ -190,7 +190,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
             </span>
             {!ended && (
               <motion.div
-                className="w-1.5 h-1.5 rounded-full bg-green-400"
+                className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E]"
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ duration: 1.2, repeat: Infinity }}
               />

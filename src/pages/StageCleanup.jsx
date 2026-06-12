@@ -64,7 +64,7 @@ export default function StageCleanupPage() {
     const room = roomMap[roomId];
     if (!room) return { label: 'Room Deleted', color: 'bg-red-100 text-red-700' };
     if (room.status === 'ended') return { label: 'Room Ended', color: 'bg-orange-100 text-orange-700' };
-    return { label: room.status, color: 'bg-slate-100 text-slate-600' };
+    return { label: room.status, color: 'bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.5)]' };
   };
 
   return (
@@ -143,7 +143,7 @@ export default function StageCleanupPage() {
         ) : ghostStages.length === 0 ? (
           <div style={{ background:'rgba(8,11,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
             <div style={{ padding:'64px 0', textAlign:'center' }} className="space-y-3">
-              <CheckCircle className="w-14 h-14 mx-auto text-green-500" />
+              <CheckCircle className="w-14 h-14 mx-auto text-[#6DBF7E]" />
               <p className="text-lg font-semibold">All clean!</p>
               <p className="text-sm text-muted-foreground">No ghost stages older than {ageDays} day{ageDays !== 1 ? 's' : ''} found.</p>
             </div>

@@ -64,7 +64,7 @@ export default function StreamMetadata({ room, isHost }) {
           disabled={updateMutation.isPending}
           animate={{ scale: saved ? [1, 1.2, 1] : 1 }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            saved ? 'bg-green-700 text-white' : 'bg-[#d4af37] text-black hover:bg-[#f5e6a3]'
+            saved ? 'bg-[#4A9B5E] text-white' : 'bg-[#d4af37] text-black hover:bg-[#f5e6a3]'
           }`}
         >
           <Check className="w-3.5 h-3.5" />

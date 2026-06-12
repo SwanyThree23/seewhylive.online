@@ -221,7 +221,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
           </h3>
           <span className="text-[11px] text-white/40">({messages.length})</span>
         </div>
-        <Shield className="w-3 h-3 text-green-400" title="Automated moderation active" />
+        <Shield className="w-3 h-3 text-[#6DBF7E]" title="Automated moderation active" />
       </div>
 
       {/* Moderation Alerts */}

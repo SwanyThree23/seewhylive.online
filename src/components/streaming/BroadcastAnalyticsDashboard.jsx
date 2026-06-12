@@ -14,7 +14,7 @@ const StatCard = ({ icon: IconComponent, label, value, trend, color }) => (
         <p className="text-[11px] text-white/60 uppercase font-semibold">{label}</p>
         <p className="text-xl font-bold text-white mt-1">{value}</p>
         {trend && (
-          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-[#6DBF7E]' : 'text-red-400'}`}>
             {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </p>
         )}

@@ -75,7 +75,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       >
         <BarChart2 className="w-3 h-3" />
         {activePoll ? 'Poll Live' : 'Poll'}
-        {activePoll && <motion.div className="w-1.5 h-1.5 rounded-full bg-green-400" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />}
+        {activePoll && <motion.div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E]" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />}
       </button>
 
       <AnimatePresence>
@@ -105,7 +105,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
               {activePoll && (
                 <div className="p-3 space-y-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <div className="flex items-start gap-2">
-                    <motion.div className="w-2 h-2 rounded-full bg-green-400 mt-1 shrink-0" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
+                    <motion.div className="w-2 h-2 rounded-full bg-[#6DBF7E] mt-1 shrink-0" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
                     <p className="text-[11px] font-bold text-white flex-1 leading-snug">{activePoll.question}</p>
                   </div>
                   <div className="flex items-center justify-between text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>

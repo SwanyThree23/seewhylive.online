@@ -110,7 +110,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                   onClick={() => handleCopy(transcription)}
                   className="absolute top-2 right-2 w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center"
                 >
-                  {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                  {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3" />}
                 </button>
               </div>
             )}
@@ -158,7 +158,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
                     onClick={() => handleCopy(translatedText)}
                     className="absolute top-2 right-2 w-7 h-7 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center"
                   >
-                    {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                    {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3" />}
                   </button>
                 </div>
               )}

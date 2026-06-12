@@ -89,7 +89,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(rtmpUrl, 'RTMP URL')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'RTMP URL' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'RTMP URL' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>
@@ -115,14 +115,14 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(rtmpKey, 'Stream Key')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'Stream Key' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'Stream Key' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-green-900/20 border border-green-600/30 rounded p-2 flex gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
-                  <div className="text-[10px] text-green-300">
+                <div className="bg-[#0F1428]/20 border border-[#6DBF7E]/35/30 rounded p-2 flex gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#6DBF7E] shrink-0 mt-0.5" />
+                  <div className="text-[10px] text-[#6DBF7E]/80">
                     <p className="font-semibold">Ready for OBS / Streamlabs</p>
                     <p className="text-white/60">Copy URL + Key into your streaming software</p>
                   </div>
@@ -154,7 +154,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(whipUrl, 'WHIP URL')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'WHIP URL' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'WHIP URL' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>
@@ -178,7 +178,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(whipAuth, 'WHIP Auth')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'WHIP Auth' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'WHIP Auth' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>

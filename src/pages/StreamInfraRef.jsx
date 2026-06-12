@@ -13,7 +13,7 @@ const TABS = [
 
 const Badge = ({ type, children }) => {
   const styles = {
-    live:     "bg-green-500/20 text-green-300 border border-green-500/40",
+    live:     "bg-[#6DBF7E]/15 text-[#6DBF7E] border border-[#6DBF7E]/35",
     pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
     critical: "bg-red-500/20 text-red-300 border border-red-500/40",
     info:     "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30",
@@ -72,7 +72,7 @@ const Row = ({ label, value, badge, pending }) => (
 
 const CheckItem = ({ done, children }) => (
   <div className={`flex items-start gap-3 py-1.5 text-sm ${done ? "text-white/40 line-through" : "text-white/80"}`}>
-    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-green-400" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
+    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-[#6DBF7E]" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
     {children}
   </div>
 );
@@ -517,8 +517,8 @@ function EnvTab() {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-green-500/10 border border-green-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-green-400">{statusCounts.live}</div>
+        <div className="bg-[#6DBF7E]/10 border border-[#6DBF7E]/40/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#6DBF7E]">{statusCounts.live}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Live</div>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">

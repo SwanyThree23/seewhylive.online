@@ -141,7 +141,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-semibold text-white truncate">{clip.title}</span>
-                    {clip.status === 'ready' && <Check className="w-3 h-3 text-green-400" />}
+                    {clip.status === 'ready' && <Check className="w-3 h-3 text-[#6DBF7E]" />}
                     {clip.status === 'generating' && <Loader2 className="w-3 h-3 animate-spin text-[#D4AF37]" />}
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-white/50 mb-1.5">
@@ -156,7 +156,7 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                     >
                       {copied === clip.clip_url ? (
                         <>
-                          <Check className="w-2.5 h-2.5 text-green-400" />
+                          <Check className="w-2.5 h-2.5 text-[#6DBF7E]" />
                           Copied
                         </>
                       ) : (

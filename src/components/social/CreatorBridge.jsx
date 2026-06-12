@@ -32,7 +32,7 @@ export default function CreatorBridge({ user }) {
           <Youtube className="w-4 h-4 text-red-500" />
           <h3 className="text-sm font-bold text-white">Connect YouTube Channel</h3>
         </div>
-        {linked && <CheckCircle2 className="w-4 h-4 text-green-400" />}
+        {linked && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
       </div>
 
       {!linked ? (
@@ -73,10 +73,10 @@ export default function CreatorBridge({ user }) {
         </div>
       ) : (
         <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(109,191,126,0.1)' }}>
-          <CheckCircle2 className="w-4 h-4 text-green-400" />
+          <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />
           <div>
-            <p className="text-xs font-semibold text-green-400">Connected</p>
-            <p className="text-[11px] text-green-300/70">Your YouTube content syncs to SeeWhy LIVE</p>
+            <p className="text-xs font-semibold text-[#6DBF7E]">Connected</p>
+            <p className="text-[11px] text-[#6DBF7E]/80/70">Your YouTube content syncs to SeeWhy LIVE</p>
           </div>
         </div>
       )}

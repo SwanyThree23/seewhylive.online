@@ -165,7 +165,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
             <Badge variant="outline" className="text-[11px] px-1 py-0 border-white/30 text-white/70">You</Badge>
           </div>
           <div className="flex items-center gap-1">
-            {audioEnabled ? <Mic className="w-3 h-3 text-green-400" /> : <MicOff className="w-3 h-3 text-red-400" />}
+            {audioEnabled ? <Mic className="w-3 h-3 text-[#6DBF7E]" /> : <MicOff className="w-3 h-3 text-red-400" />}
             {videoEnabled ? <Video className="w-3 h-3 text-[#D4AF37]" /> : <VideoOff className="w-3 h-3 text-red-400" />}
           </div>
         </div>
@@ -176,7 +176,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
             onClick={() => { onToggleAudio?.(); onUpdateParticipant(participant.id, { is_audio_enabled: !audioEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
             style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#ef4444'}` }}>
-            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-green-400" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
+            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-[#6DBF7E]" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
           <button
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
@@ -207,7 +207,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
     switch(role) {
       case 'host': return 'bg-[#800020]';
       case 'co-host': return 'bg-[#D4AF37]/50';
-      case 'speaker': return 'bg-green-500';
+      case 'speaker': return 'bg-[#6DBF7E]';
       case 'guest': return 'bg-yellow-500';
       default: return 'bg-gray-500';
     }
@@ -220,7 +220,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
       exit={{ opacity: 0, scale: 0.9 }}
       className="relative"
     >
-      <Card className={`${speaking ? 'ring-2 ring-green-500' : ''}`}>
+      <Card className={`${speaking ? 'ring-2 ring-[#6DBF7E]' : ''}`}>
         <CardContent className="p-4">
           <div className="flex flex-col items-center gap-3">
             {/* Video/Avatar */}
@@ -261,7 +261,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
 
               {/* Audio Status */}
               <div className={`absolute bottom-2 right-2 p-2 rounded-full ${
-                participant.is_audio_enabled ? 'bg-green-500' : 'bg-red-500'
+                participant.is_audio_enabled ? 'bg-[#6DBF7E]' : 'bg-red-500'
               }`}>
                 {participant.is_audio_enabled ? (
                   <Mic className="w-4 h-4 text-white" />

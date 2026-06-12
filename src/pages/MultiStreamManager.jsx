@@ -35,7 +35,7 @@ const PLATFORMS = [
 
 function StatusDot({ status }) {
   const styles = {
-    live: 'bg-green-400 animate-pulse',
+    live: 'bg-[#6DBF7E] animate-pulse',
     connecting: 'bg-yellow-400 animate-pulse',
     error: 'bg-red-400',
     offline: 'bg-white/20',
@@ -44,7 +44,7 @@ function StatusDot({ status }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${styles[status] || styles.offline}`} />
-      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-green-400' : status === 'error' ? 'text-red-400' : 'text-white/30'}`}>
+      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-[#6DBF7E]' : status === 'error' ? 'text-red-400' : 'text-white/30'}`}>
         {labels[status] || 'OFF'}
       </span>
     </div>
@@ -161,7 +161,7 @@ export default function MultiStreamManager() {
               <Button
                 onClick={goLiveFanout}
                 disabled={enabledCount === 0}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+                className="bg-[#4A9B5E] hover:bg-[#4A9B5E] text-white font-bold gap-2"
               >
                 <PlayCircle className="w-4 h-4" /> Go Live ({enabledCount})
               </Button>
@@ -389,12 +389,12 @@ export default function MultiStreamManager() {
         {/* MediaMTX info banner */}
         {anyLive && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-green-950/40 border-green-500/30">
+            <Card className="bg-[#0F1428]/40 border-[#6DBF7E]/40/30">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-3 h-3 rounded-full bg-[#6DBF7E] animate-pulse" />
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-green-400">MediaMTX Fanout Active</p>
-                  <p className="text-xs text-green-300/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
+                  <p className="text-sm font-bold text-[#6DBF7E]">MediaMTX Fanout Active</p>
+                  <p className="text-xs text-[#6DBF7E]/80/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
                 </div>
                 <Button onClick={stopAllFanout} className="bg-red-700 hover:bg-red-800 text-white text-xs h-8">
                   🛑 Stop All

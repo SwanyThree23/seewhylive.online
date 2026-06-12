@@ -75,8 +75,8 @@ export default function ShareToSocial({ content }) {
       >
         {copied ? (
           <>
-            <CheckCircle2 className="w-4 h-4 text-green-400" />
-            <span className="text-xs font-semibold text-green-400">Copied!</span>
+            <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />
+            <span className="text-xs font-semibold text-[#6DBF7E]">Copied!</span>
           </>
         ) : (
           <>

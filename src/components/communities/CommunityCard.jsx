@@ -15,7 +15,7 @@ const CATEGORY_COLORS = {
   education:     '#6DBF7E',
   business:      '#D4854A',
   entertainment: '#D4AF37',
-  sports:        '#38bdf8',
+  sports:        '#D4AF37',
   lifestyle:     '#D4854A',
   all:           '#D4AF37',
 };

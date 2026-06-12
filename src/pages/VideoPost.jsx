@@ -281,8 +281,8 @@ export default function VideoPost() {
 
         {step === 'published' && (
           <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-green-900/30 flex items-center justify-center mx-auto">
-              <CheckCircle className="w-10 h-10 text-green-400" />
+            <div className="w-20 h-20 rounded-full bg-[#0F1428]/30 flex items-center justify-center mx-auto">
+              <CheckCircle className="w-10 h-10 text-[#6DBF7E]" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Video Posted! 🎉</h2>
