@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
@@ -648,6 +649,11 @@ export default function Home() {
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
+
+      {/* ── CONTENT RECOMMENDATIONS ── */}
+      <div className="px-4 pb-4">
+        <ContentRecommendations />
+      </div>
 
       {/* ── COMMUNITY CARDS (shown when Communities filter is active) ── */}
       {activeFilter === 'Communities' && (
