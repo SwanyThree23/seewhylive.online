@@ -48,11 +48,18 @@ export default function ContentCalendarPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledContent.create({ ...data, creator_id: user.id, status: 'scheduled' }),
-    onSuccess: () => {
+    onSuccess: (content) => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-content'] });
       setShowCreate(false);
       setFormData({ content_type: 'room', title: '', description: '', scheduled_for: new Date().toISOString(), recurrence: 'none' });
       toast.success('Content scheduled!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Scheduled content: ${content?.title || 'Content'}`,
+        }).catch(() => {});
+      }
     },
   });
 

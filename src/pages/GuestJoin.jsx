@@ -114,13 +114,13 @@ export default function GuestJoin() {
           <div style={{ ...card, padding: 14 }}>
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full"
-                style={{ background: room.status === 'live' ? '#C0392B' : '#ffc800', animation: room.status === 'live' ? 'pulse 1.5s infinite' : 'none' }} />
+                style={{ background: room.status === 'live' ? '#C0392B' : '#D4AF37', animation: room.status === 'live' ? 'pulse 1.5s infinite' : 'none' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
                 <p className="text-[10px] capitalize" style={{ color: 'rgba(255,255,255,0.35)' }}>{room.status}</p>
               </div>
               <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                style={{ ...T, background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#C0392B' : '#ffc800' }}>
+                style={{ ...T, background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : 'rgba(212,175,55,0.3)'}`, color: room.status === 'live' ? '#C0392B' : '#D4AF37' }}>
                 {room.status === 'live' ? '● LIVE' : 'Scheduled'}
               </span>
             </div>
@@ -163,7 +163,7 @@ export default function GuestJoin() {
                   </div>
                   <h2 className="text-base font-black text-white" style={T}>{name}</h2>
                   <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${readyState ? '' : 'animate-pulse'}`}
-                    style={{ ...T, background: readyState ? 'rgba(109,191,126,0.12)' : 'rgba(255,200,0,0.12)', border: `1px solid ${readyState ? 'rgba(109,191,126,0.3)' : 'rgba(255,200,0,0.3)'}`, color: readyState ? '#6DBF7E' : '#ffc800' }}>
+                    style={{ ...T, background: readyState ? 'rgba(109,191,126,0.12)' : 'rgba(212,175,55,0.12)', border: `1px solid ${readyState ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'}`, color: readyState ? '#6DBF7E' : '#D4AF37' }}>
                     {readyState ? <><CheckCircle className="w-2.5 h-2.5" /> Ready</> : <><Clock className="w-2.5 h-2.5" /> Waiting</>}
                   </span>
                   <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>

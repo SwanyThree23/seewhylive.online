@@ -115,7 +115,7 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
           <button
             onClick={() => !reminderSet && reminderMutation.mutate()}
             disabled={reminderSet}
-            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'none', background: reminderSet ? '#15803d' : '#d4af37', color: reminderSet ? '#fff' : '#000', fontWeight:700, cursor: reminderSet ? 'default' : 'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:8, border:'none', background: reminderSet ? '#4A9B5E' : '#d4af37', color: reminderSet ? '#fff' : '#000', fontWeight:700, cursor: reminderSet ? 'default' : 'pointer', fontSize:14, fontFamily:'Barlow Condensed, sans-serif' }}
           >
             <Bell className="w-4 h-4" />
             {reminderSet ? 'Reminder Set ✓' : 'Set Reminder'}

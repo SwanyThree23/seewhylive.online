@@ -561,7 +561,16 @@ export default function OnboardingPage() {
       if (onboarding?.id) return base44.entities.CreatorOnboarding.update(onboarding.id, data);
       return base44.entities.CreatorOnboarding.create({ user_id: user.id, ...data });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['onboarding', user?.id] }),
+    onSuccess: (_, data) => {
+      qc.invalidateQueries({ queryKey: ['onboarding', user?.id] });
+      if (data.is_complete && user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Completed creator onboarding',
+        }).catch(() => {});
+      }
+    },
   });
 
   const handleDone = async (data) => {

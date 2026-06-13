@@ -71,6 +71,13 @@ export default function CreateRoomPage() {
     },
     onSuccess: (room) => {
       toast.success('Room created successfully!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Created room: ${room.title || 'New Room'}`,
+        }).catch(() => {});
+      }
       window.location.href = `/LiveRoom?id=${room.id}`;
     },
     onError: () => toast.error('Failed to create room. Please try again.'),

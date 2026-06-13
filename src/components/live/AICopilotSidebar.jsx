@@ -11,7 +11,7 @@ const INSIGHT_CONFIG = {
   chat_spike:           { icon: Zap,            color: '#D4AF37', label: '⚡ Spike',    bg: 'rgba(212,175,55,0.08)' },
   trending_topic:       { icon: TrendingUp,     color: '#D4AF37', label: 'Trending',    bg: 'rgba(212,175,55,0.08)' },
   performance_tip:      { icon: TrendingUp,     color: '#6DBF7E', label: 'Pro Tip',     bg: 'rgba(109,191,126,0.08)' },
-  sentiment_shift:      { icon: AlertTriangle,  color: '#D4854A', label: 'Mood Shift',  bg: 'rgba(255,140,0,0.08)' },
+  sentiment_shift:      { icon: AlertTriangle,  color: '#D4854A', label: 'Mood Shift',  bg: 'rgba(212,133,74,0.08)' },
 };
 
 function SentimentMeter({ score }) {
