@@ -22,7 +22,7 @@ var G = {
 };
 
 var BADGE_COLORS = {
-  super_fan: { color: "#D4AF37", bg: "rgba(255,215,0,0.15)", icon: "👑" },
+  super_fan: { color: "#D4AF37", bg: "rgba(212,175,55,0.15)", icon: "👑" },
   top_supporter: { color: "#C0392B", bg: "rgba(192,57,43,0.15)", icon: "❤️" },
   raid_master: { color: "#D4AF37", bg: "rgba(212,175,55,0.12)", icon: "⚡" },
   poll_champion: { color: "#800020", bg: "rgba(128,0,32,0.15)", icon: "🏆" },

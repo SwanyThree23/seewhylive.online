@@ -59,7 +59,7 @@ function FlaggedItem({ mod, onAction, user }) {
           </span>
           {mod.auto_detected && (
             <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-              style={{ background: 'rgba(255,215,0,0.12)', color: '#D4AF37', border: '1px solid rgba(255,215,0,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               AI
             </span>
           )}
@@ -112,7 +112,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
           </span>
           {entry.auto_detected && (
             <span className="text-[7px] px-1 py-0.5 rounded font-black"
-              style={{ background: 'rgba(255,215,0,0.12)', color: '#D4AF37' }}>AI</span>
+              style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37' }}>AI</span>
           )}
           <span className="text-[11px] font-bold text-white">{entry.target_user_name || entry.target_user_id}</span>
         </div>
@@ -133,7 +133,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
         ].map(({ label, timeout }) => (
           <button key={label} onClick={() => onQuickAction(entry, 'timeout', timeout)}
             className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
-            style={{ background: 'rgba(255,215,0,0.1)', color: '#D4AF37', border: '1px solid rgba(255,215,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {label}
           </button>
         ))}

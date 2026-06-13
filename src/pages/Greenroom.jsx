@@ -27,7 +27,7 @@ function PermissionPill({ label, status }) {
   const cfg = {
     granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
     denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
-    prompt:  { color: '#D4AF37', border: 'rgba(255,215,0,0.3)',  icon: '…' },
+    prompt:  { color: '#D4AF37', border: 'rgba(212,175,55,0.3)',  icon: '…' },
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
 
   return (
