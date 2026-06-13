@@ -492,9 +492,7 @@ export default function SceneTemplates() {
   const [showCreate, setShowCreate]         = useState(false);
   const [editingTpl, setEditingTpl]         = useState(null);
 
-  // Attempt to get current user from base44 session helper (may not exist)
-  let user = null;
-  try { user = base44.auth?.currentUser?.(); } catch (_) {}
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
     queryKey: ['scene-templates', user?.id],
