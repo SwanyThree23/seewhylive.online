@@ -115,7 +115,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
     switch(role) {
       case 'host': return '#d4af37';
       case 'co-host': return '#D4AF37';
-      case 'speaker': return '#34d399';
+      case 'speaker': return '#6DBF7E';
       default: return '#D4AF37';
     }
   };
@@ -175,7 +175,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           <button
             onClick={() => { onToggleAudio?.(); onUpdateParticipant(participant.id, { is_audio_enabled: !audioEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#ef4444'}` }}>
+            style={{ background: audioEnabled ? 'rgba(109,191,126,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${audioEnabled ? '#6DBF7E' : '#ef4444'}` }}>
             {audioEnabled ? <Mic className="w-3.5 h-3.5 text-[#6DBF7E]" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
           <button

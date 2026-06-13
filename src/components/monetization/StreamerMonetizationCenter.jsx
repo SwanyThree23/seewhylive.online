@@ -185,7 +185,7 @@ const StreamerMonetizationCenter = () => {
       <div style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: 12 }}>
         <p style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 11, color: '#bfdbfe', ...T }}>$3,847 on May 31, 2026</span>
+          <span style={{ fontSize: 11, color: '#C9A84C', ...T }}>$3,847 on May 31, 2026</span>
           <span style={{ fontSize: 11, background: 'rgba(201,168,76,0.2)', color: '#C9A84C', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
         </div>
       </div>
