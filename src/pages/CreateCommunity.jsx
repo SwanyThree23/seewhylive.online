@@ -47,6 +47,12 @@ export default function CreateCommunityPage() {
     mutationFn: async (data) => {
       const community = await base44.entities.Community.create(data);
       await base44.entities.CommunityMember.create({ community_id: community.id, user_id: user.id, role: 'owner', joined_at: new Date().toISOString() });
+      await base44.entities.Activity.create({
+        user_id: user.id,
+        type: 'community_joined',
+        title: `Created community: ${data.name}`,
+        description: data.description || '',
+      }).catch(() => {});
       return community;
     },
     onSuccess: (c) => { toast.success('Community created!'); window.location.href = `/Community?id=${c.id}`; },
