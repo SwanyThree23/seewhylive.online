@@ -262,14 +262,35 @@ export default function ControlRoomPage() {
         });
       }
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['cr-room', roomId]);
+      toast.success('Stream is now LIVE!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Stream went live`,
+        }).catch(() => {});
+      }
+    },
   });
   const endStreamMut = useMutation({
     mutationFn: async () => {
       await base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); setShowEndModal(false); toast.success('Stream ended.'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['cr-room', roomId]);
+      setShowEndModal(false);
+      toast.success('Stream ended.');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended via Control Room`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const latestHealth = healthMetrics[0];

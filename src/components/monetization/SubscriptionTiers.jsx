@@ -52,9 +52,17 @@ export default function SubscriptionTiers({ communityId, userId }) {
         auto_renew: true,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, { tierId, price }) => {
       toast.success('Subscription activated! 🎉');
       queryClient.invalidateQueries(['userSubscription']);
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'subscription',
+          title: `Subscribed to ${tierId} tier`,
+          amount: price,
+        }).catch(() => {});
+      }
     },
     onError: () => {
       toast.error('Subscription failed');
