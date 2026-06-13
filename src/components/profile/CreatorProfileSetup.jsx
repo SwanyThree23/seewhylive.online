@@ -111,7 +111,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
 
           <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, padding: 12, fontSize: 14, color: '#C9A84C' }}>
             <p style={{ fontWeight: 600, marginBottom: 4 }}>What you unlock:</p>
-            <ul style={{ fontSize: 12, color: '#d97706', paddingLeft: 16, margin: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <ul style={{ fontSize: 12, color: '#D4854A', paddingLeft: 16, margin: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <li>Public creator profile page</li>
               <li>90/10 revenue split on tips &amp; subscriptions</li>
               <li>VOD library, stream analytics, loyalty rewards</li>
