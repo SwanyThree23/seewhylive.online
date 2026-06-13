@@ -272,10 +272,19 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         ...(isBuyout ? { winner_id: currentUser.id, winner_name: currentUser.full_name || currentUser.email, final_amount: amount } : {}),
       });
     },
-    onSuccess: (_, { auction, amount }) => {
+    onSuccess: (_, { auction, amount, isBuyout }) => {
       qc.invalidateQueries(['live-auctions']);
       qc.invalidateQueries(['auction-bids']);
       toast.success(`Bid of $${amount} placed!`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: isBuyout ? 'ppv_purchase' : 'tip_sent',
+          title: isBuyout ? `Won auction: ${auction?.title || 'Auction'}` : `Bid $${amount} on: ${auction?.title || 'Auction'}`,
+          amount,
+          recipient_id: auction?.creator_id,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Failed to place bid'),
   });

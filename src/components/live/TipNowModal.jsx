@@ -37,7 +37,28 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
         is_displayed: false,
       }),
     ]),
-    onSuccess: () => { setSuccess(true); qc.invalidateQueries(["tip-alerts", roomId]); },
+    onSuccess: () => {
+      setSuccess(true);
+      qc.invalidateQueries(["tip-alerts", roomId]);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'tip_sent',
+            title: `Tipped $${finalAmount.toFixed(2)}`,
+            amount: finalAmount,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'tip_received',
+            title: `Received $${finalAmount.toFixed(2)} tip from ${currentUser.full_name || 'viewer'}`,
+            amount: finalAmount,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
+    },
   });
 
   if (success) return (

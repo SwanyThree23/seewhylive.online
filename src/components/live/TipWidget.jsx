@@ -183,6 +183,22 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
       setUseCustom(false);
       setSelected(5);
       setSelectedEmoji(null);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'tip_sent',
+          title: `Tipped $${rawAmount} to creator`,
+          amount: rawAmount,
+          recipient_id: hostId,
+        }),
+        hostId && base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'tip_received',
+          title: `Received $${rawAmount} tip from ${name}`,
+          amount: rawAmount,
+          sender_id: currentUser.id,
+        }),
+      ]);
     },
     onError: () => toast.error('Could not send tip'),
   });

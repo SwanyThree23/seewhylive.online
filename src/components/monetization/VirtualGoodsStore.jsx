@@ -52,10 +52,18 @@ export default function VirtualGoodsStore({ userId }) {
         await base44.entities.VirtualGood.update(good.id, { stock: good.stock - 1 });
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, { good }) => {
       toast.success('Item purchased! ✨');
       queryClient.invalidateQueries(['virtualGoods']);
       queryClient.invalidateQueries(['userInventory']);
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'ppv_purchase',
+          title: `Purchased: ${good?.name || 'Virtual Item'}`,
+          amount: good?.price,
+        }).catch(() => {});
+      }
     },
     onError: () => {
       toast.error('Purchase failed');

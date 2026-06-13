@@ -136,6 +136,14 @@ export default function GiftShopTray({ roomId, currentUser }) {
       qc.invalidateQueries(['gift-lb', roomId]);
       setAnim({ gift, sender: currentUser?.full_name || 'Someone' });
       setOpen(false);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name || 'gift'}`,
+          amount: gift.price,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Could not send gift'),
   });

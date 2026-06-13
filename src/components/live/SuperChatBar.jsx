@@ -62,6 +62,26 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
       toast.success(vars.type === 'gift' ? '🎁 Gift sent!' : '⭐ Super Chat sent!');
       setMode(null);
       setMessage('');
+      if (currentUser?.id) {
+        const isGift = vars.type === 'gift';
+        const giftName = isGift ? GIFTS.find(g => g.id === vars.giftType)?.name || 'Gift' : null;
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: isGift ? 'gift_sent' : 'tip_sent',
+            title: isGift ? `Sent ${giftName} gift` : `Super Chat $${vars.amount}`,
+            amount: vars.amount,
+            recipient_id: recipientId,
+          }),
+          recipientId && base44.entities.Activity.create({
+            user_id: recipientId,
+            type: isGift ? 'gift_received' : 'tip_received',
+            title: isGift ? `Received ${giftName} gift` : `Super Chat $${vars.amount} from ${currentUser.full_name || 'viewer'}`,
+            amount: vars.amount,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
     },
     onError: () => toast.error('Failed to send'),
   });
