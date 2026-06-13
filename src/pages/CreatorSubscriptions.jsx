@@ -342,6 +342,22 @@ function SubscriberView({ user, creatorId, creatorName }) {
       }
       toast.success(`Welcome to ${tier.name}! 🎉`);
       qc.invalidateQueries(['userSubs']);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'subscription',
+          title: `Subscribed to ${tier.name} tier`,
+          amount: tier.price,
+          recipient_id: creatorId,
+        }),
+        creatorId && base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'tip_received',
+          title: `New ${tier.name} subscriber: ${user.full_name || user.email}`,
+          amount: Math.floor(tier.price * 0.9 * 100) / 100,
+          sender_id: user.id,
+        }),
+      ]);
     } catch {
       toast.error('Subscription failed');
     } finally {

@@ -35,6 +35,13 @@ export default function InviteUsersPage() {
       await base44.users.inviteUser(email.trim(), isAdmin ? role : 'user');
       setInvitedList(prev => [...prev, { email: email.trim(), role: isAdmin ? role : 'user', sentAt: new Date() }]);
       toast.success(`Invite sent to ${email.trim()}!`);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'follow',
+          title: `Invited ${email.trim()} to SeeWhyLIVE`,
+        }).catch(() => {});
+      }
       setEmail('');
     } catch {
       toast.error('Failed to send invite. They may already be registered.');

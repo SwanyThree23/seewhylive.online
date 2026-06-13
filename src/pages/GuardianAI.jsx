@@ -17,7 +17,7 @@ const TEXTD = '#C4B596';
 const TEXTM = '#8A7A62';
 const GREEN = '#6DBF7E';
 const WARN  = '#D4AF37';
-const ORANGE= '#F97316';
+const ORANGE= '#D4854A';
 const RED   = '#E74C3C';
 const PILL  = 999;
 
