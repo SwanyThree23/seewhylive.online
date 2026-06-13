@@ -143,7 +143,7 @@ export default function AIHub() {
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = localStorage.getItem('seewhy_dj_track');
+        const raw = sessionStorage.getItem('seewhy_dj_track');
         setDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setDjTrack(null);

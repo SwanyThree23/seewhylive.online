@@ -320,7 +320,7 @@ function SVSPanel() {
 
 // ── TRIBUTE PANEL ──────────────────────────────────────────────────────────
 function TributePanel() {
-  const [tributes, setTributes] = useState(() => JSON.parse(localStorage.getItem('v37_tributes') || '[]'));
+  const [tributes, setTributes] = useState(() => JSON.parse(sessionStorage.getItem('v37_tributes') || '[]'));
   const [name, setName] = useState('');
   const [msg, setMsg] = useState('');
   const [era, setEra] = useState('');
@@ -331,7 +331,7 @@ function TributePanel() {
     const t = { id: Date.now(), name: name.trim(), msg: msg.trim(), era: era.trim(), at: new Date().toLocaleDateString() };
     const updated = [t, ...tributes].slice(0, 30);
     setTributes(updated);
-    localStorage.setItem('v37_tributes', JSON.stringify(updated));
+    sessionStorage.setItem('v37_tributes', JSON.stringify(updated));
     setName(''); setMsg(''); setEra('');
     toast('Tribute added', setToastMsg);
   }
@@ -339,7 +339,7 @@ function TributePanel() {
   function removeTribute(id) {
     const updated = tributes.filter(t => t.id !== id);
     setTributes(updated);
-    localStorage.setItem('v37_tributes', JSON.stringify(updated));
+    sessionStorage.setItem('v37_tributes', JSON.stringify(updated));
   }
 
   return (
@@ -384,7 +384,7 @@ function PodcastPanel() {
   const [toastMsg, setToastMsg] = useState('');
   const [nlmUrl, setNlmUrl] = useState('');
   const [nlmLabel, setNlmLabel] = useState('');
-  const [nlmSources, setNlmSources] = useState(() => JSON.parse(localStorage.getItem('v37_nlm_sources') || '[]'));
+  const [nlmSources, setNlmSources] = useState(() => JSON.parse(sessionStorage.getItem('v37_nlm_sources') || '[]'));
 
   function addSource() {
     if (!srcInput.trim() || sources.length >= 5) return;
@@ -400,7 +400,7 @@ function PodcastPanel() {
     const src = { id: Date.now(), label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
     const updated = [src, ...nlmSources].slice(0, 20);
     setNlmSources(updated);
-    localStorage.setItem('v37_nlm_sources', JSON.stringify(updated));
+    sessionStorage.setItem('v37_nlm_sources', JSON.stringify(updated));
     setNlmUrl(''); setNlmLabel('');
     toast('NLM source saved!', setToastMsg);
   }
@@ -494,7 +494,7 @@ function PodcastPanel() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <a href={s.url} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
-                  <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); localStorage.setItem('v37_nlm_sources', JSON.stringify(u)); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
+                  <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); sessionStorage.setItem('v37_nlm_sources', JSON.stringify(u)); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>
             </Card>
@@ -1176,14 +1176,14 @@ function SettingsPanel() {
   const [saved, setSaved] = useState(false);
 
   function save() {
-    localStorage.setItem('v37_settings', JSON.stringify({ handle, bio, email, notifs }));
+    sessionStorage.setItem('v37_settings', JSON.stringify({ handle, bio, email, notifs }));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
 
   useEffect(() => {
     try {
-      const s = JSON.parse(localStorage.getItem('v37_settings') || '{}');
+      const s = JSON.parse(sessionStorage.getItem('v37_settings') || '{}');
       if (s.handle) setHandle(s.handle);
       if (s.bio) setBio(s.bio);
       if (s.email) setEmail(s.email);

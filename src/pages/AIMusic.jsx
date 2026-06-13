@@ -869,10 +869,10 @@ Return ONLY valid JSON (no markdown, no backticks):
 
   function handleAddToStream(track) {
     try {
-      const existing = JSON.parse(localStorage.getItem('seewhy_stream_queue') || '[]');
+      const existing = JSON.parse(sessionStorage.getItem('seewhy_stream_queue') || '[]');
       if (!existing.some(t => t.id === track.id)) {
         existing.push({ id: track.id, title: track.title, tags: track.tags, duration: track.duration, emoji: track.emoji, streamReady: track.streamReady });
-        localStorage.setItem('seewhy_stream_queue', JSON.stringify(existing));
+        sessionStorage.setItem('seewhy_stream_queue', JSON.stringify(existing));
       }
     } catch (_) {}
     showToast(`📡 "${track.title}" added to stream queue!`);
