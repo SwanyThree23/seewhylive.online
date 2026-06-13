@@ -42,7 +42,7 @@ export function MerchStrip({ roomId, currentUser, hostId }) {
                 <div style={{ fontFamily: C.fBeb, fontSize: 14, color: C.gold }}>${item.price_usd}</div>
                 <div style={{ display: "flex", gap: 3, marginTop: 3 }}>
                   {item.is_live_exclusive && <span style={{ fontFamily: C.fMon, fontSize: 6, background: C.burgundy, color: C.gold, padding: "1px 4px", borderRadius: 3 }}>LIVE</span>}
-                  {item.stock != null && item.stock < 10 && <span style={{ fontFamily: C.fMon, fontSize: 6, background: "#FF9500", color: "#000", padding: "1px 4px", borderRadius: 3 }}>LOW</span>}
+                  {item.stock != null && item.stock < 10 && <span style={{ fontFamily: C.fMon, fontSize: 6, background: "#D4854A", color: "#000", padding: "1px 4px", borderRadius: 3 }}>LOW</span>}
                 </div>
               </div>
             </div>

@@ -238,6 +238,13 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       setInviteMessage('');
       toast.success('Battle invitation sent!');
       if (onBattleSelect) { onBattleSelect(b); }
+      if (user && user.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `PK Battle challenge sent to ${b?.challenger_name || 'challenger'}`,
+        }).catch(() => {});
+      }
     },
   });
 
