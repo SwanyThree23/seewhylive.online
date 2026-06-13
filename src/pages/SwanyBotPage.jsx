@@ -148,7 +148,7 @@ export default function SwanyBotPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none' }}>
-            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(128,0,32,0.3)`, background: 'rgba(128,0,32,0.1)', color: '#5C8EE0', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(128,0,32,0.3)`, background: 'rgba(128,0,32,0.1)', color: AMBER, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               ⚔️ SVS
             </button>
           </Link>
