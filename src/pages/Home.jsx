@@ -232,6 +232,8 @@ var SPOTLIGHT_ITEMS = [
   { emoji: '🤖', label: 'SwanyBot',          sub: 'Domino Culture AI',   color: '#D4AF37', page: 'SwanyBotPage'          },
   { emoji: '🗳️', label: 'Poll Manager',      sub: 'Live Audience Polls', color: '#6B7C4A', page: 'PollManager'           },
   { emoji: '🎚️', label: 'Overlay Editor',   sub: 'Custom Overlays',     color: '#D4AF37', page: 'OverlayEditor'         },
+  { emoji: '🌐', label: 'Hybrid Room',     sub: 'WebRTC + Guest Mix',  color: '#D4854A', page: 'HybridStreamRoom'       },
+  { emoji: '🌟', label: 'Enhancement',     sub: 'Creator Power Tools', color: '#D4AF37', page: 'EnhancementSuite'       },
 ];
 
 function SpotlightStrip() {

@@ -111,7 +111,7 @@ function BattleCard({ battle, onVote, myVote }) {
         {/* Side B */}
         <div style={{ flex: 1, textAlign: 'right' }}>
           <div style={{ ...T, fontSize: 16, fontWeight: 900, color: TEXT, letterSpacing: '0.02em' }}>{battle.b.name}</div>
-          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: '#5C8EE0', marginTop: 2 }}>
+          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: '#D4854A', marginTop: 2 }}>
             {battle.b.score.toLocaleString()}
           </div>
           <div style={{ ...T, fontSize: 10, color: TEXTM }}>{100 - pctA}%</div>
