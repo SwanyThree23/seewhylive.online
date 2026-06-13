@@ -328,11 +328,11 @@ export default function AdminDashboard() {
           ) : (
             <div className="space-y-3">
               {reports.map(report => (
-                <div key={report.id} className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.25)' : 'rgba(212,175,55,0.1)'}` }}>
+                <div key={report.id} className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${report.status === 'pending' ? 'rgba(212,133,74,0.25)' : 'rgba(212,175,55,0.1)'}` }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(255,136,0,0.12)' : 'rgba(109,191,126,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.3)' : 'rgba(109,191,126,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#6DBF7E' }}>{report.status}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(212,133,74,0.12)' : 'rgba(109,191,126,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(212,133,74,0.3)' : 'rgba(109,191,126,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#6DBF7E' }}>{report.status}</span>
                         <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>{report.report_type}</span>
                       </div>
                       <p className="text-sm text-white" style={T}>{report.description}</p>
@@ -404,10 +404,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* User suspension */}
-            <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(255,136,0,0.15)' }}>
+            <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(212,133,74,0.15)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">⚠️</span>
-                <span className="text-sm font-black uppercase" style={{ color: '#FF8800', ...T }}>User Suspension</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#D4854A', ...T }}>User Suspension</span>
               </div>
               <div className="flex gap-2 mb-2">
                 <input value={suspendUser} onChange={e => setSuspendUser(e.target.value)}
@@ -417,21 +417,21 @@ export default function AdminDashboard() {
                 <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                   {[['1h','1h'],['24h','24h'],['7d','7d'],['30d','30d'],['perm','Perm']].map(([val, label]) => (
                     <button key={val} onClick={() => setSuspendDuration(val)}
-                      style={{ padding: '4px 8px', borderRadius: 99, fontSize: 10, border: `1px solid ${suspendDuration === val ? '#FF8800' : 'rgba(255,136,0,0.2)'}`, background: suspendDuration === val ? 'rgba(255,136,0,0.2)' : 'rgba(255,136,0,0.06)', color: suspendDuration === val ? '#FF8800' : 'rgba(255,136,0,0.6)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      style={{ padding: '4px 8px', borderRadius: 99, fontSize: 10, border: `1px solid ${suspendDuration === val ? '#D4854A' : 'rgba(212,133,74,0.2)'}`, background: suspendDuration === val ? 'rgba(212,133,74,0.2)' : 'rgba(212,133,74,0.06)', color: suspendDuration === val ? '#D4854A' : 'rgba(212,133,74,0.6)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                       {label}
                     </button>
                   ))}
                 </div>
                 <button onClick={() => { if(suspendUser.trim()) { setSuspensions(p => [...p, { user: suspendUser.trim(), duration: suspendDuration, date: new Date().toISOString() }]); setSuspendUser(''); toast.success('User suspended'); }}}
                   className="h-9 px-3 rounded-xl text-xs font-black"
-                  style={{ background: 'rgba(255,136,0,0.12)', color: '#FF8800', border: '1px solid rgba(255,136,0,0.25)', ...T }}>
+                  style={{ background: 'rgba(212,133,74,0.12)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
                   Suspend
                 </button>
               </div>
               {suspensions.map((s, i) => (
-                <div key={i} className="flex items-center gap-2 p-2 rounded-lg mt-1" style={{ background: 'rgba(255,136,0,0.05)', border: '1px solid rgba(255,136,0,0.1)' }}>
+                <div key={i} className="flex items-center gap-2 p-2 rounded-lg mt-1" style={{ background: 'rgba(212,133,74,0.05)', border: '1px solid rgba(212,133,74,0.1)' }}>
                   <span className="text-xs font-bold text-white/60 flex-1">{s.user}</span>
-                  <span className="text-[11px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(255,136,0,0.15)', color: '#FF8800', ...T }}>{s.duration}</span>
+                  <span className="text-[11px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', ...T }}>{s.duration}</span>
                   <button onClick={() => setSuspensions(p => p.filter((_, j) => j !== i))}
                     className="text-[11px] px-2 py-0.5 rounded" style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', ...T }}>Lift</button>
                 </div>

@@ -127,7 +127,7 @@ function OnFireBadge({ show }) {
           exit={{ scale: 0 }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
         >
-          <div className="text-sm font-black px-3 py-1 rounded-xl" style={{ background: 'rgba(255,100,0,0.3)', border: '1px solid rgba(255,100,0,0.6)', color: '#FF6400' }}>
+          <div className="text-sm font-black px-3 py-1 rounded-xl" style={{ background: 'rgba(192,57,43,0.3)', border: '1px solid rgba(192,57,43,0.6)', color: '#D4854A' }}>
             🔥 ON FIRE!
           </div>
         </motion.div>

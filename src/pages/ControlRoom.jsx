@@ -113,7 +113,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
         <div className="flex items-center gap-1.5">
           {(dest.reconnect_count || 0) > 0 && (
             <span className="text-[11px] px-1.5 py-0.5 rounded font-bold"
-              style={{ background: 'rgba(255,165,0,0.15)', color: '#FFA500', border: '1px solid rgba(255,165,0,0.3)' }}>
+              style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' }}>
               ⚠ {dest.reconnect_count} reconnects
             </span>
           )}
