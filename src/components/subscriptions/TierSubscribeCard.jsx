@@ -49,6 +49,22 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
         message: `${me.full_name || me.email} just subscribed to your ${tier.name} tier for $${tier.price}/month.`,
         sender_id: userId,
       });
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'subscription',
+          title: `Subscribed to ${tier.name} tier`,
+          creator_id: creatorId,
+          amount: tier.price,
+        }),
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'subscription',
+          title: `New ${tier.name} subscriber`,
+          amount: tier.price,
+          sender_id: userId,
+        }),
+      ]);
       return sub;
     },
     onSuccess: () => {
