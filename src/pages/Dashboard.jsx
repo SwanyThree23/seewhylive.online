@@ -287,7 +287,18 @@ function ContentTab({ user }) {
 
   const createMut = useMutation({
     mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: user?.id, views: 0 }),
-    onSuccess: () => { qc.invalidateQueries(['db-vods']); setShowCreate(false); toast.success('VOD created!'); },
+    onSuccess: (vod) => {
+      qc.invalidateQueries(['db-vods']);
+      setShowCreate(false);
+      toast.success('VOD created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'clip_created',
+          title: `Uploaded VOD: ${vod?.title || 'Video'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
@@ -497,7 +508,18 @@ function CommunityTab({ user }) {
       status: 'active',
       total_votes: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(['db-polls']); setShowPollForm(false); toast.success('Poll created!'); },
+    onSuccess: (poll) => {
+      qc.invalidateQueries(['db-polls']);
+      setShowPollForm(false);
+      toast.success('Poll created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created poll: ${poll?.question || 'Community Poll'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const endPollMut = useMutation({

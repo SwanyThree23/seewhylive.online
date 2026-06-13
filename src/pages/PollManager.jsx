@@ -30,10 +30,17 @@ export default function PollManager() {
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => base44.entities.PollTemplate.create({ ...data, creator_id: user.id }),
-    onSuccess: () => {
+    onSuccess: (template) => {
       queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] });
       setFormData({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
       setShowForm(false);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created poll template: ${template?.name || template?.question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 
