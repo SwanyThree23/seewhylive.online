@@ -38,9 +38,16 @@ export default function DiscussionFeed({ communityId }) {
         content,
       });
     },
-    onSuccess: () => {
+    onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: ['communityDiscussions', communityId] });
       setNewPost('');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Posted in community discussion`,
+        }).catch(() => {});
+      }
     },
   });
 

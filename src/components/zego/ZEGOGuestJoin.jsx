@@ -33,6 +33,13 @@ export default function ZEGOGuestJoin({ roomId, userId, userName, onJoined }) {
       setRequestSent(true);
       toast.success('Join request sent to host');
       qc.invalidateQueries(['participants', roomId]);
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'room_joined',
+          title: 'Requested to join live stream as co-host',
+        }).catch(() => {});
+      }
       setTimeout(() => onJoined?.(), 2000);
     },
     onError: () => {
