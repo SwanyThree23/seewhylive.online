@@ -24,7 +24,7 @@ function GoldenWallItem({ item, onExpire }) {
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className={`relative rounded-xl overflow-hidden border ${
         isSuperChat
-          ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(255,184,0,0.4)] bg-gradient-to-br from-[#1a1000] to-[#0B0B18]'
+          ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.4)] bg-gradient-to-br from-[#1a1000] to-[#0B0B18]'
           : isGift
           ? 'border-[#C0392B]/50 shadow-[0_0_16px_rgba(192,57,43,0.3)] bg-gradient-to-br from-[#1a0010] to-[#0B0B18]'
           : 'border-[#D4AF37]/30 bg-[#10101E]'
