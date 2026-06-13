@@ -175,6 +175,16 @@ export default function SettingsPage() {
     { label: 'Content Calendar',  href: 'ContentCalendar' },
     { label: 'Clips Library',     href: 'ClipsLibrary' },
     { label: 'Pre-Flight',        href: 'GreenRoomPreFlight' },
+    { label: 'Greenroom',         href: 'Greenroom' },
+    { label: 'Greenroom Enhanced',href: 'GreenroomEnhanced' },
+    { label: 'Newsletter',        href: 'Newsletter' },
+    { label: 'Dashboard',         href: 'Dashboard' },
+    { label: 'Social Expo',       href: 'SocialExpo' },
+    { label: 'Leaderboard',       href: 'Leaderboard' },
+    { label: 'Messages',          href: 'Messages' },
+    { label: 'BroadcastStudio',   href: 'BroadcastStudio' },
+    { label: 'Guardian AI',       href: 'GuardianAI' },
+    { label: 'PKBattle Arena',    href: 'PKBattleArena' },
   ];
 
   return (
