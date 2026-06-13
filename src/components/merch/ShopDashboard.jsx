@@ -36,7 +36,19 @@ export default function ShopDashboard({ creatorId }) {
       price_usd: parseFloat(newItem.price_usd) || 0,
       is_active: true, times_sold: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(["shop-items", creatorId]); setShowAdd(false); setNewItem({ name: "", price_usd: "", description: "", sizes_available: [] }); },
+    onSuccess: (item) => {
+      qc.invalidateQueries(["shop-items", creatorId]);
+      setShowAdd(false);
+      setNewItem({ name: "", price_usd: "", description: "", sizes_available: [] });
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Added merch item: ${item?.name || 'New Item'}`,
+          amount: item?.price_usd,
+        }).catch(() => {});
+      }
+    },
   });
 
   var toggleMutation = useMutation({
