@@ -255,17 +255,17 @@ function StreamTab({ user }) {
             <CopyField label="Director View URL" value={directorUrl} mono={true} />
             <div className="grid grid-cols-2 gap-2">
               <a href={guestUrl} target="_blank" rel="noopener noreferrer">
-                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(255,184,0,0.12)', color:'#D4AF37', border:'1px solid rgba(255,184,0,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
+                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(212,175,55,0.12)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
                   <ExternalLink className="w-3 h-3" /> Guest Link
                 </button>
               </a>
               <a href={directorUrl} target="_blank" rel="noopener noreferrer">
-                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(255,184,0,0.08)', color:'rgba(255,184,0,0.6)', border:'1px solid rgba(255,184,0,0.15)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
+                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(212,175,55,0.08)', color:'rgba(212,175,55,0.6)', border:'1px solid rgba(212,175,55,0.15)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
                   <Eye className="w-3 h-3" /> Director
                 </button>
               </a>
             </div>
-            <div className="rounded-lg p-2" style={{ background: 'rgba(255,184,0,0.04)', border: '1px solid rgba(255,184,0,0.08)' }}>
+            <div className="rounded-lg p-2" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="text-[10px] text-white/30">Guest opens URL → feeds into OBS via Browser Source</p>
             </div>
           </div>
@@ -525,7 +525,7 @@ function LiveRoomTab({ user }) {
               <button
                 onClick={function() { setHandRaised(!handRaised); toast(handRaised ? 'Hand lowered' : '✋ Hand raised — waiting to speak'); }}
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
-                style={{ background: handRaised ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (handRaised ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.08)') }}
+                style={{ background: handRaised ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (handRaised ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)') }}
               >
                 <Hand className="w-4 h-4" style={{ color: handRaised ? '#D4AF37' : 'rgba(255,255,255,0.4)' }} />
                 <span className="text-xs" style={{ color: handRaised ? '#D4AF37' : 'rgba(255,255,255,0.4)' }}>{handRaised ? 'Hand Raised ✋' : 'Raise Hand'}</span>
