@@ -21,7 +21,10 @@ function usePullToRefresh(onRefresh) {
   function onTouchMove(e) {
     if (window.scrollY > 0) return;
     var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    if (dy > 0) {
+      e.preventDefault();
+      setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    }
   }
   async function onTouchEnd() {
     if (pullY >= THRESHOLD && !refreshing) {

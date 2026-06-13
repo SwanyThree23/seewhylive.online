@@ -1,0 +1,74 @@
+{
+  "name": "InviteLink",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Unique invite code e.g. SWY-HOST-DOM01"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "host",
+        "co-host",
+        "viewer",
+        "vip"
+      ],
+      "default": "viewer"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human label e.g. Domino Entertainment Host"
+    },
+    "max_uses": {
+      "type": "number",
+      "default": 1
+    },
+    "uses": {
+      "type": "number",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Admin user ID"
+    },
+    "community_id": {
+      "type": "string",
+      "description": "Optional community association"
+    },
+    "note": {
+      "type": "string",
+      "description": "Internal note for admin"
+    }
+  },
+  "required": [
+    "code",
+    "role"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

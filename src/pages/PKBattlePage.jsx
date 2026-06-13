@@ -512,17 +512,6 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
-  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
-
-  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
-  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-
-  React.useEffect(() => () => {
-    leftCaptureStream?.getTracks().forEach(t => t.stop());
-    rightCaptureStream?.getTracks().forEach(t => t.stop());
-  }, [leftCaptureStream, rightCaptureStream]);
-
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },

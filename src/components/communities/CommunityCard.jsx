@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Users, CheckCircle, Lock, Globe, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
@@ -23,6 +23,9 @@ const CATEGORY_COLORS = {
 export default function CommunityCard({ community, isMember, isAdmin, onJoin }) {
   const catColor = CATEGORY_COLORS[community.category] || GOLD;
   const initial  = community.name?.charAt(0).toUpperCase() || '?';
+  const [optimisticJoined, setOptimisticJoined] = React.useState(false);
+  const [joinPending, setJoinPending] = React.useState(false);
+  const effectiveMember = isMember || optimisticJoined;
 
   return (
     <div
@@ -124,12 +127,30 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
             </button>
           </Link>
 
-          {!isMember && (
-            <button className="flex-1 py-2 rounded-xl font-black uppercase text-[10px] transition-all"
-              onClick={e => { e.preventDefault(); onJoin?.(community); }}
-              style={{ background: 'rgba(212,175,55,0.1)', border: `1px solid rgba(212,175,55,0.4)`, color: GOLD, ...T }}>
-              + Join
+          {!effectiveMember && (
+            <button
+              className="flex-1 py-2 rounded-xl font-black uppercase text-[10px] transition-all"
+              disabled={joinPending}
+              onClick={e => {
+                e.preventDefault();
+                setOptimisticJoined(true);
+                setJoinPending(true);
+                Promise.resolve(onJoin?.(community)).finally(() => setJoinPending(false));
+              }}
+              style={{
+                background: joinPending ? 'rgba(212,175,55,0.05)' : 'rgba(212,175,55,0.1)',
+                border: `1px solid rgba(212,175,55,0.4)`, color: GOLD,
+                opacity: joinPending ? 0.7 : 1,
+                ...T,
+              }}>
+              {joinPending ? '✓ Joining…' : '+ Join'}
             </button>
+          )}
+          {effectiveMember && !isMember && (
+            <span className="flex-1 py-2 rounded-xl font-black uppercase text-[10px] text-center"
+              style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E', ...T }}>
+              ✓ Joined!
+            </span>
           )}
 
           {isMember && isAdmin && (
