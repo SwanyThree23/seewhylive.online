@@ -15,7 +15,7 @@ const PLATFORM_PRESETS = [
   { id: 'instagram', label: 'Instagram', color: '#e1306c', server: 'rtmps://live-upload.instagram.com:443/rtmp' },
   { id: 'linkedin',  label: 'LinkedIn',  color: '#0a66c2', server: 'rtmps://stream.linkedin.com:443/media' },
   { id: 'kick',      label: 'Kick',      color: '#53fc18', server: 'rtmp://fa723fc1b171.global-contribute.live-video.net/app' },
-  { id: 'dlive',     label: 'DLive',     color: '#ffd700', server: 'rtmp://stream.dlive.tv/live' },
+  { id: 'dlive',     label: 'DLive',     color: '#D4AF37', server: 'rtmp://stream.dlive.tv/live' },
   { id: 'custom',    label: 'Custom',    color: '#8B6F47', server: '' },
 ];
 
