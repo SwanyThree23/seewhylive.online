@@ -53,7 +53,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Timeouts</p>
-              <p className="text-sm font-bold text-orange-400">{stats.timeouts}</p>
+              <p className="text-sm font-bold text-[#D4854A]">{stats.timeouts}</p>
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Deleted</p>

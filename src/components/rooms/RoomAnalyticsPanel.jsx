@@ -52,7 +52,7 @@ export default function RoomAnalyticsPanel({ roomId }) {
       label: 'Avg Watch Time',
       value: `${Math.round(latest.average_watch_time || 0)}m`,
       icon: Clock,
-      color: 'text-orange-500',
+      color: 'text-[#D4854A]',
     },
     {
       label: 'Chat Messages',

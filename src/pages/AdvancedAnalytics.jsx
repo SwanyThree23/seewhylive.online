@@ -21,7 +21,7 @@ const TOOLTIP_STYLE = {
 const TICK = { fill: 'rgba(255,255,255,0.35)', fontSize: 10 };
 const GRID = { stroke: 'rgba(255,255,255,0.06)' };
 
-const TABS = ['revenue', 'engagement', 'performance', 'insights'];
+const TABS = ['revenue', 'engagement', 'performance', 'retention', 'insights'];
 
 export default function AdvancedAnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
@@ -58,7 +58,7 @@ export default function AdvancedAnalyticsPage() {
   const roomPerformance = rooms.filter(r => r.viewer_count > 0).slice(0, 10)
     .map(r => ({ title: r.title.substring(0, 20), viewers: r.viewer_count }));
 
-  const tabLabels = { revenue: 'Revenue Trends', engagement: 'Engagement', performance: 'Room Performance', insights: 'AI Insights' };
+  const tabLabels = { revenue: 'Revenue Trends', engagement: 'Engagement', performance: 'Room Performance', retention: 'Viewer Retention', insights: 'AI Insights' };
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>

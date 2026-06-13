@@ -347,7 +347,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Group 4: Admin (isAdmin only) */}
               {isAdmin && (
                 <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,140,0,0.12)' }}>
-                  <p className="text-[11px] uppercase font-bold tracking-widest mb-2 px-1 text-orange-400/40"
+                  <p className="text-[11px] uppercase font-bold tracking-widest mb-2 px-1 text-[#D4854A]/40"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Admin</p>
                   <div className="space-y-0.5">
                     {DRAWER_ADMIN.map(function(item) {
@@ -356,8 +356,8 @@ export default function Layout({ children, currentPageName }) {
                         <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                             style={{ background: 'rgba(255,140,0,0.04)', borderLeft: '2px solid rgba(255,140,0,0.15)', userSelect: 'none', WebkitUserSelect: 'none' }}>
-                            <Icon className="w-4 h-4 shrink-0 text-orange-400/70" />
-                            <span className="text-sm font-bold text-orange-400/60" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>{item.name}</span>
+                            <Icon className="w-4 h-4 shrink-0 text-[#D4854A]/70" />
+                            <span className="text-sm font-bold text-[#D4854A]/60" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>{item.name}</span>
                           </div>
                         </Link>
                       );

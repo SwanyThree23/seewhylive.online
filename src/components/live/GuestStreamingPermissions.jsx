@@ -132,8 +132,8 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
 
             {/* Warning */}
             <div className="rounded p-2 flex gap-2" style={{ background: 'rgba(212,133,74,0.1)', border: '1px solid rgba(212,133,74,0.25)' }}>
-              <AlertCircle className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
-              <p className="text-[10px] text-orange-300">These permissions are specific to this guest. You can update them anytime during the stream.</p>
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#D4854A' }} />
+              <p className="text-[10px]" style={{ color: '#CC7755' }}>These permissions are specific to this guest. You can update them anytime during the stream.</p>
             </div>
           </div>
 

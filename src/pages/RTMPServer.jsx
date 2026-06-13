@@ -75,7 +75,7 @@ export default function RTMPServer() {
             </button>
           </Link>
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-orange-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#D4854A] flex items-center justify-center">
               <Server className="w-4 h-4 text-black" />
             </div>
             <div>

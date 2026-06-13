@@ -96,8 +96,8 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
           animate={{ opacity: 1 }}
           className="rounded p-1.5 flex gap-1.5" style={{ background: 'rgba(212,133,74,0.1)', border: '1px solid rgba(212,133,74,0.25)' }}
         >
-          <AlertTriangle className="w-3 h-3 text-orange-400 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-orange-300">
+          <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" style={{ color: '#D4854A' }} />
+          <p className="text-[11px]" style={{ color: '#CC7755' }}>
             {stats.health === 'warning' ? 'Connection unstable — consider lower bitrate' : 'Critical — connection degrading'}
           </p>
         </motion.div>
