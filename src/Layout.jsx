@@ -91,6 +91,14 @@ var DRAWER_CREATE = [
   { name: 'PK Battle Mgr',    icon: Swords,          href: createPageUrl('PKBattleManager') },
   { name: 'Creator Subs',     icon: DollarSign,      href: createPageUrl('CreatorSubscriptions') },
   { name: 'Invite Users',     icon: Users,           href: createPageUrl('InviteUsers') },
+  { name: 'Analytics',        icon: BarChart2,       href: createPageUrl('Analytics') },
+  { name: 'Creator Dashboard',icon: LayoutDashboard, href: createPageUrl('Dashboard') },
+  { name: 'Newsletter',       icon: MessageSquare,   href: createPageUrl('Newsletter') },
+  { name: 'Overlay Builder',  icon: Layers,          href: createPageUrl('OverlayBuilder') },
+  { name: 'Greenroom',        icon: Video,           href: createPageUrl('Greenroom') },
+  { name: 'PPV Events',       icon: DollarSign,      href: createPageUrl('PayPerViewEvents') },
+  { name: 'VOD Library',      icon: Video,           href: createPageUrl('VODLibrary') },
+  { name: 'Social Expo',      icon: Globe,           href: createPageUrl('SocialExpo') },
 ];
 
 var DRAWER_ACCOUNT = [
@@ -106,8 +114,12 @@ var DRAWER_ACCOUNT = [
   { name: 'Data Export',icon: FileText,      href: createPageUrl('DataExport') },
   { name: 'Viewer Dashboard',icon: LayoutDashboard, href: createPageUrl('ViewerDashboard') },
   { name: 'Loyalty Program',  icon: Trophy,         href: createPageUrl('LoyaltyProgram') },
+  { name: 'Loyalty Hub',      icon: Trophy,         href: createPageUrl('LoyaltyHub') },
   { name: 'My Subscriptions', icon: Star,           href: createPageUrl('CreatorSubscriptions') },
   { name: 'Invite Friends',   icon: Users,          href: createPageUrl('InviteUsers') },
+  { name: 'Communities',      icon: Users,          href: createPageUrl('Communities') },
+  { name: 'Messages',         icon: MessageSquare,  href: createPageUrl('Messages') },
+  { name: 'Leaderboard',      icon: Trophy,         href: createPageUrl('Leaderboard') },
 ];
 
 var DRAWER_ADMIN = [
