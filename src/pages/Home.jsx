@@ -234,6 +234,11 @@ var SPOTLIGHT_ITEMS = [
   { emoji: '🎚️', label: 'Overlay Editor',   sub: 'Custom Overlays',     color: '#D4AF37', page: 'OverlayEditor'         },
   { emoji: '🌐', label: 'Hybrid Room',     sub: 'WebRTC + Guest Mix',  color: '#D4854A', page: 'HybridStreamRoom'       },
   { emoji: '🌟', label: 'Enhancement',     sub: 'Creator Power Tools', color: '#D4AF37', page: 'EnhancementSuite'       },
+  { emoji: '🏅', label: 'Challenges',      sub: 'Earn Rewards',        color: '#D4AF37', page: 'ChallengesHub'          },
+  { emoji: '💎', label: 'Loyalty Hub',     sub: 'Points & Rewards',    color: '#C9A84C', page: 'LoyaltyHub'             },
+  { emoji: '👥', label: 'Communities',     sub: 'Join & Grow',         color: '#6DBF7E', page: 'Communities'            },
+  { emoji: '📺', label: 'Social Expo',     sub: 'Featured Creators',   color: '#CC7755', page: 'SocialExpo'             },
+  { emoji: '🔀', label: 'Multi-Stream',    sub: 'Manage All Streams',  color: '#D4854A', page: 'MultiStreamManager'     },
 ];
 
 function SpotlightStrip() {

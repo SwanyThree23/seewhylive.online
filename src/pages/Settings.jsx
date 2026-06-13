@@ -156,6 +156,15 @@ export default function SettingsPage() {
     { label: 'Hybrid Stream',     href: 'HybridStreamRoom' },
     { label: 'Enhancement Suite', href: 'EnhancementSuite' },
     { label: 'Transcription',     href: 'TranscriptionStudio' },
+    { label: 'Poll Manager',      href: 'PollManager' },
+    { label: 'Multi-Stream Mgr',  href: 'MultiStreamManager' },
+    { label: 'Voice AI Settings', href: 'VoiceAISettings' },
+    { label: 'Stream Analytics',  href: 'StreamAnalytics' },
+    { label: 'Advanced Analytics',href: 'AdvancedAnalytics' },
+    { label: 'Challenges Hub',    href: 'ChallengesHub' },
+    { label: 'Loyalty Hub',       href: 'LoyaltyHub' },
+    { label: 'Communities',       href: 'Communities' },
+    { label: 'Overlay Builder',   href: 'OverlayBuilder' },
   ];
 
   return (
