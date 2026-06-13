@@ -165,6 +165,16 @@ export default function SettingsPage() {
     { label: 'Loyalty Hub',       href: 'LoyaltyHub' },
     { label: 'Communities',       href: 'Communities' },
     { label: 'Overlay Builder',   href: 'OverlayBuilder' },
+    { label: 'Control Room',      href: 'ControlRoom' },
+    { label: 'PK Battle Mgr',     href: 'PKBattleManager' },
+    { label: 'Creator Subs',      href: 'CreatorSubscriptions' },
+    { label: 'Loyalty Program',   href: 'LoyaltyProgram' },
+    { label: 'Invite Users',      href: 'InviteUsers' },
+    { label: 'PPV Events',        href: 'PayPerViewEvents' },
+    { label: 'VOD Library',       href: 'VODLibrary' },
+    { label: 'Content Calendar',  href: 'ContentCalendar' },
+    { label: 'Clips Library',     href: 'ClipsLibrary' },
+    { label: 'Pre-Flight',        href: 'GreenRoomPreFlight' },
   ];
 
   return (
