@@ -51,6 +51,13 @@ export default function ZEGOGoLiveFlow({ roomId, userId, onLive, children }) {
       qc.invalidateQueries(['zego-health', roomId]);
       toast.success('Stream is now LIVE via ZEGOCLOUD!');
       onLive?.();
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'room_created',
+          title: 'Started ZEGO live stream',
+        }).catch(() => {});
+      }
     },
     onError: () => { setConnecting(false); },
   });
