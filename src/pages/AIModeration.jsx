@@ -11,7 +11,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const VIOLATION_STYLE = {
   spam:         { bg: 'rgba(212,175,55,0.1)',   border: 'rgba(212,175,55,0.3)',   color: '#D4AF37' },
-  harassment:   { bg: 'rgba(255,100,0,0.1)',   border: 'rgba(255,100,0,0.3)',   color: '#ff6400' },
+  harassment:   { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
   hate_speech:  { bg: 'rgba(192,57,43,0.1)',  border: 'rgba(192,57,43,0.3)',  color: '#C0392B' },
   inappropriate:{ bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD },
   safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#6DBF7E' },
@@ -135,7 +135,7 @@ export default function AIModerationPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Total Scanned', value: stats.total, icon: Shield, color: GOLD },
-            { label: 'Pending Review', value: stats.pending, icon: AlertTriangle, color: '#ff6400' },
+            { label: 'Pending Review', value: stats.pending, icon: AlertTriangle, color: '#C0392B' },
             { label: 'Safe Content', value: stats.safe, icon: CheckCircle, color: '#6DBF7E' },
             { label: 'Violations', value: stats.violations, icon: XCircle, color: '#C0392B' },
           ].map(({ label, value, icon: Icon, color }) => (
