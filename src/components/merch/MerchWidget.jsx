@@ -74,7 +74,28 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
       creator_payout: total * 0.9, platform_cut: total * 0.1,
       room_id: roomId, status: "pending",
     }),
-    onSuccess: () => { setSuccess(true); qc.invalidateQueries(["merch-orders"]); },
+    onSuccess: () => {
+      setSuccess(true);
+      qc.invalidateQueries(["merch-orders"]);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'ppv_purchase',
+            title: `Ordered ${item.name} x${qty}`,
+            amount: total,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'tip_received',
+            title: `Merch order: ${item.name} x${qty} from ${currentUser.full_name || 'viewer'}`,
+            amount: total * 0.9,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
+    },
   });
 
   return (

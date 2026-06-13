@@ -183,7 +183,17 @@ export default function ChallengesHubPage() {
       score: 0,
       completed: false,
     }),
-    onSuccess: () => { qc.invalidateQueries(['ch-mine']); toast.success('Joined challenge!'); },
+    onSuccess: (_, challenge) => {
+      qc.invalidateQueries(['ch-mine']);
+      toast.success('Joined challenge!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'challenge_joined',
+          title: `Joined challenge: ${challenge?.title || 'Challenge'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const myCompleted = myParticipations.filter(p => p.completed);

@@ -43,13 +43,22 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
   const redeemMutation = useMutation({
     mutationFn: ({ rewardId, message }) =>
       base44.functions.invoke('redeemReward', { reward_id: rewardId, room_id: roomId, message }),
-    onSuccess: (res) => {
+    onSuccess: (res, { rewardId }) => {
       if (res.data?.error) { toast.error(res.data.error); return; }
       toast.success('Reward redeemed! 🎉');
+      const reward = rewards.find(r => r.id === rewardId);
       setRedeeming(null);
       setMessageInput('');
       setShowMessage(null);
       qc.invalidateQueries(['viewer-loyalty', currentUser?.id, creatorId]);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'ppv_purchase',
+          title: `Redeemed: ${reward ? REWARD_LABELS[reward.reward_type] || reward.reward_type : 'Reward'}`,
+          amount: reward?.points_cost,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Redemption failed'),
   });

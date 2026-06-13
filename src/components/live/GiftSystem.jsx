@@ -158,6 +158,24 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
       onSend && onSend({ ...gift, sender_name: currentUser?.full_name || "You" });
       qc.invalidateQueries(["gift-lb", roomId]);
       setOpen(false);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'gift_sent',
+            title: `Sent ${gift.name || 'gift'}`,
+            amount: gift.price,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'gift_received',
+            title: `Received ${gift.name || 'gift'} from ${currentUser.full_name || 'viewer'}`,
+            amount: gift.price,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
     },
   });
 
