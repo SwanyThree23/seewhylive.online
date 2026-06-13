@@ -145,7 +145,6 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
               Done
             </button>
           </div>
-          </div>
         </div>
       </div>
     </>
