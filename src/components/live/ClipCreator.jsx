@@ -20,9 +20,17 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
 
   const createClipMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamClip.create(data),
-    onSuccess: () => {
+    onSuccess: (clip) => {
       toast.success('Clip saved! View on your channel →');
       setOpen(false);
+      const userId = currentUser?.id || creatorId;
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Clipped: ${clip?.title || title || 'Stream clip'}`,
+        }).catch(() => {});
+      }
     },
   });
 
