@@ -223,6 +223,12 @@ export default function CreatorPublicProfile() {
     } else {
       base44.entities.Follow.create({ creator_id: creatorId, follower_id: currentUser.id }).catch(() => {});
       setFollowToast('Following!');
+      base44.entities.Activity.create({
+        user_id: currentUser.id,
+        type: 'follow',
+        title: `Followed creator: ${profile?.display_name || profile?.full_name || 'Creator'}`,
+        recipient_id: creatorId,
+      }).catch(() => {});
     }
     setTimeout(() => setFollowToast(''), 2500);
   }

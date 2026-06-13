@@ -136,6 +136,13 @@ export default function ProfilePage() {
       toast.success('Profile updated!');
       queryClient.invalidateQueries(['currentUser']);
       setIsEditing(false);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Updated profile',
+        }).catch(() => {});
+      }
     },
   });
 

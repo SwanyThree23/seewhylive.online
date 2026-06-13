@@ -90,12 +90,21 @@ export default function CommunitySettingsPage() {
     }
   }, [community]);
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Community.update(communityId, data),
     onSuccess: () => {
       toast.success('Community settings saved!');
       queryClient.invalidateQueries({ queryKey: ['community-settings'] });
       queryClient.invalidateQueries({ queryKey: ['search-communities'] });
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Updated community settings: ${community?.name || 'Community'}`,
+        }).catch(() => {});
+      }
     },
   });
 
