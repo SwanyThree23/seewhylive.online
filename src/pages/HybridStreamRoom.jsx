@@ -155,6 +155,9 @@ export default function HybridStreamRoom() {
               spotlightId={spotlightId}
               onSpotlight={(id) => setSpotlightId(spotlightId === id ? null : id)}
               maxGuests={20}
+              roomId={roomId}
+              isHost={isHost}
+              currentUser={user}
             />
           </div>
         </div>
