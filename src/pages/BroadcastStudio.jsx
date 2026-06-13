@@ -1634,8 +1634,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 />
                 <GuestControls
                   participants={members}
-                  onMuteGuest={(guestId) => console.log('mute', guestId)}
-                  onRemoveGuest={(guestId) => console.log('remove', guestId)}
+                  onMuteGuest={(guestId) => {
+                    const m = members.find(x => x.id === guestId);
+                    if (m) toast(`${m.user_name} muted (local)`);
+                  }}
+                  onRemoveGuest={(guestId) => {
+                    const m = members.find(x => x.id === guestId);
+                    if (m) kickMember(m);
+                  }}
                 />
                 <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
                 {members[0]?.user_id && (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 
@@ -112,6 +112,8 @@ export default function MultiPlatform() {
   const [shoutouts, setShoutouts] = useState(['Welcome Creator_XYZ to SeeWhy LIVE! 🎉','100 viewers milestone — you\'re amazing! 🔥','FanbaseUser just gifted you a 💎 Diamond!']);
   const [toast, setToast] = useState('');
   const [reactions] = useState(['🔥','❤️','🎉','💯','👏']);
+  const [customBgs, setCustomBgs] = useState([]);
+  const bgUploadRef = useRef(null);
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
@@ -365,6 +367,23 @@ export default function MultiPlatform() {
                 {/* Virtual backgrounds */}
                 <div style={{ background:BG2, borderRadius:16, border:'1px solid rgba(255,255,255,0.07)', padding:'18px 16px' }}>
                   <p style={{ ...T, fontSize:15, fontWeight:900, color:'#fff', margin:'0 0 12px' }}>Virtual Background</p>
+                  <input
+                    ref={bgUploadRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display:'none' }}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const url = URL.createObjectURL(file);
+                      const id = `custom_${Date.now()}`;
+                      const label = file.name.replace(/\.[^.]+$/, '').slice(0, 12);
+                      setCustomBgs(prev => [...prev, { id, label, url }]);
+                      setVirtualBg(id);
+                      showToast(`Background "${label}" added`);
+                      e.target.value = '';
+                    }}
+                  />
                   <div style={{ display:'flex', gap:10, overflowX:'auto', paddingBottom:4 }} className="scrollbar-hide">
                     {VIRTUAL_BGS.map(bg => (
                       <motion.button key={bg.id} whileTap={{ scale:0.95 }} onClick={() => setVirtualBg(bg.id)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
@@ -372,7 +391,13 @@ export default function MultiPlatform() {
                         <span style={{ ...T, fontSize:10, color:virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.4)', fontWeight:700 }}>{bg.label}</span>
                       </motion.button>
                     ))}
-                    <motion.button whileTap={{ scale:0.95 }} onClick={() => showToast('Upload feature coming soon!')} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
+                    {customBgs.map(bg => (
+                      <motion.button key={bg.id} whileTap={{ scale:0.95 }} onClick={() => setVirtualBg(bg.id)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
+                        <div style={{ width:64, height:40, borderRadius:8, backgroundImage:`url(${bg.url})`, backgroundSize:'cover', backgroundPosition:'center', border:`2px solid ${virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.08)'}` }} />
+                        <span style={{ ...T, fontSize:10, color:virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.4)', fontWeight:700, maxWidth:60, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{bg.label}</span>
+                      </motion.button>
+                    ))}
+                    <motion.button whileTap={{ scale:0.95 }} onClick={() => bgUploadRef.current?.click()} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
                       <div style={{ width:64, height:40, borderRadius:8, background:'rgba(255,255,255,0.04)', border:'2px dashed rgba(255,255,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                         <span style={{ fontSize:18 }}>+</span>
                       </div>
