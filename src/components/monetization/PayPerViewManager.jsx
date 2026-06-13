@@ -35,16 +35,25 @@ export default function PayPerViewManager({ roomId }) {
   const createPPVMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
-      return base44.entities.PayPerViewEvent.create({
+      const event = await base44.entities.PayPerViewEvent.create({
         ...data,
         room_id: roomId,
         status: 'upcoming',
       });
+      return { event, userId: user?.id };
     },
-    onSuccess: () => {
+    onSuccess: ({ event, userId }) => {
       queryClient.invalidateQueries({ queryKey: ['ppvEvents', roomId] });
       setShowForm(false);
       setFormData({ title: '', description: '', price: 9.99, event_date: '', duration_minutes: 60, max_participants: null });
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'stream_scheduled',
+          title: `Created PPV event: ${event?.title || 'PPV Event'}`,
+          amount: event?.price,
+        }).catch(() => {});
+      }
     },
   });
 

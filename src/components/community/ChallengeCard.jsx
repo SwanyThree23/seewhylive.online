@@ -24,6 +24,13 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
       queryClient.invalidateQueries(['challenges']);
       queryClient.invalidateQueries(['challengeParticipation']);
       toast.success('Joined challenge successfully!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'challenge_joined',
+          title: `Joined challenge: ${challenge?.title || 'Challenge'}`,
+        }).catch(() => {});
+      }
     },
   });
 

@@ -111,7 +111,19 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamerGoal.create(data),
-    onSuccess: () => { qc.invalidateQueries(['streamer-goals']); setShowForm(false); toast.success('Goal created!'); },
+    onSuccess: (goal) => {
+      qc.invalidateQueries(['streamer-goals']);
+      setShowForm(false);
+      toast.success('Goal created!');
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created stream goal: ${goal?.title || 'Goal'}`,
+          amount: goal?.target_amount,
+        }).catch(() => {});
+      }
+    },
   });
 
   const updateMutation = useMutation({

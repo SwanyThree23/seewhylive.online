@@ -31,13 +31,20 @@ export default function AnnouncementPanel({ communityId, userId }) {
         sent_at: new Date().toISOString(),
       });
     },
-    onSuccess: () => {
+    onSuccess: (ann) => {
       queryClient.invalidateQueries(['announcements']);
       setTitle('');
       setContent('');
       setPriority('normal');
       setTargetAudience('all');
       toast.success('Announcement sent successfully!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Sent announcement: ${ann?.title || 'Announcement'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -54,11 +61,18 @@ export default function AnnouncementPanel({ communityId, userId }) {
         scheduled_for: scheduledTime,
       });
     },
-    onSuccess: () => {
+    onSuccess: (ann) => {
       queryClient.invalidateQueries(['announcements']);
       setTitle('');
       setContent('');
       toast.success('Announcement scheduled!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'stream_scheduled',
+          title: `Scheduled announcement: ${ann?.title || 'Announcement'}`,
+        }).catch(() => {});
+      }
     },
   });
 
