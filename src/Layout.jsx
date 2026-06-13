@@ -36,6 +36,7 @@ var DRAWER_WATCH = [
   { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
+  { name: 'SwanyBot',         icon: Bot,     href: createPageUrl('SwanyBotPage') },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
   { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
   { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
@@ -71,6 +72,10 @@ var DRAWER_CREATE = [
   { name: 'Captions',         icon: FileText,        href: createPageUrl('TranscriptionStudio') },
   { name: 'Clips',            icon: Scissors,        href: createPageUrl('ClipsLibrary') },
   { name: 'Content Calendar', icon: Calendar,        href: createPageUrl('ContentCalendar') },
+  { name: 'Scene Templates',  icon: Layers,          href: createPageUrl('SceneTemplates') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Hybrid Room',      icon: Radio,           href: createPageUrl('HybridStreamRoom') },
+  { name: 'Enhancement Suite',icon: Sparkles,        href: createPageUrl('EnhancementSuite') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 
