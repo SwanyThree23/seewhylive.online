@@ -80,7 +80,17 @@ export default function CommunityPage() {
 
   const joinMut = useMutation({
     mutationFn: () => base44.entities.CommunityMember.create({ community_id: community.id, user_id: user.id, role: 'member', joined_date: new Date().toISOString() }),
-    onSuccess: () => { toast.success(`Joined ${community.name}!`); qc.invalidateQueries({ queryKey: ['my-membership'] }); qc.invalidateQueries({ queryKey: ['community-member-count-page'] }); },
+    onSuccess: () => {
+      toast.success(`Joined ${community.name}!`);
+      qc.invalidateQueries({ queryKey: ['my-membership'] });
+      qc.invalidateQueries({ queryKey: ['community-member-count-page'] });
+      base44.entities.Activity.create({
+        user_id: user.id,
+        type: 'community_joined',
+        title: `Joined ${community.name}`,
+        description: community.description || '',
+      }).catch(() => {});
+    },
   });
 
   const leaveMut = useMutation({
