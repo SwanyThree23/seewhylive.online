@@ -2,50 +2,54 @@
   "name": "PKBattle",
   "type": "object",
   "properties": {
-    "creator_id": {
-      "type": "string",
-      "description": "Battle host user ID"
-    },
     "challenger_id": {
-      "type": "string",
-      "description": "Invited challenger user ID"
-    },
-    "creator_name": {
       "type": "string"
     },
     "challenger_name": {
       "type": "string"
     },
-    "creator_avatar": {
+    "opponent_id": {
       "type": "string"
     },
-    "challenger_avatar": {
+    "opponent_name": {
       "type": "string"
     },
-    "creator_stream_url": {
-      "type": "string"
+    "format": {
+      "type": "number",
+      "enum": [
+        3,
+        5,
+        7,
+        10
+      ],
+      "default": 5
     },
-    "challenger_stream_url": {
-      "type": "string"
+    "score_a": {
+      "type": "number",
+      "default": 0
     },
-    "title": {
+    "score_b": {
+      "type": "number",
+      "default": 0
+    },
+    "winner_id": {
       "type": "string"
     },
     "status": {
       "type": "string",
       "enum": [
         "pending",
-        "accepted",
-        "declined",
         "active",
         "ended",
-        "cancelled"
+        "forfeited"
       ],
       "default": "pending"
     },
-    "duration_seconds": {
-      "type": "number",
-      "default": 180
+    "match_log": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
     },
     "started_at": {
       "type": "string",
@@ -54,92 +58,11 @@
     "ended_at": {
       "type": "string",
       "format": "date-time"
-    },
-    "creator_score": {
-      "type": "number",
-      "default": 0
-    },
-    "challenger_score": {
-      "type": "number",
-      "default": 0
-    },
-    "creator_tips": {
-      "type": "number",
-      "default": 0
-    },
-    "challenger_tips": {
-      "type": "number",
-      "default": 0
-    },
-    "creator_subs": {
-      "type": "number",
-      "default": 0
-    },
-    "challenger_subs": {
-      "type": "number",
-      "default": 0
-    },
-    "winner_id": {
-      "type": "string"
-    },
-    "winner_name": {
-      "type": "string"
-    },
-    "reward_points": {
-      "type": "number",
-      "default": 500,
-      "description": "Points awarded to winner"
-    },
-    "reward_badge": {
-      "type": "string",
-      "default": "pk_champion"
-    },
-    "viewer_count": {
-      "type": "number",
-      "default": 0
-    },
-    "invite_message": {
-      "type": "string"
-    },
-    "room_id": {
-      "type": "string"
     }
   },
   "required": [
-    "creator_id",
-    "creator_name"
-  ],
-  "rls": {
-    "create": {
-      "data.creator_id": "{{user.id}}"
-    },
-    "read": {},
-    "update": {
-      "$or": [
-        {
-          "data.creator_id": "{{user.id}}"
-        },
-        {
-          "data.challenger_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
-    "delete": {
-      "$or": [
-        {
-          "data.creator_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    }
-  }
+    "challenger_id",
+    "challenger_name",
+    "format"
+  ]
 }
