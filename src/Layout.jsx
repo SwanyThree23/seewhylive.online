@@ -87,6 +87,10 @@ var DRAWER_CREATE = [
   { name: 'Hybrid Room',      icon: Radio,           href: createPageUrl('HybridStreamRoom') },
   { name: 'Enhancement Suite',icon: Sparkles,        href: createPageUrl('EnhancementSuite') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
+  { name: 'Control Room',     icon: LayoutDashboard, href: createPageUrl('ControlRoom') },
+  { name: 'PK Battle Mgr',    icon: Swords,          href: createPageUrl('PKBattleManager') },
+  { name: 'Creator Subs',     icon: DollarSign,      href: createPageUrl('CreatorSubscriptions') },
+  { name: 'Invite Users',     icon: Users,           href: createPageUrl('InviteUsers') },
 ];
 
 var DRAWER_ACCOUNT = [
@@ -100,6 +104,10 @@ var DRAWER_ACCOUNT = [
   { name: 'Notifications', icon: Bell,       href: createPageUrl('Notifications') },
   { name: 'Activity',   icon: ActivityIcon,  href: createPageUrl('Activity') },
   { name: 'Data Export',icon: FileText,      href: createPageUrl('DataExport') },
+  { name: 'Viewer Dashboard',icon: LayoutDashboard, href: createPageUrl('ViewerDashboard') },
+  { name: 'Loyalty Program',  icon: Trophy,         href: createPageUrl('LoyaltyProgram') },
+  { name: 'My Subscriptions', icon: Star,           href: createPageUrl('CreatorSubscriptions') },
+  { name: 'Invite Friends',   icon: Users,          href: createPageUrl('InviteUsers') },
 ];
 
 var DRAWER_ADMIN = [
