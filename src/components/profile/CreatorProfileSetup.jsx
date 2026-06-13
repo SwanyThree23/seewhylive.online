@@ -42,6 +42,14 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
       qc.invalidateQueries(['creatorProfile', user?.id]);
       toast.success('Creator profile created! Welcome to SeeWhy LIVE 🎉');
       onClose();
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: 'Creator profile set up',
+          description: category,
+        }).catch(() => {});
+      }
     },
   });
 

@@ -14,7 +14,7 @@
     --cy: #6DBF7E;          /* green - data/success */
     --em: #6DBF7E;          /* green - success/live */
     --pu: #D4854A;          /* amber - AI/AURA accent */
-    --or: #FF8C00;          /* orange - warning/fire */
+    --or: #D4854A;          /* amber - warning/fire */
     --bg-card: rgba(11,11,24,0.95);
     --bg-panel: rgba(8,11,24,0.98);
     --border-gold: rgba(212,175,55,0.2);
