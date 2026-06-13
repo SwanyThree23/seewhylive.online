@@ -80,7 +80,19 @@ export default function NewsletterHubPage() {
   });
   const sendMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, ...data }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Sent! 🚀'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('sent'); },
+    onSuccess: (newsletter) => {
+      qc.invalidateQueries({ queryKey:['newsletters'] });
+      showToast('Sent! 🚀');
+      setForm({title:'',content:'',preview_text:'',scheduled_for:''});
+      setTab('sent');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Sent newsletter: ${newsletter?.title || 'Newsletter'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.Newsletter.delete(id),
