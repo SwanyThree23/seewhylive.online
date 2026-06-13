@@ -24,18 +24,18 @@ const C = {
   text:    "#F0E8D4",
   textD:   "#C4B596",
   textM:   "#8A7A62",
-  green:   "#2ECC71",
-  red:     "#E74C3C",
-  blue:    "#3498DB",
+  green:   "#6DBF7E",
+  red:     "#C0392B",
+  blue:    "#D4AF37",
   purple:  "#D4854A",
   cyan:    "#D4854A",
-  orange:  "#FF6B35",
+  orange:  "#D4854A",
   teal:    "#6DBF7E",
-  warn:    "#F39C12",
+  warn:    "#D4854A",
   tribute: "#800020",
   tribL:   "#C9A84C",
-  state1:  "#1565C0",
-  state2:  "#C62828",
+  state1:  "#D4854A",
+  state2:  "#C0392B",
 };
 
 const F = {
@@ -948,7 +948,7 @@ function MusicStudioPanel() {
     setLoading(false);
   }
 
-  const STEM_COLORS = {Drums:C.red,Bass:C.gold,Melody:C.cyan,Vocals:C.purple,FX:C.teal,"808s":"#FF6B35"};
+  const STEM_COLORS = {Drums:C.red,Bass:C.gold,Melody:C.cyan,Vocals:C.purple,FX:C.teal,"808s":"#D4854A"};
 
   return (
     <div style={{display:"flex",flexDirection:"column",gap:14}} className="fade-up">
@@ -1154,7 +1154,7 @@ function MusicStudioPanel() {
 const PLATFORM_LIST = [
   {id:"youtube",  name:"YouTube",    icon:"▶", connected:true,  live:true,  viewers:1240, color:"#FF0000"},
   {id:"twitch",   name:"Twitch",     icon:"📺",connected:true,  live:true,  viewers:890,  color:"#9146FF"},
-  {id:"fanbase",  name:"Fanbase",    icon:"⭐",connected:true,  live:false, viewers:0,    color:"#FF6B35", webhook:true},
+  {id:"fanbase",  name:"Fanbase",    icon:"⭐",connected:true,  live:false, viewers:0,    color:"#D4854A", webhook:true},
   {id:"facebook", name:"Facebook",   icon:"📘",connected:true,  live:true,  viewers:560,  color:"#1877F2"},
   {id:"kick",     name:"Kick",       icon:"🟢",connected:false, live:false, viewers:0,    color:"#53FC18"},
   {id:"tiktok",   name:"TikTok",     icon:"🎵",connected:false, live:false, viewers:0,    color:"#FF0050"},

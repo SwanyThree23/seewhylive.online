@@ -35,6 +35,8 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
   const [participants, setParticipants] = useState([]);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const [screenSharing, setScreenSharing] = useState(false);
+  const screenTrackRef = useRef(null);
   const mediaInitialized = useRef(false);
 
   // Fetch ZEGO config & room state
@@ -149,6 +151,39 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled;
         setLocalVideoPaused(!videoTrack.enabled);
+      }
+    }
+  };
+
+  // Screen share toggle
+  const handleScreenShare = async () => {
+    if (!localStreamRef.current) return;
+    if (screenSharing) {
+      screenTrackRef.current?.stop();
+      screenTrackRef.current = null;
+      const camTrack = await navigator.mediaDevices.getUserMedia({ video: true }).then(s => s.getVideoTracks()[0]).catch(() => null);
+      if (camTrack && localStreamRef.current) {
+        const old = localStreamRef.current.getVideoTracks()[0];
+        if (old) localStreamRef.current.removeTrack(old);
+        localStreamRef.current.addTrack(camTrack);
+        if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
+      }
+      setScreenSharing(false);
+      toast('Camera restored');
+    } else {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        screenTrackRef.current = screenTrack;
+        const old = localStreamRef.current.getVideoTracks()[0];
+        if (old) localStreamRef.current.removeTrack(old);
+        localStreamRef.current.addTrack(screenTrack);
+        if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
+        screenTrack.onended = () => { handleScreenShare(); };
+        setScreenSharing(true);
+        toast.success('Screen sharing started');
+      } catch {
+        toast.error('Screen share cancelled');
       }
     }
   };
@@ -302,11 +337,18 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
             {localVideoPaused ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
           </motion.button>
 
-          {/* Screen share (stub) */}
+          {/* Screen share */}
           <motion.button
             whileTap={{ scale: 0.92 }}
-            className="flex items-center justify-center w-9 h-9 rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+            onClick={handleScreenShare}
+            disabled={!localStreamRef.current}
+            title={screenSharing ? 'Stop screen share' : 'Share screen'}
+            className="flex items-center justify-center w-9 h-9 rounded-lg transition-all"
+            style={{
+              background: screenSharing ? 'rgba(212,133,74,0.2)' : 'rgba(255,255,255,0.05)',
+              border: screenSharing ? '1px solid rgba(212,133,74,0.4)' : '1px solid rgba(255,255,255,0.1)',
+              color: screenSharing ? '#D4854A' : 'rgba(255,255,255,0.4)',
+            }}>
             <Monitor className="w-4 h-4" />
           </motion.button>
 
