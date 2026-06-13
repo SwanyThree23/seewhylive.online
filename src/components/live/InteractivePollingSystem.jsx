@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Plus, Pin, PinOff, MessageCircle, TrendingUp, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const POLL_COLORS = ['#C0392B', '#D4AF37', '#D4854A', '#FFA07A', '#C9A84C'];
+const POLL_COLORS = ['#C0392B', '#D4AF37', '#D4854A', '#CC7755', '#C9A84C'];
 
 const PollResultsChart = ({ poll, votes }) => {
   if (!poll?.options) return null;

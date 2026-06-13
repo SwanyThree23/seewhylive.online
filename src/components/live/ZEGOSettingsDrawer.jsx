@@ -172,7 +172,7 @@ export function StreamHealthHUD({ sessionId, onClick }) {
     { name: "YouTube", status: "healthy" },
     { name: "TikTok", status: "degraded" },
   ];
-  var statusColor = { healthy: "#6DBF7E", degraded: "#FF9500", error: "#FF3B30" };
+  var statusColor = { healthy: "#6DBF7E", degraded: "#D4854A", error: "#FF3B30" };
 
   return (
     <div onClick={onClick} style={{

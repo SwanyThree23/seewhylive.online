@@ -49,7 +49,7 @@ export default function PayPerViewGate({ roomId, ppvPrice = 4.99, onPurchase }) 
           disabled={processing}
           className="w-full py-3 rounded-lg font-bold text-lg transition-all active:scale-95"
           style={{
-            background: `linear-gradient(135deg, ${G}, #FFB700)`,
+            background: `linear-gradient(135deg, ${G}, #D4AF37)`,
             color: '#000',
           }}
         >

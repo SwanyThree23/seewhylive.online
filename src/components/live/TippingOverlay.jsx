@@ -52,7 +52,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2.5 rounded-lg font-bold text-sm transition-all"
         style={{
-          background: isOpen ? `linear-gradient(135deg, ${G}, #FFB700)` : G,
+          background: isOpen ? `linear-gradient(135deg, ${G}, #D4AF37)` : G,
           color: '#000',
         }}
       >
