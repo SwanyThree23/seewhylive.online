@@ -36,7 +36,25 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
 
   const sendTipMutation = useMutation({
     mutationFn: async (tipData) => {
-      return await base44.entities.Transaction.create(tipData);
+      const tx = await base44.entities.Transaction.create(tipData);
+      const recipientId = recipient.user_id || recipient.id;
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser?.id,
+          type: 'tip_sent',
+          title: `Tipped $${tipData.amount} to ${recipient.full_name || recipient.host_name || 'creator'}`,
+          amount: tipData.amount,
+          recipient_id: recipientId,
+        }),
+        base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'tip_received',
+          title: `Received a $${tipData.amount} tip`,
+          amount: tipData.amount,
+          sender_id: currentUser?.id,
+        }),
+      ]);
+      return tx;
     },
     onSuccess: () => {
       toast.success('Tip sent successfully! 💸');
