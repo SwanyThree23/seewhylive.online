@@ -4,13 +4,13 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
 const PAYMENT_PLATFORMS = [
-  { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-blue-600 to-blue-700', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
-  { id: 'cashapp', name: 'Cash App', emoji: '💚', color: 'from-green-500 to-green-600', baseUrl: 'https://cash.app/$', placeholder: 'YourCashtag' },
-  { id: 'venmo', name: 'Venmo', emoji: '💙', color: 'from-sky-500 to-blue-600', baseUrl: 'https://venmo.com/', placeholder: 'your-username' },
+  { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-[#0D1022] to-[#080B18]', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
+  { id: 'cashapp', name: 'Cash App', emoji: '💚', color: 'from-[#4A9B5E] to-[#6DBF7E]', baseUrl: 'https://cash.app/$', placeholder: 'YourCashtag' },
+  { id: 'venmo', name: 'Venmo', emoji: '💙', color: 'from-[#0D1022] to-[#0B0B18]', baseUrl: 'https://venmo.com/', placeholder: 'your-username' },
   { id: 'zelle', name: 'Zelle', emoji: '💜', color: 'from-[#800020] to-[#C0392B]', baseUrl: null, placeholder: 'phone or email' },
-  { id: 'chime', name: 'Chime', emoji: '🟢', color: 'from-emerald-500 to-teal-600', baseUrl: 'https://chime.com/', placeholder: 'your-tag' },
-  { id: 'applepay', name: 'Apple Pay', emoji: '🍎', color: 'from-gray-700 to-gray-900', baseUrl: null, placeholder: 'phone or email' },
-  { id: 'googlepay', name: 'Google Pay', emoji: '🔵', color: 'from-blue-500 to-indigo-600', baseUrl: null, placeholder: 'phone or email' },
+  { id: 'chime', name: 'Chime', emoji: '🟢', color: 'from-[#4A9B5E] to-[#6DBF7E]', baseUrl: 'https://chime.com/', placeholder: 'your-tag' },
+  { id: 'applepay', name: 'Apple Pay', emoji: '🍎', color: 'from-[#0F1428] to-[#080B18]', baseUrl: null, placeholder: 'phone or email' },
+  { id: 'googlepay', name: 'Google Pay', emoji: '🔵', color: 'from-[#0D1022] to-[#080B18]', baseUrl: null, placeholder: 'phone or email' },
   { id: 'custom', name: 'Custom Link', emoji: '🔗', color: 'from-[#800020] to-[#D4854A]', baseUrl: '', placeholder: 'https://...' },
 ];
 
