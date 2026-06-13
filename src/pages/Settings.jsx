@@ -151,6 +151,11 @@ export default function SettingsPage() {
     { label: 'Newsletter Hub',    href: 'NewsletterHub' },
     { label: 'Social Expo',       href: 'SocialExpo' },
     { label: 'Multi-Platform+',   href: 'MultiPlatformIntegration' },
+    { label: 'Aura AI',           href: 'AuraAI' },
+    { label: 'SwanyBot',          href: 'SwanyBotPage' },
+    { label: 'Hybrid Stream',     href: 'HybridStreamRoom' },
+    { label: 'Enhancement Suite', href: 'EnhancementSuite' },
+    { label: 'Transcription',     href: 'TranscriptionStudio' },
   ];
 
   return (
