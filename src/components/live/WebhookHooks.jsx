@@ -12,7 +12,7 @@ const EVENTS = [
   { id: 'tip.received', label: 'Tip Received', color: 'text-[#d4af37]' },
   { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#D4854A]' },
   { id: 'goal.reached', label: 'Goal Reached', color: 'text-[#6DBF7E]' },
-  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-orange-400' },
+  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-[#D4854A]' },
 ];
 
 export default function WebhookHooks({ roomId, isHost }) {
