@@ -739,11 +739,11 @@ export default function WatchPartyPage() {
       </div>
 
       {showSyncWarn && !isHost && (
-        <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(255,176,0,0.15)', borderBottom: '1px solid rgba(255,176,0,0.3)' }}>
-          <span className="text-xs font-bold" style={{ color: '#FFB000' }}>⚠️ Sync lost — tap to resync</span>
+        <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(212,175,55,0.15)', borderBottom: '1px solid rgba(212,175,55,0.3)' }}>
+          <span className="text-xs font-bold" style={{ color: '#D4AF37' }}>⚠️ Sync lost — tap to resync</span>
           <button onClick={function() { if (syncData) onTimeSync(syncData); else if (party) onTimeSync(party); setShowSyncWarn(false); }}
             className="ml-auto px-3 py-1 rounded-lg text-[10px] font-bold"
-            style={{ background: 'rgba(255,176,0,0.25)', color: '#FFB000', border: '1px solid rgba(255,176,0,0.4)' }}>
+            style={{ background: 'rgba(212,175,55,0.25)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)' }}>
             Resync
           </button>
         </div>

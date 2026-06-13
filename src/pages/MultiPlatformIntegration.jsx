@@ -251,7 +251,7 @@ export default function MultiPlatformIntegration() {
           </div>
           {platforms.fanbase && (
             <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,90,0,0.06)', border: '1px solid rgba(255,90,0,0.2)' }}>
-              <p style={{ ...T, fontSize: 11, color: '#FF8040', margin: 0 }}>
+              <p style={{ ...T, fontSize: 11, color: '#D4854A', margin: 0 }}>
                 <strong>Fanbase.com connected.</strong> Fan counts, tips, and Super Chats will sync automatically. Go live on both platforms simultaneously using the RTMP destinations below.
               </p>
             </div>

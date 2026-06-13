@@ -261,7 +261,7 @@ export default function PayoutsPage() {
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               fontSize: 13, fontWeight: 700,
-              color: isConnected ? GREEN : '#FF9900',
+              color: isConnected ? GREEN : '#D4854A',
               background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(255,153,0,0.1)',
               border: `1px solid ${isConnected ? 'rgba(109,191,126,0.25)' : 'rgba(255,153,0,0.25)'}`,
               borderRadius: 20, padding: '3px 10px',
@@ -350,7 +350,7 @@ export default function PayoutsPage() {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: isConnected ? GREEN : '#FF9900',
+              color: isConnected ? GREEN : '#D4854A',
               background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(255,153,0,0.08)',
               border: `1px solid ${isConnected ? 'rgba(109,191,126,0.3)' : 'rgba(255,153,0,0.3)'}`,
               borderRadius: 20, padding: '3px 10px',
@@ -471,7 +471,7 @@ export default function PayoutsPage() {
               background: 'rgba(255,153,0,0.08)',
               border: '1px solid rgba(255,153,0,0.25)',
               borderRadius: 10, padding: '12px 14px',
-              fontSize: 13, color: '#FF9900',
+              fontSize: 13, color: '#D4854A',
             }}>
               <AlertCircle size={16} style={{ flexShrink: 0 }} />
               Connect Stripe account first before requesting a payout.
