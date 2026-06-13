@@ -68,7 +68,19 @@ export default function StreamScheduler() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledStream.create(data),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setForm(blankForm); toast.success('Stream scheduled!'); },
+    onSuccess: (created) => {
+      qc.invalidateQueries(['scheduled-streams']);
+      setShowForm(false);
+      setForm(blankForm);
+      toast.success('Stream scheduled!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Scheduled: ${created?.title || 'Stream'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),

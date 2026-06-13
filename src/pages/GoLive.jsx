@@ -382,6 +382,12 @@ export default function GoLive() {
       });
       setPartyId(party.id);
       setCountdown(true);
+      base44.entities.Activity.create({
+        user_id: user?.id,
+        type: 'room_created',
+        title: `Started streaming: ${title.trim()}`,
+        description: category || '',
+      }).catch(() => {});
     } catch {
       toast.error('Failed to create stream');
       setLaunching(false);
