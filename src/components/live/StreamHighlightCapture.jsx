@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const MOMENTS = [
   { id: 'fire',    icon: '🔥', label: 'Fire Moment',  color: '#FF4500' },
-  { id: 'epic',    icon: '⚡', label: 'Epic',          color: '#FFB800' },
+  { id: 'epic',    icon: '⚡', label: 'Epic',          color: '#D4AF37' },
   { id: 'funny',   icon: '😂', label: 'LOL Moment',   color: '#6DBF7E' },
   { id: 'tip',     icon: '💰', label: 'Big Tip',       color: '#d4af37' },
   { id: 'peak',    icon: '🏆', label: 'Peak Moment',  color: '#D4AF37' },
@@ -46,7 +46,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
           fontFamily: 'Barlow Condensed, sans-serif',
           background: open ? 'rgba(255,184,0,0.2)' : 'rgba(255,184,0,0.08)',
           border: '1px solid rgba(255,184,0,0.25)',
-          color: '#FFB800',
+          color: '#D4AF37',
         }}>
         <Scissors className="w-3 h-3" />
         Clip

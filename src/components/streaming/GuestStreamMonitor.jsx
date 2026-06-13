@@ -28,7 +28,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
   const healthColor = {
     excellent: '#6DBF7E',
     good: '#d4af37',
-    warning: '#FFB800',
+    warning: '#D4AF37',
     critical: '#C0392B'
   };
 

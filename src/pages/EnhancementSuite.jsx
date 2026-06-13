@@ -80,7 +80,7 @@ const SHARE_PLATFORMS = [
   { id: "tiktok", name: "TikTok", icon: "♪", color: "#010101", textColor: "#fff" },
   { id: "whatsapp", name: "WhatsApp", icon: "✉", color: "#25D366", textColor: "#fff" },
   { id: "telegram", name: "Telegram", icon: "✈", color: "#0088CC", textColor: "#fff" },
-  { id: "discord", name: "Discord", icon: "◈", color: "#5865F2", textColor: "#fff" },
+  { id: "discord", name: "Discord", icon: "◈", color: "#D4854A", textColor: "#fff" },
   { id: "copy", name: "Copy Link", icon: "⧉", color: CV.bgPanel, textColor: CV.gold },
 ];
 
@@ -503,7 +503,7 @@ const INITIAL_MSGS = [
 
 const SHARE_ANALYTICS_DATA = [
   { label: "Twitter/X", count: 284, pct: 92, color: CV.cyan },
-  { label: "Discord", count: 197, pct: 64, color: "#5865F2" },
+  { label: "Discord", count: 197, pct: 64, color: "#D4854A" },
   { label: "WhatsApp", count: 143, pct: 46, color: "#25D366" },
   { label: "TikTok", count: 98, pct: 32, color: "#FF0050" },
   { label: "Instagram", count: 76, pct: 25, color: "#E1306C" },

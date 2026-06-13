@@ -231,7 +231,7 @@ export default function DiscoverPage() {
       <div style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <div style={{ display: 'flex', gap: 8, padding: '10px 16px', width: 'max-content' }}>
           {[
-            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#1565C0' },
+            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#C0392B' },
             { emoji: '🏟️', label: 'Battle Arena',    sub: 'Vote Live Battles', page: 'PKBattleArena',  color: '#C0392B' },
             { emoji: '🏆', label: 'Live Battles',    sub: 'PK Showdowns',   page: 'LiveBattles',     color: '#D4854A' },
             { emoji: '👑', label: 'Elite League',    sub: 'Creator Rankings', page: 'Leaderboard',    color: '#D4AF37' },
@@ -400,7 +400,7 @@ export default function DiscoverPage() {
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#FFB800', '#5A5A7A', '#FF8C00'];
+  const rankColors = ['#D4AF37', '#D4AF37', '#D4854A'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
@@ -439,10 +439,10 @@ function ScheduledRow({ room }) {
     <Link to={`${createPageUrl('Room')}?id=${room.id}`}>
       <motion.div
         whileHover={{ x: 4 }}
-        className="flex items-center gap-4 p-4 rounded-xl border border-[#0D1022] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
+        className="flex items-center gap-4 p-4 rounded-xl border border-[#0D1022] hover:border-[#D4AF37]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
       >
         <div className="w-12 h-12 rounded-lg bg-[#0D1022] border border-[#0D1022] flex items-center justify-center shrink-0">
-          <Calendar className="w-5 h-5 text-[#FFB800]" />
+          <Calendar className="w-5 h-5 text-[#D4AF37]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{room.title}</p>

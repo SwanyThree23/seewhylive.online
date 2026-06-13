@@ -6,7 +6,7 @@ const BG2  = '#0D1022';
 const BG3  = '#13182C';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const BLUE  = '#1565C0';
+const BLUE  = '#D4854A';
 const RED2  = '#C62828';
 const TEAL  = '#6DBF7E';
 const CYAN  = '#D4AF37';
@@ -19,7 +19,7 @@ const STATES_DATA = [
     players: ['K. Daniels', 'T. Brooks', 'M. Evans', 'J. Carter', 'L. Hayes'],
   },
   {
-    id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20',
+    id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E',
     record: { w: 3, l: 2 }, pts: 1650,
     players: ['D. Reyes', 'A. Nguyen', 'C. Moore', 'R. Torres', 'P. Green'],
   },
@@ -29,17 +29,17 @@ const STATES_DATA = [
     players: ['B. Williams', 'S. Johnson', 'H. Davis', 'N. Wilson', 'F. Martinez'],
   },
   {
-    id: 'fl', name: 'Florida', abbr: 'FL', color: '#E65100',
+    id: 'fl', name: 'Florida', abbr: 'FL', color: '#C0392B',
     record: { w: 3, l: 1 }, pts: 1740,
     players: ['O. Smith', 'V. Brown', 'Q. Jones', 'I. Garcia', 'E. Miller'],
   },
   {
-    id: 'ny', name: 'New York', abbr: 'NY', color: '#1B3D7B',
+    id: 'ny', name: 'New York', abbr: 'NY', color: '#D4AF37',
     record: { w: 2, l: 3 }, pts: 1380,
     players: ['Z. Anderson', 'W. Thomas', 'U. Jackson', 'Y. White', 'X. Harris'],
   },
   {
-    id: 'ga', name: 'Georgia', abbr: 'GA', color: '#BF360C',
+    id: 'ga', name: 'Georgia', abbr: 'GA', color: '#CC7755',
     record: { w: 1, l: 4 }, pts: 1120,
     players: ['G. Lewis', 'J. Robinson', 'P. Walker', 'K. Hall', 'T. Allen'],
   },
@@ -746,7 +746,7 @@ export default function StateVsState() {
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
       <a href="/Leaderboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 12 }} aria-label="Back to Leaderboard">← Leaderboard</a>
       <div style={{
-        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #1565C0 200%)`,
+        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #1A0010 200%)`,
         borderRadius: 16,
         padding: '20px 16px',
         marginBottom: 18,

@@ -78,7 +78,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
     ? 'rgba(212,175,55,0.35)'
     : 'rgba(255,255,255,0.12)';
 
-  var connDotColor = stream && stream.active ? '#6DBF7E' : member ? '#FFD700' : 'rgba(255,255,255,0.25)';
+  var connDotColor = stream && stream.active ? '#6DBF7E' : member ? '#D4AF37' : 'rgba(255,255,255,0.25)';
 
   var roleBadge = null;
   if (member.role === 'host') {

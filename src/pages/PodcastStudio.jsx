@@ -12,7 +12,7 @@ const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const CYAN   = '#D4854A';
 const PURPLE = '#D4854A';
-const GREEN  = '#5A7A4A';
+const GREEN  = '#4A9B5E';
 const NLM    = '#4285F4'; // Google NotebookLM blue
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -33,7 +33,7 @@ const NLM_LIB = [
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
 const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
+const CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D4AF37', monetize:'#4A9B5E', domino:'#C62828', social:'#D4854A' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];

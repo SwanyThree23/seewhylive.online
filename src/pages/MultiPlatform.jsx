@@ -9,7 +9,7 @@ const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const CYAN   = '#D4854A';
 const PURPLE = '#D4854A';
-const GREEN  = '#5A7A4A';
+const GREEN  = '#4A9B5E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PLATFORMS = [
@@ -18,7 +18,7 @@ const PLATFORMS = [
   { id:'twitch',   name:'Twitch',               emoji:'🟣', color:'#9146FF', desc:'Reach gaming and creative audiences with simultaneous Twitch streaming.', features:['Live stream','Clip sharing','Channel points','Raids & hosts'] },
   { id:'tiktok',   name:'TikTok LIVE',          emoji:'🎵', color:CYAN,      desc:'Go live on TikTok and tap into trending sounds and viral discovery.', features:['LIVE streaming','Trending sounds','Duet integration','Gift sync'] },
   { id:'facebook', name:'Facebook / Instagram', emoji:'📘', color:'#1877F2', desc:'Broadcast to Facebook Live and Instagram simultaneously.', features:['Facebook Live','Instagram Live','Story cross-post','Reels upload'] },
-  { id:'discord',  name:'Discord',              emoji:'💬', color:'#5865F2', desc:'Send stream notifications and events to your Discord server via webhook.', features:['Go-live notifications','Clip alerts','Community events','Bot commands'] },
+  { id:'discord',  name:'Discord',              emoji:'💬', color:'#D4854A', desc:'Send stream notifications and events to your Discord server via webhook.', features:['Go-live notifications','Clip alerts','Community events','Bot commands'] },
 ];
 
 const WEBHOOK_EVENTS = ['New Follower','New Like','New Comment','Stream Go Live','Gift Received','Milestone 100','Milestone 500','Milestone 1000'];

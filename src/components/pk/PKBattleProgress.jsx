@@ -110,7 +110,7 @@ export default function PKBattleProgress({ battleId }) {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="h-full rounded-full"
               style={{
-                background: 'linear-gradient(90deg, #C0392B, #FFB800)',
+                background: 'linear-gradient(90deg, #C0392B, #D4AF37)',
               }}
             />
           </div>

@@ -78,8 +78,8 @@ function LoyaltyCard({ loyalty, isMain = false }) {
       {isMain && (
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5" style={{ color: '#FF6B00' }} />
-            <span className="font-black text-sm" style={{ color: '#FF6B00' }}>{loyalty?.streak_days || 0}</span>
+            <Flame className="w-3.5 h-3.5" style={{ color: '#D4854A' }} />
+            <span className="font-black text-sm" style={{ color: '#D4854A' }}>{loyalty?.streak_days || 0}</span>
             <span className="text-[11px]" style={{ color: CREAM + '40' }}>day streak</span>
           </div>
         </div>
@@ -317,7 +317,7 @@ export default function LoyaltyHubPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{(l.loyalty_points || 0).toLocaleString()}</p>
-                        {l.streak_days > 0 && <p className="text-[7px]" style={{ color: '#FF6B00' }}>🔥 {l.streak_days}d</p>}
+                        {l.streak_days > 0 && <p className="text-[7px]" style={{ color: '#D4854A' }}>🔥 {l.streak_days}d</p>}
                       </div>
                     </div>
                   );

@@ -7,12 +7,12 @@ import { createPageUrl } from '../utils';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 
 const SVS_STATES = [
-  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
-  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
-  { id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20', w: 3, l: 2, pts: 1650 },
-  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C', w: 3, l: 2, pts: 1610 },
-  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#1B3D7B', w: 2, l: 3, pts: 1380 },
-  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#BF360C', w: 1, l: 4, pts: 1120 },
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', w: 4, l: 1, pts: 1820 },
+  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', w: 3, l: 1, pts: 1740 },
+  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', w: 3, l: 2, pts: 1650 },
+  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#800020', w: 3, l: 2, pts: 1610 },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37', w: 2, l: 3, pts: 1380 },
+  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', w: 1, l: 4, pts: 1120 },
 ];
 
 const GOLD    = '#D4AF37';

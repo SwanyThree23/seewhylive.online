@@ -101,7 +101,7 @@ function FlyingGift({ emoji, side }) {
 
 function ComboBadge({ combo }) {
   if (!combo || combo < 2) return null;
-  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
+  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#D4854A' : combo >= 3 ? '#CC7755' : '#D4AF37';
   var glow = combo >= 10 ? '0 0 12px rgba(192,57,43,0.8)' : 'none';
   return (
     <motion.div
@@ -170,7 +170,7 @@ function CircularTimer({ timeLeft, totalTime }) {
   var circumference = 2 * Math.PI * radius;
   var pct = totalTime > 0 ? timeLeft / totalTime : 0;
   var offset = circumference * (1 - pct);
-  var color = pct > 0.5 ? '#D4AF37' : pct > 0.25 ? '#FF8C00' : '#FF3030';
+  var color = pct > 0.5 ? '#D4AF37' : pct > 0.25 ? '#D4854A' : '#FF3030';
   var mm = String(Math.floor(timeLeft / 60)).padStart(2, '0');
   var ss = String(timeLeft % 60).padStart(2, '0');
   return (

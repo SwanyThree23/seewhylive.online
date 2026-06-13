@@ -33,7 +33,7 @@ function genBattles() {
   return names.map(([a, b], i) => ({
     id: i + 1,
     a: { name: a, score: Math.floor(Math.random() * 12000) + 4000, color: SCARL },
-    b: { name: b, score: Math.floor(Math.random() * 12000) + 4000, color: '#1565C0' },
+    b: { name: b, score: Math.floor(Math.random() * 12000) + 4000, color: '#D4854A' },
     status: i === 0 ? 'live' : i === 1 ? 'live' : 'upcoming',
     timeLeft: i === 0 ? 142 : i === 1 ? 67 : null,
     category: ['Tournament', 'Exhibition', 'Championship', 'Qualifier'][i],
@@ -44,7 +44,7 @@ function ScoreBar({ battle }) {
   const total = battle.a.score + battle.b.score;
   const pct   = total > 0 ? (battle.a.score / total) * 100 : 50;
   return (
-    <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', background: '#1565C033', margin: '8px 0' }}>
+    <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', background: 'rgba(212,133,74,0.2)', margin: '8px 0' }}>
       <motion.div
         animate={{ width: `${pct}%` }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -142,8 +142,8 @@ function BattleCard({ battle, onVote, myVote }) {
             whileTap={{ scale: 0.94 }}
             onClick={() => onVote(battle.id, 'b')}
             style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
-              background: myVote === 'b' ? 'linear-gradient(135deg, #1565C0, #0D47A1)' : 'rgba(128,0,32,0.15)',
-              color: myVote === 'b' ? '#fff' : '#5C8EE0',
+              background: myVote === 'b' ? 'linear-gradient(135deg, #D4854A, #CC7755)' : 'rgba(128,0,32,0.15)',
+              color: myVote === 'b' ? '#fff' : '#D4854A',
               ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer',
               border: '1px solid rgba(128,0,32,0.3)',
             }}

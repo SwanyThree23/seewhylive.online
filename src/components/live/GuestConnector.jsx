@@ -42,7 +42,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
       name: 'Co-Host',
       url: `https://vdo.ninja/?view=Swan23&room=COHOST-${roomId?.slice(0, 8) || 'DEMO'}&broadcast`,
       color: 'bg-[rgba(255,136,0,0.08)]',
-      textColor: '#FF8C00',
+      textColor: '#D4854A',
       icon: '👥',
       description: 'Full co-host access',
     },
