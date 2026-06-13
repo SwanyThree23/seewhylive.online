@@ -86,9 +86,7 @@ export default function ContentRecommendations() {
                 src={rec.thumbnail}
                 alt={rec.title}
                 className="w-full h-full object-cover group-hover:brightness-75 transition-all"
-                onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/56x56/1a1a1a/666';
-                }}
+                onError={(e) => { e.target.style.display = 'none'; }}
               />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Play className="w-3 h-3 text-white fill-white" />

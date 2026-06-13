@@ -77,7 +77,8 @@ export default function VODLibrary({ creatorId }) {
             {/* Thumbnail */}
             <div className="relative h-40 bg-black overflow-hidden">
               <img
-                src={item.thumbnail_url || `https://via.placeholder.com/400x225?text=${encodeURIComponent(item.title)}`}
+                src={item.thumbnail_url || undefined}
+                onError={e => { e.target.style.display = 'none'; }}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform"
               />

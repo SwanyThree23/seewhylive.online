@@ -611,7 +611,7 @@ export default function PKBattlePage() {
       </div>
 
       <div className={'flex-1 flex overflow-hidden ' + splitDir}>
-        <div className={'flex-1 relative flex flex-col bg-gradient-to-br from-blue-950 to-black ' + (isMobile ? 'border-b-2' : 'border-r-2') + ' border-[#d4af37]/30'}>
+        <div className={'flex-1 relative flex flex-col bg-gradient-to-br from-[#080B18] to-black ' + (isMobile ? 'border-b-2' : 'border-r-2') + ' border-[#d4af37]/30'}>
           <div className="flex-1 relative overflow-hidden">
             {isSafeUrl(bLeftStream) ? (
               <iframe src={bLeftStream} className="w-full h-full" allowFullScreen allow="autoplay" />

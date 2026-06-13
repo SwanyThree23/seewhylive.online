@@ -71,7 +71,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
           {activeTab === 'rtmp' && <div className="space-y-3">
             <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">⚡</div>
+                <div className="w-6 h-6 rounded bg-gradient-to-br from-[#800020] to-[#C0392B] flex items-center justify-center text-xs font-bold text-white">⚡</div>
                 <h4 className="text-sm font-bold text-white">RTMP Server</h4>
               </div>
               <p className="text-[10px] text-white/50 mb-3">Send any RTMP stream directly into evmux. Perfect for OBS, Streamlabs, etc.</p>
@@ -135,7 +135,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
           {activeTab === 'whip' && <div className="space-y-3">
             <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded bg-gradient-to-br from-red-500 via-yellow-500 to-green-500 flex items-center justify-center text-xs font-bold text-white">W</div>
+                <div className="w-6 h-6 rounded bg-gradient-to-br from-[#800020] to-[#D4AF37] flex items-center justify-center text-xs font-bold text-white">W</div>
                 <h4 className="text-sm font-bold text-white">WHIP Ingest</h4>
                 <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(128,0,32,0.2)', color:'#C9A84C' }}>Modern</span>
               </div>

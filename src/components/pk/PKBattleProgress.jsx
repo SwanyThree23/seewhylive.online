@@ -80,7 +80,8 @@ export default function PKBattleProgress({ battleId }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
               <img
-                src={battle.creator_avatar || 'https://via.placeholder.com/40'}
+                src={battle.creator_avatar || undefined}
+                onError={e => { e.target.style.display = 'none'; }}
                 alt={battle.creator_name}
                 className="w-8 h-8 rounded-full object-cover"
               />
@@ -128,7 +129,8 @@ export default function PKBattleProgress({ battleId }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
               <img
-                src={battle.challenger_avatar || 'https://via.placeholder.com/40'}
+                src={battle.challenger_avatar || undefined}
+                onError={e => { e.target.style.display = 'none'; }}
                 alt={battle.challenger_name}
                 className="w-8 h-8 rounded-full object-cover"
               />
