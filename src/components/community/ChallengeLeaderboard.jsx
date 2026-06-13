@@ -22,7 +22,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
     switch(rank) {
       case 1: return <Trophy className="w-5 h-5" style={{ color: '#D4AF37' }} />;
       case 2: return <Medal className="w-5 h-5" style={{ color: '#9ca3af' }} />;
-      case 3: return <Medal className="w-5 h-5" style={{ color: '#ea580c' }} />;
+      case 3: return <Medal className="w-5 h-5" style={{ color: '#C0392B' }} />;
       default: return <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>#{rank}</span>;
     }
   };

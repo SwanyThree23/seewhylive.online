@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellRing, Volume2, Play, Zap, Gift, Star, Heart, Users } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AlertConfig from '@/components/live/AlertConfig';
 
@@ -60,8 +60,7 @@ export default function StreamAlerts() {
     () => new Set(OVERLAY_TYPES.map((o) => o.type))
   );
 
-  // Attempt to read current user from base44 if available
-  const user = base44?.auth?.currentUser?.() ?? null;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['soundAlerts', user?.id],

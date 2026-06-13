@@ -43,7 +43,7 @@ const FLYWHEEL_STAGES = [
 
 const TIER_LADDER = [
   { id: 'free',    label: 'Free',   price: 0,  color: '#6b7280', icon: Eye,    perks: ['Chat access', 'Watch live & VODs', 'Community feed'] },
-  { id: 'bronze',  label: 'Bronze', price: 1,  color: '#ea580c', icon: Star,   perks: ['Bronze badge', 'Early chat access', 'Custom emote ×1', 'Monthly shoutout'] },
+  { id: 'bronze',  label: 'Bronze', price: 1,  color: '#C0392B', icon: Star,   perks: ['Bronze badge', 'Early chat access', 'Custom emote ×1', 'Monthly shoutout'] },
   { id: 'silver',  label: 'Silver', price: 5,  color: '#9ca3af', icon: Zap,    perks: ['Silver badge', 'Ad-free viewing', 'Custom emotes ×3', 'Backstage access', 'Priority queue'] },
   { id: 'gold',    label: 'Gold',   price: 15, color: G,         icon: Crown,  perks: ['Gold crown badge', 'All Silver perks', 'PPV 20% off', 'Co-host consideration', 'DM access'] },
   { id: 'elite',   label: 'Elite',  price: 50, color: PINK,      icon: Rocket, perks: ['Elite status', 'All Gold perks', 'Revenue share on collabs', 'Brand partnership priority', 'Direct Slack channel'] },
@@ -59,7 +59,7 @@ const REVENUE_STREAMS = [
 ];
 
 const MILESTONES = [
-  { subs: 10,   reward: 'Bronze Creator Badge',   icon: Star,   color: '#ea580c' },
+  { subs: 10,   reward: 'Bronze Creator Badge',   icon: Star,   color: '#C0392B' },
   { subs: 50,   reward: 'Verified Creator Label', icon: Shield, color: '#D4AF37' },
   { subs: 100,  reward: 'Custom Channel Banner',  icon: Award,  color: G },
   { subs: 500,  reward: 'Staff Pick Feature',     icon: Zap,    color: PINK },
@@ -756,7 +756,7 @@ export default function MonetizationPage() {
                   <div style={card()}>
                     <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Tier Breakdown</p>
                     {[
-                      { name: 'Bronze', key: 'bronze', price: 1,  color: '#ea580c' },
+                      { name: 'Bronze', key: 'bronze', price: 1,  color: '#C0392B' },
                       { name: 'Silver', key: 'premium', price: 5,  color: '#9ca3af' },
                       { name: 'Gold',   key: 'elite',  price: 15, color: G },
                     ].map(tier => {

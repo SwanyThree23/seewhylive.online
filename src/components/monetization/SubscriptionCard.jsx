@@ -1,6 +1,6 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CheckCircle, Star, Crown, Zap } from 'lucide-react';
 
@@ -18,7 +18,7 @@ const tierConfig = {
   elite: {
     icon: Crown,
     color: '#D4AF37',
-    gradient: 'linear-gradient(135deg, #D4AF37, #d97706)',
+    gradient: 'linear-gradient(135deg, #D4AF37, #D4854A)',
   },
 };
 
@@ -27,6 +27,8 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
   const config = tierConfig[tier] || tierConfig.basic;
   const Icon = config.icon;
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const subscribeMutation = useMutation({
     mutationFn: async () => {
       const startDate = new Date();
@@ -34,7 +36,7 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
       endDate.setMonth(endDate.getMonth() + 1);
 
       return await base44.entities.Subscription.create({
-        user_id: 'current_user',
+        user_id: currentUser?.id || 'unknown',
         community_id: communityId,
         creator_id: creatorId,
         tier,
@@ -49,6 +51,24 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
     onSuccess: () => {
       toast.success(`Subscribed to ${tier} tier! 🎉`);
       queryClient.invalidateQueries(['subscriptions']);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'subscription',
+            title: `Subscribed to ${tier} tier`,
+            creator_id: creatorId,
+            amount: price,
+          }),
+          creatorId && base44.entities.Activity.create({
+            user_id: creatorId,
+            type: 'subscription',
+            title: `New ${tier} subscriber`,
+            amount: price,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
     },
     onError: () => {
       toast.error('Failed to subscribe');

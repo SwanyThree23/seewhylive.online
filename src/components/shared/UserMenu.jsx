@@ -85,7 +85,7 @@ export default function UserMenu({ user, isAdmin }) {
         onClick={() => setOpen(v => !v)}
         style={{
           width:40, height:40, borderRadius:'50%', overflow:'hidden',
-          background:'linear-gradient(135deg,#92400e,#d97706)', border:'none', cursor:'pointer',
+          background:'linear-gradient(135deg,#800020,#D4854A)', border:'none', cursor:'pointer',
           display:'flex', alignItems:'center', justifyContent:'center',
           color:'#fff', fontWeight:700, fontSize:14, padding:0,
         }}
