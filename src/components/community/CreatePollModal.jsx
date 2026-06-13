@@ -29,9 +29,16 @@ export default function CreatePollModal({ isOpen, onClose, communityId }) {
 
   const createPollMutation = useMutation({
     mutationFn: (pollData) => base44.entities.Poll.create(pollData),
-    onSuccess: () => {
+    onSuccess: (poll) => {
       queryClient.invalidateQueries({ queryKey: ['polls'] });
       toast.success('Poll created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created poll: ${poll?.question || 'Community Poll'}`,
+        }).catch(() => {});
+      }
       handleClose();
     },
   });
