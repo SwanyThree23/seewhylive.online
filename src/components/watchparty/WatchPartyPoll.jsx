@@ -256,7 +256,7 @@ export default function WatchPartyPoll({ partyId, roomId, currentUser, isHost })
             {isHost && (
               <button onClick={() => closeHostPoll(poll.id)}
                 className="absolute top-2 right-2 flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded"
-                style={{ background: 'rgba(180,50,30,0.2)', border: '1px solid rgba(180,50,30,0.3)', color: '#ff8866' }}>
+                style={{ background: 'rgba(180,50,30,0.2)', border: '1px solid rgba(180,50,30,0.3)', color: '#C0392B' }}>
                 <StopCircle className="w-2.5 h-2.5" /> End
               </button>
             )}

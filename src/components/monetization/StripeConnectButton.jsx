@@ -54,6 +54,13 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
       setConnecting(false);
       toast.success('Stripe account connected! Redirecting to onboarding...');
       toast.info("In production, you would be redirected to Stripe's onboarding flow.");
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: 'Connected Stripe payout account',
+        }).catch(() => {});
+      }
     },
     onError: () => setConnecting(false),
   });

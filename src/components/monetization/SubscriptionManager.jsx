@@ -33,9 +33,17 @@ export default function SubscriptionManager({ creatorId }) {
         sort_order: (tiers?.length || 0) + 1,
       });
     },
-    onSuccess: () => {
+    onSuccess: (tier) => {
       queryClient.invalidateQueries({ queryKey: ['subscriptionTiers', creatorId] });
       setShowForm(false);
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created subscription tier: ${tier?.name || 'New Tier'}`,
+          amount: tier?.price,
+        }).catch(() => {});
+      }
     },
   });
 
