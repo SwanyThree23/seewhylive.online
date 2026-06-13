@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Video, VideoOff, Radio, Monitor, MonitorStop, Signal, WifiOff, Maximize2, Minimize2, PhoneOff } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Radio, Monitor, MonitorStop, Signal, Maximize2, Minimize2 } from 'lucide-react';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
 import { toast } from 'sonner';
 
