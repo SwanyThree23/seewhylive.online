@@ -14,7 +14,7 @@ const COIN_PACKS = [
 
 const TIP_AMOUNTS = [
   { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#C9A84C' },
-  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#FF8C00' },
+  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#D4854A' },
   { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#D4AF37' },
   { coins: 100, emoji: '👑', label: 'Royal',    color: '#d4af37' },
   { coins: 200, emoji: '🚀', label: 'Legend',   color: '#C0392B' },

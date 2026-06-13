@@ -10,7 +10,7 @@ const BG = '#080B18';
 const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
-const COLORS = ['#D4AF37', '#C9A84C', '#D4AF37', '#FF8C00', '#6DBF7E'];
+const COLORS = ['#D4AF37', '#C9A84C', '#D4AF37', '#D4854A', '#6DBF7E'];
 
 export default function StreamAnalyticsDashboard({ roomId }) {
   // Fetch room analytics
@@ -73,7 +73,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
         <StatCard icon={Eye} label="Viewers" value={latestAnalytics?.viewer_count || 0} unit="" color={G} />
         <StatCard icon={Users} label="Peak" value={latestAnalytics?.peak_viewers || 0} unit="" color="#C9A84C" />
         <StatCard icon={MessageSquare} label="Chat" value={latestAnalytics?.chat_messages || 0} unit="" color="#D4AF37" />
-        <StatCard icon={Zap} label="Tips" value={latestAnalytics?.tips_received || 0} unit="$" color="#FF8C00" />
+        <StatCard icon={Zap} label="Tips" value={latestAnalytics?.tips_received || 0} unit="$" color="#D4854A" />
         <StatCard icon={Heart} label="Engagement" value={latestAnalytics?.engagement_rate || 0} unit="%" color="#6DBF7E" />
       </div>
 
@@ -155,7 +155,7 @@ export default function StreamAnalyticsDashboard({ roomId }) {
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}` }} className="p-2.5 rounded">
               <p className="text-white/60 mb-1">Engagement</p>
-              <p className="font-bold" style={{ color: '#FF8C00' }}>{Math.round(latestAnalytics.engagement_rate || 0)}%</p>
+              <p className="font-bold" style={{ color: '#D4854A' }}>{Math.round(latestAnalytics.engagement_rate || 0)}%</p>
             </div>
           </div>
         </motion.div>

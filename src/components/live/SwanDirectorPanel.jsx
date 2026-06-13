@@ -23,7 +23,7 @@ export function SwanDirectorHUD({ roomId, hostId, onOpenPanel }) {
     refetchInterval: 10000,
   });
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#6DBF7E';
+  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#D4AF37' : '#6DBF7E';
   return (
     <div style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 12px', background:'rgba(0,0,0,0.4)', borderTop:'1px solid rgba(255,255,255,0.06)', overflow:'hidden' }}>
       {/* Layout badge */}
@@ -76,7 +76,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
   };
 
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#6DBF7E';
+  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#D4AF37' : '#6DBF7E';
   const decisions = (swan?.decisions_log || []).slice().reverse().slice(0,10);
   const engHistory = useMemo(() => Array.from({length:10},(_,i) => Math.floor(Math.random()*60+30)), []);
 
@@ -100,7 +100,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', marginTop:4 }}>
             <span style={{ fontSize:9, color:'#ff4444' }}>0 COLD</span>
-            <span style={{ fontSize:9, color:'#FFB800' }}>40</span>
+            <span style={{ fontSize:9, color:'#D4AF37' }}>40</span>
             <span style={{ fontSize:9, color:'#6DBF7E' }}>70 HOT 100</span>
           </div>
         </div>

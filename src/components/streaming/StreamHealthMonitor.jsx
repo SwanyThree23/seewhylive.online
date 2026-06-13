@@ -21,7 +21,7 @@ export default function StreamHealthMonitor({ isStreaming = false }) {
     return () => clearInterval(t);
   }, [isStreaming]);
 
-  const qualityColor = stats.quality === 'good' ? '#6DBF7E' : stats.quality === 'fair' ? '#FFD700' : '#FF4444';
+  const qualityColor = stats.quality === 'good' ? '#6DBF7E' : stats.quality === 'fair' ? '#D4AF37' : '#FF4444';
 
   if (!isStreaming) return (
     <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg"

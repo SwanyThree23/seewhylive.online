@@ -29,7 +29,7 @@ const EMOTES = {
 };
 
 const BADGE_TYPES = {
-  admin: { color: '#FF8C00', label: 'Admin', icon: '👑' },
+  admin: { color: '#D4854A', label: 'Admin', icon: '👑' },
   moderator: { color: '#6B5CF6', label: 'Mod', icon: '🛡️' },
   subscriber: { color: '#d4af37', label: 'Sub', icon: '⭐' },
   verified: { color: '#C9A84C', label: 'VIP', icon: '✓' }

@@ -12,7 +12,7 @@ const TYPE_COLORS = {
   item:       { color: GOLD,     label: 'ITEM' },
   one_on_one: { color: '#C9A84C', label: '1:1' },
   shoutout:   { color: '#D4AF37', label: 'SHOUTOUT' },
-  custom_art: { color: '#FF6B00', label: 'ART' },
+  custom_art: { color: '#D4854A', label: 'ART' },
   coaching:   { color: '#6DBF7E', label: 'COACHING' },
   experience: { color: '#C0392B', label: 'EXPERIENCE' },
 };

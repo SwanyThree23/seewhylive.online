@@ -26,8 +26,8 @@ const REACTION_COLORS = {
   domino:   GOLD,
   love:     '#CC2244',
   superchat: '#D4AF37',
-  hype:     '#FF6B00',
-  lol:      '#FFD700',
+  hype:     '#D4854A',
+  lol:      '#D4AF37',
   wow:      '#D4AF37',
   rage:     BURGUNDY,
   standard: 'rgba(255,255,255,0.4)',
@@ -132,7 +132,7 @@ export default function PartyAnalyticsDashboard({ partyId, isHost }) {
       <div className="grid grid-cols-2 gap-2">
         <StatCard icon={TrendingUp} label="Peak Viewers"       value={analytics.peak_concurrent_viewers || 0} color={GOLD} />
         <StatCard icon={Users}      label="Total Joined"       value={analytics.total_members_joined || 0}    color="#6DBF7E" />
-        <StatCard icon={Zap}        label="Total Reactions"    value={analytics.total_reactions || 0}          color="#FF6B00" />
+        <StatCard icon={Zap}        label="Total Reactions"    value={analytics.total_reactions || 0}          color="#D4854A" />
         <StatCard icon={DollarSign} label="Tips Collected"     value={tipsUSD}                                  color={GOLD} />
         <StatCard icon={Clock}      label="Avg Watch Duration" value={fmt(analytics.avg_watch_duration_seconds)} color="#C9A84C" />
         <StatCard icon={UserPlus}   label="New Followers"      value={analytics.new_followers_from_party || 0} color="#D4AF37" />

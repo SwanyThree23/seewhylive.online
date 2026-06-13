@@ -68,7 +68,7 @@ function BitrateSparkline({ data, degraded }) {
 }
 
 function StatPill({ label, value, color }) {
-  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#FF4444' : GOLD);
+  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#D4AF37' : value === 'BAD' ? '#FF4444' : GOLD);
   return (
     <div className="flex flex-col items-center px-2 py-1 rounded"
       style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
@@ -149,9 +149,9 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
 
       {/* Stats */}
       <div className="flex gap-1.5">
-        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#D4AF37' : '#FF4444'} />
+        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#D4AF37' : '#FF4444'} />
+        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#D4AF37' : '#FF4444'} />
       </div>
 
       {/* Force reconnect */}

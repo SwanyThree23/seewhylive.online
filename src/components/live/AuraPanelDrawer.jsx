@@ -68,7 +68,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
     upd({ last_message: res, last_message_at: new Date().toISOString(), interventions_count:(aura?.interventions_count||0)+1 });
   };
 
-  const statusColor = { active:'#6DBF7E', idle:'#666', paused:'#FFB800', ended:'#C0392B' };
+  const statusColor = { active:'#6DBF7E', idle:'#666', paused:'#D4AF37', ended:'#C0392B' };
   const st = aura?.status || 'idle';
 
   return (

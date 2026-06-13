@@ -301,7 +301,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
 
   const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
   const urgency = timeLeft < 30 ? 'critical' : timeLeft < 60 ? 'warning' : 'normal';
-  const timerColor = urgency === 'critical' ? '#C0392B' : urgency === 'warning' ? '#FF8C00' : '#d4af37';
+  const timerColor = urgency === 'critical' ? '#C0392B' : urgency === 'warning' ? '#D4854A' : '#d4af37';
 
   if (!battle) return null;
 

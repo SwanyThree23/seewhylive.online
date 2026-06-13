@@ -124,7 +124,7 @@ function FanbaseRoomCard({ room }) {
             </span>
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(255,140,0,0.15)', color: '#D4854A', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}
@@ -204,7 +204,7 @@ function FanbaseRoomCard({ room }) {
 
 // ── Platform Spotlight Strip ──────────────────────────────────────────────
 var SPOTLIGHT_ITEMS = [
-  { emoji: '⚔️', label: 'State vs State',   sub: 'Domino Tournaments',  color: '#1565C0', page: 'StateVsState'          },
+  { emoji: '⚔️', label: 'State vs State',   sub: 'Domino Tournaments',  color: '#C0392B', page: 'StateVsState'          },
   { emoji: '👑', label: 'Elite League',      sub: 'Creator Rankings',    color: '#D4AF37', page: 'Leaderboard'           },
   { emoji: '🥊', label: 'PK Battle',         sub: 'Head-to-Head',        color: '#C0392B', page: 'PKBattleManager'       },
   { emoji: '🏟️', label: 'PK Arena',          sub: 'Live Vote Battles',   color: '#C0392B', page: 'PKBattleArena'         },

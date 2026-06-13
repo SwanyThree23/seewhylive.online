@@ -12,7 +12,7 @@ const CRIMSON= '#800020';
 const AMBER  = '#D4854A';
 const CYAN   = '#D4AF37';
 const PURPLE = '#D4AF37';
-const BLUE   = '#1565C0';
+const BLUE   = '#C0392B';
 const RED2   = '#C62828';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 

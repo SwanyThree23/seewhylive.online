@@ -14,7 +14,7 @@ const FEATURES = [
     title: 'Guest Destinations',
     description: 'Multi-guest co-streaming with automated camera direction via SwanAI Director.',
     icon: '🎬',
-    color: '#FF8C00',
+    color: '#D4854A',
     highlights: ['Real-time layout switching', 'AI spotlight detection', 'Multi-platform RTMP'],
     link: '/ControlRoom',
   },
@@ -68,7 +68,7 @@ const FEATURES = [
     title: 'State vs State Tournaments',
     description: 'Full bracket domino tournament system with live matches, rosters, and real-time standings.',
     icon: '⚔️',
-    color: '#1565C0',
+    color: '#C0392B',
     highlights: ['Live brackets', 'State rosters', 'Season standings'],
     link: '/StateVsState',
   },
@@ -274,7 +274,7 @@ export default function PlatformShowcase() {
             href="/LiveRoom"
             whileHover={{ scale: 1.05 }}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold"
-            style={{ background: `linear-gradient(135deg, ${G}, #FF8C00)` }}
+            style={{ background: `linear-gradient(135deg, ${G}, #D4854A)` }}
           >
             Go Live Now <Radio className="w-5 h-5" />
           </motion.a>

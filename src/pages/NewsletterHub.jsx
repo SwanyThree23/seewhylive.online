@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import ShareToSocial from '../components/social/ShareToSocial';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
-const STATUS_COLORS = { draft:C.gray, scheduled:'#FFB800', sent:'#6DBF7E' };
+const STATUS_COLORS = { draft:C.gray, scheduled:'#D4AF37', sent:'#6DBF7E' };
 const TEMPLATES = {
   stream_recap: {
     title: 'Stream Recap — [Date]',

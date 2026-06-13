@@ -19,11 +19,11 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── Platform integrations ─────────────────────────────────────────────── */
 const PLATFORMS = [
-  { name: 'Fanbase',   color: '#FF3C78', icon: Heart,   desc: 'Fan economy & creator tipping' },
-  { name: 'Clubhouse', color: '#F4C542', icon: Mic,     desc: 'Live audio rooms & stages' },
-  { name: 'Discord',   color: '#5865F2', icon: Users,   desc: 'Community servers & events' },
-  { name: 'GoBrunch',  color: '#00B4D8', icon: Globe,   desc: 'Virtual events & networking' },
-  { name: 'Poldit',    color: '#FF6B35', icon: Star,    desc: 'Debate rooms & live polls' },
+  { name: 'Fanbase',   color: '#C0392B', icon: Heart,   desc: 'Fan economy & creator tipping' },
+  { name: 'Clubhouse', color: '#D4AF37', icon: Mic,     desc: 'Live audio rooms & stages' },
+  { name: 'Discord',   color: '#D4854A', icon: Users,   desc: 'Community servers & events' },
+  { name: 'GoBrunch',  color: '#6DBF7E', icon: Globe,   desc: 'Virtual events & networking' },
+  { name: 'Poldit',    color: '#CC7755', icon: Star,    desc: 'Debate rooms & live polls' },
   { name: 'Calibones', color: '#D4854A', icon: Trophy,  desc: 'Gaming tournaments & leagues' },
 ];
 
