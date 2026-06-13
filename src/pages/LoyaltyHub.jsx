@@ -18,7 +18,7 @@ const TIER_MAP = {
   silver:   { color: '#C0C0C0', label: 'Silver',   min: 500 },
   gold:     { color: '#D4AF37', label: 'Gold',     min: 1500 },
   platinum: { color: '#E5E4E2', label: 'Platinum', min: 5000 },
-  diamond:  { color: '#B9F2FF', label: 'Diamond',  min: 15000 },
+  diamond:  { color: '#E8D5A3', label: 'Diamond',  min: 15000 },
 };
 
 function tierFromPoints(pts) {
@@ -151,9 +151,33 @@ export default function LoyaltyHubPage() {
     queryFn: () => base44.entities.ViewerLoyalty.list('-loyalty_points', 10),
   });
 
+  const qc = useQueryClient();
   const mainLoyalty = myLoyalties[0];
   const totalPoints = myLoyalties.reduce((s, l) => s + (l.loyalty_points || 0), 0);
   const totalWatchTime = viewerPoints.reduce((s, v) => s + (v.watch_minutes || 0), 0);
+
+  const redeemMutation = useMutation({
+    mutationFn: async (reward) => {
+      if (!mainLoyalty?.id) throw new Error('No loyalty record found');
+      const newPoints = (mainLoyalty.loyalty_points || 0) - reward.points_required;
+      if (newPoints < 0) throw new Error('Insufficient points');
+      await base44.entities.ViewerLoyalty.update(mainLoyalty.id, { loyalty_points: newPoints });
+      return reward;
+    },
+    onSuccess: (reward) => {
+      toast.success(`Redeemed: ${reward.name}!`);
+      qc.invalidateQueries({ queryKey: ['lh-loyalties', user?.id] });
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'ppv_purchase',
+          title: `Redeemed loyalty reward: ${reward.name}`,
+          amount: reward.points_required,
+        }).catch(() => {});
+      }
+    },
+    onError: (e) => toast.error(e.message || 'Redemption failed'),
+  });
 
   const TABS = [
     { id: 'my_card',   label: '🃏 My Card' },
@@ -255,7 +279,9 @@ export default function LoyaltyHubPage() {
                           <p className="text-[11px]" style={{ color: CREAM + '40' }}>{r.description}</p>
                           <p className="text-[11px] font-black mt-0.5" style={{ color: GOLD }}>{r.points_required.toLocaleString()} pts</p>
                         </div>
-                        <button disabled={!canRedeem}
+                        <button
+                          disabled={!canRedeem || redeemMutation.isPending}
+                          onClick={() => canRedeem && redeemMutation.mutate(r)}
                           className="px-3 py-1.5 rounded-lg font-black uppercase text-[11px] shrink-0"
                           style={{ background: canRedeem ? BURGUNDY : 'rgba(255,255,255,0.05)', color: canRedeem ? GOLD : CREAM + '25', border: canRedeem ? `1px solid ${GOLD}40` : '1px solid rgba(255,255,255,0.08)', ...T, cursor: canRedeem ? 'pointer' : 'not-allowed' }}>
                           {canRedeem ? 'Redeem' : `Need ${(r.points_required - totalPoints).toLocaleString()} more`}

@@ -133,7 +133,18 @@ function CreateEventForm({ onSuccess }) {
         access_type: 'single_event',
       });
     },
-    onSuccess: () => { toast.success('PPV event created!'); onSuccess?.(); },
+    onSuccess: (event) => {
+      toast.success('PPV event created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Created PPV event: ${event?.title || 'Event'}`,
+          amount: event?.price,
+        }).catch(() => {});
+      }
+      onSuccess?.();
+    },
     onError: (e) => toast.error(e.message),
   });
 

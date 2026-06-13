@@ -136,7 +136,7 @@ export default function CreatorTierManager({ creatorId }) {
                       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{tier.description}</div>
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {tier.has_early_access && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#C9A84C' }}>Early Access</span>}
-                        {tier.has_exclusive_rooms && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#c4b5fd' }}>Exclusive Rooms</span>}
+                        {tier.has_exclusive_rooms && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#C9A84C' }}>Exclusive Rooms</span>}
                         {tier.has_custom_badge && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#D4AF37' }}>Badge</span>}
                         {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E' }}>Emotes</span>}
                         {tier.is_ad_free && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.15)', color: '#ffaaaa' }}>Ad-Free</span>}

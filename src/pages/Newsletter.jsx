@@ -56,10 +56,17 @@ export default function NewsletterPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create(data),
-    onSuccess: () => {
+    onSuccess: (newsletter) => {
       toast.success('Newsletter created!');
       queryClient.invalidateQueries(['newsletters']);
       setTitle(''); setContent(''); setPreviewText('');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Published newsletter: ${newsletter?.title || 'Newsletter'}`,
+        }).catch(() => {});
+      }
     },
   });
 

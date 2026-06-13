@@ -56,10 +56,18 @@ export default function CommunitiesPage() {
         await base44.entities.Community.update(communityId, { member_count: (community.member_count || 0) + 1 });
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, communityId) => {
       queryClient.invalidateQueries({ queryKey: ['myMemberships'] });
       queryClient.invalidateQueries({ queryKey: ['communities'] });
       toast.success('Joined community!');
+      if (user?.id) {
+        const community = allCommunities.find(c => c.id === communityId);
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'community_joined',
+          title: `Joined community: ${community?.name || 'Community'}`,
+        }).catch(() => {});
+      }
     },
   });
 

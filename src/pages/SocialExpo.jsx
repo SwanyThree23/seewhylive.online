@@ -647,7 +647,7 @@ export default function SocialExpo() {
                 {[
                   { label: 'Event Tickets',      range: '$0.99–$4.99/ticket',     color: PINK,       pct: '10% of ticket price' },
                   { label: 'Sponsorship Deals',  range: '$100–$500/event',        color: G,          pct: '10% of deal value' },
-                  { label: 'Virtual Gifts',       range: 'Variable per gift',     color: '#f97316',  pct: '10% of gift value' },
+                  { label: 'Virtual Gifts',       range: 'Variable per gift',     color: '#D4854A',  pct: '10% of gift value' },
                   { label: 'Subscriptions',       range: '$1–$50/month',          color: TEAL,       pct: '10% of sub price' },
                   { label: 'Live Tips',           range: 'Any amount',            color: '#D4854A',  pct: '10% of tip amount' },
                 ].map((stream, i) => (

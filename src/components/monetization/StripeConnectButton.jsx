@@ -102,7 +102,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
               <CheckCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Payouts enabled</p>
-                <p style={{ fontSize: 12, color: '#15803d' }}>Account: {payout?.stripe_account_id}</p>
+                <p style={{ fontSize: 12, color: '#4A9B5E' }}>Account: {payout?.stripe_account_id}</p>
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 14 }}>

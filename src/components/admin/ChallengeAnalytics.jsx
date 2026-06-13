@@ -183,7 +183,7 @@ export default function ChallengeAnalytics({ communityId }) {
           <div style={{ display:'flex', alignItems:'flex-start', gap:12, padding:12, background:'rgba(212,175,55,0.08)', borderRadius:8, border:'1px solid rgba(212,175,55,0.2)' }}>
             <Users style={{ width:20, height:20, color:'#D4AF37', marginTop:2 }} />
             <div>
-              <p style={{ fontWeight:600, color:'#c4b5fd', margin:'0 0 2px' }}>Community Engagement</p>
+              <p style={{ fontWeight:600, color:'#C9A84C', margin:'0 0 2px' }}>Community Engagement</p>
               <p style={{ fontSize:13, color:'#D4AF37', margin:0 }}>
                 {totalParticipations} total participations across {challenges.length} challenges
               </p>

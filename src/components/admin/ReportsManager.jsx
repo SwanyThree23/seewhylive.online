@@ -20,7 +20,7 @@ const priorityBadge = {
 };
 
 const statusBadge = {
-  pending:      { background:'rgba(212,175,55,0.15)',   color:'#facc15' },
+  pending:      { background:'rgba(212,175,55,0.15)',   color:'#D4AF37' },
   under_review: { background:'rgba(212,175,55,0.15)',  color:'#D4AF37' },
   resolved:     { background:'rgba(109,191,126,0.15)',   color:'#6DBF7E' },
   dismissed:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
