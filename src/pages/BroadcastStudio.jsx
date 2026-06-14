@@ -1531,7 +1531,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
-                {/* Octagonal video window */}
+                {/* Octagonal video window — live host feed */}
                 {isHost && (
                   <OctagonalVideoWindow
                     title={party?.title || 'Live'}
@@ -1540,8 +1540,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     onMicToggle={toggleAudio}
                     onVideoToggle={toggleVideo}
                     onShareScreen={() => setScreenSharing(v => !v)}
-                    streamUrl={null}
+                    stream={localStream}
+                    userName={user?.full_name || 'Host'}
+                    avatarUrl={user?.avatar_url}
                     label="Host"
+                    isLocal
                   />
                 )}
 
