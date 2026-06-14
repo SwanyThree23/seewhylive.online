@@ -9,6 +9,15 @@ import {
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import LivePollWidget from '../components/live/LivePollWidget';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import SubscriptionGate from '../components/live/SubscriptionGate';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -246,6 +255,11 @@ export default function ViewerDashboard() {
         {/* MY ACTIVITY */}
         {activeTab === 'activity' && (
           <>
+            {user?.id && (
+              <ViewerLoyaltyCard userId={user.id} />
+            )}
+            <LeaderboardPanel roomId={null} />
+            <StreamGoals roomId={null} isHost={false} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color={GOLD} />
               <StatTile label="Clips" value={myClips.length} icon={Scissors} color={GOLD} />
@@ -376,6 +390,16 @@ export default function ViewerDashboard() {
             </div>
           </div>
         )}
+
+        {/* Analytics + milestone panel */}
+        <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {user?.id && <MilestoneAlerts creatorId={user.id} />}
+          <PartyAnalyticsDashboard partyId={null} isHost={false} />
+          <QuickPollLauncher roomId={null} hostId={null} isHost={false} />
+          <LivePollWidget roomId={null} currentUser={user} isHost={false} />
+          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={null} />
+          {user?.id && <SubscriptionGate creatorId={null} roomId={null} />}
+        </div>
       </div>
     </div>
   );

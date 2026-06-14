@@ -9,6 +9,10 @@ import {
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import ShareToSocial from '../components/social/ShareToSocial';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import StreamGoals from '../components/live/StreamGoals';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import { createPageUrl } from '../utils';
 
 const CATEGORIES = [
@@ -485,6 +489,29 @@ export default function StreamScheduler() {
       </AnimatePresence>
 
       <ShareToSocial />
+
+      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamGoals isHost={true} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+        <LiveGoalWidget memberCount={0} tipTotal={0} subCount={0} />
+        <MultiStreamConfig roomId={null} isHost={true} />
+      </div>
+
+      {/* Quick navigation to related stream tools */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '8px 16px 32px', justifyContent: 'center' }}>
+        {[
+          { label: '🔴 Go Live',           href: 'GoLive'            },
+          { label: '📡 Multi-Platform',    href: 'MultiPlatform'     },
+          { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'   },
+          { label: '📊 Stream Analytics', href: 'StreamAnalytics'    },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

@@ -15,6 +15,30 @@ import {
   Crown, Layers
 } from 'lucide-react';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import RecordingManager from '../components/content/RecordingManager';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NotificationBell from '../components/shared/NotificationBell';
+import SubscriptionManager from '@/components/monetization/SubscriptionManager';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import DirectPayments from '../components/live/DirectPayments';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SpotlightSection from '../components/community/SpotlightSection';
+import PollCard from '../components/community/PollCard';
+import CreatorBridge from '../components/social/CreatorBridge';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -139,6 +163,19 @@ function OverviewTab({ user }) {
         </div>
       </Card>
 
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
+      {user && (
+        <div className="mb-4">
+          <CreatorBridge user={user} />
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 mb-2">
+        <NotificationBell />
+        <ZEGOMobileAppBanner />
+      </div>
+
       <div className="flex flex-wrap gap-2">
         {[
           { label: '📡 Go Live', href: createPageUrl('GoLive'), color: BURGUNDY },
@@ -261,6 +298,33 @@ function AnalyticsTab({ user }) {
           </div>
         </Card>
       )}
+
+      {/* Analytics Overview */}
+      {user?.id && <AnalyticsOverview creatorId={user.id} />}
+
+      {/* Audience Insights */}
+      {user?.id && <AudienceInsights creatorId={user.id} />}
+
+      {/* Earnings Breakdown */}
+      {user?.id && <EarningsBreakdown creatorId={user.id} />}
+
+      {/* Monetization dashboard widget */}
+      {roomAnalytics[0]?.room_id && (
+        <MonetizationDashboard roomId={roomAnalytics[0].room_id} />
+      )}
+
+      {/* Room Analytics Panel (most recent stream) */}
+      {roomAnalytics[0]?.room_id && (
+        <RoomAnalyticsPanel roomId={roomAnalytics[0].room_id} />
+      )}
+
+      {/* Streamer goals widget */}
+      {user?.id && (
+        <StreamerGoalsWidget creatorId={user.id} isCreator={true} />
+      )}
+
+      {/* AI highlight generator */}
+      <AIHighlightGenerator recording={null} />
     </div>
   );
 }
@@ -468,6 +532,13 @@ function ContentTab({ user }) {
           </>
         )}
       </AnimatePresence>
+
+      {/* Recording Manager */}
+      {user?.id && (
+        <div className="mt-4">
+          <RecordingManager userId={user.id} />
+        </div>
+      )}
     </div>
   );
 }
@@ -545,6 +616,14 @@ function CommunityTab({ user }) {
         </div>
       </div>
 
+      {/* Spotlight banner + section */}
+      {selectedCommunity && (
+        <div className="space-y-3">
+          <SpotlightBanner communityId={selectedCommunity} isAdmin={true} />
+          <SpotlightSection communityId={selectedCommunity} />
+        </div>
+      )}
+
       {/* Polls section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -556,6 +635,9 @@ function CommunityTab({ user }) {
           </button>
         </div>
 
+        {polls.filter(p => p.status === 'active').map(poll => (
+          <PollCard key={`pc-${poll.id}`} poll={poll} />
+        ))}
         {polls.filter(p => p.status === 'active').map(poll => {
           const opts = Array.isArray(poll.options) ? poll.options : [];
           const total = poll.total_votes || 1;
@@ -826,6 +908,56 @@ function MonetizationTab({ user }) {
           })}
         </div>
       )}
+
+      {/* Subscription manager + tiers */}
+      {user?.id && (
+        <div className="mb-4 space-y-4">
+          <SubscriptionManager creatorId={user.id} />
+          <SubscriptionTiers communityId={null} userId={user.id} />
+        </div>
+      )}
+
+      {/* PPV manager */}
+      {user?.id && (
+        <div className="mb-4">
+          <PayPerViewManager roomId={null} />
+          <PayPerViewCard event={null} />
+        </div>
+      )}
+
+      {/* Virtual goods store */}
+      {user?.id && (
+        <div className="mb-4">
+          <VirtualGoodsStore userId={user.id} />
+        </div>
+      )}
+
+      {/* Monetization center */}
+      {user?.id && (
+        <div className="mb-4">
+          <StreamerMonetizationCenter />
+        </div>
+      )}
+
+      {/* Direct payments modal */}
+      <DirectPayments isOpen={false} onClose={() => {}} creatorName={user?.full_name || ''} />
+
+      {/* Deep links to monetization pages */}
+      <div className="flex flex-wrap gap-3 pt-2">
+        {[
+          { label: '💰 Monetization',       href: 'Monetization'        },
+          { label: '⭐ Subscriptions',       href: 'CreatorSubscriptions' },
+          { label: '🎛 Widgets',             href: 'MonetizationWidgets' },
+          { label: '📊 Revenue Analytics',  href: 'Analytics'           },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+              style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1053,6 +1185,8 @@ function SettingsTab({ user }) {
 /* ═══════════════ MAIN PAGE ═══════════════ */
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: profile } = useQuery({
     queryKey: ['db-profile', user?.id],
@@ -1119,6 +1253,9 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
     </div>
   );
 }

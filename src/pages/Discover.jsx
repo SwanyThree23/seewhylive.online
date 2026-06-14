@@ -15,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -29,7 +30,10 @@ function usePullToRefresh(onRefresh) {
   function onTouchMove(e) {
     if (window.scrollY > 0) return;
     var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    if (dy > 0) {
+      e.preventDefault();
+      setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    }
   }
   async function onTouchEnd() {
     if (pullY >= THRESHOLD && !refreshing) {
@@ -251,6 +255,9 @@ export default function DiscoverPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {/* Who's Online */}
+        <OnlineUsersGrid compact maxVisible={16} />
+
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
@@ -381,7 +388,6 @@ export default function DiscoverPage() {
 
           {tab === 'collab' && (
             <motion.div key="collab" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
-              <ContentRecommendations />
               <CollaborationMatcher />
             </motion.div>
           )}

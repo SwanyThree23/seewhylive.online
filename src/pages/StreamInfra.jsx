@@ -3,7 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
+import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BitratePresets from '../components/streaming/BitratePresets';
+import StreamingPresets from '../components/streaming/StreamingPresets';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -308,6 +314,9 @@ function StreamTab({ user }) {
         </PanelCard>
 
       </div>
+
+      {/* Stream health monitor */}
+      <StreamHealthDashboard isLive={true} />
     </div>
   );
 }
@@ -476,6 +485,8 @@ function LiveRoomTab({ user }) {
               </div>
             </div>
           </PanelCard>
+          {/* Guest stream monitor */}
+          <GuestStreamMonitor guestName="Active Guest" isStreaming={roomActive} />
         </div>
 
         {/* Controls Panel */}
@@ -779,6 +790,15 @@ export default function StreamInfra() {
             {activeTab === 'studio' && <StudioTab user={user} />}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={null} isHost={false} />
+        <EnhancedIngestPanel roomId={null} isHost={false} />
+        <ZEGOConfigPanel roomId={null} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <StreamingPresets onApply={() => {}} />
       </div>
     </div>
   );

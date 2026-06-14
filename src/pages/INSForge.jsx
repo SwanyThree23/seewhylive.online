@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { AnimatePresence, motion } from 'framer-motion';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import CreatorBridge from '../components/social/CreatorBridge';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -369,6 +374,11 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
         </div>
       )}
 
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ShareToSocial />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
+
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
         <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
@@ -391,6 +401,12 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
             🎬 Studio
           </button>
         </Link>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CollaborationMatcher />
+        <CreatorBridge />
+        <AudienceInsights />
       </div>
     </div>
   );

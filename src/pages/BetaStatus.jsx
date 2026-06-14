@@ -7,6 +7,13 @@ import {
   CheckCircle, AlertCircle, Clock, Radio, Users, DollarSign,
   MessageSquare, Shield, Star, Zap, Globe, BarChart2, UserPlus
 } from 'lucide-react';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import PointsNotification from '../components/live/PointsNotification';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -191,6 +198,16 @@ export default function BetaStatusPage() {
               </button>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>
+          <LeaderboardPanel roomId={null} />
+          <StreamGoals isHost={false} />
+          <StreamAnalyticsDashboard roomId={null} />
+          <HostAlertCenter />
+          <PointsNotification userId={null} />
+          <MilestoneAlerts creatorId={null} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
       </div>
     </div>

@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, RefreshCw, AlertTriangle, CheckCircle, Layers, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import BitratePresets from '../components/streaming/BitratePresets';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import AIModeration from '../components/live/AIModeration';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -180,6 +190,29 @@ export default function StageCleanupPage() {
             })}
           </div>
         )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <AnalyticsOverview creatorId={null} timeRange="7d" />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+          <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+          <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
+          <GreenroomQueue roomId={null} hostId={null} onApprove={() => {}} />
+          <StreamHealthDashboard isLive={false} />
+          <AIModeration roomId={null} isHost={true} />
+          <GreenroomWaitlistPanel roomId={null} currentUser={null} onAdmit={() => {}} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          {[
+            { label: '← Admin Dashboard', href: 'AdminDashboard' },
+            { label: '🛡 AI Moderation',  href: 'AIModeration'  },
+            { label: '🚦 Infra Ref',      href: 'StreamInfraRef' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

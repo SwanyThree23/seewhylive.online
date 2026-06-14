@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ShareToSocial from '../components/social/ShareToSocial';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -353,6 +361,32 @@ export default function AnalyticsPage() {
             </DarkCard>
           </div>
         )}
+
+        {/* Revenue + Stream dashboards */}
+        <div className="mt-4 space-y-4">
+          <RevenueDashboard />
+          <StreamAnalyticsDashboard />
+        </div>
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LeaderboardPanel roomId={null} />
+          <ShareToSocial />
+          <AudienceInsights />
+          <StreamerMonetizationCenter userId={null} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingBottom: 24 }}>
+          {[
+            { label: '📈 Advanced Analytics', href: 'AdvancedAnalytics' },
+            { label: '📊 Stream Analytics',  href: 'StreamAnalytics'   },
+            { label: '💰 Monetization',      href: 'Monetization'      },
+            { label: '📤 Export Data',       href: 'DataExport'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

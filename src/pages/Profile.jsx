@@ -10,6 +10,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -398,9 +404,10 @@ export default function ProfilePage() {
                   { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: GOLD },
                   { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#D4854A' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
-                ].map(item => (
-                  <Link key={item.href} to={item.href}>
-                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110"
+                  { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
+                ].map(item => {
+                  const inner = (
+                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110 cursor-pointer"
                       style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                         style={{ background: `${item.color}18`, border: `1px solid ${item.color}30` }}>
@@ -408,11 +415,18 @@ export default function ProfilePage() {
                       </div>
                       <p className="font-black text-[11px] text-white" style={T}>{item.label}</p>
                     </div>
-                  </Link>
-                ))}
+                  );
+                  return item.href
+                    ? <Link key={item.label} to={item.href}>{inner}</Link>
+                    : <div key={item.label} onClick={item.onClick}>{inner}</div>;
+                })}
               </div>
             </DarkCard>
           </>
+        )}
+
+        {activeTab === 'Overview' && user?.id && (
+          <MySubscriptions userId={user.id} />
         )}
 
         {activeTab === 'Streams' && (
@@ -577,6 +591,14 @@ export default function ProfilePage() {
           <OnlinePresenceDot isOnline size="sm" />
         </>
       )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={null} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        {user?.id && <RevenueDashboard userId={user.id} />}
+        <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
+        <PerformanceDashboard roomId={null} sessionId={null} />
+      </div>
     </div>
   );
 }

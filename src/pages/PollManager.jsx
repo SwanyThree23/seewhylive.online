@@ -3,6 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Copy, Save } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
+import LivePoll from '../components/live/LivePoll';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import PollCard from '../components/community/PollCard';
+import LivePollOverlay from '../components/live/LivePollOverlay';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -182,6 +191,33 @@ export default function PollManager() {
             <p className="text-sm mb-4" style={T}>No templates yet. Create your first one!</p>
           </div>
         )}
+
+        {user && (
+          <div className="mt-6 space-y-4">
+            <LivePoll roomId={null} isHost={true} />
+            <WatchPartyPoll partyId={null} roomId={null} currentUser={user} isHost={true} />
+          </div>
+        )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+          <InteractivePollingSystem roomId={null} isHost={false} currentUser={null} />
+          <PollCard poll={null} />
+          <LivePollOverlay roomId={null} currentUser={null} isHost={false} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '🔴 Go Live',          href: 'GoLive'           },
+            { label: '🎬 Broadcast Studio', href: 'BroadcastStudio'  },
+            { label: '🎙️ Audio Room',       href: 'AudioRoom'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

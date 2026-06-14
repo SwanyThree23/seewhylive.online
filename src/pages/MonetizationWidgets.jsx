@@ -6,6 +6,10 @@ import { Target, Bell, Gavel, Zap, Info } from 'lucide-react';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -124,6 +128,17 @@ export default function MonetizationWidgets() {
             </div>
           </div>
         )}
+
+        {user?.id && (
+          <div className="mt-4">
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+          </div>
+        )}
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <AnimatedGiftShop recipientId={null} roomId={null} onClose={() => {}} />
+          <TipAlert roomId={null} recipientId={null} />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+        </div>
       </div>
     </div>
   );

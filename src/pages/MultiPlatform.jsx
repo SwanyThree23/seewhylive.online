@@ -1,5 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -90,6 +94,7 @@ function ProgressBar({ value, max, color }) {
 }
 
 export default function MultiPlatform() {
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('platforms');
 
   const { data: recentActivities = [] } = useQuery({
@@ -187,7 +192,7 @@ export default function MultiPlatform() {
 
       {/* Tab bar */}
       <div style={{ display:'flex', gap:8, padding:'0 16px 16px', overflowX:'auto' }} className="scrollbar-hide">
-        {[['platforms','Platforms'],['webhooks','Webhooks'],['camera','Virtual Camera'],['engagement','Engagement']].map(([id,label]) => (
+        {[['platforms','Platforms'],['webhooks','Webhooks'],['camera','Virtual Camera'],['engagement','Engagement'],['obs','OBS Bridge']].map(([id,label]) => (
           <TabBtn key={id} label={label} active={tab===id} onClick={() => setTab(id)} />
         ))}
       </div>
@@ -200,6 +205,11 @@ export default function MultiPlatform() {
             {tab === 'platforms' && (
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
                 <MultiStreamConfig roomId={null} isHost={true} />
+                {user?.id && (
+                  <div style={{ background:BG2, borderRadius:16, border:`1px solid ${GOLD}25`, padding:'20px 18px' }}>
+                    <DestinationsManager userId={user.id} />
+                  </div>
+                )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {
                   const isConn = !!connections[p.id];
@@ -572,11 +582,40 @@ export default function MultiPlatform() {
               </div>
             )}
 
+            {/* ── OBS BRIDGE ── */}
+            {tab === 'obs' && <OBSBridge />}
+
+            {/* ── WEBHOOK HOOKS ── */}
+            {tab === 'webhooks' && (
+              <div style={{ marginTop: 12 }}>
+                <WebhookHooks roomId={null} isHost={true} />
+              </div>
+            )}
+
           </motion.div>
         </AnimatePresence>
       </div>
 
       <Toast message={toast} />
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <EnhancedIngestPanel roomId={null} isHost={true} />
+        <StreamingPresets onApply={() => {}} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 24px' }}>
+        {[
+          { label: '🔴 Go Live',               href: 'GoLive'                   },
+          { label: '🎬 Broadcast Studio',      href: 'BroadcastStudio'          },
+          { label: '🌐 Multi-Platform+',       href: 'MultiPlatformIntegration' },
+          { label: '📊 Stream Analytics',     href: 'StreamAnalytics'           },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

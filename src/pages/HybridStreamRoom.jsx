@@ -1,12 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Users, PhoneOff, Settings, Share2, Radio } from 'lucide-react';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import GuestGrid from '../components/live/GuestGrid';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import UnifiedChat from '../components/live/UnifiedChat';
+import StageView from '../components/rooms/StageView';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
+import StreamGoals from '../components/live/StreamGoals';
+import LivePoll from '../components/live/LivePoll';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import { toast } from 'sonner';
+import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
+import WatchPartyTab from '../components/watchparty/WatchPartyTab';
+import WatchQueue from '../components/watchparty/WatchQueue';
 
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -193,6 +211,84 @@ export default function HybridStreamRoom() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Host tools */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamGoals roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LivePoll roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Co-streaming + Whiteboard */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <CoStreamPanel roomId={roomId} />
+          <CollaborativeWhiteboard roomId={roomId} />
+        </div>
+      )}
+
+      {/* Octagonal video window + guest grid (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OctagonalVideoWindow title="Main Stage" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
+          <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />
+          <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />
+          <EvmuxWebSource isActive={false} onClose={() => {}} />
+          <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
+        </div>
+      )}
+
+      {/* Unified chat (all users) */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Stage view for participants */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StageView
+            stage={null}
+            participants={participants}
+            currentUserId={user?.id}
+            onUpdateParticipant={() => {}}
+            localStream={null}
+            localAudioEnabled={true}
+            localVideoEnabled={true}
+            onToggleAudio={() => {}}
+            onToggleVideo={() => {}}
+            remoteStreams={[]}
+            peerUserIds={[]}
+          />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+          { label: '🎧 Audio Room',       href: 'AudioRoom'       },
+          { label: '🎬 Watch Party',      href: 'WatchParty'      },
+          { label: '🔴 Go Live',          href: 'GoLive'          },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CollabPlaylist roomId={null} isHost={false} />
+        <VideoQueuePanel roomId={null} isHost={false} onVideoSelect={() => {}} />
+        <WatchPartyAnalytics partyId={null} />
+        <WatchPartyTab roomId={null} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
+        <WatchQueue isHost={false} currentIndex={0} onSelect={() => {}} />
       </div>
     </div>
   );

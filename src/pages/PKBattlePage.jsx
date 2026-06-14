@@ -13,8 +13,14 @@ import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
 import BattleScoreboard from '../components/live/BattleScoreboard';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import AggregatedChat from '../components/live/AggregatedChat';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import PKInviteModal from '../components/pk/PKInviteModal';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import GiftTray from '../components/live/GiftTray';
+import TipNowModal from '../components/live/TipNowModal';
+import PointsNotification from '../components/live/PointsNotification';
 
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -269,6 +275,7 @@ export default function PKBattlePage() {
   const [showChat, setShowChat] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pkRound, setPkRound] = useState(1);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [leftSupporters, setLeftSupporters] = useState(new Set());
   const [rightSupporters, setRightSupporters] = useState(new Set());
 
@@ -428,6 +435,17 @@ export default function PKBattlePage() {
 
   const copyLink = () => { navigator.clipboard.writeText(window.location.href); toast.success('Battle link copied!'); };
 
+  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams: battleRemoteStreams } = useWebRTCPeers(battleId || '', localCamStream);
+  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
+  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
+  React.useEffect(() => {
+    return () => {
+      if (leftCaptureStream) leftCaptureStream.getTracks().forEach(t => t.stop());
+      if (rightCaptureStream) rightCaptureStream.getTracks().forEach(t => t.stop());
+    };
+  }, [leftCaptureStream, rightCaptureStream]);
+
   if (!battleId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#080B18] via-[#001428] to-[#080B18] flex items-center justify-center px-4">
@@ -515,17 +533,6 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
-  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
-
-  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
-  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-
-  React.useEffect(() => () => {
-    leftCaptureStream?.getTracks().forEach(t => t.stop());
-    rightCaptureStream?.getTracks().forEach(t => t.stop());
-  }, [leftCaptureStream, rightCaptureStream]);
-
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },
@@ -562,8 +569,20 @@ export default function PKBattlePage() {
         <div className="absolute top-2 right-2 z-30 max-w-xs space-y-2">
           <BattleScoreboard roomId={battleId} />
           <PKBattleSoundboard battleId={battleId} isBattleActive={!!battle} />
+          <PKBattleProgress battleId={battleId} />
+          {battle && (
+            <PKBattleVotePanel
+              battleId={battleId}
+              creatorId={battle.creator_id}
+              challengerId={battle.challenger_id}
+              creatorName={battle.creator_name || bLeftName}
+              challengerName={battle.challenger_name || bRightName}
+            />
+          )}
         </div>
       )}
+
+      <PKInviteModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} creators={[]} />
 
       <CountdownOverlay countdown={countdown} />
 
@@ -762,6 +781,12 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <GiftTray roomId={battleId} currentUser={user} creatorId={null} />
+        <TipNowModal roomId={battleId} recipientId={null} isOpen={false} onClose={() => {}} />
+        {user?.id && <PointsNotification userId={user.id} />}
+      </div>
     </div>
   );
 }

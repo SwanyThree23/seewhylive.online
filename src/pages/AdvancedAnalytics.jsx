@@ -2,12 +2,19 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Users, DollarSign, Radio, Zap, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -225,6 +232,30 @@ export default function AdvancedAnalyticsPage() {
             </div>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <BroadcastAnalyticsDashboard streamSession={rooms.find(r => r.status === 'live') || null} isLive={activeRooms > 0} />
+          <StreamHealthDashboard isLive={activeRooms > 0} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '📊 Analytics',          href: 'Analytics'       },
+            { label: '📡 Stream Analytics',   href: 'StreamAnalytics' },
+            { label: '📤 Export Data',        href: 'DataExport'      },
+            { label: '💰 Monetization',       href: 'Monetization'    },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <StreamerGoalsWidget userId={null} />
+          <PayPerViewManager userId={null} />
+          <VirtualGoodsStore creatorId={null} userId={null} />
+        </div>
       </div>
     </div>
   );

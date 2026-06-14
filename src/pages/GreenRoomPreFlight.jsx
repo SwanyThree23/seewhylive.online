@@ -4,6 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Eye, EyeOff, Copy, Check, X } from 'lucide-react';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import GuestQueue from '../components/live/GuestQueue';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import DevicePreview from '../components/greenroom/DevicePreview';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -168,6 +174,14 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
 
       {/* VDO.NINJA link */}
       <VdoNinjaGuestLink roomId={token} />
+
+      {/* Stream health */}
+      <ZEGOStreamHealthCard roomId={null} />
+      <GuestQueue roomId={null} isHost={false} />
+      <LocalVideoTile stream={null} audioEnabled={false} videoEnabled={false} userName="You" isHost={false} />
+      <OctagonalVideoWindow title="Preview" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
+      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <DevicePreview user={null} onDeviceState={() => {}} />
 
       {/* Session Token */}
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 14px' }}>

@@ -6,6 +6,14 @@ import { Swords, ArrowRight, Trophy, TrendingUp, Clock, Plus, Radio } from 'luci
 import PKBattleProgress from '@/components/pk/PKBattleProgress';
 import PKBattleVotePanel from '@/components/pk/PKBattleVotePanel';
 import PKInviteModal from '@/components/pk/PKInviteModal';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import BattleMode from '../components/streaming/BattleMode';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import BattleOverlay from '../components/pk/BattleOverlay';
+import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

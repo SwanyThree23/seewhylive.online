@@ -234,6 +234,23 @@ export default function CreateCommunityPage() {
             </button>
           </div>
         </form>
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={null} isAdmin={false} />
+          <AnnouncementFeed communityId={null} />
+          <ReferralProgram communityId={null} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>← All Communities</span>
+          </Link>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
+          <DiscussionFeed communityId="new" />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={null} />
+        </div>
       </div>
     </div>
   );

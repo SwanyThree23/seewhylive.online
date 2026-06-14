@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
 const BG = '#080B18';
 const BG2 = 'rgba(8,11,24,0.9)';
@@ -598,6 +606,12 @@ export default function VaultPro() {
         </div>
       )}
 
+      {/* Community spotlight + milestone alerts */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <MilestoneAlerts creatorId={null} />
+      </div>
+
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link to={createPageUrl('CreatorDashboard')} style={{ textDecoration: 'none' }}>
@@ -620,6 +634,15 @@ export default function VaultPro() {
             💰 Monetization
           </button>
         </Link>
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <EarningsBreakdown userId={null} />
+        <RevenueDashboard userId={null} />
+        <StreamerMonetizationCenter userId={null} />
+        <MonetizationDashboard roomId={null} />
+        <LiveAuctionWidget creatorId={null} roomId={null} isCreator={true} currentUser={null} />
+        <VirtualGoodsStore userId={null} />
       </div>
     </div>
   );
