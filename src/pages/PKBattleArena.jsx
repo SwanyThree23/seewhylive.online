@@ -7,6 +7,12 @@ import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
 import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
 import GiftShopTray from '../components/live/GiftShopTray';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import BattleOverlay from '../components/pk/BattleOverlay';
+import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import BattleMode from '../components/streaming/BattleMode';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -263,6 +269,12 @@ export default function PKBattleArena() {
         <PKBattleSoundboard battleId={null} isBattleActive={false} />
         <GiftShopTray roomId={null} currentUser={null} />
         <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <BattleScoreboard roomId={null} />
+        <BattleMode roomId={null} isHost={false} hostName="" participants={[]} />
+        <TournamentBracket />
+        <MatchmakingQueue user={null} onMatchFound={() => {}} />
+        <BattleOverlay battle={null} onBattleUpdate={() => {}} />
+        <PKAnalyticsDashboard battles={[]} user={null} />
       </div>
 
       {/* Footer nav */}

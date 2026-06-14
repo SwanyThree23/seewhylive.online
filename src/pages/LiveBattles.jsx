@@ -13,6 +13,11 @@ import GiftShopTray from '../components/live/GiftShopTray';
 import PKBattleInterface from '../components/pk/PKBattleInterface';
 import TournamentBracket from '../components/pk/TournamentBracket';
 import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import BattleOverlay from '../components/pk/BattleOverlay';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import BattleMode from '../components/streaming/BattleMode';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -217,6 +222,11 @@ export default function LiveBattles() {
         <MatchmakingQueue user={null} onMatchFound={() => {}} />
         <LoveTap roomId={null} user={null} creatorId={null} creatorName="Creator" />
         <GiftShopTray roomId={null} currentUser={null} />
+        <PKBattleVotePanel battleId={battles?.[0]?.id || null} creatorId={battles?.[0]?.creator_id || null} challengerId={battles?.[0]?.challenger_id || null} creatorName={battles?.[0]?.creator_name || 'Creator'} challengerName={battles?.[0]?.challenger_name || 'Challenger'} />
+        <PKBattleSoundboard battleId={battles?.[0]?.id || null} isBattleActive={battles?.[0]?.status === 'active'} />
+        <BattleMode roomId={battles?.[0]?.id || null} isHost={false} hostName="" participants={[]} />
+        <BattleOverlay battle={battles?.[0] || null} onBattleUpdate={() => {}} />
+        <PKAnalyticsDashboard battles={battles || []} user={null} />
       </div>
 
       {/* Cross-nav footer */}
