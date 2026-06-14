@@ -25,9 +25,9 @@ const C = {
   text:  '#F0E8D4',
   textD: '#C4B596',
   textM: '#8A7A62',
-  green: '#2ECC71',
+  green: '#6DBF7E',
   amber: '#D4854A',
-  blue:  '#1565C0',
+  blue:  '#D4854A',
   red:   '#C62828',
 };
 

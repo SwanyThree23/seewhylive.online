@@ -13,18 +13,11 @@ const STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';
 function creatorCut(gross) { return Math.floor(gross * CREATOR_SPLIT); }
 function platformFee(gross) { return gross - creatorCut(gross); }
 
-const MOCK_HISTORY = [
-  { id: 'po_001', period: 'May 2026', gross: 3240, streams: 8, status: 'paid', paid_at: '2026-06-01' },
-  { id: 'po_002', period: 'Apr 2026', gross: 2180, streams: 6, status: 'paid', paid_at: '2026-05-01' },
-  { id: 'po_003', period: 'Mar 2026', gross: 1870, streams: 5, status: 'paid', paid_at: '2026-04-01' },
-  { id: 'po_004', period: 'Feb 2026', gross: 940, streams: 3, status: 'paid', paid_at: '2026-03-01' },
-  { id: 'po_005', period: 'Jan 2026', gross: 620, streams: 2, status: 'failed', paid_at: null },
-];
 
 const LAYERS = [
-  { id: 'db', label: 'DB Trigger', desc: 'creator_cut = FLOOR(gross * 0.90) enforced at insert', color: '#00FF88', icon: Shield },
+  { id: 'db', label: 'DB Trigger', desc: 'creator_cut = FLOOR(gross * 0.90) enforced at insert', color: '#6DBF7E', icon: Shield },
   { id: 'api', label: 'API Middleware', desc: 'processPaymentWithPlatformCut() validates split before write', color: '#d4af37', icon: Lock },
-  { id: 'stripe', label: 'Stripe Fee', desc: 'application_fee_amount = FLOOR(gross * 0.10) in cents', color: '#8B5CF6', icon: CreditCard },
+  { id: 'stripe', label: 'Stripe Fee', desc: 'application_fee_amount = FLOOR(gross * 0.10) in cents', color: '#C0392B', icon: CreditCard },
 ];
 
 const initState = {
@@ -65,7 +58,7 @@ function StatCard({ label, value, sub, color, icon }) {
 }
 
 function StatusBadge({ status }) {
-  var map = { paid: { bg: 'rgba(0,255,136,0.1)', border: 'rgba(0,255,136,0.3)', color: '#00FF88', label: 'PAID' }, pending: { bg: 'rgba(255,140,0,0.1)', border: 'rgba(255,140,0,0.3)', color: '#FF8C00', label: 'PENDING' }, failed: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', color: '#ef4444', label: 'FAILED' } };
+  var map = { paid: { bg: 'rgba(109,191,126,0.1)', border: 'rgba(109,191,126,0.3)', color: '#6DBF7E', label: 'PAID' }, pending: { bg: 'rgba(212,133,74,0.1)', border: 'rgba(212,133,74,0.3)', color: '#D4854A', label: 'PENDING' }, failed: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', color: '#ef4444', label: 'FAILED' } };
   var s = map[status] || map.pending;
   return (
     <span style={{ background: s.bg, border: '1px solid ' + s.border, color: s.color, fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>{s.label}</span>
@@ -81,7 +74,7 @@ export default function PayoutCenter() {
     enabled: !!(user && user.id),
   });
 
-  var records = (payouts && payouts.length > 0) ? payouts : MOCK_HISTORY;
+  var records = payouts || [];
   var totalPaid = records.filter(r => r.status === 'paid').reduce((s, r) => s + creatorCut(r.gross || r.gross_amount || 0), 0);
   var pendingBalance = 847; // Simulated pending
   var totalGross = records.reduce((s, r) => s + (r.gross || r.gross_amount || 0), 0);
@@ -97,7 +90,7 @@ export default function PayoutCenter() {
     <div style={{ minHeight: '100vh', background: '#07050A', color: '#fff', fontFamily: 'Rajdhani, sans-serif' }}>
       {/* Header */}
       <div style={{ background: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(212,175,55,0.15)', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #1a4a1a, #00FF88)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #1a2a1a, #6DBF7E)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <DollarSign size={18} color="#000" />
         </div>
         <div>
@@ -126,22 +119,22 @@ export default function PayoutCenter() {
         {state.tab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Balance Card */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(0,255,136,0.08), rgba(212,175,55,0.06))', border: '1px solid rgba(0,255,136,0.2)', borderRadius: 16, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(109,191,126,0.08), rgba(212,175,55,0.06))', border: '1px solid rgba(109,191,126,0.2)', borderRadius: 16, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
               <div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>AVAILABLE BALANCE</div>
-                <div style={{ fontSize: 52, fontWeight: 900, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>${pendingBalance.toLocaleString()}</div>
+                <div style={{ fontSize: 52, fontWeight: 900, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>${pendingBalance.toLocaleString()}</div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Your 90% cut · Platform fee: ${Math.floor(pendingBalance / 9).toLocaleString()}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {state.payoutSuccess ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15 }}>
                     <CheckCircle size={20} /> Payout Requested!
                   </div>
                 ) : (
                   <button
                     onClick={handleRequestPayout}
                     disabled={state.requestingPayout || pendingBalance < 25}
-                    style={{ padding: '14px 28px', background: state.requestingPayout ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #00c96b, #00FF88)', border: 'none', borderRadius: 10, color: state.requestingPayout ? 'rgba(255,255,255,0.4)' : '#000', fontWeight: 900, fontSize: 16, cursor: state.requestingPayout ? 'wait' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}
+                    style={{ padding: '14px 28px', background: state.requestingPayout ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #4A9B5E, #6DBF7E)', border: 'none', borderRadius: 10, color: state.requestingPayout ? 'rgba(255,255,255,0.4)' : '#000', fontWeight: 900, fontSize: 16, cursor: state.requestingPayout ? 'wait' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}
                   >
                     {state.requestingPayout ? '⏳ Processing...' : '💸 REQUEST PAYOUT'}
                   </button>
@@ -152,10 +145,10 @@ export default function PayoutCenter() {
 
             {/* Stats */}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <StatCard label="TOTAL EARNED (90%)" value={'$' + totalPaid.toLocaleString()} sub="All-time creator cut" color="#00FF88" icon={TrendingUp} />
+              <StatCard label="TOTAL EARNED (90%)" value={'$' + totalPaid.toLocaleString()} sub="All-time creator cut" color="#6DBF7E" icon={TrendingUp} />
               <StatCard label="TOTAL GROSS" value={'$' + totalGross.toLocaleString()} sub="Before platform fee" color="#d4af37" icon={DollarSign} />
               <StatCard label="PLATFORM FEE (10%)" value={'$' + Math.floor(totalGross * 0.10).toLocaleString()} sub="Derived from gross" color="rgba(255,255,255,0.4)" icon={Shield} />
-              <StatCard label="STREAMS PAID" value={records.filter(r => r.status === 'paid').length} sub="Completed payouts" color="#8B5CF6" icon={CheckCircle} />
+              <StatCard label="STREAMS PAID" value={records.filter(r => r.status === 'paid').length} sub="Completed payouts" color="#C0392B" icon={CheckCircle} />
             </div>
 
             {/* 3-Layer Enforcement */}
@@ -201,7 +194,7 @@ export default function PayoutCenter() {
                       <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{rec.streams || rec.stream_count || 0} streams · ID: {rec.id}</div>
                     </div>
                     <div style={{ textAlign: 'right', minWidth: 80 }}>
-                      <div style={{ fontSize: 18, fontWeight: 900, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>${cut.toLocaleString()}</div>
+                      <div style={{ fontSize: 18, fontWeight: 900, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>${cut.toLocaleString()}</div>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>90% of ${gross.toLocaleString()}</div>
                     </div>
                     <div style={{ textAlign: 'right', minWidth: 60 }}>
@@ -219,8 +212,8 @@ export default function PayoutCenter() {
         {/* STRIPE TAB */}
         {state.tab === 'stripe' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ background: 'rgba(99,91,255,0.08)', border: '1px solid rgba(99,91,255,0.25)', borderRadius: 14, padding: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 14 }}>STRIPE CONNECT DETAILS</div>
+            <div style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 14, padding: 20 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 14 }}>STRIPE CONNECT DETAILS</div>
               {[
                 { label: 'Account ID', value: STRIPE_ACCOUNT_ID },
                 { label: 'Account Type', value: 'Express (Creator)' },

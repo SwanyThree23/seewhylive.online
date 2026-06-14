@@ -22,11 +22,11 @@ const CONTENT_TYPES = [
 
 const PLATFORMS = ['instagram', 'twitter', 'tiktok', 'youtube', 'facebook', 'all'];
 const TONES = [
-  { id: 'hype', label: 'HYPE', color: '#FF1564' },
+  { id: 'hype', label: 'HYPE', color: '#C0392B' },
   { id: 'pro', label: 'PRO', color: '#d4af37' },
-  { id: 'community', label: 'COMMUNITY', color: '#00FF88' },
-  { id: 'domino_culture', label: 'DOMINO CULTURE', color: '#8B5CF6' },
-  { id: 'griot', label: 'GRIOT', color: '#FF8C00' },
+  { id: 'community', label: 'COMMUNITY', color: '#6DBF7E' },
+  { id: 'domino_culture', label: 'DOMINO CULTURE', color: '#C9A84C' },
+  { id: 'griot', label: 'GRIOT', color: '#D4854A' },
 ];
 
 const TEMPLATES = [
@@ -38,7 +38,7 @@ const TEMPLATES = [
   { label: 'Creator Bio', type: 'creator_bio', tone: 'griot', platform: 'all', prompt: 'Write a compelling creator bio for SwanyThree23 (Ladrue Swanson), founder of SeeWhy LIVE and Cali Bones domino entertainment platform.' },
 ];
 
-const STATUS_COLORS = { draft: 'rgba(255,255,255,0.4)', scheduled: '#d4af37', posted: '#00FF88', failed: '#ef4444' };
+const STATUS_COLORS = { draft: 'rgba(255,255,255,0.4)', scheduled: '#d4af37', posted: '#6DBF7E', failed: '#ef4444' };
 
 const initState = {
   tab: 'generate',
@@ -162,11 +162,11 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
     <div style={{ minHeight: '100vh', background: '#07050A', color: '#fff', fontFamily: 'Rajdhani, sans-serif' }}>
       {/* Header */}
       <div style={{ background: 'rgba(0,0,0,0.65)', borderBottom: '1px solid rgba(212,175,55,0.15)', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #4a0a8a, #8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #3D0010, #C0392B)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Sparkles size={18} color="#fff" />
         </div>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 900, color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>INSFORGE AI STUDIO</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>INSFORGE AI STUDIO</div>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Content Engine · Powered by Claude Sonnet</div>
         </div>
       </div>
@@ -175,7 +175,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
       <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.3)', padding: '0 16px' }}>
         {['generate', 'templates', 'library', 'scheduler'].map(tab => (
           <button key={tab} onClick={() => dispatch({ type: 'SET_TAB', payload: tab })}
-            style={{ padding: '11px 16px', background: 'none', border: 'none', borderBottom: state.tab === tab ? '2px solid #8B5CF6' : '2px solid transparent', color: state.tab === tab ? '#8B5CF6' : 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            style={{ padding: '11px 16px', background: 'none', border: 'none', borderBottom: state.tab === tab ? '2px solid #C0392B' : '2px solid transparent', color: state.tab === tab ? '#C0392B' : 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {tab === 'generate' ? '✨ Generate' : tab === 'templates' ? '📋 Templates' : tab === 'library' ? '📚 Library' : '📅 Scheduler'}
           </button>
         ))}
@@ -237,7 +237,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
                 <button
                   onClick={generate}
                   disabled={state.generating || !state.prompt.trim()}
-                  style={{ marginTop: 10, width: '100%', padding: '12px', background: state.generating || !state.prompt.trim() ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg, #4a0a8a, #8B5CF6)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 900, fontSize: 15, cursor: state.generating || !state.prompt.trim() ? 'not-allowed' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: state.generating || !state.prompt.trim() ? 0.5 : 1 }}
+                  style={{ marginTop: 10, width: '100%', padding: '12px', background: state.generating || !state.prompt.trim() ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg, #3D0010, #C0392B)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 900, fontSize: 15, cursor: state.generating || !state.prompt.trim() ? 'not-allowed' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: state.generating || !state.prompt.trim() ? 0.5 : 1 }}
                 >
                   <Sparkles size={16} /> {state.generating ? 'Generating...' : 'GENERATE CONTENT'}
                 </button>
@@ -246,14 +246,14 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
 
             {/* Output */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 12, padding: 14, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 300 }}>
+              <div style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 12, padding: 14, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 300 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(139,92,246,0.8)', letterSpacing: '0.12em', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(192,57,43,0.8)', letterSpacing: '0.12em', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     GENERATED CONTENT · {toneObj.label} · {state.platform.toUpperCase()}
                   </div>
                   {state.generatedContent && (
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button onClick={() => handleCopy(state.generatedContent)} style={{ padding: '4px 10px', background: state.copied ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: state.copied ? '#00FF88' : 'rgba(255,255,255,0.6)', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      <button onClick={() => handleCopy(state.generatedContent)} style={{ padding: '4px 10px', background: state.copied ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: state.copied ? '#6DBF7E' : 'rgba(255,255,255,0.6)', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                         {state.copied ? <Check size={12} /> : <Copy size={12} />} {state.copied ? 'COPIED' : 'COPY'}
                       </button>
                       <button onClick={handleSave} style={{ padding: '4px 10px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, color: '#d4af37', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
@@ -264,7 +264,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
                 </div>
                 {state.generating ? (
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
-                    <div style={{ width: 28, height: 28, border: '3px solid rgba(139,92,246,0.2)', borderTopColor: '#8B5CF6', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                    <div style={{ width: 28, height: 28, border: '3px solid rgba(192,57,43,0.2)', borderTopColor: '#C0392B', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                     <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
                     <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>Claude Sonnet is writing...</span>
                   </div>
@@ -292,12 +292,12 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
                 <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 6 }}>{tpl.label}</div>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 10, background: 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: 99, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>{tpl.platform.toUpperCase()}</span>
-                  <span style={{ fontSize: 10, background: 'rgba(139,92,246,0.15)', padding: '2px 8px', borderRadius: 99, color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>{tpl.tone.toUpperCase()}</span>
+                  <span style={{ fontSize: 10, background: 'rgba(192,57,43,0.15)', padding: '2px 8px', borderRadius: 99, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>{tpl.tone.toUpperCase()}</span>
                 </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, marginBottom: 12 }}>{tpl.prompt.slice(0, 80)}...</div>
                 <button
                   onClick={() => { dispatch({ type: 'LOAD_TEMPLATE', payload: tpl }); dispatch({ type: 'SET_TAB', payload: 'generate' }); }}
-                  style={{ width: '100%', padding: '8px', background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, color: '#8B5CF6', fontWeight: 900, fontSize: 13, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
+                  style={{ width: '100%', padding: '8px', background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 8, color: '#C0392B', fontWeight: 900, fontSize: 13, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
                 >
                   Use Template →
                 </button>
