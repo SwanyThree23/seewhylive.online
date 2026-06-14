@@ -6,6 +6,9 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 
 const BG     = '#080B18';
 const BG2    = '#0D0620';
@@ -666,6 +669,9 @@ export default function TestMode() {
           <OctagonalVideoWindow stream={null} label="Test Participant" isHost={false} isMuted={true} />
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
           <DevicePreview />
+          <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
+          <ZEGOStreamHealthCard roomId={null} />
+          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
         </div>
       </div>
     </div>
