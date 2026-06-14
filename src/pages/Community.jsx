@@ -15,6 +15,9 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import ReferralConfig from '../components/admin/ReferralConfig';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -116,6 +119,15 @@ export default function CommunityPage() {
                 {/* Announcement Panel (creator tool) */}
                 {community.creator_id === user?.id && (
                   <AnnouncementPanel communityId={community.id} userId={user?.id} />
+                )}
+
+                {/* Creator admin tools */}
+                {community.creator_id === user?.id && (
+                  <>
+                    <AnnouncementScheduler communityId={community.id} userId={user?.id} />
+                    <ChallengeAnalytics communityId={community.id} />
+                    <ReferralConfig communityId={community.id} />
+                  </>
                 )}
 
                 {/* Challenge Leaderboard */}
