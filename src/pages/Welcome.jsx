@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, ChevronRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -175,6 +176,10 @@ export default function WelcomePage() {
           </div>
         </div>
       </section>
+
+      <div className="relative z-20 px-4 pb-4">
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
 
       {/* Footer */}
       <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"

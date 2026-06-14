@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { UserPlus, Mail, Copy, Check, Users, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -176,6 +178,11 @@ export default function InviteUsersPage() {
             </div>
           </div>
         )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={null} isAdmin={false} />
+          <DiscussionFeed communityId="invite" />
+        </div>
 
         {/* Beta info */}
         <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
