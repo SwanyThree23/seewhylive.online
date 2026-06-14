@@ -70,7 +70,7 @@ export default function TranscriptionStudio() {
   const [tab, setTab]             = useState('transcript');
   const bottomRef = useRef(null);
   const tickRef   = useRef(null);
-  const idRef     = useRef(DEMO_LINES.length + 1);
+  const idRef     = useRef(1);
 
   useEffect(() => {
     const style = document.createElement('style');
