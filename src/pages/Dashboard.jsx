@@ -26,6 +26,8 @@ import RecordingManager from '../components/content/RecordingManager';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NotificationBell from '../components/shared/NotificationBell';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -151,6 +153,11 @@ function OverviewTab({ user }) {
       </Card>
 
       {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
+      <div className="flex items-center gap-3 mb-2">
+        <NotificationBell />
+        <ZEGOMobileAppBanner />
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {[
