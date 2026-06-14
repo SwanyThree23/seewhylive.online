@@ -20,6 +20,7 @@ import AudienceInsights from '../components/dashboard/AudienceInsights';
 import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import RecordingManager from '../components/content/RecordingManager';
 import { toast } from 'sonner';
 
@@ -278,6 +279,11 @@ function AnalyticsTab({ user }) {
 
       {/* Earnings Breakdown */}
       {user?.id && <EarningsBreakdown creatorId={user.id} />}
+
+      {/* Monetization dashboard widget */}
+      {roomAnalytics[0]?.room_id && (
+        <MonetizationDashboard roomId={roomAnalytics[0].room_id} />
+      )}
 
       {/* Room Analytics Panel (most recent stream) */}
       {roomAnalytics[0]?.room_id && (
