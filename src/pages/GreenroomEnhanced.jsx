@@ -11,6 +11,8 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import GuestConnector from '../components/live/GuestConnector';
+import GuestQueue from '../components/live/GuestQueue';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -228,6 +230,10 @@ export default function GreenroomEnhanced() {
 
         {/* Room branding (logo, banner colors) */}
         <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+
+        {/* Guest connector + queue */}
+        <GuestConnector roomId={null} roomName="SeeWhy Studio" />
+        <GuestQueue roomId={null} isHost={true} />
 
         {/* Participant queue */}
         <GreenroomQueue roomId={null} isHost={true} />

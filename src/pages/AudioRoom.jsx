@@ -23,6 +23,8 @@ import AudioPanel from '../components/live/AudioPanel';
 import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import StreamChatbot from '../components/live/StreamChatbot';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
@@ -472,6 +474,20 @@ export default function AudioRoom() {
       {roomId && (
         <div style={{ padding: '0 16px 8px' }}>
           <LivePoll roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Interactive poll widget (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <InteractivePollWidget roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Live translation (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
         </div>
       )}
 

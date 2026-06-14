@@ -45,6 +45,8 @@ import StreamGoals from '../components/live/StreamGoals';
 import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import LivePollOverlay from '../components/live/LivePollOverlay';
 import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
@@ -1090,6 +1092,7 @@ export default function LiveRoom() {
           {party?.id && <AICopilotSidebar roomId={party.id} isHost={isHost} viewerCount={members.length} />}
           {party?.id && <StreamHighlightCapture roomId={party.id} sessionId={party.id} creatorId={user?.id} elapsedSeconds={0} isHost={isHost} />}
           {party?.id && <EnhancedPollingSystem roomId={party.id} hostId={user?.id} isHost={isHost} />}
+          {party?.id && user?.id && <InteractivePollingSystem roomId={party.id} isHost={isHost} currentUser={user} />}
           {party?.id && user?.id && <EngagementBadgesDisplay roomId={party.id} userId={user.id} creatorId={party.host_id} />}
         </div>
       )}
@@ -1097,6 +1100,11 @@ export default function LiveRoom() {
       {/* Aura/emotion drawer (host) */}
       {isHost && party?.id && (
         <AuraPanelDrawer roomId={party.id} hostId={user?.id} onClose={() => setAuraOpen(false)} />
+      )}
+
+      {/* Live poll overlay (floating, all users) */}
+      {(roomId || party?.id) && (
+        <LivePollOverlay roomId={roomId || party?.id} currentUser={user} isHost={isHost} />
       )}
 
       {showExclusiveGate && (
