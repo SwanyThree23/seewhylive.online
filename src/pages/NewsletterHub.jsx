@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUS_COLORS = { draft:C.gray, scheduled:'#FFB800', sent:'#6DBF7E' };
@@ -248,6 +250,10 @@ export default function NewsletterHubPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
         <ShareToSocial content={{ title: 'SeeWhy LIVE Newsletter', url: window.location.href }} />
         <SpotlightBanner communityId={null} isAdmin={false} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <AnnouncementScheduler communityId={null} userId={null} />
+          <MilestoneAlerts creatorId={null} />
+        </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
           {[
             { label: '📅 Stream Scheduler', href: 'StreamScheduler' },

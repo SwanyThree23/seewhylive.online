@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
 import LivePoll from '../components/live/LivePoll';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -186,6 +188,11 @@ export default function PollManager() {
             <WatchPartyPoll partyId={null} roomId={null} currentUser={user} isHost={true} />
           </div>
         )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[

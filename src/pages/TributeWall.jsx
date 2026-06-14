@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
+import GoldenWall from '../components/live/GoldenWall';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG      = '#080B18';
 const BG2     = '#0D1022';
@@ -314,6 +316,8 @@ export default function TributeWall() {
 
         <SpotlightBanner communityId={null} isAdmin={false} />
         <DiscussionFeed communityId="tribute-wall" />
+        <GoldenWall roomId={null} isExpanded={false} />
+        <MilestoneAlerts creatorId={null} />
 
         {/* Bottom note */}
         <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 8 }}>
