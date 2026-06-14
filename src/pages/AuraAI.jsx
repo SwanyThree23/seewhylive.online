@@ -4,6 +4,9 @@ import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -235,6 +238,9 @@ export default function AuraAI() {
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AIStreamSummary roomId={null} isHost={false} streamTitle="Aura AI Session" viewerCount={0} elapsedSeconds={0} />
         <ContentRecommendations />
+        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
       </div>
     </div>
   );
