@@ -7,6 +7,10 @@ import { motion } from 'framer-motion';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NebulaBg from '../components/home/NebulaBg';
+import GridLines from '../components/home/GridLines';
+import StarField from '../components/home/StarField';
+import FeaturedContentSection from '../components/home/FeaturedContent';
 
 export default function CoverPage() {
   const { data: user } = useQuery({
@@ -172,6 +176,10 @@ export default function CoverPage() {
       </nav>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <NebulaBg />
+        <GridLines />
+        <StarField count={40} />
+        <FeaturedContentSection />
         <OnlineUsersGrid compact maxVisible={8} />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ZEGOMobileAppBanner />
