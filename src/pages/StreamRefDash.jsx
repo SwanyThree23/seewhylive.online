@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import OBSBridge from '../components/obs/OBSBridge';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -995,6 +998,12 @@ export default function StreamRefDash() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         <ActiveContent />
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <ZEGOConfigPanel roomId={null} />
+        <OBSBridge roomId={null} isHost={true} />
       </div>
 
       {/* Footer */}
