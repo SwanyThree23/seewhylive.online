@@ -20,6 +20,9 @@ import LivePoll from '../components/live/LivePoll';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import { toast } from 'sonner';
+import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
 
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -273,6 +276,12 @@ export default function HybridStreamRoom() {
             <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
           </Link>
         ))}
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CollabPlaylist roomId={null} isHost={false} />
+        <VideoQueuePanel roomId={null} isHost={false} onVideoSelect={() => {}} />
+        <WatchPartyAnalytics partyId={null} />
       </div>
     </div>
   );

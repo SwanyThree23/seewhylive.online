@@ -21,6 +21,8 @@ import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import AudioStageTab from '../components/audio/AudioStageTab';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -427,6 +429,11 @@ export default function ControlRoomPage() {
           </div>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AudioStageTab roomId={null} isHost={true} />
+        <BackgroundCustomizer onBackgroundChange={() => {}} />
+      </div>
     </div>
   );
 }
