@@ -7,12 +7,12 @@ const G = '#d4af37';
 
 const BADGE_ICONS = {
   super_fan: { icon: Heart, color: '#C0392B', emoji: '❤️' },
-  top_supporter: { icon: Trophy, color: '#D4AF37', emoji: '🏆' },
-  raid_master: { icon: Flame, color: '#C0392B', emoji: '🔥' },
+  top_supporter: { icon: Trophy, color: '#FFD700', emoji: '🏆' },
+  raid_master: { icon: Flame, color: '#FF6B6B', emoji: '🔥' },
   poll_champion: { icon: Star, color: '#C9A84C', emoji: '⭐' },
   chat_legend: { icon: Sparkles, color: '#D4AF37', emoji: '✨' },
-  watch_streak: { icon: Flame, color: '#D4854A', emoji: '🔥' },
-  gifter: { icon: Gift, color: '#D4AF37', emoji: '🎁' },
+  watch_streak: { icon: Flame, color: '#FF8C00', emoji: '🔥' },
+  gifter: { icon: Gift, color: '#FFB700', emoji: '🎁' },
   first_subscriber: { icon: Trophy, color: G, emoji: '👑' },
 };
 
@@ -35,7 +35,6 @@ export default function EngagementBadgesDisplay({ roomId, userId, creatorId }) {
         displayBadgePopup(result.data.badge);
       }
     } catch (error) {
-      console.error('Badge award error:', error);
     }
   }, [userId, creatorId, roomId]);
 
@@ -71,7 +70,7 @@ export default function EngagementBadgesDisplay({ roomId, userId, creatorId }) {
               <div
                 className="p-4 rounded-lg backdrop-blur-md overflow-hidden relative"
                 style={{
-                  background: `rgba(8,11,24,0.9)`,
+                  background: `rgba(7,7,15,0.9)`,
                   border: `2px solid ${badge.color}`,
                   boxShadow: `0 0 20px ${badge.color}40`,
                 }}
