@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
 import 'react-quill/dist/quill.snow.css';
 
 const BG = '#080B18';
@@ -201,6 +203,10 @@ export default function NewsletterPage() {
 
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ShareToSocial />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <EarningsBreakdown creatorId={null} />
+          <AudienceInsights creatorId={null} />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
           {[
