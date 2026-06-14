@@ -12,8 +12,8 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RARITY = {
   common:    { color: 'rgba(255,255,255,0.5)', label: 'COMMON',    glow: '' },
-  rare:      { color: '#60A5FA',               label: 'RARE',      glow: '0 0 12px rgba(96,165,250,0.3)' },
-  epic:      { color: '#A78BFA',               label: 'EPIC',      glow: '0 0 12px rgba(167,139,250,0.3)' },
+  rare:      { color: '#D4AF37',               label: 'RARE',      glow: '0 0 12px rgba(212,175,55,0.3)' },
+  epic:      { color: '#D4AF37',               label: 'EPIC',      glow: '0 0 12px rgba(212,175,55,0.3)' },
   legendary: { color: GOLD,                    label: 'LEGENDARY', glow: `0 0 20px rgba(212,175,55,0.4)` },
 };
 
@@ -136,6 +136,14 @@ export default function GiftShopTray({ roomId, currentUser }) {
       qc.invalidateQueries(['gift-lb', roomId]);
       setAnim({ gift, sender: currentUser?.full_name || 'Someone' });
       setOpen(false);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name || 'gift'}`,
+          amount: gift.price,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Could not send gift'),
   });

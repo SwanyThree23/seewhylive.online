@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen py-10">
       <div className="max-w-3xl mx-auto px-6">
         <Link to={createPageUrl('Home')}>
           <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -79,7 +79,7 @@ export default function TermsOfService() {
 
           <section>
             <h2 className="text-xl font-semibold mb-2">11. Contact</h2>
-            <p>For questions about these Terms, contact us at <a href="mailto:legal@seewhy.live" className="text-blue-600 underline">legal@seewhy.live</a>.</p>
+            <p>For questions about these Terms, contact us at <a href="mailto:legal@seewhy.live" className="text-[#D4AF37] underline">legal@seewhy.live</a>.</p>
           </section>
         </div>
 

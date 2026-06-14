@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
   burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#30D158",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
@@ -42,7 +42,7 @@ export function MerchStrip({ roomId, currentUser, hostId }) {
                 <div style={{ fontFamily: C.fBeb, fontSize: 14, color: C.gold }}>${item.price_usd}</div>
                 <div style={{ display: "flex", gap: 3, marginTop: 3 }}>
                   {item.is_live_exclusive && <span style={{ fontFamily: C.fMon, fontSize: 6, background: C.burgundy, color: C.gold, padding: "1px 4px", borderRadius: 3 }}>LIVE</span>}
-                  {item.stock != null && item.stock < 10 && <span style={{ fontFamily: C.fMon, fontSize: 6, background: "#FF9500", color: "#000", padding: "1px 4px", borderRadius: 3 }}>LOW</span>}
+                  {item.stock != null && item.stock < 10 && <span style={{ fontFamily: C.fMon, fontSize: 6, background: "#D4854A", color: "#000", padding: "1px 4px", borderRadius: 3 }}>LOW</span>}
                 </div>
               </div>
             </div>
@@ -74,7 +74,28 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
       creator_payout: total * 0.9, platform_cut: total * 0.1,
       room_id: roomId, status: "pending",
     }),
-    onSuccess: () => { setSuccess(true); qc.invalidateQueries(["merch-orders"]); },
+    onSuccess: () => {
+      setSuccess(true);
+      qc.invalidateQueries(["merch-orders"]);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'ppv_purchase',
+            title: `Ordered ${item.name} x${qty}`,
+            amount: total,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'tip_received',
+            title: `Merch order: ${item.name} x${qty} from ${currentUser.full_name || 'viewer'}`,
+            amount: total * 0.9,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
+    },
   });
 
   return (

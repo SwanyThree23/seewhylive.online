@@ -28,7 +28,7 @@ function Modal({ open, onClose, title, titleColor, children }) {
       onClick={onClose}
     >
       <div
-        style={{ background: '#0d0618', border: `1px solid ${titleColor || 'rgba(212,175,55,0.2)'}`, borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ background: '#080B18', border: `1px solid ${titleColor || 'rgba(212,175,55,0.2)'}`, borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}
       >
         <h2 style={{ color: titleColor || '#d4af37', fontWeight: 700, fontSize: 16, marginBottom: 16 }}>{title}</h2>
@@ -64,7 +64,19 @@ export default function VideoLibrary({ creatorId }) {
 
   const createVOD = useMutation({
     mutationFn: (data) => base44.entities.VODVideo.create({ ...data, creator_id: creatorId, status: 'draft' }),
-    onSuccess: () => { qc.invalidateQueries(['vod-library', creatorId]); setShowAdd(false); setNewVOD({ title: '', video_url: '', description: '' }); toast.success('VOD added to library'); },
+    onSuccess: (vod) => {
+      qc.invalidateQueries(['vod-library', creatorId]);
+      setShowAdd(false);
+      setNewVOD({ title: '', video_url: '', description: '' });
+      toast.success('VOD added to library');
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'clip_created',
+          title: `Added VOD: ${vod?.title || 'New Video'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const importRecording = (rec) => {

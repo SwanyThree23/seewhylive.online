@@ -28,7 +28,7 @@ const DURATIONS = [
 ];
 const CAT_COLORS = {
   gaming: '#C0392B', music: '#D4854A', education: '#D4AF37', talk: '#6DBF7E',
-  fitness: '#fb923c', cooking: '#fbbf24', art: '#f87171', tech: '#C9A84C',
+  fitness: '#D4854A', cooking: '#D4AF37', art: '#f87171', tech: '#C9A84C',
   irl: '#6DBF7E', other: '#d4af37',
 };
 
@@ -72,7 +72,19 @@ export default function StreamScheduler() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledStream.create(data),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setForm(blankForm); toast.success('Stream scheduled!'); },
+    onSuccess: (created) => {
+      qc.invalidateQueries(['scheduled-streams']);
+      setShowForm(false);
+      setForm(blankForm);
+      toast.success('Stream scheduled!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Scheduled: ${created?.title || 'Stream'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
@@ -145,7 +157,7 @@ export default function StreamScheduler() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0618] text-white p-4 md:p-6">
+    <div className="min-h-screen bg-[#080B18] text-white p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* Header */}
@@ -333,7 +345,7 @@ export default function StreamScheduler() {
             <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed right-0 top-0 h-full w-full max-w-md bg-[#0d0618] border-l border-[rgba(212,175,55,0.2)] z-50 overflow-y-auto"
+              className="fixed right-0 top-0 h-full w-full max-w-md bg-[#080B18] border-l border-[rgba(212,175,55,0.2)] z-50 overflow-y-auto"
             >
               <div className="p-6 space-y-5">
                 <div className="flex items-center justify-between">

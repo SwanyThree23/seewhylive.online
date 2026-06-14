@@ -12,14 +12,14 @@ import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
+const BG2   = '#0D0A08';
 const BG3   = '#111218';
 const GOLD  = '#D4AF37';
-const GREEN = '#22c55e';
+const GREEN = '#6DBF7E';
 const RED   = '#EF4444';
-const SLATE = '#2A2438';
-const TEXT  = '#F0EAF8';
-const TEXTM = '#8A7A94';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTM = '#8A7A62';
 const FONT  = 'Barlow Condensed, sans-serif';
 const MONO  = { fontFamily: 'Space Mono, monospace' };
 
@@ -54,8 +54,8 @@ function TestRow({ icon, label, status, onTest }) {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '14px 16px', borderRadius: 12,
-      background: status === 'ready' ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)',
-      border: `1px solid ${status === 'ready' ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.07)'}`,
+      background: status === 'ready' ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)',
+      border: `1px solid ${status === 'ready' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'}`,
       transition: 'all 0.3s',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -204,14 +204,14 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
         style={{
           width: '100%', padding: '16px 0', borderRadius: 14, border: 'none',
           background: allReady
-            ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+            ? 'linear-gradient(135deg, #6DBF7E, #4A9B5E)'
             : 'rgba(255,255,255,0.06)',
           color: allReady ? '#fff' : TEXTM,
           cursor: allReady ? 'pointer' : 'not-allowed',
           fontFamily: FONT, fontSize: 17, fontWeight: 900,
           letterSpacing: '0.08em', textTransform: 'uppercase',
           transition: 'all 0.3s',
-          boxShadow: allReady ? `0 4px 24px rgba(34,197,94,0.35)` : 'none',
+          boxShadow: allReady ? `0 4px 24px rgba(109,191,126,0.35)` : 'none',
         }}
       >
         {allReady ? '🚀 ENTER STAGE — GO LIVE' : 'COMPLETE ALL TESTS TO CONTINUE'}

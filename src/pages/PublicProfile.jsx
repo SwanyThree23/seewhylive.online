@@ -69,7 +69,7 @@ export default function PublicProfile() {
   return (
     <div className="min-h-screen" style={{ background: BG }}>
       {/* Banner */}
-      <div className="relative h-48 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #0d0618 60%, #080B18 100%)` }}>
+      <div className="relative h-48 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #080B18 60%, #080B18 100%)` }}>
         {profile.banner_url && (
           <img src={profile.banner_url} className="w-full h-full object-cover absolute inset-0" alt="banner" />
         )}
@@ -84,7 +84,7 @@ export default function PublicProfile() {
           {/* OCT Avatar */}
           <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
             <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
-            <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
+            <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.display_name} style={{ clipPath: OCT }} />
                 : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.display_name?.charAt(0)}</span>
@@ -99,7 +99,7 @@ export default function PublicProfile() {
                 <PresenceDot userId={userId} size="md" />
                 <OnlinePresenceDot isOnline={true} size="sm" />
               </h1>
-              {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#4fc3f7' }} />}
+              {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
               {profile.category && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                   {profile.category}
@@ -161,7 +161,7 @@ export default function PublicProfile() {
 
         {/* Recent Rooms */}
         {rooms.length > 0 && (
-          <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-xs font-black uppercase mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
               <Video className="w-4 h-4" /> Recent Streams
             </p>

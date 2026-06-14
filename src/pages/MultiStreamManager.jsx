@@ -19,12 +19,12 @@ import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 
-function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
+function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
 function CardHeader({ children, className = '' }) { return <div className={`px-4 pt-4 pb-2 ${className}`}>{children}</div>; }
 function CardTitle({ children, className = '' }) { return <p className={`font-black text-sm ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{children}</p>; }
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) { return <button onClick={onClick} disabled={disabled} {...rest} className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`} style={{ padding: size === 'sm' ? '5px 10px' : size === 'icon' ? '6px' : '8px 14px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : variant === 'outline' ? '1px solid rgba(255,255,255,0.15)' : 'none', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>{children}</button>; }
-function Input({ value, onChange, placeholder, type = 'text', className = '', style = {} }) { return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={{ width: '100%', padding: '8px 12px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />; }
+function Input({ value, onChange, placeholder, type = 'text', className = '', style = {} }) { return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={{ width: '100%', padding: '8px 12px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />; }
 function Badge({ children, className = '', style = {} }) { return <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...style }}>{children}</span>; }
 function Slider({ value, onValueChange, min = 0, max = 100, step = 1, className = '' }) { return <input type="range" min={min} max={max} step={step} value={Array.isArray(value) ? value[0] : value} onChange={e => onValueChange && onValueChange([Number(e.target.value)])} className={className} style={{ width: '100%', accentColor: '#D4AF37' }} />; }
 function Tabs({ children, defaultValue }) { return <div data-defaulttab={defaultValue}>{children}</div>; }
@@ -46,8 +46,8 @@ const PLATFORMS = [
 
 function StatusDot({ status }) {
   const styles = {
-    live: 'bg-green-400 animate-pulse',
-    connecting: 'bg-yellow-400 animate-pulse',
+    live: 'bg-[#6DBF7E] animate-pulse',
+    connecting: 'bg-[#D4AF37] animate-pulse',
     error: 'bg-red-400',
     offline: 'bg-white/20',
   };
@@ -55,7 +55,7 @@ function StatusDot({ status }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${styles[status] || styles.offline}`} />
-      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-green-400' : status === 'error' ? 'text-red-400' : 'text-white/30'}`}>
+      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-[#6DBF7E]' : status === 'error' ? 'text-red-400' : 'text-white/30'}`}>
         {labels[status] || 'OFF'}
       </span>
     </div>
@@ -80,7 +80,19 @@ export default function MultiStreamManager() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); setShowAddForm(false); setNewLabel(''); toast.success('Destination added'); },
+    onSuccess: (dest) => {
+      qc.invalidateQueries(['rtmp-destinations']);
+      setShowAddForm(false);
+      setNewLabel('');
+      toast.success('Destination added');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Added multi-stream destination: ${dest?.label || selectedPlatform}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const updateMutation = useMutation({
@@ -151,7 +163,7 @@ export default function MultiStreamManager() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0618] text-white p-6">
+    <div className="min-h-screen bg-[#080B18] text-white p-6">
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Header */}
@@ -172,7 +184,7 @@ export default function MultiStreamManager() {
               <Button
                 onClick={goLiveFanout}
                 disabled={enabledCount === 0}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+                className="bg-[#4A9B5E] hover:bg-[#4A9B5E] text-white font-bold gap-2"
               >
                 <PlayCircle className="w-4 h-4" /> Go Live ({enabledCount})
               </Button>
@@ -197,7 +209,7 @@ export default function MultiStreamManager() {
               <div className="flex-1 min-w-48">
                 <div className="flex justify-between mb-1">
                   <p className="text-[10px] text-white/40">Total Outbound Bandwidth</p>
-                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#ef4444' : '#22c55e' }}>
+                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#ef4444' : '#6DBF7E' }}>
                     {(totalBitrate / 1000).toFixed(1)} Mbps
                   </p>
                 </div>
@@ -206,7 +218,7 @@ export default function MultiStreamManager() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${Math.min(100, (totalBitrate / recommendedMax) * 100)}%`,
-                      background: totalBitrate > recommendedMax ? '#ef4444' : 'linear-gradient(90deg, #22c55e, #d4af37)',
+                      background: totalBitrate > recommendedMax ? '#ef4444' : 'linear-gradient(90deg, #6DBF7E, #d4af37)',
                     }}
                   />
                 </div>
@@ -400,12 +412,12 @@ export default function MultiStreamManager() {
         {/* MediaMTX info banner */}
         {anyLive && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-green-950/40 border-green-500/30">
+            <Card className="bg-[#0F1428]/40 border-[#6DBF7E]/40/30">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-3 h-3 rounded-full bg-[#6DBF7E] animate-pulse" />
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-green-400">MediaMTX Fanout Active</p>
-                  <p className="text-xs text-green-300/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
+                  <p className="text-sm font-bold text-[#6DBF7E]">MediaMTX Fanout Active</p>
+                  <p className="text-xs text-[#6DBF7E]/80/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
                 </div>
                 <Button onClick={stopAllFanout} className="bg-red-700 hover:bg-red-800 text-white text-xs h-8">
                   🛑 Stop All

@@ -53,6 +53,14 @@ export default function PayPerViewCard({ event }) {
         current_participants: event.current_participants + 1,
         revenue: event.revenue + event.price,
       });
+
+      // Log activity
+      await base44.entities.Activity.create({
+        user_id: user.id,
+        type: 'ppv_purchase',
+        title: `Purchased access: ${event.title || 'PPV Event'}`,
+        amount: event.price,
+      }).catch(() => {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ppv-access'] });
@@ -62,7 +70,7 @@ export default function PayPerViewCard({ event }) {
   });
 
   const statusColors = {
-    upcoming: 'bg-blue-100 text-blue-800',
+    upcoming: 'bg-[#D4AF37]/12 text-[#800020]',
     live: 'bg-red-100 text-red-800 animate-pulse',
     ended: 'bg-gray-100 text-gray-800',
   };
@@ -108,7 +116,7 @@ export default function PayPerViewCard({ event }) {
             <div className="text-right">
               <p className="text-2xl font-bold text-primary">${event.price}</p>
               {hasAccess && (
-                <Badge className="mt-1 bg-green-100 text-green-800">
+                <Badge className="mt-1 bg-[#6DBF7E]/15 text-[#6DBF7E]">
                   Purchased
                 </Badge>
               )}

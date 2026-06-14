@@ -105,7 +105,7 @@ export default function PanelMusicPlayer({ className, style }) {
                 <span key={tag} style={{
                   ...T, fontSize: 9, fontWeight: 700, letterSpacing: '0.05em',
                   padding: '1px 6px', borderRadius: 999,
-                  background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)',
+                  background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)',
                   color: PURPLE, textTransform: 'uppercase',
                 }}>
                   {tag}

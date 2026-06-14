@@ -7,7 +7,7 @@ import { DollarSign, Heart, Star, Award } from 'lucide-react';
 const inputStyle = {
   width: '100%',
   padding: '10px 14px',
-  background: 'rgba(17,8,34,0.85)',
+  background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 8,
   color: '#fff',
@@ -36,7 +36,25 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
 
   const sendTipMutation = useMutation({
     mutationFn: async (tipData) => {
-      return await base44.entities.Transaction.create(tipData);
+      const tx = await base44.entities.Transaction.create(tipData);
+      const recipientId = recipient.user_id || recipient.id;
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser?.id,
+          type: 'tip_sent',
+          title: `Tipped $${tipData.amount} to ${recipient.full_name || recipient.host_name || 'creator'}`,
+          amount: tipData.amount,
+          recipient_id: recipientId,
+        }),
+        base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'tip_received',
+          title: `Received a $${tipData.amount} tip`,
+          amount: tipData.amount,
+          sender_id: currentUser?.id,
+        }),
+      ]);
+      return tx;
     },
     onSuccess: () => {
       toast.success('Tip sent successfully! 💸');
@@ -78,7 +96,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Send a Tip</p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
@@ -144,7 +162,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
             <button
               onClick={handleSendTip}
               disabled={sendTipMutation.isPending}
-              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #9333ea, #ec4899)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #800020, #D4854A)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {sendTipMutation.isPending ? 'Sending...' : 'Send Tip'}
             </button>

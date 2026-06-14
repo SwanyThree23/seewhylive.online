@@ -12,7 +12,7 @@ const TYPE_COLORS = {
   item:       { color: GOLD,     label: 'ITEM' },
   one_on_one: { color: '#C9A84C', label: '1:1' },
   shoutout:   { color: '#D4AF37', label: 'SHOUTOUT' },
-  custom_art: { color: '#FF6B00', label: 'ART' },
+  custom_art: { color: '#D4854A', label: 'ART' },
   coaching:   { color: '#6DBF7E', label: 'COACHING' },
   experience: { color: '#C0392B', label: 'EXPERIENCE' },
 };
@@ -286,7 +286,7 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
       <input placeholder="Title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
         style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />
       <select value={form.auction_type} onChange={e => setForm(f => ({ ...f, auction_type: e.target.value }))}
-        style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+        style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
         {types.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
       </select>
       <div className="flex gap-2">

@@ -37,7 +37,7 @@ function BattleCard({ battle, index }) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} whileHover={{ y: -3 }}
       className="rounded-2xl overflow-hidden transition-all"
-      style={{ background: 'linear-gradient(135deg, #0d0618, #15021f)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      style={{ background: 'linear-gradient(135deg, #080B18, #0D1528)', border: '1px solid rgba(212,175,55,0.15)' }}>
       {/* Status bar */}
       <div className="h-1 w-full" style={{ background: isActive ? `linear-gradient(90deg, #800020, ${GOLD})` : 'rgba(255,255,255,0.06)', animation: isActive ? 'pulse 2s infinite' : 'none' }} />
 
@@ -74,36 +74,36 @@ function BattleCard({ battle, index }) {
         {/* VS display */}
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-blue-300 mx-auto mb-1"
-              style={{ background: 'rgba(59,130,246,0.15)', border: '2px solid rgba(59,130,246,0.4)' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-[#D4AF37] mx-auto mb-1"
+              style={{ background: 'rgba(212,175,55,0.15)', border: '2px solid rgba(212,175,55,0.4)' }}>
               {leftName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{leftName}</p>
-            <p className="text-lg font-black font-mono" style={{ color: '#60a5fa' }}>{leftVotes.toLocaleString()}</p>
+            <p className="text-lg font-black font-mono" style={{ color: '#D4AF37' }}>{leftVotes.toLocaleString()}</p>
           </div>
           <div className="flex flex-col items-center gap-1">
             <span className="font-black text-sm" style={{ color: GOLD }}>VS</span>
             <div className="w-px h-8" style={{ background: 'rgba(212,175,55,0.2)' }} />
           </div>
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-red-300 mx-auto mb-1"
-              style={{ background: 'rgba(239,68,68,0.15)', border: '2px solid rgba(239,68,68,0.4)' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black mx-auto mb-1"
+              style={{ background: 'rgba(192,57,43,0.15)', border: '2px solid rgba(192,57,43,0.4)', color: '#C0392B' }}>
               {rightName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{rightName}</p>
-            <p className="text-lg font-black font-mono" style={{ color: '#f87171' }}>{rightVotes.toLocaleString()}</p>
+            <p className="text-lg font-black font-mono" style={{ color: '#C0392B' }}>{rightVotes.toLocaleString()}</p>
           </div>
         </div>
 
         {/* Score bar */}
         <div className="h-2 rounded-full flex overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
-          <div className="transition-all duration-500" style={{ width: `${leftPct}%`, background: '#3b82f6' }} />
-          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#ef4444' }} />
+          <div className="transition-all duration-500" style={{ width: `${leftPct}%`, background: '#D4AF37' }} />
+          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#C0392B' }} />
         </div>
 
         <Link to={`${createPageUrl('PKBattlePage')}?id=${battle.id}`}>
           <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl font-black uppercase text-xs"
-            style={{ ...T, background: isActive ? 'linear-gradient(90deg, #2563eb, #dc2626)' : 'rgba(255,255,255,0.05)', border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)', color: isActive ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+            style={{ ...T, background: isActive ? 'linear-gradient(90deg, #800020, #C0392B)' : 'rgba(255,255,255,0.05)', border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)', color: isActive ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
             {isActive ? <><Zap className="w-3.5 h-3.5" /> Join Battle</> : <><Trophy className="w-3.5 h-3.5" /> View Results</>}
           </button>
         </Link>
@@ -125,7 +125,7 @@ export default function LiveBattles() {
 
   return (
     <div className="min-h-screen text-white pb-10"
-      style={{ background: 'linear-gradient(135deg, #0d0618 0%, #15021f 50%, #0d0618 100%)' }}>
+      style={{ background: 'linear-gradient(135deg, #080B18 0%, #0D1528 50%, #080B18 100%)' }}>
       {/* Header */}
       <div className="sticky top-0 z-20 border-b"
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
@@ -149,7 +149,7 @@ export default function LiveBattles() {
             </div>
             <Link to={createPageUrl('PKBattlePage')}>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                style={{ ...T, background: 'linear-gradient(90deg, #2563eb, #dc2626)', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                style={{ ...T, background: 'linear-gradient(90deg, #800020, #C0392B)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <Plus className="w-4 h-4" /> Start Battle
               </button>
             </Link>
@@ -196,7 +196,7 @@ export default function LiveBattles() {
             </p>
             <Link to={createPageUrl('PKBattlePage')}>
               <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase text-xs mx-auto"
-                style={{ ...T, background: 'linear-gradient(90deg, #2563eb, #dc2626)', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                style={{ ...T, background: 'linear-gradient(90deg, #800020, #C0392B)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <Plus className="w-4 h-4" /> Create First Battle
               </button>
             </Link>
@@ -230,7 +230,7 @@ export default function LiveBattles() {
       </div>
 
       {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
         {[
           ['PKBattleArena',   '⚔️ Battle Arena'],
           ['PKBattleManager', '⚙️ Manage'],
@@ -239,7 +239,7 @@ export default function LiveBattles() {
           ['Home',            '🏠 Home'],
         ].map(([page, label]) => (
           <Link key={page} to={createPageUrl(page)} style={{ textDecoration: 'none' }}>
-            <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               {label}
             </button>
           </Link>

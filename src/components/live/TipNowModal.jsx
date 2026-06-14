@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
   burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#30D158",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
@@ -37,7 +37,28 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
         is_displayed: false,
       }),
     ]),
-    onSuccess: () => { setSuccess(true); qc.invalidateQueries(["tip-alerts", roomId]); },
+    onSuccess: () => {
+      setSuccess(true);
+      qc.invalidateQueries(["tip-alerts", roomId]);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'tip_sent',
+            title: `Tipped $${finalAmount.toFixed(2)}`,
+            amount: finalAmount,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'tip_received',
+            title: `Received $${finalAmount.toFixed(2)} tip from ${currentUser.full_name || 'viewer'}`,
+            amount: finalAmount,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
+    },
   });
 
   if (success) return (

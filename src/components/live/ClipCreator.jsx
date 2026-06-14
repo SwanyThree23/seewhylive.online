@@ -20,9 +20,17 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
 
   const createClipMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamClip.create(data),
-    onSuccess: () => {
+    onSuccess: (clip) => {
       toast.success('Clip saved! View on your channel →');
       setOpen(false);
+      const userId = currentUser?.id || creatorId;
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Clipped: ${clip?.title || title || 'Stream clip'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -82,7 +90,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#0d0618] border border-[#D4AF37]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#080B18] border border-[#D4AF37]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
             style={{ backdropFilter: 'blur(16px)' }}
           >
             <div className="p-4 space-y-4">
@@ -99,7 +107,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
               {/* Clip title */}
               <input value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="Clip title..."
-                style={{ width: '100%', padding: '6px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }} />
+                style={{ width: '100%', padding: '6px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }} />
 
               {/* Timeline scrubber */}
               <div className="space-y-2">

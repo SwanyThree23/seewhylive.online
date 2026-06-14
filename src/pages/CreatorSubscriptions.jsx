@@ -26,7 +26,7 @@ const DEFAULT_TIERS = [
     id: 'fan',
     name: 'Fan',
     price: 4.99,
-    color: '#5B6EF5',
+    color: '#D4854A',
     emoji: '⭐',
     description: 'Support your favorite creator',
     perks: ['Subscriber badge in chat', 'Access to subscriber-only rooms', 'Early stream notifications'],
@@ -78,7 +78,7 @@ function TierCard({ tier, isCurrentTier, onSubscribe, onCancel, loading, isDefau
       style={{
         position: 'relative',
         borderRadius: 20,
-        background: 'rgba(13,6,24,0.95)',
+        background: 'rgba(8,11,24,0.95)',
         border: `1px solid ${tier.popular || tier.is_featured ? tier.color + '55' : 'rgba(255,255,255,0.08)'}`,
         overflow: 'hidden',
         display: 'flex',
@@ -350,6 +350,22 @@ function SubscriberView({ user, creatorId, creatorName }) {
       }
       toast.success(`Welcome to ${tier.name}! 🎉`);
       qc.invalidateQueries(['userSubs']);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'subscription',
+          title: `Subscribed to ${tier.name} tier`,
+          amount: tier.price,
+          recipient_id: creatorId,
+        }),
+        creatorId && base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'tip_received',
+          title: `New ${tier.name} subscriber: ${user.full_name || user.email}`,
+          amount: Math.floor(tier.price * 0.9 * 100) / 100,
+          sender_id: user.id,
+        }),
+      ]);
     } catch {
       toast.error('Subscription failed');
     } finally {

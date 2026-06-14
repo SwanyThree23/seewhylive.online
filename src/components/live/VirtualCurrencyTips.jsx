@@ -14,7 +14,7 @@ const COIN_PACKS = [
 
 const TIP_AMOUNTS = [
   { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#C9A84C' },
-  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#FF8C00' },
+  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#D4854A' },
   { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#D4AF37' },
   { coins: 100, emoji: '👑', label: 'Royal',    color: '#d4af37' },
   { coins: 200, emoji: '🚀', label: 'Legend',   color: '#C0392B' },
@@ -145,7 +145,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   }
 
   return (
-    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
+    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
       {/* Floating tip animations */}
       <AnimatePresence>
         {floatingTips.map(tip => (

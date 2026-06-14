@@ -119,7 +119,7 @@ export default function LiveTranscription({ isLive = false, roomId }) {
             transition={{ duration: 0.3 }}
             className="mb-2 p-3 rounded-lg backdrop-blur-md"
             style={{
-              background: 'rgba(7,7,15,0.85)',
+              background: 'rgba(8,11,24,0.85)',
               border: `1px solid ${G}30`,
             }}
           >

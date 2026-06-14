@@ -12,11 +12,11 @@ const CATEGORY_COLORS = {
   music:         '#C0392B',
   gaming:        '#D4AF37',
   tech:          '#D4AF37',
-  education:     '#4ade80',
-  business:      '#fb923c',
+  education:     '#6DBF7E',
+  business:      '#D4854A',
   entertainment: '#D4AF37',
-  sports:        '#38bdf8',
-  lifestyle:     '#f472b6',
+  sports:        '#D4AF37',
+  lifestyle:     '#D4854A',
   all:           '#D4AF37',
 };
 
@@ -31,7 +31,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
     <div
       className="rounded-2xl overflow-hidden flex flex-col transition-all duration-200 hover:scale-[1.01]"
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid rgba(212,175,55,0.18)`,
         boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
       }}
@@ -156,7 +156,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
           {isMember && isAdmin && (
             <Link to={createPageUrl(`CommunityAdmin?id=${community.id}`)} className="flex-1">
               <button className="w-full py-2 rounded-xl font-black uppercase text-[10px] transition-all"
-                style={{ background: `rgba(128,0,32,0.18)`, border: `1px solid rgba(128,0,32,0.4)`, color: '#ff6680', ...T }}>
+                style={{ background: `rgba(128,0,32,0.18)`, border: `1px solid rgba(128,0,32,0.4)`, color: '#C0392B', ...T }}>
                 Admin
               </button>
             </Link>

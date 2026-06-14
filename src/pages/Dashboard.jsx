@@ -58,7 +58,7 @@ const TABS = [
 function Card({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-xl ${className}`}
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
       {children}
     </div>
   );
@@ -139,7 +139,7 @@ function OverviewTab({ user }) {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="label" tick={{ fill: 'rgba(245,230,211,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
+              <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
               <Bar dataKey="total" fill={GOLD} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -183,7 +183,7 @@ function OverviewTab({ user }) {
           { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
           { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
           { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(192,57,43,0.08)' },
-          { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(245,158,11,0.08)' },
+          { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(212,175,55,0.08)' },
         ].map(q => (
           <Link key={q.label} to={q.href}>
             <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
@@ -351,7 +351,18 @@ function ContentTab({ user }) {
 
   const createMut = useMutation({
     mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: user?.id, views: 0 }),
-    onSuccess: () => { qc.invalidateQueries(['db-vods']); setShowCreate(false); toast.success('VOD created!'); },
+    onSuccess: (vod) => {
+      qc.invalidateQueries(['db-vods']);
+      setShowCreate(false);
+      toast.success('VOD created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'clip_created',
+          title: `Uploaded VOD: ${vod?.title || 'Video'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
@@ -479,7 +490,7 @@ function ContentTab({ user }) {
               onClick={() => { setShowCreate(false); setEditVod(null); }} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md rounded-2xl p-5 space-y-3"
-              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>{editVod ? 'Edit VOD' : 'Upload VOD'}</span>
                 <button onClick={() => { setShowCreate(false); setEditVod(null); }}><X className="w-4 h-4 text-white/40" /></button>
@@ -568,7 +579,18 @@ function CommunityTab({ user }) {
       status: 'active',
       total_votes: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(['db-polls']); setShowPollForm(false); toast.success('Poll created!'); },
+    onSuccess: (poll) => {
+      qc.invalidateQueries(['db-polls']);
+      setShowPollForm(false);
+      toast.success('Poll created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created poll: ${poll?.question || 'Community Poll'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const endPollMut = useMutation({
@@ -586,7 +608,7 @@ function CommunityTab({ user }) {
             : communities.map(c => (
               <button key={c.id} onClick={() => setSelectedCommunity(c.id)}
                 className="px-3 py-1.5 rounded-xl text-[11px] font-black"
-                style={{ background: selectedCommunity===c.id ? 'rgba(212,175,55,0.15)' : 'rgba(13,6,24,0.9)', border: `1px solid ${selectedCommunity===c.id ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.2)'}`, color: selectedCommunity===c.id ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
+                style={{ background: selectedCommunity===c.id ? 'rgba(212,175,55,0.15)' : 'rgba(8,11,24,0.9)', border: `1px solid ${selectedCommunity===c.id ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.2)'}`, color: selectedCommunity===c.id ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
                 {c.name}
               </button>
             ))
@@ -693,7 +715,7 @@ function CommunityTab({ user }) {
               className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPollForm(false)} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-2xl p-5 space-y-3"
-              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase" style={{ color: GOLD, ...T }}>Create Poll</span>
                 <button onClick={() => setShowPollForm(false)}><X className="w-4 h-4 text-white/40" /></button>
@@ -828,7 +850,7 @@ function MonetizationTab({ user }) {
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value">
                       {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
+                    <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -1145,7 +1167,7 @@ function SettingsTab({ user }) {
       {/* Overlay Builder link */}
       <Link to="/OverlayBuilder">
         <div className="flex items-center justify-between p-4 rounded-xl cursor-pointer"
-          style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
+          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5" style={{ color: GOLD }} />
             <div>

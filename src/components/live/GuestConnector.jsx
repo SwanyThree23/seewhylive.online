@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { safeSrc } from '@/lib/security';
 
 const G = '#d4af37';
-const BG = 'rgba(7,7,15,0.95)';
+const BG = 'rgba(8,11,24,0.95)';
 
 export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
   const [showPanel, setShowPanel] = useState(false);
@@ -41,8 +41,8 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
     {
       name: 'Co-Host',
       url: `https://vdo.ninja/?view=Swan23&room=COHOST-${roomId?.slice(0, 8) || 'DEMO'}&broadcast`,
-      color: 'bg-[rgba(255,136,0,0.08)]',
-      textColor: '#FF8C00',
+      color: 'bg-[rgba(212,133,74,0.08)]',
+      textColor: '#D4854A',
       icon: '👥',
       description: 'Full co-host access',
     },

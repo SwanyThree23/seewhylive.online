@@ -108,7 +108,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed bottom-0 left-0 right-0 bg-[#0d0618] border-t border-[rgba(212,175,55,0.2)] rounded-t-2xl z-50 md:hidden p-4"
+              className="fixed bottom-0 left-0 right-0 bg-[#080B18] border-t border-[rgba(212,175,55,0.2)] rounded-t-2xl z-50 md:hidden p-4"
             >
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
               <p className="text-sm font-semibold text-white/60 mb-3">Quick Actions</p>

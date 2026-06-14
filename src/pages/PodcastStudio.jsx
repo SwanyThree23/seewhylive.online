@@ -19,8 +19,8 @@ const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const CYAN   = '#D4854A';
-const PURPLE = '#8B44B0';
-const GREEN  = '#5A7A4A';
+const PURPLE = '#D4854A';
+const GREEN  = '#4A9B5E';
 const NLM    = '#4285F4'; // Google NotebookLM blue
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -41,7 +41,7 @@ const NLM_LIB = [
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
 const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
+const CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D4AF37', monetize:'#4A9B5E', domino:'#C62828', social:'#D4854A' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
@@ -264,7 +264,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     failed: '⚠ Could Not Fetch — Enter Title Manually',
   }[fetchState];
 
-  const fetchColor = { ok: '#22c55e', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
+  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -602,8 +602,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                   style={{
                     ...T, padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
                     cursor: alreadyAdded ? 'default' : 'pointer',
-                    background: alreadyAdded ? 'rgba(34,197,94,0.1)' : NLM,
-                    color: alreadyAdded ? '#22c55e' : '#fff',
+                    background: alreadyAdded ? 'rgba(109,191,126,0.1)' : NLM,
+                    color: alreadyAdded ? '#6DBF7E' : '#fff',
                     fontSize: 11, fontWeight: 900, letterSpacing: '0.04em',
                     transition: 'all 0.15s',
                   }}

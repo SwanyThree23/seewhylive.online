@@ -57,6 +57,13 @@ export default function OnboardingFlow({ isOpen, onClose }) {
   const finish = async () => {
     await saveMutation.mutateAsync({ categories: selected, onboarding_completed: true });
     toast.success('Welcome to SeeWhy LIVE! 🎉');
+    if (user?.id) {
+      base44.entities.Activity.create({
+        user_id: user.id,
+        type: 'milestone',
+        title: 'Completed onboarding and selected content preferences',
+      }).catch(() => {});
+    }
     onClose();
   };
 

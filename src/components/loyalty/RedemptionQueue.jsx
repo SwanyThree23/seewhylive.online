@@ -17,9 +17,16 @@ export default function RedemptionQueue({ creatorId, roomId }) {
 
   const fulfillMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.RewardRedemption.update(id, { status, fulfilled_at: new Date().toISOString() }),
-    onSuccess: () => {
+    onSuccess: (_, { status }) => {
       toast.success('Reward updated!');
       qc.invalidateQueries(['redemptions', creatorId, roomId]);
+      if (status === 'fulfilled' && creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: 'Fulfilled a loyalty reward redemption',
+        }).catch(() => {});
+      }
     },
   });
 
@@ -56,8 +63,8 @@ export default function RedemptionQueue({ creatorId, roomId }) {
             <div className="flex gap-1 shrink-0">
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'fulfilled' })}
                 className="w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-90"
-                style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                <Check className="w-3.5 h-3.5 text-green-400" />
+                style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)' }}>
+                <Check className="w-3.5 h-3.5 text-[#6DBF7E]" />
               </button>
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'rejected' })}
                 className="w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-90"

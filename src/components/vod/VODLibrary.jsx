@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Play, Eye, ThumbsUp, Share2, Trash2 } from 'lucide-react';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function VODLibrary({ creatorId }) {
@@ -77,7 +77,8 @@ export default function VODLibrary({ creatorId }) {
             {/* Thumbnail */}
             <div className="relative h-40 bg-black overflow-hidden">
               <img
-                src={item.thumbnail_url || `https://via.placeholder.com/400x225?text=${encodeURIComponent(item.title)}`}
+                src={item.thumbnail_url || undefined}
+                onError={e => { e.target.style.display = 'none'; }}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform"
               />

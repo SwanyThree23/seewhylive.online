@@ -103,7 +103,7 @@ function FanbaseRoomCard({ room }) {
   var categoryColor = {
     Music: '#C0392B', Gaming: '#D4AF37', Tech: '#D4AF37',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
-    Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
+    Lifestyle: '#D4854A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
   var tag = room.tags && room.tags[0];
   var tagColor = tag ? (categoryColor[tag] || '#D4AF37') : '#D4AF37';
@@ -112,14 +112,14 @@ function FanbaseRoomCard({ room }) {
   var accessStyle = accessLabel === 'PPV'
     ? { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }
     : accessLabel === 'FAN'
-    ? { background: 'rgba(128,0,32,0.2)', color: '#ff9999', border: '1px solid rgba(128,0,32,0.4)' }
+    ? { background: 'rgba(128,0,32,0.2)', color: '#D4854A', border: '1px solid rgba(128,0,32,0.4)' }
     : { background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.25)' };
 
   return (
     <Link to={`/LiveRoom?id=${room.id}`}>
       <motion.div whileTap={{ scale: 0.98 }}
         className="rounded-2xl overflow-hidden cursor-pointer"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
 
         {/* Top row: LIVE + TRENDING badges | Join */}
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
@@ -130,7 +130,7 @@ function FanbaseRoomCard({ room }) {
             </span>
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}
@@ -142,7 +142,7 @@ function FanbaseRoomCard({ room }) {
         </div>
 
         {/* Thumbnail / placeholder */}
-        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
           {room.thumbnail_url ? (
             <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           ) : (
@@ -150,7 +150,7 @@ function FanbaseRoomCard({ room }) {
               <Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} />
             </div>
           )}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
         </div>
 
         {/* Room title + host */}
@@ -210,7 +210,7 @@ function FanbaseRoomCard({ room }) {
 
 // ── Platform Spotlight Strip ──────────────────────────────────────────────
 var SPOTLIGHT_ITEMS = [
-  { emoji: '⚔️', label: 'State vs State',   sub: 'Domino Tournaments',  color: '#1565C0', page: 'StateVsState'          },
+  { emoji: '⚔️', label: 'State vs State',   sub: 'Domino Tournaments',  color: '#C0392B', page: 'StateVsState'          },
   { emoji: '👑', label: 'Elite League',      sub: 'Creator Rankings',    color: '#D4AF37', page: 'Leaderboard'           },
   { emoji: '🥊', label: 'PK Battle',         sub: 'Head-to-Head',        color: '#C0392B', page: 'PKBattleManager'       },
   { emoji: '🏟️', label: 'PK Arena',          sub: 'Live Vote Battles',   color: '#C0392B', page: 'PKBattleArena'         },
@@ -238,6 +238,13 @@ var SPOTLIGHT_ITEMS = [
   { emoji: '🤖', label: 'SwanyBot',          sub: 'Domino Culture AI',   color: '#D4AF37', page: 'SwanyBotPage'          },
   { emoji: '🗳️', label: 'Poll Manager',      sub: 'Live Audience Polls', color: '#6B7C4A', page: 'PollManager'           },
   { emoji: '🎚️', label: 'Overlay Editor',   sub: 'Custom Overlays',     color: '#D4AF37', page: 'OverlayEditor'         },
+  { emoji: '🌐', label: 'Hybrid Room',     sub: 'WebRTC + Guest Mix',  color: '#D4854A', page: 'HybridStreamRoom'       },
+  { emoji: '🌟', label: 'Enhancement',     sub: 'Creator Power Tools', color: '#D4AF37', page: 'EnhancementSuite'       },
+  { emoji: '🏅', label: 'Challenges',      sub: 'Earn Rewards',        color: '#D4AF37', page: 'ChallengesHub'          },
+  { emoji: '💎', label: 'Loyalty Hub',     sub: 'Points & Rewards',    color: '#C9A84C', page: 'LoyaltyHub'             },
+  { emoji: '👥', label: 'Communities',     sub: 'Join & Grow',         color: '#6DBF7E', page: 'Communities'            },
+  { emoji: '📺', label: 'Social Expo',     sub: 'Featured Creators',   color: '#CC7755', page: 'SocialExpo'             },
+  { emoji: '🔀', label: 'Multi-Stream',    sub: 'Manage All Streams',  color: '#D4854A', page: 'MultiStreamManager'     },
 ];
 
 function SpotlightStrip() {
@@ -550,8 +557,16 @@ export default function Home() {
     queryFn: function() { return base44.auth.me(); },
   });
 
-  var liveCount = liveRooms.length;
-  var filteredRooms = applyFilter(liveRooms, activeFilter);
+  var { data: onboarding } = useQuery({
+    queryKey: ['onboarding-check', user?.id],
+    queryFn: async function() {
+      var list = await base44.entities.CreatorOnboarding.filter({ user_id: user.id });
+      return list[0] || null;
+    },
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  var showOnboardingBanner = user?.id && onboarding !== undefined && (!onboarding || !onboarding.step_1_profile);
 
   return (
     <div
@@ -580,6 +595,38 @@ export default function Home() {
           />
         )}
       </motion.div>
+
+      {/* ── NEW USER ONBOARDING BANNER ── */}
+      {showOnboardingBanner && (
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-20 mx-4 mt-3 mb-1 rounded-2xl overflow-hidden cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.35) 0%, rgba(212,175,55,0.18) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}
+          onClick={() => { window.location.href = '/Onboarding'; }}
+        >
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' }}>
+              <span style={{ fontSize: 20 }}>📡</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-white text-sm leading-tight"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>
+                Complete Your Creator Setup
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Set up profile, stream key &amp; 90/10 payout in 5 min
+              </p>
+            </div>
+            <div className="px-3 py-1.5 rounded-full font-black text-xs shrink-0"
+              style={{ background: '#D4AF37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+              START →
+            </div>
+          </div>
+          <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #800020, #D4AF37, #6DBF7E, #D4AF37)' }} />
+        </motion.div>
+      )}
 
       {/* ── HERO STRIP ── */}
       <div className="flex items-center justify-between px-4"
@@ -674,9 +721,9 @@ export default function Home() {
               return (
                 <Link key={c.id} to={createPageUrl('Communities')}>
                   <motion.div whileTap={{ scale: 0.97 }} className="rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
                     <div className="h-20 flex items-center justify-center"
-                      style={{ background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+                      style={{ background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
                       <Users className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
                     </div>
                     <div className="p-2.5">

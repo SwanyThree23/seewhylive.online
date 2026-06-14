@@ -5,14 +5,14 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
 const EVENTS = [
-  { id: 'stream.start', label: 'Stream Started', color: 'text-green-400' },
+  { id: 'stream.start', label: 'Stream Started', color: 'text-[#6DBF7E]' },
   { id: 'stream.end', label: 'Stream Ended', color: 'text-red-400' },
-  { id: 'viewer.join', label: 'Viewer Joined', color: 'text-blue-400' },
+  { id: 'viewer.join', label: 'Viewer Joined', color: 'text-[#D4AF37]' },
   { id: 'chat.message', label: 'Chat Message', color: 'text-white/60' },
   { id: 'tip.received', label: 'Tip Received', color: 'text-[#d4af37]' },
-  { id: 'subscription.new', label: 'New Subscriber', color: 'text-purple-400' },
-  { id: 'goal.reached', label: 'Goal Reached', color: 'text-emerald-400' },
-  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-orange-400' },
+  { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#D4854A]' },
+  { id: 'goal.reached', label: 'Goal Reached', color: 'text-[#6DBF7E]' },
+  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-[#D4854A]' },
 ];
 
 export default function WebhookHooks({ roomId, isHost }) {
@@ -70,7 +70,7 @@ export default function WebhookHooks({ roomId, isHost }) {
           <Webhook className={`w-4 h-4 ${hooks.filter(h => h.active).length > 0 ? 'text-[#d4af37]' : 'text-white/40'}`} />
           <span className="text-xs font-semibold text-white/70">Stream Webhooks</span>
           {hooks.filter(h => h.active).length > 0 && (
-            <span className="text-[11px] bg-blue-600/30 text-blue-400 border border-blue-600/30 px-1.5 py-0.5 rounded-full font-bold">
+            <span className="text-[11px] bg-[#800020]/30 text-[#D4AF37] border border-[#D4AF37]/30/30 px-1.5 py-0.5 rounded-full font-bold">
               {hooks.filter(h => h.active).length} ACTIVE
             </span>
           )}
@@ -139,7 +139,7 @@ export default function WebhookHooks({ roomId, isHost }) {
                       <button
                         onClick={() => testHook(hook)}
                         disabled={testing === hook.id}
-                        className="text-[11px] px-1.5 py-0.5 rounded border border-blue-700/40 text-blue-400 hover:bg-blue-900/30"
+                        className="text-[11px] px-1.5 py-0.5 rounded border border-[#D4AF37]/25/40 text-[#D4AF37] hover:bg-[#0F1428]/30"
                       >
                         {testing === hook.id ? '...' : 'Test'}
                       </button>

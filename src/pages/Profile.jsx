@@ -28,7 +28,7 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 function DarkCard({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-2xl ${className}`}
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
       {children}
     </div>
   );
@@ -44,7 +44,7 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
@@ -142,6 +142,13 @@ export default function ProfilePage() {
       toast.success('Profile updated!');
       queryClient.invalidateQueries(['currentUser']);
       setIsEditing(false);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Updated profile',
+        }).catch(() => {});
+      }
     },
   });
 

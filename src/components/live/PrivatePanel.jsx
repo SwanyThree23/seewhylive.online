@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Lock, Users, Plus, X, Eye, EyeOff, MessageSquare, Crown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Lock, Users, Plus, X, MessageSquare, Crown, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PANEL_TYPES = [
@@ -8,6 +8,94 @@ const PANEL_TYPES = [
   { id: 'subscriber', label: 'Subscribers', icon: '⭐', desc: 'Paid subscribers only', color: '#D4AF37' },
   { id: 'custom', label: 'Custom Group', icon: '🔒', desc: 'Manually invite users', color: '#D4AF37' },
 ];
+
+function PanelChat({ panel, currentUser, onSend }) {
+  const [text, setText] = useState('');
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [panel.messages.length]);
+
+  const send = () => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    onSend(panel.id, trimmed, currentUser?.full_name || 'You');
+    setText('');
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  };
+
+  return (
+    <div className="border-t border-white/5 p-3 space-y-2">
+      {/* Message list */}
+      <div
+        className="rounded-lg p-2 overflow-y-auto space-y-1.5"
+        style={{ height: 112, background: 'rgba(0,0,0,0.3)' }}
+      >
+        {panel.messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center">
+            <MessageSquare className="w-4 h-4 mb-1" style={{ color: 'rgba(255,255,255,0.15)' }} />
+            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>No messages yet — say something</p>
+          </div>
+        ) : (
+          panel.messages.map((msg) => (
+            <div key={msg.id} className="flex gap-1.5">
+              <div
+                className="w-4 h-4 rounded-full shrink-0 flex items-center justify-center text-[8px] font-black"
+                style={{ background: 'rgba(212,175,55,0.25)', color: '#D4AF37', marginTop: 1 }}
+              >
+                {msg.sender[0]?.toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold" style={{ color: '#D4AF37' }}>{msg.sender} </span>
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.7)' }}>{msg.text}</span>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input row */}
+      <div className="flex gap-1.5">
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={handleKey}
+          placeholder="Private message…"
+          maxLength={280}
+          style={{
+            flex: 1, height: 30, padding: '0 10px',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(212,175,55,0.2)',
+            borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none',
+            fontFamily: 'Barlow Condensed, sans-serif',
+          }}
+        />
+        <button
+          onClick={send}
+          disabled={!text.trim()}
+          style={{
+            width: 30, height: 30, borderRadius: 8, border: 'none',
+            background: text.trim() ? '#800020' : 'rgba(128,0,32,0.3)',
+            color: '#D4AF37', cursor: text.trim() ? 'pointer' : 'not-allowed',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <Send size={12} />
+        </button>
+      </div>
+
+      {/* Invite code */}
+      <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        Invite code: <span className="font-mono font-bold" style={{ color: '#D4AF37' }}>#{panel.code}</span>
+      </p>
+    </div>
+  );
+}
 
 export default function PrivatePanel({ isHost, currentUser }) {
   const [activePanels, setActivePanels] = useState([]);
@@ -20,15 +108,16 @@ export default function PrivatePanel({ isHost, currentUser }) {
   const createPanel = () => {
     if (!selectedType || !panelName.trim()) return;
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setActivePanels(prev => [...prev, {
+    const newPanel = {
       id: Date.now(),
       type: selectedType,
       name: panelName,
       code,
       members: [currentUser?.full_name || 'You'],
       messages: [],
-      isExpanded: false,
-    }]);
+    };
+    setActivePanels(prev => [...prev, newPanel]);
+    setExpandedPanel(newPanel.id);
     setPanelName('');
     setSelectedType(null);
     setShowCreate(false);
@@ -36,13 +125,29 @@ export default function PrivatePanel({ isHost, currentUser }) {
 
   const joinPanel = () => {
     const panel = activePanels.find(p => p.code === inviteCode.toUpperCase());
-    if (!panel) {
-      return;
-    }
+    if (!panel) return;
+    const name = currentUser?.full_name || 'Guest';
+    setActivePanels(prev => prev.map(p =>
+      p.id === panel.id && !p.members.includes(name)
+        ? { ...p, members: [...p.members, name] }
+        : p
+    ));
+    setExpandedPanel(panel.id);
     setInviteCode('');
   };
 
-  const removePanel = (id) => setActivePanels(prev => prev.filter(p => p.id !== id));
+  const sendMessage = (panelId, text, sender) => {
+    setActivePanels(prev => prev.map(p =>
+      p.id === panelId
+        ? { ...p, messages: [...p.messages, { id: Date.now(), sender, text, ts: Date.now() }] }
+        : p
+    ));
+  };
+
+  const removePanel = (id) => {
+    setActivePanels(prev => prev.filter(p => p.id !== id));
+    if (expandedPanel === id) setExpandedPanel(null);
+  };
 
   return (
     <div className="space-y-3">
@@ -51,7 +156,9 @@ export default function PrivatePanel({ isHost, currentUser }) {
           <Lock className="w-4 h-4 text-[#d4af37]" />
           <span className="text-sm font-semibold text-white">Private Panels</span>
           {activePanels.length > 0 && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)' }}>{activePanels.length}</span>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)' }}>
+              {activePanels.length}
+            </span>
           )}
         </div>
         {isHost && (
@@ -75,7 +182,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
           >
             <div className="bg-[rgba(212,175,55,0.05)] border border-[#d4af37]/20 rounded-xl p-3 space-y-3">
               <p className="text-[10px] text-white/50 uppercase tracking-wider">Create Private Panel</p>
-              
+
               <div className="grid grid-cols-2 gap-1.5">
                 {PANEL_TYPES.map(type => (
                   <button
@@ -98,7 +205,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                 value={panelName}
                 onChange={e => setPanelName(e.target.value)}
                 placeholder="Panel name..."
-                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
               />
 
               <div className="flex gap-2">
@@ -125,7 +232,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
             value={inviteCode}
             onChange={e => setInviteCode(e.target.value)}
             placeholder="Enter invite code..."
-            style={{ flex:1, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
           />
           <button style={{ padding:'6px 14px', borderRadius:8, border:'none', background:'#d4af37', color:'#000', fontWeight:700, cursor:'pointer', fontSize:12 }} onClick={joinPanel}>
             Join
@@ -138,6 +245,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
         {activePanels.map(panel => {
           const typeInfo = PANEL_TYPES.find(t => t.id === panel.type?.id) || PANEL_TYPES[0];
           const isExpanded = expandedPanel === panel.id;
+          const unread = !isExpanded ? panel.messages.length : 0;
           return (
             <div key={panel.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
               <div
@@ -146,7 +254,14 @@ export default function PrivatePanel({ isHost, currentUser }) {
               >
                 <span className="text-sm">{typeInfo?.icon || '🔒'}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white truncate">{panel.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-semibold text-white truncate">{panel.name}</p>
+                    {unread > 0 && (
+                      <span style={{ fontSize:9, fontWeight:900, padding:'1px 5px', borderRadius:99, background:'#800020', color:'#D4AF37' }}>
+                        {unread}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-white/40 flex items-center gap-1">
                     <Users className="w-2.5 h-2.5" /> {panel.members.length} member{panel.members.length !== 1 ? 's' : ''}
                     <span className="ml-2 font-mono text-[#d4af37]">#{panel.code}</span>
@@ -159,21 +274,18 @@ export default function PrivatePanel({ isHost, currentUser }) {
                 )}
               </div>
 
-              {isExpanded && (
-                <div className="border-t border-white/5 p-3 space-y-2">
-                  <div className="bg-black/30 rounded-lg p-2 h-24 overflow-y-auto text-[11px] text-white/50 text-center flex items-center justify-center">
-                    <div>
-                      <MessageSquare className="w-5 h-5 mx-auto mb-1 text-white/20" />
-                      Private chat coming soon
-                    </div>
-                  </div>
-                  {isHost && (
-                    <p className="text-[10px] text-white/30 text-center">
-                      Share invite code: <span className="text-[#d4af37] font-mono font-bold">#{panel.code}</span>
-                    </p>
-                  )}
-                </div>
-              )}
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <PanelChat panel={panel} currentUser={currentUser} onSend={sendMessage} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}

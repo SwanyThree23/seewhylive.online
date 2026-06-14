@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Copy, Eye, EyeOff, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 import { toast } from 'sonner';
 import BitratePresets from './BitratePresets';
 import GuestStreamMonitor from './GuestStreamMonitor';
@@ -15,7 +15,7 @@ const PLATFORM_PRESETS = [
   { id: 'instagram', label: 'Instagram', color: '#e1306c', server: 'rtmps://live-upload.instagram.com:443/rtmp' },
   { id: 'linkedin',  label: 'LinkedIn',  color: '#0a66c2', server: 'rtmps://stream.linkedin.com:443/media' },
   { id: 'kick',      label: 'Kick',      color: '#53fc18', server: 'rtmp://fa723fc1b171.global-contribute.live-video.net/app' },
-  { id: 'dlive',     label: 'DLive',     color: '#ffd700', server: 'rtmp://stream.dlive.tv/live' },
+  { id: 'dlive',     label: 'DLive',     color: '#D4AF37', server: 'rtmp://stream.dlive.tv/live' },
   { id: 'custom',    label: 'Custom',    color: '#8B6F47', server: '' },
 ];
 
@@ -40,12 +40,12 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
   if (!isHost) return null;
 
   return (
-    <div className="bg-[rgba(13,6,24,0.95)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/5 bg-[rgba(7,7,15,0.7)]">
+    <div className="bg-[rgba(8,11,24,0.95)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/5 bg-[rgba(8,11,24,0.7)]">
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4 text-[#d4af37]" />
           <h3 className="text-sm font-semibold text-white">Stream Ingest Setup</h3>
-          <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(8,47,73,0.5)', color:'#67e8f9' }}>BETA</span>
+          <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(13,16,34,0.5)', color:'#C9A84C' }}>BETA</span>
         </div>
       </div>
 
@@ -69,9 +69,9 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
         <div style={{ padding:16 }} className="space-y-4">
           {/* RTMP Tab */}
           {activeTab === 'rtmp' && <div className="space-y-3">
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">⚡</div>
+                <div className="w-6 h-6 rounded bg-gradient-to-br from-[#800020] to-[#C0392B] flex items-center justify-center text-xs font-bold text-white">⚡</div>
                 <h4 className="text-sm font-bold text-white">RTMP Server</h4>
               </div>
               <p className="text-[10px] text-white/50 mb-3">Send any RTMP stream directly into evmux. Perfect for OBS, Streamlabs, etc.</p>
@@ -89,7 +89,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(rtmpUrl, 'RTMP URL')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'RTMP URL' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'RTMP URL' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>
@@ -115,14 +115,14 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(rtmpKey, 'Stream Key')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'Stream Key' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'Stream Key' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-green-900/20 border border-green-600/30 rounded p-2 flex gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
-                  <div className="text-[10px] text-green-300">
+                <div className="bg-[#0F1428]/20 border border-[#6DBF7E]/35/30 rounded p-2 flex gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#6DBF7E] shrink-0 mt-0.5" />
+                  <div className="text-[10px] text-[#6DBF7E]/80">
                     <p className="font-semibold">Ready for OBS / Streamlabs</p>
                     <p className="text-white/60">Copy URL + Key into your streaming software</p>
                   </div>
@@ -133,11 +133,11 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
 
           {/* WHIP Tab */}
           {activeTab === 'whip' && <div className="space-y-3">
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded bg-gradient-to-br from-red-500 via-yellow-500 to-green-500 flex items-center justify-center text-xs font-bold text-white">W</div>
+                <div className="w-6 h-6 rounded bg-gradient-to-br from-[#800020] to-[#D4AF37] flex items-center justify-center text-xs font-bold text-white">W</div>
                 <h4 className="text-sm font-bold text-white">WHIP Ingest</h4>
-                <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(30,27,75,0.5)', color:'#93c5fd' }}>Modern</span>
+                <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(128,0,32,0.2)', color:'#C9A84C' }}>Modern</span>
               </div>
               <p className="text-[10px] text-white/50 mb-3">Ultra-low-latency WHIP stream ingest. Perfect for browser-based producers and mobile. Supports full customization of size, position, and layering.</p>
 
@@ -154,7 +154,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(whipUrl, 'WHIP URL')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'WHIP URL' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'WHIP URL' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>
@@ -178,14 +178,14 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                       onClick={() => copyToClipboard(whipAuth, 'WHIP Auth')}
                       className="w-8 h-8 rounded border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/10"
                     >
-                      {copied === 'WHIP Auth' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
+                      {copied === 'WHIP Auth' ? <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-blue-900/20 border border-blue-600/30 rounded p-2 flex gap-2">
-                  <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                  <div className="text-[10px] text-blue-300">
+                <div className="bg-[#0F1428] border border-[#D4AF37]/25 rounded p-2 flex gap-2">
+                  <AlertCircle className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
+                  <div className="text-[10px] text-[#D4AF37]">
                     <p className="font-semibold">Low-Latency WebRTC</p>
                     <p className="text-white/60">Use with ffmpeg: ffmpeg -i input -c:v libx264 -c:a aac -f whip {whipUrl}</p>
                   </div>
@@ -201,11 +201,11 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
               <GuestStreamMonitor guestName="Alex (YouTube)" isStreaming={mockGuestStreaming} />
               <GuestStreamMonitor guestName="Jordan (Twitch)" isStreaming={false} />
 
-              <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
+              <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="w-4 h-4 text-[#d4af37]" />
                   <h4 className="text-sm font-bold text-white">Guest Destinations</h4>
-                  <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(59,7,100,0.5)', color:'#d8b4fe' }}>BETA</span>
+                  <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(128,0,32,0.5)', color:'#C9A84C' }}>BETA</span>
                 </div>
 
                 <div className="space-y-3">
@@ -233,7 +233,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
         </div>
       </div>
 
-      <div className="px-4 py-3 bg-[rgba(7,7,15,0.5)] border-t border-white/5 text-[10px] text-white/40">
+      <div className="px-4 py-3 bg-[rgba(8,11,24,0.5)] border-t border-white/5 text-[10px] text-white/40">
         💡 Tip: Save your RTMP key securely. Never share it publicly. Stream keys are AES-256 encrypted at rest.
       </div>
     </div>

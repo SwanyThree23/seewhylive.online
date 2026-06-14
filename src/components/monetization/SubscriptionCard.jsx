@@ -1,24 +1,24 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CheckCircle, Star, Crown, Zap } from 'lucide-react';
 
 const tierConfig = {
   basic: {
     icon: Zap,
-    color: '#3b82f6',
-    gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+    color: '#D4AF37',
+    gradient: 'linear-gradient(135deg, #D4AF37, #C9A84C)',
   },
   premium: {
     icon: Star,
     color: '#D4854A',
-    gradient: 'linear-gradient(135deg, #D4854A, #9333ea)',
+    gradient: 'linear-gradient(135deg, #D4854A, #800020)',
   },
   elite: {
     icon: Crown,
-    color: '#f59e0b',
-    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    color: '#D4AF37',
+    gradient: 'linear-gradient(135deg, #D4AF37, #D4854A)',
   },
 };
 
@@ -27,6 +27,8 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
   const config = tierConfig[tier] || tierConfig.basic;
   const Icon = config.icon;
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const subscribeMutation = useMutation({
     mutationFn: async () => {
       const startDate = new Date();
@@ -34,7 +36,7 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
       endDate.setMonth(endDate.getMonth() + 1);
 
       return await base44.entities.Subscription.create({
-        user_id: 'current_user',
+        user_id: currentUser?.id || 'unknown',
         community_id: communityId,
         creator_id: creatorId,
         tier,
@@ -49,6 +51,24 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
     onSuccess: () => {
       toast.success(`Subscribed to ${tier} tier! 🎉`);
       queryClient.invalidateQueries(['subscriptions']);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'subscription',
+            title: `Subscribed to ${tier} tier`,
+            creator_id: creatorId,
+            amount: price,
+          }),
+          creatorId && base44.entities.Activity.create({
+            user_id: creatorId,
+            type: 'subscription',
+            title: `New ${tier} subscriber`,
+            amount: price,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
     },
     onError: () => {
       toast.error('Failed to subscribe');
@@ -56,7 +76,7 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
   });
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 12, background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+    <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 12, background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}>
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: config.gradient }} />
 
       <div style={{ padding: '20px 20px 12px' }}>
@@ -77,7 +97,7 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {benefits?.map((benefit, index) => (
             <li key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <CheckCircle style={{ width: 20, height: 20, color: '#22c55e', flexShrink: 0, marginTop: 2 }} />
+              <CheckCircle style={{ width: 20, height: 20, color: '#6DBF7E', flexShrink: 0, marginTop: 2 }} />
               <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{benefit}</span>
             </li>
           ))}

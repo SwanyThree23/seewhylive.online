@@ -44,7 +44,7 @@ export default function WelcomePage() {
 
       {/* Header */}
       <header className="sticky top-[3px] z-40 px-4 py-4 md:px-8"
-        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -68,12 +68,14 @@ export default function WelcomePage() {
       <main className="relative overflow-hidden" style={{ minHeight: '100vh' }}>
         {/* Background with gradient overlay */}
         <div className="absolute inset-0" style={{
-          background: `linear-gradient(160deg, #0A0710 0%, #150820 30%, #1a0510 60%, #0A0710 100%)`,
-        }} />
-        {/* Subtle SVG grid pattern overlay */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(212,175,55,0.04) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(128,0,32,0.06) 0%, transparent 50%)`,
-          backgroundSize: '100% 100%',
+          background: `linear-gradient(180deg,
+            rgba(8, 11, 24, 0.95) 0%,
+            rgba(13, 6, 24, 0.85) 50%,
+            rgba(8, 11, 24, 0.95) 100%)`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=2000&fit=crop')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
         }} />
 
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-70px)] px-4 py-12 md:py-20">
@@ -152,7 +154,7 @@ export default function WelcomePage() {
       </main>
 
       {/* Feature Highlights */}
-      <section className="relative z-20 py-12 px-4 md:px-8" style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
+      <section className="relative z-20 py-12 px-4 md:px-8" style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
         <div className="max-w-3xl mx-auto">
           <p className="text-center text-xs font-black uppercase tracking-widest mb-6" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>Platform Features</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -195,7 +197,7 @@ export default function WelcomePage() {
 
       {/* Footer */}
       <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
         <p>© {new Date().getFullYear()} SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split</p>
       </footer>
     </div>

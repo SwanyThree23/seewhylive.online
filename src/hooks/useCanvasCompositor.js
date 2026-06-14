@@ -230,7 +230,7 @@ function drawBattleLayout(ctx, slots, videoCache, battleData = {}) {
   const mins = Math.floor(timeLeft / 60);
   const secs = String(timeLeft % 60).padStart(2, '0');
   ctx.font = 'bold 28px Arial';
-  ctx.fillStyle = timeLeft <= 30 ? '#FF1564' : 'rgba(255,255,255,0.8)';
+  ctx.fillStyle = timeLeft <= 30 ? '#C0392B' : 'rgba(255,255,255,0.8)';
   ctx.fillText(`${mins}:${secs}`, half, barY + 50);
 
   // Progress bar

@@ -4,7 +4,6 @@ import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, RefreshCw, AlertTriangle, CheckCircle, Layers, Clock } from 'lucide-react';
-import SelectSheet from '@/components/shared/SelectSheet';
 import { toast } from 'sonner';
 import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
 import SpotlightBanner from '../components/community/SpotlightBanner';
@@ -14,6 +13,12 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import AIModeration from '../components/live/AIModeration';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const AMBER = '#D4854A';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const AGE_OPTIONS = [
   { label: '1 day', days: 1 },
@@ -39,16 +44,13 @@ export default function StageCleanupPage() {
   });
 
   const roomMap = Object.fromEntries(rooms.map(r => [r.id, r]));
-
   const cutoff = new Date(Date.now() - ageDays * 24 * 60 * 60 * 1000);
 
   const ghostStages = stages.filter(stage => {
     const createdAt = new Date(stage.created_date);
     if (createdAt >= cutoff) return false;
     const room = roomMap[stage.room_id];
-    // Ghost if: room is ended, room doesn't exist, or stage is inactive
-    const roomEnded = !room || room.status === 'ended';
-    return roomEnded || !stage.is_active;
+    return !room || room.status === 'ended' || !stage.is_active;
   });
 
   const deleteMutation = useMutation({
@@ -58,136 +60,129 @@ export default function StageCleanupPage() {
     },
     onSuccess: (count) => {
       setDeletedCount(prev => prev + count);
-      toast.success(`Deleted ${count} ghost stage(s).`);
+      toast.success(`Deleted ${count} ghost stage${count !== 1 ? 's' : ''}.`);
       qc.invalidateQueries(['all-stages']);
     },
     onError: () => toast.error('Cleanup failed. Please try again.'),
   });
 
-  const handleDeleteOne = (id) => deleteMutation.mutate([id]);
-  const handleDeleteAll = () => {
-    if (ghostStages.length === 0) return;
-    deleteMutation.mutate(ghostStages.map(s => s.id));
-  };
-
   const getRoomStatus = (roomId) => {
     const room = roomMap[roomId];
-    if (!room) return { label: 'Room Deleted', color: 'bg-red-100 text-red-700' };
-    if (room.status === 'ended') return { label: 'Room Ended', color: 'bg-orange-100 text-orange-700' };
-    return { label: room.status, color: 'bg-slate-100 text-slate-600' };
+    if (!room) return { label: 'Room Deleted', color: '#C0392B' };
+    if (room.status === 'ended') return { label: 'Room Ended', color: AMBER };
+    return { label: room.status, color: 'rgba(255,255,255,0.5)' };
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-      <div className="max-w-5xl mx-auto px-6 space-y-6">
-
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-              <Layers className="w-5 h-5 text-orange-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Stage Cleanup</h1>
-              <p className="text-sm text-muted-foreground">Remove ghost/ended stages to keep the platform tidy</p>
-            </div>
+    <div className="min-h-screen pb-10" style={{ background: BG }}>
+      {/* Header */}
+      <div className="sticky top-0 z-20 px-4 py-4 md:px-8 border-b flex items-center justify-between flex-wrap gap-3"
+        style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,133,74,0.12)', border: '1px solid rgba(212,133,74,0.2)' }}>
+            <Layers className="w-5 h-5" style={{ color: AMBER }} />
           </div>
-          <button onClick={() => refetch()} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', borderRadius:8, background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'#fff', fontSize:13, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
-            <RefreshCw className="w-4 h-4" /> Refresh
+          <div>
+            <h1 className="text-xl font-black text-white leading-none" style={T}>Stage Cleanup</h1>
+            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Remove ghost and orphaned stages</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => refetch()}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs"
+            style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </button>
+          <button
+            disabled={ghostStages.length === 0 || deleteMutation.isPending}
+            onClick={() => deleteMutation.mutate(ghostStages.map(s => s.id))}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs"
+            style={{ ...T, background: ghostStages.length === 0 ? 'rgba(192,57,43,0.06)' : 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', cursor: ghostStages.length === 0 || deleteMutation.isPending ? 'not-allowed' : 'pointer', opacity: ghostStages.length === 0 || deleteMutation.isPending ? 0.5 : 1 }}>
+            <Trash2 className="w-3.5 h-3.5" /> Delete All ({ghostStages.length})
           </button>
         </div>
+      </div>
 
-        {/* Controls */}
-        <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Older than</span>
-              <SelectSheet
-                value={String(ageDays)}
-                onChange={function(v) { setAgeDays(Number(v)); }}
-                options={AGE_OPTIONS.map(function(o) { return { value: String(o.days), label: o.label }; })}
-                style={{ width: 128 }}
-              />
-            </div>
-
-            <div className="flex items-center gap-2 ml-auto flex-wrap">
-              <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'transparent', color:'#ea580c', border:'1px solid #fdba74' }}>
-                {ghostStages.length} ghost stage{ghostStages.length !== 1 ? 's' : ''} found
-              </span>
-              <button
-                disabled={ghostStages.length === 0 || deleteMutation.isPending}
-                onClick={handleDeleteAll}
-                style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px', borderRadius:8, background:'#dc2626', color:'#fff', border:'none', fontSize:13, cursor: ghostStages.length === 0 || deleteMutation.isPending ? 'not-allowed' : 'pointer', opacity: ghostStages.length === 0 || deleteMutation.isPending ? 0.5 : 1, fontFamily:'Barlow Condensed, sans-serif' }}
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete All ({ghostStages.length})
-              </button>
-            </div>
-          </div>
-        </div>
-
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 space-y-5">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Stages', value: stages.length, icon: Layers, iconColor: '#2563eb' },
-            { label: 'Ghost / Orphaned', value: ghostStages.length, icon: AlertTriangle, iconColor: '#ea580c' },
-            { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, iconColor: '#16a34a' },
-            { label: 'Cleaned Up', value: deletedCount, icon: Trash2, iconColor: '#64748b' },
-          ].map(({ label, value, icon: Icon, iconColor }) => (
-            <div key={label} style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
-              <div style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginBottom:6 }}>{label}</div>
-              <div style={{ fontSize:30, fontWeight:700, display:'flex', alignItems:'center', gap:8, color:'#fff' }}>
-                <Icon style={{ width:24, height:24, color: iconColor }} />
-                {value}
-              </div>
+            { label: 'Total Stages', value: stages.length, icon: Layers, color: GOLD },
+            { label: 'Ghost / Orphaned', value: ghostStages.length, icon: AlertTriangle, color: AMBER },
+            { label: 'Active Stages', value: stages.filter(s => s.is_active).length, icon: CheckCircle, color: '#6DBF7E' },
+            { label: 'Cleaned Up', value: deletedCount, icon: Trash2, color: 'rgba(255,255,255,0.35)' },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <div key={label} className="p-4 rounded-2xl text-center" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              <Icon className="w-5 h-5 mx-auto mb-1" style={{ color }} />
+              <p className="text-2xl font-black" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
+              <p className="text-[10px] font-black uppercase mt-0.5" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>{label}</p>
             </div>
           ))}
         </div>
 
+        {/* Age filter */}
+        <div className="p-4 rounded-2xl flex items-center flex-wrap gap-3" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+          <Clock className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
+          <span className="text-sm font-black text-white" style={T}>Show stages older than:</span>
+          <div className="flex gap-2 flex-wrap">
+            {AGE_OPTIONS.map(o => (
+              <button key={o.days} onClick={() => setAgeDays(o.days)}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-black uppercase"
+                style={{ ...T, background: ageDays === o.days ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)', border: `1px solid ${ageDays === o.days ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)'}`, color: ageDays === o.days ? GOLD : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <span className="ml-auto text-[10px] font-black uppercase px-2 py-0.5 rounded-full"
+            style={{ ...T, background: ghostStages.length > 0 ? 'rgba(212,133,74,0.12)' : 'rgba(109,191,126,0.08)', border: `1px solid ${ghostStages.length > 0 ? 'rgba(212,133,74,0.3)' : 'rgba(109,191,126,0.2)'}`, color: ghostStages.length > 0 ? AMBER : '#6DBF7E' }}>
+            {ghostStages.length} ghost stage{ghostStages.length !== 1 ? 's' : ''} found
+          </span>
+        </div>
+
         {/* Ghost Stage List */}
         {isLoading ? (
-          <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
-            <div style={{ padding:'48px 0', textAlign:'center', color:'rgba(255,255,255,0.5)' }}>Loading stages...</div>
+          <div className="flex justify-center py-16">
+            <div className="w-8 h-8 rounded-full animate-spin" style={{ border: `2px solid ${GOLD}`, borderTopColor: 'transparent' }} />
           </div>
         ) : ghostStages.length === 0 ? (
-          <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
-            <div style={{ padding:'64px 0', textAlign:'center' }} className="space-y-3">
-              <CheckCircle className="w-14 h-14 mx-auto text-green-500" />
-              <p className="text-lg font-semibold">All clean!</p>
-              <p className="text-sm text-muted-foreground">No ghost stages older than {ageDays} day{ageDays !== 1 ? 's' : ''} found.</p>
-            </div>
+          <div className="text-center py-16 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <CheckCircle className="w-14 h-14 mx-auto mb-3" style={{ color: '#6DBF7E' }} />
+            <p className="font-black text-lg text-white" style={T}>All clean!</p>
+            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No ghost stages older than {ageDays} day{ageDays !== 1 ? 's' : ''} found.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {ghostStages.map(stage => {
               const { label, color } = getRoomStatus(stage.room_id);
               const room = roomMap[stage.room_id];
+              const ageDays2 = Math.floor((Date.now() - new Date(stage.created_date)) / 86400000);
               return (
-                <div key={stage.id} style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(255,165,0,0.15)', borderRadius:16, padding:16 }}>
+                <div key={stage.id} className="p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,133,74,0.15)' }}>
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-medium truncate">{stage.name}</span>
-                        <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'transparent', color:'rgba(255,255,255,0.7)', border:'1px solid rgba(255,255,255,0.3)', textTransform:'capitalize' }}>{stage.type}</span>
-                        <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'transparent', color: color.includes('red') ? '#dc2626' : color.includes('orange') ? '#ea580c' : '#64748b', border: color.includes('red') ? '1px solid #dc2626' : color.includes('orange') ? '1px solid #ea580c' : '1px solid #64748b' }}>{label}</span>
+                        <span className="font-black text-sm text-white truncate" style={T}>{stage.name}</span>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase"
+                          style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>{stage.type}</span>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase"
+                          style={{ ...T, background: `${color}18`, border: `1px solid ${color}40`, color }}>{label}</span>
                         {!stage.is_active && (
-                          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(100,116,139,0.15)', color:'#64748b', border:'1px solid rgba(100,116,139,0.3)' }}>Inactive</span>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase"
+                            style={{ ...T, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}>Inactive</span>
                         )}
                       </div>
-                      <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
+                      <div className="flex gap-4 flex-wrap" style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>
                         <span>Room: {room?.title || 'Deleted'}</span>
                         <span>Created: {new Date(stage.created_date).toLocaleDateString()}</span>
-                        <span>Age: {Math.floor((Date.now() - new Date(stage.created_date)) / 86400000)}d</span>
+                        <span>Age: {ageDays2}d</span>
                       </div>
                     </div>
                     <button
-                      style={{ display:'flex', alignItems:'center', gap:4, padding:'6px 12px', borderRadius:8, background:'transparent', color:'#dc2626', border:'1px solid #fca5a5', fontSize:13, cursor: deleteMutation.isPending ? 'not-allowed' : 'pointer', opacity: deleteMutation.isPending ? 0.5 : 1, fontFamily:'Barlow Condensed, sans-serif', flexShrink:0 }}
-                      onClick={() => handleDeleteOne(stage.id)}
+                      onClick={() => deleteMutation.mutate([stage.id])}
                       disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Delete
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-xs shrink-0"
+                      style={{ ...T, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', cursor: deleteMutation.isPending ? 'not-allowed' : 'pointer', opacity: deleteMutation.isPending ? 0.5 : 1 }}>
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
                     </button>
                   </div>
                 </div>

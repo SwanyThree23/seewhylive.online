@@ -11,14 +11,14 @@ import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 
 const BG     = '#080B18';
-const BG2    = '#0D0620';
+const BG2    = '#0D1022';
 const GOLD   = '#D4AF37';
 const CRIMSON= '#800020';
 const PINK    = '#C0392B';
 const GREEN  = '#6DBF7E';
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-const PALETTE = ['#D4AF37','#C0392B','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#EC4899'];
+const PALETTE = ['#D4AF37','#C0392B','#6DBF7E','#D4854A','#D4AF37','#D4854A','#6DBF7E','#C0392B'];
 const avatarColor = n => PALETTE[(n?.charCodeAt(0) ?? 0) % PALETTE.length];
 
 const ALL_NAMES = ['SwanyThree','Joyce 🦋','CaliBonesOG','Marvin','Yahawadah','Tom','Durand','Phelo','Simone','Obi','Kenya','Marcus','Tasha','DeeJay','Rakim','Zara','Kwame','Blessed','BigFacts','Nijah'];
@@ -252,7 +252,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
   const [msg, setMsg] = useState('');
   const stats = [
     { label:'Viewers', value: data.viewerCount.toLocaleString(), color:GOLD },
-    { label:'On Stage', value: data.participants.length, color:'#00C8C8' },
+    { label:'On Stage', value: data.participants.length, color:'#6DBF7E' },
     { label:'Revenue', value:'$0.00', color:GREEN },
     { label:'Duration', value:'00:12:34', color:PINK },
   ];
@@ -546,7 +546,7 @@ export default function TestMode() {
               { label:'💸 Gift Burst', fn: sendGift, color:GOLD },
               { label:'💬 Chat Burst', fn: () => Array.from({length:5}).forEach((_,i) =>
                 setTimeout(() => addChat(ALL_NAMES[Math.floor(Math.random()*ALL_NAMES.length)], CHAT_POOL[Math.floor(Math.random()*CHAT_POOL.length)]), i*200)
-              ), color:'#A855F7' },
+              ), color:'#D4854A' },
             ].map(({ label, fn, color }) => (
               <button key={label} onClick={fn}
                 className="px-3 py-1.5 rounded-xl text-xs font-bold"

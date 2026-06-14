@@ -17,7 +17,7 @@ const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 const categories = {
@@ -39,10 +39,17 @@ export default function PollManager() {
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => base44.entities.PollTemplate.create({ ...data, creator_id: user.id }),
-    onSuccess: () => {
+    onSuccess: (template) => {
       queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] });
       setFormData({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
       setShowForm(false);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created poll template: ${template?.name || template?.question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -82,7 +89,7 @@ export default function PollManager() {
         {/* Create form */}
         {showForm && (
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
+            className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <h2 className="font-black text-sm text-white mb-2" style={T}>New Poll Template</h2>
             <label style={lbl}>Template Name</label>
             <input placeholder="e.g., Quick Yes/No" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} style={inp} />
@@ -148,7 +155,7 @@ export default function PollManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {templates?.map(template => (
             <motion.div key={template.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              className="p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-black text-sm text-white" style={T}>{template.name}</h3>

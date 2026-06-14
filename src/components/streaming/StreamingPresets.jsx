@@ -45,7 +45,7 @@ export default function StreamingPresets({ onApply }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4"
+      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4"
     >
       <div className="flex items-center gap-2 mb-3">
         <Zap className="w-4 h-4 text-[#d4af37]" />

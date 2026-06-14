@@ -56,7 +56,7 @@ function StatusBadge({ status }) {
   return (
     <span className="flex items-center gap-1 text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
+      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" />}
       {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
       {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />}
       {cfg.label}
@@ -77,7 +77,7 @@ function BitrateSparkline({ data, degraded }) {
 }
 
 function StatPill({ label, value, color }) {
-  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#FF4444' : GOLD);
+  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#D4AF37' : value === 'BAD' ? '#FF4444' : GOLD);
   return (
     <div className="flex flex-col items-center px-2 py-1 rounded"
       style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
@@ -103,7 +103,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
   return (
     <div className="rounded-xl p-4 space-y-3"
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: dest.status === 'live' ? `1px solid rgba(212,175,55,0.3)` : '1px solid rgba(255,255,255,0.08)',
         boxShadow: dest.status === 'live' ? `0 0 20px rgba(212,175,55,0.08)` : 'none',
       }}>
@@ -122,7 +122,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
         <div className="flex items-center gap-1.5">
           {(dest.reconnect_count || 0) > 0 && (
             <span className="text-[11px] px-1.5 py-0.5 rounded font-bold"
-              style={{ background: 'rgba(255,165,0,0.15)', color: '#FFA500', border: '1px solid rgba(255,165,0,0.3)' }}>
+              style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' }}>
               ⚠ {dest.reconnect_count} reconnects
             </span>
           )}
@@ -158,9 +158,9 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
 
       {/* Stats */}
       <div className="flex gap-1.5">
-        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#D4AF37' : '#FF4444'} />
+        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#D4AF37' : '#FF4444'} />
+        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#D4AF37' : '#FF4444'} />
       </div>
 
       {/* Force reconnect */}
@@ -180,10 +180,10 @@ function EndStreamModal({ onConfirm, onCancel }) {
       style={{ background: 'rgba(0,0,0,0.8)' }}>
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-        style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
         <div className="flex items-center gap-3">
           <StopCircle className="w-8 h-8 text-red-400" />
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
         </div>
         <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.5)' }}>This will end the live stream for all viewers. This action cannot be undone.</p>
         <div className="flex gap-2">
@@ -271,14 +271,35 @@ export default function ControlRoomPage() {
         });
       }
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['cr-room', roomId]);
+      toast.success('Stream is now LIVE!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Stream went live`,
+        }).catch(() => {});
+      }
+    },
   });
   const endStreamMut = useMutation({
     mutationFn: async () => {
       await base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); setShowEndModal(false); toast.success('Stream ended.'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['cr-room', roomId]);
+      setShowEndModal(false);
+      toast.success('Stream ended.');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended via Control Room`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const latestHealth = healthMetrics[0];
@@ -299,7 +320,7 @@ export default function ControlRoomPage() {
 
       {/* Header */}
       <div className="px-4 md:px-8 py-4 flex items-center justify-between"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2.5">
           <Monitor className="w-5 h-5" style={{ color: GOLD }} />
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>

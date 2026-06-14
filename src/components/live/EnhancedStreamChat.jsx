@@ -29,7 +29,7 @@ const EMOTES = {
 };
 
 const BADGE_TYPES = {
-  admin: { color: '#FF8C00', label: 'Admin', icon: '👑' },
+  admin: { color: '#D4854A', label: 'Admin', icon: '👑' },
   moderator: { color: '#6B5CF6', label: 'Mod', icon: '🛡️' },
   subscriber: { color: '#d4af37', label: 'Sub', icon: '⭐' },
   verified: { color: '#C9A84C', label: 'VIP', icon: '✓' }
@@ -211,17 +211,17 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(7,7,15,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
       {/* Header */}
       <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-400" />
+          <Sparkles className="w-4 h-4 text-[#D4854A]" />
           <h3 className="text-xs font-bold uppercase tracking-wide text-white/70" style={{ fontFamily: 'Barlow Condensed' }}>
             Live Chat
           </h3>
           <span className="text-[11px] text-white/40">({messages.length})</span>
         </div>
-        <Shield className="w-3 h-3 text-green-400" title="Automated moderation active" />
+        <Shield className="w-3 h-3 text-[#6DBF7E]" title="Automated moderation active" />
       </div>
 
       {/* Moderation Alerts */}

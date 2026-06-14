@@ -71,7 +71,7 @@ export default function CreatorDashboardPage() {
       href: createPageUrl('GoLive'),
       gradient: `linear-gradient(135deg, ${CRIMSON}40, ${CRIMSON}10)`,
       border: `${CRIMSON}50`,
-      iconColor: '#ff6b8a',
+      iconColor: '#C0392B',
     },
     {
       icon: Calendar,
@@ -109,9 +109,9 @@ export default function CreatorDashboardPage() {
       icon: Zap,
       label: 'INS Forge',
       href: createPageUrl('INSForge'),
-      gradient: `linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05))`,
-      border: 'rgba(245,158,11,0.35)',
-      iconColor: '#F59E0B',
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
+      border: 'rgba(212,175,55,0.35)',
+      iconColor: '#D4AF37',
     },
     {
       icon: Mic2,
@@ -125,9 +125,9 @@ export default function CreatorDashboardPage() {
       icon: Sliders,
       label: 'Pre-Flight',
       href: createPageUrl('GreenRoomPreFlight'),
-      gradient: `linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.04))`,
-      border: 'rgba(34,197,94,0.3)',
-      iconColor: '#22c55e',
+      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
+      border: 'rgba(109,191,126,0.3)',
+      iconColor: '#6DBF7E',
     },
     {
       icon: FileText,
@@ -246,7 +246,7 @@ export default function CreatorDashboardPage() {
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
                     <div className="px-4 py-3 flex items-center justify-between"
                       style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function CreatorDashboardPage() {
                       </div>
                       <Link to={createPageUrl('GoLive')}>
                         <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg transition-all"
-                          style={{ background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}35`, color: '#ff9999', ...T }}>
+                          style={{ background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}35`, color: '#D4854A', ...T }}>
                           + Go Live
                         </span>
                       </Link>

@@ -73,7 +73,7 @@ export default function RTMPServer() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d0618] to-[#0d1020] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0d1020] text-white">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/40 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
@@ -83,7 +83,7 @@ export default function RTMPServer() {
             </button>
           </Link>
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-orange-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#D4854A] flex items-center justify-center">
               <Server className="w-4 h-4 text-black" />
             </div>
             <div>
@@ -92,8 +92,8 @@ export default function RTMPServer() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs text-green-400 font-semibold">Server Online</span>
+            <div className="w-2 h-2 rounded-full bg-[#6DBF7E] animate-pulse" />
+            <span className="text-xs text-[#6DBF7E] font-semibold">Server Online</span>
           </div>
         </div>
         {/* Tabs */}
@@ -134,7 +134,7 @@ export default function RTMPServer() {
                 <div className="flex items-center gap-2 mb-1">
                   <Radio className="w-4 h-4 text-[#d4af37]" />
                   <h2 className="font-bold text-sm">RTMP Ingest</h2>
-                  <span style={{ background: 'rgba(21,128,61,0.5)', color: '#86efac', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>RECOMMENDED</span>
+                  <span style={{ background: 'rgba(21,128,61,0.5)', color: '#6DBF7E', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>RECOMMENDED</span>
                 </div>
                 <CopyField label="Server URL" value={RTMP_SERVER} />
                 <div className="space-y-1">
@@ -163,16 +163,16 @@ export default function RTMPServer() {
               <div className="space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Wifi className="w-4 h-4 text-blue-400" />
+                    <Wifi className="w-4 h-4 text-[#D4AF37]" />
                     <h2 className="font-bold text-sm">SRT Ingest</h2>
-                    <span style={{ background: 'rgba(30,58,138,0.5)', color: '#93c5fd', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
+                    <span style={{ background: 'rgba(128,0,32,0.2)', color: '#C9A84C', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
                   </div>
                   <CopyField label="SRT URL" value={SRT_SERVER} />
                   <CopyField label="Stream ID (passphrase)" value={streamKey} secret />
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Tv2 className="w-4 h-4 text-purple-400" />
+                    <Tv2 className="w-4 h-4 text-[#D4854A]" />
                     <h2 className="font-bold text-sm">HLS Playback</h2>
                   </div>
                   <CopyField label="HLS URL" value={PLAYBACK_URL} />
@@ -209,7 +209,7 @@ export default function RTMPServer() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Status', value: 'Idle', color: 'text-yellow-400', icon: '⏸' },
+                { label: 'Status', value: 'Idle', color: 'text-[#D4AF37]', icon: '⏸' },
                 { label: 'Uptime', value: '—', color: 'text-white', icon: '⏱' },
                 { label: 'Bitrate', value: '—', color: 'text-white', icon: '📡' },
                 { label: 'Viewers', value: '0', color: 'text-white', icon: '👁' },
@@ -227,7 +227,7 @@ export default function RTMPServer() {
                 <h2 className="font-bold text-sm">Stream Health Log</h2>
               </div>
               <div className="bg-black/60 rounded-lg p-4 font-mono text-[11px] text-white/40 min-h-32 space-y-1">
-                <p className="text-green-400/70">[2026-05-03 00:00:00] RTMP server ready on port 1935</p>
+                <p className="text-[#6DBF7E]/70">[2026-05-03 00:00:00] RTMP server ready on port 1935</p>
                 <p className="text-white/30">[2026-05-03 00:00:00] SRT server ready on port 9710</p>
                 <p className="text-white/30">[2026-05-03 00:00:00] HLS packager initialized</p>
                 <p className="text-white/20">[waiting for incoming stream...]</p>

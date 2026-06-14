@@ -6,8 +6,8 @@ import { X, Bell, CheckCircle2, Zap, Users, Target, Trophy, Gift, Heart, Star, R
 import { isSafeUrl } from '@/lib/security';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const ICON_MAP = {
@@ -34,14 +34,14 @@ const CATEGORY_TYPES = {
 const PRIORITY_COLORS = {
   low: 'rgba(100,116,139,0.1)',
   normal: 'rgba(212,175,55,0.1)',
-  high: 'rgba(255,140,0,0.15)',
+  high: 'rgba(212,133,74,0.15)',
   urgent: 'rgba(239,68,68,0.15)',
 };
 
 const PRIORITY_BORDERS = {
   low: 'rgba(100,116,139,0.2)',
   normal: `${G}20`,
-  high: 'rgba(255,140,0,0.3)',
+  high: 'rgba(212,133,74,0.3)',
   urgent: 'rgba(239,68,68,0.4)',
 };
 
@@ -126,13 +126,13 @@ export default function NotificationHub() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#FF8C00' : 'rgba(255,255,255,0.5)' }} />
+        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#D4854A' : 'rgba(255,255,255,0.5)' }} />
         {unreadCount > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-            style={{ background: '#FF8C00', color: '#000' }}
+            style={{ background: '#D4854A', color: '#000' }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.div>
@@ -152,7 +152,7 @@ export default function NotificationHub() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
               <h3 className="text-sm font-bold uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Notifications {unreadCount > 0 && <span style={{ color: '#FF8C00' }}>({unreadCount})</span>}
+                Notifications {unreadCount > 0 && <span style={{ color: '#D4854A' }}>({unreadCount})</span>}
               </h3>
               <div className="flex items-center gap-1">
                 {unreadCount > 0 && (
@@ -217,7 +217,7 @@ export default function NotificationHub() {
                         <p className="text-xs font-bold text-white">{notif.title}</p>
                         <p className="text-[10px] text-white/60 mt-0.5 leading-snug">{notif.message}</p>
                         {notif.metadata?.amount && (
-                          <p className="text-[10px] text-amber-300 mt-1">
+                          <p className="text-[10px] text-[#D4AF37]/80 mt-1">
                             {notif.metadata.amount}
                           </p>
                         )}

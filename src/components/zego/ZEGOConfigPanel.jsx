@@ -46,7 +46,17 @@ export default function ZEGOConfigPanel({ user }) {
         ? base44.entities.ZEGOStream.update(zegoStream.id, data)
         : base44.entities.ZEGOStream.create(data);
     },
-    onSuccess: () => { qc.invalidateQueries(['zego-config']); toast.success('ZEGOCLOUD config saved!'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['zego-config']);
+      toast.success('ZEGOCLOUD config saved!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Configured ZEGOCLOUD streaming settings',
+        }).catch(() => {});
+      }
+    },
   });
 
   const isConfigured = zegoStream && Number(zegoStream.app_id) > 0;
