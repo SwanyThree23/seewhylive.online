@@ -4,6 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, Play, Bell, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
 export default function CoverPage() {
   const { data: user } = useQuery({
@@ -167,6 +170,12 @@ export default function CoverPage() {
           <span>90% Payout</span>
         </div>
       </nav>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid compact maxVisible={8} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ZEGOMobileAppBanner />
+      </div>
     </div>
   );
 }
