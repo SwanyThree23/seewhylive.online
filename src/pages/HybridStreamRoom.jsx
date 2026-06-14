@@ -12,6 +12,7 @@ import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import UnifiedChat from '../components/live/UnifiedChat';
+import StageView from '../components/rooms/StageView';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import StreamGoals from '../components/live/StreamGoals';
@@ -239,6 +240,25 @@ export default function HybridStreamRoom() {
       {roomId && (
         <div style={{ padding: '0 16px 8px' }}>
           <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Stage view for participants */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StageView
+            stage={null}
+            participants={participants}
+            currentUserId={user?.id}
+            onUpdateParticipant={() => {}}
+            localStream={null}
+            localAudioEnabled={true}
+            localVideoEnabled={true}
+            onToggleAudio={() => {}}
+            onToggleVideo={() => {}}
+            remoteStreams={[]}
+            peerUserIds={[]}
+          />
         </div>
       )}
 

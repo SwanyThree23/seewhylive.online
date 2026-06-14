@@ -35,6 +35,10 @@ import PayPerViewManager from '../components/monetization/PayPerViewManager';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import DirectPayments from '../components/live/DirectPayments';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SpotlightSection from '../components/community/SpotlightSection';
+import PollCard from '../components/community/PollCard';
+import CreatorBridge from '../components/social/CreatorBridge';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -160,6 +164,12 @@ function OverviewTab({ user }) {
       </Card>
 
       {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
+      {user && (
+        <div className="mb-4">
+          <CreatorBridge user={user} />
+        </div>
+      )}
 
       <div className="flex items-center gap-3 mb-2">
         <NotificationBell />
@@ -584,6 +594,14 @@ function CommunityTab({ user }) {
         </div>
       </div>
 
+      {/* Spotlight banner + section */}
+      {selectedCommunity && (
+        <div className="space-y-3">
+          <SpotlightBanner communityId={selectedCommunity} isAdmin={true} />
+          <SpotlightSection communityId={selectedCommunity} />
+        </div>
+      )}
+
       {/* Polls section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -595,6 +613,9 @@ function CommunityTab({ user }) {
           </button>
         </div>
 
+        {polls.filter(p => p.status === 'active').map(poll => (
+          <PollCard key={`pc-${poll.id}`} poll={poll} />
+        ))}
         {polls.filter(p => p.status === 'active').map(poll => {
           const opts = Array.isArray(poll.options) ? poll.options : [];
           const total = poll.total_votes || 1;

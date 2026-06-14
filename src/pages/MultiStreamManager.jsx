@@ -9,6 +9,8 @@ import {
   Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle, PlayCircle, StopCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -405,6 +407,15 @@ export default function MultiStreamManager() {
             </Card>
           </motion.div>
         )}
+
+        {/* Stream health monitoring */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
+          <ZEGOStreamHealthCard roomId={null} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Health</span>
+            <StreamHealthMonitor isStreaming={false} />
+          </div>
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
           {[
