@@ -4,6 +4,10 @@ import { createPageUrl } from "../utils";
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import OBSBridge from '../components/obs/OBSBridge';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
+import ChatModeration from '../components/live/ChatModeration';
+import StreamMetadata from '../components/live/StreamMetadata';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -1004,6 +1008,10 @@ export default function StreamRefDash() {
         <StreamHealthDashboard isLive={false} />
         <ZEGOConfigPanel roomId={null} />
         <OBSBridge roomId={null} isHost={true} />
+        <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={null} userId={null} userName="" isHost={false} onStreamHealth={() => {}} />
+        <ChatModeration />
+        <StreamMetadata room={null} isHost={false} />
       </div>
 
       {/* Footer */}

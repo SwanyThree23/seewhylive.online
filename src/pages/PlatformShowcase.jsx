@@ -6,6 +6,9 @@ import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamep
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import VODLibrary from '../components/vod/VODLibrary';
+import ShopDashboard from '../components/merch/ShopDashboard';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -285,6 +288,9 @@ export default function PlatformShowcase() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
+        <VODLibrary creatorId={null} />
+        <ShopDashboard creatorId={null} />
         <ContentRecommendations />
         <ActivitySidebar isOpen={false} onClose={() => {}} />
         <QuickActionPanel isOpen={false} onClose={() => {}} />
