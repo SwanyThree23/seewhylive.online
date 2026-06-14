@@ -52,6 +52,7 @@ import WashingtonClassic from './pages/WashingtonClassic';
 import INSForgeStudio from './pages/INSForgeStudio';
 import CreatorAnalytics from './pages/CreatorAnalytics';
 import SVSArena from './pages/SVSArena';
+import WisperFlo from './pages/WisperFlo';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -157,6 +158,7 @@ const AuthenticatedApp = () => {
       <Route path="/INSForgeStudio" element={<LayoutWrapper currentPageName="INSForgeStudio"><INSForgeStudio /></LayoutWrapper>} />
       <Route path="/CreatorAnalytics" element={<LayoutWrapper currentPageName="CreatorAnalytics"><CreatorAnalytics /></LayoutWrapper>} />
       <Route path="/SVSArena" element={<LayoutWrapper currentPageName="SVSArena"><SVSArena /></LayoutWrapper>} />
+      <Route path="/WisperFlo" element={<LayoutWrapper currentPageName="WisperFlo"><WisperFlo /></LayoutWrapper>} />
       <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />

@@ -15,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -254,6 +255,9 @@ export default function DiscoverPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {/* Who's Online */}
+        <OnlineUsersGrid compact maxVisible={16} />
+
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">

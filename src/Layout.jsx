@@ -38,6 +38,8 @@ var DRAWER_WATCH = [
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
   { name: 'WA Classic',       icon: Trophy,  href: '/WashingtonClassic' },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
+  { name: 'Fallen Legends',   icon: Heart,   href: '/FallenLegends' },
+  { name: 'WisperFlo',        icon: MessageSquare, href: '/WisperFlo' },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
   { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
   { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
@@ -49,6 +51,7 @@ var DRAWER_WATCH = [
   { name: 'Community Growth', icon: BarChart,href: createPageUrl('CommunityGrowth') },
   { name: 'Challenges',       icon: Trophy,  href: createPageUrl('ChallengesHub') },
   { name: 'VOD Library',      icon: Film,    href: createPageUrl('VODLibrary') },
+  { name: 'SVS Arena',        icon: Swords,  href: '/SVSArena' },
   { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
   { name: 'PK Arena',         icon: Trophy,  href: createPageUrl('PKBattleArena') },
   { name: 'PK Battle',        icon: Swords,  href: createPageUrl('PKBattlePage') },
@@ -100,6 +103,9 @@ var DRAWER_CREATE = [
   { name: 'Payout Center',    icon: DollarSign,      href: '/PayoutCenter' },
   { name: 'INS Forge AI',     icon: Sparkles,        href: '/INSForgeStudio' },
   { name: 'Fallen Legends',   icon: Heart,           href: '/FallenLegends' },
+  { name: 'SVS Arena',        icon: Swords,          href: '/SVSArena' },
+  { name: 'Creator Analytics',icon: BarChart,        href: '/CreatorAnalytics' },
+  { name: 'WisperFlo',        icon: MessageSquare,   href: '/WisperFlo' },
 ];
 
 var DRAWER_ACCOUNT = [

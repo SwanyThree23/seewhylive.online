@@ -8,6 +8,7 @@ import GridLines from '../components/home/GridLines';
 import NebulaBg from '../components/home/NebulaBg';
 import StarField from '../components/home/StarField';
 import NotificationBell from '../components/shared/NotificationBell';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -646,6 +647,9 @@ export default function Home() {
           })}
         </div>
       </div>
+
+      {/* ── WHO'S ONLINE ── */}
+      <OnlineUsersGrid compact maxVisible={12} />
 
       {/* ── PLATFORM FEATURES SPOTLIGHT ── */}
       <SpotlightStrip />
