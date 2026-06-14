@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import NotificationBell from '../components/shared/NotificationBell';
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
@@ -491,6 +493,13 @@ export default function Messages() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {user && (
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <NotificationBell />
+          <EnhancedStreamChat roomId={null} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
         </div>
       )}
 

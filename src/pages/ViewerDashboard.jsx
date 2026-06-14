@@ -10,6 +10,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -250,6 +252,8 @@ export default function ViewerDashboard() {
             {user?.id && (
               <ViewerLoyaltyCard userId={user.id} />
             )}
+            <LeaderboardPanel roomId={null} />
+            <StreamGoals roomId={null} isHost={false} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color={GOLD} />
               <StatTile label="Clips" value={myClips.length} icon={Scissors} color={GOLD} />

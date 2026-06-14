@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
   MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
@@ -340,6 +342,9 @@ export default function ModerationDashboardPage() {
                   onAction={(r, action) => reportMut.mutate({ id: r.id, action })} />
               ))
         )}
+
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user.id} />}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[

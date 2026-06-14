@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
 
 const BG   = '#080B18';
 const BG2  = '#0D1022';
@@ -823,6 +825,11 @@ export default function StateVsState() {
       {tab === 'LIVE MATCH' && <LiveMatchView />}
       {tab === 'STANDINGS' && <StandingsView />}
       {tab === 'JUDGES' && <JudgesView />}
+
+      <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={null} />
+        <PKBattleProgress battleId={null} />
+      </div>
 
       {/* Cross-navigation footer */}
       <div style={{ padding: '16px 16px 32px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>

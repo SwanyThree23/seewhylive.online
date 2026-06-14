@@ -5,6 +5,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ReportsManager from '../components/admin/ReportsManager';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -379,6 +381,11 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
+        <ReportsManager communityId={null} userId={null} />
+      </div>
 
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

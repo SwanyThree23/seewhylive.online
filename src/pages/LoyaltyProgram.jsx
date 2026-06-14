@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Star, Gift, Trophy, Users, Zap, Download, Trash2, X, Check } from 'lucide-react';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -352,6 +354,11 @@ export default function LoyaltyProgram() {
           <RedemptionQueue creatorId={user.id} />
         </div>
       )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={null} />
+        {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
+      </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
         {[

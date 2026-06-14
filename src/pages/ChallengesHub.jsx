@@ -6,6 +6,8 @@ import { Zap, Trophy, Clock, Users, Check, ChevronRight, Star, Target } from 'lu
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -329,6 +331,11 @@ export default function ChallengesHubPage() {
             )}
           </motion.div>
         </AnimatePresence>
+
+        <div className="mt-4 space-y-4">
+          <LeaderboardPanel roomId={null} />
+          {user?.id && <LoyaltyBadge userId={user.id} creatorId={null} />}
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[
