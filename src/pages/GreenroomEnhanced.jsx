@@ -18,6 +18,9 @@ import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OBSBridge from '../components/obs/OBSBridge';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -295,6 +298,12 @@ export default function GreenroomEnhanced() {
           )}
         </div>
 
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <MultiGuestPanel roomId={null} hostId={null} isHost={true} />
+        <OBSBridge roomId={null} isHost={true} />
+        <VideoShortRecorder roomId={null} sessionId={null} onSave={() => {}} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

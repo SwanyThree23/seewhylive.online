@@ -8,6 +8,8 @@ import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import ShareToSocial from '../components/social/ShareToSocial';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import RecordingManager from '../components/content/RecordingManager';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import LiveTranscription from '../components/live/LiveTranscription';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -277,6 +279,8 @@ export default function TranscriptionStudio() {
         <ShareToSocial />
         <AIStreamSummary roomId={null} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
         <RecordingManager userId={null} />
+        <LiveTranslationWidget roomId={null} isHost={false} targetLanguage="en" />
+        <LiveTranscription roomId={null} isHost={false} />
       </div>
 
       {/* Footer nav */}

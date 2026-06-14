@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import ShareToSocial from '../components/social/ShareToSocial';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import OBSBridge from '../components/obs/OBSBridge';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -420,6 +422,11 @@ export default function MultiStreamManager() {
 
         <div style={{ marginBottom: 12 }}>
           <ShareToSocial />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
+          <EnhancedIngestPanel roomId={null} isHost={true} />
+          <OBSBridge roomId={null} isHost={true} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
